@@ -1,0 +1,21 @@
+{
+  "name": "@slingshot/market-data-service",
+  "version": "1.0.0",
+  "description": "Market Data Service - Real-time price streaming and P&L calculations",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node --watch index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "ws": "^8.14.2",
+    "axios": "^1.6.0",
+    "cors": "^2.8.5"
+  },
+  "keywords": ["market-data", "trading", "websocket", "slingshot"],
+  "author": "",
+  "license": "ISC"
+}
