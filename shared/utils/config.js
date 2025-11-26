@@ -17,7 +17,8 @@ class ConfigManager {
     const envPaths = [
       path.join(process.cwd(), '.env'),
       path.join(process.cwd(), `.env.${process.env.NODE_ENV || 'development'}`),
-      path.join(process.cwd(), '..', 'shared', '.env')
+      path.join(process.cwd(), 'shared', '.env'),  // For PM2 running from root
+      path.join(process.cwd(), '..', 'shared', '.env')  // For running from service dir
     ];
 
     envPaths.forEach(envPath => {

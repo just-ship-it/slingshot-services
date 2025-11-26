@@ -45,7 +45,10 @@ export const CHANNELS = {
   SERVICE_HEALTH: 'service.health',
   SERVICE_ERROR: 'service.error',
   SERVICE_STARTED: 'service.started',
-  SERVICE_STOPPED: 'service.stopped'
+  SERVICE_STOPPED: 'service.stopped',
+
+  // Tradovate sync events
+  TRADOVATE_SYNC_COMPLETED: 'tradovate_sync_completed'
 };
 
 // Service health check helper

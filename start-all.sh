@@ -12,7 +12,7 @@ YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
 # Base directory
-SERVICES_DIR="/mnt/c/projects/ereptor/slingshot/services"
+SERVICES_DIR="/home/drew/projects/slingshot-services"
 
 # Function to check if Redis is running
 check_redis() {
@@ -42,32 +42,6 @@ install_deps() {
     fi
 }
 
-# Function to start a service
-start_service() {
-    local service_dir=$1
-    local service_name=$2
-
-    echo -e "${YELLOW}Starting ${service_name}...${NC}"
-    cd "$service_dir"
-
-    # Start service in background
-    nohup node index.js > logs/${service_name}.log 2>&1 &
-    local pid=$!
-
-    # Save PID
-    echo $pid > ${service_name}.pid
-
-    sleep 2
-
-    # Check if service started successfully
-    if kill -0 $pid 2>/dev/null; then
-        echo -e "${GREEN}✓ ${service_name} started (PID: $pid)${NC}"
-        return 0
-    else
-        echo -e "${RED}✗ Failed to start ${service_name}${NC}"
-        return 1
-    fi
-}
 
 # Main execution
 cd "$SERVICES_DIR"
@@ -103,30 +77,27 @@ if [ ! -f "$SERVICES_DIR/shared/.env" ]; then
     fi
 fi
 
-# Start services in order
-echo -e "${YELLOW}Starting services...${NC}"
+# Start services using PM2
+echo -e "${YELLOW}Starting services with PM2...${NC}"
 
-# Start webhook gateway first (no dependencies)
-start_service "$SERVICES_DIR/webhook-gateway" "webhook-gateway"
+# Stop any existing PM2 processes first
+pm2 delete all 2>/dev/null || true
 
-# Start tradovate service (depends on message bus)
-sleep 1
-start_service "$SERVICES_DIR/tradovate-service" "tradovate-service"
+# Start all services using ecosystem config
+pm2 start "$SERVICES_DIR/ecosystem.config.js"
 
-# Start market data service (depends on message bus and tradovate)
-sleep 1
-start_service "$SERVICES_DIR/market-data-service" "market-data-service"
-
-# Start trade orchestrator (depends on message bus)
-sleep 1
-start_service "$SERVICES_DIR/trade-orchestrator" "trade-orchestrator"
-
-# Start monitoring service (depends on message bus)
-sleep 1
-start_service "$SERVICES_DIR/monitoring-service" "monitoring-service"
+# Wait a moment for services to initialize
+sleep 3
 
 echo ""
-echo -e "${GREEN}All services started!${NC}"
+echo -e "${GREEN}All services started with PM2!${NC}"
+echo ""
+echo "PM2 Commands:"
+echo "  pm2 status      - View all services"
+echo "  pm2 logs        - View all logs"
+echo "  pm2 monit       - Real-time monitoring"
+echo "  pm2 restart all - Restart all services"
+echo "  pm2 stop all    - Stop all services"
 echo ""
 echo "Service URLs:"
 echo "  Webhook Gateway:    http://localhost:3010/health"

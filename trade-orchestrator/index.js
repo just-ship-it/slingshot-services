@@ -1,5 +1,7 @@
 import express from 'express';
 import axios from 'axios';
+import fs from 'fs/promises';
+import path from 'path';
 import { messageBus, CHANNELS, createLogger, configManager, healthCheck } from '../shared/index.js';
 
 const SERVICE_NAME = 'trade-orchestrator';
@@ -7,6 +9,328 @@ const logger = createLogger(SERVICE_NAME);
 
 // Load configuration
 const config = configManager.loadConfig(SERVICE_NAME, { defaultPort: 3013 });
+
+// File paths for signal tracking persistence
+const SIGNAL_CONTEXT_FILE = path.join(process.cwd(), 'data', 'signal-context.json');
+const ORDER_STRATEGY_MAPPING_FILE = path.join(process.cwd(), 'data', 'order-strategy-mapping.json');
+const SIGNAL_MAPPINGS_FILE = path.join(process.cwd(), 'data', 'signal-mappings.json');
+const SIGNAL_LIFECYCLES_FILE = path.join(process.cwd(), 'data', 'signal-lifecycles.json');
+
+// Signal context persistence functions
+async function saveSignalContext() {
+  try {
+    // Ensure data directory exists
+    const dataDir = path.dirname(SIGNAL_CONTEXT_FILE);
+    await fs.mkdir(dataDir, { recursive: true });
+
+    // Convert Map to object for JSON serialization
+    const signalContextData = {};
+    for (const [key, value] of tradingState.signalContext) {
+      signalContextData[key] = value;
+    }
+
+    const dataToSave = {
+      timestamp: new Date().toISOString(),
+      signalContext: signalContextData,
+      version: '1.0'
+    };
+
+    await fs.writeFile(SIGNAL_CONTEXT_FILE, JSON.stringify(dataToSave, null, 2));
+    logger.info(`💾 Signal context saved to ${SIGNAL_CONTEXT_FILE}`);
+  } catch (error) {
+    logger.error('❌ Failed to save signal context:', error);
+  }
+}
+
+async function loadSignalContext() {
+  try {
+    const data = await fs.readFile(SIGNAL_CONTEXT_FILE, 'utf8');
+    const parsedData = JSON.parse(data);
+
+    // Restore signal context from file
+    if (parsedData.signalContext) {
+      let loadedCount = 0;
+      for (const [key, value] of Object.entries(parsedData.signalContext)) {
+        tradingState.signalContext.set(key, value);
+        loadedCount++;
+      }
+      logger.info(`🔄 Loaded ${loadedCount} signal contexts from ${SIGNAL_CONTEXT_FILE} (saved: ${parsedData.timestamp})`);
+    }
+  } catch (error) {
+    if (error.code === 'ENOENT') {
+      logger.info('📂 No existing signal context file found, starting fresh');
+    } else {
+      logger.error('❌ Failed to load signal context:', error);
+    }
+  }
+}
+
+// Order strategy mapping persistence functions
+async function saveOrderStrategyMapping() {
+  try {
+    const dataDir = path.dirname(ORDER_STRATEGY_MAPPING_FILE);
+    await fs.mkdir(dataDir, { recursive: true });
+
+    // Convert Map to object for JSON serialization
+    const orderStrategyMappingData = {};
+    for (const [orderId, strategyId] of tradingState.orderToStrategy) {
+      orderStrategyMappingData[orderId] = strategyId;
+    }
+
+    const dataToSave = {
+      timestamp: new Date().toISOString(),
+      orderToStrategy: orderStrategyMappingData,
+      version: '1.0'
+    };
+
+    await fs.writeFile(ORDER_STRATEGY_MAPPING_FILE, JSON.stringify(dataToSave, null, 2));
+    logger.info(`💾 Order strategy mapping saved to ${ORDER_STRATEGY_MAPPING_FILE}`);
+  } catch (error) {
+    logger.error('❌ Failed to save order strategy mapping:', error);
+  }
+}
+
+async function loadOrderStrategyMapping() {
+  try {
+    const data = await fs.readFile(ORDER_STRATEGY_MAPPING_FILE, 'utf8');
+    const parsedData = JSON.parse(data);
+
+    // Restore order strategy mapping from file
+    let loadedCount = 0;
+    if (parsedData.orderToStrategy) {
+      for (const [orderId, strategyId] of Object.entries(parsedData.orderToStrategy)) {
+        tradingState.orderToStrategy.set(orderId, strategyId);
+        loadedCount++;
+      }
+
+      logger.info(`🔄 Loaded ${loadedCount} order-strategy mappings from ${ORDER_STRATEGY_MAPPING_FILE} (saved: ${parsedData.timestamp})`);
+    }
+  } catch (error) {
+    if (error.code === 'ENOENT') {
+      logger.info('📂 No existing order strategy mapping file found, starting fresh');
+    } else {
+      logger.error('❌ Failed to load order strategy mapping:', error);
+    }
+  }
+}
+
+// SignalRegistry - Centralized signal tracking and lifecycle management
+class SignalRegistry {
+  constructor() {
+    // Fast bidirectional lookups for real-time operations
+    this.signalToOrders = new Map(); // signalId -> Set<orderId>
+    this.orderToSignal = new Map();  // orderId -> signalId
+    this.signalToPosition = new Map(); // signalId -> positionSymbol
+    this.signalLifecycles = new Map(); // signalId -> Array<events>
+  }
+
+  // Register a new signal when webhook is received
+  registerSignal(signalId, signalData) {
+    this.signalToOrders.set(signalId, new Set());
+    this.signalLifecycles.set(signalId, [{
+      timestamp: new Date().toISOString(),
+      event: 'signal_received',
+      data: signalData
+    }]);
+
+    logger.info(`📡 Signal registered: ${signalId}`);
+  }
+
+  // Link an order to a signal
+  linkOrderToSignal(orderId, signalId, orderRole = 'unknown') {
+    // Add order to signal's order set
+    if (!this.signalToOrders.has(signalId)) {
+      this.signalToOrders.set(signalId, new Set());
+    }
+    this.signalToOrders.get(signalId).add(orderId);
+
+    // Create reverse mapping
+    this.orderToSignal.set(orderId, signalId);
+
+    // Log lifecycle event
+    this.addLifecycleEvent(signalId, 'order_linked', {
+      orderId,
+      orderRole,
+      timestamp: new Date().toISOString()
+    });
+
+    logger.info(`🔗 Order ${orderId} linked to signal ${signalId} (role: ${orderRole})`);
+  }
+
+  // Link a position to a signal when order fills
+  linkPositionToSignal(signalId, positionSymbol, entryOrderId) {
+    this.signalToPosition.set(signalId, positionSymbol);
+
+    this.addLifecycleEvent(signalId, 'position_created', {
+      positionSymbol,
+      entryOrderId,
+      timestamp: new Date().toISOString()
+    });
+
+    logger.info(`📈 Position ${positionSymbol} linked to signal ${signalId}`);
+  }
+
+  // Find signal ID for a given order
+  findSignalForOrder(orderId) {
+    return this.orderToSignal.get(orderId);
+  }
+
+  // Get all orders for a signal
+  getOrdersForSignal(signalId) {
+    return this.signalToOrders.get(signalId) || new Set();
+  }
+
+  // Get position for a signal
+  getPositionForSignal(signalId) {
+    return this.signalToPosition.get(signalId);
+  }
+
+  // Add lifecycle event
+  addLifecycleEvent(signalId, event, data) {
+    if (!this.signalLifecycles.has(signalId)) {
+      this.signalLifecycles.set(signalId, []);
+    }
+
+    this.signalLifecycles.get(signalId).push({
+      timestamp: new Date().toISOString(),
+      event,
+      data
+    });
+  }
+
+  // Get complete signal lifecycle
+  getSignalLifecycle(signalId) {
+    return this.signalLifecycles.get(signalId) || [];
+  }
+
+  // Clean up completed signal
+  cleanupSignal(signalId) {
+    const orders = this.signalToOrders.get(signalId);
+    if (orders) {
+      for (const orderId of orders) {
+        this.orderToSignal.delete(orderId);
+      }
+    }
+
+    this.addLifecycleEvent(signalId, 'signal_completed', {
+      timestamp: new Date().toISOString()
+    });
+
+    // Keep lifecycle but remove active mappings
+    this.signalToOrders.delete(signalId);
+    this.signalToPosition.delete(signalId);
+
+    logger.info(`🏁 Signal ${signalId} completed and cleaned up`);
+  }
+
+  // Persistence methods
+  async saveMappings() {
+    try {
+      const dataDir = path.dirname(SIGNAL_MAPPINGS_FILE);
+      await fs.mkdir(dataDir, { recursive: true });
+
+      const mappingsData = {
+        timestamp: new Date().toISOString(),
+        signalToOrders: Object.fromEntries(
+          Array.from(this.signalToOrders.entries()).map(([k, v]) => [k, Array.from(v)])
+        ),
+        orderToSignal: Object.fromEntries(this.orderToSignal),
+        signalToPosition: Object.fromEntries(this.signalToPosition),
+        version: '1.0'
+      };
+
+      await fs.writeFile(SIGNAL_MAPPINGS_FILE, JSON.stringify(mappingsData, null, 2));
+      logger.info(`💾 Signal mappings saved to ${SIGNAL_MAPPINGS_FILE}`);
+    } catch (error) {
+      logger.error('❌ Failed to save signal mappings:', error);
+    }
+  }
+
+  async saveLifecycles() {
+    try {
+      const dataDir = path.dirname(SIGNAL_LIFECYCLES_FILE);
+      await fs.mkdir(dataDir, { recursive: true });
+
+      const lifecycleData = {
+        timestamp: new Date().toISOString(),
+        signalLifecycles: Object.fromEntries(this.signalLifecycles),
+        version: '1.0'
+      };
+
+      await fs.writeFile(SIGNAL_LIFECYCLES_FILE, JSON.stringify(lifecycleData, null, 2));
+      logger.info(`💾 Signal lifecycles saved to ${SIGNAL_LIFECYCLES_FILE}`);
+    } catch (error) {
+      logger.error('❌ Failed to save signal lifecycles:', error);
+    }
+  }
+
+  async loadMappings() {
+    try {
+      const data = await fs.readFile(SIGNAL_MAPPINGS_FILE, 'utf8');
+      const parsed = JSON.parse(data);
+
+      if (parsed.signalToOrders) {
+        for (const [signalId, orderIds] of Object.entries(parsed.signalToOrders)) {
+          this.signalToOrders.set(signalId, new Set(orderIds));
+        }
+      }
+
+      if (parsed.orderToSignal) {
+        for (const [orderId, signalId] of Object.entries(parsed.orderToSignal)) {
+          this.orderToSignal.set(orderId, signalId);
+        }
+      }
+
+      if (parsed.signalToPosition) {
+        for (const [signalId, positionSymbol] of Object.entries(parsed.signalToPosition)) {
+          this.signalToPosition.set(signalId, positionSymbol);
+        }
+      }
+
+      logger.info(`📁 Signal mappings loaded: ${this.signalToOrders.size} signals, ${this.orderToSignal.size} orders`);
+    } catch (error) {
+      if (error.code === 'ENOENT') {
+        logger.info('📂 No existing signal mappings found, starting fresh');
+      } else {
+        logger.error('❌ Failed to load signal mappings:', error);
+      }
+    }
+  }
+
+  async loadLifecycles() {
+    try {
+      const data = await fs.readFile(SIGNAL_LIFECYCLES_FILE, 'utf8');
+      const parsed = JSON.parse(data);
+
+      if (parsed.signalLifecycles) {
+        for (const [signalId, lifecycle] of Object.entries(parsed.signalLifecycles)) {
+          this.signalLifecycles.set(signalId, lifecycle);
+        }
+      }
+
+      logger.info(`📁 Signal lifecycles loaded: ${this.signalLifecycles.size} signal histories`);
+    } catch (error) {
+      if (error.code === 'ENOENT') {
+        logger.info('📂 No existing signal lifecycles found, starting fresh');
+      } else {
+        logger.error('❌ Failed to load signal lifecycles:', error);
+      }
+    }
+  }
+
+  // Debug/monitoring methods
+  getStats() {
+    return {
+      totalSignals: this.signalToOrders.size,
+      totalOrderMappings: this.orderToSignal.size,
+      totalPositionMappings: this.signalToPosition.size,
+      totalLifecycles: this.signalLifecycles.size
+    };
+  }
+}
+
+// Initialize signal registry
+const signalRegistry = new SignalRegistry();
 
 // Trading state - comprehensive position and order tracking
 const tradingState = {
@@ -21,6 +345,18 @@ const tradingState = {
   // Order Relationships: Track which orders belong to which position/bracket
   // Key: orderId, Value: { positionSymbol, orderRole, parentOrderId }
   orderRelationships: new Map(),
+
+  // Trade Signal Context: Store original signal details for pending orders
+  // Key: signalId, Value: Original trade signal with context
+  signalContext: new Map(),
+
+  // Order Strategy Mapping: Map individual order IDs to their strategy IDs
+  // Key: individual orderId, Value: strategyId
+  orderToStrategy: new Map(),
+
+  // Current Market Prices: Latest prices for active symbols
+  // Key: symbol, Value: { price, timestamp, source }
+  marketPrices: new Map(),
 
   // Account settings and configuration
   accountSettings: new Map(),
@@ -125,7 +461,10 @@ app.get('/api/trading/orders', (req, res) => {
 
 // Get comprehensive trading status for dashboard
 app.get('/api/trading/active-status', (req, res) => {
-  const positions = Array.from(tradingState.tradingPositions.values());
+  // Filter out positions with null or zero netPos (ghost positions)
+  const positions = Array.from(tradingState.tradingPositions.values()).filter(pos =>
+    pos.netPos !== null && pos.netPos !== undefined && pos.netPos !== 0
+  );
   const orders = Array.from(tradingState.workingOrders.values());
 
   // Separate different types of orders
@@ -153,6 +492,255 @@ app.get('/api/trading/active-status', (req, res) => {
     stats: tradingState.stats,
     lastUpdate: new Date().toISOString()
   });
+});
+
+// Enhanced trading status with signal context and market data
+app.get('/api/trading/enhanced-status', (req, res) => {
+  // Helper function to calculate distance from current price to order price
+  const calculateMarketDistance = (orderPrice, currentPrice, isLong) => {
+    if (!orderPrice || !currentPrice) return null;
+    const distance = orderPrice - currentPrice;
+    const percentage = (distance / currentPrice) * 100;
+    const pointsAway = Math.abs(distance);
+    const direction = distance > 0 ? 'above' : 'below';
+
+    return {
+      points: pointsAway,
+      percentage: Math.abs(percentage),
+      direction,
+      needsToMove: isLong ? (distance > 0 ? 'down' : 'filled') : (distance < 0 ? 'up' : 'filled')
+    };
+  };
+
+  // Filter out positions with null or zero netPos
+  const positions = Array.from(tradingState.tradingPositions.values()).filter(pos =>
+    pos.netPos !== null && pos.netPos !== undefined && pos.netPos !== 0
+  );
+
+  // Get all working orders
+  const orders = Array.from(tradingState.workingOrders.values());
+
+  // Separate different types of orders - only show unfilled limit orders
+  // Exclude bracket orders (stop_loss, take_profit) and filled entry orders
+  const pendingEntryOrders = orders.filter(order => {
+    // Skip bracket orders (stop_loss, take_profit)
+    const relationship = tradingState.orderRelationships.get(order.id);
+    if (relationship && (relationship.orderRole === 'stop_loss' || relationship.orderRole === 'take_profit')) {
+      return false;
+    }
+
+    // SIGNAL-BASED FILTERING: The key simplification
+    // If this order has a signalId and that signal already has a position, hide it
+    if (order.signalId) {
+      const signalHasPosition = positions.some(pos =>
+        pos.signalContext && pos.signalContext.signalId === order.signalId
+      );
+      if (signalHasPosition) {
+        logger.info(`🎯 Hiding order ${order.id} - signal ${order.signalId} already has position`);
+        return false; // Signal completed, position exists
+      }
+    }
+
+    // Legacy fallback: Hide ANY order where a position exists for the same symbol
+    // This catches orders without signal tracking
+    const hasMatchingPosition = positions.some(pos => pos.symbol === order.symbol);
+    if (hasMatchingPosition) {
+      // Only hide entry orders, not stops/targets
+      if (!order.stopPrice && !order.isTakeProfit && !order.isStopLoss) {
+        logger.info(`🔍 Hiding filled order ${order.id} - position exists for ${order.symbol} (legacy fallback)`);
+        return false; // Order likely filled and created the position
+      }
+    }
+
+    // Show unfilled orders
+    return true;
+  });
+
+  // Enhanced pending orders with signal context and market data
+  const enhancedPendingOrders = pendingEntryOrders.map(order => {
+    // Look up signal context using the signalId stored in the order
+    let signalContext = null;
+
+    if (order.signalId) {
+      signalContext = tradingState.signalContext.get(order.signalId);
+      if (signalContext) {
+        logger.debug(`📡 Found signal context for order ${order.id} via signalId ${order.signalId}`);
+      }
+    }
+
+    // Fallback: check if this is part of an order strategy (for backward compatibility)
+    if (!signalContext) {
+      const strategyId = tradingState.orderToStrategy.get(order.id);
+      if (strategyId) {
+        const strategySignalContext = tradingState.signalContext.get(strategyId);
+        if (strategySignalContext) {
+          signalContext = strategySignalContext;
+          logger.debug(`📡 Found signal context for order ${order.id} via strategy ${strategyId}`);
+        }
+      }
+    }
+    const baseSymbol = getBaseSymbol(order.symbol);
+    const marketData = tradingState.marketPrices.get(baseSymbol);
+    const currentPrice = marketData?.price;
+
+    // Calculate market distance if we have both order price and current price
+    const marketDistance = order.price && currentPrice ?
+      calculateMarketDistance(order.price, currentPrice, order.action === 'Buy') : null;
+
+    return {
+      // Basic order info
+      orderId: order.id,
+      symbol: order.symbol,
+      baseSymbol,
+      action: order.action,
+      quantity: order.quantity,
+      orderType: order.orderType,
+      price: order.price,
+
+      // Signal context (original trade signal details)
+      signalContext: signalContext ? {
+        signalId: signalContext.signalId,
+        action: signalContext.action,
+        originalAction: signalContext.action,
+        originalSymbol: signalContext.originalSymbol,
+        strategy: signalContext.strategy,
+        reason: signalContext.reason,
+        price: signalContext.price || order.price,
+        quantity: signalContext.quantity || order.quantity,
+        stopLoss: signalContext.stopPrice,
+        stopPrice: signalContext.stopPrice,
+        takeProfit: signalContext.takeProfit,
+        // Include separate trailing stop fields
+        trailingOffset: signalContext.trailingOffset,
+        trailingTrigger: signalContext.trailingTrigger,
+        // Legacy trailing stop field
+        trailingStop: signalContext.trailingStop,
+        side: signalContext.side,
+        timestamp: signalContext.timestamp,
+        source: signalContext.source || 'tradingview',
+        notes: signalContext.notes
+      } : null,
+
+      // Market data and distance
+      marketData: marketData ? {
+        currentPrice: marketData.price,
+        timestamp: marketData.timestamp,
+        source: marketData.source
+      } : null,
+
+      marketDistance,
+
+      // Order metadata
+      orderStatus: order.orderStatus,
+      timestamp: order.timestamp,
+      createdAt: order.timestamp || order.createdAt,
+      timeSinceSignal: signalContext ?
+        Date.now() - new Date(signalContext.timestamp).getTime() : null
+    };
+  });
+
+  // Enhanced positions with current P&L and exit levels
+  const enhancedPositions = positions.map(position => {
+    const baseSymbol = getBaseSymbol(position.symbol);
+    const marketData = tradingState.marketPrices.get(baseSymbol);
+    const currentPrice = marketData?.price;
+
+    // Find associated stop and target orders
+    const stopOrders = orders.filter(order => {
+      const relationship = tradingState.orderRelationships.get(order.id);
+      return relationship &&
+             relationship.orderRole === 'stop_loss' &&
+             relationship.positionSymbol === position.symbol;
+    });
+
+    const targetOrders = orders.filter(order => {
+      const relationship = tradingState.orderRelationships.get(order.id);
+      return relationship &&
+             relationship.orderRole === 'take_profit' &&
+             relationship.positionSymbol === position.symbol;
+    });
+
+    return {
+      // Basic position info
+      symbol: position.symbol,
+      baseSymbol,
+      netPos: position.netPos,
+      netPrice: position.netPrice,
+      entryPrice: position.netPrice, // Frontend expects entryPrice
+      unrealizedPnL: position.unrealizedPnL || 0,
+
+      // Current market data
+      currentPrice,
+      marketData: marketData ? {
+        price: marketData.price,
+        timestamp: marketData.timestamp,
+        source: marketData.source
+      } : null,
+
+      // Exit levels for detailed view
+      exitLevels: {
+        stopLoss: stopOrders.map(order => ({
+          orderId: order.id,
+          price: order.stopPrice || order.price,
+          quantity: order.quantity
+        })),
+        takeProfit: targetOrders.map(order => ({
+          orderId: order.id,
+          price: order.price,
+          quantity: order.quantity
+        }))
+      },
+
+      // Flattened fields for frontend compatibility
+      stopPrice: stopOrders.length > 0 ? (stopOrders[0].stopPrice || stopOrders[0].price) : null,
+      targetPrice: targetOrders.length > 0 ? targetOrders[0].price : null,
+
+      // Position metadata
+      lastUpdate: position.lastUpdate,
+      displaySummary: position.displaySummary,
+
+      // Signal context from original trade signal
+      signalContext: position.signalContext
+    };
+  });
+
+  res.json({
+    tradingEnabled: tradingState.tradingEnabled,
+    timestamp: new Date().toISOString(),
+
+    // Question 1: Pending orders from trade signals
+    pendingOrders: enhancedPendingOrders,
+
+    // Question 2: Open positions
+    openPositions: enhancedPositions,
+
+    // Current market prices for all active symbols
+    marketPrices: Object.fromEntries(tradingState.marketPrices),
+
+    // Trading statistics
+    stats: tradingState.stats
+  });
+});
+
+// Signal Registry debugging and monitoring endpoint
+app.get('/api/trading/signal-registry', (req, res) => {
+  const stats = signalRegistry.getStats();
+
+  // Optionally include detailed signal lifecycles
+  const includeLifecycles = req.query.includeLifecycles === 'true';
+
+  const response = {
+    timestamp: new Date().toISOString(),
+    signalRegistryStats: stats,
+    service: SERVICE_NAME
+  };
+
+  if (includeLifecycles) {
+    // Convert Map to object for JSON serialization
+    response.signalLifecycles = Object.fromEntries(signalRegistry.signalLifecycles);
+  }
+
+  res.json(response);
 });
 
 // Get specific position by symbol
@@ -216,9 +804,9 @@ async function handleWebhookReceived(message) {
       logger.info(`📊 Position sizing: ${positionSizing.quantity} ${positionSizing.symbol} (${positionSizing.reason})`);
     }
 
-    // Special handling for position_closed action
-    if (signal.action === 'position_closed') {
-      logger.info(`🔴 Position close requested for ${positionSizing.symbol}`);
+    // Special handling for position liquidation actions (position_closed and cancel_limit)
+    if (signal.action === 'position_closed' || signal.action === 'cancel_limit') {
+      logger.info(`🔴 Position liquidation requested for ${positionSizing.symbol} (action: ${signal.action})`);
 
       // Send position close request directly to tradovate-service via webhook channel
       // This bypasses the ORDER_REQUEST channel and uses the webhook handler that expects position_closed
@@ -226,7 +814,7 @@ async function handleWebhookReceived(message) {
         id: message.id,
         type: 'trade_signal',
         body: {
-          action: 'position_closed',
+          action: 'position_closed', // Always use position_closed for the liquidation handler
           symbol: positionSizing.symbol, // Use converted symbol
           side: signal.side,
           accountId: signal.accountId || getDefaultAccountId(),
@@ -237,7 +825,7 @@ async function handleWebhookReceived(message) {
       // Route directly to tradovate service webhook handler
       await messageBus.publish(CHANNELS.WEBHOOK_TRADE, closeMessage);
 
-      logger.info(`Position close signal routed to tradovate-service: ${positionSizing.symbol}`);
+      logger.info(`Position liquidation signal routed to tradovate-service: ${positionSizing.symbol} (${signal.action} → position_closed)`);
       return; // Exit early, no need to process as regular order
     }
 
@@ -245,7 +833,7 @@ async function handleWebhookReceived(message) {
     let mappedAction, mappedOrderType, mappedPrice, mappedStopPrice, mappedTakeProfit;
 
     // Log the incoming signal for debugging
-    logger.info(`📝 Processing signal - action: ${signal.action}, side: ${signal.side}, price: ${signal.price}, stop_loss: ${signal.stop_loss}, take_profit: ${signal.take_profit}`);
+    logger.info(`📝 Processing signal - action: ${signal.action}, side: ${signal.side}, price: ${signal.price}, stop_loss: ${signal.stop_loss}, take_profit: ${signal.take_profit}, trailing_trigger: ${signal.trailing_trigger}, trailing_offset: ${signal.trailing_offset}`);
 
     // Handle different action types
     if (signal.action === 'place_limit') {
@@ -278,6 +866,9 @@ async function handleWebhookReceived(message) {
       takeProfit: mappedTakeProfit,
       signalId: message.id,
       timestamp: new Date().toISOString(),
+      // Add trailing stop parameters if present
+      trailing_trigger: signal.trailing_trigger,
+      trailing_offset: signal.trailing_offset,
       // Add position sizing metadata
       positionSizing: {
         originalSymbol: positionSizing.originalSymbol,
@@ -286,6 +877,51 @@ async function handleWebhookReceived(message) {
         reason: positionSizing.reason
       }
     };
+
+    // Store original signal context for status tracking
+    tradingState.signalContext.set(message.id, {
+      signalId: message.id,
+      originalSignal: signal,
+      action: signal.action,
+      symbol: positionSizing.symbol,
+      originalSymbol: signal.symbol,
+      price: mappedPrice,
+      stopPrice: mappedStopPrice,
+      takeProfit: mappedTakeProfit,
+      quantity: positionSizing.quantity,
+      side: signal.side,
+      orderType: mappedOrderType,
+      strategy: signal.strategy,
+      reason: signal.reason,
+      timestamp: new Date().toISOString(),
+      positionSizing,
+      source: signal.source || 'tradingview',
+      // Keep trailing stop components separate
+      trailingOffset: signal.trailing_offset,
+      trailingTrigger: signal.trailing_trigger,
+      // Legacy support for existing trailingStop field
+      trailingStop: signal.trailingStop,
+      notes: signal.notes
+    });
+
+    // Register signal with SignalRegistry for comprehensive tracking
+    signalRegistry.registerSignal(message.id, {
+      originalSignal: signal,
+      processedSignal: {
+        symbol: positionSizing.symbol,
+        price: mappedPrice,
+        stopPrice: mappedStopPrice,
+        takeProfit: mappedTakeProfit,
+        quantity: positionSizing.quantity,
+        side: signal.side,
+        orderType: mappedOrderType
+      }
+    });
+
+    // Save signal context and registry to disk for persistence
+    await saveSignalContext();
+    await signalRegistry.saveMappings();
+    await signalRegistry.saveLifecycles();
 
     // Publish validated trade signal
     await messageBus.publish(CHANNELS.TRADE_VALIDATED, {
@@ -323,7 +959,10 @@ function parseTradeSignal(body) {
         price: body.price,
         stopPrice: body.stop_price,
         quantity: body.contracts,
-        accountId: body.account_id
+        accountId: body.account_id,
+        // Add trailing stop support for TradingView format
+        trailing_trigger: body.trailing_trigger,
+        trailing_offset: body.trailing_offset
       };
     }
 
@@ -586,34 +1225,81 @@ function getPointValue(symbol) {
 
 // Get base symbol for price lookup (e.g., MNQZ5 -> MNQ)
 function getBaseSymbol(contractSymbol) {
+  // Handle null/undefined
+  if (!contractSymbol) return null;
+
+  // Convert to string if needed
+  const symbol = String(contractSymbol);
+
   // Remove month/year suffixes to get base symbol
-  if (contractSymbol.includes('MNQ')) return 'MNQ';
-  if (contractSymbol.includes('NQ')) return 'NQ';
-  if (contractSymbol.includes('MES')) return 'MES';
-  if (contractSymbol.includes('ES')) return 'ES';
-  if (contractSymbol.includes('M2K')) return 'M2K';
-  if (contractSymbol.includes('RTY')) return 'RTY';
-  return contractSymbol; // Return original if no match
+  if (symbol.includes('MNQ')) return 'MNQ';
+  if (symbol.includes('NQ')) return 'NQ';
+  if (symbol.includes('MES')) return 'MES';
+  if (symbol.includes('ES')) return 'ES';
+  if (symbol.includes('M2K')) return 'M2K';
+  if (symbol.includes('RTY')) return 'RTY';
+  return symbol; // Return original if no match
+}
+
+// Validate netPrice from external data sources to prevent corrupted PnL calculations
+function validateNetPrice(posData, symbol) {
+  const candidates = [posData.netPrice, posData.averagePrice, posData.entryPrice];
+  const currentPrice = posData.currentPrice;
+
+  // Find the first valid price that's reasonable
+  for (const price of candidates) {
+    if (price && price > 0) {
+      // For futures, check if price is in reasonable range compared to current price
+      if (currentPrice && currentPrice > 0) {
+        const percentDiff = Math.abs(price - currentPrice) / currentPrice;
+
+        // If price difference is more than 50%, it's likely corrupted
+        if (percentDiff > 0.5) {
+          logger.warn(`⚠️ Suspicious netPrice for ${symbol}: ${price} vs current ${currentPrice} (${(percentDiff*100).toFixed(1)}% diff)`);
+          continue; // Try next candidate
+        }
+      }
+
+      logger.info(`✅ Valid netPrice for ${symbol}: ${price}`);
+      return price;
+    }
+  }
+
+  // If all candidates are invalid, use current price as fallback
+  if (currentPrice && currentPrice > 0) {
+    logger.warn(`⚠️ All netPrice candidates invalid for ${symbol}, using currentPrice: ${currentPrice}`);
+    return currentPrice;
+  }
+
+  logger.error(`❌ No valid price found for ${symbol}, using 0`);
+  return 0;
 }
 
 // Calculate unrealized P&L for a position
 function calculateUnrealizedPnL(position, currentPrice) {
   logger.info(`🧮 Calculating P&L: symbol=${position.symbol}, currentPrice=${currentPrice}, netPrice=${position.netPrice}, netPos=${position.netPos}`);
 
-  if (!currentPrice || !position.netPrice || position.netPos === 0) {
-    logger.info(`🧮 P&L calculation failed: currentPrice=${currentPrice}, netPrice=${position.netPrice}, netPos=${position.netPos}`);
+  if (!currentPrice || position.netPos === 0) {
+    logger.info(`🧮 P&L calculation failed: currentPrice=${currentPrice}, netPos=${position.netPos}`);
+    return 0;
+  }
+
+  // Try multiple sources for entry price
+  const entryPrice = position.netPrice || position.entryPrice || position.averagePrice;
+  if (!entryPrice) {
+    logger.warn(`⚠️ No entry price available for ${position.symbol} - cannot calculate P&L`);
     return 0;
   }
 
   const pointValue = getPointValue(position.symbol);
   const quantity = Math.abs(position.netPos);
   const priceDiff = position.netPos > 0
-    ? (currentPrice - position.netPrice)  // Long position
-    : (position.netPrice - currentPrice); // Short position
+    ? (currentPrice - entryPrice)  // Long position: profit when price goes up
+    : (entryPrice - currentPrice); // Short position: profit when price goes down
 
   const result = priceDiff * quantity * pointValue;
 
-  logger.info(`🧮 P&L calculation: ${position.netPos} ${position.symbol} @ ${position.netPrice} → ${currentPrice} | diff=${priceDiff} × qty=${quantity} × pv=${pointValue} = $${result.toFixed(2)}`);
+  logger.info(`🧮 P&L calculation: ${position.netPos} ${position.symbol} @ ${entryPrice} → ${currentPrice} | diff=${priceDiff} × qty=${quantity} × pv=${pointValue} = $${result.toFixed(2)}`);
 
   return result;
 }
@@ -640,11 +1326,32 @@ async function handleOrderPlaced(message) {
     parentOrderId: message.parentOrderId,
     orderRole: message.orderRole, // 'entry', 'stop_loss', 'take_profit'
     timestamp: message.timestamp,
-    source: message.source
+    source: message.source,
+    signalId: message.signalId  // Store signal ID from tradovate-service
   };
+
+  // Create signal ID mapping if signal ID is present
+  if (message.signalId) {
+    // Store the mapping between order ID and signal ID for signal context lookup
+    // This allows both direct lookup and strategy-based lookup to work
+    logger.info(`📡 Creating signal mapping: order ${message.orderId} → signal ${message.signalId}`);
+
+    // For order strategies, we also need to handle the strategy ID mapping
+    if (message.strategyId && message.strategyId !== message.orderId) {
+      tradingState.orderToStrategy.set(message.orderId, message.strategyId);
+      // Also map the strategy ID to the signal ID
+      tradingState.orderToStrategy.set(message.strategyId, message.signalId);
+      logger.info(`📡 Creating strategy mapping: order ${message.orderId} → strategy ${message.strategyId} → signal ${message.signalId}`);
+    }
+  }
 
   // Store the working order
   tradingState.workingOrders.set(message.orderId, order);
+
+  // Link order to signal in SignalRegistry
+  if (message.signalId) {
+    signalRegistry.linkOrderToSignal(message.orderId, message.signalId, message.orderRole || 'entry');
+  }
 
   // Track order relationships for bracket orders
   if (message.parentOrderId || message.orderRole) {
@@ -675,13 +1382,15 @@ async function handleOrderFilled(message) {
   if (orderRole === 'entry') {
     // This is a main entry order - create or update position
     await updatePositionFromFill(message);
+    // Don't delete the order relationship for entry orders - we need it for dashboard filtering
+    logger.info(`🔗 Keeping order relationship for filled entry order ${message.orderId} for dashboard tracking`);
   } else if (orderRole === 'stop_loss' || orderRole === 'take_profit') {
     // This is a bracket order fill - update position and remove other bracket orders
     await handleBracketOrderFill(message, orderRole);
+    // Clean up bracket order relationships since they're no longer needed
+    tradingState.orderRelationships.delete(message.orderId);
+    logger.info(`🗑️ Cleaned up bracket order relationship for ${message.orderId}`);
   }
-
-  // Clean up order relationship
-  tradingState.orderRelationships.delete(message.orderId);
 
   // Update statistics
   tradingState.stats.totalWorkingOrders = tradingState.workingOrders.size;
@@ -704,17 +1413,68 @@ async function handleOrderRejected(message) {
   tradingState.stats.totalWorkingOrders = tradingState.workingOrders.size;
 }
 
+// Handle order cancellations from Tradovate
+async function handleOrderCancelled(message) {
+  logger.warn(`❌ Order cancelled: ${message.orderId}`);
+
+  // Check if this is an individual order from an order strategy
+  const strategyId = tradingState.orderToStrategy.get(message.orderId);
+  const orderIdToDelete = strategyId || message.orderId;
+
+  // Remove from working orders (using strategy ID if available)
+  tradingState.workingOrders.delete(orderIdToDelete);
+
+  // Clean up order relationship
+  tradingState.orderRelationships.delete(orderIdToDelete);
+
+  // Clean up the mapping
+  if (strategyId) {
+    tradingState.orderToStrategy.delete(message.orderId);
+    // Save mapping after modification
+    await saveOrderStrategyMapping();
+  }
+
+  // Update statistics
+  tradingState.stats.totalWorkingOrders = tradingState.workingOrders.size;
+
+  logger.info(`💼 Working orders after cancellation: ${tradingState.workingOrders.size}`);
+}
+
 // Handle position updates from Tradovate (for real-time P&L)
 async function handlePositionUpdate(message) {
+  logger.info(`📊 Processing position update from ${message.source || 'unknown'}`);
+
   if (message.positions && Array.isArray(message.positions)) {
     // Bulk position update
+    let newPositionsAdded = 0;
+    let duplicatesSkipped = 0;
+
     for (const posData of message.positions) {
+      // Check for duplicate by contract ID
+      const existingPosition = Array.from(tradingState.tradingPositions.values())
+        .find(pos => pos.contractId === posData.contractId);
+
+      if (existingPosition && message.source === 'websocket_sync') {
+        logger.info(`⚠️  Skipping duplicate position from sync: Contract ${posData.contractId}`);
+        duplicatesSkipped++;
+        continue;
+      }
+
       if (posData.netPos !== 0) {
         await updateTradingPositionFromMarketData(posData, message.accountId);
+        newPositionsAdded++;
       } else {
         // Position closed
-        tradingState.tradingPositions.delete(posData.symbol);
+        const symbolToDelete = posData.symbol || getSymbolFromContractId(posData.contractId);
+        if (symbolToDelete) {
+          tradingState.tradingPositions.delete(symbolToDelete);
+          logger.info(`🗑️  Removed closed position: ${symbolToDelete}`);
+        }
       }
+    }
+
+    if (duplicatesSkipped > 0) {
+      logger.info(`📊 Position update summary: ${newPositionsAdded} new, ${duplicatesSkipped} duplicates skipped`);
     }
   } else if (message.symbol) {
     // Single position update
@@ -722,11 +1482,22 @@ async function handlePositionUpdate(message) {
       await updateTradingPositionFromMarketData(message, message.accountId);
     } else {
       tradingState.tradingPositions.delete(message.symbol);
+      logger.info(`🗑️  Removed closed position: ${message.symbol}`);
     }
   }
 
   // Update position count
   tradingState.stats.totalPositions = tradingState.tradingPositions.size;
+}
+
+// Helper function to find symbol by contract ID
+function getSymbolFromContractId(contractId) {
+  for (const [symbol, position] of tradingState.tradingPositions.entries()) {
+    if (position.contractId === contractId) {
+      return symbol;
+    }
+  }
+  return null;
 }
 
 // Handle explicit position closure
@@ -774,8 +1545,39 @@ async function updatePositionFromFill(fillMessage) {
       // Update position
       const newSide = newQuantity > 0 ? 'long' : 'short';
       // Calculate new average entry price
+      logger.warn(`🔍 Entry price calculation inputs: existing.netPosition=${existing.netPosition}, existing.entryPrice=${existing.entryPrice}, fillMessage.quantity=${fillMessage.quantity}, fillMessage.fillPrice=${fillMessage.fillPrice}, newQuantity=${newQuantity}`);
+
+      // Enhanced entry price calculation with better validation
       const totalValue = (existing.netPosition * existing.entryPrice) + (fillMessage.quantity * fillMessage.fillPrice);
-      const newEntryPrice = Math.abs(totalValue / newQuantity);
+      let newEntryPrice = Math.abs(totalValue / newQuantity);
+
+      logger.warn(`🔍 Entry price calculation: totalValue=${totalValue}, newEntryPrice=${newEntryPrice}`);
+      logger.warn(`🔍 Detailed breakdown: (${existing.netPosition} × ${existing.entryPrice}) + (${fillMessage.quantity} × ${fillMessage.fillPrice}) = ${totalValue}`);
+      logger.warn(`🔍 Division: ${totalValue} ÷ ${newQuantity} = ${totalValue / newQuantity}, abs = ${Math.abs(totalValue / newQuantity)}`);
+
+      // Enhanced validation for futures prices
+      const currentMarketPrice = fillMessage.fillPrice;
+      const maxReasonableDeviation = 0.5; // 50% deviation max
+      const isReasonablePrice = newEntryPrice > 0 &&
+                               newEntryPrice > (currentMarketPrice * (1 - maxReasonableDeviation)) &&
+                               newEntryPrice < (currentMarketPrice * (1 + maxReasonableDeviation));
+
+      if (!newEntryPrice || newEntryPrice < 1 || newEntryPrice > 100000 || !isReasonablePrice) {
+        logger.error(`🚨 CORRUPTED ENTRY PRICE DETECTED: ${newEntryPrice} for ${symbol}`);
+        logger.error(`🚨 Calculation inputs: netPos=${existing.netPosition} @ ${existing.entryPrice} + fill=${fillMessage.quantity} @ ${fillMessage.fillPrice}`);
+        logger.error(`🚨 Current market price: ${currentMarketPrice}, calculated: ${newEntryPrice}, reasonable: ${isReasonablePrice}`);
+
+        // Better fallback: use volume-weighted average if we can, otherwise use existing entry price
+        if (Math.abs(fillMessage.quantity) >= Math.abs(existing.netPosition)) {
+          // This is a larger fill, so use the fill price
+          newEntryPrice = fillMessage.fillPrice;
+          logger.error(`🚨 Using fill price ${fillMessage.fillPrice} as fallback (larger fill)`);
+        } else {
+          // Keep existing entry price for smaller additional fills
+          newEntryPrice = existing.entryPrice;
+          logger.error(`🚨 Keeping existing entry price ${existing.entryPrice} as fallback (smaller fill)`);
+        }
+      }
 
       // Update both frontend-expected and internal fields
       existing.netPos = newQuantity;
@@ -785,12 +1587,108 @@ async function updatePositionFromFill(fillMessage) {
       existing.entryPrice = newEntryPrice;
       existing.lastUpdate = fillMessage.timestamp;
 
+      // Create order relationship to mark this filled order (for position updates too)
+      tradingState.orderRelationships.set(fillMessage.orderId, {
+        orderRole: 'entry',
+        positionSymbol: symbol,
+        signalId: existing.signalContext?.signalId || 'unknown'
+      });
+      logger.info(`🔗 Created order relationship for filled order ${fillMessage.orderId} -> existing position ${symbol}`);
+
       logger.info(`📊 Updated position: ${symbol} = ${newQuantity} @ ${newEntryPrice.toFixed(2)}`);
     }
   } else {
     // Create new position
     const quantity = fillMessage.action === 'Buy' ? fillMessage.quantity : -fillMessage.quantity;
     const side = quantity > 0 ? 'long' : 'short';
+
+    // Look up signal context for this order using SignalRegistry
+    let signalContext = null;
+
+    // PRIMARY: Use signalId from the fill message (sent by tradovate-service)
+    if (fillMessage.signalId) {
+      signalContext = tradingState.signalContext.get(fillMessage.signalId);
+      if (signalContext) {
+        logger.info(`📡 Found signal context via message signalId for ${fillMessage.orderId}: Signal ID ${fillMessage.signalId}`);
+      }
+    }
+
+    // Fallback: Use SignalRegistry for fast lookup
+    if (!signalContext) {
+      const signalId = signalRegistry.findSignalForOrder(fillMessage.orderId);
+      if (signalId) {
+        signalContext = tradingState.signalContext.get(signalId);
+        if (signalContext) {
+          logger.info(`📡 Found signal context via SignalRegistry for ${fillMessage.orderId}: Signal ID ${signalId}`);
+        }
+      }
+    }
+
+    // Fallback: Use working order data (for compatibility)
+    if (!signalContext) {
+      const workingOrder = tradingState.workingOrders.get(fillMessage.orderId);
+      if (workingOrder && workingOrder.signalId) {
+        signalContext = tradingState.signalContext.get(workingOrder.signalId);
+        if (signalContext) {
+          logger.info(`📡 Found signal context via working order for ${fillMessage.orderId}: Signal ID ${signalContext.signalId}`);
+        }
+      }
+    }
+
+    // Emergency fallback: Find recent signal context by symbol/price match (for immediate fills)
+    if (!signalContext) {
+      logger.warn(`⚡ Immediate fill scenario detected for ${fillMessage.orderId} - searching recent signals by symbol/price`);
+
+      for (const [contextSignalId, contextData] of tradingState.signalContext.entries()) {
+        // Look for recent signal (within last 30 seconds) with matching symbol and similar price
+        const signalTime = new Date(contextData.timestamp).getTime();
+        const fillTime = new Date(fillMessage.timestamp || new Date()).getTime();
+        const timeDiff = Math.abs(fillTime - signalTime);
+
+        if (timeDiff < 30000 && // Within 30 seconds
+            contextData.symbol === symbol && // Same symbol
+            Math.abs(contextData.price - fillMessage.fillPrice) < 10) { // Price within 10 points
+          signalContext = contextData;
+          logger.info(`⚡ Found signal context via emergency price/time match: ${contextSignalId} (time diff: ${timeDiff}ms, price diff: ${Math.abs(contextData.price - fillMessage.fillPrice)})`);
+
+          // Register this order with the signal for future lookups
+          signalRegistry.linkOrderToSignal(fillMessage.orderId, contextSignalId, 'entry_order');
+          break;
+        }
+      }
+    }
+
+    // Additional fallback: Search for parent OrderStrategy orders with same symbol
+    // This handles the case where child order fills but doesn't inherit parent signal context
+    if (!signalContext) {
+      logger.warn(`🔍 Searching for parent OrderStrategy orders for symbol ${symbol}`);
+
+      for (const [orderId, order] of tradingState.workingOrders.entries()) {
+        if (order.symbol === symbol && (order.isOrderStrategy || order.strategyId) && order.signalId) {
+          signalContext = tradingState.signalContext.get(order.signalId);
+          if (signalContext) {
+            logger.info(`🔗 Found signal context via parent OrderStrategy ${orderId}: Signal ID ${order.signalId}`);
+            break;
+          }
+        }
+      }
+    }
+
+    // Final fallback: Try the order-to-strategy mapping (for bracket orders)
+    if (!signalContext) {
+      const strategyId = tradingState.orderToStrategy.get(fillMessage.orderId);
+      if (strategyId) {
+        const strategySignalContext = tradingState.signalContext.get(strategyId);
+        if (strategySignalContext) {
+          signalContext = strategySignalContext;
+          logger.info(`📡 Found signal context via strategy ${strategyId} for order ${fillMessage.orderId}: Signal ID ${signalContext.signalId}`);
+        }
+      }
+    }
+
+    if (!signalContext) {
+      logger.warn(`⚠️  No signal context found for filled order ${fillMessage.orderId}`);
+    }
 
     const newPosition = {
       symbol: symbol,
@@ -812,19 +1710,180 @@ async function updatePositionFromFill(fillMessage) {
       takeProfitOrder: null,
       pendingEntryOrders: [],
 
+      // Signal context from trade signal
+      signalContext: signalContext,
+
       // Metadata
       createdAt: fillMessage.timestamp,
       lastUpdate: fillMessage.timestamp,
-      strategy: 'unknown',
+      strategy: signalContext?.source || 'unknown',
       riskParams: {}
     };
 
     tradingState.tradingPositions.set(symbol, newPosition);
     logger.info(`🆕 New position created: ${symbol} = ${quantity} @ ${fillMessage.fillPrice}`);
+
+    // Create order relationship to mark this filled entry order
+    // This is crucial for the dashboard filtering logic to properly hide filled orders
+    tradingState.orderRelationships.set(fillMessage.orderId, {
+      orderRole: 'entry',
+      positionSymbol: symbol,
+      signalId: signalContext?.signalId || 'unknown'
+    });
+    logger.info(`🔗 Created order relationship for filled entry order ${fillMessage.orderId} -> position ${symbol}`);
+
+    // If this fill has a signal context, also check if there's a parent OrderStrategy to link
+    if (signalContext && signalContext.signalId) {
+      // Find any OrderStrategy orders with the same signal ID
+      for (const [orderId, order] of tradingState.workingOrders.entries()) {
+        if (order.signalId === signalContext.signalId && (order.isOrderStrategy || order.strategyId)) {
+          tradingState.orderRelationships.set(orderId, {
+            orderRole: 'entry',
+            positionSymbol: symbol,
+            signalId: signalContext.signalId
+          });
+          logger.info(`🔗 Created order relationship for parent OrderStrategy ${orderId} -> position ${symbol}`);
+        }
+      }
+    }
+
+    // Link position to signal in SignalRegistry
+    if (signalContext && signalContext.signalId) {
+      signalRegistry.linkPositionToSignal(signalContext.signalId, symbol, fillMessage.orderId);
+    }
+
+    // Link bracket orders to the new position
+    await linkBracketOrdersToPosition(newPosition, signalContext, fillMessage.orderId);
   }
 
   // Update statistics
   tradingState.stats.totalPositions = tradingState.tradingPositions.size;
+}
+
+// Link bracket orders to a newly created position
+async function linkBracketOrdersToPosition(position, signalContext, entryOrderId) {
+  if (!signalContext) {
+    logger.warn(`⚠️ No signal context available to link bracket orders for ${position.symbol}`);
+    return;
+  }
+
+  logger.info(`🔗 Looking for bracket orders to link to position ${position.symbol} from signal ${signalContext.signalId}`);
+
+  let stopOrdersLinked = 0;
+  let targetOrdersLinked = 0;
+
+  // Find bracket orders that belong to the same signal/strategy
+  for (const [orderId, order] of tradingState.workingOrders.entries()) {
+    // Check if this order belongs to the same signal
+    const orderSignalContext = tradingState.signalContext.get(orderId);
+    const strategyId = tradingState.orderToStrategy.get(orderId);
+    const strategySignalContext = strategyId ? tradingState.signalContext.get(strategyId) : null;
+
+    const orderContext = orderSignalContext || strategySignalContext;
+
+    if (orderContext && orderContext.signalId === signalContext.signalId && order.symbol === position.symbol) {
+      // This is a bracket order from the same signal - determine its role
+      const isStopOrder = order.orderType === 'Stop' || order.orderType === 'StopLimit' ||
+                         (orderContext.stopPrice && Math.abs(order.price - orderContext.stopPrice) < 1);
+      const isTargetOrder = orderContext.takeProfit && Math.abs(order.price - orderContext.takeProfit) < 1;
+
+      if (isStopOrder) {
+        // Link as stop loss order
+        tradingState.orderRelationships.set(orderId, {
+          orderRole: 'stop_loss',
+          positionSymbol: position.symbol,
+          signalId: signalContext.signalId
+        });
+        stopOrdersLinked++;
+        logger.info(`🔗 Linked stop loss order ${orderId} to position ${position.symbol}`);
+      } else if (isTargetOrder) {
+        // Link as take profit order
+        tradingState.orderRelationships.set(orderId, {
+          orderRole: 'take_profit',
+          positionSymbol: position.symbol,
+          signalId: signalContext.signalId
+        });
+        targetOrdersLinked++;
+        logger.info(`🔗 Linked take profit order ${orderId} to position ${position.symbol}`);
+      }
+    }
+  }
+
+  logger.info(`✅ Bracket order linking complete for ${position.symbol}: ${stopOrdersLinked} stop orders, ${targetOrdersLinked} target orders`);
+
+  // Update the position with bracket order info for immediate display
+  await linkAssociatedOrders(position);
+}
+
+// Link bracket orders to a synced position (without signal context)
+async function linkBracketOrdersForSyncedPosition(position) {
+  logger.info(`🔗 Searching for bracket orders to link to synced position ${position.symbol}`);
+
+  let stopOrdersLinked = 0;
+  let targetOrdersLinked = 0;
+
+  // Look through all signal contexts to find one that matches this position
+  let matchingSignalContext = null;
+
+  for (const [signalId, signalContext] of tradingState.signalContext.entries()) {
+    // Check if this signal is for the same symbol and has bracket order prices
+    if (signalContext.originalSymbol === position.baseSymbol || signalContext.originalSymbol === position.symbol) {
+      // Check if position price is close to signal entry price
+      if (signalContext.price && Math.abs(position.entryPrice - signalContext.price) < 10) {
+        matchingSignalContext = signalContext;
+        logger.info(`🎯 Found matching signal context ${signalId} for position ${position.symbol}`);
+        break;
+      }
+    }
+  }
+
+  if (!matchingSignalContext) {
+    logger.info(`⚠️ No matching signal context found for position ${position.symbol}`);
+    return;
+  }
+
+  // Now use the matching signal context to link bracket orders
+  for (const [orderId, order] of tradingState.workingOrders.entries()) {
+    // Check if this order belongs to the matching signal
+    const orderSignalContext = tradingState.signalContext.get(orderId);
+    const strategyId = tradingState.orderToStrategy.get(orderId);
+    const strategySignalContext = strategyId ? tradingState.signalContext.get(strategyId) : null;
+
+    const orderContext = orderSignalContext || strategySignalContext;
+
+    if (orderContext && orderContext.signalId === matchingSignalContext.signalId && order.symbol === position.symbol) {
+      // This is a bracket order from the matching signal - determine its role
+      const isStopOrder = order.orderType === 'Stop' || order.orderType === 'StopLimit' ||
+                         (orderContext.stopPrice && Math.abs(order.price - orderContext.stopPrice) < 1);
+      const isTargetOrder = orderContext.takeProfit && Math.abs(order.price - orderContext.takeProfit) < 1;
+
+      if (isStopOrder) {
+        // Link as stop loss order
+        tradingState.orderRelationships.set(orderId, {
+          orderRole: 'stop_loss',
+          positionSymbol: position.symbol,
+          signalId: matchingSignalContext.signalId
+        });
+        stopOrdersLinked++;
+        logger.info(`🔗 Linked stop loss order ${orderId} to synced position ${position.symbol}`);
+      } else if (isTargetOrder) {
+        // Link as take profit order
+        tradingState.orderRelationships.set(orderId, {
+          orderRole: 'take_profit',
+          positionSymbol: position.symbol,
+          signalId: matchingSignalContext.signalId
+        });
+        targetOrdersLinked++;
+        logger.info(`🔗 Linked take profit order ${orderId} to synced position ${position.symbol}`);
+      }
+    }
+  }
+
+  logger.info(`✅ Bracket order linking complete for synced position ${position.symbol}: ${stopOrdersLinked} stop orders, ${targetOrdersLinked} target orders`);
+
+  // Update position with signal context and refresh bracket order info
+  position.signalContext = matchingSignalContext;
+  await linkAssociatedOrders(position);
 }
 
 // Handle when a bracket order (stop/target) fills
@@ -881,6 +1940,16 @@ async function cancelOtherBracketOrders(symbol, filledOrderId) {
 
 // Update position with real-time market data
 async function updateTradingPositionFromMarketData(posData, accountId) {
+  logger.info(`🔄 Position update from market data:`, {
+    symbol: posData.symbol,
+    contractId: posData.contractId,
+    netPos: posData.netPos,
+    netPrice: posData.netPrice,
+    averagePrice: posData.averagePrice,
+    entryPrice: posData.entryPrice,
+    currentPrice: posData.currentPrice,
+    unrealizedPnL: posData.pnl || posData.unrealizedPnL
+  });
   // Handle positions that only have contractId - need to resolve symbol
   let symbol = posData.symbol;
   if (!symbol && posData.contractId) {
@@ -908,8 +1977,9 @@ async function updateTradingPositionFromMarketData(posData, accountId) {
 
     // Update associated orders in the position
     await linkAssociatedOrders(position);
-  } else if (posData.netPos !== 0) {
+  } else if (posData.netPos && posData.netPos !== 0) {
     // Create position from market data (startup sync scenario)
+    // Only create if netPos is valid and not zero
     const newPosition = {
       symbol: symbol,
       contractId: posData.contractId,
@@ -917,14 +1987,14 @@ async function updateTradingPositionFromMarketData(posData, accountId) {
 
       // Frontend expects these field names
       netPos: posData.netPos,
-      netPrice: posData.netPrice || posData.averagePrice || posData.entryPrice || 0,
+      netPrice: validateNetPrice(posData, symbol),
       unrealizedPnL: posData.pnl || posData.unrealizedPnL || 0,
 
       // Trade-orchestrator additional fields
       netPosition: posData.netPos,
       side: posData.netPos > 0 ? 'long' : 'short',
-      entryPrice: posData.netPrice || posData.averagePrice || posData.entryPrice || 0,
-      currentPrice: posData.currentPrice || posData.netPrice || posData.entryPrice || 0,
+      entryPrice: validateNetPrice(posData, symbol),
+      currentPrice: posData.currentPrice || validateNetPrice(posData, symbol),
 
       stopLossOrder: null,
       takeProfitOrder: null,
@@ -938,6 +2008,9 @@ async function updateTradingPositionFromMarketData(posData, accountId) {
 
     tradingState.tradingPositions.set(symbol, newPosition);
     await linkAssociatedOrders(newPosition);
+
+    // Try to link bracket orders for this position using signal context matching
+    await linkBracketOrdersForSyncedPosition(newPosition);
 
     logger.info(`📊 Position synced from market data: ${symbol} = ${posData.netPos} @ ${newPosition.entryPrice}`);
   }
@@ -955,16 +2028,45 @@ async function linkAssociatedOrders(position) {
       const orderRole = relationship?.orderRole || 'entry';
 
       if (orderRole === 'stop_loss') {
-        position.stopLossOrder = {
+        const stopOrder = {
           orderId: orderId,
           price: order.stopPrice || order.price,
-          status: order.status
+          status: order.status,
+          orderType: order.orderType
         };
+
+        // Check if this is a trailing stop order
+        if (order.orderType === 'Stop' || (order.orderType === 'Limit' && order.stopPrice)) {
+          stopOrder.isTrailing = true;
+
+          // Calculate trailing stop activation point
+          const currentPrice = position.currentPrice;
+          const entryPrice = position.entryPrice;
+          const isLong = position.netPos > 0;
+
+          // For trailing stops, calculate how far price needs to move before trailing activates
+          if (currentPrice && entryPrice) {
+            const priceMovement = isLong ? currentPrice - entryPrice : entryPrice - currentPrice;
+            const stopDistance = isLong ? currentPrice - stopOrder.price : stopOrder.price - currentPrice;
+
+            stopOrder.trailingInfo = {
+              activationPrice: stopOrder.price, // This is the current trailing level
+              priceMovement: priceMovement,
+              stopDistance: stopDistance,
+              distanceToActivation: Math.max(0, stopDistance - priceMovement)
+            };
+
+            logger.info(`📈 Trailing stop for ${position.symbol}: activation=${stopOrder.price}, movement=${priceMovement.toFixed(2)}, distance=${stopDistance.toFixed(2)}`);
+          }
+        }
+
+        position.stopLossOrder = stopOrder;
       } else if (orderRole === 'take_profit') {
         position.takeProfitOrder = {
           orderId: orderId,
           price: order.price,
-          status: order.status
+          status: order.status,
+          orderType: order.orderType
         };
       } else if (orderRole === 'entry') {
         position.pendingEntryOrders.push({
@@ -977,6 +2079,30 @@ async function linkAssociatedOrders(position) {
       }
     }
   }
+
+  // Add unified position display summary
+  const stopInfo = position.stopLossOrder ?
+    (position.stopLossOrder.isTrailing ? `${position.stopLossOrder.price} (trailing)` : position.stopLossOrder.price) : 'none';
+  const targetInfo = position.takeProfitOrder?.price || 'none';
+  const entryOrders = position.pendingEntryOrders.length || 0;
+
+  // Enhanced position summary for display
+  position.displaySummary = {
+    direction: position.netPos > 0 ? 'Long' : 'Short',
+    quantity: Math.abs(position.netPos),
+    symbol: position.symbol,
+    entryPrice: position.entryPrice,
+    currentPrice: position.currentPrice,
+    stopPrice: position.stopLossOrder?.price || position.signalContext?.stopPrice,
+    targetPrice: position.takeProfitOrder?.price || position.signalContext?.takeProfit,
+    isTrailingStop: position.stopLossOrder?.isTrailing || false,
+    trailingInfo: position.stopLossOrder?.trailingInfo,
+    unrealizedPnL: position.unrealizedPnL,
+    // Unified string for display: "Long 1 MNQ @ 24895 | Stop: 24850 (trailing) | Target: 24950"
+    displayString: `${position.netPos > 0 ? 'Long' : 'Short'} ${Math.abs(position.netPos)} ${position.symbol} @ ${position.entryPrice}${position.stopLossOrder ? ` | Stop: ${stopInfo}` : ''}${position.takeProfitOrder ? ` | Target: ${targetInfo}` : ''}`
+  };
+
+  logger.info(`🔗 Position summary: ${position.displaySummary.displayString}`);
 }
 
 // ===== MARKET DATA AND P&L MANAGEMENT =====
@@ -995,7 +2121,16 @@ async function handlePriceUpdate(message) {
       return;
     }
 
-    // Only process if we have positions for this symbol
+    // Store current market price for all symbols (not just those with positions)
+    tradingState.marketPrices.set(baseSymbol, {
+      price: currentPrice,
+      timestamp: new Date().toISOString(),
+      source: message.source || 'market-data-service',
+      symbol: symbol,
+      baseSymbol: baseSymbol
+    });
+
+    // Only process P&L updates if we have positions for this symbol
     let hasPositions = false;
     logger.info(`📊 Checking positions for base symbol: ${baseSymbol}`);
 
@@ -1034,6 +2169,43 @@ async function handlePriceUpdate(message) {
 
   } catch (error) {
     logger.error('Failed to handle price update:', error.message);
+  }
+}
+
+// Handle Tradovate sync completion to reconcile pending orders
+async function handleTradovateSyncCompleted(message) {
+  try {
+    logger.info(`🔄 Tradovate sync completed with ${message.workingOrderIds.length} working orders`);
+
+    // Get current pending order IDs from our state
+    const currentPendingOrderIds = new Set(tradingState.workingOrders.keys());
+    const tradovateWorkingOrderIds = new Set(message.workingOrderIds);
+
+    // Find orders that are no longer working in Tradovate but still in our state
+    const staleOrderIds = [...currentPendingOrderIds].filter(orderId => !tradovateWorkingOrderIds.has(orderId));
+
+    if (staleOrderIds.length > 0) {
+      logger.info(`🧹 Found ${staleOrderIds.length} stale pending orders to remove: ${staleOrderIds.join(', ')}`);
+
+      // Remove stale orders from working orders
+      for (const orderId of staleOrderIds) {
+        const order = tradingState.workingOrders.get(orderId);
+        if (order) {
+          logger.info(`🗑️ Removing stale order: ${orderId} (${order.symbol} ${order.action})`);
+          tradingState.workingOrders.delete(orderId);
+        }
+      }
+
+      // Update statistics
+      tradingState.stats.totalWorkingOrders = tradingState.workingOrders.size;
+
+      logger.info(`✅ Cleaned up ${staleOrderIds.length} stale orders. Current working orders: ${tradingState.stats.totalWorkingOrders}`);
+    } else {
+      logger.info('✅ No stale orders found - pending orders state is synchronized');
+    }
+
+  } catch (error) {
+    logger.error('Failed to handle Tradovate sync completion:', error.message);
   }
 }
 
@@ -1147,8 +2319,27 @@ async function performInitialSync() {
       logger.info(`📋 Syncing ${workingOrders.length} working orders (filtered from ${dashboardData.orders.length} total)...`);
 
       for (const orderData of workingOrders) {
+        // Try to find signal context for this order by looking through saved signal contexts
+        let signalId = null;
+        const orderId = orderData.id || orderData.orderId;
+
+        // First, check if we have direct signal mapping from SignalRegistry
+        signalId = signalRegistry.findSignalForOrder(orderId);
+
+        // Fallback: check if this order can be matched to a signal by symbol/price/time
+        if (!signalId) {
+          for (const [contextSignalId, contextData] of tradingState.signalContext.entries()) {
+            if (contextData.symbol === orderData.symbol &&
+                Math.abs(contextData.price - orderData.price) < 10) {
+              signalId = contextSignalId;
+              logger.info(`🔄 Sync: Matched order ${orderId} to signal ${signalId} via symbol/price match`);
+              break;
+            }
+          }
+        }
+
         const orderMessage = {
-          orderId: orderData.id || orderData.orderId,
+          orderId: orderId,
           accountId: orderData.accountId,
           symbol: orderData.symbol,
           action: orderData.action,
@@ -1161,16 +2352,67 @@ async function performInitialSync() {
           parentOrderId: orderData.parentOrderId,
           orderRole: orderData.orderRole,
           timestamp: orderData.timestamp,
-          source: 'startup_sync'
+          source: 'startup_sync',
+          signalId: signalId  // Include signal ID if found
         };
 
         await handleOrderPlaced(orderMessage);
+
+        // If we found a signal context, link the order to it
+        if (signalId) {
+          signalRegistry.linkOrderToSignal(orderId, signalId, orderData.orderRole || 'entry');
+          logger.info(`🔗 Sync: Linked restored order ${orderId} to signal ${signalId}`);
+        } else {
+          logger.warn(`⚠️ Sync: No signal context found for order ${orderId} - this may cause dashboard filtering issues`);
+        }
       }
     }
 
     // Link orders to positions now that we have both
     for (const position of tradingState.tradingPositions.values()) {
       await linkAssociatedOrders(position);
+    }
+
+    // CRITICAL FIX: Check for orders that should be hidden because corresponding positions exist
+    // This handles the case where an order filled immediately but sync restored it as working
+    const orderIdsToRemoveFromWorking = [];
+    for (const [orderId, order] of tradingState.workingOrders.entries()) {
+      // Check if there's a position for this symbol
+      const position = tradingState.tradingPositions.get(order.symbol);
+      if (position && order.signalId) {
+        // Check if this order and position are from the same signal
+        const orderSignalContext = tradingState.signalContext.get(order.signalId);
+        if (orderSignalContext && position.signalContext &&
+            orderSignalContext.signalId === position.signalContext.signalId) {
+
+          // This order was actually filled and created the position
+          logger.info(`🔧 Sync Fix: Order ${orderId} actually filled and created position ${order.symbol} - marking as filled`);
+
+          // Create the order relationship to mark this as a filled entry order
+          tradingState.orderRelationships.set(orderId, {
+            orderRole: 'entry',
+            positionSymbol: order.symbol,
+            signalId: order.signalId
+          });
+
+          // Remove from working orders since it's actually filled
+          orderIdsToRemoveFromWorking.push(orderId);
+
+          // Register in signal registry if not already done
+          signalRegistry.linkPositionToSignal(order.signalId, order.symbol, orderId);
+
+          logger.info(`✅ Sync Fix: Properly linked filled order ${orderId} to position ${order.symbol}`);
+        }
+      }
+    }
+
+    // Remove the filled orders from working orders
+    for (const orderId of orderIdsToRemoveFromWorking) {
+      tradingState.workingOrders.delete(orderId);
+    }
+
+    if (orderIdsToRemoveFromWorking.length > 0) {
+      logger.info(`🧹 Sync Fix: Removed ${orderIdsToRemoveFromWorking.length} actually-filled orders from working orders`);
     }
 
     logger.info(`✅ Initial sync complete: ${tradingState.tradingPositions.size} positions, ${tradingState.workingOrders.size} working orders`);
@@ -1191,14 +2433,24 @@ async function startup() {
     await messageBus.connect();
     logger.info('Message bus connected');
 
+    // Load persisted signal context
+    await loadSignalContext();
+    await loadOrderStrategyMapping();
+
+    // Load SignalRegistry persistence data
+    await signalRegistry.loadMappings();
+    await signalRegistry.loadLifecycles();
+
     // Subscribe to relevant channels
     await messageBus.subscribe(CHANNELS.WEBHOOK_RECEIVED, handleWebhookReceived);
     await messageBus.subscribe(CHANNELS.ORDER_PLACED, handleOrderPlaced);
     await messageBus.subscribe(CHANNELS.ORDER_FILLED, handleOrderFilled);
     await messageBus.subscribe(CHANNELS.ORDER_REJECTED, handleOrderRejected);
+    await messageBus.subscribe(CHANNELS.ORDER_CANCELLED, handleOrderCancelled);
     await messageBus.subscribe(CHANNELS.POSITION_UPDATE, handlePositionUpdate);
     await messageBus.subscribe(CHANNELS.POSITION_CLOSED, handlePositionClosed);
     await messageBus.subscribe(CHANNELS.PRICE_UPDATE, handlePriceUpdate);
+    await messageBus.subscribe(CHANNELS.TRADOVATE_SYNC_COMPLETED, handleTradovateSyncCompleted);
     logger.info('Subscribed to message bus channels');
 
     // Request initial sync of existing positions and orders from other services

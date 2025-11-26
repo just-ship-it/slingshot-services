@@ -3,7 +3,7 @@ module.exports = {
     {
       name: 'webhook-gateway',
       script: './webhook-gateway/index.js',
-      cwd: '/mnt/c/projects/ereptor/slingshot/services',
+      cwd: '/home/drew/projects/slingshot-services',
       instances: 1,
       exec_mode: 'fork',
       autorestart: true,
@@ -21,7 +21,7 @@ module.exports = {
     {
       name: 'tradovate-service',
       script: './tradovate-service/index.js',
-      cwd: '/mnt/c/projects/ereptor/slingshot/services',
+      cwd: '/home/drew/projects/slingshot-services',
       instances: 1,
       exec_mode: 'fork',
       autorestart: true,
@@ -39,7 +39,7 @@ module.exports = {
     {
       name: 'market-data-service',
       script: './market-data-service/index.js',
-      cwd: '/mnt/c/projects/ereptor/slingshot/services',
+      cwd: '/home/drew/projects/slingshot-services',
       instances: 1,
       exec_mode: 'fork',
       autorestart: true,
@@ -57,7 +57,7 @@ module.exports = {
     {
       name: 'trade-orchestrator',
       script: './trade-orchestrator/index.js',
-      cwd: '/mnt/c/projects/ereptor/slingshot/services',
+      cwd: '/home/drew/projects/slingshot-services',
       instances: 1,
       exec_mode: 'fork',
       autorestart: true,
@@ -75,7 +75,7 @@ module.exports = {
     {
       name: 'monitoring-service',
       script: './monitoring-service/index.js',
-      cwd: '/mnt/c/projects/ereptor/slingshot/services',
+      cwd: '/home/drew/projects/slingshot-services',
       instances: 1,
       exec_mode: 'fork',
       autorestart: true,

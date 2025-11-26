@@ -2,6 +2,6 @@
   "method": "fixed",
   "fixedQuantity": 1,
   "riskPercentage": 10,
-  "maxContracts": 10,
-  "contractType": "micro"
+  "maxContracts": 1,
+  "contractType": "auto"
 }

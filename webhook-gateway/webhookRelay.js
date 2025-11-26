@@ -23,7 +23,7 @@ class WebhookRelayService extends EventEmitter {
 
     // Configuration from environment variables
     this.relayName = process.env.WEBHOOK_RELAY_NAME || 'slingshot';
-    this.destination = process.env.WEBHOOK_RELAY_DESTINATION || 'http://172.29.244.52:3010/slingshot';
+    this.destination = process.env.WEBHOOK_RELAY_DESTINATION || 'http://172.29.244.52:3010';
     this.relayCommand = process.env.WEBHOOK_RELAY_COMMAND || 'relay';
     this.autoStart = process.env.WEBHOOK_RELAY_AUTO_START !== 'false';
     this.autoRestart = process.env.WEBHOOK_RELAY_AUTO_RESTART !== 'false';

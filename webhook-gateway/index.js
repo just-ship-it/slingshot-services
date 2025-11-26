@@ -39,6 +39,10 @@ app.get('/health', async (req, res) => {
 function detectWebhookType(body) {
   // Check explicit webhook_type field first (preferred method)
   if (body.webhook_type) {
+    // Normalize trading_signal to trade_signal for consistency
+    if (body.webhook_type === 'trading_signal') {
+      return 'trade_signal';
+    }
     return body.webhook_type;
   }
 
@@ -95,8 +99,8 @@ app.post('/webhook', async (req, res) => {
           break;
 
         case 'trade_signal':
-          await messageBus.publish(CHANNELS.WEBHOOK_TRADE, webhookMessage);
-          logger.info(`Trade signal webhook routed to tradovate-service: ${req.id}`);
+          await messageBus.publish(CHANNELS.WEBHOOK_RECEIVED, webhookMessage);
+          logger.info(`Trade signal webhook routed to trade-orchestrator: ${req.id}`);
           break;
 
         default:

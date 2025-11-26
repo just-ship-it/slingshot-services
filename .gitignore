@@ -51,3 +51,13 @@ logs/
 # Temporary files
 *.tmp
 .temp/
+
+# Claude IDE settings
+.claude/settings.local.json
+
+# Runtime data directories
+data/
+*/data/
+
+# Windows file attributes
+*.Zone.Identifier

@@ -4,6 +4,7 @@ import { createServer } from 'http';
 import { Server } from 'socket.io';
 import { readFileSync, writeFileSync, existsSync } from 'fs';
 import path from 'path';
+import axios from 'axios';
 import { messageBus, CHANNELS, createLogger, configManager, healthCheck } from '../shared/index.js';
 
 const SERVICE_NAME = 'monitoring-service';
@@ -349,7 +350,6 @@ app.get('/api/trading/active-status', async (req, res) => {
   try {
     logger.info('🔄 Proxying request to trade-orchestrator...');
 
-    const axios = require('axios');
     const response = await axios.get('http://localhost:3013/api/trading/active-status', {
       timeout: 5000
     });
@@ -377,6 +377,105 @@ app.get('/api/trading/active-status', async (req, res) => {
         totalWorkingOrders: workingOrders.length,
         dailyTrades: 0,
         dailyPnL: 0
+      },
+      lastUpdate: new Date().toISOString(),
+      source: 'monitoring_fallback'
+    });
+  }
+});
+
+// Proxy endpoint to trade-orchestrator for enhanced trading status
+app.get('/api/trading/enhanced-status', async (req, res) => {
+  try {
+    logger.info('🔄 Proxying enhanced status request to trade-orchestrator...');
+
+    const response = await axios.get('http://localhost:3013/api/trading/enhanced-status', {
+      timeout: 5000
+    });
+
+    logger.info('✅ Enhanced trade-orchestrator proxy response received');
+    res.json(response.data);
+  } catch (error) {
+    logger.error('❌ Enhanced trade-orchestrator proxy failed:', error.message);
+
+    // Enhanced fallback with signal context simulation
+    const openPositions = Array.from(monitoringState.positions.values())
+      .filter(pos => pos.netPos !== 0);
+
+    const workingOrders = Array.from(monitoringState.orders.values())
+      .filter(order => order.status === 'working' || order.orderStatus === 'Working');
+
+    // Group orders by symbol for context
+    const ordersBySymbol = new Map();
+    workingOrders.forEach(order => {
+      if (!ordersBySymbol.has(order.symbol)) {
+        ordersBySymbol.set(order.symbol, []);
+      }
+      ordersBySymbol.get(order.symbol).push(order);
+    });
+
+    res.json({
+      tradingEnabled: true,
+      pendingOrders: Array.from(ordersBySymbol.entries()).map(([symbol, orders]) => {
+        const entryOrder = orders.find(o => !o.orderRole || o.orderRole === 'entry');
+        const currentPrice = monitoringState.prices.get(symbol)?.close;
+
+        return {
+          signalId: entryOrder?.id || 'unknown',
+          symbol,
+          action: entryOrder?.action || 'unknown',
+          price: entryOrder?.price || 0,
+          quantity: entryOrder?.quantity || 0,
+          orderId: entryOrder?.id,
+          orderStatus: entryOrder?.orderStatus || 'Working',
+          marketDistance: currentPrice && entryOrder?.price ?
+            Math.abs(currentPrice - entryOrder.price) : null,
+          marketDistancePercent: currentPrice && entryOrder?.price ?
+            ((Math.abs(currentPrice - entryOrder.price) / currentPrice) * 100) : null,
+          orders,
+          signalContext: {
+            signalId: entryOrder?.id || 'unknown',
+            action: entryOrder?.action || 'unknown',
+            symbol,
+            price: entryOrder?.price || 0,
+            quantity: entryOrder?.quantity || 0,
+            timestamp: entryOrder?.timestamp || new Date().toISOString(),
+            source: 'fallback'
+          },
+          currentMarketData: monitoringState.prices.get(symbol)
+        };
+      }),
+      openPositions: openPositions.map(pos => {
+        const currentPrice = monitoringState.prices.get(pos.symbol)?.close;
+        const isLong = pos.netPos > 0;
+
+        return {
+          positionId: pos.id,
+          symbol: pos.symbol,
+          quantity: pos.netPos,
+          side: isLong ? 'long' : 'short',
+          currentPrice,
+          entryPrice: pos.avgFillPrice || null,
+          unrealizedPnL: pos.unrealizedPnL || 0,
+          realizedPnL: pos.realizedPnL || 0,
+          stopPrice: null,
+          targetPrice: null,
+          trailingStopPrice: null,
+          signalContext: {
+            signalId: 'unknown',
+            symbol: pos.symbol,
+            action: isLong ? 'long' : 'short',
+            source: 'fallback'
+          },
+          currentMarketData: monitoringState.prices.get(pos.symbol)
+        };
+      }),
+      marketData: Object.fromEntries(monitoringState.prices),
+      stats: {
+        pendingOrdersCount: workingOrders.length,
+        openPositionsCount: openPositions.length,
+        totalUnrealizedPnL: openPositions.reduce((sum, pos) => sum + (pos.unrealizedPnL || 0), 0),
+        totalRealizedPnL: openPositions.reduce((sum, pos) => sum + (pos.realizedPnL || 0), 0)
       },
       lastUpdate: new Date().toISOString(),
       source: 'monitoring_fallback'
@@ -412,18 +511,21 @@ async function handleAccountUpdate(message) {
   logger.info('📊 Received account update:', {
     accountId: message.accountId,
     accountName: message.accountName,
-    cashData: JSON.stringify(message.cashData),
-    accountData: JSON.stringify(message.accountData)
+    source: message.source || 'unknown',
+    hasDirectBalance: !!message.balance,
+    hasCashData: !!message.cashData,
+    hasAccountData: !!message.accountData
   });
 
+  // Handle both formats: direct fields (WebSocket sync) and nested objects (REST API)
   const account = {
     id: message.accountId,
     name: message.accountName,
-    balance: message.cashData?.totalCashValue || message.cashData?.cashUSD || message.cashData?.balance || 0,
-    realizedPnL: message.cashData?.realizedPnL || 0,
-    unrealizedPnL: message.cashData?.unrealizedPnL || 0,
-    marginUsed: message.accountData?.marginUsed || 0,
-    marginAvailable: message.accountData?.marginAvailable || 0,
+    balance: message.balance || message.cashData?.totalCashValue || message.cashData?.cashUSD || message.cashData?.balance || 0,
+    realizedPnL: message.realizedPnL || message.cashData?.realizedPnL || 0,
+    unrealizedPnL: message.unrealizedPnL || message.cashData?.unrealizedPnL || 0,
+    marginUsed: message.marginUsed || message.accountData?.marginUsed || 0,
+    marginAvailable: message.marginAvailable || message.accountData?.marginAvailable || 0,
     lastUpdate: message.timestamp
   };
 
