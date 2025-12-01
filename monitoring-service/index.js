@@ -23,7 +23,7 @@ const CONTRACT_MAPPINGS_KEY = 'contracts:mappings';
 // Position sizing Redis functions
 async function loadPositionSizingSettings() {
   try {
-    const data = await messageBus.client.get('config:position-sizing');
+    const data = await messageBus.publisher.get('config:position-sizing');
     if (data) {
       const settings = JSON.parse(data);
       logger.info('✅ Position sizing settings loaded from Redis:', settings);
@@ -58,7 +58,7 @@ async function savePositionSizingSettings(settings, reason = 'unknown') {
     logger.info(`💾 Saving position sizing settings to Redis (reason: ${reason}):`, settings);
     logger.debug(`📍 Save called from: ${stack}`);
 
-    await messageBus.client.set('config:position-sizing', JSON.stringify(settings));
+    await messageBus.publisher.set('config:position-sizing', JSON.stringify(settings));
     logger.info('✅ Position sizing settings successfully saved to Redis');
     return true;
   } catch (error) {
@@ -70,7 +70,7 @@ async function savePositionSizingSettings(settings, reason = 'unknown') {
 // Contract mappings Redis functions
 async function loadContractMappings() {
   try {
-    const data = await messageBus.client.get('contracts:mappings');
+    const data = await messageBus.publisher.get('contracts:mappings');
     if (data) {
       const mappings = JSON.parse(data);
       logger.info('Contract mappings loaded from Redis:', mappings);
@@ -101,7 +101,7 @@ async function loadContractMappings() {
 
   // Save defaults to Redis for future use
   try {
-    await messageBus.client.set('contracts:mappings', JSON.stringify(defaults));
+    await messageBus.publisher.set('contracts:mappings', JSON.stringify(defaults));
     logger.info('✅ Default contract mappings saved to Redis');
   } catch (error) {
     logger.error('❌ Failed to save default contract mappings to Redis:', error);

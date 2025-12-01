@@ -31,7 +31,7 @@ async function saveSignalContext() {
       version: '1.0'
     };
 
-    await messageBus.client.set('signal:context', JSON.stringify(dataToSave));
+    await messageBus.publisher.set('signal:context', JSON.stringify(dataToSave));
     logger.info('💾 Signal context saved to Redis');
   } catch (error) {
     logger.error('❌ Failed to save signal context to Redis:', error);
@@ -40,7 +40,7 @@ async function saveSignalContext() {
 
 async function loadSignalContext() {
   try {
-    const data = await messageBus.client.get('signal:context');
+    const data = await messageBus.publisher.get('signal:context');
     if (data) {
       const parsedData = JSON.parse(data);
 
@@ -113,7 +113,7 @@ async function loadOrderStrategyMapping() {
 // Contract mappings Redis functions
 async function loadContractMappings() {
   try {
-    const data = await messageBus.client.get('contracts:mappings');
+    const data = await messageBus.publisher.get('contracts:mappings');
     if (data) {
       const mappings = JSON.parse(data);
       logger.info('Contract mappings loaded from Redis:', mappings);
@@ -144,7 +144,7 @@ async function loadContractMappings() {
 
   // Save defaults to Redis
   try {
-    await messageBus.client.set('contracts:mappings', JSON.stringify(defaults));
+    await messageBus.publisher.set('contracts:mappings', JSON.stringify(defaults));
     logger.info('✅ Default contract mappings saved to Redis');
   } catch (error) {
     logger.error('❌ Failed to save default contract mappings to Redis:', error);
@@ -312,7 +312,7 @@ class SignalRegistry {
         version: '1.0'
       };
 
-      await messageBus.client.set('signal:mappings', JSON.stringify(mappingsData));
+      await messageBus.publisher.set('signal:mappings', JSON.stringify(mappingsData));
       logger.info('💾 Signal mappings saved to Redis');
     } catch (error) {
       logger.error('❌ Failed to save signal mappings to Redis:', error);
@@ -328,7 +328,7 @@ class SignalRegistry {
       };
 
       // Set with 7-day TTL (604800 seconds) to prevent indefinite growth
-      await messageBus.client.setex('signal:lifecycles', 604800, JSON.stringify(lifecycleData));
+      await messageBus.publisher.setex('signal:lifecycles', 604800, JSON.stringify(lifecycleData));
       logger.info('💾 Signal lifecycles saved to Redis (7-day TTL)');
     } catch (error) {
       logger.error('❌ Failed to save signal lifecycles to Redis:', error);
@@ -337,7 +337,7 @@ class SignalRegistry {
 
   async loadMappings() {
     try {
-      const data = await messageBus.client.get('signal:mappings');
+      const data = await messageBus.publisher.get('signal:mappings');
       if (data) {
         const parsed = JSON.parse(data);
 
@@ -370,7 +370,7 @@ class SignalRegistry {
 
   async loadLifecycles() {
     try {
-      const data = await messageBus.client.get('signal:lifecycles');
+      const data = await messageBus.publisher.get('signal:lifecycles');
       if (data) {
         const parsed = JSON.parse(data);
 
