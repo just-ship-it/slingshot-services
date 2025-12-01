@@ -295,6 +295,17 @@ async function handleOrderRequest(message) {
             if (dependents && Array.isArray(dependents)) {
               const mapping = strategyChildMap.get(strategyId);
               if (mapping) {
+                // Store strategy info in orderStrategyLinks for stop detection
+                const strategyInfo = orderStrategyLinks.get(strategyId) || {
+                  strategyId: strategyId,
+                  timestamp: new Date().toISOString(),
+                  entryOrderId: null,
+                  stopOrderId: null,
+                  targetOrderId: null,
+                  isTrailing: hasTrailingStop,
+                  symbol: contractSymbol
+                };
+
                 // Store all child order IDs
                 dependents.forEach(dep => {
                   if (dep.orderId) {
@@ -302,8 +313,24 @@ async function handleOrderRequest(message) {
                     // Also map individual orders to the signal
                     orderSignalMap.set(dep.orderId, message.signalId);
                     logger.info(`🔗 Mapped child order ${dep.orderId} (label: ${dep.label}) → signal ${message.signalId}`);
+
+                    // Track which order is which based on label or order
+                    // First order is usually entry, second is stop
+                    if (!strategyInfo.entryOrderId) {
+                      strategyInfo.entryOrderId = dep.orderId;
+                      logger.info(`🎯 Identified order ${dep.orderId} as ENTRY order for strategy ${strategyId}`);
+                    } else if (!strategyInfo.stopOrderId) {
+                      strategyInfo.stopOrderId = dep.orderId;
+                      logger.info(`🛑 Identified order ${dep.orderId} as STOP order for strategy ${strategyId}`);
+                    } else if (!strategyInfo.targetOrderId) {
+                      strategyInfo.targetOrderId = dep.orderId;
+                      logger.info(`🎯 Identified order ${dep.orderId} as TARGET order for strategy ${strategyId}`);
+                    }
                   }
                 });
+
+                // Update the strategy links map
+                orderStrategyLinks.set(strategyId, strategyInfo);
                 logger.info(`✅ Successfully mapped ${mapping.childOrderIds.size} child orders + parent strategy to signal ${message.signalId}`);
               }
             }
@@ -690,6 +717,50 @@ async function handlePlaceLimitOrder(tradeSignal, accountId, webhookId) {
   await handleOrderRequest(orderRequest);
 }
 
+// Handle account sync requests from monitoring service
+async function handleAccountSyncRequest(message) {
+  logger.info(`🔄 Received account sync request from ${message.requestedBy}`);
+
+  try {
+    // Re-publish current account data if we have accounts available
+    await tradovateClient.loadAccounts();
+    const accounts = tradovateClient.accounts;
+    if (accounts && accounts.length > 0) {
+      for (const account of accounts) {
+        try {
+          // Get current account and cash data
+          const [accountData, cashData] = await Promise.all([
+            tradovateClient.getAccountBalances(account.id),
+            tradovateClient.getCashBalances(account.id)
+          ]);
+
+          // Publish account update
+          await messageBus.publish(CHANNELS.ACCOUNT_UPDATE, {
+            accountId: account.id,
+            accountName: account.name,
+            accountData,
+            cashData,
+            source: 'sync_request',
+            timestamp: new Date().toISOString()
+          });
+
+          logger.info(`✅ Re-published account data for ${account.name} (${account.id})`);
+        } catch (error) {
+          logger.error(`❌ Failed to sync account ${account.id}:`, error.message);
+        }
+      }
+    } else {
+      logger.warn('⚠️ No accounts available to sync');
+    }
+  } catch (error) {
+    logger.error('❌ Failed to handle account sync request:', {
+      error: error.message,
+      stack: error.stack,
+      tradovateConnected: tradovateClient?.isConnected || false
+    });
+  }
+}
+
 // Handle cancel_limit action from LDPS Trader
 async function handleCancelLimitOrders(tradeSignal, accountId, webhookId) {
   logger.info(`Processing cancel_limit: ${tradeSignal.side} ${tradeSignal.symbol} (reason: ${tradeSignal.reason})`);
@@ -857,12 +928,18 @@ async function startup() {
       let parentOrderId = null;
       let strategyId = null;
 
+      // Enhanced order role detection - check order text for clues
+      const orderText = order.text || order.description || '';
+      const isTrailingStop = orderText.toLowerCase().includes('trail') || order.isAutoTrade;
+
       // Try to determine if this is a bracket order based on order type and timing
-      if (order.orderType === 'Stop') {
+      if (order.orderType === 'Stop' || (order.orderType === 'StopLimit' && order.stopPrice)) {
         orderRole = 'stop_loss';
+        logger.info(`🛑 Detected STOP order ${order.id} (type: ${order.orderType}, trailing: ${isTrailingStop})`);
       } else if (order.orderType === 'Limit' && order.stopPrice) {
-        // This might be a trailing stop order
+        // This might be a trailing stop order that has been converted
         orderRole = 'stop_loss';
+        logger.info(`🛑 Detected converted trailing STOP order ${order.id}`);
       } else if (order.orderType === 'Limit' && !order.stopPrice) {
         // This might be a profit target order
         // We need more logic to distinguish between entry and profit target
@@ -874,6 +951,7 @@ async function startup() {
           if (!strategy.targetOrderId && strategy.entryOrderId) {
             orderRole = 'take_profit';
             strategyId = strategy.strategyId;
+            logger.info(`🎯 Detected TARGET order ${order.id} for strategy`);
           }
         }
       }
@@ -891,7 +969,8 @@ async function startup() {
             break;
           } else if (orderRole === 'stop_loss' && !strategy.stopOrderId) {
             strategy.stopOrderId = order.id;
-            logger.info(`🔗 Linked stop order ${order.id} to strategy ${strategy.strategyId}`);
+            strategy.isTrailing = isTrailingStop;
+            logger.info(`🔗 Linked stop order ${order.id} to strategy ${strategy.strategyId} (trailing: ${isTrailingStop})`);
             break;
           } else if (orderRole === 'take_profit' && !strategy.targetOrderId) {
             strategy.targetOrderId = order.id;
@@ -922,6 +1001,48 @@ async function startup() {
             timestamp: new Date().toISOString(),
             source: 'websocket_order_update'
           });
+
+          // Check if stop/target fill closes position
+          if (orderRole === 'stop_loss' || orderRole === 'take_profit') {
+            logger.info(`🔍 ${orderRole} filled - scheduling position check for contract ${order.contractId}`);
+
+            setTimeout(async () => {
+              try {
+                const positions = await tradovateClient.getPositions(order.accountId);
+                const position = positions.find(pos => pos.contractId === order.contractId);
+
+                if (!position || position.netPos === 0) {
+                  logger.info(`✅ Position CLOSED after ${orderRole} fill`);
+
+                  // Resolve symbol
+                  let symbol = enrichedOrder.symbol || enrichedOrder.contractName;
+                  if (!symbol && order.contractId) {
+                    try {
+                      const contractDetails = await tradovateClient.getContractDetails(order.contractId);
+                      symbol = contractDetails?.name || `CONTRACT_${order.contractId}`;
+                    } catch (err) {
+                      symbol = `CONTRACT_${order.contractId}`;
+                    }
+                  }
+
+                  await messageBus.publish(CHANNELS.POSITION_CLOSED, {
+                    accountId: order.accountId,
+                    contractId: order.contractId,
+                    symbol: symbol,
+                    closedByOrder: order.id,
+                    orderType: orderRole,
+                    fillPrice: enrichedOrder.avgFillPrice || enrichedOrder.price,
+                    timestamp: new Date().toISOString(),
+                    source: 'order_update_position_check'
+                  });
+
+                  logger.info(`📉 Published POSITION_CLOSED for ${symbol} after ${orderRole} fill`);
+                }
+              } catch (error) {
+                logger.error(`Failed to check position after ${orderRole} fill:`, error);
+              }
+            }, 2000);
+          }
         } catch (error) {
           logger.error(`Failed to process order fill for ${order.id}:`, error);
         }
@@ -1041,6 +1162,21 @@ async function startup() {
           logger.warn(`⚠️ No signal mapping found for filled order ${execution.orderId} - signal context will be lost`);
         }
 
+        // Check if this order is a stop or target from an OrderStrategy
+        let isStopOrder = false;
+        let isTargetOrder = false;
+        for (const [strategyId, strategyLinks] of orderStrategyLinks.entries()) {
+          if (strategyLinks.stopOrderId === execution.orderId) {
+            isStopOrder = true;
+            logger.info(`🛑 Identified order ${execution.orderId} as STOP ORDER from strategy ${strategyId}`);
+            break;
+          } else if (strategyLinks.targetOrderId === execution.orderId) {
+            isTargetOrder = true;
+            logger.info(`🎯 Identified order ${execution.orderId} as TARGET ORDER from strategy ${strategyId}`);
+            break;
+          }
+        }
+
         await messageBus.publish(CHANNELS.ORDER_FILLED, {
           orderId: execution.orderId,
           accountId: execution.accountId,
@@ -1052,7 +1188,9 @@ async function startup() {
           status: 'filled',
           timestamp: execution.timestamp || new Date().toISOString(),
           source: 'websocket_execution_report',
-          signalId: signalId  // Include the original signal ID!
+          signalId: signalId,  // Include the original signal ID!
+          isStopOrder: isStopOrder,
+          isTargetOrder: isTargetOrder
         });
 
         // Clean up the mapping since order is now filled
@@ -1062,6 +1200,45 @@ async function startup() {
         }
 
         logger.info(`📊 Published execution fill for order ${execution.orderId} with symbol: ${symbol}`);
+
+        // IMPORTANT: Check if this fill closes a position (stop or target fills)
+        if ((isStopOrder || isTargetOrder) && execution.accountId && execution.contractId) {
+          logger.info(`🔍 Stop/Target filled - checking if position is closed for contract ${execution.contractId}`);
+
+          // Wait a brief moment for Tradovate to update position state
+          setTimeout(async () => {
+            try {
+              // Get current positions for this account
+              const positions = await tradovateClient.getPositions(execution.accountId);
+
+              // Find position for this contract
+              const position = positions.find(pos => pos.contractId === execution.contractId);
+
+              if (!position || position.netPos === 0) {
+                logger.info(`✅ Position CLOSED after stop/target fill for contract ${execution.contractId}`);
+
+                // Publish position closed event
+                await messageBus.publish(CHANNELS.POSITION_CLOSED, {
+                  accountId: execution.accountId,
+                  contractId: execution.contractId,
+                  symbol: symbol,
+                  closedByOrder: execution.orderId,
+                  orderType: isStopOrder ? 'stop' : 'target',
+                  fillPrice: execution.avgPx || execution.price,
+                  timestamp: new Date().toISOString(),
+                  source: 'stop_fill_position_check',
+                  signalId: signalId
+                });
+
+                logger.info(`📉 Published POSITION_CLOSED for ${symbol} after ${isStopOrder ? 'stop' : 'target'} fill`);
+              } else {
+                logger.info(`📊 Position still open: ${symbol} netPos=${position.netPos}`);
+              }
+            } catch (error) {
+              logger.error(`❌ Failed to check position after stop/target fill:`, error);
+            }
+          }, 2000); // 2 second delay to allow Tradovate to update
+        }
       } else if (execution.execType === 'New') {
         logger.info(`📝 Execution report: New order acknowledged for order ${execution.orderId}`);
       } else if (execution.execType === 'Canceled' || execution.execType === 'Cancelled') {
@@ -1296,6 +1473,10 @@ async function startup() {
     await messageBus.subscribe(CHANNELS.WEBHOOK_TRADE, handleWebhookTrade);
     logger.info(`Subscribed to ${CHANNELS.WEBHOOK_TRADE}`);
 
+    // Subscribe to account sync requests
+    await messageBus.subscribe('account.sync.request', handleAccountSyncRequest);
+    logger.info('Subscribed to account.sync.request');
+
     // Publish startup event
     await messageBus.publish(CHANNELS.SERVICE_STARTED, {
       service: SERVICE_NAME,
@@ -1305,9 +1486,10 @@ async function startup() {
       timestamp: new Date().toISOString()
     });
 
-    // Start Express server
-    const server = app.listen(config.service.port, config.service.host, () => {
-      logger.info(`${SERVICE_NAME} listening on ${config.service.host}:${config.service.port}`);
+    // Start Express server - bind to localhost only for internal access
+    const bindHost = process.env.BIND_HOST || '127.0.0.1';
+    const server = app.listen(config.service.port, bindHost, () => {
+      logger.info(`${SERVICE_NAME} listening on ${bindHost}:${config.service.port}`);
       logger.info(`Environment: ${config.service.env}`);
       logger.info(`Tradovate: ${config.tradovate.useDemo ? 'DEMO' : 'LIVE'} mode`);
       logger.info(`Health check: http://localhost:${config.service.port}/health`);

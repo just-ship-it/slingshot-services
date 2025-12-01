@@ -61,3 +61,10 @@ data/
 
 # Windows file attributes
 *.Zone.Identifier
+*:Zone.Identifier
+
+# Binary/download files
+*.deb
+*.rpm
+*.exe
+*.msi

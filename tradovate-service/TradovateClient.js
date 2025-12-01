@@ -466,11 +466,13 @@ class TradovateClient extends EventEmitter {
 
       // Add stop loss and take profit as relative values
       if (orderData.bracket1 && orderData.bracket1.stopPrice) {
-        // Calculate relative stop loss (positive value means loss)
+        // Calculate relative stop loss distance from entry
+        // For Buy: negative value = stop below entry, positive = stop above
+        // For Sell: positive value = stop above entry, negative = stop below
         const stopLossDistance = orderData.action === 'Buy'
-          ? orderData.bracket1.stopPrice - orderData.price  // Buy: stop below entry
-          : orderData.price - orderData.bracket1.stopPrice; // Sell: stop above entry
-        bracket.stopLoss = Math.abs(stopLossDistance);
+          ? orderData.bracket1.stopPrice - orderData.price  // Buy: stop below entry (stop - entry = negative)
+          : orderData.bracket1.stopPrice - orderData.price; // Sell: stop above entry (stop - entry = positive)
+        bracket.stopLoss = stopLossDistance;  // Preserve the sign for Tradovate API
 
         // Add autoTrail if specified
         if (orderData.bracket1.autoTrail) {
@@ -483,11 +485,12 @@ class TradovateClient extends EventEmitter {
       }
 
       if (orderData.bracket2 && orderData.bracket2.price) {
-        // Calculate relative profit target (negative value means profit)
+        // Calculate relative profit target
+        // For Tradovate API: positive value = profit in the direction of the trade
         const profitDistance = orderData.action === 'Buy'
-          ? orderData.bracket2.price - orderData.price   // Buy: profit above entry
-          : orderData.price - orderData.bracket2.price;  // Sell: profit below entry
-        bracket.profitTarget = -Math.abs(profitDistance); // Negative for profit
+          ? orderData.bracket2.price - orderData.price   // Buy: profit above entry (target - entry = positive)
+          : orderData.bracket2.price - orderData.price;  // Sell: profit below entry (target - entry = negative)
+        bracket.profitTarget = profitDistance; // Preserve sign: positive for buy, negative for sell
       }
 
       strategyParams.brackets.push(bracket);

@@ -61,7 +61,64 @@ app.get('/api/subscriptions', (req, res) => {
 // Webhook quote handler function (to be subscribed after message bus connects)
 async function handleWebhookQuote(webhookMessage) {
   try {
-    const quote = webhookMessage.body;
+    const body = webhookMessage.body;
+
+    // Check if this is a batch format (NinjaTrader)
+    if (body.webhook_type === 'quote' && body.type === 'quote_batch' && body.quotes) {
+      logger.debug(`📡 Received quote batch with ${body.quotes.length} quotes from ${body.source || 'unknown'}`);
+
+      const processed = [];
+
+      for (const quote of body.quotes) {
+        if (!quote.baseSymbol || quote.close === undefined) {
+          logger.warn(`Skipping invalid quote in batch: ${JSON.stringify(quote)}`);
+          continue;
+        }
+
+        const processedQuote = {
+          symbol: quote.symbol || quote.baseSymbol,
+          baseSymbol: quote.baseSymbol,
+          contractId: quote.contractId || quote.symbol || quote.baseSymbol,
+          name: quote.name || quote.symbol || quote.baseSymbol,
+          open: quote.open ?? null,
+          high: quote.high ?? null,
+          low: quote.low ?? null,
+          close: quote.close ?? null,
+          previousClose: quote.previousClose ?? null,
+          volume: quote.volume ?? null,
+          timestamp: body.timestamp || new Date().toISOString(),
+          source: body.source || 'ninjatrader'
+        };
+
+        marketDataState.quotes.set(processedQuote.baseSymbol, processedQuote);
+
+        if (!marketDataState.subscriptions.has(processedQuote.baseSymbol)) {
+          marketDataState.subscriptions.add(processedQuote.baseSymbol);
+        }
+
+        await messageBus.publish(CHANNELS.PRICE_UPDATE, {
+          symbol: processedQuote.symbol,
+          baseSymbol: processedQuote.baseSymbol,
+          open: processedQuote.open,
+          high: processedQuote.high,
+          low: processedQuote.low,
+          close: processedQuote.close,
+          previousClose: processedQuote.previousClose,
+          volume: processedQuote.volume,
+          timestamp: processedQuote.timestamp,
+          source: processedQuote.source
+        });
+
+        processed.push(processedQuote.baseSymbol);
+      }
+
+      marketDataState.lastUpdate = new Date().toISOString();
+      logger.debug(`📊 Processed batch via webhook: ${processed.join(', ')}`);
+      return;
+    }
+
+    // Handle single quote (TradingView format)
+    const quote = body;
 
     logger.debug(`📡 Received webhook quote for ${quote.baseSymbol} (${quote.symbol}): ${quote.close}`);
 
@@ -110,7 +167,7 @@ async function handleWebhookQuote(webhookMessage) {
       source: processedQuote.source
     });
 
-    logger.debug(`📊 Published webhook price update for ${processedQuote.baseSymbol}: ${processedQuote.last}`);
+    logger.debug(`📊 Published webhook price update for ${processedQuote.baseSymbol}: ${processedQuote.close}`);
 
   } catch (error) {
     logger.error('Failed to process webhook quote:', error.message);
@@ -206,6 +263,95 @@ app.post('/api/webhook/quote', async (req, res) => {
   }
 });
 
+// Webhook endpoint for batched quote updates (NinjaTrader)
+app.post('/api/webhook/quote-batch', async (req, res) => {
+  try {
+    const { webhook_type, type, quotes, timestamp, source } = req.body;
+
+    // Validate webhook format
+    if (webhook_type !== 'quote' || type !== 'quote_batch') {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid webhook format. Expected webhook_type: "quote" and type: "quote_batch"'
+      });
+    }
+
+    if (!quotes || !Array.isArray(quotes) || quotes.length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: 'Missing or invalid quotes array'
+      });
+    }
+
+    logger.debug(`📈 Received ${type} with ${quotes.length} quotes from ${source || 'unknown'}`);
+
+    const processed = [];
+
+    for (const quote of quotes) {
+      if (!quote.baseSymbol || quote.close === undefined) {
+        logger.warn(`Skipping invalid quote in batch: ${JSON.stringify(quote)}`);
+        continue;
+      }
+
+      const processedQuote = {
+        symbol: quote.symbol || quote.baseSymbol,
+        baseSymbol: quote.baseSymbol,
+        contractId: quote.contractId || quote.symbol || quote.baseSymbol,
+        name: quote.name || quote.symbol || quote.baseSymbol,
+        open: quote.open ?? null,
+        high: quote.high ?? null,
+        low: quote.low ?? null,
+        close: quote.close ?? null,
+        previousClose: quote.previousClose ?? null,
+        volume: quote.volume ?? null,
+        timestamp: timestamp || new Date().toISOString(),
+        source: source || 'ninjatrader'
+      };
+
+      marketDataState.quotes.set(processedQuote.baseSymbol, processedQuote);
+
+      if (!marketDataState.subscriptions.has(processedQuote.baseSymbol)) {
+        marketDataState.subscriptions.add(processedQuote.baseSymbol);
+      }
+
+      await messageBus.publish(CHANNELS.PRICE_UPDATE, {
+        symbol: processedQuote.symbol,
+        baseSymbol: processedQuote.baseSymbol,
+        open: processedQuote.open,
+        high: processedQuote.high,
+        low: processedQuote.low,
+        close: processedQuote.close,
+        previousClose: processedQuote.previousClose,
+        volume: processedQuote.volume,
+        timestamp: processedQuote.timestamp,
+        source: processedQuote.source
+      });
+
+      processed.push(processedQuote.baseSymbol);
+    }
+
+    marketDataState.lastUpdate = new Date().toISOString();
+
+    logger.debug(`📊 Processed batch: ${processed.join(', ')}`);
+
+    res.json({
+      success: true,
+      webhook_type: 'quote',
+      type: 'quote_batch_response',
+      processed: processed.length,
+      symbols: processed,
+      timestamp: new Date().toISOString()
+    });
+
+  } catch (error) {
+    logger.error('Failed to process batch webhook:', error.message);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
 // Symbol initialization no longer needed - quotes come via webhooks
 
 // Startup sequence
@@ -235,9 +381,10 @@ async function startup() {
       timestamp: new Date().toISOString()
     });
 
-    // Start Express server
-    const server = app.listen(config.service.port, config.service.host, () => {
-      logger.info(`${SERVICE_NAME} listening on ${config.service.host}:${config.service.port}`);
+    // Start Express server - bind to localhost only for internal access
+    const bindHost = process.env.BIND_HOST || '127.0.0.1';
+    const server = app.listen(config.service.port, bindHost, () => {
+      logger.info(`${SERVICE_NAME} listening on ${bindHost}:${config.service.port}`);
       logger.info(`Environment: ${config.service.env}`);
       logger.info(`Market Data Mode: WEBHOOK`);
       logger.info(`Health check: http://localhost:${config.service.port}/health`);

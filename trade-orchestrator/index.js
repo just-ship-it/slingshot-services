@@ -1,7 +1,6 @@
 import express from 'express';
 import axios from 'axios';
-import fs from 'fs/promises';
-import path from 'path';
+// File system imports removed - using Redis for persistence
 import { messageBus, CHANNELS, createLogger, configManager, healthCheck } from '../shared/index.js';
 
 const SERVICE_NAME = 'trade-orchestrator';
@@ -10,19 +9,16 @@ const logger = createLogger(SERVICE_NAME);
 // Load configuration
 const config = configManager.loadConfig(SERVICE_NAME, { defaultPort: 3013 });
 
-// File paths for signal tracking persistence
-const SIGNAL_CONTEXT_FILE = path.join(process.cwd(), 'data', 'signal-context.json');
-const ORDER_STRATEGY_MAPPING_FILE = path.join(process.cwd(), 'data', 'order-strategy-mapping.json');
-const SIGNAL_MAPPINGS_FILE = path.join(process.cwd(), 'data', 'signal-mappings.json');
-const SIGNAL_LIFECYCLES_FILE = path.join(process.cwd(), 'data', 'signal-lifecycles.json');
+// Redis configuration keys
+const CONTRACT_MAPPINGS_KEY = 'contracts:mappings';
+const SIGNAL_CONTEXT_KEY = 'signal:context';
+const ORDER_STRATEGY_MAPPING_KEY = 'orders:strategy-mapping';
+const SIGNAL_MAPPINGS_KEY = 'signal:mappings';
+const SIGNAL_LIFECYCLES_KEY = 'signal:lifecycles';
 
 // Signal context persistence functions
 async function saveSignalContext() {
   try {
-    // Ensure data directory exists
-    const dataDir = path.dirname(SIGNAL_CONTEXT_FILE);
-    await fs.mkdir(dataDir, { recursive: true });
-
     // Convert Map to object for JSON serialization
     const signalContextData = {};
     for (const [key, value] of tradingState.signalContext) {
@@ -35,33 +31,33 @@ async function saveSignalContext() {
       version: '1.0'
     };
 
-    await fs.writeFile(SIGNAL_CONTEXT_FILE, JSON.stringify(dataToSave, null, 2));
-    logger.info(`💾 Signal context saved to ${SIGNAL_CONTEXT_FILE}`);
+    await messageBus.client.set('signal:context', JSON.stringify(dataToSave));
+    logger.info('💾 Signal context saved to Redis');
   } catch (error) {
-    logger.error('❌ Failed to save signal context:', error);
+    logger.error('❌ Failed to save signal context to Redis:', error);
   }
 }
 
 async function loadSignalContext() {
   try {
-    const data = await fs.readFile(SIGNAL_CONTEXT_FILE, 'utf8');
-    const parsedData = JSON.parse(data);
+    const data = await messageBus.client.get('signal:context');
+    if (data) {
+      const parsedData = JSON.parse(data);
 
-    // Restore signal context from file
-    if (parsedData.signalContext) {
-      let loadedCount = 0;
-      for (const [key, value] of Object.entries(parsedData.signalContext)) {
-        tradingState.signalContext.set(key, value);
-        loadedCount++;
+      // Restore signal context from Redis
+      if (parsedData.signalContext) {
+        let loadedCount = 0;
+        for (const [key, value] of Object.entries(parsedData.signalContext)) {
+          tradingState.signalContext.set(key, value);
+          loadedCount++;
+        }
+        logger.info(`🔄 Loaded ${loadedCount} signal contexts from Redis (saved: ${parsedData.timestamp})`);
       }
-      logger.info(`🔄 Loaded ${loadedCount} signal contexts from ${SIGNAL_CONTEXT_FILE} (saved: ${parsedData.timestamp})`);
+    } else {
+      logger.info('📂 No existing signal context found in Redis, starting fresh');
     }
   } catch (error) {
-    if (error.code === 'ENOENT') {
-      logger.info('📂 No existing signal context file found, starting fresh');
-    } else {
-      logger.error('❌ Failed to load signal context:', error);
-    }
+    logger.error('❌ Failed to load signal context from Redis:', error);
   }
 }
 
@@ -111,6 +107,86 @@ async function loadOrderStrategyMapping() {
     } else {
       logger.error('❌ Failed to load order strategy mapping:', error);
     }
+  }
+}
+
+// Contract mappings Redis functions
+async function loadContractMappings() {
+  try {
+    const data = await messageBus.client.get('contracts:mappings');
+    if (data) {
+      const mappings = JSON.parse(data);
+      logger.info('Contract mappings loaded from Redis:', mappings);
+      return mappings;
+    }
+  } catch (error) {
+    logger.error('Error loading contract mappings from Redis:', error);
+  }
+
+  // Return defaults if Redis key doesn't exist or error occurred
+  const defaults = {
+    lastUpdated: new Date().toISOString(),
+    currentContracts: {
+      'NQ': 'NQZ5',
+      'MNQ': 'MNQZ5',
+      'ES': 'ESZ5',
+      'MES': 'MESZ5'
+    },
+    pointValues: {
+      'NQ': 20,
+      'MNQ': 2,
+      'ES': 50,
+      'MES': 5
+    },
+    tickSize: 0.25,
+    notes: 'Default contract mappings - stored in Redis for rollover updates'
+  };
+
+  // Save defaults to Redis
+  try {
+    await messageBus.client.set('contracts:mappings', JSON.stringify(defaults));
+    logger.info('✅ Default contract mappings saved to Redis');
+  } catch (error) {
+    logger.error('❌ Failed to save default contract mappings to Redis:', error);
+  }
+
+  logger.warn('Using default contract mappings:', defaults);
+  return defaults;
+}
+
+function loadPositionSizingSettings() {
+  // Return defaults that will be updated from monitoring service
+  const defaults = {
+    method: 'fixed',
+    fixedQuantity: 1,
+    riskPercentage: 10,
+    maxContracts: 10,
+    contractType: 'micro'
+  };
+  logger.info('Using default position sizing settings (will sync with monitoring service):', defaults);
+  return defaults;
+}
+
+async function syncPositionSizingSettings() {
+  try {
+    // Get latest settings from monitoring service (no auth needed for internal calls)
+    const response = await axios.get('http://localhost:3014/api/position-sizing/settings', {
+      headers: {
+        'Authorization': `Bearer ${process.env.DASHBOARD_SECRET}`
+      },
+      timeout: 5000
+    });
+
+    // Update the trading state with latest settings
+    tradingState.positionSizing = response.data;
+    logger.info('📊 Synced position sizing settings from monitoring service:', response.data);
+    return response.data;
+  } catch (error) {
+    logger.warn('Failed to sync position sizing settings, using cached:', {
+      message: error.message,
+      status: error.response?.status
+    });
+    return tradingState.positionSizing;
   }
 }
 
@@ -226,9 +302,6 @@ class SignalRegistry {
   // Persistence methods
   async saveMappings() {
     try {
-      const dataDir = path.dirname(SIGNAL_MAPPINGS_FILE);
-      await fs.mkdir(dataDir, { recursive: true });
-
       const mappingsData = {
         timestamp: new Date().toISOString(),
         signalToOrders: Object.fromEntries(
@@ -239,82 +312,80 @@ class SignalRegistry {
         version: '1.0'
       };
 
-      await fs.writeFile(SIGNAL_MAPPINGS_FILE, JSON.stringify(mappingsData, null, 2));
-      logger.info(`💾 Signal mappings saved to ${SIGNAL_MAPPINGS_FILE}`);
+      await messageBus.client.set('signal:mappings', JSON.stringify(mappingsData));
+      logger.info('💾 Signal mappings saved to Redis');
     } catch (error) {
-      logger.error('❌ Failed to save signal mappings:', error);
+      logger.error('❌ Failed to save signal mappings to Redis:', error);
     }
   }
 
   async saveLifecycles() {
     try {
-      const dataDir = path.dirname(SIGNAL_LIFECYCLES_FILE);
-      await fs.mkdir(dataDir, { recursive: true });
-
       const lifecycleData = {
         timestamp: new Date().toISOString(),
         signalLifecycles: Object.fromEntries(this.signalLifecycles),
         version: '1.0'
       };
 
-      await fs.writeFile(SIGNAL_LIFECYCLES_FILE, JSON.stringify(lifecycleData, null, 2));
-      logger.info(`💾 Signal lifecycles saved to ${SIGNAL_LIFECYCLES_FILE}`);
+      // Set with 7-day TTL (604800 seconds) to prevent indefinite growth
+      await messageBus.client.setex('signal:lifecycles', 604800, JSON.stringify(lifecycleData));
+      logger.info('💾 Signal lifecycles saved to Redis (7-day TTL)');
     } catch (error) {
-      logger.error('❌ Failed to save signal lifecycles:', error);
+      logger.error('❌ Failed to save signal lifecycles to Redis:', error);
     }
   }
 
   async loadMappings() {
     try {
-      const data = await fs.readFile(SIGNAL_MAPPINGS_FILE, 'utf8');
-      const parsed = JSON.parse(data);
+      const data = await messageBus.client.get('signal:mappings');
+      if (data) {
+        const parsed = JSON.parse(data);
 
-      if (parsed.signalToOrders) {
-        for (const [signalId, orderIds] of Object.entries(parsed.signalToOrders)) {
-          this.signalToOrders.set(signalId, new Set(orderIds));
+        if (parsed.signalToOrders) {
+          for (const [signalId, orderIds] of Object.entries(parsed.signalToOrders)) {
+            this.signalToOrders.set(signalId, new Set(orderIds));
+          }
         }
-      }
 
-      if (parsed.orderToSignal) {
-        for (const [orderId, signalId] of Object.entries(parsed.orderToSignal)) {
-          this.orderToSignal.set(orderId, signalId);
+        if (parsed.orderToSignal) {
+          for (const [orderId, signalId] of Object.entries(parsed.orderToSignal)) {
+            this.orderToSignal.set(orderId, signalId);
+          }
         }
-      }
 
-      if (parsed.signalToPosition) {
-        for (const [signalId, positionSymbol] of Object.entries(parsed.signalToPosition)) {
-          this.signalToPosition.set(signalId, positionSymbol);
+        if (parsed.signalToPosition) {
+          for (const [signalId, positionSymbol] of Object.entries(parsed.signalToPosition)) {
+            this.signalToPosition.set(signalId, positionSymbol);
+          }
         }
-      }
 
-      logger.info(`📁 Signal mappings loaded: ${this.signalToOrders.size} signals, ${this.orderToSignal.size} orders`);
-    } catch (error) {
-      if (error.code === 'ENOENT') {
-        logger.info('📂 No existing signal mappings found, starting fresh');
+        logger.info(`📁 Signal mappings loaded from Redis: ${this.signalToOrders.size} signals, ${this.orderToSignal.size} orders`);
       } else {
-        logger.error('❌ Failed to load signal mappings:', error);
+        logger.info('📂 No existing signal mappings found in Redis, starting fresh');
       }
+    } catch (error) {
+      logger.error('❌ Failed to load signal mappings from Redis:', error);
     }
   }
 
   async loadLifecycles() {
     try {
-      const data = await fs.readFile(SIGNAL_LIFECYCLES_FILE, 'utf8');
-      const parsed = JSON.parse(data);
+      const data = await messageBus.client.get('signal:lifecycles');
+      if (data) {
+        const parsed = JSON.parse(data);
 
-      if (parsed.signalLifecycles) {
-        for (const [signalId, lifecycle] of Object.entries(parsed.signalLifecycles)) {
-          this.signalLifecycles.set(signalId, lifecycle);
+        if (parsed.signalLifecycles) {
+          for (const [signalId, lifecycle] of Object.entries(parsed.signalLifecycles)) {
+            this.signalLifecycles.set(signalId, lifecycle);
+          }
         }
-      }
 
-      logger.info(`📁 Signal lifecycles loaded: ${this.signalLifecycles.size} signal histories`);
-    } catch (error) {
-      if (error.code === 'ENOENT') {
-        logger.info('📂 No existing signal lifecycles found, starting fresh');
+        logger.info(`📁 Signal lifecycles loaded from Redis: ${this.signalLifecycles.size} signal histories`);
       } else {
-        logger.error('❌ Failed to load signal lifecycles:', error);
+        logger.info('📂 No existing signal lifecycles found in Redis, starting fresh');
       }
+    } catch (error) {
+      logger.error('❌ Failed to load signal lifecycles from Redis:', error);
     }
   }
 
@@ -361,6 +432,12 @@ const tradingState = {
   // Account settings and configuration
   accountSettings: new Map(),
 
+  // Position sizing settings
+  positionSizing: loadPositionSizingSettings(),
+
+  // Contract mappings for symbol conversion
+  contractMappings: null, // Will be loaded async on startup
+
   // Global trading controls
   tradingEnabled: true,
 
@@ -372,6 +449,164 @@ const tradingState = {
     dailyPnL: 0
   }
 };
+
+/**
+ * Parse TradingView symbol to extract base contract type
+ * Handles variations like: NQ, NQ!, NQ1, NQ1!, NQH4, NQZ23, etc.
+ * Returns: NQ, MNQ, ES, MES
+ */
+function parseBaseSymbol(symbol) {
+  // Extract base symbol using regex - everything before numbers/special chars
+  const match = symbol.toUpperCase().match(/^(NQ|MNQ|ES|MES)/);
+  if (match) {
+    return match[1];
+  }
+
+  // Fallback: remove all numbers and special characters
+  const fallback = symbol.toUpperCase().replace(/[^A-Z]/g, '');
+  logger.warn(`Unknown symbol pattern for ${symbol}, using fallback: ${fallback}`);
+  return fallback;
+}
+
+/**
+ * Get account balance for risk-based calculations
+ */
+function getTradeAccountBalance() {
+  // Try to get from account state first
+  const accounts = Array.from(tradingState.accountSettings.values());
+  if (accounts.length > 0 && accounts[0].netLiquidatingValue) {
+    return accounts[0].netLiquidatingValue;
+  }
+
+  // Default fallback - this should be configurable
+  logger.warn('Using default account balance for risk calculations');
+  return 100000; // $100k default
+}
+
+/**
+ * Complete position sizing conversion logic
+ * Handles both fixed contracts and risk-based sizing
+ */
+function convertPositionSize(originalSymbol, originalQuantity, action, entryPrice = null, stopLoss = null) {
+  const settings = tradingState.positionSizing;
+  const mappings = tradingState.contractMappings;
+  let converted = false;
+  let reason = 'No conversion needed';
+
+  // Step 1: Parse base symbol from TradingView input
+  const baseSymbol = parseBaseSymbol(originalSymbol);
+  logger.info(`🔍 Parsed base symbol: ${originalSymbol} → ${baseSymbol}`);
+
+  // Step 2: Check if we have mapping for this base symbol
+  if (!mappings.currentContracts[baseSymbol]) {
+    logger.error(`No contract mapping found for base symbol: ${baseSymbol}`);
+    return {
+      symbol: originalSymbol,
+      quantity: originalQuantity,
+      action,
+      converted: false,
+      reason: `Unknown base symbol: ${baseSymbol}`,
+      error: true
+    };
+  }
+
+  let targetSymbol;
+  let targetQuantity = originalQuantity;
+
+  // Step 3: Handle Fixed Contracts method
+  if (settings.method === 'fixed') {
+    // Use fixed quantity
+    targetQuantity = settings.fixedQuantity;
+
+    // Apply contract type override
+    if (settings.contractType === 'auto') {
+      // Auto: preserve original contract size
+      if (baseSymbol.startsWith('M')) {
+        // Micro symbol (MNQ, MES)
+        const microBase = baseSymbol;
+        targetSymbol = mappings.currentContracts[microBase];
+        reason = `Fixed auto (micro preserved): ${originalSymbol} → ${targetSymbol}, qty: ${targetQuantity}`;
+      } else {
+        // Full symbol (NQ, ES)
+        targetSymbol = mappings.currentContracts[baseSymbol];
+        reason = `Fixed auto (full preserved): ${originalSymbol} → ${targetSymbol}, qty: ${targetQuantity}`;
+      }
+    } else if (settings.contractType === 'micro') {
+      // Force micro contracts
+      const microBase = baseSymbol.startsWith('M') ? baseSymbol : `M${baseSymbol}`;
+      targetSymbol = mappings.currentContracts[microBase];
+      reason = `Fixed micro forced: ${originalSymbol} → ${targetSymbol}, qty: ${targetQuantity}`;
+    } else if (settings.contractType === 'full') {
+      // Force full contracts
+      const fullBase = baseSymbol.startsWith('M') ? baseSymbol.slice(1) : baseSymbol;
+      targetSymbol = mappings.currentContracts[fullBase];
+      reason = `Fixed full forced: ${originalSymbol} → ${targetSymbol}, qty: ${targetQuantity}`;
+    }
+
+    converted = (targetSymbol !== originalSymbol || targetQuantity !== originalQuantity);
+
+  // Step 4: Handle Risk-Based Sizing method
+  } else if (settings.method === 'risk_based') {
+    if (!entryPrice || !stopLoss) {
+      logger.warn('Risk-based sizing requires entry price and stop loss');
+      return {
+        symbol: originalSymbol,
+        quantity: originalQuantity,
+        action,
+        converted: false,
+        reason: 'Risk-based sizing requires entry price and stop loss',
+        error: true
+      };
+    }
+
+    const accountBalance = getTradeAccountBalance();
+    const riskAmount = accountBalance * (settings.riskPercentage / 100);
+    const stopDistance = Math.abs(entryPrice - stopLoss);
+
+    logger.info(`📊 Risk calculation: balance=${accountBalance}, risk%=${settings.riskPercentage}, riskAmount=${riskAmount}, stopDistance=${stopDistance}`);
+
+    // Start with full contracts if possible
+    let workingBase = baseSymbol.startsWith('M') ? baseSymbol.slice(1) : baseSymbol;
+    let workingPointValue = mappings.pointValues[workingBase];
+    let riskPerContract = stopDistance * workingPointValue;
+
+    logger.info(`💰 Full contract risk: ${workingBase} @ $${workingPointValue}/pt = $${riskPerContract} per contract`);
+
+    // Check if we need to downconvert to micro
+    if (riskPerContract > riskAmount) {
+      logger.info(`⚠️ Risk per contract ($${riskPerContract}) exceeds risk budget ($${riskAmount}), downconverting to micro`);
+      workingBase = `M${workingBase}`;
+      workingPointValue = mappings.pointValues[workingBase];
+      riskPerContract = stopDistance * workingPointValue;
+      logger.info(`🔄 Micro contract risk: ${workingBase} @ $${workingPointValue}/pt = $${riskPerContract} per contract`);
+    }
+
+    // Calculate position size
+    targetQuantity = Math.floor(riskAmount / riskPerContract);
+    targetQuantity = Math.min(targetQuantity, settings.maxContracts); // Apply max limit
+    targetQuantity = Math.max(1, targetQuantity); // Ensure minimum 1 contract
+
+    targetSymbol = mappings.currentContracts[workingBase];
+    converted = true;
+    reason = `Risk-based: ${originalSymbol} → ${targetSymbol}, qty: ${targetQuantity} (risk: $${riskPerContract.toFixed(0)}/contract, budget: $${riskAmount.toFixed(0)})`;
+
+    logger.info(`📈 Final position: ${targetQuantity} contracts of ${targetSymbol}`);
+  }
+
+  logger.info(`🔄 Position sizing result: ${reason}`);
+
+  return {
+    symbol: targetSymbol,
+    quantity: targetQuantity,
+    action,
+    originalSymbol,
+    originalQuantity,
+    converted,
+    reason,
+    settings: settings.method,
+    error: false
+  };
+}
 
 // TradingPosition structure:
 // {
@@ -794,8 +1029,11 @@ async function handleWebhookReceived(message) {
       return;
     }
 
+    // Sync latest position sizing settings before processing
+    await syncPositionSizingSettings();
+
     // Calculate position size and apply position sizing conversion
-    const positionSizing = await calculatePositionSize(signal);
+    const positionSizing = convertPositionSize(signal.symbol, signal.quantity, signal.action, signal.price, signal.stop_loss);
 
     // Log position sizing results
     if (positionSizing.converted) {
@@ -1056,89 +1294,7 @@ async function validateTradeSignal(signal) {
 }
 
 // Calculate position size and apply position sizing conversion
-async function calculatePositionSize(signal) {
-  // Get position sizing settings from monitoring service
-  let positionSizingSettings;
-  try {
-    const response = await axios.get('http://localhost:3014/api/position-sizing/settings', {
-      timeout: 5000
-    });
-    positionSizingSettings = response.data;
-    logger.info('📊 Retrieved position sizing settings:', positionSizingSettings);
-  } catch (error) {
-    logger.error('Failed to get position sizing settings, using defaults:', {
-      message: error.message,
-      code: error.code,
-      status: error.response?.status,
-      statusText: error.response?.statusText,
-      url: 'http://localhost:3014/api/position-sizing/settings'
-    });
-    positionSizingSettings = {
-      method: 'fixed',
-      fixedQuantity: 1,
-      contractType: 'micro'
-    };
-  }
-
-  // Get original quantity from signal or calculate it
-  let originalQuantity = signal.quantity;
-  if (!originalQuantity) {
-    // Calculate based on risk parameters if no quantity specified
-    const accountBalance = getAccountBalance(signal.accountId);
-    const riskPerTrade = getRiskPerTrade(); // e.g., 0.02 (2%)
-    const stopLoss = signal.stopPrice || getDefaultStopLoss(signal.symbol);
-
-    if (!stopLoss) {
-      originalQuantity = getDefaultPositionSize(signal.symbol);
-    } else {
-      const riskAmount = accountBalance * riskPerTrade;
-      const pointValue = getPointValue(signal.symbol);
-      const stopDistance = Math.abs(signal.price - stopLoss);
-      originalQuantity = Math.floor(riskAmount / (stopDistance * pointValue));
-    }
-  }
-
-  // Apply position sizing conversion
-  try {
-    const conversionResponse = await axios.post('http://localhost:3014/api/position-sizing/convert', {
-      originalSymbol: signal.symbol,
-      quantity: originalQuantity,
-      action: signal.action
-    }, {
-      timeout: 5000
-    });
-
-    const conversionResult = conversionResponse.data;
-    logger.info('📊 Position sizing conversion result:', conversionResult);
-
-    // Return both symbol and quantity for modification in the order request
-    return {
-      symbol: conversionResult.symbol,
-      quantity: conversionResult.quantity,
-      originalSymbol: signal.symbol,
-      originalQuantity: originalQuantity,
-      converted: conversionResult.converted,
-      reason: conversionResult.reason
-    };
-
-  } catch (error) {
-    logger.error('Position sizing conversion failed, using original values:', {
-      message: error.message,
-      code: error.code,
-      status: error.response?.status,
-      statusText: error.response?.statusText,
-      url: 'http://localhost:3014/api/position-sizing/convert'
-    });
-    return {
-      symbol: signal.symbol,
-      quantity: Math.min(originalQuantity, getMaxPositionSize(signal.symbol)),
-      originalSymbol: signal.symbol,
-      originalQuantity: originalQuantity,
-      converted: false,
-      reason: 'Conversion service unavailable'
-    };
-  }
-}
+// Position sizing is now handled locally by convertPositionSize() function above
 
 // Helper functions (these would typically fetch from config or state)
 function getDefaultAccountId() {
@@ -1502,6 +1658,30 @@ function getSymbolFromContractId(contractId) {
 
 // Handle explicit position closure
 async function handlePositionClosed(message) {
+  // Defensive check for undefined message or symbol
+  if (!message) {
+    logger.error(`❌ Position closed event received with undefined message`);
+    return;
+  }
+
+  if (!message.symbol) {
+    logger.warn(`⚠️ Position closed event received with undefined symbol:`, message);
+    // Try to resolve symbol from contractId if available
+    if (message.contractId) {
+      const symbol = getSymbolFromContractId(message.contractId);
+      if (symbol) {
+        message.symbol = symbol;
+        logger.info(`✅ Resolved symbol from contractId ${message.contractId}: ${symbol}`);
+      } else {
+        logger.error(`❌ Cannot resolve symbol for contractId ${message.contractId}, skipping position closure`);
+        return;
+      }
+    } else {
+      logger.error(`❌ Position closed event has no symbol or contractId, skipping:`, message);
+      return;
+    }
+  }
+
   logger.info(`🔒 Position closed: ${message.symbol}`);
 
   // Remove the trading position
@@ -2433,6 +2613,11 @@ async function startup() {
     await messageBus.connect();
     logger.info('Message bus connected');
 
+    // Load configuration from Redis
+    logger.info('Loading configuration from Redis...');
+    tradingState.contractMappings = await loadContractMappings();
+    logger.info('Configuration loaded from Redis');
+
     // Load persisted signal context
     await loadSignalContext();
     await loadOrderStrategyMapping();
@@ -2469,9 +2654,10 @@ async function startup() {
       timestamp: new Date().toISOString()
     });
 
-    // Start Express server
-    const server = app.listen(config.service.port, config.service.host, () => {
-      logger.info(`${SERVICE_NAME} listening on ${config.service.host}:${config.service.port}`);
+    // Start Express server - bind to localhost only for internal access
+    const bindHost = process.env.BIND_HOST || '127.0.0.1';
+    const server = app.listen(config.service.port, bindHost, () => {
+      logger.info(`${SERVICE_NAME} listening on ${bindHost}:${config.service.port}`);
       logger.info(`Environment: ${config.service.env}`);
       logger.info(`Health check: http://localhost:${config.service.port}/health`);
     });

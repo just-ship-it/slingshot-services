@@ -61,7 +61,7 @@ npm install
 cd ..
 
 # Install dependencies for each service
-services=("webhook-gateway" "tradovate-service" "market-data-service" "trade-orchestrator" "monitoring-service")
+services=("tradovate-service" "market-data-service" "trade-orchestrator" "monitoring-service")
 
 for service in "${services[@]}"; do
     install_deps "$SERVICES_DIR/$service" "$service"
@@ -84,7 +84,7 @@ echo -e "${YELLOW}Starting services with PM2...${NC}"
 pm2 delete all 2>/dev/null || true
 
 # Start all services using ecosystem config
-pm2 start "$SERVICES_DIR/ecosystem.config.js"
+pm2 start "$SERVICES_DIR/ecosystem.config.cjs"
 
 # Wait a moment for services to initialize
 sleep 3
@@ -100,13 +100,15 @@ echo "  pm2 restart all - Restart all services"
 echo "  pm2 stop all    - Stop all services"
 echo ""
 echo "Service URLs:"
-echo "  Webhook Gateway:    http://localhost:3010/health"
+echo "  Monitoring (PUBLIC): http://localhost:3014/health"
+echo "  Webhook Endpoint:    http://localhost:3014/webhook"
+echo "  Dashboard API:       http://localhost:3014/api/dashboard"
+echo ""
+echo "Internal Services (localhost only):"
 echo "  Tradovate Service:  http://localhost:3011/health"
 echo "  Market Data:        http://localhost:3012/health"
 echo "  Trade Orchestrator: http://localhost:3013/health"
-echo "  Monitoring:         http://localhost:3014/health"
 echo ""
-echo "Monitoring Dashboard: http://localhost:3014/api/dashboard"
 echo "WebSocket:           ws://localhost:3014"
 echo ""
 echo "To stop all services, run: ./stop-all.sh"

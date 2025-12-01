@@ -2,8 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
-import { readFileSync, writeFileSync, existsSync } from 'fs';
-import path from 'path';
+// File system imports removed - using Redis for persistence
 import axios from 'axios';
 import { messageBus, CHANNELS, createLogger, configManager, healthCheck } from '../shared/index.js';
 
@@ -13,23 +12,30 @@ const logger = createLogger(SERVICE_NAME);
 // Load configuration
 const config = configManager.loadConfig(SERVICE_NAME, { defaultPort: 3014 });
 
-// Position sizing config file path
-const POSITION_SIZING_CONFIG_PATH = path.join(process.cwd(), 'config', 'position-sizing.json');
+// Auth secrets from environment
+const DASHBOARD_SECRET = process.env.DASHBOARD_SECRET;
+const WEBHOOK_SECRET = process.env.WEBHOOK_SECRET;
 
-// Position sizing file I/O functions
-function loadPositionSizingSettings() {
+// Redis configuration keys
+const POSITION_SIZING_KEY = 'config:position-sizing';
+const CONTRACT_MAPPINGS_KEY = 'contracts:mappings';
+
+// Position sizing Redis functions
+async function loadPositionSizingSettings() {
   try {
-    if (existsSync(POSITION_SIZING_CONFIG_PATH)) {
-      const data = readFileSync(POSITION_SIZING_CONFIG_PATH, 'utf8');
+    const data = await messageBus.client.get('config:position-sizing');
+    if (data) {
       const settings = JSON.parse(data);
-      logger.info('Position sizing settings loaded from file:', settings);
+      logger.info('✅ Position sizing settings loaded from Redis:', settings);
       return settings;
+    } else {
+      logger.warn('⚠️ Position sizing config not found in Redis, will create with defaults');
     }
   } catch (error) {
-    logger.error('Error loading position sizing settings from file:', error);
+    logger.error('❌ Error loading position sizing settings from Redis:', error);
   }
 
-  // Return defaults if file doesn't exist or error occurred
+  // Return defaults if Redis key doesn't exist or error occurred
   const defaults = {
     method: 'fixed',
     fixedQuantity: 1,
@@ -37,19 +43,72 @@ function loadPositionSizingSettings() {
     maxContracts: 10,
     contractType: 'micro'
   };
-  logger.info('Using default position sizing settings:', defaults);
+  logger.warn('📋 Using default position sizing settings (Redis missing or error):', defaults);
+
+  logger.info('🆕 Creating new position sizing config in Redis with defaults');
+  await savePositionSizingSettings(defaults, 'initial_redis_creation');
   return defaults;
 }
 
-function savePositionSizingSettings(settings) {
+async function savePositionSizingSettings(settings, reason = 'unknown') {
   try {
-    writeFileSync(POSITION_SIZING_CONFIG_PATH, JSON.stringify(settings, null, 2), 'utf8');
-    logger.info('Position sizing settings saved to file:', settings);
+    // Get stack trace to see who called this function
+    const stack = new Error().stack.split('\n').slice(1, 4).map(line => line.trim()).join(' → ');
+
+    logger.info(`💾 Saving position sizing settings to Redis (reason: ${reason}):`, settings);
+    logger.debug(`📍 Save called from: ${stack}`);
+
+    await messageBus.client.set('config:position-sizing', JSON.stringify(settings));
+    logger.info('✅ Position sizing settings successfully saved to Redis');
     return true;
   } catch (error) {
-    logger.error('Error saving position sizing settings to file:', error);
+    logger.error('❌ Failed to save position sizing settings to Redis:', error);
     return false;
   }
+}
+
+// Contract mappings Redis functions
+async function loadContractMappings() {
+  try {
+    const data = await messageBus.client.get('contracts:mappings');
+    if (data) {
+      const mappings = JSON.parse(data);
+      logger.info('Contract mappings loaded from Redis:', mappings);
+      return mappings;
+    }
+  } catch (error) {
+    logger.error('Error loading contract mappings from Redis:', error);
+  }
+
+  // Return defaults if Redis key doesn't exist or error occurred
+  const defaults = {
+    lastUpdated: new Date().toISOString(),
+    currentContracts: {
+      'NQ': 'NQZ5',
+      'MNQ': 'MNQZ5',
+      'ES': 'ESZ5',
+      'MES': 'MESZ5'
+    },
+    pointValues: {
+      'NQ': 20,
+      'MNQ': 2,
+      'ES': 50,
+      'MES': 5
+    },
+    tickSize: 0.25,
+    notes: 'Default contract mappings - store in Redis for rollover updates'
+  };
+
+  // Save defaults to Redis for future use
+  try {
+    await messageBus.client.set('contracts:mappings', JSON.stringify(defaults));
+    logger.info('✅ Default contract mappings saved to Redis');
+  } catch (error) {
+    logger.error('❌ Failed to save default contract mappings to Redis:', error);
+  }
+
+  logger.warn('Using default contract mappings:', defaults);
+  return defaults;
 }
 
 // Monitoring state
@@ -61,85 +120,253 @@ const monitoringState = {
   services: new Map(),
   activity: [],
   maxActivitySize: 1000,
-  positionSizing: loadPositionSizingSettings()
+  positionSizing: null, // Will be loaded async on startup
+  contractMappings: null // Will be loaded async on startup
 };
 
-// Contract conversion mappings
-const contractSpecs = {
-  'MNQ': { pointValue: 2, type: 'micro', fullSize: 'NQ' },
-  'NQ': { pointValue: 20, type: 'full', microSize: 'MNQ' },
-  'MES': { pointValue: 5, type: 'micro', fullSize: 'ES' },
-  'ES': { pointValue: 50, type: 'full', microSize: 'MES' },
-  'M2K': { pointValue: 5, type: 'micro', fullSize: 'RTY' },
-  'RTY': { pointValue: 50, type: 'full', microSize: 'M2K' }
-};
+/**
+ * Parse TradingView symbol to extract base contract type
+ * Handles variations like: NQ, NQ!, NQ1, NQ1!, NQH4, NQZ23, etc.
+ * Returns: NQ, MNQ, ES, MES
+ */
+function parseBaseSymbol(symbol) {
+  // Extract base symbol using regex - everything before numbers/special chars
+  const match = symbol.toUpperCase().match(/^(NQ|MNQ|ES|MES)/);
+  if (match) {
+    return match[1];
+  }
 
-// Position sizing conversion logic
-function convertPositionSize(originalSymbol, originalQuantity, action, settings) {
-  // Clean symbol (remove suffixes like 1!, Z5, etc.)
-  const cleanSymbol = originalSymbol.replace(/[0-9!].*$/, '').toUpperCase();
-  const spec = contractSpecs[cleanSymbol];
+  // Fallback: remove all numbers and special characters
+  const fallback = symbol.toUpperCase().replace(/[^A-Z]/g, '');
+  logger.warn(`Unknown symbol pattern for ${symbol}, using fallback: ${fallback}`);
+  return fallback;
+}
 
-  if (!spec) {
-    logger.warn(`Unknown symbol for conversion: ${originalSymbol}`);
+/**
+ * Get account balance for risk-based calculations
+ */
+function getAccountBalance() {
+  // Try to get from account state first
+  const accounts = Array.from(monitoringState.accounts.values());
+  if (accounts.length > 0 && accounts[0].netLiquidatingValue) {
+    return accounts[0].netLiquidatingValue;
+  }
+
+  // Default fallback - this should be configurable
+  logger.warn('Using default account balance for risk calculations');
+  return 100000; // $100k default
+}
+
+/**
+ * Complete position sizing conversion logic
+ * Handles both fixed contracts and risk-based sizing
+ */
+function convertPositionSize(originalSymbol, originalQuantity, action, settings, entryPrice = null, stopLoss = null) {
+  const mappings = monitoringState.contractMappings;
+  let converted = false;
+  let reason = 'No conversion needed';
+
+  // Step 1: Parse base symbol from TradingView input
+  const baseSymbol = parseBaseSymbol(originalSymbol);
+  logger.info(`🔍 Parsed base symbol: ${originalSymbol} → ${baseSymbol}`);
+
+  // Step 2: Check if we have mapping for this base symbol
+  if (!mappings.currentContracts[baseSymbol]) {
+    logger.error(`No contract mapping found for base symbol: ${baseSymbol}`);
     return {
       symbol: originalSymbol,
       quantity: originalQuantity,
       action,
       converted: false,
-      reason: 'Unknown symbol'
+      reason: `Unknown base symbol: ${baseSymbol}`,
+      error: true
     };
   }
 
-  let targetSymbol = cleanSymbol;
+  let targetSymbol;
   let targetQuantity = originalQuantity;
-  let converted = false;
-  let reason = 'No conversion needed';
 
-  // Apply conversion based on settings
+  // Step 3: Handle Fixed Contracts method
   if (settings.method === 'fixed') {
-    // Fixed quantity method
+    // Use fixed quantity
     targetQuantity = settings.fixedQuantity;
-    converted = targetQuantity !== originalQuantity;
 
-    // Contract type conversion
-    if (settings.contractType === 'micro' && spec.type === 'full' && spec.microSize) {
-      targetSymbol = spec.microSize;
-      // Use fixed quantity as-is when converting to micro
-      targetQuantity = settings.fixedQuantity;
-      converted = true;
-      reason = `Converted to micro contracts (${settings.fixedQuantity} fixed)`;
-    } else if (settings.contractType === 'full' && spec.type === 'micro' && spec.fullSize) {
-      targetSymbol = spec.fullSize;
-      // Use fixed quantity as-is when converting to full size
-      targetQuantity = settings.fixedQuantity;
-      converted = true;
-      reason = `Converted to full-size contracts (${settings.fixedQuantity} fixed)`;
-    } else {
-      reason = `Fixed quantity: ${settings.fixedQuantity} contracts`;
+    // Apply contract type override
+    if (settings.contractType === 'auto') {
+      // Auto: preserve original contract size
+      if (baseSymbol.startsWith('M')) {
+        // Micro symbol (MNQ, MES)
+        const microBase = baseSymbol;
+        targetSymbol = mappings.currentContracts[microBase];
+        reason = `Fixed auto (micro preserved): ${originalSymbol} → ${targetSymbol}, qty: ${targetQuantity}`;
+      } else {
+        // Full symbol (NQ, ES)
+        targetSymbol = mappings.currentContracts[baseSymbol];
+        reason = `Fixed auto (full preserved): ${originalSymbol} → ${targetSymbol}, qty: ${targetQuantity}`;
+      }
+    } else if (settings.contractType === 'micro') {
+      // Force micro contracts
+      const microBase = baseSymbol.startsWith('M') ? baseSymbol : `M${baseSymbol}`;
+      targetSymbol = mappings.currentContracts[microBase];
+      reason = `Fixed micro forced: ${originalSymbol} → ${targetSymbol}, qty: ${targetQuantity}`;
+    } else if (settings.contractType === 'full') {
+      // Force full contracts
+      const fullBase = baseSymbol.startsWith('M') ? baseSymbol.slice(1) : baseSymbol;
+      targetSymbol = mappings.currentContracts[fullBase];
+      reason = `Fixed full forced: ${originalSymbol} → ${targetSymbol}, qty: ${targetQuantity}`;
     }
+
+    converted = (targetSymbol !== originalSymbol || targetQuantity !== originalQuantity);
+
+  // Step 4: Handle Risk-Based Sizing method
   } else if (settings.method === 'risk_based') {
-    // Risk-based sizing would require account balance and stop loss data
-    // For now, just return the original with a note
-    reason = 'Risk-based sizing requires account balance data';
+    if (!entryPrice || !stopLoss) {
+      logger.warn('Risk-based sizing requires entry price and stop loss');
+      return {
+        symbol: originalSymbol,
+        quantity: originalQuantity,
+        action,
+        converted: false,
+        reason: 'Risk-based sizing requires entry price and stop loss',
+        error: true
+      };
+    }
+
+    const accountBalance = getAccountBalance();
+    const riskAmount = accountBalance * (settings.riskPercentage / 100);
+    const stopDistance = Math.abs(entryPrice - stopLoss);
+
+    logger.info(`📊 Risk calculation: balance=${accountBalance}, risk%=${settings.riskPercentage}, riskAmount=${riskAmount}, stopDistance=${stopDistance}`);
+
+    // Start with full contracts if possible
+    let workingBase = baseSymbol.startsWith('M') ? baseSymbol.slice(1) : baseSymbol;
+    let workingPointValue = mappings.pointValues[workingBase];
+    let riskPerContract = stopDistance * workingPointValue;
+
+    logger.info(`💰 Full contract risk: ${workingBase} @ $${workingPointValue}/pt = $${riskPerContract} per contract`);
+
+    // Check if we need to downconvert to micro
+    if (riskPerContract > riskAmount) {
+      logger.info(`⚠️ Risk per contract ($${riskPerContract}) exceeds risk budget ($${riskAmount}), downconverting to micro`);
+      workingBase = `M${workingBase}`;
+      workingPointValue = mappings.pointValues[workingBase];
+      riskPerContract = stopDistance * workingPointValue;
+      logger.info(`🔄 Micro contract risk: ${workingBase} @ $${workingPointValue}/pt = $${riskPerContract} per contract`);
+    }
+
+    // Calculate position size
+    targetQuantity = Math.floor(riskAmount / riskPerContract);
+    targetQuantity = Math.min(targetQuantity, settings.maxContracts); // Apply max limit
+    targetQuantity = Math.max(1, targetQuantity); // Ensure minimum 1 contract
+
+    targetSymbol = mappings.currentContracts[workingBase];
+    converted = true;
+    reason = `Risk-based: ${originalSymbol} → ${targetSymbol}, qty: ${targetQuantity} (risk: $${riskPerContract.toFixed(0)}/contract, budget: $${riskAmount.toFixed(0)})`;
+
+    logger.info(`📈 Final position: ${targetQuantity} contracts of ${targetSymbol}`);
   }
+
+  logger.info(`🔄 Position sizing result: ${reason}`);
 
   return {
     symbol: targetSymbol,
-    quantity: Math.max(1, targetQuantity), // Ensure minimum 1 contract
+    quantity: targetQuantity,
     action,
     originalSymbol,
     originalQuantity,
     converted,
     reason,
-    settings: settings.method
+    settings: settings.method,
+    error: false
   };
 }
 
 // Initialize Express app
 const app = express();
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true }));
+
+// Request ID middleware for tracking
+let requestCounter = 0;
+app.use((req, res, next) => {
+  req.id = `${Date.now()}-${++requestCounter}`;
+  req.receivedAt = new Date().toISOString();
+  next();
+});
+
+// Dashboard auth middleware
+const dashboardAuth = (req, res, next) => {
+  const authHeader = req.headers.authorization;
+
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    logger.warn('Unauthorized dashboard access attempt - missing token');
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  const token = authHeader.substring(7);
+
+  if (!DASHBOARD_SECRET || token !== DASHBOARD_SECRET) {
+    logger.warn('Unauthorized dashboard access attempt - invalid token');
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  next();
+};
+
+// Webhook auth validation functions
+function validateTradingViewWebhook(body) {
+  if (!WEBHOOK_SECRET) {
+    logger.warn('WEBHOOK_SECRET not configured, skipping TradingView webhook validation');
+    return true;
+  }
+
+  if (!body.secret) {
+    logger.warn('TradingView webhook missing secret field');
+    return false;
+  }
+
+  return body.secret === WEBHOOK_SECRET;
+}
+
+function validateNinjaTraderWebhook(headers) {
+  if (!WEBHOOK_SECRET) {
+    logger.warn('WEBHOOK_SECRET not configured, skipping NinjaTrader webhook validation');
+    return true;
+  }
+
+  const apiKey = headers['x-api-key'];
+
+  if (!apiKey) {
+    logger.warn('NinjaTrader webhook missing X-API-Key header');
+    return false;
+  }
+
+  return apiKey === WEBHOOK_SECRET;
+}
+
+// Webhook type detection
+function detectWebhookType(body) {
+  // Check explicit webhook_type field first (preferred method)
+  if (body.webhook_type) {
+    // Normalize trading_signal to trade_signal for consistency
+    if (body.webhook_type === 'trading_signal') {
+      return 'trade_signal';
+    }
+    return body.webhook_type;
+  }
+
+  // Fallback to content-based detection
+  if (body.type === 'quote_update' || body.source === 'tradingview') {
+    return 'quote';
+  }
+
+  if (body.action || body.orderAction || body.side) {
+    return 'trade_signal';
+  }
+
+  return 'unknown';
+}
 
 // Create HTTP server
 const server = createServer(app);
@@ -161,7 +388,8 @@ io.on('connection', (socket) => {
     accounts: Array.from(monitoringState.accounts.values()),
     positions: Array.from(monitoringState.positions.values()),
     services: Array.from(monitoringState.services.values()),
-    activity: monitoringState.activity.slice(-100)
+    activity: monitoringState.activity.slice(-100),
+    quotes: Object.fromEntries(monitoringState.prices)
   });
 
   // Handle ping/pong
@@ -191,10 +419,125 @@ io.on('connection', (socket) => {
 
 // Broadcast to all Socket.IO clients
 function broadcast(eventName, data) {
+  const clientCount = io.engine.clientsCount;
+  logger.info(`📡 Broadcasting ${eventName} to ${clientCount} connected clients`);
+  if (eventName === 'market_data') {
+    logger.debug(`📊 Market data broadcast: ${data.baseSymbol || data.symbol} = ${data.close}`);
+  }
   io.emit(eventName, data);
 }
 
-// REST API Endpoints
+// Webhook endpoints (no auth required)
+app.post('/webhook', async (req, res) => {
+  const startTime = Date.now();
+
+  try {
+    logger.info(`Webhook received: ${req.id}`, {
+      headers: req.headers,
+      bodySize: JSON.stringify(req.body).length
+    });
+
+    // Quick validation
+    if (!req.body || Object.keys(req.body).length === 0) {
+      logger.warn(`Empty webhook body: ${req.id}`);
+      res.status(400).json({ error: 'Empty request body' });
+      return;
+    }
+
+    // Detect webhook source and validate
+    const isNinjaTrader = req.headers['x-api-key'] !== undefined;
+    const isTradingView = req.body.secret !== undefined;
+
+    if (isNinjaTrader) {
+      if (!validateNinjaTraderWebhook(req.headers)) {
+        logger.warn(`Unauthorized NinjaTrader webhook: ${req.id}`);
+        res.status(401).json({ error: 'Unauthorized' });
+        return;
+      }
+    } else if (isTradingView) {
+      if (!validateTradingViewWebhook(req.body)) {
+        logger.warn(`Unauthorized TradingView webhook: ${req.id}`);
+        res.status(401).json({ error: 'Unauthorized' });
+        return;
+      }
+    }
+
+    const webhookType = detectWebhookType(req.body);
+    logger.info(`Detected webhook type: ${webhookType} for request ${req.id}`);
+
+    // Prepare webhook message
+    const webhookMessage = {
+      id: req.id,
+      receivedAt: req.receivedAt,
+      type: webhookType,
+      source: req.headers['x-source'] || (isNinjaTrader ? 'ninjatrader' : isTradingView ? 'tradingview' : 'unknown'),
+      userAgent: req.headers['user-agent'],
+      ip: req.ip,
+      body: req.body,
+      headers: req.headers
+    };
+
+    // Route to appropriate service
+    if (messageBus.isConnected) {
+      switch(webhookType) {
+        case 'quote':
+          await messageBus.publish(CHANNELS.WEBHOOK_QUOTE, webhookMessage);
+          logger.info(`Quote webhook routed to market-data-service: ${req.id}`);
+          break;
+
+        case 'trade_signal':
+          await messageBus.publish(CHANNELS.WEBHOOK_RECEIVED, webhookMessage);
+          logger.info(`Trade signal webhook routed to trade-orchestrator: ${req.id}`);
+          break;
+
+        default:
+          await messageBus.publish(CHANNELS.WEBHOOK_RECEIVED, webhookMessage);
+          logger.warn(`Unknown webhook type routed to generic handler: ${req.id}`);
+          break;
+      }
+    } else {
+      logger.error(`Message bus not connected, webhook dropped: ${req.id}`);
+      res.status(503).json({ error: 'Service temporarily unavailable' });
+      return;
+    }
+
+    // Send immediate response
+    const processingTime = Date.now() - startTime;
+    res.status(200).json({
+      status: 'accepted',
+      id: req.id,
+      type: webhookType,
+      processingTime: `${processingTime}ms`
+    });
+
+    logger.info(`Webhook processed: ${req.id} (${webhookType}) in ${processingTime}ms`);
+  } catch (error) {
+    logger.error(`Error processing webhook: ${req.id}`, error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Legacy webhook endpoints for compatibility
+app.post('/autotrader', async (req, res) => {
+  logger.info('Legacy autotrader webhook received');
+  req.headers['x-source'] = 'autotrader-legacy';
+  return app._router.handle(Object.assign(req, { url: '/webhook', method: 'POST' }), res);
+});
+
+app.post('/slingshot', async (req, res) => {
+  logger.info('Slingshot webhook received on dedicated endpoint');
+  req.headers['x-source'] = 'slingshot-endpoint';
+  return app._router.handle(Object.assign(req, { url: '/webhook', method: 'POST' }), res);
+});
+
+app.post('/quote', async (req, res) => {
+  logger.info('Quote webhook received on legacy endpoint');
+  req.body.webhook_type = 'quote';
+  req.headers['x-source'] = 'quote-endpoint-legacy';
+  return app._router.handle(Object.assign(req, { url: '/webhook', method: 'POST' }), res);
+});
+
+// REST API Endpoints (auth required except for health)
 app.get('/health', async (req, res) => {
   const health = await healthCheck(SERVICE_NAME, {
     messageBus: messageBus.isConnected,
@@ -206,7 +549,75 @@ app.get('/health', async (req, res) => {
   res.json(health);
 });
 
-app.get('/api/dashboard', (req, res) => {
+// Public system health endpoint for external monitoring (UptimeRobot, etc)
+app.get('/api/health/system', async (req, res) => {
+  try {
+    // Define services to check
+    const servicesToCheck = [
+      { name: 'monitoring-service', url: 'http://localhost:3014', port: 3014 },
+      { name: 'trade-orchestrator', url: 'http://localhost:3013', port: 3013 },
+      { name: 'market-data-service', url: 'http://localhost:3012', port: 3012 },
+      { name: 'tradovate-service', url: 'http://localhost:3011', port: 3011 }
+    ];
+
+    // Check health of all services
+    const healthChecks = await Promise.allSettled(
+      servicesToCheck.map(async (service) => {
+        try {
+          const response = await axios.get(`${service.url}/health`, {
+            timeout: 2000 // Quick timeout for monitoring
+          });
+          return { name: service.name, status: 'up', healthy: true };
+        } catch (error) {
+          return { name: service.name, status: 'down', healthy: false };
+        }
+      })
+    );
+
+    // Process results
+    const services = {};
+    let upCount = 0;
+
+    healthChecks.forEach((result, index) => {
+      const serviceData = result.status === 'fulfilled' ? result.value :
+        { name: servicesToCheck[index].name, status: 'down', healthy: false };
+
+      services[serviceData.name] = serviceData.status;
+      if (serviceData.healthy) upCount++;
+    });
+
+    // Determine overall status
+    const totalServices = servicesToCheck.length;
+    let overallStatus = 'healthy';
+
+    if (upCount === 0) {
+      overallStatus = 'down';
+    } else if (upCount < totalServices - 1) {
+      overallStatus = 'degraded';
+    } else if (upCount < totalServices) {
+      overallStatus = 'degraded';
+    }
+
+    // Return health status
+    res.json({
+      status: overallStatus,
+      services,
+      summary: `${upCount}/${totalServices} services running`,
+      healthy: overallStatus === 'healthy',
+      timestamp: new Date().toISOString()
+    });
+
+  } catch (error) {
+    logger.error('System health check failed:', error);
+    res.status(500).json({
+      status: 'down',
+      error: 'Health check failed',
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
+app.get('/api/dashboard', dashboardAuth, (req, res) => {
   res.json({
     accounts: Array.from(monitoringState.accounts.values()),
     positions: Array.from(monitoringState.positions.values()),
@@ -217,11 +628,11 @@ app.get('/api/dashboard', (req, res) => {
   });
 });
 
-app.get('/api/accounts', (req, res) => {
+app.get('/api/accounts', dashboardAuth, (req, res) => {
   res.json(Array.from(monitoringState.accounts.values()));
 });
 
-app.get('/api/accounts/:accountId', (req, res) => {
+app.get('/api/accounts/:accountId', dashboardAuth, (req, res) => {
   const accountId = req.params.accountId;
   // Try both string and number lookups since account IDs might be stored differently
   let account = monitoringState.accounts.get(accountId) ||
@@ -255,7 +666,7 @@ app.get('/api/accounts/:accountId', (req, res) => {
   }
 });
 
-app.get('/api/positions', (req, res) => {
+app.get('/api/positions', dashboardAuth, (req, res) => {
   const positions = Array.from(monitoringState.positions.values());
   if (req.query.accountId) {
     const filtered = positions.filter(p => p.accountId === req.query.accountId);
@@ -265,20 +676,83 @@ app.get('/api/positions', (req, res) => {
   }
 });
 
-app.get('/api/activity', (req, res) => {
+app.get('/api/activity', dashboardAuth, (req, res) => {
   const limit = parseInt(req.query.limit) || 100;
   res.json(monitoringState.activity.slice(-limit));
 });
 
-app.get('/api/services', (req, res) => {
-  res.json(Array.from(monitoringState.services.values()));
+app.get('/api/services', dashboardAuth, async (req, res) => {
+  // Get baseline services from monitoring state
+  const baselineServices = Array.from(monitoringState.services.values());
+
+  // Define internal services to check
+  const internalServices = [
+    { name: 'monitoring-service', url: 'http://localhost:3014', port: 3014 },
+    { name: 'trade-orchestrator', url: process.env.TRADE_ORCHESTRATOR_URL || 'http://localhost:3013', port: 3013 },
+    { name: 'market-data-service', url: process.env.MARKET_DATA_SERVICE_URL || 'http://localhost:3012', port: 3012 },
+    { name: 'tradovate-service', url: process.env.TRADOVATE_SERVICE_URL || 'http://localhost:3011', port: 3011 }
+  ];
+
+  // Perform health checks for all internal services
+  const healthChecks = await Promise.allSettled(
+    internalServices.map(async (service) => {
+      try {
+        const response = await axios.get(`${service.url}/health`, {
+          timeout: 3000
+        });
+        return {
+          name: service.name,
+          status: 'running',
+          health: response.data,
+          port: service.port,
+          lastChecked: new Date().toISOString(),
+          url: service.url
+        };
+      } catch (error) {
+        return {
+          name: service.name,
+          status: 'down',
+          error: error.message,
+          port: service.port,
+          lastChecked: new Date().toISOString(),
+          url: service.url
+        };
+      }
+    })
+  );
+
+  // Combine baseline services with health check results
+  const servicesMap = new Map();
+
+  // Add baseline services
+  baselineServices.forEach(service => {
+    servicesMap.set(service.name, service);
+  });
+
+  // Override with real-time health check results
+  healthChecks.forEach((result, index) => {
+    const serviceName = internalServices[index].name;
+    if (result.status === 'fulfilled') {
+      servicesMap.set(serviceName, result.value);
+    } else {
+      servicesMap.set(serviceName, {
+        name: serviceName,
+        status: 'down',
+        error: result.reason?.message || 'Health check failed',
+        port: internalServices[index].port,
+        lastChecked: new Date().toISOString()
+      });
+    }
+  });
+
+  res.json(Array.from(servicesMap.values()));
 });
 
-app.get('/api/quotes', (req, res) => {
+app.get('/api/quotes', dashboardAuth, (req, res) => {
   res.json(Object.fromEntries(monitoringState.prices));
 });
 
-app.get('/api/quotes/:symbol', (req, res) => {
+app.get('/api/quotes/:symbol', dashboardAuth, (req, res) => {
   const quote = monitoringState.prices.get(req.params.symbol);
   if (quote) {
     res.json(quote);
@@ -288,7 +762,7 @@ app.get('/api/quotes/:symbol', (req, res) => {
 });
 
 // Debug endpoint to clear orders
-app.delete('/api/orders', (req, res) => {
+app.delete('/api/orders', dashboardAuth, (req, res) => {
   const clearedCount = monitoringState.orders.size;
   monitoringState.orders.clear();
   logger.info(`🧹 Cleared ${clearedCount} orders from monitoring state`);
@@ -296,12 +770,12 @@ app.delete('/api/orders', (req, res) => {
 });
 
 // Position Sizing endpoints
-app.get('/api/position-sizing/settings', (req, res) => {
+app.get('/api/position-sizing/settings', dashboardAuth, (req, res) => {
   logger.info('📊 Position sizing settings requested');
   res.json(monitoringState.positionSizing);
 });
 
-app.post('/api/position-sizing/settings', (req, res) => {
+app.post('/api/position-sizing/settings', dashboardAuth, (req, res) => {
   const settings = req.body;
   logger.info('📊 Updating position sizing settings:', settings);
 
@@ -312,7 +786,7 @@ app.post('/api/position-sizing/settings', (req, res) => {
   };
 
   // Save to file
-  const saved = savePositionSizingSettings(monitoringState.positionSizing);
+  const saved = savePositionSizingSettings(monitoringState.positionSizing, 'api_update');
   if (!saved) {
     logger.warn('Position sizing settings updated in memory but failed to save to file');
   }
@@ -334,19 +808,19 @@ app.post('/api/position-sizing/settings', (req, res) => {
 });
 
 // Position sizing conversion endpoint
-app.post('/api/position-sizing/convert', (req, res) => {
-  const { originalSymbol, quantity, action } = req.body;
-  logger.info(`📊 Converting position sizing: ${action} ${quantity} ${originalSymbol}`);
+app.post('/api/position-sizing/convert', dashboardAuth, (req, res) => {
+  const { originalSymbol, quantity, action, entryPrice, stopLoss } = req.body;
+  logger.info(`📊 Converting position sizing: ${action} ${quantity} ${originalSymbol}`, { entryPrice, stopLoss });
 
   const settings = monitoringState.positionSizing;
-  const result = convertPositionSize(originalSymbol, quantity, action, settings);
+  const result = convertPositionSize(originalSymbol, quantity, action, settings, entryPrice, stopLoss);
 
   logger.info(`📊 Conversion result:`, result);
   res.json(result);
 });
 
 // Proxy endpoint to trade-orchestrator for active trading status
-app.get('/api/trading/active-status', async (req, res) => {
+app.get('/api/trading/active-status', dashboardAuth, async (req, res) => {
   try {
     logger.info('🔄 Proxying request to trade-orchestrator...');
 
@@ -385,7 +859,7 @@ app.get('/api/trading/active-status', async (req, res) => {
 });
 
 // Proxy endpoint to trade-orchestrator for enhanced trading status
-app.get('/api/trading/enhanced-status', async (req, res) => {
+app.get('/api/trading/enhanced-status', dashboardAuth, async (req, res) => {
   try {
     logger.info('🔄 Proxying enhanced status request to trade-orchestrator...');
 
@@ -480,6 +954,88 @@ app.get('/api/trading/enhanced-status', async (req, res) => {
       lastUpdate: new Date().toISOString(),
       source: 'monitoring_fallback'
     });
+  }
+});
+
+// Proxy endpoints for internal service health checks
+app.get('/api/services/:serviceName/health', dashboardAuth, async (req, res) => {
+  const { serviceName } = req.params;
+  const serviceUrls = {
+    'trade-orchestrator': process.env.TRADE_ORCHESTRATOR_URL || 'http://localhost:3013',
+    'market-data': process.env.MARKET_DATA_SERVICE_URL || 'http://localhost:3012',
+    'tradovate': process.env.TRADOVATE_SERVICE_URL || 'http://localhost:3011'
+  };
+
+  const serviceUrl = serviceUrls[serviceName];
+
+  if (!serviceUrl) {
+    return res.status(404).json({ error: 'Service not found' });
+  }
+
+  try {
+    logger.info(`🔄 Proxying health check to ${serviceName}...`);
+    const response = await axios.get(`${serviceUrl}/health`, {
+      timeout: 5000
+    });
+    logger.info(`✅ ${serviceName} health check proxy response received`);
+    res.json(response.data);
+  } catch (error) {
+    logger.error(`❌ ${serviceName} health check proxy failed:`, error.message);
+    res.status(503).json({
+      service: serviceName,
+      status: 'unavailable',
+      error: error.message,
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
+// Generic proxy endpoint for internal service API calls
+app.all('/api/proxy/:serviceName/*', dashboardAuth, async (req, res) => {
+  const { serviceName } = req.params;
+  const path = req.params[0];
+
+  const serviceUrls = {
+    'trade-orchestrator': process.env.TRADE_ORCHESTRATOR_URL || 'http://localhost:3013',
+    'market-data': process.env.MARKET_DATA_SERVICE_URL || 'http://localhost:3012',
+    'tradovate': process.env.TRADOVATE_SERVICE_URL || 'http://localhost:3011'
+  };
+
+  const serviceUrl = serviceUrls[serviceName];
+
+  if (!serviceUrl) {
+    return res.status(404).json({ error: 'Service not found' });
+  }
+
+  try {
+    logger.info(`🔄 Proxying ${req.method} request to ${serviceName}/${path}...`);
+
+    const axiosConfig = {
+      method: req.method,
+      url: `${serviceUrl}/${path}`,
+      timeout: 10000,
+      params: req.query
+    };
+
+    if (['POST', 'PUT', 'PATCH'].includes(req.method)) {
+      axiosConfig.data = req.body;
+    }
+
+    const response = await axios(axiosConfig);
+    logger.info(`✅ ${serviceName} proxy response received`);
+    res.status(response.status).json(response.data);
+  } catch (error) {
+    logger.error(`❌ ${serviceName} proxy failed:`, error.message);
+
+    if (error.response) {
+      res.status(error.response.status).json(error.response.data);
+    } else {
+      res.status(503).json({
+        service: serviceName,
+        error: error.message,
+        timestamp: new Date().toISOString()
+      });
+    }
   }
 });
 
@@ -583,6 +1139,8 @@ async function handlePositionUpdate(message) {
 }
 
 async function handlePriceUpdate(message) {
+  logger.info(`🔔 PRICE_UPDATE received: ${message.baseSymbol || message.symbol} = ${message.close} (source: ${message.source})`);
+
   const quoteData = {
     symbol: message.symbol,
     baseSymbol: message.baseSymbol,
@@ -711,6 +1269,12 @@ async function startup() {
     await messageBus.connect();
     logger.info('Message bus connected');
 
+    // Load configuration from Redis
+    logger.info('Loading configuration from Redis...');
+    monitoringState.positionSizing = await loadPositionSizingSettings();
+    monitoringState.contractMappings = await loadContractMappings();
+    logger.info('Configuration loaded from Redis');
+
     // Subscribe to all relevant channels
     const subscriptions = [
       [CHANNELS.ACCOUNT_UPDATE, handleAccountUpdate],
@@ -739,13 +1303,22 @@ async function startup() {
       timestamp: new Date().toISOString()
     });
 
-    // Start server
-    server.listen(config.service.port, config.service.host, () => {
-      logger.info(`${SERVICE_NAME} listening on ${config.service.host}:${config.service.port}`);
+    // Request account data sync from tradovate-service
+    logger.info('🔄 Requesting account data sync from tradovate-service...');
+    await messageBus.publish('account.sync.request', {
+      requestedBy: SERVICE_NAME,
+      timestamp: new Date().toISOString()
+    });
+
+    // Start server - bind to all interfaces for external access
+    const bindHost = process.env.BIND_HOST || '0.0.0.0';
+    server.listen(config.service.port, bindHost, () => {
+      logger.info(`${SERVICE_NAME} listening on ${bindHost}:${config.service.port}`);
       logger.info(`Environment: ${config.service.env}`);
       logger.info(`Health check: http://localhost:${config.service.port}/health`);
       logger.info(`Dashboard API: http://localhost:${config.service.port}/api/dashboard`);
       logger.info(`WebSocket: ws://localhost:${config.service.port}`);
+      logger.info(`Webhook endpoint: http://localhost:${config.service.port}/webhook`);
     });
 
     // Graceful shutdown
