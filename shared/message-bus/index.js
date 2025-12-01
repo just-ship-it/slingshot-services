@@ -25,9 +25,16 @@ class MessageBus extends EventEmitter {
 
   async connect() {
     try {
+      // Construct Redis URL with optional authentication
+      const password = process.env.REDIS_PASSWORD;
+      const database = process.env.REDIS_DB || 0;
+      const redisUrl = password
+        ? `redis://:${password}@${this.options.host}:${this.options.port}/${database}`
+        : `redis://${this.options.host}:${this.options.port}/${database}`;
+
       // Create publisher client
       this.publisher = createClient({
-        url: `redis://${this.options.host}:${this.options.port}`,
+        url: redisUrl,
         socket: {
           reconnectStrategy: this.options.retryStrategy
         }
@@ -35,7 +42,7 @@ class MessageBus extends EventEmitter {
 
       // Create subscriber client
       this.subscriber = createClient({
-        url: `redis://${this.options.host}:${this.options.port}`,
+        url: redisUrl,
         socket: {
           reconnectStrategy: this.options.retryStrategy
         }
