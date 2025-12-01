@@ -31,7 +31,7 @@ class ConfigManager {
     this.config = {
       service: {
         name: serviceName,
-        port: process.env[`${serviceName.toUpperCase().replace(/-/g, '_')}_PORT`] || options.defaultPort,
+        port: process.env.PORT || process.env[`${serviceName.toUpperCase().replace(/-/g, '_')}_PORT`] || options.defaultPort,
         host: process.env.HOST || '0.0.0.0',
         env: process.env.NODE_ENV || 'development'
       },
