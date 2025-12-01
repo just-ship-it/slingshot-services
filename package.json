@@ -11,6 +11,7 @@
     "trade-orchestrator"
   ],
   "scripts": {
+    "start": "npm run start:${SERVICE_NAME:?SERVICE_NAME environment variable is required}",
     "start:monitoring": "cd monitoring-service && npm start",
     "start:tradovate": "cd tradovate-service && npm start",
     "start:market-data": "cd market-data-service && npm start",
