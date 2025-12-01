@@ -1,0 +1,33 @@
+{
+  "name": "slingshot-services",
+  "version": "1.0.0",
+  "description": "Slingshot microservices trading system",
+  "type": "module",
+  "workspaces": [
+    "shared",
+    "monitoring-service",
+    "tradovate-service",
+    "market-data-service",
+    "trade-orchestrator"
+  ],
+  "scripts": {
+    "start:monitoring": "cd monitoring-service && npm start",
+    "start:tradovate": "cd tradovate-service && npm start",
+    "start:market-data": "cd market-data-service && npm start",
+    "start:trade-orchestrator": "cd trade-orchestrator && npm start",
+    "install:all": "npm install && npm run install:workspaces",
+    "install:workspaces": "npm install --workspaces"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": [
+    "trading",
+    "microservices",
+    "tradovate",
+    "redis",
+    "nodejs"
+  ],
+  "author": "Drew",
+  "license": "ISC"
+}
