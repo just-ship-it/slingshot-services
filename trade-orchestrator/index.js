@@ -64,9 +64,6 @@ async function loadSignalContext() {
 // Order strategy mapping persistence functions
 async function saveOrderStrategyMapping() {
   try {
-    const dataDir = path.dirname(ORDER_STRATEGY_MAPPING_FILE);
-    await fs.mkdir(dataDir, { recursive: true });
-
     // Convert Map to object for JSON serialization
     const orderStrategyMappingData = {};
     for (const [orderId, strategyId] of tradingState.orderToStrategy) {
@@ -79,34 +76,34 @@ async function saveOrderStrategyMapping() {
       version: '1.0'
     };
 
-    await fs.writeFile(ORDER_STRATEGY_MAPPING_FILE, JSON.stringify(dataToSave, null, 2));
-    logger.info(`💾 Order strategy mapping saved to ${ORDER_STRATEGY_MAPPING_FILE}`);
+    await messageBus.publisher.set('orders:strategy-mapping', JSON.stringify(dataToSave));
+    logger.info('💾 Order strategy mapping saved to Redis');
   } catch (error) {
-    logger.error('❌ Failed to save order strategy mapping:', error);
+    logger.error('❌ Failed to save order strategy mapping to Redis:', error);
   }
 }
 
 async function loadOrderStrategyMapping() {
   try {
-    const data = await fs.readFile(ORDER_STRATEGY_MAPPING_FILE, 'utf8');
-    const parsedData = JSON.parse(data);
+    const data = await messageBus.publisher.get('orders:strategy-mapping');
+    if (data) {
+      const parsedData = JSON.parse(data);
 
-    // Restore order strategy mapping from file
-    let loadedCount = 0;
-    if (parsedData.orderToStrategy) {
-      for (const [orderId, strategyId] of Object.entries(parsedData.orderToStrategy)) {
-        tradingState.orderToStrategy.set(orderId, strategyId);
-        loadedCount++;
+      // Restore order strategy mapping from Redis
+      let loadedCount = 0;
+      if (parsedData.orderToStrategy) {
+        for (const [orderId, strategyId] of Object.entries(parsedData.orderToStrategy)) {
+          tradingState.orderToStrategy.set(orderId, strategyId);
+          loadedCount++;
+        }
+
+        logger.info(`🔄 Loaded ${loadedCount} order-strategy mappings from Redis (saved: ${parsedData.timestamp})`);
       }
-
-      logger.info(`🔄 Loaded ${loadedCount} order-strategy mappings from ${ORDER_STRATEGY_MAPPING_FILE} (saved: ${parsedData.timestamp})`);
+    } else {
+      logger.info('📂 No existing order strategy mapping found in Redis, starting fresh');
     }
   } catch (error) {
-    if (error.code === 'ENOENT') {
-      logger.info('📂 No existing order strategy mapping file found, starting fresh');
-    } else {
-      logger.error('❌ Failed to load order strategy mapping:', error);
-    }
+    logger.error('❌ Failed to load order strategy mapping from Redis:', error);
   }
 }
 
