@@ -167,7 +167,8 @@ function loadPositionSizingSettings() {
 async function syncPositionSizingSettings() {
   try {
     // Get latest settings from monitoring service (no auth needed for internal calls)
-    const response = await axios.get('http://localhost:3014/api/position-sizing/settings', {
+    const monitoringUrl = process.env.MONITORING_SERVICE_URL || 'http://localhost:3014';
+    const response = await axios.get(`${monitoringUrl}/api/position-sizing/settings`, {
       headers: {
         'Authorization': `Bearer ${process.env.DASHBOARD_SECRET}`
       },
