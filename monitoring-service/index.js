@@ -111,7 +111,7 @@ async function loadContractMappings() {
   return defaults;
 }
 
-// Monitoring state
+// Monitoring state - trigger redeploy
 const monitoringState = {
   accounts: new Map(),
   positions: new Map(),
