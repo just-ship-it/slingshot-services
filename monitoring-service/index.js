@@ -552,8 +552,9 @@ app.get('/health', async (req, res) => {
 // Public system health endpoint for external monitoring (UptimeRobot, etc)
 app.get('/api/health/system', async (req, res) => {
   try {
-    // Define services to check (excluding self)
+    // Define services to check (including self)
     const servicesToCheck = [
+      { name: 'monitoring-service', url: `http://localhost:${config.service.port}`, port: config.service.port },
       { name: 'trade-orchestrator', url: process.env.TRADE_ORCHESTRATOR_URL || 'http://localhost:3013', port: 3013 },
       { name: 'market-data-service', url: process.env.MARKET_DATA_SERVICE_URL || 'http://localhost:3012', port: 3012 },
       { name: 'tradovate-service', url: process.env.TRADOVATE_SERVICE_URL || 'http://localhost:3011', port: 3011 }
@@ -688,8 +689,9 @@ app.get('/api/services', dashboardAuth, async (req, res) => {
   // Get baseline services from monitoring state
   const baselineServices = Array.from(monitoringState.services.values());
 
-  // Define internal services to check (excluding self)
+  // Define internal services to check (including self)
   const internalServices = [
+    { name: 'monitoring-service', url: `http://localhost:${config.service.port}`, port: config.service.port },
     { name: 'trade-orchestrator', url: process.env.TRADE_ORCHESTRATOR_URL || 'http://localhost:3013', port: 3013 },
     { name: 'market-data-service', url: process.env.MARKET_DATA_SERVICE_URL || 'http://localhost:3012', port: 3012 },
     { name: 'tradovate-service', url: process.env.TRADOVATE_SERVICE_URL || 'http://localhost:3011', port: 3011 }
