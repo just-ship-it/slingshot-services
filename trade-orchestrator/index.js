@@ -901,6 +901,7 @@ app.get('/api/trading/enhanced-status', (req, res) => {
       netPrice: position.netPrice,
       entryPrice: position.netPrice, // Frontend expects entryPrice
       unrealizedPnL: position.unrealizedPnL || 0,
+      side: position.netPos > 0 ? 'long' : 'short', // Frontend expects side field
 
       // Current market data
       currentPrice,
@@ -1781,11 +1782,7 @@ async function updatePositionFromFill(fillMessage) {
       logger.info(`📊 Updated position: ${symbol} = ${newQuantity} @ ${newEntryPrice.toFixed(2)}`);
     }
   } else {
-    // Create new position
-    const quantity = fillMessage.action === 'Buy' ? fillMessage.quantity : -fillMessage.quantity;
-    const side = quantity > 0 ? 'long' : 'short';
-
-    // Look up signal context for this order using SignalRegistry
+    // Look up signal context for this order using SignalRegistry first (needed for action fallback)
     let signalContext = null;
 
     // PRIMARY: Use signalId from the fill message (sent by tradovate-service)
@@ -1872,6 +1869,26 @@ async function updatePositionFromFill(fillMessage) {
     if (!signalContext) {
       logger.warn(`⚠️  No signal context found for filled order ${fillMessage.orderId}`);
     }
+
+    // Determine position direction with fallback logic
+    let action = fillMessage.action;
+
+    // Fallback: If action is missing, use signal context
+    if (!action && signalContext) {
+      if (signalContext.side === 'buy') {
+        action = 'Buy';
+        logger.info(`📡 Using signal context to determine action: ${signalContext.side} → ${action}`);
+      } else if (signalContext.side === 'sell') {
+        action = 'Sell';
+        logger.info(`📡 Using signal context to determine action: ${signalContext.side} → ${action}`);
+      }
+    }
+
+    // Calculate position quantity (positive = long, negative = short)
+    const quantity = action === 'Buy' ? fillMessage.quantity : -fillMessage.quantity;
+    const side = quantity > 0 ? 'long' : 'short';
+
+    logger.info(`📊 Position direction: action=${action}, quantity=${fillMessage.quantity} → netPos=${quantity} (${side})`);
 
     const newPosition = {
       symbol: symbol,
@@ -2338,6 +2355,72 @@ async function handlePriceUpdate(message) {
 
         logger.info(`💰 Updated P&L for ${position.symbol}: ${position.netPos} @ ${position.netPrice} → current ${currentPrice} = $${unrealizedPnL.toFixed(2)}`);
         logger.info(`✅ Position object after update: unrealizedPnL=${position.unrealizedPnL}, currentPrice=${position.currentPrice}`);
+
+        // Broadcast real-time position update for dashboard
+        await messageBus.publish(CHANNELS.POSITION_REALTIME_UPDATE, {
+          positionId: position.id,
+          accountId: position.accountId,
+          symbol: position.symbol,
+          netPos: position.netPos,
+          currentPrice: position.currentPrice,
+          entryPrice: position.netPrice,
+          unrealizedPnL: position.unrealizedPnL,
+          realizedPnL: position.realizedPnL || 0,
+          side: position.netPos > 0 ? 'long' : 'short',
+          lastUpdate: position.lastUpdate,
+          marketData: { price: currentPrice, timestamp: message.timestamp, source: message.source },
+          source: 'realtime_price_update'
+        });
+      }
+    }
+
+    // Broadcast real-time updates for pending orders with matching base symbol
+    for (const order of tradingState.workingOrders.values()) {
+      const orderBaseSymbol = getBaseSymbol(order.symbol);
+      if (orderBaseSymbol === baseSymbol) {
+        // Calculate market distance for this order
+        const calculateMarketDistance = (orderPrice, currentPrice, isLong) => {
+          if (!orderPrice || !currentPrice) return null;
+          const distance = orderPrice - currentPrice;
+          const percentage = (distance / currentPrice) * 100;
+          const pointsAway = Math.abs(distance);
+          const direction = distance > 0 ? 'above' : 'below';
+
+          return {
+            points: pointsAway,
+            percentage: Math.abs(percentage),
+            direction,
+            needsToMove: isLong ? (distance > 0 ? 'down' : 'filled') : (distance < 0 ? 'up' : 'filled')
+          };
+        };
+
+        const marketDistance = order.price ? calculateMarketDistance(order.price, currentPrice, order.action === 'Buy') : null;
+
+        // Get signal context for this order
+        let signalContext = null;
+        if (order.signalId) {
+          signalContext = tradingState.signalContext.get(order.signalId);
+        }
+
+        // Broadcast real-time order update for dashboard
+        await messageBus.publish(CHANNELS.ORDER_REALTIME_UPDATE, {
+          orderId: order.id,
+          symbol: order.symbol,
+          baseSymbol: orderBaseSymbol,
+          action: order.action,
+          quantity: order.quantity,
+          orderType: order.orderType,
+          price: order.price,
+          orderStatus: order.orderStatus,
+          currentPrice,
+          marketDistance,
+          marketData: { price: currentPrice, timestamp: message.timestamp, source: message.source },
+          signalContext,
+          lastUpdate: new Date().toISOString(),
+          source: 'realtime_price_update'
+        });
+
+        logger.debug(`📋 Broadcast real-time order update: ${order.symbol} ${order.action} @ ${order.price}, market: ${currentPrice}`);
       }
     }
 

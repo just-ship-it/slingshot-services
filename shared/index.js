@@ -23,11 +23,13 @@ export const CHANNELS = {
   ORDER_FILLED: 'order.filled',
   ORDER_REJECTED: 'order.rejected',
   ORDER_CANCELLED: 'order.cancelled',
+  ORDER_REALTIME_UPDATE: 'order.realtime_update',
 
   // Position events
   POSITION_OPENED: 'position.opened',
   POSITION_CLOSED: 'position.closed',
   POSITION_UPDATE: 'position.update',
+  POSITION_REALTIME_UPDATE: 'position.realtime_update',
 
   // Market data events
   PRICE_UPDATE: 'price.update',

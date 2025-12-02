@@ -1281,6 +1281,92 @@ async function handleOrderUpdate(message) {
   logActivity('order', `Order ${message.action} ${message.symbol} - ${message.status || 'placed'}`, order);
 }
 
+async function handlePositionRealtimeUpdate(message) {
+  logger.info('📊 Received real-time position update:', message);
+
+  // Update monitoring state with real-time P&L data
+  const positionKey = `${message.accountId}-${message.symbol}`;
+  const existingPosition = monitoringState.positions.get(positionKey);
+
+  const updatedPosition = {
+    ...(existingPosition || {}),
+    id: message.positionId,
+    accountId: message.accountId,
+    symbol: message.symbol,
+    netPos: message.netPos,
+    currentPrice: message.currentPrice,
+    entryPrice: message.entryPrice,
+    unrealizedPnL: message.unrealizedPnL,
+    realizedPnL: message.realizedPnL,
+    side: message.side,
+    lastUpdate: message.lastUpdate,
+    source: message.source
+  };
+
+  monitoringState.positions.set(positionKey, updatedPosition);
+
+  // Broadcast real-time position update to dashboard
+  broadcast('position_realtime_update', {
+    positionId: message.positionId,
+    symbol: message.symbol,
+    netPos: message.netPos,
+    currentPrice: message.currentPrice,
+    entryPrice: message.entryPrice,
+    unrealizedPnL: message.unrealizedPnL,
+    realizedPnL: message.realizedPnL,
+    side: message.side,
+    lastUpdate: message.lastUpdate,
+    marketData: message.marketData
+  });
+
+  logger.debug(`📡 Broadcast real-time position update for ${message.symbol}: $${message.unrealizedPnL?.toFixed(2)} P&L`);
+}
+
+async function handleOrderRealtimeUpdate(message) {
+  logger.info('📋 Received real-time order update:', message);
+
+  // Update monitoring state with real-time market distance data
+  const existingOrder = monitoringState.orders.get(message.orderId);
+
+  const updatedOrder = {
+    ...(existingOrder || {}),
+    id: message.orderId,
+    orderId: message.orderId,
+    symbol: message.symbol,
+    baseSymbol: message.baseSymbol,
+    action: message.action,
+    quantity: message.quantity,
+    orderType: message.orderType,
+    price: message.price,
+    orderStatus: message.orderStatus,
+    currentPrice: message.currentPrice,
+    marketDistance: message.marketDistance,
+    lastUpdate: message.lastUpdate,
+    source: message.source
+  };
+
+  monitoringState.orders.set(message.orderId, updatedOrder);
+
+  // Broadcast real-time order update to dashboard
+  broadcast('order_realtime_update', {
+    orderId: message.orderId,
+    symbol: message.symbol,
+    baseSymbol: message.baseSymbol,
+    action: message.action,
+    quantity: message.quantity,
+    orderType: message.orderType,
+    price: message.price,
+    orderStatus: message.orderStatus,
+    currentPrice: message.currentPrice,
+    marketDistance: message.marketDistance,
+    marketData: message.marketData,
+    signalContext: message.signalContext,
+    lastUpdate: message.lastUpdate
+  });
+
+  logger.debug(`📡 Broadcast real-time order update for ${message.symbol}: ${message.action} @ ${message.price}, market: ${message.currentPrice}`);
+}
+
 async function handleServiceHealth(message) {
   monitoringState.services.set(message.service, {
     name: message.service,
@@ -1349,10 +1435,12 @@ async function startup() {
     const subscriptions = [
       [CHANNELS.ACCOUNT_UPDATE, handleAccountUpdate],
       [CHANNELS.POSITION_UPDATE, handlePositionUpdate],
+      [CHANNELS.POSITION_REALTIME_UPDATE, handlePositionRealtimeUpdate],
       [CHANNELS.PRICE_UPDATE, handlePriceUpdate],
       [CHANNELS.ORDER_PLACED, handleOrderUpdate],
       [CHANNELS.ORDER_FILLED, handleOrderUpdate],
       [CHANNELS.ORDER_REJECTED, handleOrderUpdate],
+      [CHANNELS.ORDER_REALTIME_UPDATE, handleOrderRealtimeUpdate],
       [CHANNELS.SERVICE_HEALTH, handleServiceHealth],
       [CHANNELS.SERVICE_STARTED, handleServiceStarted],
       [CHANNELS.SERVICE_STOPPED, handleServiceStopped],
