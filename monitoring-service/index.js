@@ -554,7 +554,7 @@ app.get('/api/health/system', async (req, res) => {
   try {
     // Define services to check
     const servicesToCheck = [
-      { name: 'monitoring-service', url: 'http://localhost:3014', port: 3014 },
+      { name: 'monitoring-service', url: `http://localhost:${config.service.port}`, port: config.service.port },
       { name: 'trade-orchestrator', url: 'http://localhost:3013', port: 3013 },
       { name: 'market-data-service', url: 'http://localhost:3012', port: 3012 },
       { name: 'tradovate-service', url: 'http://localhost:3011', port: 3011 }
@@ -687,7 +687,7 @@ app.get('/api/services', dashboardAuth, async (req, res) => {
 
   // Define internal services to check
   const internalServices = [
-    { name: 'monitoring-service', url: 'http://localhost:3014', port: 3014 },
+    { name: 'monitoring-service', url: `http://localhost:${config.service.port}`, port: config.service.port },
     { name: 'trade-orchestrator', url: process.env.TRADE_ORCHESTRATOR_URL || 'http://localhost:3013', port: 3013 },
     { name: 'market-data-service', url: process.env.MARKET_DATA_SERVICE_URL || 'http://localhost:3012', port: 3012 },
     { name: 'tradovate-service', url: process.env.TRADOVATE_SERVICE_URL || 'http://localhost:3011', port: 3011 }
@@ -854,6 +854,67 @@ app.get('/api/trading/active-status', dashboardAuth, async (req, res) => {
       },
       lastUpdate: new Date().toISOString(),
       source: 'monitoring_fallback'
+    });
+  }
+});
+
+// Trading control proxy endpoints
+app.get('/api/trading/status', dashboardAuth, async (req, res) => {
+  try {
+    logger.info('🔄 Proxying trading status request to trade-orchestrator...');
+
+    const response = await axios.get('http://localhost:3013/trading/status', {
+      timeout: 5000
+    });
+
+    logger.info('✅ Trading status response received');
+    res.json(response.data);
+  } catch (error) {
+    logger.error('❌ Trading status proxy failed:', error.message);
+    res.status(503).json({
+      error: 'Failed to get trading status',
+      message: error.message,
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
+app.post('/api/trading/enable', dashboardAuth, async (req, res) => {
+  try {
+    logger.info('🔄 Proxying trading enable request to trade-orchestrator...');
+
+    const response = await axios.post('http://localhost:3013/trading/enable', {}, {
+      timeout: 5000
+    });
+
+    logger.info('✅ Trading enabled successfully');
+    res.json(response.data);
+  } catch (error) {
+    logger.error('❌ Trading enable proxy failed:', error.message);
+    res.status(503).json({
+      error: 'Failed to enable trading',
+      message: error.message,
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
+app.post('/api/trading/disable', dashboardAuth, async (req, res) => {
+  try {
+    logger.info('🔄 Proxying trading disable request to trade-orchestrator...');
+
+    const response = await axios.post('http://localhost:3013/trading/disable', {}, {
+      timeout: 5000
+    });
+
+    logger.info('✅ Trading disabled successfully');
+    res.json(response.data);
+  } catch (error) {
+    logger.error('❌ Trading disable proxy failed:', error.message);
+    res.status(503).json({
+      error: 'Failed to disable trading',
+      message: error.message,
+      timestamp: new Date().toISOString()
     });
   }
 });

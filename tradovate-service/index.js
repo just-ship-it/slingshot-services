@@ -797,6 +797,27 @@ async function handleCancelLimitOrders(tradeSignal, accountId, webhookId) {
       timestamp: new Date().toISOString()
     });
 
+    // Refresh account balance after cancellation
+    logger.info(`💰 Refreshing account balance after order cancellation for account ${accountId}`);
+    try {
+      const [accountData, cashData] = await Promise.all([
+        tradovateClient.getAccountBalances(accountId),
+        tradovateClient.getCashBalances(accountId)
+      ]);
+
+      await messageBus.publish(CHANNELS.ACCOUNT_UPDATE, {
+        accountId: accountId,
+        accountName: `Account ${accountId}`,
+        accountData,
+        cashData,
+        timestamp: new Date().toISOString(),
+        source: 'post_cancel_refresh'
+      });
+      logger.info(`✅ Account balance refreshed after cancellation`);
+    } catch (error) {
+      logger.error(`❌ Failed to refresh account balance after cancellation:`, error);
+    }
+
   } catch (error) {
     logger.error('Failed to cancel limit orders:', error);
     throw error;
@@ -1002,6 +1023,27 @@ async function startup() {
             source: 'websocket_order_update'
           });
 
+          // Refresh account balance after fill
+          logger.info(`💰 Refreshing account balance after order fill for account ${enrichedOrder.accountId}`);
+          try {
+            const [accountData, cashData] = await Promise.all([
+              tradovateClient.getAccountBalances(enrichedOrder.accountId),
+              tradovateClient.getCashBalances(enrichedOrder.accountId)
+            ]);
+
+            await messageBus.publish(CHANNELS.ACCOUNT_UPDATE, {
+              accountId: enrichedOrder.accountId,
+              accountName: enrichedOrder.accountName || `Account ${enrichedOrder.accountId}`,
+              accountData,
+              cashData,
+              timestamp: new Date().toISOString(),
+              source: 'post_fill_refresh'
+            });
+            logger.info(`✅ Account balance refreshed after fill`);
+          } catch (error) {
+            logger.error(`❌ Failed to refresh account balance after fill:`, error);
+          }
+
           // Check if stop/target fill closes position
           if (orderRole === 'stop_loss' || orderRole === 'take_profit') {
             logger.info(`🔍 ${orderRole} filled - scheduling position check for contract ${order.contractId}`);
@@ -1201,6 +1243,27 @@ async function startup() {
 
         logger.info(`📊 Published execution fill for order ${execution.orderId} with symbol: ${symbol}`);
 
+        // Refresh account balance after execution fill
+        logger.info(`💰 Refreshing account balance after execution fill for account ${execution.accountId}`);
+        try {
+          const [accountData, cashData] = await Promise.all([
+            tradovateClient.getAccountBalances(execution.accountId),
+            tradovateClient.getCashBalances(execution.accountId)
+          ]);
+
+          await messageBus.publish(CHANNELS.ACCOUNT_UPDATE, {
+            accountId: execution.accountId,
+            accountName: `Account ${execution.accountId}`,
+            accountData,
+            cashData,
+            timestamp: new Date().toISOString(),
+            source: 'post_execution_refresh'
+          });
+          logger.info(`✅ Account balance refreshed after execution fill`);
+        } catch (error) {
+          logger.error(`❌ Failed to refresh account balance after execution fill:`, error);
+        }
+
         // IMPORTANT: Check if this fill closes a position (stop or target fills)
         if ((isStopOrder || isTargetOrder) && execution.accountId && execution.contractId) {
           logger.info(`🔍 Stop/Target filled - checking if position is closed for contract ${execution.contractId}`);
@@ -1277,6 +1340,27 @@ async function startup() {
           source: 'websocket_orderStrategy_status',
           status: strategy.status
         });
+
+        // Refresh account balance after strategy completion/cancellation
+        logger.info(`💰 Refreshing account balance after strategy ${strategy.status.toLowerCase()} for account ${strategy.accountId}`);
+        try {
+          const [accountData, cashData] = await Promise.all([
+            tradovateClient.getAccountBalances(strategy.accountId),
+            tradovateClient.getCashBalances(strategy.accountId)
+          ]);
+
+          await messageBus.publish(CHANNELS.ACCOUNT_UPDATE, {
+            accountId: strategy.accountId,
+            accountName: `Account ${strategy.accountId}`,
+            accountData,
+            cashData,
+            timestamp: new Date().toISOString(),
+            source: 'post_strategy_completion'
+          });
+          logger.info(`✅ Account balance refreshed after strategy ${strategy.status.toLowerCase()}`);
+        } catch (error) {
+          logger.error(`❌ Failed to refresh account balance after strategy completion:`, error);
+        }
 
         // Find and remove from our tracking
         const strategyInfo = orderStrategyLinks.get(strategy.id);

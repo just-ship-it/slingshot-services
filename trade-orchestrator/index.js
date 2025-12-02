@@ -952,8 +952,13 @@ app.get('/api/trading/enhanced-status', (req, res) => {
     // Current market prices for all active symbols
     marketPrices: Object.fromEntries(tradingState.marketPrices),
 
-    // Trading statistics
-    stats: tradingState.stats
+    // Trading statistics (removed dailyPnL - should come from Tradovate account data only)
+    stats: {
+      pendingOrdersCount: enhancedPendingOrders.length,
+      openPositionsCount: enhancedPositions.length,
+      totalUnrealizedPnL: enhancedPositions.reduce((sum, pos) => sum + (pos.unrealizedPnL || 0), 0),
+      dailyTrades: tradingState.stats.dailyTrades
+    }
   });
 });
 
@@ -2342,9 +2347,7 @@ async function handlePriceUpdate(message) {
     if (hasPositions) {
       logger.debug(`📈 Price update used: ${baseSymbol} = ${currentPrice}`);
 
-      // Update daily P&L stats
-      tradingState.stats.dailyPnL = Array.from(tradingState.tradingPositions.values())
-        .reduce((total, pos) => total + (pos.unrealizedPnL || 0), 0);
+      // Note: Daily P&L should come from Tradovate account data, not unrealized P&L
     }
 
   } catch (error) {
@@ -2420,9 +2423,7 @@ async function initializePnLSystem() {
         }
       }
 
-      // Update daily P&L stats
-      tradingState.stats.dailyPnL = Array.from(tradingState.tradingPositions.values())
-        .reduce((total, pos) => total + (pos.unrealizedPnL || 0), 0);
+      // Note: Daily P&L should come from Tradovate account data, not unrealized P&L
 
       logger.info(`💰 P&L system initialized for ${tradingState.tradingPositions.size} positions`);
     }
