@@ -2297,7 +2297,7 @@ async function handlePriceUpdate(message) {
     const baseSymbol = message.baseSymbol || getBaseSymbol(symbol);
     const currentPrice = message.close || message.price;
 
-    logger.info(`📈 Price update received: ${symbol} (base: ${baseSymbol}) = ${currentPrice}`);
+    logger.debug(`📈 Price update received: ${symbol} (base: ${baseSymbol}) = ${currentPrice}`);
 
     if (!currentPrice) {
       logger.warn(`📈 No price in update for ${symbol}`);
@@ -2315,14 +2315,14 @@ async function handlePriceUpdate(message) {
 
     // Only process P&L updates if we have positions for this symbol
     let hasPositions = false;
-    logger.info(`📊 Checking positions for base symbol: ${baseSymbol}`);
+    logger.debug(`📊 Checking positions for base symbol: ${baseSymbol}`);
 
     for (const position of tradingState.tradingPositions.values()) {
       const positionBaseSymbol = getBaseSymbol(position.symbol);
-      logger.info(`📊 Position ${position.symbol} -> base: ${positionBaseSymbol} (looking for: ${baseSymbol})`);
-      logger.info(`🔍 String comparison: "${positionBaseSymbol}" === "${baseSymbol}" = ${positionBaseSymbol === baseSymbol}`);
-      logger.info(`🔍 Types: ${typeof positionBaseSymbol} vs ${typeof baseSymbol}`);
-      logger.info(`🔍 Lengths: ${positionBaseSymbol.length} vs ${baseSymbol.length}`);
+      logger.debug(`📊 Position ${position.symbol} -> base: ${positionBaseSymbol} (looking for: ${baseSymbol})`);
+      logger.debug(`🔍 String comparison: "${positionBaseSymbol}" === "${baseSymbol}" = ${positionBaseSymbol === baseSymbol}`);
+      logger.debug(`🔍 Types: ${typeof positionBaseSymbol} vs ${typeof baseSymbol}`);
+      logger.debug(`🔍 Lengths: ${positionBaseSymbol.length} vs ${baseSymbol.length}`);
 
       if (positionBaseSymbol === baseSymbol) {
         hasPositions = true;
