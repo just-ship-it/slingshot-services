@@ -1570,8 +1570,8 @@ async function startup() {
       timestamp: new Date().toISOString()
     });
 
-    // Start Express server - bind to localhost only for internal access
-    const bindHost = process.env.BIND_HOST || '127.0.0.1';
+    // Start Express server - bind to all interfaces for container networking
+    const bindHost = process.env.BIND_HOST || '0.0.0.0';
     const server = app.listen(config.service.port, bindHost, () => {
       logger.info(`${SERVICE_NAME} listening on ${bindHost}:${config.service.port}`);
       logger.info(`Environment: ${config.service.env}`);

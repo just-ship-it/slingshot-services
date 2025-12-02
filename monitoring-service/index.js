@@ -552,23 +552,26 @@ app.get('/health', async (req, res) => {
 // Public system health endpoint for external monitoring (UptimeRobot, etc)
 app.get('/api/health/system', async (req, res) => {
   try {
-    // Define services to check
+    // Define services to check (excluding self)
     const servicesToCheck = [
-      { name: 'monitoring-service', url: `http://localhost:${config.service.port}`, port: config.service.port },
-      { name: 'trade-orchestrator', url: 'http://localhost:3013', port: 3013 },
-      { name: 'market-data-service', url: 'http://localhost:3012', port: 3012 },
-      { name: 'tradovate-service', url: 'http://localhost:3011', port: 3011 }
+      { name: 'trade-orchestrator', url: process.env.TRADE_ORCHESTRATOR_URL || 'http://localhost:3013', port: 3013 },
+      { name: 'market-data-service', url: process.env.MARKET_DATA_SERVICE_URL || 'http://localhost:3012', port: 3012 },
+      { name: 'tradovate-service', url: process.env.TRADOVATE_SERVICE_URL || 'http://localhost:3011', port: 3011 }
     ];
 
     // Check health of all services
+    console.log('🔍 DEBUG: Services to check:', servicesToCheck);
     const healthChecks = await Promise.allSettled(
       servicesToCheck.map(async (service) => {
         try {
+          console.log(`🔍 DEBUG: Checking ${service.name} at ${service.url}/health`);
           const response = await axios.get(`${service.url}/health`, {
             timeout: 2000 // Quick timeout for monitoring
           });
+          console.log(`✅ DEBUG: ${service.name} responded with ${response.status}`);
           return { name: service.name, status: 'up', healthy: true };
         } catch (error) {
+          console.log(`❌ DEBUG: ${service.name} failed:`, error.message);
           return { name: service.name, status: 'down', healthy: false };
         }
       })
@@ -685,9 +688,8 @@ app.get('/api/services', dashboardAuth, async (req, res) => {
   // Get baseline services from monitoring state
   const baselineServices = Array.from(monitoringState.services.values());
 
-  // Define internal services to check
+  // Define internal services to check (excluding self)
   const internalServices = [
-    { name: 'monitoring-service', url: `http://localhost:${config.service.port}`, port: config.service.port },
     { name: 'trade-orchestrator', url: process.env.TRADE_ORCHESTRATOR_URL || 'http://localhost:3013', port: 3013 },
     { name: 'market-data-service', url: process.env.MARKET_DATA_SERVICE_URL || 'http://localhost:3012', port: 3012 },
     { name: 'tradovate-service', url: process.env.TRADOVATE_SERVICE_URL || 'http://localhost:3011', port: 3011 }
