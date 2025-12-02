@@ -828,7 +828,8 @@ app.get('/api/trading/active-status', dashboardAuth, async (req, res) => {
   try {
     logger.info('🔄 Proxying request to trade-orchestrator...');
 
-    const response = await axios.get('http://localhost:3013/api/trading/active-status', {
+    const tradeOrchestratorUrl = process.env.TRADE_ORCHESTRATOR_URL || 'http://localhost:3013';
+    const response = await axios.get(`${tradeOrchestratorUrl}/api/trading/active-status`, {
       timeout: 5000
     });
 
@@ -867,7 +868,8 @@ app.get('/api/trading/status', dashboardAuth, async (req, res) => {
   try {
     logger.info('🔄 Proxying trading status request to trade-orchestrator...');
 
-    const response = await axios.get('http://localhost:3013/trading/status', {
+    const tradeOrchestratorUrl = process.env.TRADE_ORCHESTRATOR_URL || 'http://localhost:3013';
+    const response = await axios.get(`${tradeOrchestratorUrl}/trading/status`, {
       timeout: 5000
     });
 
@@ -887,7 +889,8 @@ app.post('/api/trading/enable', dashboardAuth, async (req, res) => {
   try {
     logger.info('🔄 Proxying trading enable request to trade-orchestrator...');
 
-    const response = await axios.post('http://localhost:3013/trading/enable', {}, {
+    const tradeOrchestratorUrl = process.env.TRADE_ORCHESTRATOR_URL || 'http://localhost:3013';
+    const response = await axios.post(`${tradeOrchestratorUrl}/trading/enable`, {}, {
       timeout: 5000
     });
 
@@ -907,7 +910,8 @@ app.post('/api/trading/disable', dashboardAuth, async (req, res) => {
   try {
     logger.info('🔄 Proxying trading disable request to trade-orchestrator...');
 
-    const response = await axios.post('http://localhost:3013/trading/disable', {}, {
+    const tradeOrchestratorUrl = process.env.TRADE_ORCHESTRATOR_URL || 'http://localhost:3013';
+    const response = await axios.post(`${tradeOrchestratorUrl}/trading/disable`, {}, {
       timeout: 5000
     });
 
@@ -928,7 +932,8 @@ app.get('/api/trading/enhanced-status', dashboardAuth, async (req, res) => {
   try {
     logger.info('🔄 Proxying enhanced status request to trade-orchestrator...');
 
-    const response = await axios.get('http://localhost:3013/api/trading/enhanced-status', {
+    const tradeOrchestratorUrl = process.env.TRADE_ORCHESTRATOR_URL || 'http://localhost:3013';
+    const response = await axios.get(`${tradeOrchestratorUrl}/api/trading/enhanced-status`, {
       timeout: 5000
     });
 
