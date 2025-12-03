@@ -4,14 +4,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is a microservices trading system called "Slingshot" that separates trading functionality into 5 independent services communicating via Redis pub/sub. The system handles webhook ingestion, Tradovate API interactions, real-time market data, trade orchestration, and monitoring.
+This is a microservices trading system called "Slingshot" that separates trading functionality into 4 independent services communicating via Redis pub/sub. The system handles webhook ingestion, Tradovate API interactions, real-time market data, trade orchestration, and monitoring.
 
 ## Development Commands
 
 ### Service Management
 - **Start all services**: `./start-all.sh` (includes dependency installation and health checks)
 - **Stop all services**: `./stop-all.sh`
-- **PM2 management**: `pm2 start ecosystem.config.js` / `pm2 logs` / `pm2 monit`
+- **PM2 management**: `pm2 start ecosystem.config.cjs` / `pm2 logs` / `pm2 monit`
 
 ### Individual Service Development
 Each service supports the same npm scripts:
@@ -25,11 +25,10 @@ Each service supports the same npm scripts:
 ## Architecture
 
 ### Service Structure
-- **Port 3010**: Webhook Gateway - Fast webhook ingestion and routing
 - **Port 3011**: Tradovate Service - All Tradovate API interactions
-- **Port 3012**: Market Data Service - Real-time price streaming and P&L
+- **Port 3012**: Market Data Service - Real-time price streaming and P&L (receives quotes via webhooks)
 - **Port 3013**: Trade Orchestrator - Business logic and trade coordination
-- **Port 3014**: Monitoring Service - Data aggregation and dashboard APIs
+- **Port 3014**: Monitoring Service - Webhook ingestion, data aggregation, and dashboard APIs
 
 ### Key Dependencies
 - All services use ES modules (`"type": "module"` in package.json)
@@ -39,34 +38,95 @@ Each service supports the same npm scripts:
 
 ### Message Bus Channels
 The system uses predefined Redis channels for communication (defined in `shared/index.js`):
-- Webhook events: `webhook.received`, `webhook.validated`, `webhook.rejected`
+- Webhook events: `webhook.received`, `webhook.validated`, `webhook.rejected`, `webhook.quote`, `webhook.trade`
 - Trading signals: `trade.signal`, `trade.validated`, `trade.rejected`
-- Order events: `order.request`, `order.placed`, `order.filled`, `order.rejected`
-- Position events: `position.opened`, `position.closed`, `position.update`
-- Market data: `price.update`, `market.connected`, `market.disconnected`
+- Order events: `order.request`, `order.placed`, `order.filled`, `order.rejected`, `order.cancelled`
+- Position events: `position.opened`, `position.closed`, `position.update`, `position.realtime_update`
+- Market data: `price.update`, `market.connected`, `market.disconnected`, `quote.request`, `quote.response`
 - Account events: `account.update`, `balance.update`, `margin.update`
-- System events: `service.health`, `service.error`, `service.started`
+- System events: `service.health`, `service.error`, `service.started`, `service.stopped`
+- Sync events: `tradovate_sync_completed`
 
 ### Configuration
 - Environment variables are managed through `shared/.env`
 - Each service has its own `package.json` with consistent script structure
-- PM2 configuration in `ecosystem.config.js` defines all service startup parameters
+- PM2 configuration in `ecosystem.config.cjs` defines all service startup parameters
 - Default ports are defined but configurable via environment variables
 
 ### Service Dependencies
 Services must start in this order (handled by `start-all.sh`):
-1. Webhook Gateway (no dependencies)
-2. Tradovate Service (depends on message bus)
-3. Market Data Service (depends on message bus and Tradovate)
-4. Trade Orchestrator (depends on message bus)
-5. Monitoring Service (depends on message bus)
+1. Tradovate Service (depends on message bus)
+2. Market Data Service (depends on message bus, receives quotes via webhooks from NinjaTrader)
+3. Trade Orchestrator (depends on message bus)
+4. Monitoring Service (depends on message bus, handles all webhook ingestion)
+
+## Webhook Data Formats
+
+### Trade Signal Format
+The system accepts trade signals via webhook at `http://localhost:3014/webhook`:
+
+```json
+{
+  "webhook_type": "trade_signal",
+  "secret": "your_webhook_secret_here",
+  "action": "place_limit",
+  "side": "buy",
+  "symbol": "NQ1!",
+  "price": 25534.5,
+  "stop_loss": 25482.5,
+  "take_profit": 25634.5,
+  "trailing_trigger": 22,      // Points from entry, not price
+  "trailing_offset": 6,         // Points, not price
+  "quantity": 1,
+  "strategy": "LDPS"
+}
+```
+
+**Supported Actions:**
+- `place_limit` - Place a limit order with bracket orders (stop loss and take profit)
+- `place_market` - Place a market order
+- `position_closed` - Close an existing position
+- `cancel_limit` - Cancel pending limit orders
+
+**Key Fields:**
+- `webhook_type`: Must be "trade_signal" for trading signals
+- `secret`: Webhook authentication secret (configured in .env)
+- `trailing_trigger`: Distance in points from entry where trailing stop activates
+- `trailing_offset`: Trailing stop distance in points
+- `strategy`: Strategy identifier for tracking and grouping orders
+
+### Quote Data Format
+Real-time market quotes are sent from NinjaTrader via webhook:
+
+```json
+{
+  "webhook_type": "quote",
+  "type": "quote_batch",
+  "source": "ninjatrader",
+  "timestamp": "2024-12-03T12:00:00Z",
+  "quotes": [
+    {
+      "symbol": "MNQZ5",
+      "baseSymbol": "MNQ",
+      "open": 25500.0,
+      "high": 25550.0,
+      "low": 25480.0,
+      "close": 25530.0,
+      "previousClose": 25495.0,
+      "volume": 1234
+    }
+  ]
+}
+```
+
+The monitoring service receives these webhooks and routes them to the appropriate services via Redis pub/sub.
 
 ## Common Development Tasks
 
 ### Adding New Services
 1. Create service directory with standard structure
 2. Use shared utilities: `import { messageBus, createLogger, CHANNELS } from '../shared/index.js'`
-3. Add to `ecosystem.config.js` PM2 configuration
+3. Add to `ecosystem.config.cjs` PM2 configuration
 4. Update `start-all.sh` and `stop-all.sh` scripts
 
 ### Working with Message Bus
@@ -83,3 +143,18 @@ Services must start in this order (handled by `start-all.sh`):
 - Use shared logger: `import { createLogger } from '../shared/index.js'`
 - Logs are written to `logs/[service-name].log` when using startup scripts
 - PM2 provides centralized log management: `pm2 logs [service-name]`
+
+## Service Endpoints
+
+### Public Endpoints (Monitoring Service - Port 3014)
+- **Webhook Endpoint**: `http://localhost:3014/webhook` - Receives trade signals and quotes
+- **Dashboard API**: `http://localhost:3014/api/dashboard` - Dashboard data aggregation
+- **Health Check**: `http://localhost:3014/health` - Service health status
+- **WebSocket**: `ws://localhost:3014` - Real-time updates
+
+### Internal Service Endpoints (localhost only)
+- **Tradovate Service**: `http://localhost:3011/health` - Tradovate API gateway
+- **Market Data Service**: `http://localhost:3012/health` - Price streaming service
+- **Trade Orchestrator**: `http://localhost:3013/health` - Trade logic service
+
+Note: Internal services bind to 127.0.0.1 and are not publicly accessible. Only the monitoring service (3014) binds to 0.0.0.0 for external access.
