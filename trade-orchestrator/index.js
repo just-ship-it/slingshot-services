@@ -326,7 +326,7 @@ class SignalRegistry {
       };
 
       // Set with 7-day TTL (604800 seconds) to prevent indefinite growth
-      await messageBus.publisher.setex('signal:lifecycles', 604800, JSON.stringify(lifecycleData));
+      await messageBus.publisher.set('signal:lifecycles', JSON.stringify(lifecycleData), { EX: 604800 });
       logger.info('💾 Signal lifecycles saved to Redis (7-day TTL)');
     } catch (error) {
       logger.error('❌ Failed to save signal lifecycles to Redis:', error);
