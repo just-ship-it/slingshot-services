@@ -39,19 +39,10 @@ else
     echo "⚠️  Project root logs directory not found"
 fi
 
-# Also clear signal context
-signal_context_file="trade-orchestrator/data/signal-context.json"
-if [ -f "$signal_context_file" ]; then
-    echo "🔄 Resetting signal context..."
-    cat > "$signal_context_file" << 'EOF'
-{
-  "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%S.%3NZ)",
-  "signalContext": {},
-  "version": "1.0"
-}
-EOF
-    echo "✅ Signal context reset"
-fi
+# Clear PM2 logs
+echo "📋 Clearing PM2 logs..."
+pm2 flush
+echo "✅ PM2 logs cleared"
 
 echo "🎉 All logs cleared! Ready for a clean run."
 echo ""
