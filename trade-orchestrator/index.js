@@ -1401,39 +1401,6 @@ function getBaseSymbol(contractSymbol) {
   return symbol; // Return original if no match
 }
 
-// Validate netPrice from external data sources to prevent corrupted PnL calculations
-function validateNetPrice(posData, symbol) {
-  const candidates = [posData.netPrice, posData.averagePrice, posData.entryPrice];
-  const currentPrice = posData.currentPrice;
-
-  // Find the first valid price that's reasonable
-  for (const price of candidates) {
-    if (price && price > 0) {
-      // For futures, check if price is in reasonable range compared to current price
-      if (currentPrice && currentPrice > 0) {
-        const percentDiff = Math.abs(price - currentPrice) / currentPrice;
-
-        // If price difference is more than 50%, it's likely corrupted
-        if (percentDiff > 0.5) {
-          logger.warn(`⚠️ Suspicious netPrice for ${symbol}: ${price} vs current ${currentPrice} (${(percentDiff*100).toFixed(1)}% diff)`);
-          continue; // Try next candidate
-        }
-      }
-
-      logger.info(`✅ Valid netPrice for ${symbol}: ${price}`);
-      return price;
-    }
-  }
-
-  // If all candidates are invalid, use current price as fallback
-  if (currentPrice && currentPrice > 0) {
-    logger.warn(`⚠️ All netPrice candidates invalid for ${symbol}, using currentPrice: ${currentPrice}`);
-    return currentPrice;
-  }
-
-  logger.error(`❌ No valid price found for ${symbol}, using 0`);
-  return 0;
-}
 
 // Calculate unrealized P&L for a position
 function calculateUnrealizedPnL(position, currentPrice) {
@@ -1718,52 +1685,67 @@ async function updatePositionFromFill(fillMessage) {
   const existing = tradingState.tradingPositions.get(symbol);
 
   if (existing) {
-    // Update existing position
-    const newQuantity = existing.netPosition + (fillMessage.action === 'Buy' ? fillMessage.quantity : -fillMessage.quantity);
+    // FUTURES PARADIGM: One position per symbol - all fills adjust the existing position
+
+    // Normalize action to handle various formats (Buy/Sell, B/S, 1/2, etc.)
+    const action = String(fillMessage.action).toUpperCase();
+    let isBuyFill;
+
+    if (action === 'BUY' || action === 'B' || action === '1') {
+      isBuyFill = true;
+    } else if (action === 'SELL' || action === 'S' || action === '2') {
+      isBuyFill = false;
+    } else {
+      logger.error(`🚨 Unknown fill action: ${fillMessage.action}, treating as BUY`);
+      isBuyFill = true;
+    }
+
+    // Calculate signed quantity change
+    const signedFillQuantity = isBuyFill ? fillMessage.quantity : -fillMessage.quantity;
+    const oldNetPos = existing.netPosition;
+    const newQuantity = oldNetPos + signedFillQuantity;
+
+    logger.info(`📊 Position adjustment: ${symbol} ${oldNetPos} → ${newQuantity} (${isBuyFill ? 'BUY' : 'SELL'} ${fillMessage.quantity})`);
 
     if (newQuantity === 0) {
       // Position closed
       tradingState.tradingPositions.delete(symbol);
       logger.info(`📊 Position closed via fill: ${symbol}`);
     } else {
-      // Update position
-      const newSide = newQuantity > 0 ? 'long' : 'short';
-      // Calculate new average entry price
-      logger.warn(`🔍 Entry price calculation inputs: existing.netPosition=${existing.netPosition}, existing.entryPrice=${existing.entryPrice}, fillMessage.quantity=${fillMessage.quantity}, fillMessage.fillPrice=${fillMessage.fillPrice}, newQuantity=${newQuantity}`);
+      // Determine if we're adding, reducing, or flipping the position
+      const isAdding = (oldNetPos > 0 && signedFillQuantity > 0) || (oldNetPos < 0 && signedFillQuantity < 0);
+      const isFlipping = (oldNetPos > 0 && newQuantity < 0) || (oldNetPos < 0 && newQuantity > 0);
 
-      // Enhanced entry price calculation with better validation
-      const totalValue = (existing.netPosition * existing.entryPrice) + (fillMessage.quantity * fillMessage.fillPrice);
-      let newEntryPrice = Math.abs(totalValue / newQuantity);
+      let newEntryPrice;
 
-      logger.warn(`🔍 Entry price calculation: totalValue=${totalValue}, newEntryPrice=${newEntryPrice}`);
-      logger.warn(`🔍 Detailed breakdown: (${existing.netPosition} × ${existing.entryPrice}) + (${fillMessage.quantity} × ${fillMessage.fillPrice}) = ${totalValue}`);
-      logger.warn(`🔍 Division: ${totalValue} ÷ ${newQuantity} = ${totalValue / newQuantity}, abs = ${Math.abs(totalValue / newQuantity)}`);
+      if (isAdding) {
+        // ADDING to position: calculate weighted average
+        const totalValue = (oldNetPos * existing.entryPrice) + (signedFillQuantity * fillMessage.fillPrice);
+        newEntryPrice = Math.abs(totalValue / newQuantity);
+        logger.info(`📈 ADDING to position: avg price = (${oldNetPos} × ${existing.entryPrice.toFixed(2)} + ${signedFillQuantity} × ${fillMessage.fillPrice}) / ${newQuantity} = ${newEntryPrice.toFixed(2)}`);
+      } else if (isFlipping) {
+        // Position FLIPPED: use fill price as new entry
+        newEntryPrice = fillMessage.fillPrice;
+        logger.info(`🔄 Position FLIPPED: new entry = ${newEntryPrice.toFixed(2)} (fill price)`);
+      } else {
+        // REDUCING position: keep existing entry price
+        newEntryPrice = existing.entryPrice;
+        logger.info(`📉 REDUCING position: entry unchanged at ${newEntryPrice.toFixed(2)}`);
+      }
 
-      // Enhanced validation for futures prices
-      const currentMarketPrice = fillMessage.fillPrice;
-      const maxReasonableDeviation = 0.5; // 50% deviation max
-      const isReasonablePrice = newEntryPrice > 0 &&
-                               newEntryPrice > (currentMarketPrice * (1 - maxReasonableDeviation)) &&
-                               newEntryPrice < (currentMarketPrice * (1 + maxReasonableDeviation));
+      // Round entry price to nearest tick (0.25 for NQ futures)
+      const tickSize = 0.25;
+      newEntryPrice = Math.round(newEntryPrice / tickSize) * tickSize;
+      logger.info(`📏 Rounded entry price to nearest tick: ${newEntryPrice}`);
 
-      if (!newEntryPrice || newEntryPrice < 1 || newEntryPrice > 100000 || !isReasonablePrice) {
-        logger.error(`🚨 CORRUPTED ENTRY PRICE DETECTED: ${newEntryPrice} for ${symbol}`);
-        logger.error(`🚨 Calculation inputs: netPos=${existing.netPosition} @ ${existing.entryPrice} + fill=${fillMessage.quantity} @ ${fillMessage.fillPrice}`);
-        logger.error(`🚨 Current market price: ${currentMarketPrice}, calculated: ${newEntryPrice}, reasonable: ${isReasonablePrice}`);
-
-        // Better fallback: use volume-weighted average if we can, otherwise use existing entry price
-        if (Math.abs(fillMessage.quantity) >= Math.abs(existing.netPosition)) {
-          // This is a larger fill, so use the fill price
-          newEntryPrice = fillMessage.fillPrice;
-          logger.error(`🚨 Using fill price ${fillMessage.fillPrice} as fallback (larger fill)`);
-        } else {
-          // Keep existing entry price for smaller additional fills
-          newEntryPrice = existing.entryPrice;
-          logger.error(`🚨 Keeping existing entry price ${existing.entryPrice} as fallback (smaller fill)`);
-        }
+      // Validate the calculated price is reasonable (basic sanity check)
+      if (!newEntryPrice || newEntryPrice < 1 || newEntryPrice > 1000000) {
+        logger.error(`🚨 Invalid entry price calculated: ${newEntryPrice}, using fill price ${fillMessage.fillPrice}`);
+        newEntryPrice = fillMessage.fillPrice;
       }
 
       // Update both frontend-expected and internal fields
+      const newSide = newQuantity > 0 ? 'long' : 'short';
       existing.netPos = newQuantity;
       existing.netPrice = newEntryPrice;
       existing.netPosition = newQuantity;
@@ -1870,25 +1852,36 @@ async function updatePositionFromFill(fillMessage) {
       logger.warn(`⚠️  No signal context found for filled order ${fillMessage.orderId}`);
     }
 
-    // Determine position direction with fallback logic
-    let action = fillMessage.action;
+    // Normalize action to handle various formats (Buy/Sell, B/S, 1/2, etc.)
+    let isBuyFill;
+    const rawAction = String(fillMessage.action || '').toUpperCase();
 
-    // Fallback: If action is missing, use signal context
-    if (!action && signalContext) {
+    if (rawAction === 'BUY' || rawAction === 'B' || rawAction === '1') {
+      isBuyFill = true;
+    } else if (rawAction === 'SELL' || rawAction === 'S' || rawAction === '2') {
+      isBuyFill = false;
+    } else if (signalContext) {
+      // Fallback: If action is not recognized, use signal context
       if (signalContext.side === 'buy') {
-        action = 'Buy';
-        logger.info(`📡 Using signal context to determine action: ${signalContext.side} → ${action}`);
+        isBuyFill = true;
+        logger.info(`📡 Using signal context to determine action: ${signalContext.side} → BUY`);
       } else if (signalContext.side === 'sell') {
-        action = 'Sell';
-        logger.info(`📡 Using signal context to determine action: ${signalContext.side} → ${action}`);
+        isBuyFill = false;
+        logger.info(`📡 Using signal context to determine action: ${signalContext.side} → SELL`);
+      } else {
+        logger.warn(`⚠️ Unknown action '${fillMessage.action}' and signal side '${signalContext?.side}', defaulting to BUY`);
+        isBuyFill = true;
       }
+    } else {
+      logger.warn(`⚠️ Unknown action '${fillMessage.action}' with no signal context, defaulting to BUY`);
+      isBuyFill = true;
     }
 
     // Calculate position quantity (positive = long, negative = short)
-    const quantity = action === 'Buy' ? fillMessage.quantity : -fillMessage.quantity;
+    const quantity = isBuyFill ? fillMessage.quantity : -fillMessage.quantity;
     const side = quantity > 0 ? 'long' : 'short';
 
-    logger.info(`📊 Position direction: action=${action}, quantity=${fillMessage.quantity} → netPos=${quantity} (${side})`);
+    logger.info(`📊 New position created: ${isBuyFill ? 'BUY' : 'SELL'} ${fillMessage.quantity} → netPos=${quantity} (${side})`);
 
     const newPosition = {
       symbol: symbol,
@@ -2089,32 +2082,18 @@ async function linkBracketOrdersForSyncedPosition(position) {
 // Handle when a bracket order (stop/target) fills
 async function handleBracketOrderFill(fillMessage, orderRole) {
   const symbol = fillMessage.symbol;
-  const position = tradingState.tradingPositions.get(symbol);
 
-  if (position) {
-    logger.info(`🎯 Bracket ${orderRole} filled for ${symbol} - closing/reducing position`);
+  logger.info(`🎯 Bracket ${orderRole} filled for ${symbol}`);
 
-    // The bracket order fill should reduce or close the position
-    const quantity = fillMessage.action === 'Buy' ? fillMessage.quantity : -fillMessage.quantity;
-    const newNetPosition = position.netPosition - quantity; // Opposite of position direction
+  // In futures paradigm, bracket orders are just fills that adjust the position
+  // Let updatePositionFromFill handle it with the proper one-position-per-symbol logic
+  await updatePositionFromFill(fillMessage);
 
-    if (Math.abs(newNetPosition) < 0.01) {
-      // Position fully closed
-      tradingState.tradingPositions.delete(symbol);
-      logger.info(`🔒 Position fully closed via ${orderRole}: ${symbol}`);
-
-      // Remove other bracket orders for this position
-      await cancelOtherBracketOrders(symbol, fillMessage.orderId);
-    } else {
-      // Position partially closed
-      // Update both frontend-expected and internal fields
-      position.netPos = newNetPosition;
-      position.netPrice = position.netPrice; // Keep existing entry price
-      position.netPosition = newNetPosition;
-      position.side = newNetPosition > 0 ? 'long' : 'short';
-      position.lastUpdate = fillMessage.timestamp;
-      logger.info(`📉 Position reduced via ${orderRole}: ${symbol} = ${newNetPosition}`);
-    }
+  // If position was closed, cancel other bracket orders
+  const remainingPosition = tradingState.tradingPositions.get(symbol);
+  if (!remainingPosition) {
+    logger.info(`🔒 Position closed via ${orderRole}, cancelling other bracket orders`);
+    await cancelOtherBracketOrders(symbol, fillMessage.orderId);
   }
 }
 
@@ -2171,6 +2150,19 @@ async function updateTradingPositionFromMarketData(posData, accountId) {
   if (position) {
     // Update existing position with market data
     position.currentPrice = posData.currentPrice || position.currentPrice;
+
+    // Update entry price if provided (startup sync with calculated entry prices)
+    if (posData.netPrice && posData.netPrice > 0) {
+      position.netPrice = posData.netPrice;
+      position.entryPrice = posData.netPrice;
+    } else if (posData.averagePrice && posData.averagePrice > 0) {
+      position.netPrice = posData.averagePrice;
+      position.entryPrice = posData.averagePrice;
+    } else if (posData.entryPrice && posData.entryPrice > 0) {
+      position.netPrice = posData.entryPrice;
+      position.entryPrice = posData.entryPrice;
+    }
+
     // Don't overwrite real-time calculated P&L with monitoring service data
     // position.unrealizedPnL is managed by real-time price updates
     position.lastUpdate = new Date().toISOString();
@@ -2187,14 +2179,14 @@ async function updateTradingPositionFromMarketData(posData, accountId) {
 
       // Frontend expects these field names
       netPos: posData.netPos,
-      netPrice: validateNetPrice(posData, symbol),
+      netPrice: posData.netPrice || posData.averagePrice || posData.entryPrice || 0,
       unrealizedPnL: posData.pnl || posData.unrealizedPnL || 0,
 
       // Trade-orchestrator additional fields
       netPosition: posData.netPos,
       side: posData.netPos > 0 ? 'long' : 'short',
-      entryPrice: validateNetPrice(posData, symbol),
-      currentPrice: posData.currentPrice || validateNetPrice(posData, symbol),
+      entryPrice: posData.netPrice || posData.averagePrice || posData.entryPrice || 0,
+      currentPrice: posData.currentPrice || 0,
 
       stopLossOrder: null,
       takeProfitOrder: null,
@@ -2550,9 +2542,13 @@ async function performInitialSync() {
     tradingState.orderRelationships.clear();
 
     // Get current dashboard data which includes positions and orders
-    const response = await fetch(`${monitoringBaseUrl}/api/dashboard`);
+    const response = await fetch(`${monitoringBaseUrl}/api/dashboard`, {
+      headers: {
+        'Authorization': `Bearer ${process.env.DASHBOARD_SECRET}`
+      }
+    });
     if (!response.ok) {
-      throw new Error(`Failed to fetch dashboard: ${response.status}`);
+      throw new Error(`Failed to fetch dashboard: ${response.status} ${response.statusText}`);
     }
 
     const dashboardData = await response.json();

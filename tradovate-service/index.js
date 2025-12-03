@@ -469,6 +469,20 @@ async function handlePositionUpdate() {
     for (const account of tradovateClient.accounts) {
       const positions = await tradovateClient.getPositions(account.id);
 
+      // Log the raw position data to see what Tradovate provides
+      if (positions && positions.length > 0) {
+        logger.info(`📊 Raw position data from Tradovate for account ${account.id}:`, JSON.stringify(positions[0]));
+
+        // Try to get more details about positions using /position/items
+        try {
+          const positionIds = positions.map(p => p.id);
+          const positionDetails = await tradovateClient.makeRequest('POST', '/position/items', { ids: positionIds });
+          logger.info(`📊 Detailed position data from /position/items:`, JSON.stringify(positionDetails));
+        } catch (error) {
+          logger.warn(`Could not fetch position details: ${error.message}`);
+        }
+      }
+
       await messageBus.publish(CHANNELS.POSITION_UPDATE, {
         accountId: account.id,
         accountName: account.name,
@@ -578,6 +592,92 @@ async function syncExistingData() {
         if (openPositions.length > 0) {
           logger.info(`📊 Syncing ${openPositions.length} open positions`);
 
+          // Get fills to calculate average entry price
+          let fillsData = [];
+          try {
+            // Get all fills for the account
+            fillsData = await tradovateClient.makeRequest('GET', `/fill/list?accountId=${account.id}`);
+            logger.info(`📊 Retrieved ${fillsData.length} total fills for account ${account.id}`);
+
+            // Log first few fills to see structure
+            if (fillsData.length > 0) {
+              logger.info(`📊 Sample fill data (first 2):`, JSON.stringify(fillsData.slice(0, 2), null, 2));
+            }
+          } catch (error) {
+            logger.error(`Failed to fetch fills: ${error.message}`);
+          }
+
+          // Calculate average entry price for each position from fills
+          const positionPrices = {};
+          for (const pos of openPositions) {
+            try {
+              // Filter fills for this contract
+              const contractFills = fillsData.filter(fill =>
+                fill.contractId === pos.contractId &&
+                fill.active === true
+              );
+
+              logger.info(`📊 Found ${contractFills.length} active fills for position ${pos.id} (contract ${pos.contractId})`);
+
+              if (contractFills.length > 0) {
+                // Sort fills by timestamp (most recent first)
+                const sortedFills = contractFills.sort((a, b) => {
+                  const timeA = new Date(a.timestamp || a.tradeDate || 0);
+                  const timeB = new Date(b.timestamp || b.tradeDate || 0);
+                  return timeB - timeA; // Most recent first
+                });
+
+                logger.info(`📊 Working backwards from ${sortedFills.length} fills to reconstruct current position of ${pos.netPos}`);
+
+                // Work backwards to reconstruct the current open position
+                let currentNetPos = 0;
+                const relevantFills = [];
+
+                for (const fill of sortedFills) {
+                  const qty = fill.qty || 0;
+                  const isBuy = fill.action === 'Buy';
+                  const signedQty = isBuy ? qty : -qty;
+
+                  logger.info(`  Fill: ${fill.action} (${isBuy ? 'BUY' : 'SELL'}) ${qty} @ ${fill.price} [Net: ${currentNetPos} → ${currentNetPos + signedQty}]`);
+
+                  relevantFills.push({ ...fill, signedQty });
+                  currentNetPos += signedQty;
+
+                  // Stop when we've reconstructed the current position
+                  if (Math.abs(currentNetPos) >= Math.abs(pos.netPos)) {
+                    logger.info(`📊 Reconstructed position: target=${pos.netPos}, current=${currentNetPos}`);
+                    break;
+                  }
+                }
+
+                // Calculate weighted average price from relevant fills only
+                let totalValue = 0;
+                let totalQuantity = 0;
+
+                for (const fill of relevantFills) {
+                  const qty = fill.qty || 0;
+                  const price = fill.price || 0;
+                  const isBuy = fill.action === 'Buy';
+
+                  if (isBuy) {
+                    totalValue += qty * price;
+                    totalQuantity += qty;
+                  } else {
+                    // For sells, subtract from both value and quantity
+                    totalValue -= qty * price;
+                    totalQuantity -= qty;
+                  }
+                }
+
+                const avgPrice = totalQuantity !== 0 ? Math.abs(totalValue / totalQuantity) : 0;
+                positionPrices[pos.contractId] = avgPrice;
+                logger.info(`📊 Calculated entry price from ${relevantFills.length} relevant fills: ${avgPrice.toFixed(2)}`);
+              }
+            } catch (error) {
+              logger.error(`Failed to calculate entry price for position ${pos.id}: ${error.message}`);
+            }
+          }
+
           // Resolve contract symbols for each position
           const enrichedPositions = [];
           for (const position of openPositions) {
@@ -594,7 +694,10 @@ async function syncExistingData() {
             enrichedPositions.push({
               ...position,
               symbol: symbol,
-              contractName: symbol
+              contractName: symbol,
+              netPrice: positionPrices[position.contractId] || 0,
+              averagePrice: positionPrices[position.contractId] || 0,
+              entryPrice: positionPrices[position.contractId] || 0
             });
           }
 
@@ -1219,12 +1322,25 @@ async function startup() {
           }
         }
 
+        // LOG EVERY SINGLE FIELD from execution report for analysis
+        logger.info(`🔬 COMPLETE EXECUTION REPORT ANALYSIS:`);
+        logger.info(`🔬 Raw execution object keys: ${Object.keys(execution).join(', ')}`);
+        for (const [key, value] of Object.entries(execution)) {
+          logger.info(`🔬 execution.${key} = ${value} (type: ${typeof value})`);
+        }
+
+        // The action is in execution.action field (Buy/Sell)
+        let action = execution.action || execution.side || execution.buySell || execution.orderSide || execution.direction;
+
+        logger.info(`🔍 Action determination: side=${execution.side}, action=${execution.action}, buySell=${execution.buySell}, orderSide=${execution.orderSide}, direction=${execution.direction}`);
+        logger.info(`🔍 Final action: ${action || 'UNDEFINED'}`);
+
         await messageBus.publish(CHANNELS.ORDER_FILLED, {
           orderId: execution.orderId,
           accountId: execution.accountId,
           contractId: execution.contractId,
           symbol: symbol,
-          action: execution.side,
+          action: action,  // Will be undefined if we can't determine it
           quantity: execution.cumQty,
           fillPrice: execution.avgPx || execution.price,
           status: 'filled',
