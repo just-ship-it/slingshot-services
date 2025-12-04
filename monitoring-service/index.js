@@ -432,7 +432,7 @@ app.post('/webhook', async (req, res) => {
   const startTime = Date.now();
 
   try {
-    logger.info(`Webhook received: ${req.id}`, {
+    logger.debug(`Webhook received: ${req.id}`, {
       headers: req.headers,
       bodySize: JSON.stringify(req.body).length
     });
