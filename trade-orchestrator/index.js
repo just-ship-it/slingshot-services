@@ -2677,6 +2677,8 @@ async function performInitialSync() {
 
   } catch (error) {
     logger.error('❌ Failed to perform initial sync:', error.message);
+    logger.error(error.message, error.message);
+    logger.error(error, error.message);
     // Continue startup even if sync fails - we'll get updates from live events
   }
 }
