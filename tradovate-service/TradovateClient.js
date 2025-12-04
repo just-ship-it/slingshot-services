@@ -1206,8 +1206,9 @@ class TradovateClient extends EventEmitter {
   handleWebSocketMessage(message) {
     // Handle different message types
     if (message.e === 'props') {
-      // Don't log kalshiMarket events to avoid spam
-      if (message.d.entityType !== 'kalshiMarket') {
+      // Don't log Kalshi events to avoid spam
+      const kalshiEvents = ['kalshiMarket', 'kalshiMilestone', 'kalshiStructuredTarget'];
+      if (!kalshiEvents.includes(message.d.entityType)) {
         this.logger.info(`🔄 WebSocket event: ${message.d.entityType} - ${message.d.eventType}`);
       }
       this.handleUserPropertyUpdate(message.d);
@@ -1254,11 +1255,12 @@ class TradovateClient extends EventEmitter {
   handleUserPropertyUpdate(data) {
     const { entity, entityType, eventType } = data;
 
-    // Special handling for Kalshi market data - infrastructure ready for future use
-    if (entityType === 'kalshiMarket') {
+    // Special handling for Kalshi data - infrastructure ready for future use
+    const kalshiEvents = ['kalshiMarket', 'kalshiMilestone', 'kalshiStructuredTarget'];
+    if (kalshiEvents.includes(entityType)) {
       // TODO: Future Kalshi market analysis and correlation features
-      // Silently process kalshiMarket events without any logging to avoid spam
-      // Available data: entity.title, entity.status, entity.result, entity.openTime/closeTime, entity.rulesPrimary
+      // Silently process Kalshi events without any logging to avoid spam
+      // Available data varies by type: entity.title, entity.status, entity.result, entity.openTime/closeTime, entity.rulesPrimary
     } else {
       // Log important trading events at info level, others at debug
       const importantTypes = ['order', 'fill', 'position', 'executionReport', 'orderStrategy'];
