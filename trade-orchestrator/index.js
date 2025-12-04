@@ -2531,7 +2531,7 @@ async function resolveSymbolFromContractId(contractId) {
 async function performInitialSync() {
   try {
     // The monitoring service has the most recent state from tradovate-service
-    const monitoringBaseUrl = 'http://localhost:3014'; // monitoring-service port
+    const monitoringBaseUrl = process.env.MONITORING_SERVICE_URL || 'http://localhost:3014';
 
     logger.info('📡 Fetching current trading state from monitoring service...');
 
@@ -2676,9 +2676,7 @@ async function performInitialSync() {
     logger.info(`✅ Initial sync complete: ${tradingState.tradingPositions.size} positions, ${tradingState.workingOrders.size} working orders`);
 
   } catch (error) {
-    logger.error('❌ Failed to perform initial sync:', error.message);
-    logger.error(error.message, error.message);
-    logger.error(error, error.message);
+    logger.error('❌ Failed to perform initial sync:', error.message);    
     // Continue startup even if sync fails - we'll get updates from live events
   }
 }
