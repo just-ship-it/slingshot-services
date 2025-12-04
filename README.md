@@ -4,13 +4,12 @@ A scalable microservices architecture for trading system operations, separating 
 
 ## Architecture Overview
 
-The system consists of 5 independent microservices that communicate via Redis pub/sub:
+The system consists of 4 independent microservices that communicate via Redis pub/sub:
 
-1. **Webhook Gateway** (Port 3010) - Fast webhook ingestion and routing
-2. **Tradovate Service** (Port 3011) - Manages all Tradovate API interactions
-3. **Market Data Service** (Port 3012) - Real-time price streaming and P&L calculations
-4. **Trade Orchestrator** (Port 3013) - Business logic and trade coordination
-5. **Monitoring Service** (Port 3014) - Data aggregation and dashboard APIs
+1. **Tradovate Service** (Port 3011) - Manages all Tradovate API interactions
+2. **Market Data Service** (Port 3012) - Real-time price streaming and P&L calculations
+3. **Trade Orchestrator** (Port 3013) - Business logic and trade coordination
+4. **Monitoring Service** (Port 3014) - Webhook ingestion, data aggregation and dashboard APIs
 
 ## Prerequisites
 
@@ -55,7 +54,6 @@ cd slingshot/services
 cd shared && npm install && cd ..
 
 # Install service dependencies
-cd webhook-gateway && npm install && cd ..
 cd tradovate-service && npm install && cd ..
 cd market-data-service && npm install && cd ..
 cd trade-orchestrator && npm install && cd ..
@@ -72,23 +70,19 @@ cd slingshot/services
 
 #### Option B: Start services individually
 ```bash
-# Terminal 1 - Webhook Gateway
-cd slingshot/services/webhook-gateway
-npm start
-
-# Terminal 2 - Tradovate Service
+# Terminal 1 - Tradovate Service
 cd slingshot/services/tradovate-service
 npm start
 
-# Terminal 3 - Market Data Service
+# Terminal 2 - Market Data Service
 cd slingshot/services/market-data-service
 npm start
 
-# Terminal 4 - Trade Orchestrator
+# Terminal 3 - Trade Orchestrator
 cd slingshot/services/trade-orchestrator
 npm start
 
-# Terminal 5 - Monitoring Service
+# Terminal 4 - Monitoring Service
 cd slingshot/services/monitoring-service
 npm start
 ```
@@ -115,7 +109,6 @@ pm2 restart all
 ## Service Endpoints
 
 ### Health Checks
-- Webhook Gateway: http://localhost:3010/health
 - Tradovate Service: http://localhost:3011/health
 - Market Data Service: http://localhost:3012/health
 - Trade Orchestrator: http://localhost:3013/health
@@ -123,9 +116,8 @@ pm2 restart all
 
 ### API Endpoints
 
-#### Webhook Gateway
-- `POST /webhook` - Receive trading webhooks
-- `POST /autotrader` - Legacy webhook endpoint
+#### Monitoring Service (Webhook Ingestion)
+- `POST /webhook` - Receive trading webhooks and quotes
 
 #### Tradovate Service
 - `GET /accounts` - List all accounts
@@ -152,16 +144,19 @@ pm2 restart all
 
 ## Testing Webhooks
 
-Send a test webhook to the gateway:
+Send a test webhook to the monitoring service:
 
 ```bash
-curl -X POST http://localhost:3010/webhook \
+curl -X POST http://localhost:3014/webhook \
   -H "Content-Type: application/json" \
   -d '{
-    "ticker": "MNQU24",
-    "action": "BUY",
-    "contracts": 2,
-    "order_type": "Market"
+    "webhook_type": "trade_signal",
+    "secret": "your_webhook_secret_here",
+    "action": "place_market",
+    "side": "buy",
+    "symbol": "NQ1!",
+    "quantity": 1,
+    "strategy": "TEST"
   }'
 ```
 
