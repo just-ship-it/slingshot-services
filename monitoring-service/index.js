@@ -381,7 +381,7 @@ const io = new Server(server, {
 
 // Socket.IO connection handling
 io.on('connection', (socket) => {
-  logger.info('New Socket.IO client connected');
+  logger.debug('New Socket.IO client connected');
 
   // Send current state to new client
   socket.emit('initial_state', {
@@ -400,16 +400,16 @@ io.on('connection', (socket) => {
   // Handle subscription requests
   socket.on('subscribe_account', (accountId) => {
     socket.join(`account_${accountId}`);
-    logger.info(`Client subscribed to account ${accountId}`);
+    logger.debug(`Client subscribed to account ${accountId}`);
   });
 
   socket.on('subscribe_quote', (symbol) => {
     socket.join(`quote_${symbol}`);
-    logger.info(`Client subscribed to quotes for ${symbol}`);
+    logger.debug(`Client subscribed to quotes for ${symbol}`);
   });
 
   socket.on('disconnect', (reason) => {
-    logger.info('Socket.IO client disconnected:', reason);
+    logger.debug('Socket.IO client disconnected:', reason);
   });
 
   socket.on('error', (error) => {
@@ -420,7 +420,7 @@ io.on('connection', (socket) => {
 // Broadcast to all Socket.IO clients
 function broadcast(eventName, data) {
   const clientCount = io.engine.clientsCount;
-  logger.info(`📡 Broadcasting ${eventName} to ${clientCount} connected clients`);
+  logger.debug(`📡 Broadcasting ${eventName} to ${clientCount} connected clients`);
   if (eventName === 'market_data') {
     logger.debug(`📊 Market data broadcast: ${data.baseSymbol || data.symbol} = ${data.close}`);
   }
@@ -463,7 +463,11 @@ app.post('/webhook', async (req, res) => {
     }
 
     const webhookType = detectWebhookType(req.body);
-    logger.info(`Detected webhook type: ${webhookType} for request ${req.id}`);
+    if (webhookType === 'trade_signal') {
+      logger.info(`Detected webhook type: ${webhookType} for request ${req.id}`);
+    } else {
+      logger.debug(`Detected webhook type: ${webhookType} for request ${req.id}`);
+    }
 
     // Prepare webhook message
     const webhookMessage = {
@@ -482,7 +486,7 @@ app.post('/webhook', async (req, res) => {
       switch(webhookType) {
         case 'quote':
           await messageBus.publish(CHANNELS.WEBHOOK_QUOTE, webhookMessage);
-          logger.info(`Quote webhook routed to market-data-service: ${req.id}`);
+          logger.debug(`Quote webhook routed to market-data-service: ${req.id}`);
           break;
 
         case 'trade_signal':
@@ -510,7 +514,11 @@ app.post('/webhook', async (req, res) => {
       processingTime: `${processingTime}ms`
     });
 
-    logger.info(`Webhook processed: ${req.id} (${webhookType}) in ${processingTime}ms`);
+    if (webhookType === 'trade_signal') {
+      logger.info(`Webhook processed: ${req.id} (${webhookType}) in ${processingTime}ms`);
+    } else {
+      logger.debug(`Webhook processed: ${req.id} (${webhookType}) in ${processingTime}ms`);
+    }
   } catch (error) {
     logger.error(`Error processing webhook: ${req.id}`, error);
     res.status(500).json({ error: 'Internal server error' });
@@ -826,14 +834,14 @@ app.post('/api/position-sizing/convert', dashboardAuth, (req, res) => {
 // Proxy endpoint to trade-orchestrator for active trading status
 app.get('/api/trading/active-status', dashboardAuth, async (req, res) => {
   try {
-    logger.info('🔄 Proxying request to trade-orchestrator...');
+    logger.debug('🔄 Proxying request to trade-orchestrator...');
 
     const tradeOrchestratorUrl = process.env.TRADE_ORCHESTRATOR_URL || 'http://localhost:3013';
     const response = await axios.get(`${tradeOrchestratorUrl}/api/trading/active-status`, {
       timeout: 5000
     });
 
-    logger.info('✅ Trade-orchestrator proxy response received');
+    logger.debug('✅ Trade-orchestrator proxy response received');
     res.json(response.data);
   } catch (error) {
     logger.error('❌ Trade-orchestrator proxy failed:', error.message);
@@ -866,14 +874,14 @@ app.get('/api/trading/active-status', dashboardAuth, async (req, res) => {
 // Trading control proxy endpoints
 app.get('/api/trading/status', dashboardAuth, async (req, res) => {
   try {
-    logger.info('🔄 Proxying trading status request to trade-orchestrator...');
+    logger.debug('🔄 Proxying trading status request to trade-orchestrator...');
 
     const tradeOrchestratorUrl = process.env.TRADE_ORCHESTRATOR_URL || 'http://localhost:3013';
     const response = await axios.get(`${tradeOrchestratorUrl}/trading/status`, {
       timeout: 5000
     });
 
-    logger.info('✅ Trading status response received');
+    logger.debug('✅ Trading status response received');
     res.json(response.data);
   } catch (error) {
     logger.error('❌ Trading status proxy failed:', error.message);
@@ -887,7 +895,7 @@ app.get('/api/trading/status', dashboardAuth, async (req, res) => {
 
 app.post('/api/trading/enable', dashboardAuth, async (req, res) => {
   try {
-    logger.info('🔄 Proxying trading enable request to trade-orchestrator...');
+    logger.debug('🔄 Proxying trading enable request to trade-orchestrator...');
 
     const tradeOrchestratorUrl = process.env.TRADE_ORCHESTRATOR_URL || 'http://localhost:3013';
     const response = await axios.post(`${tradeOrchestratorUrl}/trading/enable`, {}, {
@@ -908,7 +916,7 @@ app.post('/api/trading/enable', dashboardAuth, async (req, res) => {
 
 app.post('/api/trading/disable', dashboardAuth, async (req, res) => {
   try {
-    logger.info('🔄 Proxying trading disable request to trade-orchestrator...');
+    logger.debug('🔄 Proxying trading disable request to trade-orchestrator...');
 
     const tradeOrchestratorUrl = process.env.TRADE_ORCHESTRATOR_URL || 'http://localhost:3013';
     const response = await axios.post(`${tradeOrchestratorUrl}/trading/disable`, {}, {
@@ -930,14 +938,14 @@ app.post('/api/trading/disable', dashboardAuth, async (req, res) => {
 // Proxy endpoint to trade-orchestrator for enhanced trading status
 app.get('/api/trading/enhanced-status', dashboardAuth, async (req, res) => {
   try {
-    logger.info('🔄 Proxying enhanced status request to trade-orchestrator...');
+    logger.debug('🔄 Proxying enhanced status request to trade-orchestrator...');
 
     const tradeOrchestratorUrl = process.env.TRADE_ORCHESTRATOR_URL || 'http://localhost:3013';
     const response = await axios.get(`${tradeOrchestratorUrl}/api/trading/enhanced-status`, {
       timeout: 5000
     });
 
-    logger.info('✅ Enhanced trade-orchestrator proxy response received');
+    logger.debug('✅ Enhanced trade-orchestrator proxy response received');
     res.json(response.data);
   } catch (error) {
     logger.error('❌ Enhanced trade-orchestrator proxy failed:', error.message);
@@ -1043,11 +1051,11 @@ app.get('/api/services/:serviceName/health', dashboardAuth, async (req, res) => 
   }
 
   try {
-    logger.info(`🔄 Proxying health check to ${serviceName}...`);
+    logger.debug(`🔄 Proxying health check to ${serviceName}...`);
     const response = await axios.get(`${serviceUrl}/health`, {
       timeout: 5000
     });
-    logger.info(`✅ ${serviceName} health check proxy response received`);
+    logger.debug(`✅ ${serviceName} health check proxy response received`);
     res.json(response.data);
   } catch (error) {
     logger.error(`❌ ${serviceName} health check proxy failed:`, error.message);
@@ -1078,7 +1086,7 @@ app.all('/api/proxy/:serviceName/*', dashboardAuth, async (req, res) => {
   }
 
   try {
-    logger.info(`🔄 Proxying ${req.method} request to ${serviceName}/${path}...`);
+    logger.debug(`🔄 Proxying ${req.method} request to ${serviceName}/${path}...`);
 
     const axiosConfig = {
       method: req.method,
@@ -1092,7 +1100,7 @@ app.all('/api/proxy/:serviceName/*', dashboardAuth, async (req, res) => {
     }
 
     const response = await axios(axiosConfig);
-    logger.info(`✅ ${serviceName} proxy response received`);
+    logger.debug(`✅ ${serviceName} proxy response received`);
     res.status(response.status).json(response.data);
   } catch (error) {
     logger.error(`❌ ${serviceName} proxy failed:`, error.message);
@@ -1134,7 +1142,7 @@ function logActivity(type, message, data = {}) {
 
 // Message bus event handlers
 async function handleAccountUpdate(message) {
-  logger.info('📊 Received account update:', {
+  logger.debug('📊 Received account update:', {
     accountId: message.accountId,
     accountName: message.accountName,
     source: message.source || 'unknown',
@@ -1156,7 +1164,7 @@ async function handleAccountUpdate(message) {
   };
 
   monitoringState.accounts.set(message.accountId, account);
-  logger.info('💰 Account stored:', account);
+  logger.debug('💰 Account stored:', account);
 
   broadcast('account_update', account);
 
@@ -1164,7 +1172,7 @@ async function handleAccountUpdate(message) {
 }
 
 async function handlePositionUpdate(message) {
-  logger.info('📊 Received position update:', message);
+  logger.debug('📊 Received position update:', message);
 
   const positionKey = `${message.accountId}-${message.symbol || message.positionId}`;
 
@@ -1183,7 +1191,7 @@ async function handlePositionUpdate(message) {
         unrealizedPnL: pos.unrealizedPnL || pos.pnl || 0
       };
       monitoringState.positions.set(key, position);
-      logger.info(`📊 Position stored: ${key}`, position);
+      logger.debug(`📊 Position stored: ${key}`, position);
     });
   } else {
     // Single update
@@ -1200,7 +1208,7 @@ async function handlePositionUpdate(message) {
     };
 
     monitoringState.positions.set(positionKey, position);
-    logger.info(`📊 Single position stored: ${positionKey}`, position);
+    logger.debug(`📊 Single position stored: ${positionKey}`, position);
   }
 
   broadcast('position_update', message);
@@ -1209,7 +1217,7 @@ async function handlePositionUpdate(message) {
 }
 
 async function handlePriceUpdate(message) {
-  logger.info(`🔔 PRICE_UPDATE received: ${message.baseSymbol || message.symbol} = ${message.close} (source: ${message.source})`);
+  logger.debug(`🔔 PRICE_UPDATE received: ${message.baseSymbol || message.symbol} = ${message.close} (source: ${message.source})`);
 
   const quoteData = {
     symbol: message.symbol,
@@ -1236,7 +1244,7 @@ async function handlePriceUpdate(message) {
 }
 
 async function handleOrderUpdate(message) {
-  logger.info('📋 Received order update:', message);
+  logger.debug('📋 Received order update:', message);
 
   // Skip if no orderId - this would be invalid
   if (!message.orderId) {
@@ -1267,12 +1275,12 @@ async function handleOrderUpdate(message) {
   // Check if we already have this order (prevent duplicates)
   const existingOrder = monitoringState.orders.get(message.orderId);
   if (existingOrder) {
-    logger.info('📋 Order already exists, updating:', message.orderId);
+    logger.debug('📋 Order already exists, updating:', message.orderId);
     // Update existing order with new data
     const updatedOrder = { ...existingOrder, ...order };
     monitoringState.orders.set(message.orderId, updatedOrder);
   } else {
-    logger.info('📋 New order, adding to monitoring state:', message.orderId);
+    logger.debug('📋 New order, adding to monitoring state:', message.orderId);
     monitoringState.orders.set(message.orderId, order);
   }
 
@@ -1282,7 +1290,7 @@ async function handleOrderUpdate(message) {
 }
 
 async function handlePositionRealtimeUpdate(message) {
-  logger.info('📊 Received real-time position update:', message);
+  logger.debug('📊 Received real-time position update:', message);
 
   // Update monitoring state with real-time P&L data
   const positionKey = `${message.accountId}-${message.symbol}`;
@@ -1323,7 +1331,7 @@ async function handlePositionRealtimeUpdate(message) {
 }
 
 async function handleOrderRealtimeUpdate(message) {
-  logger.info('📋 Received real-time order update:', message);
+  logger.debug('📋 Received real-time order update:', message);
 
   // Update monitoring state with real-time market distance data
   const existingOrder = monitoringState.orders.get(message.orderId);

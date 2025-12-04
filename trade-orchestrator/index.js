@@ -769,7 +769,7 @@ app.get('/api/trading/enhanced-status', (req, res) => {
         pos.signalContext && pos.signalContext.signalId === order.signalId
       );
       if (signalHasPosition) {
-        logger.info(`🎯 Hiding order ${order.id} - signal ${order.signalId} already has position`);
+        logger.debug(`🎯 Hiding order ${order.id} - signal ${order.signalId} already has position`);
         return false; // Signal completed, position exists
       }
     }
@@ -1404,10 +1404,10 @@ function getBaseSymbol(contractSymbol) {
 
 // Calculate unrealized P&L for a position
 function calculateUnrealizedPnL(position, currentPrice) {
-  logger.info(`🧮 Calculating P&L: symbol=${position.symbol}, currentPrice=${currentPrice}, netPrice=${position.netPrice}, netPos=${position.netPos}`);
+  logger.debug(`🧮 Calculating P&L: symbol=${position.symbol}, currentPrice=${currentPrice}, netPrice=${position.netPrice}, netPos=${position.netPos}`);
 
   if (!currentPrice || position.netPos === 0) {
-    logger.info(`🧮 P&L calculation failed: currentPrice=${currentPrice}, netPos=${position.netPos}`);
+    logger.debug(`🧮 P&L calculation failed: currentPrice=${currentPrice}, netPos=${position.netPos}`);
     return 0;
   }
 
@@ -1426,7 +1426,7 @@ function calculateUnrealizedPnL(position, currentPrice) {
 
   const result = priceDiff * quantity * pointValue;
 
-  logger.info(`🧮 P&L calculation: ${position.netPos} ${position.symbol} @ ${entryPrice} → ${currentPrice} | diff=${priceDiff} × qty=${quantity} × pv=${pointValue} = $${result.toFixed(2)}`);
+  logger.debug(`🧮 P&L calculation: ${position.netPos} ${position.symbol} @ ${entryPrice} → ${currentPrice} | diff=${priceDiff} × qty=${quantity} × pv=${pointValue} = $${result.toFixed(2)}`);
 
   return result;
 }
@@ -1771,7 +1771,7 @@ async function updatePositionFromFill(fillMessage) {
     if (fillMessage.signalId) {
       signalContext = tradingState.signalContext.get(fillMessage.signalId);
       if (signalContext) {
-        logger.info(`📡 Found signal context via message signalId for ${fillMessage.orderId}: Signal ID ${fillMessage.signalId}`);
+        logger.debug(`📡 Found signal context via message signalId for ${fillMessage.orderId}: Signal ID ${fillMessage.signalId}`);
       }
     }
 
@@ -1781,7 +1781,7 @@ async function updatePositionFromFill(fillMessage) {
       if (signalId) {
         signalContext = tradingState.signalContext.get(signalId);
         if (signalContext) {
-          logger.info(`📡 Found signal context via SignalRegistry for ${fillMessage.orderId}: Signal ID ${signalId}`);
+          logger.debug(`📡 Found signal context via SignalRegistry for ${fillMessage.orderId}: Signal ID ${signalId}`);
         }
       }
     }
@@ -1792,7 +1792,7 @@ async function updatePositionFromFill(fillMessage) {
       if (workingOrder && workingOrder.signalId) {
         signalContext = tradingState.signalContext.get(workingOrder.signalId);
         if (signalContext) {
-          logger.info(`📡 Found signal context via working order for ${fillMessage.orderId}: Signal ID ${signalContext.signalId}`);
+          logger.debug(`📡 Found signal context via working order for ${fillMessage.orderId}: Signal ID ${signalContext.signalId}`);
         }
       }
     }
@@ -1811,7 +1811,7 @@ async function updatePositionFromFill(fillMessage) {
             contextData.symbol === symbol && // Same symbol
             Math.abs(contextData.price - fillMessage.fillPrice) < 10) { // Price within 10 points
           signalContext = contextData;
-          logger.info(`⚡ Found signal context via emergency price/time match: ${contextSignalId} (time diff: ${timeDiff}ms, price diff: ${Math.abs(contextData.price - fillMessage.fillPrice)})`);
+          logger.debug(`⚡ Found signal context via emergency price/time match: ${contextSignalId} (time diff: ${timeDiff}ms, price diff: ${Math.abs(contextData.price - fillMessage.fillPrice)})`);
 
           // Register this order with the signal for future lookups
           signalRegistry.linkOrderToSignal(fillMessage.orderId, contextSignalId, 'entry_order');
@@ -1829,7 +1829,7 @@ async function updatePositionFromFill(fillMessage) {
         if (order.symbol === symbol && (order.isOrderStrategy || order.strategyId) && order.signalId) {
           signalContext = tradingState.signalContext.get(order.signalId);
           if (signalContext) {
-            logger.info(`🔗 Found signal context via parent OrderStrategy ${orderId}: Signal ID ${order.signalId}`);
+            logger.debug(`🔗 Found signal context via parent OrderStrategy ${orderId}: Signal ID ${order.signalId}`);
             break;
           }
         }
@@ -1843,7 +1843,7 @@ async function updatePositionFromFill(fillMessage) {
         const strategySignalContext = tradingState.signalContext.get(strategyId);
         if (strategySignalContext) {
           signalContext = strategySignalContext;
-          logger.info(`📡 Found signal context via strategy ${strategyId} for order ${fillMessage.orderId}: Signal ID ${signalContext.signalId}`);
+          logger.debug(`📡 Found signal context via strategy ${strategyId} for order ${fillMessage.orderId}: Signal ID ${signalContext.signalId}`);
         }
       }
     }
@@ -2335,7 +2335,7 @@ async function handlePriceUpdate(message) {
 
       if (positionBaseSymbol === baseSymbol) {
         hasPositions = true;
-        logger.info(`🎯 MATCH! Processing P&L for ${position.symbol}: ${positionBaseSymbol} === ${baseSymbol}`);
+        logger.debug(`🎯 MATCH! Processing P&L for ${position.symbol}: ${positionBaseSymbol} === ${baseSymbol}`);
 
         // Calculate new P&L with updated price
         const unrealizedPnL = calculateUnrealizedPnL(position, currentPrice);
@@ -2345,8 +2345,8 @@ async function handlePriceUpdate(message) {
         position.unrealizedPnL = unrealizedPnL;
         position.lastUpdate = new Date().toISOString();
 
-        logger.info(`💰 Updated P&L for ${position.symbol}: ${position.netPos} @ ${position.netPrice} → current ${currentPrice} = $${unrealizedPnL.toFixed(2)}`);
-        logger.info(`✅ Position object after update: unrealizedPnL=${position.unrealizedPnL}, currentPrice=${position.currentPrice}`);
+        logger.debug(`💰 Updated P&L for ${position.symbol}: ${position.netPos} @ ${position.netPrice} → current ${currentPrice} = $${unrealizedPnL.toFixed(2)}`);
+        logger.debug(`✅ Position object after update: unrealizedPnL=${position.unrealizedPnL}, currentPrice=${position.currentPrice}`);
 
         // Broadcast real-time position update for dashboard
         await messageBus.publish(CHANNELS.POSITION_REALTIME_UPDATE, {
