@@ -2431,11 +2431,13 @@ async function handlePriceUpdate(message) {
 // Handle Tradovate sync completion to reconcile pending orders
 async function handleTradovateSyncCompleted(message) {
   try {
-    logger.info(`🔄 Tradovate sync completed with ${message.workingOrderIds.length} working orders`);
+    // Handle both old and new field names for compatibility
+    const workingOrderIds = message.validWorkingOrderIds || message.workingOrderIds || [];
+    logger.info(`🔄 Tradovate sync completed with ${workingOrderIds.length} working orders from source: ${message.source}`);
 
     // Get current pending order IDs from our state
     const currentPendingOrderIds = new Set(tradingState.workingOrders.keys());
-    const tradovateWorkingOrderIds = new Set(message.workingOrderIds);
+    const tradovateWorkingOrderIds = new Set(workingOrderIds);
 
     // Find orders that are no longer working in Tradovate but still in our state
     const staleOrderIds = [...currentPendingOrderIds].filter(orderId => !tradovateWorkingOrderIds.has(orderId));

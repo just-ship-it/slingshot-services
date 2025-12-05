@@ -1375,6 +1375,43 @@ async function handleOrderRealtimeUpdate(message) {
   logger.debug(`📡 Broadcast real-time order update for ${message.symbol}: ${message.action} @ ${message.price}, market: ${message.currentPrice}`);
 }
 
+async function handleTradovateSyncCompleted(message) {
+  try {
+    const { accountId, validWorkingOrderIds = [], source } = message;
+    logger.info(`🔄 Tradovate sync completed for account ${accountId} with ${validWorkingOrderIds.length} valid orders from ${source}`);
+
+    // Get all current orders for this account
+    const currentOrdersForAccount = Array.from(monitoringState.orders.values())
+      .filter(order => order.accountId === accountId);
+
+    const validOrderSet = new Set(validWorkingOrderIds);
+    let removedCount = 0;
+
+    // Remove any orders not in the valid list
+    for (const order of currentOrdersForAccount) {
+      if (!validOrderSet.has(order.id) && !validOrderSet.has(order.orderId)) {
+        logger.info(`🗑️ Removing stale order from monitoring: ${order.id} - ${order.symbol} ${order.action}`);
+        monitoringState.orders.delete(order.id);
+        removedCount++;
+      }
+    }
+
+    if (removedCount > 0) {
+      logger.info(`✅ Cleaned up ${removedCount} stale orders from monitoring state`);
+
+      // Broadcast update to connected clients
+      broadcast('orders', {
+        orders: Array.from(monitoringState.orders.values()),
+        source: 'sync_cleanup'
+      });
+    } else {
+      logger.info('✅ No stale orders found in monitoring state');
+    }
+  } catch (error) {
+    logger.error('Failed to handle Tradovate sync completion:', error);
+  }
+}
+
 async function handleServiceHealth(message) {
   monitoringState.services.set(message.service, {
     name: message.service,
@@ -1449,6 +1486,7 @@ async function startup() {
       [CHANNELS.ORDER_FILLED, handleOrderUpdate],
       [CHANNELS.ORDER_REJECTED, handleOrderUpdate],
       [CHANNELS.ORDER_REALTIME_UPDATE, handleOrderRealtimeUpdate],
+      [CHANNELS.TRADOVATE_SYNC_COMPLETED, handleTradovateSyncCompleted],
       [CHANNELS.SERVICE_HEALTH, handleServiceHealth],
       [CHANNELS.SERVICE_STARTED, handleServiceStarted],
       [CHANNELS.SERVICE_STOPPED, handleServiceStopped],

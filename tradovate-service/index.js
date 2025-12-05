@@ -856,9 +856,12 @@ async function performFullSync(options = {}) {
       }
       syncStats.signalMappingsRemoved += cleanedMappings;
 
-      // Step 4: Publish fresh working orders
+      // Step 4: Collect all valid working order IDs for this account
+      const validOrderIds = [];
+
       for (const order of workingOrders) {
         syncStats.ordersReconciled++;
+        validOrderIds.push(order.id);
 
         if (!dryRun) {
           await messageBus.publish(CHANNELS.ORDER_PLACED, {
@@ -881,6 +884,19 @@ async function performFullSync(options = {}) {
         }
 
         logger.debug(`📋 ${dryRun ? '[DRY RUN] Would reconcile' : 'Reconciled'} working order: ${order.id} - ${order.action} ${order.symbol || order.contractName}`);
+      }
+
+      // Step 4b: Publish a sync completed event for this account with valid order IDs
+      // This allows downstream services to clean up any orders not in this list
+      if (!dryRun) {
+        await messageBus.publish(CHANNELS.TRADOVATE_SYNC_COMPLETED, {
+          accountId: account.id,
+          validWorkingOrderIds: validOrderIds,
+          timestamp: new Date().toISOString(),
+          source: 'full_sync_reconciliation'
+        });
+
+        logger.info(`📋 Published sync completion for account ${account.id} with ${validOrderIds.length} valid working orders`);
       }
 
       // Step 5: Reconcile positions
