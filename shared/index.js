@@ -50,7 +50,10 @@ export const CHANNELS = {
   SERVICE_STOPPED: 'service.stopped',
 
   // Tradovate sync events
-  TRADOVATE_SYNC_COMPLETED: 'tradovate_sync_completed'
+  TRADOVATE_SYNC_COMPLETED: 'tradovate_sync_completed',
+  TRADOVATE_FULL_SYNC_REQUESTED: 'tradovate_full_sync_requested',
+  TRADOVATE_FULL_SYNC_STARTED: 'tradovate_full_sync_started',
+  TRADOVATE_FULL_SYNC_COMPLETED: 'tradovate_full_sync_completed'
 };
 
 // Service health check helper

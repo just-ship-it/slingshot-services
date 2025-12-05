@@ -110,6 +110,60 @@ app.get('/balance/:accountId', async (req, res) => {
   }
 });
 
+// Full sync endpoints
+app.post('/sync/full', async (req, res) => {
+  try {
+    const { dryRun = false, reason = 'manual_api_request' } = req.body;
+
+    logger.info(`🔄 Full sync triggered via API (dryRun: ${dryRun}, reason: ${reason})`);
+
+    const stats = await performFullSync({
+      dryRun,
+      requestedBy: 'api_endpoint',
+      reason
+    });
+
+    res.json({
+      success: true,
+      stats,
+      message: dryRun ? 'Dry run completed successfully' : 'Full sync completed successfully'
+    });
+  } catch (error) {
+    logger.error('Full sync API failed:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+// Trigger full sync via message bus (for remote triggering)
+app.post('/sync/trigger', async (req, res) => {
+  try {
+    const { dryRun = false, reason = 'manual_trigger', requestedBy = 'api' } = req.body;
+
+    logger.info(`🔄 Publishing full sync request (dryRun: ${dryRun}, reason: ${reason})`);
+
+    await messageBus.publish(CHANNELS.TRADOVATE_FULL_SYNC_REQUESTED, {
+      dryRun,
+      reason,
+      requestedBy,
+      timestamp: new Date().toISOString()
+    });
+
+    res.json({
+      success: true,
+      message: 'Full sync request published to message bus'
+    });
+  } catch (error) {
+    logger.error('Failed to trigger full sync:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
 // Message bus event handlers
 async function handleOrderRequest(message) {
   try {
@@ -718,6 +772,328 @@ async function syncExistingData() {
   } catch (error) {
     logger.error('❌ Failed to sync existing data:', error);
   }
+}
+
+// Comprehensive full re-sync function to reconcile trading state with Tradovate
+// Handles stale orders, archived orders, and position discrepancies
+async function performFullSync(options = {}) {
+  const {
+    dryRun = false,
+    requestedBy = 'system',
+    reason = 'manual_request'
+  } = options;
+
+  const syncStats = {
+    startTime: new Date().toISOString(),
+    endTime: null,
+    accountsProcessed: 0,
+    ordersFound: 0,
+    ordersReconciled: 0,
+    ordersRemoved: 0,
+    positionsFound: 0,
+    positionsReconciled: 0,
+    signalMappingsRemoved: 0,
+    errors: [],
+    dryRun: dryRun
+  };
+
+  try {
+    logger.info(`🔄 Starting full sync (${dryRun ? 'DRY RUN' : 'LIVE'}) - requested by: ${requestedBy}, reason: ${reason}`);
+
+    await messageBus.publish(CHANNELS.TRADOVATE_FULL_SYNC_STARTED, {
+      requestedBy,
+      reason,
+      dryRun,
+      timestamp: syncStats.startTime
+    });
+
+    // Get fresh account list
+    await tradovateClient.loadAccounts();
+    const accounts = tradovateClient.accounts;
+
+    if (!accounts || accounts.length === 0) {
+      throw new Error('No accounts available for sync');
+    }
+
+    for (const account of accounts) {
+      syncStats.accountsProcessed++;
+      logger.info(`📋 Full sync for account: ${account.name} (${account.id})`);
+
+      // Step 1: Get ground truth from Tradovate
+      const [freshOrders, freshPositions] = await Promise.all([
+        tradovateClient.getOrders(account.id, true), // enriched
+        tradovateClient.getPositions(account.id)
+      ]);
+
+      syncStats.ordersFound += freshOrders.length;
+      syncStats.positionsFound += freshPositions.length;
+
+      logger.info(`📊 Tradovate ground truth: ${freshOrders.length} orders, ${freshPositions.length} positions`);
+
+      // Step 2: Reconcile orders - identify truly working vs archived/stale
+      const workingOrders = freshOrders.filter(order =>
+        order.ordStatus === 'Working' || order.ordStatus === 'Pending'
+      );
+
+      const completedOrders = freshOrders.filter(order =>
+        order.ordStatus === 'Filled' ||
+        order.ordStatus === 'Cancelled' ||
+        order.ordStatus === 'Rejected'
+      );
+
+      logger.info(`📊 Order breakdown: ${workingOrders.length} working, ${completedOrders.length} completed`);
+
+      // Step 3: Clean up signal mappings for completed orders
+      let cleanedMappings = 0;
+      for (const order of completedOrders) {
+        if (orderSignalMap.has(order.id)) {
+          if (!dryRun) {
+            orderSignalMap.delete(order.id);
+          }
+          cleanedMappings++;
+          logger.info(`🧹 ${dryRun ? '[DRY RUN] Would remove' : 'Removed'} signal mapping for completed order ${order.id}`);
+        }
+      }
+      syncStats.signalMappingsRemoved += cleanedMappings;
+
+      // Step 4: Publish fresh working orders
+      for (const order of workingOrders) {
+        syncStats.ordersReconciled++;
+
+        if (!dryRun) {
+          await messageBus.publish(CHANNELS.ORDER_PLACED, {
+            orderId: order.id,
+            accountId: account.id,
+            symbol: order.symbol || order.contractName,
+            action: order.action,
+            quantity: order.qty || order.orderQty,
+            orderType: order.orderType,
+            price: order.price || order.limitPrice,
+            stopPrice: order.stopPrice,
+            contractId: order.contractId,
+            contractName: order.contractName,
+            tickSize: order.tickSize,
+            status: 'working',
+            orderStatus: order.ordStatus,
+            timestamp: new Date().toISOString(),
+            source: 'full_sync'
+          });
+        }
+
+        logger.debug(`📋 ${dryRun ? '[DRY RUN] Would reconcile' : 'Reconciled'} working order: ${order.id} - ${order.action} ${order.symbol || order.contractName}`);
+      }
+
+      // Step 5: Reconcile positions
+      const openPositions = freshPositions.filter(pos => pos.netPos !== 0);
+
+      for (const position of openPositions) {
+        syncStats.positionsReconciled++;
+
+        // Get contract details for enrichment
+        let symbol = `CONTRACT_${position.contractId}`;
+        try {
+          const contractDetails = await tradovateClient.getContractDetails(position.contractId);
+          symbol = contractDetails.name || contractDetails.symbol || symbol;
+        } catch (error) {
+          logger.warn(`Failed to resolve contract ${position.contractId}: ${error.message}`);
+        }
+
+        if (!dryRun) {
+          await messageBus.publish(CHANNELS.POSITION_UPDATE, {
+            accountId: account.id,
+            contractId: position.contractId,
+            symbol: symbol,
+            netPos: position.netPos,
+            side: position.netPos > 0 ? 'long' : 'short',
+            timestamp: new Date().toISOString(),
+            source: 'full_sync'
+          });
+        }
+
+        logger.debug(`📊 ${dryRun ? '[DRY RUN] Would reconcile' : 'Reconciled'} position: ${symbol} netPos=${position.netPos}`);
+      }
+    }
+
+    syncStats.endTime = new Date().toISOString();
+
+    logger.info(`✅ Full sync ${dryRun ? '(DRY RUN) ' : ''}completed successfully`);
+    logger.info(`📊 Sync stats: ${syncStats.accountsProcessed} accounts, ${syncStats.ordersReconciled} orders, ${syncStats.positionsReconciled} positions, ${syncStats.signalMappingsRemoved} mappings cleaned`);
+
+    // Publish completion event
+    await messageBus.publish(CHANNELS.TRADOVATE_FULL_SYNC_COMPLETED, {
+      requestedBy,
+      reason,
+      stats: syncStats,
+      success: true,
+      timestamp: syncStats.endTime
+    });
+
+    return syncStats;
+
+  } catch (error) {
+    syncStats.errors.push(error.message);
+    syncStats.endTime = new Date().toISOString();
+
+    logger.error(`❌ Full sync failed: ${error.message}`);
+
+    await messageBus.publish(CHANNELS.TRADOVATE_FULL_SYNC_COMPLETED, {
+      requestedBy,
+      reason,
+      stats: syncStats,
+      success: false,
+      error: error.message,
+      timestamp: syncStats.endTime
+    });
+
+    throw error;
+  }
+}
+
+// Handle full sync requests
+async function handleFullSyncRequest(message) {
+  const { requestedBy = 'unknown', reason = 'unknown', dryRun = false } = message;
+
+  logger.info(`🔄 Received full sync request from ${requestedBy} (reason: ${reason}, dryRun: ${dryRun})`);
+
+  try {
+    await performFullSync({ requestedBy, reason, dryRun });
+  } catch (error) {
+    logger.error(`❌ Failed to handle full sync request: ${error.message}`);
+  }
+}
+
+// Scheduled sync functionality
+let scheduledSyncInterval = null;
+
+function startScheduledSync(intervalHours = 6, enabled = true) {
+  if (!enabled) {
+    logger.info('📅 Scheduled sync is disabled');
+    return;
+  }
+
+  // Clear any existing interval
+  if (scheduledSyncInterval) {
+    clearInterval(scheduledSyncInterval);
+  }
+
+  const intervalMs = intervalHours * 60 * 60 * 1000; // Convert hours to milliseconds
+
+  logger.info(`📅 Starting scheduled full sync every ${intervalHours} hours`);
+
+  scheduledSyncInterval = setInterval(async () => {
+    try {
+      logger.info('📅 Triggering scheduled full sync...');
+
+      await performFullSync({
+        requestedBy: 'scheduler',
+        reason: 'scheduled_interval',
+        dryRun: false
+      });
+
+      logger.info('✅ Scheduled full sync completed successfully');
+    } catch (error) {
+      logger.error(`❌ Scheduled full sync failed: ${error.message}`);
+    }
+  }, intervalMs);
+
+  logger.info(`📅 Next scheduled sync in ${intervalHours} hours`);
+}
+
+function stopScheduledSync() {
+  if (scheduledSyncInterval) {
+    clearInterval(scheduledSyncInterval);
+    scheduledSyncInterval = null;
+    logger.info('📅 Scheduled sync stopped');
+  }
+}
+
+// Market hours based sync - trigger sync after market close and before market open
+function startMarketHoursSync(enabled = false) {
+  if (!enabled) {
+    logger.info('📅 Market hours sync is disabled');
+    return;
+  }
+
+  logger.info('📅 Setting up market hours sync (after close: 5:15pm EST, before open: 5:45pm EST)');
+
+  // Schedule for 5:15 PM EST (after futures close at 5:00 PM EST)
+  const scheduleAfterClose = () => {
+    const now = new Date();
+    const target = new Date(now);
+
+    // Set to 5:15 PM EST (convert to local time if needed)
+    target.setHours(17, 15, 0, 0); // 5:15 PM
+
+    // If it's already past 5:15 PM today, schedule for tomorrow
+    if (now > target) {
+      target.setDate(target.getDate() + 1);
+    }
+
+    const timeout = target.getTime() - now.getTime();
+
+    logger.info(`📅 Scheduled post-close sync for: ${target.toLocaleString()}`);
+
+    setTimeout(async () => {
+      try {
+        logger.info('📅 Triggering post-market-close sync...');
+
+        await performFullSync({
+          requestedBy: 'market_scheduler',
+          reason: 'post_market_close',
+          dryRun: false
+        });
+
+        // Schedule the next one
+        scheduleAfterClose();
+
+      } catch (error) {
+        logger.error(`❌ Post-market-close sync failed: ${error.message}`);
+        // Still schedule the next one
+        scheduleAfterClose();
+      }
+    }, timeout);
+  };
+
+  // Schedule for 5:45 PM EST (before futures reopen at 6:00 PM EST)
+  const scheduleBeforeOpen = () => {
+    const now = new Date();
+    const target = new Date(now);
+
+    // Set to 5:45 PM EST
+    target.setHours(17, 45, 0, 0); // 5:45 PM
+
+    // If it's already past 5:45 PM today, schedule for tomorrow
+    if (now > target) {
+      target.setDate(target.getDate() + 1);
+    }
+
+    const timeout = target.getTime() - now.getTime();
+
+    logger.info(`📅 Scheduled pre-open sync for: ${target.toLocaleString()}`);
+
+    setTimeout(async () => {
+      try {
+        logger.info('📅 Triggering pre-market-open sync...');
+
+        await performFullSync({
+          requestedBy: 'market_scheduler',
+          reason: 'pre_market_open',
+          dryRun: false
+        });
+
+        // Schedule the next one
+        scheduleBeforeOpen();
+
+      } catch (error) {
+        logger.error(`❌ Pre-market-open sync failed: ${error.message}`);
+        // Still schedule the next one
+        scheduleBeforeOpen();
+      }
+    }, timeout);
+  };
+
+  scheduleAfterClose();
+  scheduleBeforeOpen();
 }
 
 // Handle webhook trade signals from TradingView
@@ -1662,6 +2038,22 @@ async function startup() {
       await syncExistingData();
 
       logger.info('Initial data sync completed');
+
+      // Initialize scheduled sync functionality
+      // Can be configured via environment variables
+      const syncIntervalHours = parseInt(process.env.SYNC_INTERVAL_HOURS) || 6;
+      const enableScheduledSync = process.env.ENABLE_SCHEDULED_SYNC !== 'false'; // Default enabled
+      const enableMarketHoursSync = process.env.ENABLE_MARKET_HOURS_SYNC === 'true'; // Default disabled
+
+      if (enableScheduledSync) {
+        logger.info(`🔄 Enabling scheduled sync every ${syncIntervalHours} hours`);
+        startScheduledSync(syncIntervalHours, true);
+      }
+
+      if (enableMarketHoursSync) {
+        logger.info('🔄 Enabling market hours sync (5:15pm & 5:45pm EST)');
+        startMarketHoursSync(true);
+      }
     } else {
       logger.warn('Tradovate credentials not configured');
     }
@@ -1676,6 +2068,10 @@ async function startup() {
     // Subscribe to account sync requests
     await messageBus.subscribe('account.sync.request', handleAccountSyncRequest);
     logger.info('Subscribed to account.sync.request');
+
+    // Subscribe to full sync requests
+    await messageBus.subscribe(CHANNELS.TRADOVATE_FULL_SYNC_REQUESTED, handleFullSyncRequest);
+    logger.info(`Subscribed to ${CHANNELS.TRADOVATE_FULL_SYNC_REQUESTED}`);
 
     // Publish startup event
     await messageBus.publish(CHANNELS.SERVICE_STARTED, {
