@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { EventEmitter } from 'events';
 import WebSocket from 'ws';
-import nodemailer from 'nodemailer';
+import { Resend } from 'resend';
 
 class TradovateClient extends EventEmitter {
   constructor(config, logger) {
@@ -16,6 +16,17 @@ class TradovateClient extends EventEmitter {
     this.isConnected = false;
     this.rateLimitTracker = new Map();
     this.maxRequestsPerSecond = 10;
+
+    // Define active order statuses that need to be cancelled during liquidation
+    // These are orders that are still "alive" and could prevent position closure
+    this.ACTIVE_ORDER_STATUSES = [
+      'Working',      // Order is active at the exchange
+      'Pending',      // Order pending exchange confirmation
+      'PendingNew',   // New order pending submission
+      'Suspended',    // Order suspended but can become active (e.g., OSO/OCO legs)
+      'PendingReplace', // Order modification pending
+      'PendingCancel'   // Cancellation pending (might still fill)
+    ];
 
     // WebSocket properties
     this.ws = null;
@@ -599,6 +610,112 @@ class TradovateClient extends EventEmitter {
     }
   }
 
+  // Helper method to explicitly cancel all orders for a contract
+  async cancelAllOrdersForContract(accountId, contractId) {
+    try {
+      this.logger.info(`🎯 Explicitly cancelling all orders for contract ${contractId}`);
+
+      // Get all orders for this account
+      const orders = await this.makeRequest('GET', `/order/list?accountId=${accountId}`);
+      const activeOrdersForContract = (orders || []).filter(order =>
+        order.contractId === contractId &&
+        this.ACTIVE_ORDER_STATUSES.includes(order.ordStatus)
+      );
+
+      if (activeOrdersForContract.length === 0) {
+        this.logger.info(`✅ No active orders to cancel for contract ${contractId}`);
+        return { success: true, cancelledCount: 0, failedOrders: [] };
+      }
+
+      this.logger.info(`📋 Found ${activeOrdersForContract.length} active orders to cancel`);
+
+      // First, try to identify and cancel parent orders (OSO/OCO strategies)
+      const parentOrders = [];
+      const childOrders = [];
+      const standaloneOrders = [];
+
+      for (const order of activeOrdersForContract) {
+        // Check if this is part of an order strategy
+        if (order.orderStrategyId) {
+          // This is a child order of a strategy
+          childOrders.push(order);
+        } else if (order.ocoId || order.osoId) {
+          // This might be a parent or linked order
+          parentOrders.push(order);
+        } else {
+          // Standalone order
+          standaloneOrders.push(order);
+        }
+
+        // Log detailed order information for debugging
+        this.logger.info(`📄 Order ${order.id}: Status=${order.ordStatus}, Type=${order.orderType || 'Unknown'}, Strategy=${order.orderStrategyId || 'None'}`);
+      }
+
+      const cancelledOrders = [];
+      const failedOrders = [];
+
+      // Cancel in order: parent orders first, then standalone, then children
+      const ordersToCancel = [...parentOrders, ...standaloneOrders, ...childOrders];
+
+      for (const order of ordersToCancel) {
+        try {
+          this.logger.info(`🚫 Cancelling order ${order.id} (${order.ordStatus})`);
+
+
+          // Only try to cancel if the status suggests it's cancellable
+          const cancellableStatuses = ['Working', 'Suspended', 'Pending', 'PendingNew'];
+          if (!cancellableStatuses.includes(order.ordStatus)) {
+            this.logger.warn(`⚠️ Order ${order.id} has status ${order.ordStatus} - may not be cancellable`);
+          }
+
+          const cancelResult = await this.cancelOrder(order.id);
+
+          if (cancelResult) {
+            this.logger.info(`✅ Successfully cancelled order ${order.id}`);
+            cancelledOrders.push(order.id);
+          } else {
+            this.logger.warn(`⚠️ Cancel request for order ${order.id} returned no result`);
+            failedOrders.push({ orderId: order.id, reason: 'No result from cancel API' });
+          }
+
+          // Small delay to avoid rate limiting
+          await new Promise(resolve => setTimeout(resolve, 100));
+
+        } catch (cancelError) {
+          this.logger.error(`❌ Failed to cancel order ${order.id}: ${cancelError.message}`);
+          failedOrders.push({
+            orderId: order.id,
+            status: order.ordStatus,
+            reason: cancelError.message
+          });
+        }
+      }
+
+      // Check if all orders were cancelled
+      const allCancelled = failedOrders.length === 0;
+
+      if (allCancelled) {
+        this.logger.info(`✅ Successfully cancelled all ${cancelledOrders.length} orders for contract ${contractId}`);
+      } else {
+        this.logger.warn(`⚠️ Cancelled ${cancelledOrders.length} orders, but ${failedOrders.length} orders failed to cancel`);
+        failedOrders.forEach(failed => {
+          this.logger.error(`  Failed order ${failed.orderId}: ${failed.reason}`);
+        });
+      }
+
+      return {
+        success: allCancelled,
+        cancelledCount: cancelledOrders.length,
+        failedOrders: failedOrders,
+        totalOrders: activeOrdersForContract.length
+      };
+
+    } catch (error) {
+      this.logger.error(`❌ Error in cancelAllOrdersForContract: ${error.message}`);
+      throw error;
+    }
+  }
+
   // Helper method to wait for liquidation completion
   async waitForLiquidationComplete(accountId, contractId, options = {}) {
     const {
@@ -609,6 +726,7 @@ class TradovateClient extends EventEmitter {
 
     const startTime = Date.now();
     let retryCount = 0;
+    let useExplicitCancellation = false;  // Flag to trigger explicit order cancellation
 
     while (Date.now() - startTime < maxPollTime) {
       try {
@@ -616,10 +734,11 @@ class TradovateClient extends EventEmitter {
 
         // Check for open orders on this contract
         const orders = await this.makeRequest('GET', `/order/list?accountId=${accountId}`);
-        const openOrdersForContract = (orders || []).filter(order =>
+        let openOrdersForContract = (orders || []).filter(order =>
           order.contractId === contractId &&
-          (order.ordStatus === 'Working' || order.ordStatus === 'Pending')
+          this.ACTIVE_ORDER_STATUSES.includes(order.ordStatus)
         );
+
 
         // Check position for this contract
         const positions = await this.makeRequest('GET', `/position/list?accountId=${accountId}`);
@@ -631,28 +750,79 @@ class TradovateClient extends EventEmitter {
         // Success condition: no open orders AND zero net position
         if (openOrdersForContract.length === 0 && netPosition === 0) {
           this.logger.info(`✅ Liquidation verified complete for contract ${contractId}`);
-          return true;
+          return { success: true, retries: retryCount };
         }
 
         // If we still have open orders or position, retry liquidation if within retry limit
         if (openOrdersForContract.length > 0 || netPosition !== 0) {
           if (retryCount < maxRetries) {
-            this.logger.warn(`⚠️ Incomplete liquidation detected. Orders: ${openOrdersForContract.length}, Position: ${netPosition}. Retrying liquidation (${retryCount + 1}/${maxRetries})`);
+            this.logger.warn(`⚠️ Incomplete liquidation detected. Orders: ${openOrdersForContract.length}, Position: ${netPosition}. Retry ${retryCount + 1}/${maxRetries}`);
 
             // Log details of remaining orders
             if (openOrdersForContract.length > 0) {
+              this.logger.info(`📋 Remaining orders details:`);
               openOrdersForContract.forEach(order => {
-                this.logger.info(`📋 Remaining order: ${order.id} - ${order.ordStatus} - ${order.action || 'Unknown'}`);
+                this.logger.info(`  • Order ${order.id}: Status=${order.ordStatus}, Type=${order.orderType || 'Unknown'}, Action=${order.action || 'Unknown'}`);
               });
             }
 
-            // Retry liquidation
-            await this.makeRequest('POST', '/order/liquidateposition', {
-              accountId: accountId,
-              contractId: contractId,
-              admin: false
-            });
+            // On second retry and beyond, try explicit order cancellation first
+            if (retryCount >= 1 && openOrdersForContract.length > 0) {
+              this.logger.info(`🎯 Attempting explicit order cancellation before retry ${retryCount + 1}`);
+
+              try {
+                const cancelResult = await this.cancelAllOrdersForContract(accountId, contractId);
+
+                if (cancelResult.success) {
+                  this.logger.info(`✅ Successfully cancelled all ${cancelResult.cancelledCount} orders`);
+                } else {
+                  this.logger.warn(`⚠️ Partial cancellation: ${cancelResult.cancelledCount} cancelled, ${cancelResult.failedOrders.length} failed`);
+
+                  // Log failed orders for debugging
+                  if (cancelResult.failedOrders.length > 0) {
+                    this.logger.error(`❌ Failed to cancel the following orders:`);
+                    cancelResult.failedOrders.forEach(failed => {
+                      this.logger.error(`  • Order ${failed.orderId} (${failed.status}): ${failed.reason}`);
+                    });
+                  }
+                }
+
+                // Wait a bit for cancellations to process
+                await new Promise(resolve => setTimeout(resolve, 2000));
+
+              } catch (cancelError) {
+                this.logger.error(`❌ Error during explicit order cancellation: ${cancelError.message}`);
+              }
+            }
+
+            // Retry liquidation API call
+            this.logger.info(`🔄 Retrying liquidatePosition API call (attempt ${retryCount + 1})`);
+
+            try {
+              await this.makeRequest('POST', '/order/liquidateposition', {
+                accountId: accountId,
+                contractId: contractId,
+                admin: false
+              });
+              this.logger.info(`📤 Liquidation retry ${retryCount + 1} sent successfully`);
+            } catch (liquidateError) {
+              this.logger.error(`❌ Liquidation retry ${retryCount + 1} failed: ${liquidateError.message}`);
+            }
+
             retryCount++;
+          } else {
+            // Max retries exceeded - prepare detailed error information
+            this.logger.error(`❌ Max retries (${maxRetries}) exceeded. Liquidation incomplete.`);
+
+            const failedOrderDetails = openOrdersForContract.map(order => ({
+              id: order.id,
+              status: order.ordStatus,
+              type: order.orderType,
+              action: order.action
+            }));
+
+            // This will trigger the alert
+            throw new Error(`Liquidation failed after ${maxRetries} retries. ${openOrdersForContract.length} orders remain open, position: ${netPosition}`);
           }
         }
 
@@ -660,27 +830,34 @@ class TradovateClient extends EventEmitter {
         await new Promise(resolve => setTimeout(resolve, pollInterval));
 
       } catch (error) {
+        // If it's our deliberate error, re-throw it
+        if (error.message.includes('Liquidation failed after')) {
+          throw error;
+        }
+
         this.logger.error(`Error during liquidation verification: ${error.message}`);
         // Continue polling unless this is a critical error
         await new Promise(resolve => setTimeout(resolve, pollInterval));
       }
     }
 
-    // Timeout reached - check final status
+    // Timeout reached - check final status and prepare detailed error
     try {
       const orders = await this.makeRequest('GET', `/order/list?accountId=${accountId}`);
       const openOrdersForContract = (orders || []).filter(order =>
         order.contractId === contractId &&
-        (order.ordStatus === 'Working' || order.ordStatus === 'Pending')
+        this.ACTIVE_ORDER_STATUSES.includes(order.ordStatus)
       );
 
       const positions = await this.makeRequest('GET', `/position/list?accountId=${accountId}`);
       const positionForContract = (positions || []).find(position => position.contractId === contractId);
       const netPosition = positionForContract ? positionForContract.netPos : 0;
 
-      throw new Error(`Liquidation timeout after ${maxPollTime}ms. Remaining orders: ${openOrdersForContract.length}, Net position: ${netPosition}`);
+      // Include order IDs in the error for manual intervention
+      const orderIds = openOrdersForContract.map(o => o.id).join(', ');
+      throw new Error(`Liquidation timeout after ${maxPollTime}ms. Remaining orders: ${openOrdersForContract.length} (IDs: ${orderIds}), Net position: ${netPosition}`);
     } catch (statusError) {
-      throw new Error(`Liquidation verification failed: ${statusError.message}`);
+      throw statusError;
     }
   }
 
@@ -694,7 +871,7 @@ class TradovateClient extends EventEmitter {
       const initialOrders = await this.makeRequest('GET', `/order/list?accountId=${accountId}`);
       const initialOrdersForContract = (initialOrders || []).filter(order =>
         order.contractId === contractId &&
-        (order.ordStatus === 'Working' || order.ordStatus === 'Pending')
+        this.ACTIVE_ORDER_STATUSES.includes(order.ordStatus)
       );
 
       const initialPositions = await this.makeRequest('GET', `/position/list?accountId=${accountId}`);
@@ -720,17 +897,21 @@ class TradovateClient extends EventEmitter {
       this.logger.info('📤 Liquidation request sent to Tradovate:', response);
 
       // Wait for liquidation to complete with polling
-      await this.waitForLiquidationComplete(accountId, contractId, options);
+      const verificationResult = await this.waitForLiquidationComplete(accountId, contractId, options);
 
-      this.logger.info(`✅ Position liquidated and verified complete for contract ${contractId}`);
-      this.emit('positionLiquidated', { accountId, contractId, response, verified: true });
-      return { ...response, verified: true };
+      this.logger.info(`✅ Position liquidated and verified complete for contract ${contractId} after ${verificationResult.retries} retries`);
+      this.emit('positionLiquidated', { accountId, contractId, response, verified: true, retries: verificationResult.retries });
+      return { ...response, verified: true, retries: verificationResult.retries };
 
     } catch (error) {
       this.logger.error(`❌ Failed to liquidate position: ${error.message}`);
 
-      // Send critical alert for liquidation failures
-      await this.sendLiquidationAlert(error, accountId, contractId);
+      // Send critical alert for liquidation failures with additional context
+      const alertDetails = {
+        retries: error.message.includes('retries') ? error.message.match(/after (\d+) retries/)?.[1] : undefined,
+        timestamp: new Date().toISOString()
+      };
+      await this.sendLiquidationAlert(error, accountId, contractId, alertDetails);
 
       this.emit('orderError', { error: error.message, accountId, contractId });
       throw error;
@@ -1368,25 +1549,25 @@ class TradovateClient extends EventEmitter {
     this.wsConnected = false;
   }
 
-  // Send email alert for critical liquidation failures
-  async sendLiquidationAlert(error, accountId, contractId) {
+  // Send email alert for critical liquidation failures using Resend
+  async sendLiquidationAlert(error, accountId, contractId, additionalDetails = {}) {
     try {
-      // Skip if email alerts not configured
-      if (!process.env.GMAIL_USER || !process.env.GMAIL_APP_PASSWORD || !process.env.ALERT_SMS_EMAIL) {
-        this.logger.warn('📧 Email alert skipped - missing configuration');
+      // Skip if Resend not configured
+      if (!process.env.RESEND_API_KEY) {
+        this.logger.warn('📧 Email alert skipped - RESEND_API_KEY not configured');
         return;
       }
 
-      this.logger.info('📧 Sending liquidation failure alert...');
+      // Skip if no alert destination configured
+      if (!process.env.ALERT_SMS_EMAIL && !process.env.ALERT_EMAIL) {
+        this.logger.warn('📧 Email alert skipped - no alert destinations configured');
+        return;
+      }
 
-      // Create Gmail SMTP transporter
-      const transporter = nodemailer.createTransport({
-        service: 'gmail',
-        auth: {
-          user: process.env.GMAIL_USER,
-          pass: process.env.GMAIL_APP_PASSWORD
-        }
-      });
+      this.logger.info('📧 Sending liquidation failure alert via Resend...');
+
+      // Initialize Resend client
+      const resend = new Resend(process.env.RESEND_API_KEY);
 
       // Get contract details for better context
       let contractInfo = `Contract ${contractId}`;
@@ -1399,27 +1580,96 @@ class TradovateClient extends EventEmitter {
         // Ignore contract lookup errors for alerts
       }
 
-      // Format alert message for SMS (keep it concise)
-      const alertMessage = `🚨 LIQUIDATION FAILED
+      // Try to get current order and position status
+      let orderStatus = '';
+      let positionStatus = '';
+      try {
+        const orders = await this.makeRequest('GET', `/order/list?accountId=${accountId}`);
+        const activeOrders = (orders || []).filter(order =>
+          order.contractId === contractId &&
+          this.ACTIVE_ORDER_STATUSES.includes(order.ordStatus)
+        );
+
+        if (activeOrders.length > 0) {
+          const orderIds = activeOrders.map(o => o.id).slice(0, 5).join(', '); // Limit to first 5
+          orderStatus = `\nOpen Orders: ${activeOrders.length} (IDs: ${orderIds})`;
+        }
+
+        const positions = await this.makeRequest('GET', `/position/list?accountId=${accountId}`);
+        const position = (positions || []).find(p => p.contractId === contractId);
+        if (position && position.netPos !== 0) {
+          positionStatus = `\nNet Position: ${position.netPos}`;
+        }
+      } catch (statusError) {
+        // Ignore errors when fetching status for alert
+      }
+
+      // Extract order IDs from error message if present
+      let orderIdsFromError = '';
+      const orderIdMatch = error.message.match(/IDs: ([^)]+)/);
+      if (orderIdMatch) {
+        orderIdsFromError = `\nFailed Order IDs: ${orderIdMatch[1]}`;
+      }
+
+      // Send SMS alert if SMS email is configured
+      if (process.env.ALERT_SMS_EMAIL) {
+        const smsMessage = `🚨 LIQUIDATION FAILED
 Account: ${accountId}
-Contract: ${contractInfo}
-Error: ${error.message}
+Contract: ${contractInfo}${orderStatus}${positionStatus}${orderIdsFromError}
+Error: ${error.message.substring(0, 100)}
 Time: ${new Date().toLocaleString()}
 
 MANUAL INTERVENTION REQUIRED`;
 
-      // Send email (which becomes SMS via carrier gateway)
-      const info = await transporter.sendMail({
-        from: process.env.GMAIL_USER,
-        to: process.env.ALERT_SMS_EMAIL, // e.g., 1234567890@vtext.com
-        subject: '🚨 LIQUIDATION FAILURE - URGENT',
-        text: alertMessage
-      });
+        const smsResult = await resend.emails.send({
+          from: process.env.ALERT_FROM_EMAIL,
+          to: process.env.ALERT_SMS_EMAIL,
+          subject: '🚨 LIQUIDATION FAILURE - URGENT',
+          text: smsMessage
+        });
 
-      this.logger.info(`✅ Liquidation alert sent successfully: ${info.messageId}`);
+        this.logger.info(`✅ SMS alert sent via Resend: ${smsResult.data?.id}`);
+      }
+
+      // Send detailed email alert if email is configured
+      if (process.env.ALERT_EMAIL) {
+        const detailedMessage = `
+CRITICAL ALERT: Position Liquidation Failed
+
+Account ID: ${accountId}
+Contract: ${contractInfo}
+Timestamp: ${new Date().toISOString()}
+
+ERROR DETAILS:
+${error.message}
+
+CURRENT STATUS:${orderStatus}${positionStatus}
+
+${orderIdsFromError ? 'PROBLEMATIC ORDER IDS:' + orderIdsFromError : ''}
+
+ACTION REQUIRED:
+1. Log into Tradovate immediately
+2. Manually cancel all open orders for ${contractInfo}
+3. Close any remaining positions
+4. Check system logs for additional details
+
+${additionalDetails.retries ? `Retry Attempts: ${additionalDetails.retries}` : ''}
+
+This is an automated alert from the Slingshot Trading System.
+`;
+
+        const emailResult = await resend.emails.send({
+          from: process.env.ALERT_FROM_EMAIL,
+          to: process.env.ALERT_EMAIL,
+          subject: '🚨 CRITICAL: Liquidation Failure - Manual Intervention Required',
+          text: detailedMessage
+        });
+
+        this.logger.info(`✅ Detailed email alert sent via Resend: ${emailResult.data?.id}`);
+      }
 
     } catch (emailError) {
-      this.logger.error(`❌ Failed to send liquidation alert: ${emailError.message}`);
+      this.logger.error(`❌ Failed to send liquidation alert via Resend: ${emailError.message}`);
       // Don't throw - we don't want email failures to break liquidation error handling
     }
   }
