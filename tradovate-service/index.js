@@ -793,6 +793,7 @@ async function performFullSync(options = {}) {
     positionsFound: 0,
     positionsReconciled: 0,
     signalMappingsRemoved: 0,
+    accountBalancesUpdated: 0,
     errors: [],
     dryRun: dryRun
   };
@@ -819,16 +820,18 @@ async function performFullSync(options = {}) {
       syncStats.accountsProcessed++;
       logger.info(`📋 Full sync for account: ${account.name} (${account.id})`);
 
-      // Step 1: Get ground truth from Tradovate
-      const [freshOrders, freshPositions] = await Promise.all([
+      // Step 1: Get ground truth from Tradovate (including account balances)
+      const [freshOrders, freshPositions, accountData, cashData] = await Promise.all([
         tradovateClient.getOrders(account.id, true), // enriched
-        tradovateClient.getPositions(account.id)
+        tradovateClient.getPositions(account.id),
+        tradovateClient.getAccountBalances(account.id),
+        tradovateClient.getCashBalances(account.id)
       ]);
 
       syncStats.ordersFound += freshOrders.length;
       syncStats.positionsFound += freshPositions.length;
 
-      logger.info(`📊 Tradovate ground truth: ${freshOrders.length} orders, ${freshPositions.length} positions`);
+      logger.info(`📊 Tradovate ground truth: ${freshOrders.length} orders, ${freshPositions.length} positions, balance: $${cashData?.amount || 0}`);
 
       // Step 2: Reconcile orders - identify truly working vs archived/stale
       const workingOrders = freshOrders.filter(order =>
@@ -899,7 +902,27 @@ async function performFullSync(options = {}) {
         logger.info(`📋 Published sync completion for account ${account.id} with ${validOrderIds.length} valid working orders`);
       }
 
-      // Step 5: Reconcile positions
+      // Step 5: Publish account balance update
+      if (!dryRun && (accountData || cashData)) {
+        await messageBus.publish(CHANNELS.ACCOUNT_UPDATE, {
+          accountId: account.id,
+          accountName: account.name,
+          balance: cashData?.amount || 0,
+          cashData: cashData,
+          accountData: accountData,
+          realizedPnL: cashData?.realizedPnL || 0,
+          unrealizedPnL: cashData?.unrealizedPnL || 0,
+          marginUsed: accountData?.marginUsed || 0,
+          marginAvailable: accountData?.marginAvailable || 0,
+          timestamp: new Date().toISOString(),
+          source: 'full_sync'
+        });
+
+        syncStats.accountBalancesUpdated++;
+        logger.info(`💰 Published account balance update for ${account.name}: $${cashData?.amount || 0}`);
+      }
+
+      // Step 6: Reconcile positions
       const openPositions = freshPositions.filter(pos => pos.netPos !== 0);
 
       for (const position of openPositions) {
@@ -933,7 +956,7 @@ async function performFullSync(options = {}) {
     syncStats.endTime = new Date().toISOString();
 
     logger.info(`✅ Full sync ${dryRun ? '(DRY RUN) ' : ''}completed successfully`);
-    logger.info(`📊 Sync stats: ${syncStats.accountsProcessed} accounts, ${syncStats.ordersReconciled} orders, ${syncStats.positionsReconciled} positions, ${syncStats.signalMappingsRemoved} mappings cleaned`);
+    logger.info(`📊 Sync stats: ${syncStats.accountsProcessed} accounts, ${syncStats.ordersReconciled} orders, ${syncStats.positionsReconciled} positions, ${syncStats.accountBalancesUpdated} balances updated, ${syncStats.signalMappingsRemoved} mappings cleaned`);
 
     // Publish completion event
     await messageBus.publish(CHANNELS.TRADOVATE_FULL_SYNC_COMPLETED, {
