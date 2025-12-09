@@ -781,6 +781,14 @@ app.delete('/api/orders', dashboardAuth, (req, res) => {
   res.json({ cleared: clearedCount, message: 'Orders cleared successfully' });
 });
 
+// Debug endpoint to clear positions
+app.delete('/api/positions', dashboardAuth, (req, res) => {
+  const clearedCount = monitoringState.positions.size;
+  monitoringState.positions.clear();
+  logger.info(`🧹 Cleared ${clearedCount} positions from monitoring state`);
+  res.json({ cleared: clearedCount, message: 'Positions cleared successfully' });
+});
+
 // Position Sizing endpoints
 app.get('/api/position-sizing/settings', dashboardAuth, (req, res) => {
   logger.info('📊 Position sizing settings requested');
@@ -1180,12 +1188,23 @@ async function handlePositionUpdate(message) {
     // Bulk update
     message.positions.forEach(pos => {
       const key = `${message.accountId}-${pos.symbol}`;
+      const netPos = pos.netPos || pos.quantity || 0;
+
+      // Remove position if netPos is 0
+      if (netPos === 0) {
+        if (monitoringState.positions.has(key)) {
+          monitoringState.positions.delete(key);
+          logger.info(`🧹 Removed closed position: ${key}`);
+        }
+        return;
+      }
+
       const position = {
         ...pos,
         accountId: message.accountId,
         lastUpdate: message.timestamp || new Date().toISOString(),
         // Ensure we have essential P&L fields
-        netPos: pos.netPos || pos.quantity || 0,
+        netPos: netPos,
         pnl: pos.pnl || pos.unrealizedPnL || 0,
         realizedPnL: pos.realizedPnL || 0,
         unrealizedPnL: pos.unrealizedPnL || pos.pnl || 0
@@ -1195,11 +1214,24 @@ async function handlePositionUpdate(message) {
     });
   } else {
     // Single update
+    const netPos = message.netPos || message.quantity || 0;
+
+    // Remove position if netPos is 0
+    if (netPos === 0) {
+      if (monitoringState.positions.has(positionKey)) {
+        monitoringState.positions.delete(positionKey);
+        logger.info(`🧹 Removed closed position: ${positionKey}`);
+      }
+      broadcast('position_update', message);
+      logActivity('position', `Position closed for ${message.symbol}`, message);
+      return;
+    }
+
     const position = {
       id: message.positionId,
       accountId: message.accountId,
       symbol: message.symbol,
-      netPos: message.netPos || message.quantity || 0,
+      netPos: netPos,
       currentPrice: message.currentPrice,
       pnl: message.pnl || message.unrealizedPnL || 0,
       realizedPnL: message.realizedPnL || 0,
