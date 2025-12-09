@@ -1172,8 +1172,12 @@ async function handleWebhookTrade(webhookMessage) {
         await handlePositionClosed(tradeSignal, accountId, webhookMessage.id);
         break;
 
+      case 'update_limit':
+        await handleUpdateLimitOrder(tradeSignal, accountId, webhookMessage.id);
+        break;
+
       default:
-        throw new Error(`Unknown action: ${tradeSignal.action}. Expected: place_limit, cancel_limit, or position_closed`);
+        throw new Error(`Unknown action: ${tradeSignal.action}. Expected: place_limit, cancel_limit, position_closed, or update_limit`);
     }
 
     // Publish webhook processed event
@@ -1206,6 +1210,32 @@ async function handlePlaceLimitOrder(tradeSignal, accountId, webhookId) {
   if (tradeSignal.side === 'buy') action = 'Buy';
   else if (tradeSignal.side === 'sell') action = 'Sell';
   else throw new Error(`Invalid side: ${tradeSignal.side}. Expected 'buy' or 'sell'.`);
+
+  // Check for existing working limit orders to prevent stacking
+  try {
+    const orders = await tradovateClient.getOrders(accountId);
+    const existingLimitOrders = orders.filter(order => {
+      return order.orderStatus === 'Working' &&
+             order.orderType === 'Limit' &&
+             order.contractId === tradovateClient.mapToFullContractSymbol(tradeSignal.symbol) &&
+             order.action === action;
+    });
+
+    if (existingLimitOrders.length > 0) {
+      logger.warn(`⚠️ Found ${existingLimitOrders.length} existing working limit order(s) for ${tradeSignal.symbol} ${tradeSignal.side}`);
+
+      // Cancel existing orders to prevent stacking
+      for (const existingOrder of existingLimitOrders) {
+        logger.info(`🔄 Cancelling existing order ${existingOrder.id} at price ${existingOrder.price} to prevent stacking`);
+        await tradovateClient.cancelOrder(existingOrder.id);
+      }
+
+      logger.info(`✅ Cancelled ${existingLimitOrders.length} existing order(s), proceeding with new order placement`);
+    }
+  } catch (error) {
+    logger.error(`Failed to check/cancel existing orders: ${error.message}`);
+    // Continue with order placement even if check fails
+  }
 
   // Create order request
   const orderRequest = {
@@ -1279,6 +1309,108 @@ async function handleAccountSyncRequest(message) {
   }
 }
 
+// Handle position sync requests from trade-orchestrator
+async function handlePositionSyncRequest(message) {
+  const { requestedBy = 'unknown', reason = 'unknown' } = message;
+  logger.info(`🔄 Received position sync request from ${requestedBy} (reason: ${reason})`);
+
+  try {
+    if (!tradovateClient || !tradovateClient.isConnected) {
+      logger.warn('⚠️ Tradovate client not connected - cannot sync positions');
+      return;
+    }
+
+    // Get current accounts
+    await tradovateClient.loadAccounts();
+    const accounts = tradovateClient.accounts;
+
+    if (!accounts || accounts.length === 0) {
+      logger.warn('⚠️ No accounts available for position sync');
+      return;
+    }
+
+    // Sync positions for each account
+    for (const account of accounts) {
+      try {
+        logger.info(`📊 Syncing positions for account ${account.name} (${account.id})`);
+
+        // Get current positions from Tradovate
+        const positions = await tradovateClient.getPositions(account.id);
+
+        if (positions && positions.length > 0) {
+          const validPositions = positions.filter(pos => pos.netPos !== 0);
+
+          logger.info(`📊 Found ${validPositions.length} open positions for account ${account.id}`);
+
+          // Publish position updates with authoritative data
+          for (const position of validPositions) {
+            try {
+              // Resolve contract ID to symbol
+              let symbol = 'Unknown';
+              try {
+                const contractDetails = await tradovateClient.getContractDetails(position.contractId);
+                symbol = contractDetails.name || contractDetails.symbol || `CONTRACT_${position.contractId}`;
+              } catch (error) {
+                logger.warn(`Failed to resolve contract ${position.contractId}: ${error.message}`);
+                symbol = `CONTRACT_${position.contractId}`;
+              }
+
+              // Publish individual position update
+              await messageBus.publish(CHANNELS.POSITION_UPDATE, {
+                accountId: position.accountId,
+                positionId: position.id,
+                contractId: position.contractId,
+                symbol: symbol,
+                contractName: symbol,
+                netPos: position.netPos,
+                netPrice: position.netPrice,
+                bought: position.bought,
+                sold: position.sold,
+                pnl: position.pnl,
+                timestamp: new Date().toISOString(),
+                source: 'position_sync_request'
+              });
+
+              logger.info(`✅ Published position sync: ${symbol} (${position.netPos} @ ${position.netPrice})`);
+            } catch (error) {
+              logger.error(`❌ Failed to publish position for contract ${position.contractId}:`, error.message);
+            }
+          }
+        } else {
+          logger.info(`📊 No open positions found for account ${account.id}`);
+        }
+      } catch (error) {
+        logger.error(`❌ Failed to sync positions for account ${account.id}:`, error.message);
+      }
+    }
+
+    // Publish completion event
+    await messageBus.publish(CHANNELS.TRADOVATE_SYNC_COMPLETED, {
+      requestedBy,
+      reason,
+      success: true,
+      timestamp: new Date().toISOString()
+    });
+
+    logger.info('✅ Position sync request completed');
+  } catch (error) {
+    logger.error('❌ Failed to handle position sync request:', {
+      error: error.message,
+      stack: error.stack,
+      tradovateConnected: tradovateClient?.isConnected || false
+    });
+
+    // Publish failure event
+    await messageBus.publish(CHANNELS.TRADOVATE_SYNC_COMPLETED, {
+      requestedBy,
+      reason,
+      success: false,
+      error: error.message,
+      timestamp: new Date().toISOString()
+    });
+  }
+}
+
 // Handle cancel_limit action from LDPS Trader
 async function handleCancelLimitOrders(tradeSignal, accountId, webhookId) {
   logger.info(`Processing cancel_limit: ${tradeSignal.side} ${tradeSignal.symbol} (reason: ${tradeSignal.reason})`);
@@ -1338,6 +1470,218 @@ async function handleCancelLimitOrders(tradeSignal, accountId, webhookId) {
 
   } catch (error) {
     logger.error('Failed to cancel limit orders:', error);
+    throw error;
+  }
+}
+
+// Handle update_limit action from LDPS Trader
+async function handleUpdateLimitOrder(tradeSignal, accountId, webhookId) {
+  logger.info(`🔄 STARTING handleUpdateLimitOrder function`);
+  logger.info(`Processing update_limit: ${tradeSignal.side} ${tradeSignal.symbol} from ${tradeSignal.old_price} to ${tradeSignal.new_price}`);
+  logger.debug(`Full tradeSignal object:`, JSON.stringify(tradeSignal, null, 2));
+
+  try {
+    // Validate required fields
+    if (!tradeSignal.old_price && tradeSignal.old_price !== 0) {
+      throw new Error(`Missing required field: old_price`);
+    }
+    if (!tradeSignal.new_price && tradeSignal.new_price !== 0) {
+      throw new Error(`Missing required field: new_price`);
+    }
+    if (!tradeSignal.symbol) {
+      throw new Error(`Missing required field: symbol`);
+    }
+    if (!tradeSignal.side) {
+      throw new Error(`Missing required field: side`);
+    }
+
+    // Map side to Tradovate action for filtering
+    let sideAction;
+    if (tradeSignal.side === 'buy') sideAction = 'Buy';
+    else if (tradeSignal.side === 'sell') sideAction = 'Sell';
+    else throw new Error(`Invalid side: ${tradeSignal.side}. Expected 'buy' or 'sell'.`);
+
+    // Get all open orders for the account
+    const orders = await tradovateClient.getOrders(accountId);
+    logger.info(`Found ${orders.length} total orders for account ${accountId}`);
+
+    // Debug: Log first few orders to see their actual field names
+    logger.info(`Debugging order field names (first 2):`);
+    orders.slice(0, 2).forEach(order => {
+      logger.info(`  Order ${order.id}: Fields available: ${Object.keys(order).join(', ')}`);
+    });
+
+    // Try different field name variations for status and type
+    const workingOrders = orders.filter(order =>
+      (order.orderStatus === 'Working' || order.ordStatus === 'Working' || order.status === 'Working')
+    );
+    logger.info(`Working orders: ${workingOrders.length}`);
+    workingOrders.forEach(order => {
+      const status = order.orderStatus || order.ordStatus || order.status;
+      const type = order.orderType || order.ordType || order.type;
+      logger.info(`  Order ${order.id}: ${order.action} ${order.contractId} ${type} at ${order.price} (status: ${status})`);
+    });
+
+    // Look up the numeric contract ID for comparison
+    const contractSymbol = tradovateClient.mapToFullContractSymbol(tradeSignal.symbol);
+    const contractInfo = await tradovateClient.findContract(tradeSignal.symbol);
+    const expectedContractId = contractInfo.id;
+    logger.info(`Looking for: ${sideAction} ${contractSymbol} (contractId: ${expectedContractId}) Limit orders`);
+
+    // First, check for ANY working limit orders for this symbol/side
+    // Note: We identify limit orders by having a price field and Working status
+    const workingLimitOrders = orders.filter(order => {
+      return order.ordStatus === 'Working' &&
+             order.price &&  // Limit orders have a price
+             order.contractId === expectedContractId &&
+             order.action === sideAction;
+    });
+
+    logger.info(`Found ${workingLimitOrders.length} working limit orders matching ${sideAction} ${expectedContractId}`);
+
+    // If no working orders at all, fallback to place_limit
+    if (workingLimitOrders.length === 0) {
+      logger.warn(`No working limit orders found for ${tradeSignal.symbol} ${tradeSignal.side}`);
+      logger.info(`🔄 Falling back to place_limit with price ${tradeSignal.new_price}`);
+
+      // Convert to a place_limit order with the new price
+      const fallbackSignal = {
+        ...tradeSignal,
+        action: 'place_limit',
+        price: tradeSignal.new_price  // Use the new_price as the limit price
+      };
+
+      // Call the place limit handler (which will handle duplicates)
+      await handlePlaceLimitOrder(fallbackSignal, accountId, webhookId);
+
+      logger.info(`✅ Placed new limit order (fallback from update_limit)`);
+      return;
+    }
+
+    // Now check for orders matching the old price
+    const matchingOrders = workingLimitOrders.filter(order => {
+      return Math.abs(order.price - tradeSignal.old_price) < 0.01; // Allow small floating point tolerance
+    });
+
+    if (matchingOrders.length === 0) {
+      // We have working orders but none at the old price - don't create duplicates!
+      const existingPrices = workingLimitOrders.map(o => o.price).join(', ');
+      logger.warn(`⚠️ Found ${workingLimitOrders.length} working order(s) at price(s) [${existingPrices}], but none at ${tradeSignal.old_price}`);
+      logger.warn(`⚠️ Skipping update to avoid order stacking. Consider cancelling existing orders first.`);
+
+      // Publish a warning event but don't throw an error
+      await messageBus.publish(CHANNELS.ORDER_REJECTED, {
+        accountId: accountId,
+        symbol: tradeSignal.symbol,
+        side: tradeSignal.side,
+        action: 'update_limit',
+        reason: 'price_mismatch',
+        message: `Working order exists but at different price. Expected ${tradeSignal.old_price}, found ${existingPrices}`,
+        timestamp: new Date().toISOString()
+      });
+      return;
+    }
+
+    if (matchingOrders.length > 1) {
+      logger.warn(`Found multiple matching orders (${matchingOrders.length}), updating the first one`);
+    }
+
+    const orderToUpdate = matchingOrders[0];
+    logger.info(`Found order ${orderToUpdate.id} to update: ${orderToUpdate.action} ${orderToUpdate.contractId} at ${orderToUpdate.price}`);
+
+    // Build the update request
+    const updateRequest = {
+      orderId: orderToUpdate.id,
+      price: tradeSignal.new_price,
+      quantity: tradeSignal.quantity || orderToUpdate.qty, // qty is the correct field name
+      orderType: 'Limit' // Required by Tradovate API
+    };
+
+    // Note: For bracket orders, we can only modify the main order price
+    // Bracket components (stop loss, take profit) cannot be modified via /order/modifyorder
+    // If bracket modifications are needed, the entire strategy would need to be cancelled and recreated
+    if (tradeSignal.stop_loss !== undefined || tradeSignal.take_profit !== undefined) {
+      logger.warn(`⚠️ Bracket order modifications not supported via update_limit. Only updating main order price.`);
+    }
+
+    // Perform the order update
+    const updatedOrder = await tradovateClient.modifyOrder(updateRequest);
+
+    logger.info(`✅ Successfully updated order ${orderToUpdate.id}:`);
+    logger.info(`   Price: ${orderToUpdate.price} → ${tradeSignal.new_price}`);
+    if (tradeSignal.stop_loss !== undefined) {
+      logger.info(`   Stop Loss: ${tradeSignal.stop_loss}`);
+    }
+    if (tradeSignal.take_profit !== undefined) {
+      logger.info(`   Take Profit: ${tradeSignal.take_profit}`);
+    }
+
+    // Debug: Check what updatedOrder contains
+    logger.info(`🔍 DEBUG: updatedOrder response:`, JSON.stringify(updatedOrder, null, 2));
+
+    // Publish order update event with comprehensive field mapping
+    // Use original order ID since modifyOrder response might not contain id
+    try {
+      const orderUpdateEvent = {
+        accountId: accountId,
+        orderId: orderToUpdate.id, // Use original order ID
+        symbol: tradeSignal.symbol,
+        contractId: orderToUpdate.contractId,
+        contractName: tradeSignal.symbol,
+        side: tradeSignal.side,
+        action: 'update_limit', // Keep action as update_limit for tracking
+        orderType: 'Limit',
+        price: tradeSignal.new_price, // Use new price as the current price
+        oldPrice: tradeSignal.old_price,
+        newPrice: tradeSignal.new_price,
+        quantity: updateRequest.quantity,
+        stopPrice: updateRequest.stopPrice,
+        takeProfit: updateRequest.takeProfit,
+        status: 'working', // Order is still working after update
+        orderStatus: 'Working', // Tradovate format
+        strategy: tradeSignal.strategy || 'unknown',
+        webhookId: webhookId,
+        timestamp: new Date().toISOString(),
+        source: 'strategy_order_update', // Mark as strategy update for priority handling
+        updateType: 'price_modification' // Specific update type
+      };
+
+      logger.info(`📤 Publishing ORDER_PLACED event for updated order ${orderToUpdate.id} with price ${tradeSignal.new_price}`);
+      await messageBus.publish(CHANNELS.ORDER_PLACED, orderUpdateEvent);
+      logger.info(`✅ ORDER_PLACED event published successfully for order ${orderToUpdate.id}`);
+    } catch (error) {
+      logger.error(`❌ Failed to publish ORDER_PLACED event for updated order:`, error);
+    }
+
+    // Refresh account balance after update
+    logger.info(`💰 Refreshing account balance after order update for account ${accountId}`);
+    try {
+      const [accountData, cashData] = await Promise.all([
+        tradovateClient.getAccountBalances(accountId),
+        tradovateClient.getCashBalances(accountId)
+      ]);
+
+      await messageBus.publish(CHANNELS.ACCOUNT_UPDATE, {
+        accountId: accountId,
+        accountName: `Account ${accountId}`,
+        accountData,
+        cashData,
+        timestamp: new Date().toISOString(),
+        source: 'post_update_refresh'
+      });
+      logger.info(`✅ Account balance refreshed after order update`);
+    } catch (error) {
+      logger.error(`❌ Failed to refresh account balance after update:`, error);
+    }
+
+  } catch (error) {
+    logger.error('Failed to update limit order:', {
+      error: error.message,
+      symbol: tradeSignal.symbol,
+      side: tradeSignal.side,
+      oldPrice: tradeSignal.old_price,
+      newPrice: tradeSignal.new_price
+    });
     throw error;
   }
 }
@@ -1854,13 +2198,27 @@ async function startup() {
     // Handle orderStrategy WebSocket updates (for detecting strategy completion)
     tradovateClient.on('orderStrategyUpdate', async (data) => {
       logger.info(`📋 OrderStrategy update event: ${data.eventType} for strategy ${data.entity.id}`);
+      logger.info(`📋 Strategy details: status=${data.entity.status}, accountId=${data.entity.accountId}, contractId=${data.entity.contractId || 'undefined'}`);
       logger.warn(`🔍 DEBUG: OrderStrategy status: ${data.entity.status}`);
 
       const strategy = data.entity;
 
       // Check if the strategy is completed/closed/interrupted
-      if (data.eventType === 'Updated' && (strategy.status === 'Completed' || strategy.status === 'Canceled' || strategy.status === 'ExecutionInterrupted')) {
+      // API statuses: ExecutionFinished, ExecutionInterrupted, ExecutionFailed, Canceled, StoppedByUser
+      if (data.eventType === 'Updated' && (
+        strategy.status === 'ExecutionFinished' ||
+        strategy.status === 'ExecutionInterrupted' ||
+        strategy.status === 'ExecutionFailed' ||
+        strategy.status === 'Canceled' ||
+        strategy.status === 'StoppedByUser'
+      )) {
         logger.info(`🔚 OrderStrategy ${strategy.id} completed with status: ${strategy.status}`);
+
+        // Enhanced cleanup: Get child orders from the strategy and cancel them explicitly
+        await cleanupOrderStrategyChildren(strategy);
+
+        // Also run general orphaned order cleanup as a fallback
+        await cleanupOrphanedBracketOrders(strategy);
 
         // Notify trade-orchestrator about strategy cancellation
         await messageBus.publish(CHANNELS.ORDER_CANCELLED, {
@@ -1976,6 +2334,9 @@ async function startup() {
               symbol = `CONTRACT_${position.contractId}`;
             }
 
+            // Enhanced logging for position updates
+            logger.info(`📊 Publishing position update: ${symbol} netPos=${position.netPos}, netPrice=${position.netPrice || 'undefined'}, bought=${position.bought}, sold=${position.sold}`);
+
             await messageBus.publish(CHANNELS.POSITION_UPDATE, {
               accountId: position.accountId,
               positionId: position.id,
@@ -1983,6 +2344,7 @@ async function startup() {
               symbol: symbol, // Now properly resolved
               contractName: symbol,
               netPos: position.netPos,
+              netPrice: position.netPrice, // Include entry price data
               bought: position.bought,
               boughtValue: position.boughtValue,
               sold: position.sold,
@@ -2108,6 +2470,10 @@ async function startup() {
     await messageBus.subscribe('account.sync.request', handleAccountSyncRequest);
     logger.info('Subscribed to account.sync.request');
 
+    // Subscribe to position sync requests
+    await messageBus.subscribe(CHANNELS.POSITION_SYNC_REQUEST, handlePositionSyncRequest);
+    logger.info(`Subscribed to ${CHANNELS.POSITION_SYNC_REQUEST}`);
+
     // Subscribe to full sync requests
     await messageBus.subscribe(CHANNELS.TRADOVATE_FULL_SYNC_REQUESTED, handleFullSyncRequest);
     logger.info(`Subscribed to ${CHANNELS.TRADOVATE_FULL_SYNC_REQUESTED}`);
@@ -2166,6 +2532,152 @@ async function startup() {
   } catch (error) {
     logger.error('Startup failed:', error);
     process.exit(1);
+  }
+}
+
+// Enhanced OrderStrategy cleanup - get and cancel child orders explicitly
+async function cleanupOrderStrategyChildren(strategy) {
+  try {
+    logger.info(`🧹 Getting child orders for strategy ${strategy.id}`);
+
+    // Try to get child orders using OrderStrategy dependents API
+    let childOrders = [];
+    try {
+      const dependents = await tradovateClient.getOrderStrategyDependents(strategy.id);
+      childOrders = Array.isArray(dependents) ? dependents : [];
+      logger.info(`📋 Found ${childOrders.length} child orders from strategy dependents`);
+    } catch (error) {
+      logger.warn(`⚠️ Failed to get strategy dependents: ${error.message}`);
+    }
+
+    // If we couldn't get dependents, look for child orders by orderStrategyId
+    if (childOrders.length === 0) {
+      try {
+        const allOrders = await tradovateClient.getOrders(strategy.accountId);
+        childOrders = allOrders.filter(order =>
+          order.orderStrategyId === strategy.id &&
+          (order.ordStatus === 'Working' || order.ordStatus === 'Placed')
+        );
+        logger.info(`📋 Found ${childOrders.length} child orders by orderStrategyId search`);
+      } catch (error) {
+        logger.warn(`⚠️ Failed to search for child orders: ${error.message}`);
+      }
+    }
+
+    // Cancel all child orders
+    for (const order of childOrders) {
+      try {
+        logger.info(`🗑️ Cancelling strategy child order ${order.id} (${order.ordType || 'Unknown'}) - parent strategy ${strategy.id} completed with ${strategy.status}`);
+        await tradovateClient.cancelOrder(order.id);
+
+        // Publish cancellation event
+        await messageBus.publish(CHANNELS.ORDER_CANCELLED, {
+          orderId: order.id,
+          strategyId: strategy.id,
+          accountId: order.accountId,
+          reason: `Child order cleanup - parent strategy ${strategy.status}`,
+          timestamp: new Date().toISOString(),
+          source: 'strategy_child_cleanup'
+        });
+      } catch (error) {
+        logger.error(`❌ Failed to cancel strategy child order ${order.id}:`, error.message);
+      }
+    }
+
+    if (childOrders.length > 0) {
+      logger.info(`✅ Strategy child cleanup complete: cancelled ${childOrders.length} child orders from strategy ${strategy.id}`);
+    } else {
+      logger.info(`✅ No child orders found for strategy ${strategy.id}`);
+    }
+
+  } catch (error) {
+    logger.error(`❌ Failed to cleanup strategy children for ${strategy.id}:`, error.message);
+  }
+}
+
+// Clean up orphaned bracket orders when a strategy completes
+async function cleanupOrphanedBracketOrders(strategy) {
+  try {
+    logger.info(`🧹 Looking for orphaned bracket orders from strategy ${strategy.id}`);
+
+    // Get all working orders for this account
+    const orders = await tradovateClient.getOrders(strategy.accountId);
+
+    let ordersToCancel = [];
+
+    for (const order of orders) {
+      // Check if this order is part of the completed strategy
+      // OrderStrategy orders typically have a parent relationship or are created at the same time
+
+      // Look for orders that might be bracket orders from this strategy:
+      // 1. Stop/StopLimit orders without fills
+      // 2. Limit orders that are still working from around the same time
+      // 3. Orders that don't have an associated position
+
+      if (order.ordStatus === 'Working') {
+        // Check if this is likely a stop loss order
+        const isStopOrder = order.ordType === 'Stop' || order.ordType === 'StopLimit' ||
+                           order.stopPrice !== undefined;
+
+        // Check if this is a bracket order by looking for orders without associated positions
+        // In a properly closed strategy, the main position should be closed but stops might remain
+        const hasMatchingPosition = await checkOrderHasMatchingPosition(order);
+
+        if (isStopOrder && !hasMatchingPosition) {
+          logger.info(`🎯 Found potential orphaned stop order: ${order.id} (${order.ordType}) for contract ${order.contractId}`);
+          ordersToCancel.push(order);
+        }
+      }
+    }
+
+    logger.info(`🧹 Found ${ordersToCancel.length} potentially orphaned orders to cancel`);
+
+    // Cancel the orphaned orders
+    for (const order of ordersToCancel) {
+      try {
+        logger.info(`🗑️ Cancelling orphaned order ${order.id} (${order.ordType}) - strategy ${strategy.id} completed`);
+        await tradovateClient.cancelOrder(order.id);
+
+        // Publish cancellation event
+        await messageBus.publish(CHANNELS.ORDER_CANCELLED, {
+          orderId: order.id,
+          strategyId: strategy.id,
+          accountId: order.accountId,
+          reason: `Bracket order cleanup after strategy ${strategy.status}`,
+          timestamp: new Date().toISOString(),
+          source: 'orphaned_order_cleanup'
+        });
+      } catch (error) {
+        logger.error(`Failed to cancel orphaned order ${order.id}:`, error.message);
+      }
+    }
+
+    if (ordersToCancel.length > 0) {
+      logger.info(`✅ Cleanup complete: cancelled ${ordersToCancel.length} orphaned orders from strategy ${strategy.id}`);
+    } else {
+      logger.info(`✅ No orphaned orders found for strategy ${strategy.id}`);
+    }
+
+  } catch (error) {
+    logger.error(`Failed to cleanup orphaned orders for strategy ${strategy.id}:`, error.message);
+  }
+}
+
+// Helper function to check if an order has a matching open position
+async function checkOrderHasMatchingPosition(order) {
+  try {
+    const positions = await tradovateClient.getPositions(order.accountId);
+
+    // Look for a position with the same contract that's still open
+    const matchingPosition = positions.find(pos =>
+      pos.contractId === order.contractId &&
+      Math.abs(pos.netPos) > 0
+    );
+
+    return !!matchingPosition;
+  } catch (error) {
+    logger.error(`Failed to check position for order ${order.id}:`, error.message);
+    return false; // Assume no position if we can't check
   }
 }
 

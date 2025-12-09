@@ -450,6 +450,54 @@ class TradovateClient extends EventEmitter {
     }
   }
 
+  async modifyOrder(modifyData) {
+    try {
+      this.logger.info(`Modifying order ${modifyData.orderId}: ${modifyData.orderType} ${modifyData.orderQty} @ ${modifyData.price}`);
+
+      // Build the modify request according to Tradovate API schema
+      const modifyRequest = {
+        orderId: modifyData.orderId,
+        orderQty: modifyData.quantity || modifyData.orderQty,
+        orderType: modifyData.orderType || 'Limit'
+      };
+
+      // Add price for limit orders
+      if (modifyData.price !== undefined) {
+        modifyRequest.price = modifyData.price;
+      }
+
+      // Add stop price if provided
+      if (modifyData.stopPrice !== undefined) {
+        modifyRequest.stopPrice = modifyData.stopPrice;
+      }
+
+      // Add client order ID if provided
+      if (modifyData.clOrdId) {
+        modifyRequest.clOrdId = modifyData.clOrdId;
+      }
+
+      const response = await this.makeRequest('POST', '/order/modifyorder', modifyRequest);
+
+      // Update the cache with the new price instead of just invalidating
+      if (this.enrichmentCache.has(modifyData.orderId)) {
+        const cachedOrder = this.enrichmentCache.get(modifyData.orderId);
+        const updatedOrder = {
+          ...cachedOrder,
+          price: modifyData.price,
+          qty: modifyRequest.orderQty || cachedOrder.qty
+        };
+        this.enrichmentCache.set(modifyData.orderId, updatedOrder);
+        this.logger.debug(`🔄 Updated cache for order ${modifyData.orderId}: price ${cachedOrder.price} → ${modifyData.price}`);
+      }
+
+      this.emit('orderModified', response);
+      return response;
+    } catch (error) {
+      this.logger.error(`Failed to modify order ${modifyData.orderId}:`, error.message);
+      throw error;
+    }
+  }
+
   // Place a bracket order with trailing stop using orderStrategy endpoint
   async placeOrderStrategy(orderData) {
     try {

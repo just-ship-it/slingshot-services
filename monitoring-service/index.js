@@ -1308,12 +1308,51 @@ async function handleOrderUpdate(message) {
   const existingOrder = monitoringState.orders.get(message.orderId);
   if (existingOrder) {
     logger.debug('📋 Order already exists, updating:', message.orderId);
-    // Update existing order with new data
-    const updatedOrder = { ...existingOrder, ...order };
-    monitoringState.orders.set(message.orderId, updatedOrder);
+
+    // Source-based priority handling for order updates
+    const incomingSource = message.source || 'unknown';
+    const existingSource = existingOrder.source || 'unknown';
+    const incomingTimestamp = new Date(message.timestamp || new Date().toISOString()).getTime();
+    const existingTimestamp = new Date(existingOrder.timestamp || existingOrder.lastUpdate || '1970-01-01').getTime();
+    const timeDifference = incomingTimestamp - existingTimestamp;
+
+    // Priority rules:
+    // 1. Strategy updates (strategy_order_update) take priority over WebSocket updates within 10 seconds
+    // 2. Recent updates (< 5 seconds) take priority regardless of source
+    // 3. WebSocket updates older than 10 seconds can override strategy updates
+
+    let shouldUpdate = true;
+    if (existingSource === 'strategy_order_update' && incomingSource === 'websocket_order_update') {
+      // Don't let WebSocket updates override recent strategy updates
+      if (timeDifference < 10000) { // 10 seconds grace period
+        shouldUpdate = false;
+        logger.info(`🚫 Ignoring WebSocket order update for ${message.orderId} - strategy update ${Math.round(timeDifference/1000)}s ago takes priority`);
+      }
+    } else if (incomingSource === 'strategy_order_update') {
+      // Strategy updates always take priority
+      shouldUpdate = true;
+      logger.info(`✅ Strategy order update for ${message.orderId} - overriding existing data`);
+    } else if (timeDifference < -5000) {
+      // Don't accept updates that are more than 5 seconds older than existing data
+      shouldUpdate = false;
+      logger.debug(`🕒 Ignoring older order update for ${message.orderId} - existing data is newer`);
+    }
+
+    if (shouldUpdate) {
+      // Update existing order with new data, preserving important fields
+      const updatedOrder = {
+        ...existingOrder,
+        ...order,
+        lastUpdate: order.timestamp,
+        source: incomingSource
+      };
+      monitoringState.orders.set(message.orderId, updatedOrder);
+      logger.debug(`📋 Updated order ${message.orderId} from source: ${incomingSource}`);
+    }
   } else {
     logger.debug('📋 New order, adding to monitoring state:', message.orderId);
-    monitoringState.orders.set(message.orderId, order);
+    const newOrder = { ...order, source: message.source || 'unknown' };
+    monitoringState.orders.set(message.orderId, newOrder);
   }
 
   broadcast('order_update', order);

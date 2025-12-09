@@ -423,6 +423,9 @@ const tradingState = {
   // Key: individual orderId, Value: strategyId
   orderToStrategy: new Map(),
 
+  // Position reconciliation tracking
+  lastPositionReconciliation: 0,
+
   // Current Market Prices: Latest prices for active symbols
   // Key: symbol, Value: { price, timestamp, source }
   marketPrices: new Map(),
@@ -756,6 +759,12 @@ app.get('/api/trading/enhanced-status', (req, res) => {
   // Separate different types of orders - only show unfilled limit orders
   // Exclude bracket orders (stop_loss, take_profit) and filled entry orders
   const pendingEntryOrders = orders.filter(order => {
+    // Skip invalid orders with undefined ID
+    if (!order.id || order.id === 'undefined') {
+      logger.warn(`⚠️ Skipping order with undefined ID: ${JSON.stringify(order)}`);
+      return false;
+    }
+
     // Skip bracket orders (stop_loss, take_profit)
     const relationship = tradingState.orderRelationships.get(order.id);
     if (relationship && (relationship.orderRole === 'stop_loss' || relationship.orderRole === 'take_profit')) {
@@ -838,7 +847,7 @@ app.get('/api/trading/enhanced-status', (req, res) => {
         originalSymbol: signalContext.originalSymbol,
         strategy: signalContext.strategy,
         reason: signalContext.reason,
-        price: signalContext.price || order.price,
+        price: signalContext.price || order.price || null,  // Ensure null instead of undefined
         quantity: signalContext.quantity || order.quantity,
         stopLoss: signalContext.stopPrice,
         stopPrice: signalContext.stopPrice,
@@ -1046,28 +1055,57 @@ async function handleWebhookReceived(message) {
       logger.info(`📊 Position sizing: ${positionSizing.quantity} ${positionSizing.symbol} (${positionSizing.reason})`);
     }
 
-    // Special handling for position liquidation actions (position_closed and cancel_limit)
-    if (signal.action === 'position_closed' || signal.action === 'cancel_limit') {
-      logger.info(`🔴 Position liquidation requested for ${positionSizing.symbol} (action: ${signal.action})`);
+    // Special handling for direct tradovate service actions (position_closed, cancel_limit, update_limit)
+    if (signal.action === 'position_closed' || signal.action === 'cancel_limit' || signal.action === 'update_limit') {
+      const actionType = signal.action === 'update_limit' ? 'order update' : 'position liquidation';
+      logger.info(`🔄 ${actionType} requested for ${positionSizing.symbol} (action: ${signal.action})`);
 
-      // Send position close request directly to tradovate-service via webhook channel
-      // This bypasses the ORDER_REQUEST channel and uses the webhook handler that expects position_closed
-      const closeMessage = {
-        id: message.id,
-        type: 'trade_signal',
-        body: {
-          action: 'position_closed', // Always use position_closed for the liquidation handler
-          symbol: positionSizing.symbol, // Use converted symbol
-          side: signal.side,
-          accountId: signal.accountId || getDefaultAccountId(),
-          timestamp: new Date().toISOString()
-        }
-      };
+      // Send request directly to tradovate-service via webhook channel
+      // This bypasses the ORDER_REQUEST channel and uses the webhook handler
+      let routeMessage;
+
+      if (signal.action === 'update_limit') {
+        // For update_limit, preserve all the original fields
+        routeMessage = {
+          id: message.id,
+          type: 'trade_signal',
+          body: {
+            action: 'update_limit',
+            symbol: positionSizing.symbol, // Use converted symbol
+            side: signal.side,
+            old_price: signal.old_price,
+            new_price: signal.new_price,
+            stop_loss: signal.stop_loss,
+            take_profit: signal.take_profit,
+            quantity: signal.quantity,
+            strategy: signal.strategy,
+            accountId: signal.accountId || getDefaultAccountId(),
+            timestamp: new Date().toISOString()
+          }
+        };
+      } else {
+        // For position_closed and cancel_limit
+        routeMessage = {
+          id: message.id,
+          type: 'trade_signal',
+          body: {
+            action: 'position_closed', // Always use position_closed for the liquidation handler
+            symbol: positionSizing.symbol, // Use converted symbol
+            side: signal.side,
+            accountId: signal.accountId || getDefaultAccountId(),
+            timestamp: new Date().toISOString()
+          }
+        };
+      }
 
       // Route directly to tradovate service webhook handler
-      await messageBus.publish(CHANNELS.WEBHOOK_TRADE, closeMessage);
+      await messageBus.publish(CHANNELS.WEBHOOK_TRADE, routeMessage);
 
-      logger.info(`Position liquidation signal routed to tradovate-service: ${positionSizing.symbol} (${signal.action} → position_closed)`);
+      if (signal.action === 'update_limit') {
+        logger.info(`Order update signal routed to tradovate-service: ${positionSizing.symbol} ${signal.old_price} → ${signal.new_price}`);
+      } else {
+        logger.info(`Position liquidation signal routed to tradovate-service: ${positionSizing.symbol} (${signal.action} → position_closed)`);
+      }
       return; // Exit early, no need to process as regular order
     }
 
@@ -1094,6 +1132,57 @@ async function handleWebhookReceived(message) {
       mappedStopPrice = signal.stopPrice;
       mappedTakeProfit = signal.takeProfit;
       logger.info(`📌 Standard order - action: ${mappedAction}, type: ${mappedOrderType}`);
+    }
+
+    // CRITICAL: Check for existing positions to prevent multiple position stacking
+    if (signal.action === 'place_limit' || mappedAction === 'Buy' || mappedAction === 'Sell') {
+      // First, perform a quick position reconciliation to ensure we have latest state
+      const lastReconciliation = tradingState.lastPositionReconciliation || 0;
+      const reconciliationAge = Date.now() - lastReconciliation;
+
+      // If position state is older than 30 seconds, reconcile with Tradovate
+      if (reconciliationAge > 30000) {
+        logger.info(`🔄 Position state is ${Math.round(reconciliationAge/1000)}s old, performing reconciliation before order validation`);
+        const reconcileSuccess = await reconcilePositions();
+        if (reconcileSuccess) {
+          tradingState.lastPositionReconciliation = Date.now();
+          logger.info(`✅ Position reconciliation completed before order validation`);
+        } else {
+          logger.warn(`⚠️ Position reconciliation failed, proceeding with local state`);
+        }
+      }
+
+      const existingPosition = tradingState.tradingPositions.get(positionSizing.symbol);
+      if (existingPosition && Math.abs(existingPosition.netPos) > 0) {
+        logger.error(`🚨 POSITION COLLISION DETECTED: Existing position ${existingPosition.netPos} for ${positionSizing.symbol}`);
+        logger.error(`🚨 Signal attempted: ${mappedAction} ${positionSizing.quantity} ${positionSizing.symbol} @ ${mappedPrice}`);
+        logger.error(`🚨 Last update: ${existingPosition.lastUpdate}, source: ${existingPosition.lastUpdateSource}`);
+
+        // Reject the order to prevent stacking
+        await messageBus.publish(CHANNELS.TRADE_REJECTED, {
+          reason: `Position collision: Existing ${existingPosition.netPos > 0 ? 'LONG' : 'SHORT'} position of ${existingPosition.netPos} units exists for ${positionSizing.symbol}. Cannot place new ${mappedAction} order to prevent position stacking.`,
+          existingPosition: {
+            symbol: existingPosition.symbol,
+            netPos: existingPosition.netPos,
+            entryPrice: existingPosition.netPrice,
+            lastUpdate: existingPosition.lastUpdate,
+            lastUpdateSource: existingPosition.lastUpdateSource
+          },
+          rejectedSignal: {
+            symbol: positionSizing.symbol,
+            action: mappedAction,
+            quantity: positionSizing.quantity,
+            price: mappedPrice
+          },
+          originalSignal: message,
+          timestamp: new Date().toISOString()
+        });
+
+        logger.error(`🚫 Order rejected due to position collision for ${positionSizing.symbol}`);
+        return; // Exit early to prevent order placement
+      }
+
+      logger.info(`✅ Position validation passed: No existing position for ${positionSizing.symbol}`);
     }
 
     // Prepare order request with potentially converted symbol and quantity
@@ -1209,20 +1298,24 @@ function parseTradeSignal(body) {
     }
 
     // Format 2: Test interface format with bracket order support
-    if (body.symbol && (body.side || body.action === 'place_limit')) {
+    if (body.symbol && (body.side || body.action === 'place_limit' || body.action === 'update_limit' || body.action === 'cancel_limit' || body.action === 'position_closed')) {
       return {
         symbol: body.symbol,
-        action: body.action, // Preserve original action (e.g., 'place_limit')
+        action: body.action, // Preserve original action (e.g., 'place_limit', 'update_limit')
         side: body.side, // Preserve side for bracket order mapping
         orderType: body.type || 'Market',
         price: body.price,
+        old_price: body.old_price, // For update_limit actions
+        new_price: body.new_price, // For update_limit actions
         stop_loss: body.stop_loss, // Preserve for bracket orders
         take_profit: body.take_profit, // Preserve for bracket orders
         stopPrice: body.stop_price,
         quantity: body.quantity,
         accountId: body.accountId || body.account,
         trailing_trigger: body.trailing_trigger,
-        trailing_offset: body.trailing_offset
+        trailing_offset: body.trailing_offset,
+        strategy: body.strategy, // Preserve strategy field
+        reason: body.reason // For cancel_limit actions
       };
     }
 
@@ -2119,7 +2212,10 @@ async function cancelOtherBracketOrders(symbol, filledOrderId) {
 
 // Update position with real-time market data
 async function updateTradingPositionFromMarketData(posData, accountId) {
-  logger.info(`🔄 Position update from market data:`, {
+  const updateSource = posData.source || 'unknown';
+  const updateTimestamp = posData.timestamp || new Date().toISOString();
+
+  logger.info(`🔄 Position update from ${updateSource}:`, {
     symbol: posData.symbol,
     contractId: posData.contractId,
     netPos: posData.netPos,
@@ -2127,7 +2223,8 @@ async function updateTradingPositionFromMarketData(posData, accountId) {
     averagePrice: posData.averagePrice,
     entryPrice: posData.entryPrice,
     currentPrice: posData.currentPrice,
-    unrealizedPnL: posData.pnl || posData.unrealizedPnL
+    unrealizedPnL: posData.pnl || posData.unrealizedPnL,
+    timestamp: updateTimestamp
   });
   // Handle positions that only have contractId - need to resolve symbol
   let symbol = posData.symbol;
@@ -2148,24 +2245,63 @@ async function updateTradingPositionFromMarketData(posData, accountId) {
   const position = tradingState.tradingPositions.get(symbol);
 
   if (position) {
-    // Update existing position with market data
+    logger.info(`📊 Updating existing position ${symbol} from ${updateSource}`);
+
+    // Always update current price for real-time market data
     position.currentPrice = posData.currentPrice || position.currentPrice;
 
-    // Update entry price if provided (startup sync with calculated entry prices)
-    if (posData.netPrice && posData.netPrice > 0) {
-      position.netPrice = posData.netPrice;
-      position.entryPrice = posData.netPrice;
-    } else if (posData.averagePrice && posData.averagePrice > 0) {
-      position.netPrice = posData.averagePrice;
-      position.entryPrice = posData.averagePrice;
-    } else if (posData.entryPrice && posData.entryPrice > 0) {
-      position.netPrice = posData.entryPrice;
-      position.entryPrice = posData.entryPrice;
+    // Simplified position update logic - Tradovate is authoritative
+    let shouldUpdateEntryPrice = false;
+    let newEntryPrice = position.netPrice;
+
+    // Trust Tradovate data sources for entry price updates
+    if (updateSource === 'websocket_position_update' || updateSource === 'websocket_update' || updateSource === 'websocket_sync') {
+      // WebSocket data from Tradovate is always authoritative
+      shouldUpdateEntryPrice = true;
+      if (posData.netPrice && posData.netPrice > 0) {
+        newEntryPrice = posData.netPrice;
+      } else if (posData.averagePrice && posData.averagePrice > 0) {
+        newEntryPrice = posData.averagePrice;
+      }
+      logger.info(`📡 WebSocket position update: ${newEntryPrice} from ${updateSource}`);
+    } else if (updateSource === 'fill_update') {
+      // Fill data is always trusted - this is direct execution data
+      shouldUpdateEntryPrice = true;
+      if (posData.netPrice && posData.netPrice > 0) {
+        newEntryPrice = posData.netPrice;
+      } else if (posData.averagePrice && posData.averagePrice > 0) {
+        newEntryPrice = posData.averagePrice;
+      }
+      logger.info(`💰 Fill position update: ${newEntryPrice} from execution`);
+    } else if (!position.netPrice || position.netPrice === 0) {
+      // Fill missing entry price from any source
+      if (posData.netPrice && posData.netPrice > 0) {
+        shouldUpdateEntryPrice = true;
+        newEntryPrice = posData.netPrice;
+        logger.info(`🔄 Setting missing entry price: ${newEntryPrice}`);
+      } else if (posData.averagePrice && posData.averagePrice > 0) {
+        shouldUpdateEntryPrice = true;
+        newEntryPrice = posData.averagePrice;
+        logger.info(`📈 Setting missing entry price from average: ${newEntryPrice}`);
+      }
     }
 
-    // Don't overwrite real-time calculated P&L with monitoring service data
-    // position.unrealizedPnL is managed by real-time price updates
-    position.lastUpdate = new Date().toISOString();
+    // Apply entry price update if approved
+    if (shouldUpdateEntryPrice && newEntryPrice > 0) {
+      const oldPrice = position.netPrice;
+      position.netPrice = newEntryPrice;
+      position.entryPrice = newEntryPrice;
+      logger.info(`✅ Entry price updated: ${oldPrice} → ${newEntryPrice} (source: ${updateSource})`);
+    }
+
+    // Update metadata
+    position.lastUpdate = updateTimestamp;
+    position.lastUpdateSource = updateSource;
+
+    // Update net position if provided
+    if (posData.netPos !== undefined) {
+      position.netPos = posData.netPos;
+    }
 
     // Update associated orders in the position
     await linkAssociatedOrders(position);
@@ -2528,6 +2664,51 @@ async function resolveSymbolFromContractId(contractId) {
 }
 
 // ===== STARTUP SYNC FUNCTIONALITY =====
+
+// Reconcile local position state with Tradovate authoritative data
+async function reconcilePositions() {
+  try {
+    logger.info('🔄 Starting position reconciliation with Tradovate...');
+
+    // Request current position sync from tradovate-service
+    await messageBus.publish(CHANNELS.POSITION_SYNC_REQUEST, {
+      requestedBy: 'trade-orchestrator',
+      reason: 'position_reconciliation',
+      timestamp: new Date().toISOString()
+    });
+
+    // Track positions before reconciliation
+    const positionsBeforeSync = Array.from(tradingState.tradingPositions.keys());
+    logger.info(`📊 Local positions before sync: [${positionsBeforeSync.join(', ')}]`);
+
+    return new Promise((resolve) => {
+      const timeout = setTimeout(() => {
+        logger.warn('⚠️ Position reconciliation timeout after 10 seconds');
+        resolve(false);
+      }, 10000);
+
+      // Listen for sync completion
+      const cleanup = messageBus.subscribe(CHANNELS.TRADOVATE_SYNC_COMPLETED, (message) => {
+        if (message.requestedBy === 'trade-orchestrator' && message.reason === 'position_reconciliation') {
+          clearTimeout(timeout);
+
+          // Cleanup subscription
+          if (typeof cleanup === 'function') {
+            cleanup();
+          }
+
+          const positionsAfterSync = Array.from(tradingState.tradingPositions.keys());
+          logger.info(`📊 Local positions after sync: [${positionsAfterSync.join(', ')}]`);
+          logger.info(`✅ Position reconciliation completed in ${Date.now() - Date.parse(message.timestamp)}ms`);
+          resolve(true);
+        }
+      });
+    });
+  } catch (error) {
+    logger.error('❌ Position reconciliation failed:', error);
+    return false;
+  }
+}
 
 // Perform initial sync by requesting current state from monitoring service
 async function performInitialSync() {

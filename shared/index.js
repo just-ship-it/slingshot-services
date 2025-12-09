@@ -30,6 +30,7 @@ export const CHANNELS = {
   POSITION_CLOSED: 'position.closed',
   POSITION_UPDATE: 'position.update',
   POSITION_REALTIME_UPDATE: 'position.realtime_update',
+  POSITION_SYNC_REQUEST: 'position.sync_request',
 
   // Market data events
   PRICE_UPDATE: 'price.update',
