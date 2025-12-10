@@ -1076,6 +1076,154 @@ app.get('/api/services/:serviceName/health', dashboardAuth, async (req, res) => 
   }
 });
 
+// Restart service endpoint (Sevalla API integration for production)
+app.post('/api/services/:serviceName/restart', dashboardAuth, async (req, res) => {
+  const { serviceName } = req.params;
+
+  // Sevalla configuration
+  const sevallaApiKey = process.env.SEVALLA_API_KEY;
+  const sevallaAppIds = {
+    'tradovate-service': process.env.SEVALLA_APP_ID_TRADOVATE,
+    'market-data-service': process.env.SEVALLA_APP_ID_MARKET_DATA,
+    'trade-orchestrator': process.env.SEVALLA_APP_ID_ORCHESTRATOR,
+    'monitoring-service': process.env.SEVALLA_APP_ID_MONITORING
+  };
+
+  const appId = sevallaAppIds[serviceName];
+
+  // Check if we have Sevalla configuration
+  if (!sevallaApiKey || !appId) {
+    logger.warn(`⚠️ Restart requested for ${serviceName} but Sevalla not configured`);
+    return res.status(503).json({
+      error: 'Service restart not available - Sevalla configuration missing',
+      service: serviceName
+    });
+  }
+
+  try {
+    logger.info(`🔄 Initiating restart for ${serviceName} via Sevalla API`);
+
+    // Add to activity log
+    monitoringState.activity.push({
+      timestamp: new Date().toISOString(),
+      type: 'system',
+      message: `🔄 Restarting ${serviceName} (requested by dashboard)`
+    });
+    if (monitoringState.activity.length > monitoringState.maxActivitySize) {
+      monitoringState.activity.shift();
+    }
+
+    // Emit WebSocket event for real-time update
+    io.emit('service_restart_initiated', {
+      service: serviceName,
+      timestamp: new Date().toISOString(),
+      status: 'initiated'
+    });
+
+    // Special handling for monitoring-service self-restart
+    if (serviceName === 'monitoring-service') {
+      // Send response BEFORE triggering restart
+      res.json({
+        success: true,
+        message: 'Restart initiated - monitoring service will be temporarily unavailable',
+        service: serviceName
+      });
+
+      // Small delay to ensure response is sent
+      setTimeout(async () => {
+        try {
+          const response = await axios.post(
+            'https://api.sevalla.com/v2/applications/deployments',
+            {
+              app_id: appId,
+              is_restart: true  // Restart without rebuild
+            },
+            {
+              headers: {
+                'Authorization': `Bearer ${sevallaApiKey}`,
+                'Content-Type': 'application/json'
+              },
+              timeout: 30000
+            }
+          );
+          logger.info(`✅ Monitoring service self-restart triggered successfully`);
+        } catch (error) {
+          logger.error(`❌ Failed to restart monitoring service:`, error.message);
+        }
+      }, 500);
+
+      return; // Exit early for self-restart
+    }
+
+    // Normal restart for other services
+    const response = await axios.post(
+      'https://api.sevalla.com/v2/applications/deployments',
+      {
+        app_id: appId,
+        is_restart: true  // Restart without rebuild
+      },
+      {
+        headers: {
+          'Authorization': `Bearer ${sevallaApiKey}`,
+          'Content-Type': 'application/json'
+        },
+        timeout: 30000
+      }
+    );
+
+    logger.info(`✅ Restart initiated for ${serviceName}:`, response.data);
+
+    // Add to activity log
+    monitoringState.activity.push({
+      timestamp: new Date().toISOString(),
+      type: 'system',
+      message: `✅ ${serviceName} restart triggered successfully`
+    });
+    if (monitoringState.activity.length > monitoringState.maxActivitySize) {
+      monitoringState.activity.shift();
+    }
+
+    // Emit WebSocket event
+    io.emit('service_restart_success', {
+      service: serviceName,
+      timestamp: new Date().toISOString(),
+      deploymentId: response.data?.deployment_id
+    });
+
+    res.json({
+      success: true,
+      message: `Restart initiated for ${serviceName}`,
+      deploymentId: response.data?.deployment_id
+    });
+
+  } catch (error) {
+    logger.error(`❌ Failed to restart ${serviceName}:`, error.response?.data || error.message);
+
+    // Add error to activity log
+    monitoringState.activity.push({
+      timestamp: new Date().toISOString(),
+      type: 'stderr',
+      message: `❌ Failed to restart ${serviceName}: ${error.message}`
+    });
+    if (monitoringState.activity.length > monitoringState.maxActivitySize) {
+      monitoringState.activity.shift();
+    }
+
+    // Emit error event
+    io.emit('service_restart_failed', {
+      service: serviceName,
+      timestamp: new Date().toISOString(),
+      error: error.message
+    });
+
+    res.status(500).json({
+      error: 'Failed to restart service',
+      service: serviceName,
+      details: error.response?.data?.error || error.message
+    });
+  }
+});
+
 // Generic proxy endpoint for internal service API calls
 app.all('/api/proxy/:serviceName/*', dashboardAuth, async (req, res) => {
   const { serviceName } = req.params;
