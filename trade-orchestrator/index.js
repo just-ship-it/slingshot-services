@@ -2606,10 +2606,16 @@ async function handleTradovateSyncCompleted(message) {
 // Handle full sync start - clear working orders to prepare for ground truth
 async function handleFullSyncStarted(message) {
   const previousCount = tradingState.workingOrders.size;
+  const previousSignalCount = tradingState.signalContext.size;
+
   tradingState.workingOrders.clear();
+  tradingState.signalContext.clear();
   tradingState.stats.totalWorkingOrders = 0;
 
-  logger.info(`🔄 Full sync started - cleared ${previousCount} working orders to prepare for ground truth from broker`);
+  // Clear Redis signal context data too
+  await saveSignalContext(); // This saves empty signalContext to Redis, effectively clearing it
+
+  logger.info(`🔄 Full sync started - cleared ${previousCount} working orders and ${previousSignalCount} signal contexts to prepare for ground truth from broker`);
 }
 
 // Initialize P&L system with initial price data
