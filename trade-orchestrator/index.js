@@ -2603,6 +2603,15 @@ async function handleTradovateSyncCompleted(message) {
   }
 }
 
+// Handle full sync start - clear working orders to prepare for ground truth
+async function handleFullSyncStarted(message) {
+  const previousCount = tradingState.workingOrders.size;
+  tradingState.workingOrders.clear();
+  tradingState.stats.totalWorkingOrders = 0;
+
+  logger.info(`🔄 Full sync started - cleared ${previousCount} working orders to prepare for ground truth from broker`);
+}
+
 // Initialize P&L system with initial price data
 async function initializePnLSystem() {
   logger.info('💰 Initializing real-time P&L system...');
@@ -2897,6 +2906,7 @@ async function startup() {
     await messageBus.subscribe(CHANNELS.POSITION_CLOSED, handlePositionClosed);
     await messageBus.subscribe(CHANNELS.PRICE_UPDATE, handlePriceUpdate);
     await messageBus.subscribe(CHANNELS.TRADOVATE_SYNC_COMPLETED, handleTradovateSyncCompleted);
+    await messageBus.subscribe(CHANNELS.TRADOVATE_FULL_SYNC_STARTED, handleFullSyncStarted);
     logger.info('Subscribed to message bus channels');
 
     // Request initial sync of existing positions and orders from other services

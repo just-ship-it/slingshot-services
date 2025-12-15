@@ -120,6 +120,8 @@ const monitoringState = {
   services: new Map(),
   activity: [],
   maxActivitySize: 1000,
+  signals: [], // Store recent trade signal webhooks
+  maxSignalsSize: 100,
   positionSizing: null, // Will be loaded async on startup
   contractMappings: null // Will be loaded async on startup
 };
@@ -140,6 +142,57 @@ function parseBaseSymbol(symbol) {
   const fallback = symbol.toUpperCase().replace(/[^A-Z]/g, '');
   logger.warn(`Unknown symbol pattern for ${symbol}, using fallback: ${fallback}`);
   return fallback;
+}
+
+/**
+ * Create human-readable summary from trade signal webhook data
+ */
+function createSignalSummary(signalData) {
+  try {
+    const { action, side, symbol, quantity, price, stop_loss, take_profit, trailing_trigger, trailing_offset, strategy } = signalData;
+
+    // Determine action type
+    const actionText = action === 'place_limit' ? (side === 'buy' ? 'Buy' : 'Sell') :
+                      action === 'place_market' ? (side === 'buy' ? 'Buy Market' : 'Sell Market') :
+                      action === 'position_closed' ? 'Close Position' :
+                      action === 'cancel_limit' ? 'Cancel Order' : action;
+
+    // Base summary
+    let summary = `${actionText} ${quantity} ${symbol}`;
+
+    // Add price for limit orders
+    if (price && action === 'place_limit') {
+      summary += ` at ${price}`;
+    }
+
+    // Add stop/target info
+    const parts = [];
+    if (stop_loss && price) {
+      const stopPoints = Math.abs(price - stop_loss) * (symbol.startsWith('MNQ') ? 2 : symbol.startsWith('NQ') ? 20 : 50);
+      parts.push(`Stop: ${stopPoints.toFixed(0)}pts`);
+    }
+    if (take_profit && price) {
+      const targetPoints = Math.abs(take_profit - price) * (symbol.startsWith('MNQ') ? 2 : symbol.startsWith('NQ') ? 20 : 50);
+      parts.push(`Target: ${targetPoints.toFixed(0)}pts`);
+    }
+    if (trailing_trigger && trailing_offset) {
+      parts.push(`Trailing: ${trailing_trigger}/${trailing_offset}`);
+    }
+
+    if (parts.length > 0) {
+      summary += ` (${parts.join(', ')})`;
+    }
+
+    // Add strategy if present
+    if (strategy) {
+      summary += ` [${strategy}]`;
+    }
+
+    return summary;
+  } catch (error) {
+    logger.error('Failed to create signal summary:', error);
+    return `Signal: ${signalData.action || 'unknown'} ${signalData.symbol || 'unknown'}`;
+  }
 }
 
 /**
@@ -389,6 +442,7 @@ io.on('connection', (socket) => {
     positions: Array.from(monitoringState.positions.values()),
     services: Array.from(monitoringState.services.values()),
     activity: monitoringState.activity.slice(-100),
+    signals: monitoringState.signals.slice(0, 50),
     quotes: Object.fromEntries(monitoringState.prices)
   });
 
@@ -490,8 +544,28 @@ app.post('/webhook', async (req, res) => {
           break;
 
         case 'trade_signal':
+          // Store the signal in monitoring state
+          const signalData = {
+            id: req.id,
+            timestamp: new Date().toISOString(),
+            summary: createSignalSummary(req.body),
+            status: 'received',
+            rawData: req.body,
+            source: req.headers['user-agent'] || 'unknown'
+          };
+
+          monitoringState.signals.unshift(signalData);
+
+          // Limit signal storage
+          if (monitoringState.signals.length > monitoringState.maxSignalsSize) {
+            monitoringState.signals = monitoringState.signals.slice(0, monitoringState.maxSignalsSize);
+          }
+
+          // Emit WebSocket event for real-time updates
+          io.emit('signal_received', signalData);
+
           await messageBus.publish(CHANNELS.WEBHOOK_RECEIVED, webhookMessage);
-          logger.info(`Trade signal webhook routed to trade-orchestrator: ${req.id}`);
+          logger.info(`Trade signal webhook stored and routed: ${req.id} - ${signalData.summary}`);
           break;
 
         default:
@@ -636,7 +710,8 @@ app.get('/api/dashboard', dashboardAuth, (req, res) => {
     orders: Array.from(monitoringState.orders.values()),
     prices: Object.fromEntries(monitoringState.prices),
     services: Array.from(monitoringState.services.values()),
-    activity: monitoringState.activity.slice(-100)
+    activity: monitoringState.activity.slice(-100),
+    signals: monitoringState.signals.slice(0, 50)
   });
 });
 
@@ -691,6 +766,11 @@ app.get('/api/positions', dashboardAuth, (req, res) => {
 app.get('/api/activity', dashboardAuth, (req, res) => {
   const limit = parseInt(req.query.limit) || 100;
   res.json(monitoringState.activity.slice(-limit));
+});
+
+app.get('/api/signals', dashboardAuth, (req, res) => {
+  const limit = parseInt(req.query.limit) || 50;
+  res.json(monitoringState.signals.slice(0, limit));
 });
 
 app.get('/api/services', dashboardAuth, async (req, res) => {
