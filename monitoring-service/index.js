@@ -1711,6 +1711,20 @@ async function handleTradovateSyncCompleted(message) {
   }
 }
 
+// Handle full sync start - clear orders to prepare for ground truth
+async function handleFullSyncStarted(message) {
+  const previousCount = monitoringState.orders.size;
+  monitoringState.orders.clear();
+
+  logger.info(`🔄 Full sync started - cleared ${previousCount} orders from monitoring state to prepare for ground truth`);
+
+  // Broadcast update to connected clients
+  broadcast('orders', {
+    orders: [],
+    source: 'full_sync_start'
+  });
+}
+
 async function handleServiceHealth(message) {
   monitoringState.services.set(message.service, {
     name: message.service,
@@ -1786,6 +1800,7 @@ async function startup() {
       [CHANNELS.ORDER_REJECTED, handleOrderUpdate],
       [CHANNELS.ORDER_REALTIME_UPDATE, handleOrderRealtimeUpdate],
       [CHANNELS.TRADOVATE_SYNC_COMPLETED, handleTradovateSyncCompleted],
+      [CHANNELS.TRADOVATE_FULL_SYNC_STARTED, handleFullSyncStarted],
       [CHANNELS.SERVICE_HEALTH, handleServiceHealth],
       [CHANNELS.SERVICE_STARTED, handleServiceStarted],
       [CHANNELS.SERVICE_STOPPED, handleServiceStopped],
