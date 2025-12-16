@@ -164,6 +164,48 @@ app.post('/sync/trigger', async (req, res) => {
   }
 });
 
+// Handle individual order cancel requests (multi-strategy support)
+async function handleOrderCancelRequest(message) {
+  try {
+    logger.info(`🎯 Received order cancel request: ${message.orderId} (reason: ${message.reason})`);
+
+    // Cancel the specific order
+    const result = await tradovateClient.cancelOrder(message.orderId);
+
+    if (result) {
+      logger.info(`✅ Successfully cancelled order ${message.orderId}`);
+
+      // Publish cancellation confirmation
+      await messageBus.publish(CHANNELS.ORDER_CANCELLED, {
+        orderId: message.orderId,
+        reason: message.reason,
+        timestamp: new Date().toISOString()
+      });
+    } else {
+      logger.warn(`⚠️ Cancel request for order ${message.orderId} returned no result`);
+    }
+
+    return result;
+  } catch (error) {
+    logger.error(`❌ Failed to cancel order ${message.orderId}:`, {
+      message: error.message,
+      status: error.response?.status,
+      statusText: error.response?.statusText,
+      data: error.response?.data,
+      stack: error.stack,
+      fullError: error
+    });
+
+    // Publish error event
+    await messageBus.publish(CHANNELS.ORDER_REJECTED, {
+      orderId: message.orderId,
+      error: error.message,
+      reason: 'Cancel failed',
+      timestamp: new Date().toISOString()
+    });
+  }
+}
+
 // Message bus event handlers
 async function handleOrderRequest(message) {
   try {
@@ -1416,14 +1458,39 @@ async function handleCancelLimitOrders(tradeSignal, accountId, webhookId) {
   logger.info(`Processing cancel_limit: ${tradeSignal.side} ${tradeSignal.symbol} (reason: ${tradeSignal.reason})`);
 
   try {
+    // Map side to Tradovate action for filtering
+    let sideAction;
+    if (tradeSignal.side === 'buy') sideAction = 'Buy';
+    else if (tradeSignal.side === 'sell') sideAction = 'Sell';
+    else throw new Error(`Invalid side: ${tradeSignal.side}. Expected 'buy' or 'sell'.`);
+
     // Get all open orders for the account
     const orders = await tradovateClient.getOrders(accountId);
 
-    // Filter for working limit orders matching symbol and side
+    // Debug: Log what we're looking for
+    const expectedContractName = tradovateClient.mapToFullContractSymbol(tradeSignal.symbol);
+    logger.info(`🔍 Looking for: orderStatus=Working, orderType=Limit, action=${sideAction}, symbol=${expectedContractName}`);
+
+    // Debug: Log working limit orders for cancellation
+    const workingLimitOrders = orders.filter(o => {
+      const isWorking = (o.orderStatus === 'Working' || o.ordStatus === 'Working');
+      const orderType = o.orderType || o.ordType;
+      const isLimit = orderType === 'Limit';
+      return isWorking && isLimit;
+    });
+    logger.info(`📋 Found ${workingLimitOrders.length} working limit orders for ${sideAction} ${expectedContractName}`);
+
+    // Filter for working limit orders matching symbol and side - orderType should now be enriched properly
     const matchingOrders = orders.filter(order => {
-      return order.orderStatus === 'Working' &&
-             order.orderType === 'Limit' &&
-             order.contractId === tradovateClient.mapToFullContractSymbol(tradeSignal.symbol);
+      const isWorking = order.orderStatus === 'Working' || order.ordStatus === 'Working';
+      const orderType = order.orderType || order.ordType;
+      const isLimit = orderType === 'Limit';
+      const actionMatch = order.action === sideAction;
+      const symbolMatch = order.symbol === expectedContractName;
+
+      // Removed verbose debug logging
+
+      return isWorking && isLimit && actionMatch && symbolMatch;
     });
 
     if (matchingOrders.length === 0) {
@@ -2118,6 +2185,28 @@ async function startup() {
 
         logger.info(`📊 Published execution fill for order ${execution.orderId} with symbol: ${symbol}`);
 
+        // Check position state after execution fill to detect position closures
+        try {
+          const positions = await tradovateClient.getPositions(execution.accountId);
+          const position = positions?.find(pos => pos.contractId === execution.contractId);
+
+          if (!position || position.netPos === 0) {
+            // Position was closed by this execution
+            logger.info(`🔒 Position closed by execution - publishing POSITION_CLOSED for ${symbol}`);
+            await messageBus.publish(CHANNELS.POSITION_CLOSED, {
+              accountId: execution.accountId,
+              contractId: execution.contractId,
+              symbol: symbol,
+              timestamp: new Date().toISOString(),
+              source: 'execution_fill_close'
+            });
+          } else {
+            logger.info(`📈 Position still open after execution: ${symbol} netPos=${position.netPos}`);
+          }
+        } catch (error) {
+          logger.warn(`⚠️ Failed to check position state after execution fill: ${error.message}`);
+        }
+
         // Refresh account balance after execution fill
         logger.info(`💰 Refreshing account balance after execution fill for account ${execution.accountId}`);
         try {
@@ -2462,6 +2551,9 @@ async function startup() {
     // Subscribe to message bus channels
     await messageBus.subscribe(CHANNELS.ORDER_REQUEST, handleOrderRequest);
     logger.info(`Subscribed to ${CHANNELS.ORDER_REQUEST}`);
+
+    await messageBus.subscribe(CHANNELS.ORDER_CANCEL_REQUEST, handleOrderCancelRequest);
+    logger.info(`Subscribed to ${CHANNELS.ORDER_CANCEL_REQUEST}`);
 
     await messageBus.subscribe(CHANNELS.WEBHOOK_TRADE, handleWebhookTrade);
     logger.info(`Subscribed to ${CHANNELS.WEBHOOK_TRADE}`);

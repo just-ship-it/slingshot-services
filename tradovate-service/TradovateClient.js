@@ -254,6 +254,10 @@ class TradovateClient extends EventEmitter {
 
       if (requestData) {
         config.data = requestData;
+        // Debug: Log the exact JSON being sent
+        this.logger.info(`🔍 Sending JSON to ${endpoint}:`);
+        this.logger.info(`🔍 Request data:`, requestData);
+        this.logger.info(`🔍 OrderId type: ${typeof requestData.orderId}, value: ${requestData.orderId}`);
       }
 
       const response = await axios(config);
@@ -441,11 +445,24 @@ class TradovateClient extends EventEmitter {
 
   async cancelOrder(orderId) {
     try {
-      const response = await this.makeRequest('POST', '/order/cancelorder', { orderId });
+      // Try sending as integer - Tradovate might expect number not string
+      const orderIdInt = parseInt(orderId, 10);
+      this.logger.info(`🔢 Converting orderId ${orderId} to integer: ${orderIdInt}, safe: ${Number.isSafeInteger(orderIdInt)}`);
+
+      const response = await this.makeRequest('POST', '/order/cancelorder', {
+        orderId: orderIdInt,
+        isAutomated: true  // Match the isAutomated flag from order placement
+      });
       this.emit('orderCancelled', response);
       return response;
     } catch (error) {
-      this.logger.error(`Failed to cancel order ${orderId}:`, error.message);
+      this.logger.error(`Failed to cancel order ${orderId}:`, {
+        message: error.message,
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        data: error.response?.data,
+        fullError: error
+      });
       throw error;
     }
   }
@@ -1109,32 +1126,34 @@ class TradovateClient extends EventEmitter {
     }
   }
 
-  // Map generic symbols like "MNQ" to full contract symbols like "MNQZ5"
+  // Map generic symbols like "MNQ" to full contract symbols like "MNQH6"
   mapToFullContractSymbol(symbol) {
     const symbolMap = {
       // Micro E-mini NASDAQ-100
-      'MNQ': 'MNQZ5',  // December 2025
-      'MNQZ5': 'MNQZ5',
+      'MNQ': 'MNQH6',  // March 2026
+      'MNQH6': 'MNQH6',
 
       // E-mini NASDAQ-100
-      'NQ': 'NQZ5',    // December 2025
-      'NQZ5': 'NQZ5',
+      'NQ': 'NQH6',    // March 2026
+      'NQ!': 'NQH6',   // TradingView continuous contract
+      'NQ1!': 'NQH6',  // TradingView format variant
+      'NQH6': 'NQH6',
 
       // Micro E-mini S&P 500
-      'MES': 'MESZ5',  // December 2025
-      'MESZ5': 'MESZ5',
+      'MES': 'MESH6',  // March 2026
+      'MESH6': 'MESH6',
 
       // E-mini S&P 500
-      'ES': 'ESZ5',    // December 2025
-      'ESZ5': 'ESZ5',
+      'ES': 'ESH6',    // March 2026
+      'ESH6': 'ESH6',
 
       // E-mini Russell 2000
-      'RTY': 'RTYZ5',  // December 2025
-      'RTYZ5': 'RTYZ5',
+      'RTY': 'RTYH6',  // March 2026
+      'RTYH6': 'RTYH6',
 
       // Micro E-mini Russell 2000
-      'M2K': 'M2KZ5',  // December 2025
-      'M2KZ5': 'M2KZ5'
+      'M2K': 'M2KH6',  // March 2026
+      'M2KH6': 'M2KH6'
     };
 
     return symbolMap[symbol.toUpperCase()] || symbol;
@@ -1196,14 +1215,15 @@ class TradovateClient extends EventEmitter {
           const orderVersion = orderVersionResponse[0];
           this.logger.info(`Order version data for ${order.id}:`, orderVersion);
 
-          // Merge order version data which has the real prices
+          // Merge order version data which has the real prices AND order type
           enrichedOrder = {
             ...enrichedOrder,
             price: orderVersion.price || enrichedOrder.price,
             stopPrice: orderVersion.stopPrice || enrichedOrder.stopPrice,
             qty: orderVersion.qty || enrichedOrder.qty,
             filledQty: orderVersion.filledQty || enrichedOrder.filledQty,
-            avgFillPrice: orderVersion.avgFillPrice || enrichedOrder.avgFillPrice
+            avgFillPrice: orderVersion.avgFillPrice || enrichedOrder.avgFillPrice,
+            orderType: orderVersion.orderType || enrichedOrder.orderType
           };
         }
       } catch (versionError) {

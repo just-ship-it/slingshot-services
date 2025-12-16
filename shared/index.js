@@ -23,6 +23,7 @@ export const CHANNELS = {
   ORDER_FILLED: 'order.filled',
   ORDER_REJECTED: 'order.rejected',
   ORDER_CANCELLED: 'order.cancelled',
+  ORDER_CANCEL_REQUEST: 'order.cancel_request',
   ORDER_REALTIME_UPDATE: 'order.realtime_update',
 
   // Position events

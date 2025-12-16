@@ -107,6 +107,56 @@ async function loadOrderStrategyMapping() {
   }
 }
 
+// Multi-strategy state persistence functions
+async function saveStrategyState() {
+  try {
+    // Convert Map to object for JSON serialization
+    const pendingOrdersData = {};
+    for (const [orderId, orderInfo] of tradingState.strategyState.pendingOrders) {
+      pendingOrdersData[orderId] = orderInfo;
+    }
+
+    const dataToSave = {
+      position: tradingState.strategyState.position,
+      positionSource: tradingState.strategyState.positionSource,
+      pendingOrders: pendingOrdersData,
+      timestamp: new Date().toISOString()
+    };
+
+    await messageBus.publisher.set('multi-strategy:state', JSON.stringify(dataToSave));
+    logger.info(`💾 Multi-strategy state saved to Redis (${tradingState.strategyState.pendingOrders.size} pending orders)`);
+  } catch (error) {
+    logger.error('❌ Failed to save multi-strategy state to Redis:', error);
+  }
+}
+
+async function loadStrategyState() {
+  try {
+    const data = await messageBus.publisher.get('multi-strategy:state');
+    if (data) {
+      const parsedData = JSON.parse(data);
+
+      // Restore strategy state from Redis
+      tradingState.strategyState.position = parsedData.position || 'flat';
+      tradingState.strategyState.positionSource = parsedData.positionSource || null;
+
+      // Restore pending orders Map
+      tradingState.strategyState.pendingOrders.clear();
+      if (parsedData.pendingOrders) {
+        for (const [orderId, orderInfo] of Object.entries(parsedData.pendingOrders)) {
+          tradingState.strategyState.pendingOrders.set(orderId, orderInfo);
+        }
+      }
+
+      logger.info(`🔄 Loaded multi-strategy state from Redis: position=${parsedData.position}, source=${parsedData.positionSource}, pending=${tradingState.strategyState.pendingOrders.size} (saved: ${parsedData.timestamp})`);
+    } else {
+      logger.info('📂 No existing multi-strategy state found in Redis, starting fresh');
+    }
+  } catch (error) {
+    logger.error('❌ Failed to load multi-strategy state from Redis:', error);
+  }
+}
+
 // Contract mappings Redis functions
 async function loadContractMappings() {
   try {
@@ -124,10 +174,10 @@ async function loadContractMappings() {
   const defaults = {
     lastUpdated: new Date().toISOString(),
     currentContracts: {
-      'NQ': 'NQZ5',
-      'MNQ': 'MNQZ5',
-      'ES': 'ESZ5',
-      'MES': 'MESZ5'
+      'NQ': 'NQH6',
+      'MNQ': 'MNQH6',
+      'ES': 'ESH6',
+      'MES': 'MESH6'
     },
     pointValues: {
       'NQ': 20,
@@ -136,7 +186,7 @@ async function loadContractMappings() {
       'MES': 5
     },
     tickSize: 0.25,
-    notes: 'Default contract mappings - stored in Redis for rollover updates'
+    notes: 'March 2026 contract mappings - stored in Redis for rollover updates'
   };
 
   // Save defaults to Redis
@@ -212,23 +262,26 @@ class SignalRegistry {
 
   // Link an order to a signal
   linkOrderToSignal(orderId, signalId, orderRole = 'unknown') {
+    // Ensure orderId is a string for consistent Map key format
+    const orderIdStr = String(orderId);
+
     // Add order to signal's order set
     if (!this.signalToOrders.has(signalId)) {
       this.signalToOrders.set(signalId, new Set());
     }
-    this.signalToOrders.get(signalId).add(orderId);
+    this.signalToOrders.get(signalId).add(orderIdStr);
 
-    // Create reverse mapping
-    this.orderToSignal.set(orderId, signalId);
+    // Create reverse mapping (using string key)
+    this.orderToSignal.set(orderIdStr, signalId);
 
     // Log lifecycle event
     this.addLifecycleEvent(signalId, 'order_linked', {
-      orderId,
+      orderId: orderIdStr,
       orderRole,
       timestamp: new Date().toISOString()
     });
 
-    logger.info(`🔗 Order ${orderId} linked to signal ${signalId} (role: ${orderRole})`);
+    logger.info(`🔗 Order ${orderIdStr} linked to signal ${signalId} (role: ${orderRole})`);
   }
 
   // Link a position to a signal when order fills
@@ -246,7 +299,8 @@ class SignalRegistry {
 
   // Find signal ID for a given order
   findSignalForOrder(orderId) {
-    return this.orderToSignal.get(orderId);
+    // Ensure orderId is a string for consistent Map key format
+    return this.orderToSignal.get(String(orderId));
   }
 
   // Get all orders for a signal
@@ -347,7 +401,8 @@ class SignalRegistry {
 
         if (parsed.orderToSignal) {
           for (const [orderId, signalId] of Object.entries(parsed.orderToSignal)) {
-            this.orderToSignal.set(orderId, signalId);
+            // Ensure orderId is stored as string for consistent lookups
+            this.orderToSignal.set(String(orderId), signalId);
           }
         }
 
@@ -385,6 +440,39 @@ class SignalRegistry {
     } catch (error) {
       logger.error('❌ Failed to load signal lifecycles from Redis:', error);
     }
+  }
+
+  // Get strategy information for an order using signal context
+  getOrderStrategy(orderId) {
+    // Convert orderId to string to ensure consistent Map key format
+    const orderIdStr = String(orderId);
+    const signalId = this.orderToSignal.get(orderIdStr);
+
+    logger.info(`🔍 [SignalRegistry] Looking up strategy for order ${orderIdStr}: found signalId=${signalId}, mappings loaded=${this.orderToSignal.size}`);
+
+    if (!signalId) {
+      return 'UNKNOWN';
+    }
+
+    const lifecycle = this.signalLifecycles.get(signalId);
+    if (!lifecycle || !Array.isArray(lifecycle)) {
+      logger.info(`🔍 [SignalRegistry] No lifecycle found for signal ${signalId}`);
+      return 'UNKNOWN';
+    }
+
+    // Find the signal_received event which contains the original signal data
+    const signalEvent = lifecycle.find(event => event.event === 'signal_received');
+    if (!signalEvent || !signalEvent.data) {
+      logger.info(`🔍 [SignalRegistry] No signal_received event found in lifecycle for signal ${signalId}`);
+      return 'UNKNOWN';
+    }
+
+    // Strategy could be in data.strategy (direct) or data.originalSignal.strategy (nested)
+    const strategy = signalEvent.data.strategy ||
+                    (signalEvent.data.originalSignal && signalEvent.data.originalSignal.strategy) ||
+                    'UNKNOWN';
+    logger.info(`🔍 [SignalRegistry] Found strategy ${strategy} for order ${orderIdStr} via signal ${signalId}`);
+    return strategy;
   }
 
   // Debug/monitoring methods
@@ -448,6 +536,13 @@ const tradingState = {
     totalWorkingOrders: 0,
     dailyTrades: 0,
     dailyPnL: 0
+  },
+
+  // Multi-strategy state tracking
+  strategyState: {
+    position: 'flat', // 'flat' | 'long' | 'short'
+    positionSource: null, // null | 'LDPS' | 'OES' - which strategy owns current position
+    pendingOrders: new Map() // orderId -> { strategy, direction, price, createdAt, symbol }
   }
 };
 
@@ -611,7 +706,7 @@ function convertPositionSize(originalSymbol, originalQuantity, action, entryPric
 
 // TradingPosition structure:
 // {
-//   symbol: 'MNQZ5',
+//   symbol: 'MNQH6',
 //   accountId: '12345',
 //   netPosition: 2,  // Net quantity (positive = long, negative = short)
 //   side: 'long',    // 'long' or 'short'
@@ -1083,15 +1178,32 @@ async function handleWebhookReceived(message) {
             timestamp: new Date().toISOString()
           }
         };
-      } else {
-        // For position_closed and cancel_limit
+      } else if (signal.action === 'position_closed') {
+        // For position_closed only
         routeMessage = {
           id: message.id,
           type: 'trade_signal',
           body: {
-            action: 'position_closed', // Always use position_closed for the liquidation handler
+            action: 'position_closed',
             symbol: positionSizing.symbol, // Use converted symbol
             side: signal.side,
+            accountId: signal.accountId || getDefaultAccountId(),
+            timestamp: new Date().toISOString()
+          }
+        };
+      } else if (signal.action === 'cancel_limit') {
+        // For cancel_limit, route directly to tradovate-service webhook handler
+        logger.info(`🎯 Routing cancel_limit for strategy ${signal.strategy} to working cancellation handler`);
+
+        routeMessage = {
+          id: message.id,
+          body: {
+            action: signal.action,
+            symbol: signal.symbol,
+            side: signal.side,
+            strategy: signal.strategy,
+            reason: signal.reason || 'strategy_request',
+            quantity: signal.quantity,
             accountId: signal.accountId || getDefaultAccountId(),
             timestamp: new Date().toISOString()
           }
@@ -1152,23 +1264,22 @@ async function handleWebhookReceived(message) {
         }
       }
 
-      const existingPosition = tradingState.tradingPositions.get(positionSizing.symbol);
-      if (existingPosition && Math.abs(existingPosition.netPos) > 0) {
-        logger.error(`🚨 POSITION COLLISION DETECTED: Existing position ${existingPosition.netPos} for ${positionSizing.symbol}`);
-        logger.error(`🚨 Signal attempted: ${mappedAction} ${positionSizing.quantity} ${positionSizing.symbol} @ ${mappedPrice}`);
-        logger.error(`🚨 Last update: ${existingPosition.lastUpdate}, source: ${existingPosition.lastUpdateSource}`);
+      // Multi-strategy position check - first-come-first-serve with first-fill-wins
+      const strategy = signal.strategy || 'UNKNOWN';
 
-        // Reject the order to prevent stacking
+      // Check if already in a position (any strategy)
+      if (tradingState.strategyState.position !== 'flat') {
+        logger.warn(`📊 [${strategy}] Signal skipped - already in ${tradingState.strategyState.position} position from ${tradingState.strategyState.positionSource}`);
+        logger.warn(`📊 Signal attempted: ${mappedAction} ${positionSizing.quantity} ${positionSizing.symbol} @ ${mappedPrice}`);
+
         await messageBus.publish(CHANNELS.TRADE_REJECTED, {
-          reason: `Position collision: Existing ${existingPosition.netPos > 0 ? 'LONG' : 'SHORT'} position of ${existingPosition.netPos} units exists for ${positionSizing.symbol}. Cannot place new ${mappedAction} order to prevent position stacking.`,
-          existingPosition: {
-            symbol: existingPosition.symbol,
-            netPos: existingPosition.netPos,
-            entryPrice: existingPosition.netPrice,
-            lastUpdate: existingPosition.lastUpdate,
-            lastUpdateSource: existingPosition.lastUpdateSource
+          reason: `Already in ${tradingState.strategyState.position} position from ${tradingState.strategyState.positionSource} strategy`,
+          currentPosition: {
+            state: tradingState.strategyState.position,
+            source: tradingState.strategyState.positionSource
           },
           rejectedSignal: {
+            strategy: strategy,
             symbol: positionSizing.symbol,
             action: mappedAction,
             quantity: positionSizing.quantity,
@@ -1178,11 +1289,10 @@ async function handleWebhookReceived(message) {
           timestamp: new Date().toISOString()
         });
 
-        logger.error(`🚫 Order rejected due to position collision for ${positionSizing.symbol}`);
-        return; // Exit early to prevent order placement
+        return; // Exit early - already in position
       }
 
-      logger.info(`✅ Position validation passed: No existing position for ${positionSizing.symbol}`);
+      logger.info(`✅ [${strategy}] Position validation passed: Currently flat, allowing ${mappedAction} order`);
     }
 
     // Prepare order request with potentially converted symbol and quantity
@@ -1265,7 +1375,9 @@ async function handleWebhookReceived(message) {
     // Request order execution
     await messageBus.publish(CHANNELS.ORDER_REQUEST, orderRequest);
 
-    logger.info(`Trade signal processed and order requested: ${positionSizing.symbol} ${signal.action} ${positionSizing.quantity}`);
+    const strategy = signal.strategy || 'UNKNOWN';
+    const pendingCount = tradingState.strategyState.pendingOrders.size;
+    logger.info(`[${strategy}] Trade signal processed and order requested: ${positionSizing.symbol} ${signal.action} ${positionSizing.quantity} (${pendingCount} pending orders across all strategies)`);
   } catch (error) {
     logger.error('Failed to process webhook signal:', error);
 
@@ -1476,7 +1588,7 @@ function getPointValue(symbol) {
   return 1; // Default fallback
 }
 
-// Get base symbol for price lookup (e.g., MNQZ5 -> MNQ)
+// Get base symbol for price lookup (e.g., MNQH6 -> MNQ)
 function getBaseSymbol(contractSymbol) {
   // Handle null/undefined
   if (!contractSymbol) return null;
@@ -1568,9 +1680,53 @@ async function handleOrderPlaced(message) {
   // Store the working order
   tradingState.workingOrders.set(message.orderId, order);
 
+  // Track pending order for multi-strategy management (only for entry orders)
+  if (!message.orderRole || message.orderRole === 'entry') {
+    // Extract strategy from signal context - try multiple sources
+    let strategy = 'UNKNOWN';
+    let strategySource = 'none';
+
+    // First try: Current signal context (for new signals)
+    if (message.signalId && tradingState.signalContext.has(message.signalId)) {
+      const signalContext = tradingState.signalContext.get(message.signalId);
+      strategy = signalContext.strategy || 'UNKNOWN';
+      strategySource = 'signal_context';
+    }
+
+    // Second try: SignalRegistry lifecycle data (for restored orders)
+    if (strategy === 'UNKNOWN') {
+      strategy = signalRegistry.getOrderStrategy(String(message.orderId));
+      if (strategy !== 'UNKNOWN') {
+        strategySource = 'signal_registry';
+      }
+    }
+
+    logger.info(`🔍 [${strategy}] Strategy extracted from ${strategySource} for order ${message.orderId}`);
+
+    // Determine direction from action
+    const direction = message.action === 'Buy' ? 'long' : 'short';
+
+    // Add to pending orders for multi-strategy tracking
+    tradingState.strategyState.pendingOrders.set(message.orderId, {
+      strategy: strategy,
+      direction: direction,
+      symbol: message.symbol,
+      price: message.price,
+      quantity: message.quantity,
+      createdAt: new Date().toISOString()
+    });
+
+    logger.info(`📌 [${strategy}] Added pending ${direction} order ${message.orderId} to multi-strategy tracking (total pending: ${tradingState.strategyState.pendingOrders.size})`);
+
+    // Save strategy state to Redis
+    await saveStrategyState();
+  }
+
   // Link order to signal in SignalRegistry
   if (message.signalId) {
     signalRegistry.linkOrderToSignal(message.orderId, message.signalId, message.orderRole || 'entry');
+    // Save the updated mappings to Redis immediately after linking
+    await signalRegistry.saveMappings();
   }
 
   // Track order relationships for bracket orders
@@ -1604,6 +1760,52 @@ async function handleOrderFilled(message) {
     await updatePositionFromFill(message);
     // Don't delete the order relationship for entry orders - we need it for dashboard filtering
     logger.info(`🔗 Keeping order relationship for filled entry order ${message.orderId} for dashboard tracking`);
+
+    // Multi-strategy: Cancel ALL other pending entry orders when ANY order fills
+    const filledOrderInfo = tradingState.strategyState.pendingOrders.get(message.orderId);
+    if (filledOrderInfo) {
+      const filledStrategy = filledOrderInfo.strategy;
+      const filledDirection = filledOrderInfo.direction;
+
+      // Update strategy state - we now have a position
+      tradingState.strategyState.position = filledDirection;
+      tradingState.strategyState.positionSource = filledStrategy;
+
+      // Get list of all OTHER pending orders to cancel
+      const ordersToCancel = [];
+      for (const [orderId, orderInfo] of tradingState.strategyState.pendingOrders) {
+        if (orderId !== message.orderId) {
+          ordersToCancel.push({ orderId, ...orderInfo });
+        }
+      }
+
+      if (ordersToCancel.length > 0) {
+        logger.info(`🎯 [${filledStrategy}] Order filled - cancelling ${ordersToCancel.length} other pending orders from all strategies`);
+
+        // Send cancel requests for each order
+        for (const orderToCancel of ordersToCancel) {
+          logger.info(`❌ Cancelling ${orderToCancel.strategy} ${orderToCancel.direction} order ${orderToCancel.orderId}`);
+
+          // Publish cancel request to tradovate-service
+          await messageBus.publish(CHANNELS.ORDER_CANCEL_REQUEST, {
+            orderId: orderToCancel.orderId,
+            reason: `${filledStrategy} order filled first`,
+            filledOrderId: message.orderId,
+            timestamp: new Date().toISOString()
+          });
+        }
+      }
+
+      // Clear all pending orders since we now have a position
+      tradingState.strategyState.pendingOrders.clear();
+
+      // Save updated strategy state to Redis
+      await saveStrategyState();
+
+      logger.info(`📊 Multi-strategy state updated: position=${tradingState.strategyState.position}, source=${filledStrategy}, pending=0`);
+    } else {
+      logger.warn(`⚠️ Filled order ${message.orderId} not found in pending orders tracking`);
+    }
   } else if (orderRole === 'stop_loss' || orderRole === 'take_profit') {
     // This is a bracket order fill - update position and remove other bracket orders
     await handleBracketOrderFill(message, orderRole);
@@ -1652,6 +1854,17 @@ async function handleOrderCancelled(message) {
     tradingState.orderToStrategy.delete(message.orderId);
     // Save mapping after modification
     await saveOrderStrategyMapping();
+  }
+
+  // Multi-strategy: Remove from pending orders tracking
+  if (tradingState.strategyState.pendingOrders.has(message.orderId)) {
+    const cancelledOrderInfo = tradingState.strategyState.pendingOrders.get(message.orderId);
+    tradingState.strategyState.pendingOrders.delete(message.orderId);
+
+    logger.info(`🧹 [${cancelledOrderInfo.strategy}] Removed cancelled ${cancelledOrderInfo.direction} order from pending tracking (remaining: ${tradingState.strategyState.pendingOrders.size})`);
+
+    // Save updated strategy state to Redis
+    await saveStrategyState();
   }
 
   // Update statistics
@@ -1764,6 +1977,18 @@ async function handlePositionClosed(message) {
     tradingState.orderRelationships.delete(orderId);
     logger.info(`🗑️ Removed associated order: ${orderId}`);
   }
+
+  // Multi-strategy: Reset state when position is closed
+  const previousSource = tradingState.strategyState.positionSource;
+  tradingState.strategyState.position = 'flat';
+  tradingState.strategyState.positionSource = null;
+  // Note: pendingOrders should already be empty, but clear just in case
+  tradingState.strategyState.pendingOrders.clear();
+
+  // Save updated strategy state to Redis
+  await saveStrategyState();
+
+  logger.info(`📊 Multi-strategy state reset to flat (was ${previousSource} position)`);
 
   // Update statistics
   tradingState.stats.totalPositions = tradingState.tradingPositions.size;
@@ -2598,6 +2823,21 @@ async function handleTradovateSyncCompleted(message) {
       logger.info('✅ No stale orders found - pending orders state is synchronized');
     }
 
+    // Strategy state reconciliation: check if we think we have a position but actually don't
+    if (tradingState.strategyState.position !== 'flat') {
+      const hasActualPositions = tradingState.tradingPositions.size > 0;
+      if (!hasActualPositions) {
+        logger.warn(`🔄 Strategy state reconciliation: resetting state - claimed position "${tradingState.strategyState.position}" from ${tradingState.strategyState.positionSource} but no actual positions exist`);
+        tradingState.strategyState.position = 'flat';
+        tradingState.strategyState.positionSource = null;
+        tradingState.strategyState.pendingOrders.clear();
+        await saveStrategyState(tradingState.strategyState);
+        logger.info('✅ Strategy state reconciled and reset to flat');
+      } else {
+        logger.info(`✅ Strategy state verified: position "${tradingState.strategyState.position}" from ${tradingState.strategyState.positionSource} matches ${tradingState.tradingPositions.size} actual positions`);
+      }
+    }
+
   } catch (error) {
     logger.error('Failed to handle Tradovate sync completion:', error.message);
   }
@@ -2901,6 +3141,9 @@ async function startup() {
     await loadSignalContext();
     await loadOrderStrategyMapping();
 
+    // Load multi-strategy state
+    await loadStrategyState();
+
     // Load SignalRegistry persistence data
     await signalRegistry.loadMappings();
     await signalRegistry.loadLifecycles();
@@ -2918,9 +3161,13 @@ async function startup() {
     await messageBus.subscribe(CHANNELS.TRADOVATE_FULL_SYNC_STARTED, handleFullSyncStarted);
     logger.info('Subscribed to message bus channels');
 
-    // Request initial sync of existing positions and orders from other services
-    logger.info('🔄 Requesting initial sync of trading data...');
-    await performInitialSync();
+    // Request full sync which includes strategy state reconciliation
+    logger.info('🔄 Requesting full sync of trading data (includes strategy state reconciliation)...');
+    await messageBus.publish(CHANNELS.TRADOVATE_FULL_SYNC_REQUESTED, {
+      requestedBy: 'trade-orchestrator-startup',
+      reason: 'Initial sync with strategy state reconciliation',
+      dryRun: false
+    });
 
     // Initialize P&L calculation system with message bus
     logger.info('💰 Initializing real-time P&L system...');

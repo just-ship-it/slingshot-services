@@ -84,10 +84,10 @@ async function loadContractMappings() {
   const defaults = {
     lastUpdated: new Date().toISOString(),
     currentContracts: {
-      'NQ': 'NQZ5',
-      'MNQ': 'MNQZ5',
-      'ES': 'ESZ5',
-      'MES': 'MESZ5'
+      'NQ': 'NQH6',
+      'MNQ': 'MNQH6',
+      'ES': 'ESH6',
+      'MES': 'MESH6'
     },
     pointValues: {
       'NQ': 20,
@@ -96,7 +96,7 @@ async function loadContractMappings() {
       'MES': 5
     },
     tickSize: 0.25,
-    notes: 'Default contract mappings - store in Redis for rollover updates'
+    notes: 'March 2026 contract mappings - store in Redis for rollover updates'
   };
 
   // Save defaults to Redis for future use
