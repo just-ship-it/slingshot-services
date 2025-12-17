@@ -168,11 +168,11 @@ function createSignalSummary(signalData) {
     // Add stop/target info
     const parts = [];
     if (stop_loss && price) {
-      const stopPoints = Math.abs(price - stop_loss) * (symbol.startsWith('MNQ') ? 2 : symbol.startsWith('NQ') ? 20 : 50);
+      const stopPoints = Math.abs(price - stop_loss);
       parts.push(`Stop: ${stopPoints.toFixed(0)}pts`);
     }
     if (take_profit && price) {
-      const targetPoints = Math.abs(take_profit - price) * (symbol.startsWith('MNQ') ? 2 : symbol.startsWith('NQ') ? 20 : 50);
+      const targetPoints = Math.abs(take_profit - price);
       parts.push(`Target: ${targetPoints.toFixed(0)}pts`);
     }
     if (trailing_trigger && trailing_offset) {
