@@ -20,7 +20,11 @@ class MessageBus extends EventEmitter {
     this.publisher = null;
     this.subscriber = null;
     this.isConnected = false;
+    this.isReconnecting = false;
     this.subscriptions = new Map();
+    this.operationQueue = [];
+    this.reconnectAttempts = 0;
+    this.maxReconnectAttempts = 3;
   }
 
   async connect() {
@@ -48,24 +52,22 @@ class MessageBus extends EventEmitter {
         }
       });
 
-      // Set up error handlers
-      this.publisher.on('error', (err) => {
-        console.error('Redis Publisher Error:', err);
-        this.emit('error', { type: 'publisher', error: err });
-      });
-
-      this.subscriber.on('error', (err) => {
-        console.error('Redis Subscriber Error:', err);
-        this.emit('error', { type: 'subscriber', error: err });
-      });
+      // Set up error and connection event handlers
+      this.setupConnectionHandlers(this.publisher, 'publisher');
+      this.setupConnectionHandlers(this.subscriber, 'subscriber');
 
       // Connect both clients
       await this.publisher.connect();
       await this.subscriber.connect();
 
       this.isConnected = true;
+      this.isReconnecting = false;
+      this.reconnectAttempts = 0;
       this.emit('connected');
       console.log('Message bus connected to Redis');
+
+      // Process any queued operations
+      await this.processQueuedOperations();
 
       return true;
     } catch (error) {
@@ -77,6 +79,18 @@ class MessageBus extends EventEmitter {
 
   async publish(channel, message) {
     if (!this.isConnected) {
+      if (this.isReconnecting) {
+        // Queue the operation during reconnection
+        return new Promise((resolve, reject) => {
+          this.operationQueue.push({
+            type: 'publish',
+            args: [channel, message],
+            resolve,
+            reject,
+            timestamp: Date.now()
+          });
+        });
+      }
       throw new Error('Message bus not connected');
     }
 
@@ -99,6 +113,18 @@ class MessageBus extends EventEmitter {
 
   async subscribe(channel, callback) {
     if (!this.isConnected) {
+      if (this.isReconnecting) {
+        // Queue the operation during reconnection
+        return new Promise((resolve, reject) => {
+          this.operationQueue.push({
+            type: 'subscribe',
+            args: [channel, callback],
+            resolve,
+            reject,
+            timestamp: Date.now()
+          });
+        });
+      }
       throw new Error('Message bus not connected');
     }
 
@@ -205,6 +231,128 @@ class MessageBus extends EventEmitter {
         replyChannel
       });
     });
+  }
+
+  setupConnectionHandlers(client, clientType) {
+    client.on('error', (err) => {
+      console.error(`Redis ${clientType} Error:`, err);
+      this.emit('error', { type: clientType, error: err });
+    });
+
+    client.on('end', () => {
+      console.warn(`Redis ${clientType} connection ended`);
+      this.handleDisconnection();
+    });
+
+    client.on('close', () => {
+      console.warn(`Redis ${clientType} connection closed`);
+      this.handleDisconnection();
+    });
+
+    client.on('reconnecting', () => {
+      console.log(`Redis ${clientType} reconnecting...`);
+      this.isReconnecting = true;
+    });
+
+    client.on('connect', () => {
+      console.log(`Redis ${clientType} connected`);
+      if (this.publisher && this.subscriber &&
+          this.publisher.isReady && this.subscriber.isReady) {
+        this.isConnected = true;
+        this.isReconnecting = false;
+        this.reconnectAttempts = 0;
+      }
+    });
+  }
+
+  handleDisconnection() {
+    if (this.isConnected) {
+      this.isConnected = false;
+      this.isReconnecting = true;
+      console.log('Redis connection lost, attempting to reconnect...');
+      this.emit('disconnected');
+
+      // Start reconnection process
+      this.attemptReconnection();
+    }
+  }
+
+  async attemptReconnection() {
+    if (this.reconnectAttempts >= this.maxReconnectAttempts) {
+      console.error('Max reconnection attempts reached, clearing operation queue');
+      this.clearOperationQueue('Max reconnection attempts exceeded');
+      this.isReconnecting = false;
+      return;
+    }
+
+    this.reconnectAttempts++;
+    const delay = Math.min(1000 * Math.pow(2, this.reconnectAttempts - 1), 10000);
+
+    console.log(`Reconnection attempt ${this.reconnectAttempts}/${this.maxReconnectAttempts} in ${delay}ms...`);
+
+    setTimeout(async () => {
+      try {
+        await this.connect();
+        console.log('Reconnection successful');
+      } catch (error) {
+        console.error(`Reconnection attempt ${this.reconnectAttempts} failed:`, error);
+        this.attemptReconnection();
+      }
+    }, delay);
+  }
+
+  async processQueuedOperations() {
+    const queueCopy = [...this.operationQueue];
+    this.operationQueue = [];
+
+    console.log(`Processing ${queueCopy.length} queued operations`);
+
+    for (const operation of queueCopy) {
+      try {
+        let result;
+        if (operation.type === 'publish') {
+          result = await this.publish(...operation.args);
+        } else if (operation.type === 'subscribe') {
+          result = await this.subscribe(...operation.args);
+        }
+        operation.resolve(result);
+      } catch (error) {
+        operation.reject(error);
+      }
+    }
+  }
+
+  clearOperationQueue(reason) {
+    const queueCopy = [...this.operationQueue];
+    this.operationQueue = [];
+
+    queueCopy.forEach(operation => {
+      operation.reject(new Error(`Operation failed: ${reason}`));
+    });
+
+    if (queueCopy.length > 0) {
+      console.log(`Cleared ${queueCopy.length} queued operations due to: ${reason}`);
+    }
+  }
+
+  // Clean up old queued operations (older than 10 seconds)
+  cleanupStaleOperations() {
+    const now = Date.now();
+    const staleThreshold = 10000; // 10 seconds
+
+    const staleBefore = this.operationQueue.length;
+    this.operationQueue = this.operationQueue.filter(operation => {
+      const isStale = (now - operation.timestamp) > staleThreshold;
+      if (isStale) {
+        operation.reject(new Error('Operation timeout during reconnection'));
+      }
+      return !isStale;
+    });
+
+    const staleAfter = this.operationQueue.length;
+    if (staleBefore !== staleAfter) {
+      console.log(`Cleaned up ${staleBefore - staleAfter} stale operations`);
+    }
   }
 }
 
