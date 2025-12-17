@@ -1199,7 +1199,7 @@ async function handleWebhookReceived(message) {
           id: message.id,
           body: {
             action: signal.action,
-            symbol: signal.symbol,
+            symbol: positionSizing.symbol, // Use converted symbol from position sizing
             side: signal.side,
             strategy: signal.strategy,
             reason: signal.reason || 'strategy_request',
