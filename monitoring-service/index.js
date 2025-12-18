@@ -111,7 +111,7 @@ async function loadContractMappings() {
   return defaults;
 }
 
-// Monitoring state - trigger redeploy
+// Monitoring state - trigger redeploy for market news
 const monitoringState = {
   accounts: new Map(),
   positions: new Map(),
@@ -122,6 +122,8 @@ const monitoringState = {
   maxActivitySize: 1000,
   signals: [], // Store recent trade signal webhooks
   maxSignalsSize: 100,
+  marketNews: [], // Store recent Kalshi market events
+  maxNewsSize: 200,
   positionSizing: null, // Will be loaded async on startup
   contractMappings: null // Will be loaded async on startup
 };
@@ -771,6 +773,11 @@ app.get('/api/activity', dashboardAuth, (req, res) => {
 app.get('/api/signals', dashboardAuth, (req, res) => {
   const limit = parseInt(req.query.limit) || 50;
   res.json(monitoringState.signals.slice(0, limit));
+});
+
+app.get('/api/market-news', dashboardAuth, (req, res) => {
+  const limit = parseInt(req.query.limit) || 100;
+  res.json(monitoringState.marketNews.slice(0, limit));
 });
 
 app.get('/api/services', dashboardAuth, async (req, res) => {
@@ -1773,6 +1780,27 @@ async function handleTradeRejected(message) {
   logActivity('trade', `Trade rejected: ${message.reason}`, message);
 }
 
+async function handleMarketNews(message) {
+  logger.info(`📰 Market news: ${message.title} (${message.type})`);
+
+  // Add to news array with timestamp
+  const newsItem = {
+    ...message,
+    id: `${message.type}_${Date.now()}`,
+    receivedAt: new Date().toISOString()
+  };
+
+  monitoringState.marketNews.unshift(newsItem);
+
+  // Trim to max size
+  if (monitoringState.marketNews.length > monitoringState.maxNewsSize) {
+    monitoringState.marketNews = monitoringState.marketNews.slice(0, monitoringState.maxNewsSize);
+  }
+
+  // Emit WebSocket event for real-time updates
+  io.emit('market_news', newsItem);
+}
+
 // Startup sequence
 async function startup() {
   try {
@@ -1806,12 +1834,18 @@ async function startup() {
       [CHANNELS.SERVICE_STOPPED, handleServiceStopped],
       [CHANNELS.WEBHOOK_RECEIVED, handleWebhookReceived],
       [CHANNELS.TRADE_VALIDATED, handleTradeValidated],
-      [CHANNELS.TRADE_REJECTED, handleTradeRejected]
+      [CHANNELS.TRADE_REJECTED, handleTradeRejected],
+      [CHANNELS.MARKET_NEWS, handleMarketNews]
     ];
 
+
     for (const [channel, handler] of subscriptions) {
-      await messageBus.subscribe(channel, handler);
-      logger.info(`Subscribed to ${channel}`);
+      try {
+        await messageBus.subscribe(channel, handler);
+        logger.info(`Subscribed to ${channel}`);
+      } catch (error) {
+        logger.error(`Failed to subscribe to ${channel}:`, error.message);
+      }
     }
 
     // Publish startup event

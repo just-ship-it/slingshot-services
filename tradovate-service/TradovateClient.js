@@ -4,10 +4,12 @@ import WebSocket from 'ws';
 import { Resend } from 'resend';
 
 class TradovateClient extends EventEmitter {
-  constructor(config, logger) {
+  constructor(config, logger, messageBus, channels) {
     super();
     this.config = config;
     this.logger = logger;
+    this.messageBus = messageBus;
+    this.channels = channels;
     this.accessToken = null;
     this.mdAccessToken = null;
     this.userId = null;
@@ -1504,12 +1506,29 @@ class TradovateClient extends EventEmitter {
   handleUserPropertyUpdate(data) {
     const { entity, entityType, eventType } = data;
 
-    // Special handling for Kalshi data - infrastructure ready for future use
+    // Special handling for Kalshi data - publish to news channel
     const kalshiEvents = ['kalshiMarket', 'kalshiMilestone', 'kalshiStructuredTarget'];
     if (kalshiEvents.includes(entityType)) {
-      // TODO: Future Kalshi market analysis and correlation features
-      // Silently process Kalshi events without any logging to avoid spam
-      // Available data varies by type: entity.title, entity.status, entity.result, entity.openTime/closeTime, entity.rulesPrimary
+      // Log Kalshi market events for news panel
+      this.logger.debug(`📰 Kalshi ${entityType}: ${entity.title || entity.id} - ${eventType}`);
+
+      // Publish to market news channel
+      const newsEvent = {
+        type: entityType,
+        eventType,
+        timestamp: new Date().toISOString(),
+        title: entity.title || `${entityType} Update`,
+        description: entity.rulesPrimary || entity.status || '',
+        status: entity.status || eventType,
+        result: entity.result,
+        openTime: entity.openTime,
+        closeTime: entity.closeTime,
+        entity: entity
+      };
+
+      if (this.messageBus && this.channels) {
+        this.messageBus.publish(this.channels.MARKET_NEWS, newsEvent);
+      }
     } else {
       // Log important trading events at info level, others at debug
       const importantTypes = ['order', 'fill', 'position', 'executionReport', 'orderStrategy'];

@@ -16,7 +16,7 @@ if (debugConfig.tradovate && debugConfig.tradovate.password) {
 logger.info('Loaded configuration:', debugConfig);
 
 // Initialize Tradovate client
-const tradovateClient = new TradovateClient(config.tradovate, logger);
+const tradovateClient = new TradovateClient(config.tradovate, logger, messageBus, CHANNELS);
 
 // Track orderStrategy relationships
 // Map: strategyId -> { entryOrderId, stopOrderId, targetOrderId, symbol, isTrailing, trailingTrigger, trailingOffset }
@@ -2167,14 +2167,16 @@ async function startup() {
           contractId: execution.contractId,
           symbol: symbol,
           action: action,  // Will be undefined if we can't determine it
-          quantity: execution.cumQty,
+          quantity: execution.lastQty || execution.cumQty,  // Use incremental qty, fallback to cumQty
           fillPrice: execution.avgPx || execution.price,
           status: 'filled',
           timestamp: execution.timestamp || new Date().toISOString(),
           source: 'websocket_execution_report',
           signalId: signalId,  // Include the original signal ID!
           isStopOrder: isStopOrder,
-          isTargetOrder: isTargetOrder
+          isTargetOrder: isTargetOrder,
+          cumQty: execution.cumQty,  // Also send cumulative for reference
+          lastQty: execution.lastQty  // And the incremental quantity
         });
 
         // Clean up the mapping since order is now filled

@@ -40,6 +40,10 @@ export const CHANNELS = {
   QUOTE_REQUEST: 'quote.request',
   QUOTE_RESPONSE: 'quote.response',
 
+  // Market news/events
+  MARKET_NEWS: 'market.news',
+  MARKET_EVENT: 'market.event',
+
   // Account events
   ACCOUNT_UPDATE: 'account.update',
   BALANCE_UPDATE: 'balance.update',
