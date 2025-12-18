@@ -1000,7 +1000,8 @@ class TradovateClient extends EventEmitter {
       // Enrich each order with additional data
       const enrichedOrders = [];
       for (const order of basicOrders) {
-        const enrichedOrder = await this.enrichOrder(order);
+        // For bulk operations, we can bypass cache to ensure fresh data
+        const enrichedOrder = await this.enrichOrder(order, { bypassCache: true });
         enrichedOrders.push(enrichedOrder);
       }
 
@@ -1012,62 +1013,142 @@ class TradovateClient extends EventEmitter {
     }
   }
 
-  // Enrich a single order with price and contract details
-  async enrichOrder(order) {
-    let enrichedOrder = { ...order };
+  // LEGACY METHOD - COMMENTED OUT FOR ROLLBACK SAFETY
+  // async enrichOrder(order) {
+  //   let enrichedOrder = { ...order };
+  //   try {
+  //     // Step 1: Get order version details (this has the real prices!)
+  //     this.logger.info(`🔬 Getting order version details for order ${order.id}...`);
+  //     const orderVersionResponse = await this.makeRequest('GET', `/orderVersion/deps?masterid=${order.id}`);
+  //     const orderVersions = orderVersionResponse || [];
+  //     this.logger.info(`🔍 DEBUG Order ${order.id} versions found: ${orderVersions.length}`);
+  //     if (orderVersions.length > 0) {
+  //       // Usually there's only one version, but take the most recent
+  //       const latestVersion = orderVersions[orderVersions.length - 1];
+  //       // Extract price information from version (CRITICAL!)
+  //       const versionPrice = latestVersion.price || latestVersion.limitPrice || latestVersion.stopPrice;
+  //       enrichedOrder = {
+  //         ...enrichedOrder,
+  //         // Price information from order version
+  //         limitPrice: versionPrice,
+  //         price: versionPrice,
+  //         // Order details
+  //         orderType: latestVersion.orderType || order.orderType || 'Market',
+  //         qty: latestVersion.orderQty || order.orderQty,
+  //         orderQty: latestVersion.orderQty || order.orderQty,
+  //         // Action
+  //         action: order.action || latestVersion.action
+  //       };
+  //       this.logger.info(`🔬 Enriched order ${order.id}: Price=${versionPrice}, Type=${enrichedOrder.orderType}, Qty=${enrichedOrder.qty}`);
+  //       this.logger.info(`🔍 DEBUG Enrichment - latestVersion.orderQty=${latestVersion.orderQty}, order.orderQty=${order.orderQty}, final qty=${enrichedOrder.qty}`);
+  //     }
+  //     // Step 2: Get contract details if contractId is available
+  //     if (order.contractId) {
+  //       try {
+  //         const contractDetails = await this.makeRequest('GET', `/contract/item?id=${order.contractId}`);
+  //         if (contractDetails) {
+  //           enrichedOrder.contractName = contractDetails.name;
+  //           enrichedOrder.symbol = contractDetails.name; // Use contract name as symbol
+  //           enrichedOrder.tickSize = contractDetails.tickSize;
+  //           this.logger.info(`📋 Contract details for ${order.id}: ${contractDetails.name}`);
+  //         }
+  //       } catch (contractError) {
+  //         this.logger.warn(`Failed to get contract details for order ${order.id}:`, contractError.message);
+  //       }
+  //     }
+  //   } catch (error) {
+  //     this.logger.warn(`Failed to enrich order ${order.id}:`, error.message);
+  //   }
+  //   return enrichedOrder;
+  // }
+
+  // CONSOLIDATED enrichOrder method with caching and improved field mapping
+  async enrichOrder(order, options = {}) {
+    const { bypassCache = false } = options;
 
     try {
-      // Step 1: Get order version details (this has the real prices!)
-      this.logger.info(`🔬 Getting order version details for order ${order.id}...`);
-
-      const orderVersionResponse = await this.makeRequest('GET', `/orderVersion/deps?masterid=${order.id}`);
-      const orderVersions = orderVersionResponse || [];
-
-      if (orderVersions.length > 0) {
-        // Usually there's only one version, but take the most recent
-        const latestVersion = orderVersions[orderVersions.length - 1];
-
-        // Extract price information from version (CRITICAL!)
-        const versionPrice = latestVersion.price || latestVersion.limitPrice || latestVersion.stopPrice;
-
-        enrichedOrder = {
-          ...enrichedOrder,
-          // Price information from order version
-          limitPrice: versionPrice,
-          price: versionPrice,
-          // Order details
-          orderType: latestVersion.orderType || order.orderType || 'Market',
-          qty: latestVersion.orderQty || order.orderQty,
-          orderQty: latestVersion.orderQty || order.orderQty,
-          // Action
-          action: order.action || latestVersion.action
-        };
-
-        this.logger.info(`🔬 Enriched order ${order.id}: Price=${versionPrice}, Type=${enrichedOrder.orderType}, Qty=${enrichedOrder.qty}`);
+      // Check if we already have enriched data for this order (unless bypassing cache)
+      if (!bypassCache && this.enrichmentCache.has(order.id)) {
+        this.logger.debug(`📦 Using cached enrichment for order ${order.id}`);
+        const cached = this.enrichmentCache.get(order.id);
+        // Merge any new status updates from WebSocket with cached enriched data
+        return { ...cached, ...order };
       }
 
-      // Step 2: Get contract details if contractId is available
+      this.logger.info(`Enriching order ${order.id} for symbol ${order.symbol || 'unknown'}`);
+
+      let enrichedOrder = { ...order };
+
+      // Step 1: Get order version details (has real prices!)
+      try {
+        const orderVersionResponse = await this.makeRequest('GET', `/orderVersion/deps?masterid=${order.id}`);
+
+        if (orderVersionResponse && Array.isArray(orderVersionResponse) && orderVersionResponse.length > 0) {
+          const orderVersion = orderVersionResponse[0];
+          this.logger.info(`Order version data for ${order.id}:`, orderVersion);
+
+          // Merge order version data which has the real prices AND order type
+          enrichedOrder = {
+            ...enrichedOrder,
+            price: orderVersion.price || enrichedOrder.price,
+            stopPrice: orderVersion.stopPrice || enrichedOrder.stopPrice,
+            qty: orderVersion.orderQty || orderVersion.qty || enrichedOrder.qty,
+            orderQty: orderVersion.orderQty || orderVersion.qty || enrichedOrder.orderQty,
+            filledQty: orderVersion.filledQty || enrichedOrder.filledQty,
+            avgFillPrice: orderVersion.avgFillPrice || enrichedOrder.avgFillPrice,
+            orderType: orderVersion.orderType || enrichedOrder.orderType
+          };
+        }
+      } catch (versionError) {
+        this.logger.warn(`Failed to get order version for ${order.id}:`, versionError.message);
+      }
+
+      // Step 2: Get contract details if we have a contractId
       if (order.contractId) {
         try {
-          const contractDetails = await this.makeRequest('GET', `/contract/item?id=${order.contractId}`);
+          // Check contract cache first
+          let contractDetails = this.contractCache.get(order.contractId);
+
+          if (!contractDetails) {
+            contractDetails = await this.makeRequest('GET', `/contract/item?id=${order.contractId}`);
+            if (contractDetails) {
+              // Cache the contract details
+              this.contractCache.set(order.contractId, contractDetails);
+            }
+          } else {
+            this.logger.debug(`📦 Using cached contract details for ${order.contractId}`);
+          }
 
           if (contractDetails) {
+            this.logger.info(`Contract details for ${order.contractId}:`, contractDetails);
             enrichedOrder.contractName = contractDetails.name;
-            enrichedOrder.symbol = contractDetails.name; // Use contract name as symbol
             enrichedOrder.tickSize = contractDetails.tickSize;
+            enrichedOrder.pointValue = contractDetails.pointValue;
 
-            this.logger.info(`📋 Contract details for ${order.id}: ${contractDetails.name}`);
+            // If we don't have a symbol, use the contract name
+            if (!enrichedOrder.symbol) {
+              enrichedOrder.symbol = contractDetails.name;
+            }
           }
         } catch (contractError) {
-          this.logger.warn(`Failed to get contract details for order ${order.id}:`, contractError.message);
+          this.logger.warn(`Failed to get contract details for ${order.contractId}:`, contractError.message);
         }
       }
 
-    } catch (error) {
-      this.logger.warn(`Failed to enrich order ${order.id}:`, error.message);
-    }
+      this.logger.info(`Order ${order.id} enriched successfully`);
 
-    return enrichedOrder;
+      // Cache the enriched order to avoid future API calls (unless bypassing cache)
+      if (!bypassCache) {
+        this.enrichmentCache.set(order.id, enrichedOrder);
+      }
+
+      return enrichedOrder;
+
+    } catch (error) {
+      this.logger.error(`Failed to enrich order ${order.id}:`, error.message);
+      // Return original order if enrichment fails
+      return order;
+    }
   }
 
   // Position Management Methods
@@ -1194,89 +1275,7 @@ class TradovateClient extends EventEmitter {
     }
   }
 
-  // Order enrichment methods
-  async enrichOrder(order) {
-    try {
-      // Check if we already have enriched data for this order
-      if (this.enrichmentCache.has(order.id)) {
-        this.logger.debug(`📦 Using cached enrichment for order ${order.id}`);
-        const cached = this.enrichmentCache.get(order.id);
-        // Merge any new status updates from WebSocket with cached enriched data
-        return { ...cached, ...order };
-      }
-
-      this.logger.info(`Enriching order ${order.id} for symbol ${order.symbol || 'unknown'}`);
-
-      let enrichedOrder = { ...order };
-
-      // Step 1: Get order version details (has real prices!)
-      try {
-        const orderVersionResponse = await this.makeRequest('GET', `/orderVersion/deps?masterid=${order.id}`);
-
-        if (orderVersionResponse && Array.isArray(orderVersionResponse) && orderVersionResponse.length > 0) {
-          const orderVersion = orderVersionResponse[0];
-          this.logger.info(`Order version data for ${order.id}:`, orderVersion);
-
-          // Merge order version data which has the real prices AND order type
-          enrichedOrder = {
-            ...enrichedOrder,
-            price: orderVersion.price || enrichedOrder.price,
-            stopPrice: orderVersion.stopPrice || enrichedOrder.stopPrice,
-            qty: orderVersion.qty || enrichedOrder.qty,
-            filledQty: orderVersion.filledQty || enrichedOrder.filledQty,
-            avgFillPrice: orderVersion.avgFillPrice || enrichedOrder.avgFillPrice,
-            orderType: orderVersion.orderType || enrichedOrder.orderType
-          };
-        }
-      } catch (versionError) {
-        this.logger.warn(`Failed to get order version for ${order.id}:`, versionError.message);
-      }
-
-      // Step 2: Get contract details if we have a contractId
-      if (order.contractId) {
-        try {
-          // Check contract cache first
-          let contractDetails = this.contractCache.get(order.contractId);
-
-          if (!contractDetails) {
-            contractDetails = await this.makeRequest('GET', `/contract/item?id=${order.contractId}`);
-            if (contractDetails) {
-              // Cache the contract details
-              this.contractCache.set(order.contractId, contractDetails);
-            }
-          } else {
-            this.logger.debug(`📦 Using cached contract details for ${order.contractId}`);
-          }
-
-          if (contractDetails) {
-            this.logger.info(`Contract details for ${order.contractId}:`, contractDetails);
-            enrichedOrder.contractName = contractDetails.name;
-            enrichedOrder.tickSize = contractDetails.tickSize;
-            enrichedOrder.pointValue = contractDetails.pointValue;
-
-            // If we don't have a symbol, use the contract name
-            if (!enrichedOrder.symbol) {
-              enrichedOrder.symbol = contractDetails.name;
-            }
-          }
-        } catch (contractError) {
-          this.logger.warn(`Failed to get contract details for ${order.contractId}:`, contractError.message);
-        }
-      }
-
-      this.logger.info(`Order ${order.id} enriched successfully`);
-
-      // Cache the enriched order to avoid future API calls
-      this.enrichmentCache.set(order.id, enrichedOrder);
-
-      return enrichedOrder;
-
-    } catch (error) {
-      this.logger.error(`Failed to enrich order ${order.id}:`, error.message);
-      // Return original order if enrichment fails
-      return order;
-    }
-  }
+  // DUPLICATE METHOD REMOVED - Using consolidated enrichOrder method above
 
   // Handle WebSocket order updates efficiently
   async handleOrderUpdate(orderData, eventType) {
@@ -1302,7 +1301,7 @@ class TradovateClient extends EventEmitter {
   }
 
   // Enrich multiple orders
-  async enrichOrders(orders) {
+  async enrichOrders(orders, options = {}) {
     if (!Array.isArray(orders)) {
       return orders;
     }
@@ -1310,7 +1309,7 @@ class TradovateClient extends EventEmitter {
     const enrichedOrders = [];
     for (const order of orders) {
       try {
-        const enriched = await this.enrichOrder(order);
+        const enriched = await this.enrichOrder(order, options);
         enrichedOrders.push(enriched);
         // Add small delay to avoid rate limiting
         await new Promise(resolve => setTimeout(resolve, 50));

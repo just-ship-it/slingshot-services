@@ -648,6 +648,9 @@ async function syncExistingData() {
           if (orderStatus === 'Working') {
             logger.info(`📋 Syncing working order: ${order.id} - ${order.action} ${order.symbol || order.contractName} ${order.orderType} @ ${order.price}`);
 
+            // Debug: Log what quantity fields are available
+            logger.info(`🔍 DEBUG Order ${order.id} quantity fields: qty=${order.qty}, orderQty=${order.orderQty}, final=${order.qty || order.orderQty}`);
+
             await messageBus.publish(CHANNELS.ORDER_PLACED, {
               orderId: order.id,
               accountId: account.id,
@@ -1829,6 +1832,12 @@ async function startup() {
     logger.info('Connecting to message bus...');
     await messageBus.connect();
     logger.info('Message bus connected');
+
+    // Handle MessageBus errors to prevent crashes
+    messageBus.on('error', (err) => {
+      logger.error('MessageBus error (handled):', err);
+      // Service continues running - reconnection logic will handle recovery
+    });
 
     // Set up Tradovate event forwarding BEFORE connecting
     tradovateClient.on('orderPlaced', async (data) => {

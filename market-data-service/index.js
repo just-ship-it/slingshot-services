@@ -364,6 +364,12 @@ async function startup() {
     await messageBus.connect();
     logger.info('Message bus connected');
 
+    // Handle MessageBus errors to prevent crashes
+    messageBus.on('error', (err) => {
+      logger.error('MessageBus error (handled):', err);
+      // Service continues running - reconnection logic will handle recovery
+    });
+
     // Subscribe to webhook quote updates from the gateway
     await messageBus.subscribe(CHANNELS.WEBHOOK_QUOTE, handleWebhookQuote);
     logger.info('Subscribed to webhook quote updates');

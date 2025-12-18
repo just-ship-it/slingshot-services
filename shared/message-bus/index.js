@@ -236,7 +236,8 @@ class MessageBus extends EventEmitter {
   setupConnectionHandlers(client, clientType) {
     client.on('error', (err) => {
       console.error(`Redis ${clientType} Error:`, err);
-      this.emit('error', { type: clientType, error: err });
+      // Don't re-emit - this causes uncaught exceptions if no listener
+      // this.emit('error', { type: clientType, error: err });
     });
 
     client.on('end', () => {

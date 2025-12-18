@@ -1811,6 +1811,12 @@ async function startup() {
     await messageBus.connect();
     logger.info('Message bus connected');
 
+    // Handle MessageBus errors to prevent crashes
+    messageBus.on('error', (err) => {
+      logger.error('MessageBus error (handled):', err);
+      // Service continues running - reconnection logic will handle recovery
+    });
+
     // Load configuration from Redis
     logger.info('Loading configuration from Redis...');
     monitoringState.positionSizing = await loadPositionSizingSettings();

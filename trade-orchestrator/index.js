@@ -19,6 +19,11 @@ const SIGNAL_LIFECYCLES_KEY = 'signal:lifecycles';
 // Signal context persistence functions
 async function saveSignalContext() {
   try {
+    if (!messageBus.isConnected) {
+      logger.warn('Redis disconnected, skipping saveSignalContext operation');
+      return;
+    }
+
     // Convert Map to object for JSON serialization
     const signalContextData = {};
     for (const [key, value] of tradingState.signalContext) {
@@ -40,6 +45,11 @@ async function saveSignalContext() {
 
 async function loadSignalContext() {
   try {
+    if (!messageBus.isConnected) {
+      logger.warn('Redis disconnected, skipping loadSignalContext operation');
+      return;
+    }
+
     const data = await messageBus.publisher.get('signal:context');
     if (data) {
       const parsedData = JSON.parse(data);
@@ -64,6 +74,11 @@ async function loadSignalContext() {
 // Order strategy mapping persistence functions
 async function saveOrderStrategyMapping() {
   try {
+    if (!messageBus.isConnected) {
+      logger.warn('Redis disconnected, skipping saveOrderStrategyMapping operation');
+      return;
+    }
+
     // Convert Map to object for JSON serialization
     const orderStrategyMappingData = {};
     for (const [orderId, strategyId] of tradingState.orderToStrategy) {
@@ -85,6 +100,11 @@ async function saveOrderStrategyMapping() {
 
 async function loadOrderStrategyMapping() {
   try {
+    if (!messageBus.isConnected) {
+      logger.warn('Redis disconnected, skipping loadOrderStrategyMapping operation');
+      return;
+    }
+
     const data = await messageBus.publisher.get('orders:strategy-mapping');
     if (data) {
       const parsedData = JSON.parse(data);
@@ -110,6 +130,11 @@ async function loadOrderStrategyMapping() {
 // Multi-strategy state persistence functions
 async function saveStrategyState() {
   try {
+    if (!messageBus.isConnected) {
+      logger.warn('Redis disconnected, skipping saveStrategyState operation');
+      return;
+    }
+
     // Convert Map to object for JSON serialization
     const pendingOrdersData = {};
     for (const [orderId, orderInfo] of tradingState.strategyState.pendingOrders) {
@@ -132,6 +157,11 @@ async function saveStrategyState() {
 
 async function loadStrategyState() {
   try {
+    if (!messageBus.isConnected) {
+      logger.warn('Redis disconnected, skipping loadStrategyState operation');
+      return;
+    }
+
     const data = await messageBus.publisher.get('multi-strategy:state');
     if (data) {
       const parsedData = JSON.parse(data);
@@ -160,6 +190,20 @@ async function loadStrategyState() {
 // Contract mappings Redis functions
 async function loadContractMappings() {
   try {
+    if (!messageBus.isConnected) {
+      logger.warn('Redis disconnected, skipping loadContractMappings operation');
+      // Return defaults when Redis is unavailable
+      return {
+        lastUpdated: new Date().toISOString(),
+        currentContracts: {
+          'NQ': 'NQH6',
+          'MNQ': 'MNQH6',
+          'ES': 'ESH6',
+          'MES': 'MESH6'
+        }
+      };
+    }
+
     const data = await messageBus.publisher.get('contracts:mappings');
     if (data) {
       const mappings = JSON.parse(data);
@@ -191,8 +235,12 @@ async function loadContractMappings() {
 
   // Save defaults to Redis
   try {
-    await messageBus.publisher.set('contracts:mappings', JSON.stringify(defaults));
-    logger.info('✅ Default contract mappings saved to Redis');
+    if (!messageBus.isConnected) {
+      logger.warn('Redis disconnected, skipping save of default contract mappings');
+    } else {
+      await messageBus.publisher.set('contracts:mappings', JSON.stringify(defaults));
+      logger.info('✅ Default contract mappings saved to Redis');
+    }
   } catch (error) {
     logger.error('❌ Failed to save default contract mappings to Redis:', error);
   }
@@ -354,6 +402,11 @@ class SignalRegistry {
   // Persistence methods
   async saveMappings() {
     try {
+      if (!messageBus.isConnected) {
+        logger.warn('Redis disconnected, skipping saveMappings operation');
+        return;
+      }
+
       const mappingsData = {
         timestamp: new Date().toISOString(),
         signalToOrders: Object.fromEntries(
@@ -373,6 +426,11 @@ class SignalRegistry {
 
   async saveLifecycles() {
     try {
+      if (!messageBus.isConnected) {
+        logger.warn('Redis disconnected, skipping saveLifecycles operation');
+        return;
+      }
+
       const lifecycleData = {
         timestamp: new Date().toISOString(),
         signalLifecycles: Object.fromEntries(this.signalLifecycles),
@@ -389,6 +447,11 @@ class SignalRegistry {
 
   async loadMappings() {
     try {
+      if (!messageBus.isConnected) {
+        logger.warn('Redis disconnected, skipping loadMappings operation');
+        return;
+      }
+
       const data = await messageBus.publisher.get('signal:mappings');
       if (data) {
         const parsed = JSON.parse(data);
@@ -423,6 +486,11 @@ class SignalRegistry {
 
   async loadLifecycles() {
     try {
+      if (!messageBus.isConnected) {
+        logger.warn('Redis disconnected, skipping loadLifecycles operation');
+        return;
+      }
+
       const data = await messageBus.publisher.get('signal:lifecycles');
       if (data) {
         const parsed = JSON.parse(data);
@@ -3131,6 +3199,12 @@ async function startup() {
     logger.info('Connecting to message bus...');
     await messageBus.connect();
     logger.info('Message bus connected');
+
+    // Handle MessageBus errors to prevent crashes
+    messageBus.on('error', (err) => {
+      logger.error('MessageBus error (handled):', err);
+      // Service continues running - reconnection logic will handle recovery
+    });
 
     // Load configuration from Redis
     logger.info('Loading configuration from Redis...');
