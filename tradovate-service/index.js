@@ -30,6 +30,79 @@ const orderSignalMap = new Map();
 // Map: parentStrategyId -> { signalId, childOrderIds: Set<orderId> }
 const strategyChildMap = new Map();
 
+// Track order to strategy mapping for multi-strategy cancellation support
+// Map: orderId -> strategyName (to enable strategy-specific order cancellation)
+const orderStrategyMap = new Map();
+
+// Order-to-strategy persistence functions
+async function saveOrderStrategyMappings() {
+  try {
+    if (!messageBus.isConnected) {
+      logger.warn('Redis disconnected, skipping saveOrderStrategyMappings operation');
+      return;
+    }
+
+    // Convert Map to object for JSON serialization
+    const mappingsData = {};
+    for (const [orderId, strategy] of orderStrategyMap) {
+      mappingsData[orderId] = strategy;
+    }
+
+    const dataToSave = {
+      timestamp: new Date().toISOString(),
+      mappings: mappingsData,
+      count: orderStrategyMap.size,
+      version: '1.0'
+    };
+
+    await messageBus.publisher.set('tradovate:order:strategy:mappings', JSON.stringify(dataToSave));
+    logger.info(`💾 Order-to-strategy mappings saved to Redis (${orderStrategyMap.size} mappings)`);
+  } catch (error) {
+    logger.error('❌ Failed to save order-strategy mappings to Redis:', error);
+  }
+}
+
+// Helper function to add order-strategy mapping and persist to Redis
+async function addOrderStrategyMapping(orderId, strategy) {
+  if (!orderId || !strategy) return;
+
+  // Always use string keys for consistent lookups
+  const orderIdStr = String(orderId);
+  orderStrategyMap.set(orderIdStr, strategy);
+  logger.info(`🎯 Mapped order ${orderIdStr} → strategy ${strategy}`);
+
+  // Save to Redis immediately for persistence
+  await saveOrderStrategyMappings();
+}
+
+async function loadOrderStrategyMappings() {
+  try {
+    if (!messageBus.isConnected) {
+      logger.warn('Redis disconnected, skipping loadOrderStrategyMappings operation');
+      return;
+    }
+
+    const data = await messageBus.publisher.get('tradovate:order:strategy:mappings');
+    if (data) {
+      const parsedData = JSON.parse(data);
+
+      // Restore order-strategy mappings from Redis
+      if (parsedData.mappings) {
+        let loadedCount = 0;
+        for (const [orderId, strategy] of Object.entries(parsedData.mappings)) {
+          orderStrategyMap.set(orderId, strategy);
+          loadedCount++;
+        }
+        logger.info(`📂 Loaded ${loadedCount} order-to-strategy mappings from Redis (saved at ${parsedData.timestamp})`);
+      }
+    } else {
+      logger.info('📂 No existing order-strategy mappings found in Redis');
+    }
+  } catch (error) {
+    logger.error('❌ Failed to load order-strategy mappings from Redis:', error);
+  }
+}
+
 // Initialize Express app for REST API
 const app = express();
 app.use(express.json());
@@ -44,6 +117,20 @@ app.use((req, res, next) => {
   } else {
     next();
   }
+});
+
+// Get current order-strategy mappings for debugging
+app.get('/api/order-strategy-mappings', (req, res) => {
+  const mappingsArray = Array.from(orderStrategyMap.entries()).map(([orderId, strategy]) => ({
+    orderId,
+    strategy
+  }));
+
+  res.json({
+    timestamp: new Date().toISOString(),
+    count: orderStrategyMap.size,
+    mappings: mappingsArray
+  });
 });
 
 // Health check endpoint
@@ -382,6 +469,12 @@ async function handleOrderRequest(message) {
           orderSignalMap.set(strategyId, message.signalId);
           logger.info(`🔗 Mapped parent OrderStrategy ${strategyId} → signal ${message.signalId}`);
 
+          // Map parent OrderStrategy to the strategy name for multi-strategy cancellation support
+          if (message.strategy) {
+            await addOrderStrategyMapping(strategyId, message.strategy);
+            logger.info(`📦 Mapped parent OrderStrategy ${strategyId} → strategy ${message.strategy}`);
+          }
+
           // Query Tradovate for the child orders that belong to this strategy
           try {
             logger.info(`🔍 Querying Tradovate for child orders of strategy ${strategyId}`);
@@ -403,12 +496,17 @@ async function handleOrderRequest(message) {
                 };
 
                 // Store all child order IDs
-                dependents.forEach(dep => {
+                for (const dep of dependents) {
                   if (dep.orderId) {
                     mapping.childOrderIds.add(dep.orderId);
                     // Also map individual orders to the signal
                     orderSignalMap.set(dep.orderId, message.signalId);
                     logger.info(`🔗 Mapped child order ${dep.orderId} (label: ${dep.label}) → signal ${message.signalId}`);
+
+                    // Map child order to strategy for multi-strategy cancellation support
+                    if (message.strategy) {
+                      await addOrderStrategyMapping(dep.orderId, message.strategy);
+                    }
 
                     // Track which order is which based on label or order
                     // First order is usually entry, second is stop
@@ -423,7 +521,7 @@ async function handleOrderRequest(message) {
                       logger.info(`🎯 Identified order ${dep.orderId} as TARGET order for strategy ${strategyId}`);
                     }
                   }
-                });
+                }
 
                 // Update the strategy links map
                 orderStrategyLinks.set(strategyId, strategyInfo);
@@ -458,6 +556,11 @@ async function handleOrderRequest(message) {
         if (message.signalId && result.orderId) {
           orderSignalMap.set(result.orderId, message.signalId);
           logger.info(`🔗 Stored signal mapping: order ${result.orderId} → signal ${message.signalId}`);
+
+          // Store strategy mapping for multi-strategy cancellation support
+          if (message.strategy) {
+            await addOrderStrategyMapping(result.orderId, message.strategy);
+          }
         }
       }
 
@@ -485,6 +588,11 @@ async function handleOrderRequest(message) {
           if (message.signalId) {
             orderSignalMap.set(result.bracket1OrderId, message.signalId);
             logger.info(`🔗 Stored signal mapping: bracket stop order ${result.bracket1OrderId} → signal ${message.signalId}`);
+
+            // Store strategy mapping for bracket stop loss order
+            if (message.strategy) {
+              await addOrderStrategyMapping(result.bracket1OrderId, message.strategy);
+            }
           }
         }
 
@@ -510,6 +618,11 @@ async function handleOrderRequest(message) {
           if (message.signalId) {
             orderSignalMap.set(result.bracket2OrderId, message.signalId);
             logger.info(`🔗 Stored signal mapping: bracket target order ${result.bracket2OrderId} → signal ${message.signalId}`);
+
+            // Store strategy mapping for bracket take profit order
+            if (message.strategy) {
+              await addOrderStrategyMapping(result.bracket2OrderId, message.strategy);
+            }
           }
         }
       }
@@ -543,6 +656,11 @@ async function handleOrderRequest(message) {
       if (message.signalId && result.orderId) {
         orderSignalMap.set(result.orderId, message.signalId);
         logger.info(`🔗 Stored signal mapping: regular order ${result.orderId} → signal ${message.signalId}`);
+
+        // Store strategy mapping for regular order
+        if (message.strategy) {
+          await addOrderStrategyMapping(result.orderId, message.strategy);
+        }
       }
     }
 
@@ -897,6 +1015,13 @@ async function performFullSync(options = {}) {
         if (orderSignalMap.has(order.id)) {
           if (!dryRun) {
             orderSignalMap.delete(order.id);
+            // Also clean up strategy mapping
+            if (orderStrategyMap.has(order.id)) {
+              orderStrategyMap.delete(order.id);
+              logger.info(`🧹 Removed strategy mapping for completed order ${order.id}`);
+              // Save updated mappings to Redis
+              await saveOrderStrategyMappings();
+            }
           }
           cleanedMappings++;
           logger.info(`🧹 ${dryRun ? '[DRY RUN] Would remove' : 'Removed'} signal mapping for completed order ${order.id}`);
@@ -1456,9 +1581,9 @@ async function handlePositionSyncRequest(message) {
   }
 }
 
-// Handle cancel_limit action from LDPS Trader
+// Handle cancel_limit action with multi-strategy support
 async function handleCancelLimitOrders(tradeSignal, accountId, webhookId) {
-  logger.info(`Processing cancel_limit: ${tradeSignal.side} ${tradeSignal.symbol} (reason: ${tradeSignal.reason})`);
+  logger.info(`Processing cancel_limit: ${tradeSignal.side} ${tradeSignal.symbol} (strategy: ${tradeSignal.strategy || 'ALL'}, reason: ${tradeSignal.reason})`);
 
   try {
     // Map side to Tradovate action for filtering
@@ -1483,7 +1608,7 @@ async function handleCancelLimitOrders(tradeSignal, accountId, webhookId) {
     });
     logger.info(`📋 Found ${workingLimitOrders.length} working limit orders for ${sideAction} ${expectedContractName}`);
 
-    // Filter for working limit orders matching symbol and side - orderType should now be enriched properly
+    // Filter for working limit orders matching symbol, side, and strategy
     const matchingOrders = orders.filter(order => {
       const isWorking = order.orderStatus === 'Working' || order.ordStatus === 'Working';
       const orderType = order.orderType || order.ordType;
@@ -1491,20 +1616,28 @@ async function handleCancelLimitOrders(tradeSignal, accountId, webhookId) {
       const actionMatch = order.action === sideAction;
       const symbolMatch = order.symbol === expectedContractName;
 
-      // Removed verbose debug logging
+      // CRITICAL: Check strategy match for multi-strategy support
+      // Convert order.id to string since Redis keys are stored as strings
+      const orderStrategy = orderStrategyMap.get(String(order.id));
+      const strategyMatch = !tradeSignal.strategy || !orderStrategy || orderStrategy === tradeSignal.strategy;
 
-      return isWorking && isLimit && actionMatch && symbolMatch;
+      if (!strategyMatch) {
+        logger.info(`🎯 Skipping order ${order.id} - strategy mismatch: order strategy=${orderStrategy}, requested strategy=${tradeSignal.strategy}`);
+      }
+
+      return isWorking && isLimit && actionMatch && symbolMatch && strategyMatch;
     });
 
     if (matchingOrders.length === 0) {
-      logger.info(`No matching limit orders found to cancel for ${tradeSignal.symbol} ${tradeSignal.side}`);
+      logger.info(`No matching limit orders found to cancel for ${tradeSignal.symbol} ${tradeSignal.side} (strategy: ${tradeSignal.strategy || 'ALL'})`);
       return;
     }
 
     // Cancel each matching order
     for (const order of matchingOrders) {
+      const orderStrategy = orderStrategyMap.get(String(order.id));
       await tradovateClient.cancelOrder(order.id);
-      logger.info(`Cancelled order ${order.id} for ${tradeSignal.symbol}`);
+      logger.info(`Cancelled order ${order.id} for ${tradeSignal.symbol} (strategy: ${orderStrategy || 'UNKNOWN'})`);
     }
 
     // Publish cancellation event
@@ -2192,6 +2325,15 @@ async function startup() {
         if (signalId) {
           orderSignalMap.delete(execution.orderId);
           logger.info(`🧹 Cleaned up signal mapping for filled order ${execution.orderId}`);
+
+          // Also clean up strategy mapping
+          if (orderStrategyMap.has(execution.orderId)) {
+            const strategy = orderStrategyMap.get(execution.orderId);
+            orderStrategyMap.delete(execution.orderId);
+            logger.info(`🧹 Cleaned up strategy mapping for filled order ${execution.orderId} (strategy: ${strategy})`);
+            // Save updated mappings to Redis
+            await saveOrderStrategyMappings();
+          }
         }
 
         logger.info(`📊 Published execution fill for order ${execution.orderId} with symbol: ${symbol}`);
@@ -2519,6 +2661,10 @@ async function startup() {
         logger.error('❌ Error processing WebSocket sync data:', error);
       }
     });
+
+    // Load persisted order-strategy mappings from Redis
+    logger.info('Loading persisted order-strategy mappings...');
+    await loadOrderStrategyMappings();
 
     // Connect to Tradovate
     if (config.tradovate.username && config.tradovate.password) {

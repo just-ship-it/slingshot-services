@@ -1374,6 +1374,7 @@ async function handleWebhookReceived(message) {
       stopPrice: mappedStopPrice,
       takeProfit: mappedTakeProfit,
       signalId: message.id,
+      strategy: signal.strategy, // CRITICAL: Include strategy for multi-strategy support
       timestamp: new Date().toISOString(),
       // Add trailing stop parameters if present
       trailing_trigger: signal.trailing_trigger,
