@@ -956,6 +956,7 @@ async function performFullSync(options = {}) {
     positionsFound: 0,
     positionsReconciled: 0,
     signalMappingsRemoved: 0,
+    strategyMappingsCleaned: 0,
     accountBalancesUpdated: 0,
     errors: [],
     dryRun: dryRun
@@ -1123,10 +1124,65 @@ async function performFullSync(options = {}) {
       }
     }
 
+    // Step 5: Final cleanup - if no working orders exist, clear all strategy mappings
+    let totalWorkingOrders = 0;
+    let validWorkingOrderIds = new Set();
+
+    // Collect all working order IDs across all accounts
+    for (const account of tradovateClient.accounts) {
+      const orders = await tradovateClient.getOrders(account.id);
+      const workingOrders = orders.filter(o =>
+        o.ordStatus === 'Working' || o.ordStatus === 'Pending'
+      );
+      totalWorkingOrders += workingOrders.length;
+
+      // Add working order IDs to our set
+      workingOrders.forEach(order => {
+        validWorkingOrderIds.add(String(order.id));
+      });
+    }
+
+    // Clean up strategy mappings for non-existent orders
+    let strategyMappingsCleaned = 0;
+    const allMappedOrderIds = Array.from(orderStrategyMap.keys());
+
+    for (const orderId of allMappedOrderIds) {
+      if (!validWorkingOrderIds.has(orderId)) {
+        if (!dryRun) {
+          const strategy = orderStrategyMap.get(orderId);
+          orderStrategyMap.delete(orderId);
+          logger.info(`🧹 Removed stale strategy mapping: order ${orderId} (strategy: ${strategy})`);
+          strategyMappingsCleaned++;
+        } else {
+          logger.info(`🧹 [DRY RUN] Would remove stale strategy mapping for order ${orderId}`);
+          strategyMappingsCleaned++;
+        }
+      }
+    }
+
+    // If we cleaned any strategy mappings, save to Redis
+    if (strategyMappingsCleaned > 0 && !dryRun) {
+      await saveOrderStrategyMappings();
+      logger.info(`💾 Saved cleaned strategy mappings to Redis (removed ${strategyMappingsCleaned} stale entries)`);
+    }
+
+    // If no working orders at all, clear everything
+    if (totalWorkingOrders === 0) {
+      logger.info(`🧹 No working orders found - clearing all strategy mappings`);
+      if (!dryRun) {
+        orderStrategyMap.clear();
+        await saveOrderStrategyMappings();
+        logger.info(`💾 Cleared all strategy mappings from memory and Redis`);
+      } else {
+        logger.info(`🧹 [DRY RUN] Would clear all strategy mappings (${orderStrategyMap.size} entries)`);
+      }
+    }
+
+    syncStats.strategyMappingsCleaned = strategyMappingsCleaned;
     syncStats.endTime = new Date().toISOString();
 
     logger.info(`✅ Full sync ${dryRun ? '(DRY RUN) ' : ''}completed successfully`);
-    logger.info(`📊 Sync stats: ${syncStats.accountsProcessed} accounts, ${syncStats.ordersReconciled} orders, ${syncStats.positionsReconciled} positions, ${syncStats.accountBalancesUpdated} balances updated, ${syncStats.signalMappingsRemoved} mappings cleaned`);
+    logger.info(`📊 Sync stats: ${syncStats.accountsProcessed} accounts, ${syncStats.ordersReconciled} orders, ${syncStats.positionsReconciled} positions, ${syncStats.accountBalancesUpdated} balances updated, ${syncStats.signalMappingsRemoved} signal mappings cleaned, ${syncStats.strategyMappingsCleaned} strategy mappings cleaned`);
 
     // Publish completion event
     await messageBus.publish(CHANNELS.TRADOVATE_FULL_SYNC_COMPLETED, {
