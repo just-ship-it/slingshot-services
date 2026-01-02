@@ -476,9 +476,9 @@ io.on('connection', (socket) => {
 // Broadcast to all Socket.IO clients
 function broadcast(eventName, data) {
   const clientCount = io.engine.clientsCount;
-  logger.debug(`📡 Broadcasting ${eventName} to ${clientCount} connected clients`);
+  logger.info(`📡 Broadcasting ${eventName} to ${clientCount} connected clients`);
   if (eventName === 'market_data') {
-    logger.debug(`📊 Market data broadcast: ${data.baseSymbol || data.symbol} = ${data.close}`);
+    logger.info(`📊 Market data broadcast: ${data.baseSymbol || data.symbol} = ${data.close}`);
   }
   io.emit(eventName, data);
 }
@@ -924,6 +924,31 @@ app.post('/api/position-sizing/convert', dashboardAuth, (req, res) => {
 
   logger.info(`📊 Conversion result:`, result);
   res.json(result);
+});
+
+// GEX levels endpoint - proxy to signal-generator service
+app.get('/api/gex/levels', dashboardAuth, async (req, res) => {
+  try {
+    logger.info('📊 Fetching GEX levels from signal-generator');
+    const response = await axios.get('http://127.0.0.1:3015/gex/levels', {
+      timeout: 5000
+    });
+
+    // Add timestamp if not present
+    const data = response.data;
+    if (!data.timestamp) {
+      data.timestamp = new Date().toISOString();
+    }
+
+    logger.info('✅ GEX levels fetched successfully');
+    res.json(data);
+  } catch (error) {
+    logger.error('❌ Failed to fetch GEX levels:', error.message);
+    res.status(500).json({
+      error: 'Failed to fetch GEX levels',
+      message: error.message
+    });
+  }
 });
 
 // Proxy endpoint to trade-orchestrator for active trading status
@@ -1484,7 +1509,19 @@ async function handlePositionUpdate(message) {
 }
 
 async function handlePriceUpdate(message) {
-  logger.debug(`🔔 PRICE_UPDATE received: ${message.baseSymbol || message.symbol} = ${message.close} (source: ${message.source})`);
+  // Add error handling for malformed messages
+  if (!message || typeof message !== 'object') {
+    logger.warn('Received invalid price update message:', message);
+    return;
+  }
+
+
+  if (!message.symbol || message.close === undefined) {
+    logger.warn('Received incomplete price update message:', message);
+    return;
+  }
+
+  logger.info(`🔔 PRICE_UPDATE received: ${message.baseSymbol || message.symbol} = ${message.close} (source: ${message.source})`);
 
   const quoteData = {
     symbol: message.symbol,
@@ -1507,7 +1544,7 @@ async function handlePriceUpdate(message) {
     monitoringState.prices.set(message.baseSymbol, quoteData);
   }
 
-  broadcast('market_data', message);
+  broadcast('market_data', quoteData);
 }
 
 async function handleOrderUpdate(message) {

@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is a microservices trading system called "Slingshot" that separates trading functionality into 4 independent services communicating via Redis pub/sub. The system handles webhook ingestion, Tradovate API interactions, real-time market data, trade orchestration, and monitoring.
+This is a microservices trading system called "Slingshot" that separates trading functionality into 5 independent services communicating via Redis pub/sub. The system handles webhook ingestion, Tradovate API interactions, real-time market data, trade orchestration, signal generation, and monitoring.
 
 ## Development Commands
 
@@ -29,12 +29,15 @@ Each service supports the same npm scripts:
 - **Port 3012**: Market Data Service - Real-time price streaming and P&L (receives quotes via webhooks)
 - **Port 3013**: Trade Orchestrator - Business logic and trade coordination
 - **Port 3014**: Monitoring Service - Webhook ingestion, data aggregation, and dashboard APIs
+- **Port 3015**: Signal Generator Service - Python service for TradingView data streaming, strategy evaluation, and trade signal generation
 
 ### Key Dependencies
-- All services use ES modules (`"type": "module"` in package.json)
-- Shared utilities in `/shared/` directory provide common functionality
+- Node.js services use ES modules (`"type": "module"` in package.json)
+- Signal Generator Service is Python-based (FastAPI + asyncio)
+- Shared utilities in `/shared/` directory provide common functionality for Node.js services
 - Redis pub/sub handles inter-service communication
-- Services import from `../shared/index.js` for logging, message bus, and configuration
+- Node.js services import from `../shared/index.js` for logging, message bus, and configuration
+- Python service uses direct Redis client for pub/sub communication
 
 ### Message Bus Channels
 The system uses predefined Redis channels for communication (defined in `shared/index.js`):
@@ -46,6 +49,7 @@ The system uses predefined Redis channels for communication (defined in `shared/
 - Account events: `account.update`, `balance.update`, `margin.update`
 - System events: `service.health`, `service.error`, `service.started`, `service.stopped`
 - Sync events: `tradovate_sync_completed`
+- Signal Generator events: `lt.levels`, `gex.levels`, `candle.close`, `gex.refresh`
 
 ### Configuration
 - Environment variables are managed through `shared/.env`
@@ -59,6 +63,7 @@ Services must start in this order (handled by `start-all.sh`):
 2. Market Data Service (depends on message bus, receives quotes via webhooks from NinjaTrader)
 3. Trade Orchestrator (depends on message bus)
 4. Monitoring Service (depends on message bus, handles all webhook ingestion)
+5. Signal Generator Service (Python service, depends on Redis, streams TradingView data and generates trade signals)
 
 ## Webhook Data Formats
 
@@ -156,5 +161,55 @@ The monitoring service receives these webhooks and routes them to the appropriat
 - **Tradovate Service**: `http://localhost:3011/health` - Tradovate API gateway
 - **Market Data Service**: `http://localhost:3012/health` - Price streaming service
 - **Trade Orchestrator**: `http://localhost:3013/health` - Trade logic service
+- **Signal Generator Service**: `http://localhost:3015/health` - Python service health check
+  - `/gex/levels` - Get current GEX levels
+  - `/gex/refresh` - Force GEX recalculation
+  - `/lt/levels` - Get current LT levels
+  - `/strategy/enable` - Enable strategy evaluation
+  - `/strategy/disable` - Disable strategy evaluation
 
 Note: Internal services bind to 127.0.0.1 and are not publicly accessible. Only the monitoring service (3014) binds to 0.0.0.0 for external access.
+
+## Signal Generator Service (Python)
+
+The Signal Generator Service is a Python-based FastAPI application that handles:
+
+### Core Functionality
+- **TradingView Data Streaming**: Real-time OHLCV data from multiple symbols via WebSocket
+- **Liquidity Trigger (LT) Monitoring**: Tracks support/resistance levels
+- **GEX Level Calculation**: Gamma exposure calculations for market positioning
+- **Strategy Engine**: Evaluates market conditions and generates trade signals
+- **15-minute Candle Close Detection**: Triggers strategy evaluation on candle completions
+
+### Key Components
+- **OHLCV Monitor**: `/signal-generator/src/data_sources/ohlcv_monitor_stable.py`
+  - Streams quotes from TradingView using threading + direct Redis publishing
+  - Auto-restarts connections on failure
+  - Publishes real-time price updates to `price.update` channel
+- **LT Monitor**: `/signal-generator/src/data_sources/lt_monitor.py`
+  - Tracks liquidity trigger levels
+  - Publishes to `lt.levels` channel
+- **GEX Calculator**: `/signal-generator/src/data_sources/gex_calculator.py`
+  - Calculates gamma exposure levels
+  - Publishes to `gex.levels` channel
+- **Strategy Engine**: `/signal-generator/src/strategy/engine.py`
+  - Evaluates market conditions using LT levels, GEX data, and price action
+  - Generates trade signals published to `trade.signal` channel
+- **Redis Publisher**: `/signal-generator/src/publishers/redis_publisher.py`
+  - Handles all Redis pub/sub communication
+  - Compatible with Node.js message bus format
+
+### Environment Configuration
+The service requires these environment variables:
+- `TRADINGVIEW_CREDENTIALS`: TradingView authentication
+- `TRADINGVIEW_JWT_TOKEN`: Optional hardcoded JWT token
+- `REDIS_URL`: Redis connection string
+- `OHLCV_SYMBOLS`: Comma-separated list of symbols to monitor
+- `LT_SYMBOL`: Symbol for liquidity trigger monitoring
+- `GEX_SYMBOL`: Symbol for GEX calculations
+
+### Development Commands
+- **Start**: `pm2 start ecosystem.config.cjs --only signal-generator`
+- **Logs**: `pm2 logs signal-generator`
+- **Restart**: `pm2 restart signal-generator`
+- **Direct run**: `cd signal-generator && python -m src.main`

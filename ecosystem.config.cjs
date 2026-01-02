@@ -82,22 +82,24 @@ module.exports = {
     },
     {
       name: 'signal-generator',
-      script: './signal-generator/index.js',
-      cwd: '/home/drew/projects/slingshot-services',
+      script: './venv/bin/python',
+      args: '-m src.main',
+      cwd: '/home/drew/projects/slingshot-services/signal-generator',
+      interpreter: 'none',
       instances: 1,
       exec_mode: 'fork',
       autorestart: true,
       watch: false,
       max_memory_restart: '1G',
       env: {
-        NODE_ENV: 'development',
-        PORT: 3015,
-        BIND_HOST: '127.0.0.1'
+        PYTHONUNBUFFERED: '1',
+        HTTP_PORT: 3015,
+        LOG_LEVEL: 'INFO'
       },
       env_production: {
-        NODE_ENV: 'production',
-        PORT: 3015,
-        BIND_HOST: '127.0.0.1'
+        PYTHONUNBUFFERED: '1',
+        HTTP_PORT: 3015,
+        LOG_LEVEL: 'INFO'
       }
     }
   ]

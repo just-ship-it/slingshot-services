@@ -37,8 +37,16 @@ install_deps() {
     if [ -f "package.json" ]; then
         npm install
         echo -e "${GREEN}✓ Dependencies installed for ${service_name}${NC}"
+    elif [ -f "requirements.txt" ]; then
+        # For Python services
+        if ! command -v python3 &> /dev/null; then
+            echo -e "${RED}✗ Python3 not found for ${service_name}${NC}"
+            return 1
+        fi
+        pip install -r requirements.txt
+        echo -e "${GREEN}✓ Python dependencies installed for ${service_name}${NC}"
     else
-        echo -e "${RED}✗ No package.json found for ${service_name}${NC}"
+        echo -e "${YELLOW}⚠ No dependency file found for ${service_name}${NC}"
     fi
 }
 
