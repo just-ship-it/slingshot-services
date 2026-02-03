@@ -1,0 +1,139 @@
+/**
+ * Evening Star Pattern
+ *
+ * A 3-candle bearish reversal pattern:
+ * 1. Large bullish candle
+ * 2. Small body candle (star) gapping up
+ * 3. Large bearish candle closing below midpoint of first
+ *
+ * Entry: Short at third candle close
+ * Bias: Bearish reversal
+ */
+
+export const EveningStarPattern = {
+  name: 'evening_star',
+  displayName: 'Evening Star',
+  side: 'short',
+  candlesRequired: 3,
+  entryType: 'limit', // Limit order for pullback to star candle
+
+  /**
+   * Get optimal entry price for this pattern
+   * Entry on pullback to the star candle's low area
+   */
+  getEntryPrice(current, previous, context = {}) {
+    if (context.starCandle) {
+      return context.starCandle.low;
+    }
+    return previous.low;
+  },
+
+  /**
+   * Get stop loss price for this pattern
+   * Stop above the star candle's high
+   */
+  getStopPrice(current, previous, context = {}) {
+    const buffer = context.stopBuffer || 0.5;
+    if (context.starCandle) {
+      return context.starCandle.high + buffer;
+    }
+    return previous.high + buffer;
+  },
+
+  /**
+   * Detect evening star pattern
+   */
+  detect(current, previous, context = {}) {
+    if (!current || !previous) return false;
+
+    const first = context.oldest || (context.candles && context.candles[2]);
+    if (!first) return false;
+
+    // First candle must be bullish with significant body
+    if (first.close <= first.open) return false;
+    const firstBody = first.close - first.open;
+    const firstRange = first.high - first.low;
+    if (firstBody / firstRange < 0.5) return false;
+
+    // Second candle (star) must have small body
+    const starBody = Math.abs(previous.close - previous.open);
+    const starRange = previous.high - previous.low;
+    const maxStarBodyRatio = context.maxStarBodyRatio || 0.3;
+    if (starRange > 0 && starBody / starRange > maxStarBodyRatio) return false;
+
+    // Star should gap up from first candle's close
+    if (Math.min(previous.open, previous.close) <= first.close) {
+      // Allow if star low is above first close
+      if (previous.low <= first.close) return false;
+    }
+
+    // Third candle must be bearish
+    if (current.close >= current.open) return false;
+
+    // Third candle should close below first candle's midpoint
+    const firstMidpoint = (first.open + first.close) / 2;
+    if (current.close > firstMidpoint) return false;
+
+    // Third candle should gap down from star (or at least open lower)
+    if (current.open >= Math.max(previous.open, previous.close)) return false;
+
+    context.firstCandle = first;
+    context.starCandle = previous;
+    context.confirmCandle = current;
+    context.reversal = first.close - current.close;
+
+    return true;
+  },
+
+  getStrength(current, previous, context = {}) {
+    if (!this.detect(current, previous, context)) return 0;
+
+    let strength = 0.6;
+
+    // Stronger if third candle closes near first candle's open
+    const recoverRatio = (context.firstCandle.close - current.close) /
+                          (context.firstCandle.close - context.firstCandle.open);
+    if (recoverRatio > 1) strength += 0.2;
+    else if (recoverRatio > 0.8) strength += 0.1;
+
+    // Star being a doji adds strength
+    const starBody = Math.abs(context.starCandle.close - context.starCandle.open);
+    const starRange = context.starCandle.high - context.starCandle.low;
+    if (starRange > 0 && starBody / starRange < 0.1) strength += 0.1;
+
+    // Volume increasing on third candle
+    if (context.firstCandle.volume && current.volume > context.firstCandle.volume) {
+      strength += 0.1;
+    }
+
+    return Math.min(1, strength);
+  },
+
+  filters: {
+    volumeMultiplier: 1.0,
+    sessions: ['rth'],
+    avoidHours: [],
+    useOrderFlow: false,
+    maxStarBodyRatio: 0.3
+  },
+
+  exits: {
+    targetPoints: 3.0,
+    stopLossPoints: 2.5,
+    trailingTrigger: 2.0,
+    trailingOffset: 1.0,
+    maxHoldBars: 5
+  },
+
+  metrics: {
+    count: 0,
+    winRate2pt: 0,
+    winRate3pt: 0,
+    avgMFE: 0,
+    avgMAE: 0,
+    bestHour: null,
+    bestDay: null
+  }
+};
+
+export default EveningStarPattern;

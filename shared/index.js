@@ -59,7 +59,31 @@ export const CHANNELS = {
   TRADOVATE_SYNC_COMPLETED: 'tradovate_sync_completed',
   TRADOVATE_FULL_SYNC_REQUESTED: 'tradovate_full_sync_requested',
   TRADOVATE_FULL_SYNC_STARTED: 'tradovate_full_sync_started',
-  TRADOVATE_FULL_SYNC_COMPLETED: 'tradovate_full_sync_completed'
+  TRADOVATE_FULL_SYNC_COMPLETED: 'tradovate_full_sync_completed',
+
+  // Strategy status events
+  STRATEGY_STATUS: 'strategy.status',
+
+  // Signal Generator events
+  LT_LEVELS: 'lt.levels',
+  GEX_LEVELS: 'gex.levels',
+  VEX_LEVELS: 'vex.levels',
+  CEX_LEVELS: 'cex.levels',
+  EXPOSURE_LEVELS: 'exposure.levels',
+  CANDLE_CLOSE: 'candle.close',
+  GEX_REFRESH: 'gex.refresh',
+  EXPOSURE_REFRESH: 'exposure.refresh',
+
+  // Squeeze Momentum events
+  SQUEEZE_STATUS: 'squeeze.status',
+  SQUEEZE_UPDATE: 'squeeze.update',
+
+  // IV Skew events
+  IV_SKEW: 'iv.skew',
+  IV_UPDATE: 'iv.update',
+
+  // Analytics events
+  ANALYTICS: 'analytics.update'
 };
 
 // Service health check helper

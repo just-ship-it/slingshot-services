@@ -453,6 +453,7 @@ async function handleOrderRequest(message) {
           trailing_trigger: message.trailing_trigger,
           trailing_offset: message.trailing_offset,
           signalId: message.signalId,
+          strategy: message.strategy,
           response: result
         });
 
@@ -549,6 +550,7 @@ async function handleOrderRequest(message) {
           timestamp: timestamp,
           isBracketOrder: true,
           signalId: message.signalId,
+          strategy: message.strategy,
           response: result
         });
 
@@ -556,11 +558,11 @@ async function handleOrderRequest(message) {
         if (message.signalId && result.orderId) {
           orderSignalMap.set(result.orderId, message.signalId);
           logger.info(`🔗 Stored signal mapping: order ${result.orderId} → signal ${message.signalId}`);
+        }
 
-          // Store strategy mapping for multi-strategy cancellation support
-          if (message.strategy) {
-            await addOrderStrategyMapping(result.orderId, message.strategy);
-          }
+        // Store strategy mapping for position tracking (independent of signalId)
+        if (message.strategy && result.orderId) {
+          await addOrderStrategyMapping(result.orderId, message.strategy);
         }
       }
 
@@ -588,11 +590,11 @@ async function handleOrderRequest(message) {
           if (message.signalId) {
             orderSignalMap.set(result.bracket1OrderId, message.signalId);
             logger.info(`🔗 Stored signal mapping: bracket stop order ${result.bracket1OrderId} → signal ${message.signalId}`);
+          }
 
-            // Store strategy mapping for bracket stop loss order
-            if (message.strategy) {
-              await addOrderStrategyMapping(result.bracket1OrderId, message.strategy);
-            }
+          // Store strategy mapping for bracket stop loss order (independent of signalId)
+          if (message.strategy) {
+            await addOrderStrategyMapping(result.bracket1OrderId, message.strategy);
           }
         }
 
@@ -618,11 +620,11 @@ async function handleOrderRequest(message) {
           if (message.signalId) {
             orderSignalMap.set(result.bracket2OrderId, message.signalId);
             logger.info(`🔗 Stored signal mapping: bracket target order ${result.bracket2OrderId} → signal ${message.signalId}`);
+          }
 
-            // Store strategy mapping for bracket take profit order
-            if (message.strategy) {
-              await addOrderStrategyMapping(result.bracket2OrderId, message.strategy);
-            }
+          // Store strategy mapping for bracket take profit order (independent of signalId)
+          if (message.strategy) {
+            await addOrderStrategyMapping(result.bracket2OrderId, message.strategy);
           }
         }
       }
@@ -1402,8 +1404,12 @@ async function handleWebhookTrade(webhookMessage) {
         await handleUpdateLimitOrder(tradeSignal, accountId, webhookMessage.id);
         break;
 
+      case 'modify_stop':
+        await handleModifyStop(tradeSignal, accountId, webhookMessage.id);
+        break;
+
       default:
-        throw new Error(`Unknown action: ${tradeSignal.action}. Expected: place_limit, cancel_limit, position_closed, or update_limit`);
+        throw new Error(`Unknown action: ${tradeSignal.action}. Expected: place_limit, cancel_limit, position_closed, update_limit, or modify_stop`);
     }
 
     // Publish webhook processed event
@@ -1945,6 +1951,185 @@ async function handleUpdateLimitOrder(tradeSignal, accountId, webhookId) {
   }
 }
 
+/**
+ * Handle modify_stop action - modify stop loss for breakeven protection
+ *
+ * This is used by strategies with breakeven stop functionality.
+ * When position profit reaches breakeven_trigger, the stop is moved to entry + breakeven_offset.
+ *
+ * Signal format:
+ * {
+ *   action: 'modify_stop',
+ *   strategy: 'IV_SKEW_GEX',
+ *   symbol: 'NQH6',
+ *   order_strategy_id: 12345,  // OR orderId for direct stop modification
+ *   new_stop_price: 21450.00,
+ *   reason: 'breakeven_triggered'
+ * }
+ */
+async function handleModifyStop(tradeSignal, accountId, webhookId) {
+  logger.info(`🎯 Processing modify_stop for ${tradeSignal.strategy}: ${tradeSignal.symbol}`);
+  logger.info(`   New stop price: ${tradeSignal.new_stop_price}, Reason: ${tradeSignal.reason}`);
+
+  try {
+    // Validate required fields
+    if (!tradeSignal.new_stop_price && tradeSignal.new_stop_price !== 0) {
+      throw new Error('Missing required field: new_stop_price');
+    }
+
+    if (!tradeSignal.symbol) {
+      throw new Error('Missing required field: symbol');
+    }
+
+    // Method 1: Modify via order strategy ID (bracket orders)
+    if (tradeSignal.order_strategy_id) {
+      logger.info(`🔧 Modifying bracket stop via order strategy ${tradeSignal.order_strategy_id}`);
+
+      try {
+        const result = await tradovateClient.modifyBracketStop(
+          tradeSignal.order_strategy_id,
+          tradeSignal.new_stop_price
+        );
+
+        logger.info(`✅ Bracket stop modified successfully`);
+
+        // Publish stop modification event
+        await messageBus.publish(CHANNELS.ORDER_UPDATE || 'order.update', {
+          accountId: accountId,
+          orderStrategyId: tradeSignal.order_strategy_id,
+          symbol: tradeSignal.symbol,
+          action: 'modify_stop',
+          newStopPrice: tradeSignal.new_stop_price,
+          reason: tradeSignal.reason,
+          strategy: tradeSignal.strategy,
+          webhookId: webhookId,
+          timestamp: new Date().toISOString(),
+          result: result
+        });
+
+        return result;
+      } catch (error) {
+        logger.error(`Failed to modify bracket stop via strategy: ${error.message}`);
+        // Fall through to try direct order modification
+      }
+    }
+
+    // Method 2: Modify via direct order ID
+    if (tradeSignal.order_id || tradeSignal.orderId) {
+      const orderId = tradeSignal.order_id || tradeSignal.orderId;
+      logger.info(`🔧 Modifying stop order directly: ${orderId}`);
+
+      const result = await tradovateClient.modifyOrder({
+        orderId: orderId,
+        stopPrice: tradeSignal.new_stop_price
+      });
+
+      logger.info(`✅ Stop order ${orderId} modified to ${tradeSignal.new_stop_price}`);
+
+      // Publish stop modification event
+      await messageBus.publish(CHANNELS.ORDER_UPDATE || 'order.update', {
+        accountId: accountId,
+        orderId: orderId,
+        symbol: tradeSignal.symbol,
+        action: 'modify_stop',
+        newStopPrice: tradeSignal.new_stop_price,
+        reason: tradeSignal.reason,
+        strategy: tradeSignal.strategy,
+        webhookId: webhookId,
+        timestamp: new Date().toISOString(),
+        result: result
+      });
+
+      return result;
+    }
+
+    // Method 3: Find stop order by symbol/position and modify
+    logger.info(`🔍 No order ID provided, searching for stop orders on ${tradeSignal.symbol}`);
+
+    const contractInfo = await tradovateClient.findContract(tradeSignal.symbol);
+    const contractId = contractInfo.id;
+    logger.info(`🔍 Contract ID for ${tradeSignal.symbol}: ${contractId}`);
+
+    // Get all orders and find working stop orders for this contract
+    const orders = await tradovateClient.getOrders(accountId);
+    logger.info(`🔍 Total orders returned: ${orders.length}`);
+
+    // Debug: log all orders to see what we're working with
+    orders.forEach((order, i) => {
+      const status = order.ordStatus || order.orderStatus || order.status;
+      const type = order.orderType || order.ordType || order.type;
+      logger.info(`  Order[${i}]: id=${order.id}, contractId=${order.contractId}, status=${status}, type=${type}, stopPrice=${order.stopPrice}`);
+    });
+
+    const stopOrders = orders.filter(order => {
+      const status = order.ordStatus || order.orderStatus || order.status;
+      const type = order.orderType || order.ordType || order.type;
+      const isMatchingContract = order.contractId === contractId;
+      const isWorking = status === 'Working';
+      const isStopOrder = (type === 'Stop' || type === 'StopLimit' || type === 'StopMarket');
+
+      return isMatchingContract && isWorking && isStopOrder;
+    });
+
+    if (stopOrders.length === 0) {
+      logger.warn(`⚠️ No working stop orders found for ${tradeSignal.symbol}`);
+      throw new Error(`No stop orders found to modify for ${tradeSignal.symbol}`);
+    }
+
+    if (stopOrders.length > 1) {
+      logger.warn(`Found ${stopOrders.length} stop orders, modifying all of them`);
+    }
+
+    const results = [];
+    for (const stopOrder of stopOrders) {
+      try {
+        logger.info(`🔧 Modifying stop order ${stopOrder.id} from ${stopOrder.stopPrice} to ${tradeSignal.new_stop_price}`);
+
+        // Get current order quantity and type to preserve them
+        const orderQty = stopOrder.orderQty || stopOrder.qty || 1;
+        const orderType = stopOrder.orderType || stopOrder.ordType || 'Stop';
+
+        const result = await tradovateClient.modifyOrder({
+          orderId: stopOrder.id,
+          orderQty: orderQty,
+          orderType: orderType,
+          stopPrice: tradeSignal.new_stop_price
+        });
+
+        results.push({ orderId: stopOrder.id, success: true, result });
+        logger.info(`✅ Stop order ${stopOrder.id} modified successfully`);
+      } catch (error) {
+        results.push({ orderId: stopOrder.id, success: false, error: error.message });
+        logger.error(`Failed to modify stop order ${stopOrder.id}: ${error.message}`);
+      }
+    }
+
+    // Publish aggregate result
+    await messageBus.publish(CHANNELS.ORDER_UPDATE || 'order.update', {
+      accountId: accountId,
+      symbol: tradeSignal.symbol,
+      action: 'modify_stop',
+      newStopPrice: tradeSignal.new_stop_price,
+      reason: tradeSignal.reason,
+      strategy: tradeSignal.strategy,
+      webhookId: webhookId,
+      timestamp: new Date().toISOString(),
+      modifiedOrders: results
+    });
+
+    return results;
+
+  } catch (error) {
+    logger.error('Failed to modify stop:', {
+      error: error.message,
+      symbol: tradeSignal.symbol,
+      strategy: tradeSignal.strategy,
+      newStopPrice: tradeSignal.new_stop_price
+    });
+    throw error;
+  }
+}
+
 // Handle position_closed action from LDPS Trader - liquidate position and cancel orders
 async function handlePositionClosed(tradeSignal, accountId, webhookId) {
   logger.info(`Processing position_closed: ${tradeSignal.side} ${tradeSignal.symbol} - liquidating position`);
@@ -2312,6 +2497,7 @@ async function startup() {
 
         // Look up the signalId for this order
         let signalId = orderSignalMap.get(execution.orderId);
+        let parentStrategyId = null;
 
         // If no direct mapping, check if this is a child order from an OrderStrategy
         if (!signalId) {
@@ -2320,6 +2506,7 @@ async function startup() {
             // Add this child order to the strategy's child set
             strategyInfo.childOrderIds.add(execution.orderId);
             signalId = strategyInfo.signalId;
+            parentStrategyId = strategyId;
             logger.info(`🎯 Mapped child order ${execution.orderId} to parent strategy ${strategyId} → signal ${signalId}`);
             break; // Use the first (most recent) strategy - could be enhanced with better matching
           }
@@ -2359,6 +2546,15 @@ async function startup() {
         logger.info(`🔍 Action determination: side=${execution.side}, action=${execution.action}, buySell=${execution.buySell}, orderSide=${execution.orderSide}, direction=${execution.direction}`);
         logger.info(`🔍 Final action: ${action || 'UNDEFINED'}`);
 
+        // Look up strategy name from mapping
+        // First try parentStrategyId (for order strategies with trailing stops)
+        // Then fall back to orderId (for OSO bracket orders)
+        let strategyName = parentStrategyId ? orderStrategyMap.get(String(parentStrategyId)) : null;
+        if (!strategyName && execution.orderId) {
+          strategyName = orderStrategyMap.get(String(execution.orderId));
+        }
+        logger.info(`🔍 Strategy lookup: parentStrategyId=${parentStrategyId}, orderId=${execution.orderId}, found=${strategyName || 'NONE'}, mapSize=${orderStrategyMap.size}`);
+
         await messageBus.publish(CHANNELS.ORDER_FILLED, {
           orderId: execution.orderId,
           accountId: execution.accountId,
@@ -2371,6 +2567,8 @@ async function startup() {
           timestamp: execution.timestamp || new Date().toISOString(),
           source: 'websocket_execution_report',
           signalId: signalId,  // Include the original signal ID!
+          strategyId: parentStrategyId,  // Include parent strategy ID for timeout tracking
+          strategy: strategyName,  // Include strategy name for filtering
           isStopOrder: isStopOrder,
           isTargetOrder: isTargetOrder,
           cumQty: execution.cumQty,  // Also send cumulative for reference
@@ -2401,16 +2599,45 @@ async function startup() {
 
           if (!position || position.netPos === 0) {
             // Position was closed by this execution
-            logger.info(`🔒 Position closed by execution - publishing POSITION_CLOSED for ${symbol}`);
+            logger.info(`🔒 Position closed by execution - publishing POSITION_CLOSED for ${symbol} (strategy: ${strategyName || 'unknown'})`);
             await messageBus.publish(CHANNELS.POSITION_CLOSED, {
               accountId: execution.accountId,
               contractId: execution.contractId,
               symbol: symbol,
+              strategy: strategyName,
+              exitPrice: execution.avgPx || execution.price,
+              isStopOrder: isStopOrder,
+              isTargetOrder: isTargetOrder,
+              reason: isStopOrder ? 'stop_loss' : (isTargetOrder ? 'take_profit' : 'manual'),
               timestamp: new Date().toISOString(),
               source: 'execution_fill_close'
             });
           } else {
             logger.info(`📈 Position still open after execution: ${symbol} netPos=${position.netPos}`);
+
+            // If this is an entry fill (not stop/target), publish POSITION_OPENED
+            // This allows the strategy engine to track that we're in a position
+            if (!isStopOrder && !isTargetOrder) {
+              const side = position.netPos > 0 ? 'long' : 'short';
+              logger.info(`🚀 Entry fill detected - publishing POSITION_OPENED for ${symbol} (${side}) with strategy: ${strategyName || 'NONE'}`);
+
+              await messageBus.publish(CHANNELS.POSITION_OPENED, {
+                accountId: execution.accountId,
+                contractId: execution.contractId,
+                symbol: symbol,
+                side: side,
+                action: action,  // Buy/Sell
+                price: execution.avgPx || execution.price,
+                entryPrice: execution.avgPx || execution.price,
+                quantity: Math.abs(position.netPos),
+                strategy: strategyName,
+                order_strategy_id: parentStrategyId,
+                orderStrategyId: parentStrategyId,
+                signalId: signalId,
+                timestamp: new Date().toISOString(),
+                source: 'execution_fill_entry'
+              });
+            }
           }
         } catch (error) {
           logger.warn(`⚠️ Failed to check position state after execution fill: ${error.message}`);

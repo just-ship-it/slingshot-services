@@ -1,0 +1,22 @@
+# Baselines
+
+# ICT-SMT
+node index.js --ticker NQ --start 2025-01-01 --end 2025-12-31 --strategy ict-smc --structure-timeframe 15m --entry-timeframe 1m
+
+# ICT-OB
+node index.js --ticker NQ --start 2025-01-01 --end 2025-12-31 --strategy ict-ob --structure-timeframe 15m --entry-timeframe 1m
+
+# IV-SKEW-VEX
+node index.js --ticker NQ --start 2025-01-13 --end 2025-12-24 --strategy iv-skew-gex --timeframe 15m
+node index.js --ticker NQ --start 2025-01-13 --end 2025-12-24 --strategy iv-skew-gex --timeframe 15m --target-points 70 --stop-loss-points 70
+
+##### With time trail
+ node index.js --ticker NQ --start 2025-01-13 --end 2026-01-23 --strategy iv-skew-gex --timeframe 1m --target-points 70 --stop-loss-points 70 -o results/iv-skew-gex-time
+-trail.json --time-based-trailing --tb-rule-1 "15,20,breakeven"
+
+
+# CBBO-LT-VOL
+node index.js --ticker NQ --start 2025-01-13 --end 2025-01-17 --strategy cbbo-lt-volatility --spread-threshold 0.15 --cbbo-lookback-minutes 30
+
+# LT-Cross
+node index.js --ticker NQ --start 2025-01-01 --end 2025-12-31 --strategy lt-level-crossing --timeframe 1m --stop-buffer 50 --target-points 50 --use-trailing-stop false -o results/lc-50-2025.json

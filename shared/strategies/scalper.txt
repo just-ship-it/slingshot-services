@@ -1,0 +1,12 @@
+Using the OHLCV ES and/or NQ 1 second resolution OHLCV data, I want you to build an extremely aggressive scalping strategy.  The strategy can use long and short positions of 1 ES contract at a time and should trade 24/7.  The strategy should look for different patterns and trends on any timeframe found to work.  I would suggest testing a 3 minute chart or 1 minute chart, or both.  The strategy should aim to identify different trading patterns, and once identified, aggressively trade in and out of positions until the pattern breaks.  Any trade that gains 5 points on NQ or 2 points of ES should not take a loss.  Use trailing stops to protect capital.  Some suggestions...
+
+1. Trending up or down along a simple trend line.  Identify the slope and use limit orders within a few points buffer, lock in profits quickly.
+2. Chopping between two VWAP bands or EMA levels
+3. Ranging between swing high / swing low (low timeframe like 3 or 5)
+4. Bouncing along strong support or rejection level
+
+All trades must use an initial fixed stop of 20 points, which gets moved once the trailing stop activates.  Strategy should re-enter when conditions are favorable again (near the trend line, vwap, ema, swing level, etc.
+
+Phase 1 of this is to build out the regime identifier portion that tells us are we trending up, trending down, range bound and if so what range.  Feel free to utilize or implement any potential indicators that will help and research any that prove statistically significant. We will run a backtest and fine tune parameters over the 2024-current trading period.
+
+Be aware of what session is being traded.  Some patterns may be more likely and play out better in certain sessions.  RTH (9:30 AM - 4:00 PM EST). Overnight (6 PM EST to 4 AM EST), Premarket (4 AM - 9:30 AM EST).  Do not trade 4 PM - 5 PM EST.

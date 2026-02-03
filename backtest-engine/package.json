@@ -1,0 +1,30 @@
+{
+  "name": "slingshot-backtest-engine",
+  "version": "1.0.0",
+  "description": "Professional backtesting engine for trading strategies",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node --watch index.js",
+    "test": "node --test",
+    "backtest": "node index.js"
+  },
+  "dependencies": {
+    "chalk": "^5.3.0",
+    "cli-table3": "^0.6.3",
+    "csv-parser": "^3.0.0",
+    "csv-writer": "^1.6.0",
+    "moment": "^2.29.4",
+    "yargs": "^17.7.2"
+  },
+  "keywords": [
+    "backtesting",
+    "trading",
+    "strategy",
+    "finance",
+    "algorithmic-trading"
+  ],
+  "author": "Slingshot Trading System",
+  "license": "MIT"
+}

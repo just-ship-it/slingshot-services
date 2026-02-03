@@ -1,0 +1,613 @@
+{
+  "config": {
+    "ticker": "NQ",
+    "startDate": "2023-04-02T00:00:00.000Z",
+    "endDate": "2023-04-04T00:00:00.000Z",
+    "timeframe": "15m",
+    "strategy": "gex-ldpm-confluence",
+    "strategyParams": {
+      "confluenceThreshold": 10,
+      "entryDistance": 15,
+      "volumeConfirmationPct": 0,
+      "stopLossPoints": 40,
+      "targetAtCenter": true,
+      "maxRisk": 100,
+      "positiveRegimeSize": 1,
+      "negativeRegimeSize": 1.3,
+      "transitionRegimeSize": 0.7,
+      "rthOnly": false,
+      "overnightReduced": true,
+      "overnightSizeMultiplier": 0.8,
+      "signalCooldownMs": 300000,
+      "defaultQuantity": 1,
+      "volumeLookbackPeriods": 20,
+      "avoidNewsMinutes": 30,
+      "useTrailingStop": true,
+      "trailingTrigger": 15,
+      "trailingOffset": 10,
+      "tradingSymbol": "NQ",
+      "targetPoints": 20,
+      "stopBuffer": 12,
+      "useLiquidityFilter": false,
+      "filterByLtConfiguration": false,
+      "ltFilterProfile": "conservative",
+      "blockedLtOrderings": [
+        "ASCENDING"
+      ],
+      "blockedLdmpTypes": [
+        "BULLISH_REVERSAL",
+        "BEARISH_REVERSAL"
+      ]
+    },
+    "commission": 5,
+    "initialCapital": 100000,
+    "dataDir": "/home/drew/projects/slingshot-services/backtest-engine/data",
+    "verbose": true,
+    "quiet": false,
+    "showTrades": false,
+    "outputFiles": {
+      "json": "debug_test_signals.json"
+    }
+  },
+  "data": {
+    "candleCount": 101,
+    "gexLevelCount": 2,
+    "liquidityLevelCount": 101
+  },
+  "trades": [
+    {
+      "id": "T000001",
+      "timestamp": 1680479100000,
+      "signal": {
+        "id": "signal_1680479100000",
+        "strategy": "gex-ldpm-confluence",
+        "action": "place_limit",
+        "side": "sell",
+        "symbol": "NQ",
+        "price": 13239.75,
+        "stop_loss": 13279.75,
+        "take_profit": 13221.75,
+        "quantity": 1,
+        "trailing_trigger": 15,
+        "trailing_offset": 10,
+        "timestamp": 1680479100000,
+        "confluenceZone": {
+          "center": 13221.769237875487,
+          "strength": 2,
+          "types": [
+            "put_wall_1",
+            "ldpm_level_1"
+          ],
+          "distanceFromPrice": 17.980762124512694
+        },
+        "regime": "positive",
+        "riskPoints": 40,
+        "rewardPoints": 17.980762124512694,
+        "riskRewardRatio": 0.44951905311281737,
+        "volume": 1407,
+        "avgVolume": 1267.142857142857,
+        "volumeRatio": 1.1103720405862458,
+        "debug": {
+          "gexLevels": {
+            "type": "put_wall_1",
+            "value": 13219.320883383383,
+            "importance": "high"
+          },
+          "ldpmLevels": [
+            {
+              "type": "ldpm_level_1",
+              "value": 13224.46
+            }
+          ],
+          "positionSizeMultiplier": 0.8,
+          "entryMethod": "current_price",
+          "fvgContext": null
+        },
+        "availableLTLevels": {
+          "level_1": 13224.5,
+          "level_2": 13239,
+          "level_3": 13196.5,
+          "level_4": 13183.25,
+          "level_5": 13080.25,
+          "sentiment": "BULLISH"
+        },
+        "entryAnalysis": {
+          "signalPrice": 13239.75,
+          "confluenceTarget": 13221.75,
+          "actualEntryPrice": 13239.75,
+          "direction": "short",
+          "distanceToConfluence": 17.980762124512694
+        }
+      },
+      "status": "completed",
+      "side": "sell",
+      "symbol": "NQ",
+      "quantity": 1,
+      "entryPrice": 13239.75,
+      "stopLoss": 13279.75,
+      "takeProfit": 13221.75,
+      "trailingTrigger": 15,
+      "trailingOffset": 10,
+      "strategy": "gex-ldpm-confluence",
+      "metadata": {},
+      "timeoutCandles": 0,
+      "candlesSinceSignal": 1,
+      "actualEntry": 13246.5,
+      "entryTime": 1680479160000,
+      "entryCandle": {
+        "timestamp": 1680479160000,
+        "symbol": "NQM3",
+        "open": 13248.25,
+        "high": 13250,
+        "low": 13246,
+        "close": 13246.75,
+        "volume": 66
+      },
+      "trailingStop": {
+        "triggered": false,
+        "highWaterMark": 13246.5,
+        "currentStop": 13279.75
+      },
+      "exitTime": 1680479220000,
+      "exitCandle": {
+        "timestamp": 1680479220000,
+        "symbol": "NQM3",
+        "open": 13246.5,
+        "high": 13247,
+        "low": 13244.5,
+        "close": 13246.25,
+        "volume": 150
+      },
+      "actualExit": 13246.5,
+      "exitReason": "market_close",
+      "grossPnL": 0,
+      "netPnL": -5,
+      "commission": 5,
+      "duration": 60000,
+      "event": "trade_completed",
+      "pointValue": 20,
+      "baseSymbol": "NQ",
+      "pointsPnL": 0,
+      "percentPnL": 0
+    },
+    {
+      "id": "T000002",
+      "timestamp": 1680485400000,
+      "signal": {
+        "id": "signal_1680485400000",
+        "strategy": "gex-ldpm-confluence",
+        "action": "place_limit",
+        "side": "buy",
+        "symbol": "NQ",
+        "price": 13212.75,
+        "stop_loss": 13172.75,
+        "take_profit": 13257.75,
+        "quantity": 1,
+        "trailing_trigger": 15,
+        "trailing_offset": 10,
+        "timestamp": 1680485400000,
+        "confluenceZone": {
+          "center": 13257.75908268767,
+          "strength": 2,
+          "types": [
+            "call_wall_3",
+            "ldpm_level_2"
+          ],
+          "distanceFromPrice": 45.009082687669434
+        },
+        "regime": "positive",
+        "riskPoints": 40,
+        "rewardPoints": 45.009082687669434,
+        "riskRewardRatio": 1.125227067191736,
+        "volume": 1619,
+        "avgVolume": 1591.357142857143,
+        "volumeRatio": 1.017370618070829,
+        "debug": {
+          "gexLevels": {
+            "type": "call_wall_3",
+            "value": 13260.76076076076,
+            "importance": "medium"
+          },
+          "ldpmLevels": [
+            {
+              "type": "ldpm_level_2",
+              "value": 13254.9
+            }
+          ],
+          "positionSizeMultiplier": 0.8,
+          "entryMethod": "current_price",
+          "fvgContext": null
+        },
+        "availableLTLevels": {
+          "level_1": 13223,
+          "level_2": 13255,
+          "level_3": 13208.5,
+          "level_4": 13197.5,
+          "level_5": 13092.25,
+          "sentiment": "BEARISH"
+        },
+        "entryAnalysis": {
+          "signalPrice": 13212.75,
+          "confluenceTarget": 13257.75,
+          "actualEntryPrice": 13212.75,
+          "direction": "long",
+          "distanceToConfluence": 45.009082687669434
+        }
+      },
+      "status": "completed",
+      "side": "buy",
+      "symbol": "NQ",
+      "quantity": 1,
+      "entryPrice": 13212.75,
+      "stopLoss": 13172.75,
+      "takeProfit": 13257.75,
+      "trailingTrigger": 15,
+      "trailingOffset": 10,
+      "strategy": "gex-ldpm-confluence",
+      "metadata": {},
+      "timeoutCandles": 0,
+      "candlesSinceSignal": 12,
+      "actualEntry": 13212.75,
+      "entryTime": 1680486120000,
+      "entryCandle": {
+        "timestamp": 1680486120000,
+        "symbol": "NQM3",
+        "open": 13222.5,
+        "high": 13222.5,
+        "low": 13212.5,
+        "close": 13213.25,
+        "volume": 237
+      },
+      "trailingStop": {
+        "triggered": true,
+        "highWaterMark": 13227.75,
+        "currentStop": 13217.75
+      },
+      "exitTime": 1680492780000,
+      "exitCandle": {
+        "timestamp": 1680492780000,
+        "symbol": "NQM3",
+        "open": 13218.25,
+        "high": 13220,
+        "low": 13216.5,
+        "close": 13219.5,
+        "volume": 115
+      },
+      "actualExit": 13216.25,
+      "exitReason": "stop_loss",
+      "grossPnL": 70,
+      "netPnL": 65,
+      "commission": 5,
+      "duration": 6660000,
+      "event": "trade_completed",
+      "pointValue": 20,
+      "baseSymbol": "NQ",
+      "pointsPnL": 3.5,
+      "percentPnL": 0.03
+    },
+    {
+      "id": "T000003",
+      "timestamp": 1680502500000,
+      "signal": {
+        "id": "signal_1680502500000",
+        "strategy": "gex-ldpm-confluence",
+        "action": "place_limit",
+        "side": "sell",
+        "symbol": "NQ",
+        "price": 13212.5,
+        "stop_loss": 13252.5,
+        "take_profit": 13129.5,
+        "quantity": 1,
+        "trailing_trigger": 15,
+        "trailing_offset": 10,
+        "timestamp": 1680502500000,
+        "confluenceZone": {
+          "center": 13129.545260544272,
+          "strength": 2,
+          "types": [
+            "put_wall_1",
+            "ldpm_level_5"
+          ],
+          "distanceFromPrice": 82.95473945572849
+        },
+        "regime": "positive",
+        "riskPoints": 40,
+        "rewardPoints": 82.95473945572849,
+        "riskRewardRatio": 2.073868486393212,
+        "volume": 1071,
+        "avgVolume": 939.1,
+        "volumeRatio": 1.1404536258119475,
+        "debug": {
+          "gexLevels": {
+            "type": "put_wall_1",
+            "value": 13134.104136679392,
+            "importance": "high"
+          },
+          "ldpmLevels": [
+            {
+              "type": "ldpm_level_5",
+              "value": 13125
+            }
+          ],
+          "positionSizeMultiplier": 0.8,
+          "entryMethod": "current_price",
+          "fvgContext": null
+        },
+        "availableLTLevels": {
+          "level_1": 13202.5,
+          "level_2": 13232.25,
+          "level_3": 13233,
+          "level_4": 13235.5,
+          "level_5": 13125,
+          "sentiment": "BEARISH"
+        },
+        "entryAnalysis": {
+          "signalPrice": 13212.5,
+          "confluenceTarget": 13129.5,
+          "actualEntryPrice": 13212.5,
+          "direction": "short",
+          "distanceToConfluence": 82.95473945572849
+        }
+      },
+      "status": "completed",
+      "side": "sell",
+      "symbol": "NQ",
+      "quantity": 1,
+      "entryPrice": 13212.5,
+      "stopLoss": 13252.5,
+      "takeProfit": 13129.5,
+      "trailingTrigger": 15,
+      "trailingOffset": 10,
+      "strategy": "gex-ldpm-confluence",
+      "metadata": {},
+      "timeoutCandles": 0,
+      "candlesSinceSignal": 1,
+      "actualEntry": 13220.25,
+      "entryTime": 1680502560000,
+      "entryCandle": {
+        "timestamp": 1680502560000,
+        "symbol": "NQM3",
+        "open": 13220.5,
+        "high": 13222.25,
+        "low": 13219,
+        "close": 13220.5,
+        "volume": 95
+      },
+      "trailingStop": {
+        "triggered": false,
+        "highWaterMark": 13220.25,
+        "currentStop": 13252.5
+      },
+      "exitTime": 1680529680000,
+      "exitCandle": {
+        "timestamp": 1680529680000,
+        "symbol": "NQM3",
+        "open": 13245,
+        "high": 13260,
+        "low": 13245,
+        "close": 13257.5,
+        "volume": 2670
+      },
+      "actualExit": 13254,
+      "exitReason": "stop_loss",
+      "grossPnL": -675,
+      "netPnL": -680,
+      "commission": 5,
+      "duration": 27120000,
+      "event": "trade_completed",
+      "pointValue": 20,
+      "baseSymbol": "NQ",
+      "pointsPnL": -33.75,
+      "percentPnL": -0.26
+    },
+    {
+      "id": "T000004",
+      "timestamp": 1680550200000,
+      "signal": {
+        "id": "signal_1680550200000",
+        "strategy": "gex-ldpm-confluence",
+        "action": "place_limit",
+        "side": "sell",
+        "symbol": "NQ",
+        "price": 13256,
+        "stop_loss": 13296,
+        "take_profit": 13219,
+        "quantity": 1,
+        "trailing_trigger": 15,
+        "trailing_offset": 10,
+        "timestamp": 1680550200000,
+        "confluenceZone": {
+          "center": 13218.957531249536,
+          "strength": 2,
+          "types": [
+            "put_wall_2",
+            "ldpm_level_3"
+          ],
+          "distanceFromPrice": 37.04246875046374
+        },
+        "regime": "positive",
+        "riskPoints": 40,
+        "rewardPoints": 37.04246875046374,
+        "riskRewardRatio": 0.9260617187615935,
+        "volume": 18154,
+        "avgVolume": 12765.35,
+        "volumeRatio": 1.4221310030668959,
+        "debug": {
+          "gexLevels": {
+            "type": "put_wall_2",
+            "value": 13216.969147005446,
+            "importance": "medium"
+          },
+          "ldpmLevels": [
+            {
+              "type": "ldpm_level_3",
+              "value": 13220.4
+            }
+          ],
+          "positionSizeMultiplier": 1,
+          "entryMethod": "current_price",
+          "fvgContext": null
+        },
+        "availableLTLevels": {
+          "level_1": 13154.5,
+          "level_2": 13151.75,
+          "level_3": 13220.5,
+          "level_4": 13275.5,
+          "level_5": 13189,
+          "sentiment": "BULLISH"
+        },
+        "entryAnalysis": {
+          "signalPrice": 13256,
+          "confluenceTarget": 13219,
+          "actualEntryPrice": 13256,
+          "direction": "short",
+          "distanceToConfluence": 37.04246875046374
+        }
+      },
+      "status": "completed",
+      "side": "sell",
+      "symbol": "NQ",
+      "quantity": 1,
+      "entryPrice": 13256,
+      "stopLoss": 13296,
+      "takeProfit": 13219,
+      "trailingTrigger": 15,
+      "trailingOffset": 10,
+      "strategy": "gex-ldpm-confluence",
+      "metadata": {},
+      "timeoutCandles": 0,
+      "candlesSinceSignal": 2,
+      "actualEntry": 13256,
+      "entryTime": 1680550320000,
+      "entryCandle": {
+        "timestamp": 1680550320000,
+        "symbol": "NQM3",
+        "open": 13247.5,
+        "high": 13257.75,
+        "low": 13247,
+        "close": 13254.5,
+        "volume": 1962
+      },
+      "trailingStop": {
+        "triggered": false,
+        "highWaterMark": 13256,
+        "currentStop": 13296
+      },
+      "exitTime": 1680559200000,
+      "exitCandle": {
+        "timestamp": 1680559200000,
+        "symbol": "NQM3",
+        "open": 13259,
+        "high": 13260.5,
+        "low": 13246.5,
+        "close": 13250,
+        "volume": 284
+      },
+      "actualExit": 13250.25,
+      "exitReason": "market_close",
+      "grossPnL": 115,
+      "netPnL": 110,
+      "commission": 5,
+      "duration": 8880000,
+      "event": "trade_completed",
+      "pointValue": 20,
+      "baseSymbol": "NQ",
+      "pointsPnL": 5.75,
+      "percentPnL": 0.04
+    }
+  ],
+  "performance": {
+    "summary": {
+      "totalTrades": 4,
+      "totalPnL": -510,
+      "totalReturn": -0.51,
+      "annualizedReturn": -61,
+      "sharpeRatio": -10.69,
+      "maxDrawdown": 0.68,
+      "winRate": 50
+    },
+    "basic": {
+      "totalTrades": 4,
+      "winningTrades": 2,
+      "losingTrades": 2,
+      "winRate": 50,
+      "lossRate": 50,
+      "totalPnL": -510,
+      "totalCommission": 20,
+      "avgWin": 87.5,
+      "avgLoss": 342.5,
+      "largestWin": 110,
+      "largestLoss": -680,
+      "profitFactor": 0.26,
+      "avgTrade": -127.5,
+      "expectancy": -127.5
+    },
+    "returns": {
+      "totalReturn": -0.51,
+      "annualizedReturn": -61,
+      "cagr": -61,
+      "initialCapital": 100000,
+      "finalCapital": 99490,
+      "monthlyReturns": [
+        -0.00005,
+        0.0006500325016250812,
+        -0.006795922446532081,
+        0.0011068625477963373
+      ],
+      "dailyReturns": [
+        -0.00005,
+        0.0006500325016250812,
+        -0.006795922446532081,
+        0.0011068625477963373
+      ]
+    },
+    "risk": {
+      "volatility": 0.37,
+      "annualizedVolatility": 5.89,
+      "sharpeRatio": -10.69,
+      "sortinoRatio": -8.32,
+      "downsideVolatility": 0.48,
+      "annualizedDownsideVolatility": 7.57,
+      "beta": 0,
+      "alpha": 0
+    },
+    "drawdown": {
+      "maxDrawdown": 0.68,
+      "maxDrawdownDuration": 2,
+      "currentDrawdown": 0.57,
+      "recoveryFactor": -0.75,
+      "drawdowns": [
+        {
+          "maxDrawdown": 0.005,
+          "duration": 1,
+          "start": 1680393600000,
+          "end": 1680492780000
+        }
+      ]
+    },
+    "advanced": {
+      "calmarRatio": -89.71,
+      "sterlingRatio": -12200,
+      "informationRatio": -10.36,
+      "treynorRatio": 0,
+      "jensenAlpha": 0
+    },
+    "period": {
+      "startDate": "2023-04-02T00:00:00.000Z",
+      "endDate": "2023-04-04T00:00:00.000Z",
+      "durationDays": 2,
+      "tradingDays": 1
+    }
+  },
+  "simulation": {
+    "totalSignals": 23,
+    "rejectedSignals": 19,
+    "executedTrades": 4,
+    "activeTrades": 0
+  },
+  "ltAnalysis": {
+    "totalTrades": 0,
+    "message": "No completed trades to analyze"
+  },
+  "executionTimeMs": 21363
+}

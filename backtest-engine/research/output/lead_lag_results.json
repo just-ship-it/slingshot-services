@@ -1,0 +1,2193 @@
+{
+  "correlations": [
+    {
+      "predictor": "iv_change_15m",
+      "target": "price_return_15m",
+      "lag": 1,
+      "lagMinutes": 15,
+      "correlation": -0.0026875930595537142,
+      "pValue": 1,
+      "ic": -0.0026875930595537142,
+      "hitRate": 0.4876521116678597,
+      "n": 5624,
+      "significant": false
+    },
+    {
+      "predictor": "iv_change_15m",
+      "target": "price_return_15m",
+      "lag": 2,
+      "lagMinutes": 30,
+      "correlation": 0.011640827750606183,
+      "pValue": 1,
+      "ic": 0.011640827750606183,
+      "hitRate": 0.49704671558976193,
+      "n": 5623,
+      "significant": false
+    },
+    {
+      "predictor": "iv_change_15m",
+      "target": "price_return_15m",
+      "lag": 4,
+      "lagMinutes": 60,
+      "correlation": 0.05323847207904694,
+      "pValue": 0.00013587952190575705,
+      "ic": 0.05323847207904694,
+      "hitRate": 0.490420769919427,
+      "n": 5621,
+      "significant": true
+    },
+    {
+      "predictor": "iv_change_15m",
+      "target": "price_return_15m",
+      "lag": 8,
+      "lagMinutes": 120,
+      "correlation": -0.010511701918824563,
+      "pValue": 1,
+      "ic": -0.010511701918824563,
+      "hitRate": 0.4970435405841247,
+      "n": 5617,
+      "significant": false
+    },
+    {
+      "predictor": "iv_change_15m",
+      "target": "price_return_15m",
+      "lag": 16,
+      "lagMinutes": 240,
+      "correlation": 0.03546440731156533,
+      "pValue": 0.017590375121256194,
+      "ic": 0.03546440731156533,
+      "hitRate": 0.5126502781266822,
+      "n": 5609,
+      "significant": false
+    },
+    {
+      "predictor": "iv_change_15m",
+      "target": "price_range_15m",
+      "lag": 1,
+      "lagMinutes": 15,
+      "correlation": 0.017491020494434743,
+      "pValue": 0.5146853151349141,
+      "ic": 0.017491020494434743,
+      "hitRate": 0.49473308337796823,
+      "n": 5624,
+      "significant": false
+    },
+    {
+      "predictor": "iv_change_15m",
+      "target": "price_range_15m",
+      "lag": 2,
+      "lagMinutes": 30,
+      "correlation": 0.005226542688787297,
+      "pValue": 1,
+      "ic": 0.005226542688787297,
+      "hitRate": 0.4948214285714286,
+      "n": 5623,
+      "significant": false
+    },
+    {
+      "predictor": "iv_change_15m",
+      "target": "price_range_15m",
+      "lag": 4,
+      "lagMinutes": 60,
+      "correlation": -0.005489171508106633,
+      "pValue": 1,
+      "ic": -0.005489171508106633,
+      "hitRate": 0.4948195784208646,
+      "n": 5621,
+      "significant": false
+    },
+    {
+      "predictor": "iv_change_15m",
+      "target": "price_range_15m",
+      "lag": 8,
+      "lagMinutes": 120,
+      "correlation": 0.016807449562675846,
+      "pValue": 0.5730590013830609,
+      "ic": 0.016807449562675846,
+      "hitRate": 0.4948158741508759,
+      "n": 5617,
+      "significant": false
+    },
+    {
+      "predictor": "iv_change_15m",
+      "target": "price_range_15m",
+      "lag": 16,
+      "lagMinutes": 240,
+      "correlation": -0.0032814807740852176,
+      "pValue": 1,
+      "ic": -0.0032814807740852176,
+      "hitRate": 0.49480844969566773,
+      "n": 5609,
+      "significant": false
+    },
+    {
+      "predictor": "iv_change_15m",
+      "target": "price_volatility_1h",
+      "lag": 1,
+      "lagMinutes": 15,
+      "correlation": 0.0043245187317652,
+      "pValue": 1,
+      "ic": 0.0043245187317652,
+      "hitRate": 0.49473308337796823,
+      "n": 5624,
+      "significant": false
+    },
+    {
+      "predictor": "iv_change_15m",
+      "target": "price_volatility_1h",
+      "lag": 2,
+      "lagMinutes": 30,
+      "correlation": 0.012915696655504558,
+      "pValue": 1,
+      "ic": 0.012915696655504558,
+      "hitRate": 0.4948214285714286,
+      "n": 5623,
+      "significant": false
+    },
+    {
+      "predictor": "iv_change_15m",
+      "target": "price_volatility_1h",
+      "lag": 4,
+      "lagMinutes": 60,
+      "correlation": 0.0016054705629958126,
+      "pValue": 1,
+      "ic": 0.0016054705629958126,
+      "hitRate": 0.4948195784208646,
+      "n": 5621,
+      "significant": false
+    },
+    {
+      "predictor": "iv_change_15m",
+      "target": "price_volatility_1h",
+      "lag": 8,
+      "lagMinutes": 120,
+      "correlation": 0.004819565493651458,
+      "pValue": 1,
+      "ic": 0.004819565493651458,
+      "hitRate": 0.4948158741508759,
+      "n": 5617,
+      "significant": false
+    },
+    {
+      "predictor": "iv_change_15m",
+      "target": "price_volatility_1h",
+      "lag": 16,
+      "lagMinutes": 240,
+      "correlation": -0.0026770598462181714,
+      "pValue": 1,
+      "ic": -0.0026770598462181714,
+      "hitRate": 0.49480844969566773,
+      "n": 5609,
+      "significant": false
+    },
+    {
+      "predictor": "iv_skew",
+      "target": "price_return_15m",
+      "lag": 1,
+      "lagMinutes": 15,
+      "correlation": -0.09196193928815112,
+      "pValue": 6.545963722349004e-12,
+      "ic": -0.09196193928815112,
+      "hitRate": 0.45400070497003875,
+      "n": 5695,
+      "significant": true
+    },
+    {
+      "predictor": "iv_skew",
+      "target": "price_return_15m",
+      "lag": 2,
+      "lagMinutes": 30,
+      "correlation": -0.06715675368027531,
+      "pValue": 7.899611502941074e-7,
+      "ic": -0.06715675368027531,
+      "hitRate": 0.487220165697162,
+      "n": 5694,
+      "significant": true
+    },
+    {
+      "predictor": "iv_skew",
+      "target": "price_return_15m",
+      "lag": 4,
+      "lagMinutes": 60,
+      "correlation": -0.016945384740412864,
+      "pValue": 0.5513276732940341,
+      "ic": -0.016945384740412864,
+      "hitRate": 0.5004408393581379,
+      "n": 5692,
+      "significant": false
+    },
+    {
+      "predictor": "iv_skew",
+      "target": "price_return_15m",
+      "lag": 8,
+      "lagMinutes": 120,
+      "correlation": -0.011737879893494245,
+      "pValue": 1,
+      "ic": -0.011737879893494245,
+      "hitRate": 0.49161814010940535,
+      "n": 5688,
+      "significant": false
+    },
+    {
+      "predictor": "iv_skew",
+      "target": "price_return_15m",
+      "lag": 16,
+      "lagMinutes": 240,
+      "correlation": -0.011366556701321247,
+      "pValue": 1,
+      "ic": -0.011366556701321247,
+      "hitRate": 0.4958473228485598,
+      "n": 5680,
+      "significant": false
+    },
+    {
+      "predictor": "iv_skew",
+      "target": "price_range_15m",
+      "lag": 1,
+      "lagMinutes": 15,
+      "correlation": 0.030312054692164185,
+      "pValue": 0.05088339535413204,
+      "ic": 0.030312054692164185,
+      "hitRate": 0.5679620186390012,
+      "n": 5695,
+      "significant": false
+    },
+    {
+      "predictor": "iv_skew",
+      "target": "price_range_15m",
+      "lag": 2,
+      "lagMinutes": 30,
+      "correlation": 0.017117589695754536,
+      "pValue": 0.536490356603912,
+      "ic": 0.017117589695754536,
+      "hitRate": 0.5680619064368625,
+      "n": 5694,
+      "significant": false
+    },
+    {
+      "predictor": "iv_skew",
+      "target": "price_range_15m",
+      "lag": 4,
+      "lagMinutes": 60,
+      "correlation": 0.027282499576659024,
+      "pValue": 0.0931122729627266,
+      "ic": 0.027282499576659024,
+      "hitRate": 0.5680858550316679,
+      "n": 5692,
+      "significant": false
+    },
+    {
+      "predictor": "iv_skew",
+      "target": "price_range_15m",
+      "lag": 8,
+      "lagMinutes": 120,
+      "correlation": 0.0335910852495527,
+      "pValue": 0.025370977180073917,
+      "ic": 0.0335910852495527,
+      "hitRate": 0.5681338028169014,
+      "n": 5688,
+      "significant": false
+    },
+    {
+      "predictor": "iv_skew",
+      "target": "price_range_15m",
+      "lag": 16,
+      "lagMinutes": 240,
+      "correlation": 0.021069987224972195,
+      "pValue": 0.2847751023757191,
+      "ic": 0.021069987224972195,
+      "hitRate": 0.5678772919605077,
+      "n": 5680,
+      "significant": false
+    },
+    {
+      "predictor": "iv_skew",
+      "target": "price_volatility_1h",
+      "lag": 1,
+      "lagMinutes": 15,
+      "correlation": -0.0008422661436929168,
+      "pValue": 1,
+      "ic": -0.0008422661436929168,
+      "hitRate": 0.5679620186390012,
+      "n": 5695,
+      "significant": false
+    },
+    {
+      "predictor": "iv_skew",
+      "target": "price_volatility_1h",
+      "lag": 2,
+      "lagMinutes": 30,
+      "correlation": 0.01533785791033225,
+      "pValue": 0.7058038787419205,
+      "ic": 0.01533785791033225,
+      "hitRate": 0.5680619064368625,
+      "n": 5694,
+      "significant": false
+    },
+    {
+      "predictor": "iv_skew",
+      "target": "price_volatility_1h",
+      "lag": 4,
+      "lagMinutes": 60,
+      "correlation": 0.03480710492241183,
+      "pValue": 0.0192634429490898,
+      "ic": 0.03480710492241183,
+      "hitRate": 0.5680858550316679,
+      "n": 5692,
+      "significant": false
+    },
+    {
+      "predictor": "iv_skew",
+      "target": "price_volatility_1h",
+      "lag": 8,
+      "lagMinutes": 120,
+      "correlation": 0.02516867445404781,
+      "pValue": 0.13865568284695334,
+      "ic": 0.02516867445404781,
+      "hitRate": 0.5681338028169014,
+      "n": 5688,
+      "significant": false
+    },
+    {
+      "predictor": "iv_skew",
+      "target": "price_volatility_1h",
+      "lag": 16,
+      "lagMinutes": 240,
+      "correlation": 0.013836658353237108,
+      "pValue": 0.8885869779837858,
+      "ic": 0.013836658353237108,
+      "hitRate": 0.5678772919605077,
+      "n": 5680,
+      "significant": false
+    },
+    {
+      "predictor": "iv_percentile_all",
+      "target": "price_return_15m",
+      "lag": 1,
+      "lagMinutes": 15,
+      "correlation": -0.003977597759001195,
+      "pValue": 1,
+      "ic": -0.003977597759001195,
+      "hitRate": 0.5160042208934225,
+      "n": 5699,
+      "significant": false
+    },
+    {
+      "predictor": "iv_percentile_all",
+      "target": "price_return_15m",
+      "lag": 2,
+      "lagMinutes": 30,
+      "correlation": 0.0063721389656799365,
+      "pValue": 1,
+      "ic": 0.0063721389656799365,
+      "hitRate": 0.5159190853122252,
+      "n": 5698,
+      "significant": false
+    },
+    {
+      "predictor": "iv_percentile_all",
+      "target": "price_return_15m",
+      "lag": 4,
+      "lagMinutes": 60,
+      "correlation": 0.0029674196774282773,
+      "pValue": 1,
+      "ic": 0.0029674196774282773,
+      "hitRate": 0.5161006510645786,
+      "n": 5696,
+      "significant": false
+    },
+    {
+      "predictor": "iv_percentile_all",
+      "target": "price_return_15m",
+      "lag": 8,
+      "lagMinutes": 120,
+      "correlation": 0.0008314539571015207,
+      "pValue": 1,
+      "ic": 0.0008314539571015207,
+      "hitRate": 0.5161119915478077,
+      "n": 5692,
+      "significant": false
+    },
+    {
+      "predictor": "iv_percentile_all",
+      "target": "price_return_15m",
+      "lag": 16,
+      "lagMinutes": 240,
+      "correlation": 0.0045541659604645505,
+      "pValue": 1,
+      "ic": 0.0045541659604645505,
+      "hitRate": 0.5159583847645918,
+      "n": 5684,
+      "significant": false
+    },
+    {
+      "predictor": "iv_percentile_all",
+      "target": "price_range_15m",
+      "lag": 1,
+      "lagMinutes": 15,
+      "correlation": 0.2355440160217515,
+      "pValue": 1.8802873368673204e-74,
+      "ic": 0.2355440160217515,
+      "hitRate": 1,
+      "n": 5699,
+      "significant": true
+    },
+    {
+      "predictor": "iv_percentile_all",
+      "target": "price_range_15m",
+      "lag": 2,
+      "lagMinutes": 30,
+      "correlation": 0.23240360015398095,
+      "pValue": 2.1255474902219568e-72,
+      "ic": 0.23240360015398095,
+      "hitRate": 1,
+      "n": 5698,
+      "significant": true
+    },
+    {
+      "predictor": "iv_percentile_all",
+      "target": "price_range_15m",
+      "lag": 4,
+      "lagMinutes": 60,
+      "correlation": 0.22187837651004044,
+      "pValue": 8.843432910053346e-66,
+      "ic": 0.22187837651004044,
+      "hitRate": 1,
+      "n": 5696,
+      "significant": true
+    },
+    {
+      "predictor": "iv_percentile_all",
+      "target": "price_range_15m",
+      "lag": 8,
+      "lagMinutes": 120,
+      "correlation": 0.21344183254588886,
+      "pValue": 1.0231412914758319e-60,
+      "ic": 0.21344183254588886,
+      "hitRate": 1,
+      "n": 5692,
+      "significant": true
+    },
+    {
+      "predictor": "iv_percentile_all",
+      "target": "price_range_15m",
+      "lag": 16,
+      "lagMinutes": 240,
+      "correlation": 0.20441049155412652,
+      "pValue": 1.5994065213353352e-55,
+      "ic": 0.20441049155412652,
+      "hitRate": 1,
+      "n": 5684,
+      "significant": true
+    },
+    {
+      "predictor": "iv_percentile_all",
+      "target": "price_volatility_1h",
+      "lag": 1,
+      "lagMinutes": 15,
+      "correlation": 0.3035685099897535,
+      "pValue": 1.7673506893056255e-127,
+      "ic": 0.3035685099897535,
+      "hitRate": 1,
+      "n": 5699,
+      "significant": true
+    },
+    {
+      "predictor": "iv_percentile_all",
+      "target": "price_volatility_1h",
+      "lag": 2,
+      "lagMinutes": 30,
+      "correlation": 0.2976893410470523,
+      "pValue": 3.6564183274957043e-122,
+      "ic": 0.2976893410470523,
+      "hitRate": 1,
+      "n": 5698,
+      "significant": true
+    },
+    {
+      "predictor": "iv_percentile_all",
+      "target": "price_volatility_1h",
+      "lag": 4,
+      "lagMinutes": 60,
+      "correlation": 0.28691030013478513,
+      "pValue": 8.68217198617691e-113,
+      "ic": 0.28691030013478513,
+      "hitRate": 1,
+      "n": 5696,
+      "significant": true
+    },
+    {
+      "predictor": "iv_percentile_all",
+      "target": "price_volatility_1h",
+      "lag": 8,
+      "lagMinutes": 120,
+      "correlation": 0.2677449732502857,
+      "pValue": 2.930277344420349e-97,
+      "ic": 0.2677449732502857,
+      "hitRate": 1,
+      "n": 5692,
+      "significant": true
+    },
+    {
+      "predictor": "iv_percentile_all",
+      "target": "price_volatility_1h",
+      "lag": 16,
+      "lagMinutes": 240,
+      "correlation": 0.26590132360986407,
+      "pValue": 1.0274029756200188e-95,
+      "ic": 0.26590132360986407,
+      "hitRate": 1,
+      "n": 5684,
+      "significant": true
+    },
+    {
+      "predictor": "liq_momentum",
+      "target": "price_return_15m",
+      "lag": 1,
+      "lagMinutes": 15,
+      "correlation": 0.025004105762097713,
+      "pValue": 0.14225976390060963,
+      "ic": 0.025004105762097713,
+      "hitRate": 0.5047485051002463,
+      "n": 5699,
+      "significant": false
+    },
+    {
+      "predictor": "liq_momentum",
+      "target": "price_return_15m",
+      "lag": 2,
+      "lagMinutes": 30,
+      "correlation": -0.014334041371676081,
+      "pValue": 0.8214596773033684,
+      "ic": -0.014334041371676081,
+      "hitRate": 0.49780123131046616,
+      "n": 5698,
+      "significant": false
+    },
+    {
+      "predictor": "liq_momentum",
+      "target": "price_return_15m",
+      "lag": 4,
+      "lagMinutes": 60,
+      "correlation": 0.026038654721450755,
+      "pValue": 0.11765451262822868,
+      "ic": 0.026038654721450755,
+      "hitRate": 0.5023755058947739,
+      "n": 5696,
+      "significant": false
+    },
+    {
+      "predictor": "liq_momentum",
+      "target": "price_return_15m",
+      "lag": 8,
+      "lagMinutes": 120,
+      "correlation": 0.0001068605475501803,
+      "pValue": 1,
+      "ic": 0.0001068605475501803,
+      "hitRate": 0.4960380348652932,
+      "n": 5692,
+      "significant": false
+    },
+    {
+      "predictor": "liq_momentum",
+      "target": "price_return_15m",
+      "lag": 16,
+      "lagMinutes": 240,
+      "correlation": -0.002709241235001338,
+      "pValue": 1,
+      "ic": -0.002709241235001338,
+      "hitRate": 0.5018515253041792,
+      "n": 5684,
+      "significant": false
+    },
+    {
+      "predictor": "liq_momentum",
+      "target": "price_range_15m",
+      "lag": 1,
+      "lagMinutes": 15,
+      "correlation": -0.028303264400613176,
+      "pValue": 0.07609253264873003,
+      "ic": -0.028303264400613176,
+      "hitRate": 0.5318476925776452,
+      "n": 5699,
+      "significant": false
+    },
+    {
+      "predictor": "liq_momentum",
+      "target": "price_range_15m",
+      "lag": 2,
+      "lagMinutes": 30,
+      "correlation": -0.021830368373613823,
+      "pValue": 0.24905209037151788,
+      "ic": -0.021830368373613823,
+      "hitRate": 0.5317655317655318,
+      "n": 5698,
+      "significant": false
+    },
+    {
+      "predictor": "liq_momentum",
+      "target": "price_range_15m",
+      "lag": 4,
+      "lagMinutes": 60,
+      "correlation": -0.016566138645180133,
+      "pValue": 0.5842025560365754,
+      "ic": -0.016566138645180133,
+      "hitRate": 0.5316011235955056,
+      "n": 5696,
+      "significant": false
+    },
+    {
+      "predictor": "liq_momentum",
+      "target": "price_range_15m",
+      "lag": 8,
+      "lagMinutes": 120,
+      "correlation": -0.020457661724156244,
+      "pValue": 0.3141562658236851,
+      "ic": -0.020457661724156244,
+      "hitRate": 0.5312719606465214,
+      "n": 5692,
+      "significant": false
+    },
+    {
+      "predictor": "liq_momentum",
+      "target": "price_range_15m",
+      "lag": 16,
+      "lagMinutes": 240,
+      "correlation": 0.013631967066305616,
+      "pValue": 0.9157871562642427,
+      "ic": 0.013631967066305616,
+      "hitRate": 0.5307881773399015,
+      "n": 5684,
+      "significant": false
+    },
+    {
+      "predictor": "liq_momentum",
+      "target": "price_volatility_1h",
+      "lag": 1,
+      "lagMinutes": 15,
+      "correlation": -0.030275484008249157,
+      "pValue": 0.0511558852286516,
+      "ic": -0.030275484008249157,
+      "hitRate": 0.5318476925776452,
+      "n": 5699,
+      "significant": false
+    },
+    {
+      "predictor": "liq_momentum",
+      "target": "price_volatility_1h",
+      "lag": 2,
+      "lagMinutes": 30,
+      "correlation": -0.03033525992898341,
+      "pValue": 0.050557550959912115,
+      "ic": -0.03033525992898341,
+      "hitRate": 0.5317655317655318,
+      "n": 5698,
+      "significant": false
+    },
+    {
+      "predictor": "liq_momentum",
+      "target": "price_volatility_1h",
+      "lag": 4,
+      "lagMinutes": 60,
+      "correlation": -0.019790232533832264,
+      "pValue": 0.3501718530065713,
+      "ic": -0.019790232533832264,
+      "hitRate": 0.5316011235955056,
+      "n": 5696,
+      "significant": false
+    },
+    {
+      "predictor": "liq_momentum",
+      "target": "price_volatility_1h",
+      "lag": 8,
+      "lagMinutes": 120,
+      "correlation": -0.026053554672979307,
+      "pValue": 0.1175280617532871,
+      "ic": -0.026053554672979307,
+      "hitRate": 0.5312719606465214,
+      "n": 5692,
+      "significant": false
+    },
+    {
+      "predictor": "liq_momentum",
+      "target": "price_volatility_1h",
+      "lag": 16,
+      "lagMinutes": 240,
+      "correlation": -0.01078591159882013,
+      "pValue": 1,
+      "ic": -0.01078591159882013,
+      "hitRate": 0.5307881773399015,
+      "n": 5684,
+      "significant": false
+    },
+    {
+      "predictor": "liq_max_change",
+      "target": "price_return_15m",
+      "lag": 1,
+      "lagMinutes": 15,
+      "correlation": -0.01101535320385327,
+      "pValue": 1,
+      "ic": -0.01101535320385327,
+      "hitRate": 0.5160042208934225,
+      "n": 5699,
+      "significant": false
+    },
+    {
+      "predictor": "liq_max_change",
+      "target": "price_return_15m",
+      "lag": 2,
+      "lagMinutes": 30,
+      "correlation": -0.029519495847127774,
+      "pValue": 0.05972235198072071,
+      "ic": -0.029519495847127774,
+      "hitRate": 0.5159190853122252,
+      "n": 5698,
+      "significant": false
+    },
+    {
+      "predictor": "liq_max_change",
+      "target": "price_return_15m",
+      "lag": 4,
+      "lagMinutes": 60,
+      "correlation": 0.014780611854699439,
+      "pValue": 0.7679669485970863,
+      "ic": 0.014780611854699439,
+      "hitRate": 0.5161006510645786,
+      "n": 5696,
+      "significant": false
+    },
+    {
+      "predictor": "liq_max_change",
+      "target": "price_return_15m",
+      "lag": 8,
+      "lagMinutes": 120,
+      "correlation": 0.011251142204541414,
+      "pValue": 1,
+      "ic": 0.011251142204541414,
+      "hitRate": 0.5161119915478077,
+      "n": 5692,
+      "significant": false
+    },
+    {
+      "predictor": "liq_max_change",
+      "target": "price_return_15m",
+      "lag": 16,
+      "lagMinutes": 240,
+      "correlation": 0.015754330412173948,
+      "pValue": 0.6636729665705717,
+      "ic": 0.015754330412173948,
+      "hitRate": 0.5159583847645918,
+      "n": 5684,
+      "significant": false
+    },
+    {
+      "predictor": "liq_max_change",
+      "target": "price_range_15m",
+      "lag": 1,
+      "lagMinutes": 15,
+      "correlation": 0.16894387636820635,
+      "pValue": 5.555384279136816e-38,
+      "ic": 0.16894387636820635,
+      "hitRate": 1,
+      "n": 5699,
+      "significant": true
+    },
+    {
+      "predictor": "liq_max_change",
+      "target": "price_range_15m",
+      "lag": 2,
+      "lagMinutes": 30,
+      "correlation": 0.1651316897565511,
+      "pValue": 2.680972834781179e-36,
+      "ic": 0.1651316897565511,
+      "hitRate": 1,
+      "n": 5698,
+      "significant": true
+    },
+    {
+      "predictor": "liq_max_change",
+      "target": "price_range_15m",
+      "lag": 4,
+      "lagMinutes": 60,
+      "correlation": 0.14235882090037436,
+      "pValue": 3.903421552477702e-27,
+      "ic": 0.14235882090037436,
+      "hitRate": 1,
+      "n": 5696,
+      "significant": true
+    },
+    {
+      "predictor": "liq_max_change",
+      "target": "price_range_15m",
+      "lag": 8,
+      "lagMinutes": 120,
+      "correlation": 0.10157692232022174,
+      "pValue": 2.7228855896046304e-14,
+      "ic": 0.10157692232022174,
+      "hitRate": 1,
+      "n": 5692,
+      "significant": true
+    },
+    {
+      "predictor": "liq_max_change",
+      "target": "price_range_15m",
+      "lag": 16,
+      "lagMinutes": 240,
+      "correlation": 0.12177380607816937,
+      "pValue": 4.6261840204478537e-20,
+      "ic": 0.12177380607816937,
+      "hitRate": 1,
+      "n": 5684,
+      "significant": true
+    },
+    {
+      "predictor": "liq_max_change",
+      "target": "price_volatility_1h",
+      "lag": 1,
+      "lagMinutes": 15,
+      "correlation": 0.1877645364453838,
+      "pValue": 6.850644524097704e-47,
+      "ic": 0.1877645364453838,
+      "hitRate": 1,
+      "n": 5699,
+      "significant": true
+    },
+    {
+      "predictor": "liq_max_change",
+      "target": "price_volatility_1h",
+      "lag": 2,
+      "lagMinutes": 30,
+      "correlation": 0.1755216661710229,
+      "pValue": 5.720925650170937e-41,
+      "ic": 0.1755216661710229,
+      "hitRate": 1,
+      "n": 5698,
+      "significant": true
+    },
+    {
+      "predictor": "liq_max_change",
+      "target": "price_volatility_1h",
+      "lag": 4,
+      "lagMinutes": 60,
+      "correlation": 0.15564261885507424,
+      "pValue": 2.7039944572250703e-32,
+      "ic": 0.15564261885507424,
+      "hitRate": 1,
+      "n": 5696,
+      "significant": true
+    },
+    {
+      "predictor": "liq_max_change",
+      "target": "price_volatility_1h",
+      "lag": 8,
+      "lagMinutes": 120,
+      "correlation": 0.12135002990951242,
+      "pValue": 5.908184275361337e-20,
+      "ic": 0.12135002990951242,
+      "hitRate": 1,
+      "n": 5692,
+      "significant": true
+    },
+    {
+      "predictor": "liq_max_change",
+      "target": "price_volatility_1h",
+      "lag": 16,
+      "lagMinutes": 240,
+      "correlation": 0.12941042211987985,
+      "pValue": 1.5671540166469998e-22,
+      "ic": 0.12941042211987985,
+      "hitRate": 1,
+      "n": 5684,
+      "significant": true
+    },
+    {
+      "predictor": "liq_sentiment_encoded",
+      "target": "price_return_15m",
+      "lag": 1,
+      "lagMinutes": 15,
+      "correlation": 0.006734066611852759,
+      "pValue": 1,
+      "ic": 0.006734066611852759,
+      "hitRate": 0.5003517411185368,
+      "n": 5699,
+      "significant": false
+    },
+    {
+      "predictor": "liq_sentiment_encoded",
+      "target": "price_return_15m",
+      "lag": 2,
+      "lagMinutes": 30,
+      "correlation": 0.007955500333762827,
+      "pValue": 1,
+      "ic": 0.007955500333762827,
+      "hitRate": 0.5062445030782762,
+      "n": 5698,
+      "significant": false
+    },
+    {
+      "predictor": "liq_sentiment_encoded",
+      "target": "price_return_15m",
+      "lag": 4,
+      "lagMinutes": 60,
+      "correlation": 0.017559844813376406,
+      "pValue": 0.5003837722732078,
+      "ic": 0.017559844813376406,
+      "hitRate": 0.5129333098715467,
+      "n": 5696,
+      "significant": false
+    },
+    {
+      "predictor": "liq_sentiment_encoded",
+      "target": "price_return_15m",
+      "lag": 8,
+      "lagMinutes": 120,
+      "correlation": 0.009231310450009422,
+      "pValue": 1,
+      "ic": 0.009231310450009422,
+      "hitRate": 0.506955449903152,
+      "n": 5692,
+      "significant": false
+    },
+    {
+      "predictor": "liq_sentiment_encoded",
+      "target": "price_return_15m",
+      "lag": 16,
+      "lagMinutes": 240,
+      "correlation": -0.010420212190769138,
+      "pValue": 1,
+      "ic": -0.010420212190769138,
+      "hitRate": 0.49550343854699347,
+      "n": 5684,
+      "significant": false
+    },
+    {
+      "predictor": "liq_sentiment_encoded",
+      "target": "price_range_15m",
+      "lag": 1,
+      "lagMinutes": 15,
+      "correlation": -0.10100853898023113,
+      "pValue": 3.688011820057286e-14,
+      "ic": -0.10100853898023113,
+      "hitRate": 0.49991226530970345,
+      "n": 5699,
+      "significant": true
+    },
+    {
+      "predictor": "liq_sentiment_encoded",
+      "target": "price_range_15m",
+      "lag": 2,
+      "lagMinutes": 30,
+      "correlation": -0.09752410697993227,
+      "pValue": 2.8656388687760133e-13,
+      "ic": -0.09752410697993227,
+      "hitRate": 0.49982449982449983,
+      "n": 5698,
+      "significant": true
+    },
+    {
+      "predictor": "liq_sentiment_encoded",
+      "target": "price_range_15m",
+      "lag": 4,
+      "lagMinutes": 60,
+      "correlation": -0.09143522959674075,
+      "pValue": 8.671005219675495e-12,
+      "ic": -0.09143522959674075,
+      "hitRate": 0.4996488764044944,
+      "n": 5696,
+      "significant": true
+    },
+    {
+      "predictor": "liq_sentiment_encoded",
+      "target": "price_range_15m",
+      "lag": 8,
+      "lagMinutes": 120,
+      "correlation": -0.07336298054933038,
+      "pValue": 5.926491197147116e-8,
+      "ic": -0.07336298054933038,
+      "hitRate": 0.49929725931131413,
+      "n": 5692,
+      "significant": true
+    },
+    {
+      "predictor": "liq_sentiment_encoded",
+      "target": "price_range_15m",
+      "lag": 16,
+      "lagMinutes": 240,
+      "correlation": -0.06875260772086128,
+      "pValue": 4.2411345673259747e-7,
+      "ic": -0.06875260772086128,
+      "hitRate": 0.49859254046446166,
+      "n": 5684,
+      "significant": true
+    },
+    {
+      "predictor": "liq_sentiment_encoded",
+      "target": "price_volatility_1h",
+      "lag": 1,
+      "lagMinutes": 15,
+      "correlation": -0.07959182786637738,
+      "pValue": 3.436845877928269e-9,
+      "ic": -0.07959182786637738,
+      "hitRate": 0.49991226530970345,
+      "n": 5699,
+      "significant": true
+    },
+    {
+      "predictor": "liq_sentiment_encoded",
+      "target": "price_volatility_1h",
+      "lag": 2,
+      "lagMinutes": 30,
+      "correlation": -0.0866339286651042,
+      "pValue": 1.0774660564745723e-10,
+      "ic": -0.0866339286651042,
+      "hitRate": 0.49982449982449983,
+      "n": 5698,
+      "significant": true
+    },
+    {
+      "predictor": "liq_sentiment_encoded",
+      "target": "price_volatility_1h",
+      "lag": 4,
+      "lagMinutes": 60,
+      "correlation": -0.08232580406101996,
+      "pValue": 9.355579240036394e-10,
+      "ic": -0.08232580406101996,
+      "hitRate": 0.4996488764044944,
+      "n": 5696,
+      "significant": true
+    },
+    {
+      "predictor": "liq_sentiment_encoded",
+      "target": "price_volatility_1h",
+      "lag": 8,
+      "lagMinutes": 120,
+      "correlation": -0.06806255956743305,
+      "pValue": 5.509038302412431e-7,
+      "ic": -0.06806255956743305,
+      "hitRate": 0.49929725931131413,
+      "n": 5692,
+      "significant": true
+    },
+    {
+      "predictor": "liq_sentiment_encoded",
+      "target": "price_volatility_1h",
+      "lag": 16,
+      "lagMinutes": 240,
+      "correlation": -0.04259172089237941,
+      "pValue": 0.002842471319316416,
+      "ic": -0.04259172089237941,
+      "hitRate": 0.49859254046446166,
+      "n": 5684,
+      "significant": false
+    },
+    {
+      "predictor": "gex_regime_encoded",
+      "target": "price_return_15m",
+      "lag": 1,
+      "lagMinutes": 15,
+      "correlation": 0.002400627300458662,
+      "pValue": 1,
+      "ic": 0.002400627300458662,
+      "hitRate": 0.5073865634892719,
+      "n": 5699,
+      "significant": false
+    },
+    {
+      "predictor": "gex_regime_encoded",
+      "target": "price_return_15m",
+      "lag": 2,
+      "lagMinutes": 30,
+      "correlation": -0.007945971091586018,
+      "pValue": 1,
+      "ic": -0.007945971091586018,
+      "hitRate": 0.5013192612137203,
+      "n": 5698,
+      "significant": false
+    },
+    {
+      "predictor": "gex_regime_encoded",
+      "target": "price_return_15m",
+      "lag": 4,
+      "lagMinutes": 60,
+      "correlation": -0.0024959638293511163,
+      "pValue": 1,
+      "ic": -0.0024959638293511163,
+      "hitRate": 0.5004399084990322,
+      "n": 5696,
+      "significant": false
+    },
+    {
+      "predictor": "gex_regime_encoded",
+      "target": "price_return_15m",
+      "lag": 8,
+      "lagMinutes": 120,
+      "correlation": -0.0018959661960932486,
+      "pValue": 1,
+      "ic": -0.0018959661960932486,
+      "hitRate": 0.5044902271526677,
+      "n": 5692,
+      "significant": false
+    },
+    {
+      "predictor": "gex_regime_encoded",
+      "target": "price_return_15m",
+      "lag": 16,
+      "lagMinutes": 240,
+      "correlation": -0.0005726322812051652,
+      "pValue": 1,
+      "ic": -0.0005726322812051652,
+      "hitRate": 0.502733204020455,
+      "n": 5684,
+      "significant": false
+    },
+    {
+      "predictor": "gex_regime_encoded",
+      "target": "price_range_15m",
+      "lag": 1,
+      "lagMinutes": 15,
+      "correlation": -0.25143432966865814,
+      "pValue": 2.66020152256225e-85,
+      "ic": -0.25143432966865814,
+      "hitRate": 0.6127390770310581,
+      "n": 5699,
+      "significant": true
+    },
+    {
+      "predictor": "gex_regime_encoded",
+      "target": "price_range_15m",
+      "lag": 2,
+      "lagMinutes": 30,
+      "correlation": -0.24520980270531145,
+      "pValue": 6.223044113476885e-81,
+      "ic": -0.24520980270531145,
+      "hitRate": 0.6126711126711126,
+      "n": 5698,
+      "significant": true
+    },
+    {
+      "predictor": "gex_regime_encoded",
+      "target": "price_range_15m",
+      "lag": 4,
+      "lagMinutes": 60,
+      "correlation": -0.23653690895544896,
+      "pValue": 4.578385211757171e-75,
+      "ic": -0.23653690895544896,
+      "hitRate": 0.6125351123595506,
+      "n": 5696,
+      "significant": true
+    },
+    {
+      "predictor": "gex_regime_encoded",
+      "target": "price_range_15m",
+      "lag": 8,
+      "lagMinutes": 120,
+      "correlation": -0.22733995344453717,
+      "pValue": 4.154373778210738e-69,
+      "ic": -0.22733995344453717,
+      "hitRate": 0.6122628250175686,
+      "n": 5692,
+      "significant": true
+    },
+    {
+      "predictor": "gex_regime_encoded",
+      "target": "price_range_15m",
+      "lag": 16,
+      "lagMinutes": 240,
+      "correlation": -0.2191729120177731,
+      "pValue": 5.178946742544779e-64,
+      "ic": -0.2191729120177731,
+      "hitRate": 0.6117171006333568,
+      "n": 5684,
+      "significant": true
+    },
+    {
+      "predictor": "gex_regime_encoded",
+      "target": "price_volatility_1h",
+      "lag": 1,
+      "lagMinutes": 15,
+      "correlation": -0.2557081606865577,
+      "pValue": 2.2624477541507408e-88,
+      "ic": -0.2557081606865577,
+      "hitRate": 0.6127390770310581,
+      "n": 5699,
+      "significant": true
+    },
+    {
+      "predictor": "gex_regime_encoded",
+      "target": "price_volatility_1h",
+      "lag": 2,
+      "lagMinutes": 30,
+      "correlation": -0.250903356792527,
+      "pValue": 6.552666699317408e-85,
+      "ic": -0.250903356792527,
+      "hitRate": 0.6126711126711126,
+      "n": 5698,
+      "significant": true
+    },
+    {
+      "predictor": "gex_regime_encoded",
+      "target": "price_volatility_1h",
+      "lag": 4,
+      "lagMinutes": 60,
+      "correlation": -0.233508137521025,
+      "pValue": 4.352664501788783e-73,
+      "ic": -0.233508137521025,
+      "hitRate": 0.6125351123595506,
+      "n": 5696,
+      "significant": true
+    },
+    {
+      "predictor": "gex_regime_encoded",
+      "target": "price_volatility_1h",
+      "lag": 8,
+      "lagMinutes": 120,
+      "correlation": -0.22061135057824535,
+      "pValue": 5.757335194589933e-65,
+      "ic": -0.22061135057824535,
+      "hitRate": 0.6122628250175686,
+      "n": 5692,
+      "significant": true
+    },
+    {
+      "predictor": "gex_regime_encoded",
+      "target": "price_volatility_1h",
+      "lag": 16,
+      "lagMinutes": 240,
+      "correlation": -0.20603421153527735,
+      "pValue": 2.0146024983720215e-56,
+      "ic": -0.20603421153527735,
+      "hitRate": 0.6117171006333568,
+      "n": 5684,
+      "significant": true
+    },
+    {
+      "predictor": "total_gex",
+      "target": "price_return_15m",
+      "lag": 1,
+      "lagMinutes": 15,
+      "correlation": -0.0008861892047816617,
+      "pValue": 1,
+      "ic": -0.0008861892047816617,
+      "hitRate": 0.5073865634892719,
+      "n": 5699,
+      "significant": false
+    },
+    {
+      "predictor": "total_gex",
+      "target": "price_return_15m",
+      "lag": 2,
+      "lagMinutes": 30,
+      "correlation": -0.006434970684961385,
+      "pValue": 1,
+      "ic": -0.006434970684961385,
+      "hitRate": 0.5013192612137203,
+      "n": 5698,
+      "significant": false
+    },
+    {
+      "predictor": "total_gex",
+      "target": "price_return_15m",
+      "lag": 4,
+      "lagMinutes": 60,
+      "correlation": -0.006042914954981441,
+      "pValue": 1,
+      "ic": -0.006042914954981441,
+      "hitRate": 0.5004399084990322,
+      "n": 5696,
+      "significant": false
+    },
+    {
+      "predictor": "total_gex",
+      "target": "price_return_15m",
+      "lag": 8,
+      "lagMinutes": 120,
+      "correlation": -0.004416446667111104,
+      "pValue": 1,
+      "ic": -0.004416446667111104,
+      "hitRate": 0.5044902271526677,
+      "n": 5692,
+      "significant": false
+    },
+    {
+      "predictor": "total_gex",
+      "target": "price_return_15m",
+      "lag": 16,
+      "lagMinutes": 240,
+      "correlation": -0.005798400456916252,
+      "pValue": 1,
+      "ic": -0.005798400456916252,
+      "hitRate": 0.502733204020455,
+      "n": 5684,
+      "significant": false
+    },
+    {
+      "predictor": "total_gex",
+      "target": "price_range_15m",
+      "lag": 1,
+      "lagMinutes": 15,
+      "correlation": -0.24520303831080098,
+      "pValue": 6.091599369919851e-81,
+      "ic": -0.24520303831080098,
+      "hitRate": 0.6127390770310581,
+      "n": 5699,
+      "significant": true
+    },
+    {
+      "predictor": "total_gex",
+      "target": "price_range_15m",
+      "lag": 2,
+      "lagMinutes": 30,
+      "correlation": -0.23680452466482185,
+      "pValue": 2.8744384559671966e-75,
+      "ic": -0.23680452466482185,
+      "hitRate": 0.6126711126711126,
+      "n": 5698,
+      "significant": true
+    },
+    {
+      "predictor": "total_gex",
+      "target": "price_range_15m",
+      "lag": 4,
+      "lagMinutes": 60,
+      "correlation": -0.23093765096273197,
+      "pValue": 1.963553490907405e-71,
+      "ic": -0.23093765096273197,
+      "hitRate": 0.6125351123595506,
+      "n": 5696,
+      "significant": true
+    },
+    {
+      "predictor": "total_gex",
+      "target": "price_range_15m",
+      "lag": 8,
+      "lagMinutes": 120,
+      "correlation": -0.22164005877642684,
+      "pValue": 1.3699194857953482e-65,
+      "ic": -0.22164005877642684,
+      "hitRate": 0.6122628250175686,
+      "n": 5692,
+      "significant": true
+    },
+    {
+      "predictor": "total_gex",
+      "target": "price_range_15m",
+      "lag": 16,
+      "lagMinutes": 240,
+      "correlation": -0.20749976429985692,
+      "pValue": 3.0543368344818797e-57,
+      "ic": -0.20749976429985692,
+      "hitRate": 0.6117171006333568,
+      "n": 5684,
+      "significant": true
+    },
+    {
+      "predictor": "total_gex",
+      "target": "price_volatility_1h",
+      "lag": 1,
+      "lagMinutes": 15,
+      "correlation": -0.21714699736931903,
+      "pValue": 5.742314704351769e-63,
+      "ic": -0.21714699736931903,
+      "hitRate": 0.6127390770310581,
+      "n": 5699,
+      "significant": true
+    },
+    {
+      "predictor": "total_gex",
+      "target": "price_volatility_1h",
+      "lag": 2,
+      "lagMinutes": 30,
+      "correlation": -0.21125204158163582,
+      "pValue": 1.6356398951254434e-59,
+      "ic": -0.21125204158163582,
+      "hitRate": 0.6126711126711126,
+      "n": 5698,
+      "significant": true
+    },
+    {
+      "predictor": "total_gex",
+      "target": "price_volatility_1h",
+      "lag": 4,
+      "lagMinutes": 60,
+      "correlation": -0.1947008990294974,
+      "pValue": 2.038428920808366e-50,
+      "ic": -0.1947008990294974,
+      "hitRate": 0.6125351123595506,
+      "n": 5696,
+      "significant": true
+    },
+    {
+      "predictor": "total_gex",
+      "target": "price_volatility_1h",
+      "lag": 8,
+      "lagMinutes": 120,
+      "correlation": -0.1763088977258991,
+      "pValue": 2.7081987084927825e-41,
+      "ic": -0.1763088977258991,
+      "hitRate": 0.6122628250175686,
+      "n": 5692,
+      "significant": true
+    },
+    {
+      "predictor": "total_gex",
+      "target": "price_volatility_1h",
+      "lag": 16,
+      "lagMinutes": 240,
+      "correlation": -0.17086607711905416,
+      "pValue": 9.58036123672487e-39,
+      "ic": -0.17086607711905416,
+      "hitRate": 0.6117171006333568,
+      "n": 5684,
+      "significant": true
+    },
+    {
+      "predictor": "gex_dist_gamma_flip",
+      "target": "price_return_15m",
+      "lag": 1,
+      "lagMinutes": 15,
+      "correlation": -0.169261251619892,
+      "pValue": 4.0101045303275033e-38,
+      "ic": -0.169261251619892,
+      "hitRate": 0.468870911009497,
+      "n": 5699,
+      "significant": true
+    },
+    {
+      "predictor": "gex_dist_gamma_flip",
+      "target": "price_return_15m",
+      "lag": 2,
+      "lagMinutes": 30,
+      "correlation": -0.009092887552244647,
+      "pValue": 1,
+      "ic": -0.009092887552244647,
+      "hitRate": 0.4956904133685136,
+      "n": 5698,
+      "significant": false
+    },
+    {
+      "predictor": "gex_dist_gamma_flip",
+      "target": "price_return_15m",
+      "lag": 4,
+      "lagMinutes": 60,
+      "correlation": -0.013059245635473254,
+      "pValue": 0.9963307878222833,
+      "ic": -0.013059245635473254,
+      "hitRate": 0.49551293330987156,
+      "n": 5696,
+      "significant": false
+    },
+    {
+      "predictor": "gex_dist_gamma_flip",
+      "target": "price_return_15m",
+      "lag": 8,
+      "lagMinutes": 120,
+      "correlation": -0.0014868386674256851,
+      "pValue": 1,
+      "ic": -0.0014868386674256851,
+      "hitRate": 0.5014967423842226,
+      "n": 5692,
+      "significant": false
+    },
+    {
+      "predictor": "gex_dist_gamma_flip",
+      "target": "price_return_15m",
+      "lag": 16,
+      "lagMinutes": 240,
+      "correlation": -0.0019619928102724486,
+      "pValue": 1,
+      "ic": -0.0019619928102724486,
+      "hitRate": 0.4967377887497796,
+      "n": 5684,
+      "significant": false
+    },
+    {
+      "predictor": "gex_dist_gamma_flip",
+      "target": "price_range_15m",
+      "lag": 1,
+      "lagMinutes": 15,
+      "correlation": -0.17119494251161443,
+      "pValue": 5.423989050761414e-39,
+      "ic": -0.17119494251161443,
+      "hitRate": 0.5407966309878927,
+      "n": 5699,
+      "significant": true
+    },
+    {
+      "predictor": "gex_dist_gamma_flip",
+      "target": "price_range_15m",
+      "lag": 2,
+      "lagMinutes": 30,
+      "correlation": -0.16291483137902854,
+      "pValue": 2.422393670887009e-35,
+      "ic": -0.16291483137902854,
+      "hitRate": 0.5407160407160407,
+      "n": 5698,
+      "significant": true
+    },
+    {
+      "predictor": "gex_dist_gamma_flip",
+      "target": "price_range_15m",
+      "lag": 4,
+      "lagMinutes": 60,
+      "correlation": -0.16262393150868723,
+      "pValue": 3.315191850924998e-35,
+      "ic": -0.16262393150868723,
+      "hitRate": 0.5405547752808989,
+      "n": 5696,
+      "significant": true
+    },
+    {
+      "predictor": "gex_dist_gamma_flip",
+      "target": "price_range_15m",
+      "lag": 8,
+      "lagMinutes": 120,
+      "correlation": -0.16225768743641836,
+      "pValue": 5.015962161398236e-35,
+      "ic": -0.16225768743641836,
+      "hitRate": 0.5402319044272663,
+      "n": 5692,
+      "significant": true
+    },
+    {
+      "predictor": "gex_dist_gamma_flip",
+      "target": "price_range_15m",
+      "lag": 16,
+      "lagMinutes": 240,
+      "correlation": -0.16860242105466644,
+      "pValue": 9.830114275163738e-38,
+      "ic": -0.16860242105466644,
+      "hitRate": 0.5397607318789585,
+      "n": 5684,
+      "significant": true
+    },
+    {
+      "predictor": "gex_dist_gamma_flip",
+      "target": "price_volatility_1h",
+      "lag": 1,
+      "lagMinutes": 15,
+      "correlation": -0.11142583305315482,
+      "pValue": 5.284721585781444e-17,
+      "ic": -0.11142583305315482,
+      "hitRate": 0.5407966309878927,
+      "n": 5699,
+      "significant": true
+    },
+    {
+      "predictor": "gex_dist_gamma_flip",
+      "target": "price_volatility_1h",
+      "lag": 2,
+      "lagMinutes": 30,
+      "correlation": -0.12436518659052624,
+      "pValue": 6.255516034104422e-21,
+      "ic": -0.12436518659052624,
+      "hitRate": 0.5407160407160407,
+      "n": 5698,
+      "significant": true
+    },
+    {
+      "predictor": "gex_dist_gamma_flip",
+      "target": "price_volatility_1h",
+      "lag": 4,
+      "lagMinutes": 60,
+      "correlation": -0.1462404511506044,
+      "pValue": 1.3641653369195103e-28,
+      "ic": -0.1462404511506044,
+      "hitRate": 0.5405547752808989,
+      "n": 5696,
+      "significant": true
+    },
+    {
+      "predictor": "gex_dist_gamma_flip",
+      "target": "price_volatility_1h",
+      "lag": 8,
+      "lagMinutes": 120,
+      "correlation": -0.16766978416317502,
+      "pValue": 2.2608826848656516e-37,
+      "ic": -0.16766978416317502,
+      "hitRate": 0.5402319044272663,
+      "n": 5692,
+      "significant": true
+    },
+    {
+      "predictor": "gex_dist_gamma_flip",
+      "target": "price_volatility_1h",
+      "lag": 16,
+      "lagMinutes": 240,
+      "correlation": -0.16828949784053565,
+      "pValue": 1.3525981054362086e-37,
+      "ic": -0.16828949784053565,
+      "hitRate": 0.5397607318789585,
+      "n": 5684,
+      "significant": true
+    }
+  ],
+  "bestLags": {
+    "iv_change_15m__price_return_15m": {
+      "predictor": "iv_change_15m",
+      "target": "price_return_15m",
+      "bestLag": 4,
+      "bestLagMinutes": 60,
+      "correlation": 0.05323847207904694,
+      "pValue": 0.00013587952190575705,
+      "hitRate": 0.490420769919427,
+      "allLags": [
+        {
+          "lag": 1,
+          "correlation": -0.0026875930595537142,
+          "significant": false
+        },
+        {
+          "lag": 2,
+          "correlation": 0.011640827750606183,
+          "significant": false
+        },
+        {
+          "lag": 4,
+          "correlation": 0.05323847207904694,
+          "significant": true
+        },
+        {
+          "lag": 8,
+          "correlation": -0.010511701918824563,
+          "significant": false
+        },
+        {
+          "lag": 16,
+          "correlation": 0.03546440731156533,
+          "significant": false
+        }
+      ]
+    },
+    "iv_skew__price_return_15m": {
+      "predictor": "iv_skew",
+      "target": "price_return_15m",
+      "bestLag": 1,
+      "bestLagMinutes": 15,
+      "correlation": -0.09196193928815112,
+      "pValue": 6.545963722349004e-12,
+      "hitRate": 0.45400070497003875,
+      "allLags": [
+        {
+          "lag": 1,
+          "correlation": -0.09196193928815112,
+          "significant": true
+        },
+        {
+          "lag": 2,
+          "correlation": -0.06715675368027531,
+          "significant": true
+        },
+        {
+          "lag": 4,
+          "correlation": -0.016945384740412864,
+          "significant": false
+        },
+        {
+          "lag": 8,
+          "correlation": -0.011737879893494245,
+          "significant": false
+        },
+        {
+          "lag": 16,
+          "correlation": -0.011366556701321247,
+          "significant": false
+        }
+      ]
+    },
+    "iv_percentile_all__price_range_15m": {
+      "predictor": "iv_percentile_all",
+      "target": "price_range_15m",
+      "bestLag": 1,
+      "bestLagMinutes": 15,
+      "correlation": 0.2355440160217515,
+      "pValue": 1.8802873368673204e-74,
+      "hitRate": 1,
+      "allLags": [
+        {
+          "lag": 1,
+          "correlation": 0.2355440160217515,
+          "significant": true
+        },
+        {
+          "lag": 2,
+          "correlation": 0.23240360015398095,
+          "significant": true
+        },
+        {
+          "lag": 4,
+          "correlation": 0.22187837651004044,
+          "significant": true
+        },
+        {
+          "lag": 8,
+          "correlation": 0.21344183254588886,
+          "significant": true
+        },
+        {
+          "lag": 16,
+          "correlation": 0.20441049155412652,
+          "significant": true
+        }
+      ]
+    },
+    "iv_percentile_all__price_volatility_1h": {
+      "predictor": "iv_percentile_all",
+      "target": "price_volatility_1h",
+      "bestLag": 1,
+      "bestLagMinutes": 15,
+      "correlation": 0.3035685099897535,
+      "pValue": 1.7673506893056255e-127,
+      "hitRate": 1,
+      "allLags": [
+        {
+          "lag": 1,
+          "correlation": 0.3035685099897535,
+          "significant": true
+        },
+        {
+          "lag": 2,
+          "correlation": 0.2976893410470523,
+          "significant": true
+        },
+        {
+          "lag": 4,
+          "correlation": 0.28691030013478513,
+          "significant": true
+        },
+        {
+          "lag": 8,
+          "correlation": 0.2677449732502857,
+          "significant": true
+        },
+        {
+          "lag": 16,
+          "correlation": 0.26590132360986407,
+          "significant": true
+        }
+      ]
+    },
+    "liq_max_change__price_range_15m": {
+      "predictor": "liq_max_change",
+      "target": "price_range_15m",
+      "bestLag": 1,
+      "bestLagMinutes": 15,
+      "correlation": 0.16894387636820635,
+      "pValue": 5.555384279136816e-38,
+      "hitRate": 1,
+      "allLags": [
+        {
+          "lag": 1,
+          "correlation": 0.16894387636820635,
+          "significant": true
+        },
+        {
+          "lag": 2,
+          "correlation": 0.1651316897565511,
+          "significant": true
+        },
+        {
+          "lag": 4,
+          "correlation": 0.14235882090037436,
+          "significant": true
+        },
+        {
+          "lag": 8,
+          "correlation": 0.10157692232022174,
+          "significant": true
+        },
+        {
+          "lag": 16,
+          "correlation": 0.12177380607816937,
+          "significant": true
+        }
+      ]
+    },
+    "liq_max_change__price_volatility_1h": {
+      "predictor": "liq_max_change",
+      "target": "price_volatility_1h",
+      "bestLag": 1,
+      "bestLagMinutes": 15,
+      "correlation": 0.1877645364453838,
+      "pValue": 6.850644524097704e-47,
+      "hitRate": 1,
+      "allLags": [
+        {
+          "lag": 1,
+          "correlation": 0.1877645364453838,
+          "significant": true
+        },
+        {
+          "lag": 2,
+          "correlation": 0.1755216661710229,
+          "significant": true
+        },
+        {
+          "lag": 4,
+          "correlation": 0.15564261885507424,
+          "significant": true
+        },
+        {
+          "lag": 8,
+          "correlation": 0.12135002990951242,
+          "significant": true
+        },
+        {
+          "lag": 16,
+          "correlation": 0.12941042211987985,
+          "significant": true
+        }
+      ]
+    },
+    "liq_sentiment_encoded__price_range_15m": {
+      "predictor": "liq_sentiment_encoded",
+      "target": "price_range_15m",
+      "bestLag": 1,
+      "bestLagMinutes": 15,
+      "correlation": -0.10100853898023113,
+      "pValue": 3.688011820057286e-14,
+      "hitRate": 0.49991226530970345,
+      "allLags": [
+        {
+          "lag": 1,
+          "correlation": -0.10100853898023113,
+          "significant": true
+        },
+        {
+          "lag": 2,
+          "correlation": -0.09752410697993227,
+          "significant": true
+        },
+        {
+          "lag": 4,
+          "correlation": -0.09143522959674075,
+          "significant": true
+        },
+        {
+          "lag": 8,
+          "correlation": -0.07336298054933038,
+          "significant": true
+        },
+        {
+          "lag": 16,
+          "correlation": -0.06875260772086128,
+          "significant": true
+        }
+      ]
+    },
+    "liq_sentiment_encoded__price_volatility_1h": {
+      "predictor": "liq_sentiment_encoded",
+      "target": "price_volatility_1h",
+      "bestLag": 2,
+      "bestLagMinutes": 30,
+      "correlation": -0.0866339286651042,
+      "pValue": 1.0774660564745723e-10,
+      "hitRate": 0.49982449982449983,
+      "allLags": [
+        {
+          "lag": 1,
+          "correlation": -0.07959182786637738,
+          "significant": true
+        },
+        {
+          "lag": 2,
+          "correlation": -0.0866339286651042,
+          "significant": true
+        },
+        {
+          "lag": 4,
+          "correlation": -0.08232580406101996,
+          "significant": true
+        },
+        {
+          "lag": 8,
+          "correlation": -0.06806255956743305,
+          "significant": true
+        },
+        {
+          "lag": 16,
+          "correlation": -0.04259172089237941,
+          "significant": false
+        }
+      ]
+    },
+    "gex_regime_encoded__price_range_15m": {
+      "predictor": "gex_regime_encoded",
+      "target": "price_range_15m",
+      "bestLag": 1,
+      "bestLagMinutes": 15,
+      "correlation": -0.25143432966865814,
+      "pValue": 2.66020152256225e-85,
+      "hitRate": 0.6127390770310581,
+      "allLags": [
+        {
+          "lag": 1,
+          "correlation": -0.25143432966865814,
+          "significant": true
+        },
+        {
+          "lag": 2,
+          "correlation": -0.24520980270531145,
+          "significant": true
+        },
+        {
+          "lag": 4,
+          "correlation": -0.23653690895544896,
+          "significant": true
+        },
+        {
+          "lag": 8,
+          "correlation": -0.22733995344453717,
+          "significant": true
+        },
+        {
+          "lag": 16,
+          "correlation": -0.2191729120177731,
+          "significant": true
+        }
+      ]
+    },
+    "gex_regime_encoded__price_volatility_1h": {
+      "predictor": "gex_regime_encoded",
+      "target": "price_volatility_1h",
+      "bestLag": 1,
+      "bestLagMinutes": 15,
+      "correlation": -0.2557081606865577,
+      "pValue": 2.2624477541507408e-88,
+      "hitRate": 0.6127390770310581,
+      "allLags": [
+        {
+          "lag": 1,
+          "correlation": -0.2557081606865577,
+          "significant": true
+        },
+        {
+          "lag": 2,
+          "correlation": -0.250903356792527,
+          "significant": true
+        },
+        {
+          "lag": 4,
+          "correlation": -0.233508137521025,
+          "significant": true
+        },
+        {
+          "lag": 8,
+          "correlation": -0.22061135057824535,
+          "significant": true
+        },
+        {
+          "lag": 16,
+          "correlation": -0.20603421153527735,
+          "significant": true
+        }
+      ]
+    },
+    "total_gex__price_range_15m": {
+      "predictor": "total_gex",
+      "target": "price_range_15m",
+      "bestLag": 1,
+      "bestLagMinutes": 15,
+      "correlation": -0.24520303831080098,
+      "pValue": 6.091599369919851e-81,
+      "hitRate": 0.6127390770310581,
+      "allLags": [
+        {
+          "lag": 1,
+          "correlation": -0.24520303831080098,
+          "significant": true
+        },
+        {
+          "lag": 2,
+          "correlation": -0.23680452466482185,
+          "significant": true
+        },
+        {
+          "lag": 4,
+          "correlation": -0.23093765096273197,
+          "significant": true
+        },
+        {
+          "lag": 8,
+          "correlation": -0.22164005877642684,
+          "significant": true
+        },
+        {
+          "lag": 16,
+          "correlation": -0.20749976429985692,
+          "significant": true
+        }
+      ]
+    },
+    "total_gex__price_volatility_1h": {
+      "predictor": "total_gex",
+      "target": "price_volatility_1h",
+      "bestLag": 1,
+      "bestLagMinutes": 15,
+      "correlation": -0.21714699736931903,
+      "pValue": 5.742314704351769e-63,
+      "hitRate": 0.6127390770310581,
+      "allLags": [
+        {
+          "lag": 1,
+          "correlation": -0.21714699736931903,
+          "significant": true
+        },
+        {
+          "lag": 2,
+          "correlation": -0.21125204158163582,
+          "significant": true
+        },
+        {
+          "lag": 4,
+          "correlation": -0.1947008990294974,
+          "significant": true
+        },
+        {
+          "lag": 8,
+          "correlation": -0.1763088977258991,
+          "significant": true
+        },
+        {
+          "lag": 16,
+          "correlation": -0.17086607711905416,
+          "significant": true
+        }
+      ]
+    },
+    "gex_dist_gamma_flip__price_return_15m": {
+      "predictor": "gex_dist_gamma_flip",
+      "target": "price_return_15m",
+      "bestLag": 1,
+      "bestLagMinutes": 15,
+      "correlation": -0.169261251619892,
+      "pValue": 4.0101045303275033e-38,
+      "hitRate": 0.468870911009497,
+      "allLags": [
+        {
+          "lag": 1,
+          "correlation": -0.169261251619892,
+          "significant": true
+        },
+        {
+          "lag": 2,
+          "correlation": -0.009092887552244647,
+          "significant": false
+        },
+        {
+          "lag": 4,
+          "correlation": -0.013059245635473254,
+          "significant": false
+        },
+        {
+          "lag": 8,
+          "correlation": -0.0014868386674256851,
+          "significant": false
+        },
+        {
+          "lag": 16,
+          "correlation": -0.0019619928102724486,
+          "significant": false
+        }
+      ]
+    },
+    "gex_dist_gamma_flip__price_range_15m": {
+      "predictor": "gex_dist_gamma_flip",
+      "target": "price_range_15m",
+      "bestLag": 1,
+      "bestLagMinutes": 15,
+      "correlation": -0.17119494251161443,
+      "pValue": 5.423989050761414e-39,
+      "hitRate": 0.5407966309878927,
+      "allLags": [
+        {
+          "lag": 1,
+          "correlation": -0.17119494251161443,
+          "significant": true
+        },
+        {
+          "lag": 2,
+          "correlation": -0.16291483137902854,
+          "significant": true
+        },
+        {
+          "lag": 4,
+          "correlation": -0.16262393150868723,
+          "significant": true
+        },
+        {
+          "lag": 8,
+          "correlation": -0.16225768743641836,
+          "significant": true
+        },
+        {
+          "lag": 16,
+          "correlation": -0.16860242105466644,
+          "significant": true
+        }
+      ]
+    },
+    "gex_dist_gamma_flip__price_volatility_1h": {
+      "predictor": "gex_dist_gamma_flip",
+      "target": "price_volatility_1h",
+      "bestLag": 16,
+      "bestLagMinutes": 240,
+      "correlation": -0.16828949784053565,
+      "pValue": 1.3525981054362086e-37,
+      "hitRate": 0.5397607318789585,
+      "allLags": [
+        {
+          "lag": 1,
+          "correlation": -0.11142583305315482,
+          "significant": true
+        },
+        {
+          "lag": 2,
+          "correlation": -0.12436518659052624,
+          "significant": true
+        },
+        {
+          "lag": 4,
+          "correlation": -0.1462404511506044,
+          "significant": true
+        },
+        {
+          "lag": 8,
+          "correlation": -0.16766978416317502,
+          "significant": true
+        },
+        {
+          "lag": 16,
+          "correlation": -0.16828949784053565,
+          "significant": true
+        }
+      ]
+    }
+  },
+  "metadata": {
+    "totalRecords": 5700,
+    "lagsTestedMinutes": [
+      15,
+      30,
+      60,
+      120,
+      240
+    ],
+    "predictors": [
+      "iv_change_15m",
+      "iv_skew",
+      "iv_percentile_all",
+      "liq_momentum",
+      "liq_max_change",
+      "liq_sentiment_encoded",
+      "gex_regime_encoded",
+      "total_gex",
+      "gex_dist_gamma_flip"
+    ],
+    "targets": [
+      "price_return_15m",
+      "price_range_15m",
+      "price_volatility_1h"
+    ],
+    "analysisDate": "2026-01-21T06:05:58.888Z"
+  }
+}

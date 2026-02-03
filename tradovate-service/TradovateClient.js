@@ -677,6 +677,109 @@ class TradovateClient extends EventEmitter {
     }
   }
 
+  /**
+   * Modify an existing order strategy (e.g., to adjust stop loss for breakeven)
+   * Uses the interruptOrderStrategy endpoint to change bracket parameters
+   *
+   * @param {number} orderStrategyId - The ID of the order strategy to modify
+   * @param {Object} modifications - Object containing modifications to apply
+   * @param {number} [modifications.stopPrice] - New stop loss price
+   * @returns {Promise<Object>} Response from Tradovate
+   */
+  async modifyOrderStrategy(orderStrategyId, modifications) {
+    try {
+      this.logger.info(`🔧 Modifying OrderStrategy ${orderStrategyId}: ${JSON.stringify(modifications)}`);
+
+      // Build the interrupt command
+      // The command format depends on what we're modifying
+      // For modifying stop loss, we use the "ModifyStop" action
+      const interruptRequest = {
+        orderStrategyId: parseInt(orderStrategyId, 10)
+      };
+
+      // If we're modifying the stop price, build the appropriate command
+      if (modifications.stopPrice !== undefined) {
+        // Format: JSON command to modify the bracket stop
+        interruptRequest.command = JSON.stringify({
+          action: 'modifyStop',
+          stopPrice: modifications.stopPrice
+        });
+      }
+
+      this.logger.info(`📤 InterruptOrderStrategy request: ${JSON.stringify(interruptRequest)}`);
+
+      const response = await this.makeRequest('POST', '/orderStrategy/interruptorderstrategy', interruptRequest);
+
+      this.logger.info(`✅ OrderStrategy modification response: ${JSON.stringify(response)}`);
+
+      this.emit('orderStrategyModified', {
+        orderStrategyId,
+        modifications,
+        response
+      });
+
+      return response;
+    } catch (error) {
+      this.logger.error(`❌ Failed to modify OrderStrategy ${orderStrategyId}:`, error.message);
+      this.logger.error(`Error details: ${JSON.stringify(error.response?.data || error.message)}`);
+      throw error;
+    }
+  }
+
+  /**
+   * Alternative method to modify stop using direct order modification
+   * Some Tradovate setups require modifying the child order directly
+   *
+   * @param {number} orderStrategyId - The ID of the order strategy
+   * @param {number} newStopPrice - New stop loss price
+   * @returns {Promise<Object>} Response from modification
+   */
+  async modifyBracketStop(orderStrategyId, newStopPrice) {
+    try {
+      this.logger.info(`🎯 Modifying bracket stop for strategy ${orderStrategyId} to ${newStopPrice}`);
+
+      // First, get the strategy details to find the stop order
+      const strategyDetails = await this.getOrderStrategyItem(orderStrategyId);
+
+      if (!strategyDetails) {
+        throw new Error(`OrderStrategy ${orderStrategyId} not found`);
+      }
+
+      // Get dependent orders (the bracket legs)
+      const dependents = await this.getOrderStrategyDependents(orderStrategyId);
+
+      // Find the stop order (ordType === 'Stop' or 'StopLimit')
+      let stopOrderId = null;
+      if (dependents && Array.isArray(dependents)) {
+        for (const dep of dependents) {
+          if (dep.ordType === 'Stop' || dep.ordType === 'StopLimit' || dep.ordType === 'StopMarket') {
+            stopOrderId = dep.id;
+            this.logger.info(`Found stop order: ${stopOrderId} (type: ${dep.ordType})`);
+            break;
+          }
+        }
+      }
+
+      if (!stopOrderId) {
+        this.logger.warn(`No stop order found in strategy ${orderStrategyId}, trying interruptOrderStrategy`);
+        return await this.modifyOrderStrategy(orderStrategyId, { stopPrice: newStopPrice });
+      }
+
+      // Modify the stop order directly
+      const modifyResult = await this.modifyOrder({
+        orderId: stopOrderId,
+        stopPrice: newStopPrice
+      });
+
+      this.logger.info(`✅ Stop order ${stopOrderId} modified to ${newStopPrice}`);
+
+      return modifyResult;
+    } catch (error) {
+      this.logger.error(`❌ Failed to modify bracket stop for strategy ${orderStrategyId}:`, error.message);
+      throw error;
+    }
+  }
+
   // Helper method to explicitly cancel all orders for a contract
   async cancelAllOrdersForContract(accountId, contractId) {
     try {

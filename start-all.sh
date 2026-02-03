@@ -69,7 +69,7 @@ npm install
 cd ..
 
 # Install dependencies for each service
-services=("tradovate-service" "market-data-service" "trade-orchestrator" "monitoring-service" "signal-generator")
+services=("tradovate-service" "trade-orchestrator" "monitoring-service" "signal-generator")
 
 for service in "${services[@]}"; do
     install_deps "$SERVICES_DIR/$service" "$service"
@@ -114,7 +114,6 @@ echo "  Dashboard API:       http://localhost:3014/api/dashboard"
 echo ""
 echo "Internal Services (localhost only):"
 echo "  Tradovate Service:  http://localhost:3011/health"
-echo "  Market Data:        http://localhost:3012/health"
 echo "  Trade Orchestrator: http://localhost:3013/health"
 echo "  Signal Generator:   http://localhost:3015/health"
 echo ""

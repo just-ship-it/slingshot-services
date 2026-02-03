@@ -1,0 +1,1203 @@
+// This source code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
+// © liquid-trader
+
+// This indicator automatically identifies and draws high-probability support / resistance levels (key levels).
+// Initially, it only tracked yesterdays highs / lows, premarket highs / lows, as well as yesterdays end of day
+// moving averages. It has since expanded to capture other key levels traders commonly use.
+// More here: https://www.tradingview.com/script/UtD0cGM2-Key-Levels-Premarket-Yesterday/
+
+//@version=5
+indicator("Key Levels (Open, Premarket, & Yesterday)", "Key Levels", overlay=true, max_lines_count=500, max_labels_count=500, dynamic_requests=true)
+
+
+
+// ---------------------------------------------------- SETTINGS --------------------------------------------------- //
+
+// Setting Constants
+const color clr1 = color.gray, const color clr2 = color.orange, const color clr3 = color.blue, const color clr4 = color.fuchsia, const color clr5 = color.red, const color clr6 = color.aqua, const color clr7 = color.purple, const color clr8 = color.maroon, const color clr9 = color.lime, const color clr10 = color.rgb(233, 30, 99, 0), const color none = color.new(clr1, 100), const string g1 = "Recent High / Low Pairs", const string g2 = "Recent Single Values", const string g3 = "Distant Levels", const string g4 = "Moving Averages", const string g5 = "Custom Levels", const string g6 = "Labels", const string g7 = "Lines", const string g8 = "Price Proximity", const string g9 = "Market Hours", const string O = "open", const string H = "high", const string L = "low", const string C = "close", const string HL2 = "hl2", const string HLC3 = "hlc3", const string OHLC4 = "ohlc4", const string HLCC4 = "hlcc4", const string RTH = "RTH", const string hlcDesc = "High & low line colors.", const string rthDesc = "\n\n\""+RTH+"\" limits values to Market Hours (aka. Regular Trading Hours). Disabling this will use values from a 1D chart, which may or may not occur during during RTH.", const string lcvDesc = "The line color and value to use from a 1m bar.", const string avgDesc = "Line color, and the average value to use.\n\nNote: average values are derived from the other recent level settings, even if they are disabled. If the average value is not displaying as expected, verify the other relevant settings.", const string noDisp1 = "\n\nBecause data outside RTH is only available on ETH charts, these levels will not display on RTH charts.", const string noDisp2 = "\n\nSetting a colors opacity to zero will disable that specific level.", const string thsDesc = "Open, high, low, and average line colors, and the average value to use." + noDisp2, const string lstDesc = "Open, high, low, close, and average line colors, and the average value to use." + noDisp2, const string maDesc1 = "Source, length, and type of moving average, and the line colors to use for today & yesterday." + noDisp2
+
+// Todays  High / Low Settings
+tdHiLo   = input.bool(true, "Today                ", hlcDesc + rthDesc, inline="tdHL", group=g1, display=display.none)
+tdHiClr  = input.color(color.new(clr2, 66), "", inline="tdHL", group=g1, display=display.none)
+tdLoClr  = input.color(color.new(clr2, 66), "", inline="tdHL", group=g1, display=display.none)
+tdRTH    = input.bool(true, RTH, inline="tdHL", group=g1, display=display.none)
+
+// Opening Range Settings
+orHiLo   = input.bool(false, "Opening Range", "Line & Box colors. And the number of minutes that qualify as \"the open\" during the first market hour.", inline="orHL", group=g1, display=display.none)
+orClr    = input.color(color.new(clr6, 50), "", inline="orHL", group=g1, display=display.none)
+orBoxClr = input.color(color.new(clr6, 95), "", inline="orHL", group=g1, display=display.none)
+orRange  = input.int(15, "", 1, 60, inline="orHL", group=g1, display=display.none), var box orBox = na
+
+// Near Open High / Low Settings
+noHiLo   = input.bool(false, "Near Open        ", hlcDesc + " And the number of minutes before the open that qualifies as \"near the open\"." + noDisp1, inline="noHL", group=g1, display=display.none)
+noHiClr  = input.color(clr5, "", inline="noHL", group=g1, display=display.none)
+noLoClr  = input.color(clr5, "", inline="noHL", group=g1, display=display.none)
+noRange  = input.int(60, "", 0, inline="noHL", group=g1, display=display.none)
+
+// Premarket High / Low Settings
+pmHiLo   = input.bool(true, "Premarket         ", hlcDesc + noDisp1, inline="pmHL", group=g1, display=display.none)
+pmHiClr  = input.color(color.new(clr2, 33), "", inline="pmHL", group=g1, display=display.none)
+pmLoClr  = input.color(color.new(clr2, 33), "", inline="pmHL", group=g1, display=display.none)
+
+// Overnight High / Low Settings
+onHiLo   = input.bool(false, "Overnight         ", hlcDesc + noDisp1, inline="onHL", group=g1, display=display.none)
+onHiClr  = input.color(clr8, "", inline="onHL", group=g1, display=display.none)
+onLoClr  = input.color(clr8, "", inline="onHL", group=g1, display=display.none)
+
+// After-Hours High / Low Settings
+ahHiLo   = input.bool(false, "After Hours       ", hlcDesc + noDisp1, inline="ahHL", group=g1, display=display.none)
+ahHiClr  = input.color(clr7, "", inline="ahHL", group=g1, display=display.none)
+ahLoClr  = input.color(clr7, "", inline="ahHL", group=g1, display=display.none)
+
+// Yesterday High / Low Settings
+ydHiLo   = input.bool(true, "Yesterday         ", hlcDesc + rthDesc, inline="ydHL", group=g1, display=display.none)
+ydHiClr  = input.color(clr2, "", inline="ydHL", group=g1, display=display.none)
+ydLoClr  = input.color(clr2, "", inline="ydHL", group=g1, display=display.none)
+ydRTH    = input.bool(true, RTH, inline="ydHL", group=g1, display=display.none)
+
+// Todays Opening Settings
+tdOpn    = input.bool(false, "Todays Open           ", lcvDesc + rthDesc, inline="tdOpen", group=g2, display=display.none)
+tdOpnClr = input.color(color.new(clr1, 50), "", inline="tdOpen", group=g2, display=display.none)
+tdOpnSrc = input.string(O, "", [O, H, L, C, HL2, HLC3, OHLC4, HLCC4], inline="tdOpen", group=g2, display=display.none)
+tdoRTH   = input.bool(true, RTH, inline="tdOpen", group=g2, display=display.none)
+
+// Todays Average Settings
+tdAvg    = input.bool(false, "Todays Average      ", avgDesc, inline="tdAvg", group=g2, display=display.none)
+tdAvgClr = input.color(color.new(clr10, 25), "", inline="tdAvg", group=g2, display=display.none)
+tdAvgSrc = input.string(HL2, "", [HL2, HLC3, OHLC4, HLCC4], inline="tdAvg", group=g2, display=display.none)
+
+// Yesterdays Close Settings
+ydCls    = input.bool(false, "Yesterdays Close    ", lcvDesc + rthDesc, inline="ydClose", group=g2, display=display.none)
+ydClsClr = input.color(color.new(clr1, 50), "", inline="ydClose", group=g2, display=display.none)
+ydClsSrc = input.string(C, "", [O, H, L, C, HL2, HLC3, OHLC4, HLCC4], inline="ydClose", group=g2, display=display.none)
+ydcRTH   = input.bool(true, RTH, inline="ydClose", group=g2, display=display.none)
+
+// Yesterdays Opening Settings
+ydOpn    = input.bool(false, "Yesterdays Open     ", lcvDesc + rthDesc, inline="ydOpen", group=g2, display=display.none)
+ydOpnClr = input.color(color.new(clr1, 50), "", inline="ydOpen", group=g2, display=display.none)
+ydOpnSrc = input.string(O, "", [O, H, L, C, HL2, HLC3, OHLC4, HLCC4], inline="ydOpen", group=g2, display=display.none)
+ydoRTH   = input.bool(true, RTH, inline="ydOpen", group=g2, display=display.none)
+
+// Yesterdays Average Settings
+ydAvg    = input.bool(false, "Yesterdays Average", avgDesc, inline="ydAvg", group=g2, display=display.none)
+ydAvgClr = input.color(clr10, "", inline="ydAvg", group=g2, display=display.none)
+ydAvgSrc = input.string(HL2, "", [HL2, HLC3, OHLC4, HLCC4], inline="ydAvg", group=g2, display=display.none)
+
+// This Weeks Open, High, Low, and Average Settings
+colorIsNotTransparent(color clr) => color.t(clr) < 100
+twOHLA   = input.bool(false, "This Weeks OHL & A", thsDesc, group=g3, display=display.none)
+twOpClr  = input.color(color.new(clr1, 50), "     ", inline="twOHLA", group=g3, display=display.none)
+twHiClr  = input.color(color.new(clr1, 50), "", inline="twOHLA", group=g3, display=display.none)
+twLoClr  = input.color(color.new(clr1, 50), "", inline="twOHLA", group=g3, display=display.none)
+twAvClr  = input.color(color.new(clr1, 50), "", inline="twOHLA", group=g3, display=display.none)
+twAvgSrc = input.string(HL2, "", [HL2, HLC3, OHLC4, HLCC4], inline="twOHLA", group=g3, display=display.none)
+var twOpn = twOHLA and colorIsNotTransparent(twOpClr)
+var twHi  = twOHLA and colorIsNotTransparent(twHiClr)
+var twLo  = twOHLA and colorIsNotTransparent(twLoClr)
+var twAvg = twOHLA and colorIsNotTransparent(twAvClr)
+
+// This Months Open, High, Low, and Average Settings
+tmOHLA   = input.bool(false, "This Months OHL & A", thsDesc, group=g3, display=display.none)
+tmOpClr  = input.color(color.new(clr1, 50), "     ", inline="tmOHLA", group=g3, display=display.none)
+tmHiClr  = input.color(color.new(clr1, 50), "", inline="tmOHLA", group=g3, display=display.none)
+tmLoClr  = input.color(color.new(clr1, 50), "", inline="tmOHLA", group=g3, display=display.none)
+tmAvClr  = input.color(color.new(clr1, 50), "", inline="tmOHLA", group=g3, display=display.none)
+tmAvgSrc = input.string(HL2, "", [HL2, HLC3, OHLC4, HLCC4], inline="tmOHLA", group=g3, display=display.none)
+var tmOpn = tmOHLA and colorIsNotTransparent(tmOpClr)
+var tmHi  = tmOHLA and colorIsNotTransparent(tmHiClr)
+var tmLo  = tmOHLA and colorIsNotTransparent(tmLoClr)
+var tmAvg = tmOHLA and colorIsNotTransparent(tmAvClr)
+
+// This Quarters Open, High, Low, and Average Settings
+tqOHLA   = input.bool(false, "This Quarters OHL & A", thsDesc, group=g3, display=display.none)
+tqOpClr  = input.color(color.new(clr1, 50), "     ", inline="tqOHLA", group=g3, display=display.none)
+tqHiClr  = input.color(color.new(clr1, 50), "", inline="tqOHLA", group=g3, display=display.none)
+tqLoClr  = input.color(color.new(clr1, 50), "", inline="tqOHLA", group=g3, display=display.none)
+tqAvClr  = input.color(color.new(clr1, 50), "", inline="tqOHLA", group=g3, display=display.none)
+tqAvgSrc = input.string(HL2, "", [HL2, HLC3, OHLC4, HLCC4], inline="tqOHLA", group=g3, display=display.none)
+var tqOpn = tqOHLA and colorIsNotTransparent(tqOpClr)
+var tqHi  = tqOHLA and colorIsNotTransparent(tqHiClr)
+var tqLo  = tqOHLA and colorIsNotTransparent(tqLoClr)
+var tqAvg = tqOHLA and colorIsNotTransparent(tqAvClr)
+
+// This Years Open, High, Low, and Average Settings
+tyOHLA   = input.bool(false, "This Years OHL & A", thsDesc, group=g3, display=display.none)
+tyOpClr  = input.color(color.new(clr1, 50), "     ", inline="tyOHLA", group=g3, display=display.none)
+tyHiClr  = input.color(color.new(clr1, 50), "", inline="tyOHLA", group=g3, display=display.none)
+tyLoClr  = input.color(color.new(clr1, 50), "", inline="tyOHLA", group=g3, display=display.none)
+tyAvClr  = input.color(color.new(clr1, 50), "", inline="tyOHLA", group=g3, display=display.none)
+tyAvgSrc = input.string(HL2, "", [HL2, HLC3, OHLC4, HLCC4], inline="tyOHLA", group=g3, display=display.none)
+var tyOpn = tyOHLA and colorIsNotTransparent(tyOpClr)
+var tyHi  = tyOHLA and colorIsNotTransparent(tyHiClr)
+var tyLo  = tyOHLA and colorIsNotTransparent(tyLoClr)
+var tyAvg = tyOHLA and colorIsNotTransparent(tyAvClr)
+
+// Last Weeks Open, High, Low, Close, and Average Settings
+lwOHLCA  = input.bool(false, "Last Weeks OHLC & A", lstDesc, group=g3, display=display.none)
+lwOpClr  = input.color(color.new(clr1, 50), "     ", inline="lwOHLCA", group=g3, display=display.none)
+lwHiClr  = input.color(color.new(clr1, 50), "", inline="lwOHLCA", group=g3, display=display.none)
+lwLoClr  = input.color(color.new(clr1, 50), "", inline="lwOHLCA", group=g3, display=display.none)
+lwClClr  = input.color(color.new(clr1, 50), "", inline="lwOHLCA", group=g3, display=display.none)
+lwAvClr  = input.color(color.new(clr1, 50), "", inline="lwOHLCA", group=g3, display=display.none)
+lwAvgSrc = input.string(HL2, "", [HL2, HLC3, OHLC4, HLCC4], inline="lwOHLCA", group=g3, display=display.none)
+var lwOpn = lwOHLCA and colorIsNotTransparent(lwOpClr)
+var lwHi  = lwOHLCA and colorIsNotTransparent(lwHiClr)
+var lwLo  = lwOHLCA and colorIsNotTransparent(lwLoClr)
+var lwCls = lwOHLCA and colorIsNotTransparent(lwClClr)
+var lwAvg = lwOHLCA and colorIsNotTransparent(lwAvClr)
+
+// Last Months Open, High, Low, Close, and Average Settings
+lmOHLCA  = input.bool(false, "Last Months OHLC & A", lstDesc, group=g3, display=display.none)
+lmOpClr  = input.color(color.new(clr1, 50), "     ", inline="lmOHLCA", group=g3, display=display.none)
+lmHiClr  = input.color(color.new(clr1, 50), "", inline="lmOHLCA", group=g3, display=display.none)
+lmLoClr  = input.color(color.new(clr1, 50), "", inline="lmOHLCA", group=g3, display=display.none)
+lmClClr  = input.color(color.new(clr1, 50), "", inline="lmOHLCA", group=g3, display=display.none)
+lmAvClr  = input.color(color.new(clr1, 50), "", inline="lmOHLCA", group=g3, display=display.none)
+lmAvgSrc = input.string(HL2, "", [HL2, HLC3, OHLC4, HLCC4], inline="lmOHLCA", group=g3, display=display.none)
+var lmOpn = lmOHLCA and colorIsNotTransparent(lmOpClr)
+var lmHi  = lmOHLCA and colorIsNotTransparent(lmHiClr)
+var lmLo  = lmOHLCA and colorIsNotTransparent(lmLoClr)
+var lmCls = lmOHLCA and colorIsNotTransparent(lmClClr)
+var lmAvg = lmOHLCA and colorIsNotTransparent(lmAvClr)
+
+// Last Quarters Open, High, Low, Close, and Average Settings
+lqOHLCA  = input.bool(false, "Last Quarters OHLC & A", lstDesc, group=g3, display=display.none)
+lqOpClr  = input.color(color.new(clr1, 50), "     ", inline="lqOHLCA", group=g3, display=display.none)
+lqHiClr  = input.color(color.new(clr1, 50), "", inline="lqOHLCA", group=g3, display=display.none)
+lqLoClr  = input.color(color.new(clr1, 50), "", inline="lqOHLCA", group=g3, display=display.none)
+lqClClr  = input.color(color.new(clr1, 50), "", inline="lqOHLCA", group=g3, display=display.none)
+lqAvClr  = input.color(color.new(clr1, 50), "", inline="lqOHLCA", group=g3, display=display.none)
+lqAvgSrc = input.string(HL2, "", [HL2, HLC3, OHLC4, HLCC4], inline="lqOHLCA", group=g3, display=display.none)
+var lqOpn = lqOHLCA and colorIsNotTransparent(lqOpClr)
+var lqHi  = lqOHLCA and colorIsNotTransparent(lqHiClr)
+var lqLo  = lqOHLCA and colorIsNotTransparent(lqLoClr)
+var lqCls = lqOHLCA and colorIsNotTransparent(lqClClr)
+var lqAvg = lqOHLCA and colorIsNotTransparent(lqAvClr)
+
+// Last Years Open, High, Low, Close, and Average Settings
+lyOHLCA  = input.bool(false, "Last Years OHLC & A", lstDesc, group=g3, display=display.none)
+lyOpClr  = input.color(color.new(clr1, 50), "     ", inline="lyOHLCA", group=g3, display=display.none)
+lyHiClr  = input.color(color.new(clr1, 50), "", inline="lyOHLCA", group=g3, display=display.none)
+lyLoClr  = input.color(color.new(clr1, 50), "", inline="lyOHLCA", group=g3, display=display.none)
+lyClClr  = input.color(color.new(clr1, 50), "", inline="lyOHLCA", group=g3, display=display.none)
+lyAvClr  = input.color(color.new(clr1, 50), "", inline="lyOHLCA", group=g3, display=display.none)
+lyAvgSrc = input.string(HL2, "", [HL2, HLC3, OHLC4, HLCC4], inline="lyOHLCA", group=g3, display=display.none)
+var lyOpn = lyOHLCA and colorIsNotTransparent(lyOpClr)
+var lyHi  = lyOHLCA and colorIsNotTransparent(lyHiClr)
+var lyLo  = lyOHLCA and colorIsNotTransparent(lyLoClr)
+var lyCls = lyOHLCA and colorIsNotTransparent(lyClClr)
+var lyAvg = lyOHLCA and colorIsNotTransparent(lyAvClr)
+
+// VWAP Settings
+vwap     = input.bool(false, "Volume Weighted Average Price", "VWAP source, and the line colors to use for today & yesterday." + noDisp2, group=g4, display=display.none)
+vwapSrc  = input.string(HLC3, "", [O, H, L, C, HL2, HLC3, OHLC4, HLCC4], inline="vwap", group=g4, display=display.none)
+tdVpClr  = input.color(clr3, "", inline="vwap", group=g4, display=display.none)
+ydVpClr  = input.color(color.new(clr3, 100), "", inline="vwap", group=g4, display=display.none)
+var tdVWAP = vwap and colorIsNotTransparent(tdVpClr)
+var ydVWAP = vwap and colorIsNotTransparent(ydVpClr)
+
+// First Moving Average Settings
+ma1      = input.bool(false, "Moving Average 1", maDesc1, group=g4, display=display.none)
+maSrc1   = input.string(HLC3, "", [O, H, L, C, HL2, HLC3, OHLC4, HLCC4], inline="ma1", group=g4, display=display.none)
+maLen1   = input.int(135, "", 1, inline="ma1", group=g4, display=display.none)
+maTyp1   = input.string("EMA", "", ["SMA", "EMA", "SMMA (RMA)", "WMA", "VWMA"], inline="ma1", group=g4, display=display.none)
+tdMa1Clr = input.color(clr4, "", inline="ma1", group=g4, display=display.none)
+ydMa1Clr = input.color(color.new(clr4, 100), "", inline="ma1", group=g4, display=display.none)
+var tdMA1 = ma1 and colorIsNotTransparent(tdMa1Clr)
+var ydMA1 = ma1 and colorIsNotTransparent(ydMa1Clr)
+
+// Second Moving Average Settings
+ma2      = input.bool(false, "Moving Average 2  ", maDesc1, group=g4, display=display.none)
+maSrc2   = input.string(HLC3, "", [O, H, L, C, HL2, HLC3, OHLC4, HLCC4], inline="ma2", group=g4, display=display.none)
+maLen2   = input.int(90, "", 1, inline="ma2", group=g4, display=display.none)
+maTyp2   = input.string("EMA", "", ["SMA", "EMA", "SMMA (RMA)", "WMA", "VWMA"], inline="ma2", group=g4, display=display.none)
+tdMa2Clr = input.color(clr4, "", inline="ma2", group=g4, display=display.none)
+ydMa2Clr = input.color(color.new(clr4, 100), "", inline="ma2", group=g4, display=display.none)
+var tdMA2 = ma2 and colorIsNotTransparent(tdMa2Clr)
+var ydMA2 = ma2 and colorIsNotTransparent(ydMa2Clr)
+
+// Custom Level Settings
+cstm1 = input.bool(false, "", "Title, price, and color of a custom level.", inline="c1", group=g5, display=display.none)
+c1Lbl = input.string("Custom Level 1", "", inline="c1", group=g5, display=display.none)
+c1Num = input.price(12.34, "", inline="c1", group=g5, display=display.none)
+c1Clr = input.color(clr9, "", inline="c1", group=g5, display=display.none)
+c1Ext = input.bool(false, "Ext. Left", inline="c1", group=g5, display=display.none)
+cstm2 = input.bool(false, "", "Title, price, and color of a custom level.", inline="c2", group=g5, display=display.none)
+c2Lbl = input.string("Custom Level 2", "", inline="c2", group=g5, display=display.none)
+c2Num = input.price(56.78, "", inline="c2", group=g5, display=display.none)
+c2Clr = input.color(clr9, "", inline="c2", group=g5, display=display.none)
+c2Ext = input.bool(false, "Ext. Left", inline="c2", group=g5, display=display.none)
+
+// Label Settings
+txtClr = input.color(color.new(clr1, 100), "Label Text Color", "When the colors opacity is set to zero, a color optimized to contrast with your charts background is automatically used.", inline="lblFgClr", group=g6, display=display.none)
+txtClrMatch = input.bool(false, "Match Line Color", inline="lblFgClr", group=g6, display=display.none)
+lblClr = input.color(none, "Label BG Color  ", inline="lblBgClr", group=g6, display=display.none)
+lblClrMatch = input.bool(false, "Match Line Color", inline="lblBgClr", group=g6, display=display.none)
+showLabel = input.bool(true, "Show Labels", inline="labels", group=g6, display=display.none)
+abbreviate = input.bool(true, "Abbreviate label names", group=g6, display=display.none)
+inclPrice = input.bool(true, "Append price to label names", group=g6, display=display.none)
+mergeLabels = input.bool(false, "Merge labels within", "Merges label strings into a single label when their price values are within the specified threshold. Also the merged labels text and background color.\n\nWhen the text colors opacity is set to zero, a color optimized to contrast with your charts background is automatically used.", inline="merge", group=g6, display=display.none)
+mergeThreshold = input.float(5, "", 0.01, 1000, 0.01, inline="merge", group=g6, display=display.none)
+mergeFgColor = input.color(color.new(clr1, 100), "", inline="merge", group=g6, display=display.none)
+mergeBgColor = input.color(none, "", inline="merge", group=g6, display=display.none)
+
+// Line Settings
+width    = input.int(2, "Line Width & Style       ", 1, 10, 1, inline="lines", group=g7, display=display.none)
+style    = input.string("Solid", "", ["Solid", "Dashed", "Dotted"], inline="lines", group=g7, display=display.none), var lineStyle = style == "Dotted" ? line.style_dotted : style == "Dashed" ? line.style_dashed : line.style_solid
+forward  = input.bool(true, "Extend line right  ", tooltip="How many bars into the future lines and labels should extend.", inline="forwardBars", group=g7, display=display.none)
+fwdBars  = input.int(10, "", 0, inline="forwardBars", group=g7, display=display.none), var fwdLen = forward ? fwdBars : 0
+truncate = input.bool(false, "Max line length    ", "Truncates the lines so they do not stretch back to their origin.", inline="maxLineLength", group=g7, display=display.none)
+truncLen = input.int(15, "", 0, inline="maxLineLength", group=g7, display=display.none)
+
+// Older Level Settings
+showOldLevels = input.bool(false, "Show older levels", "Visibility & color of older levels.\n\nOlder levels will not display if \"Toggle Visibility\" is also enabled.", inline="old", group=g7, display=display.none)
+oldColor = input.color(clr1, "", inline="old", group=g7, display=display.none)
+
+// Price Proximity Settings
+atrZone  = input.bool(false, "ATR Zones", "This will show a 5 bar ATR zone around the level when price is proximal to a given line. Half the ATR is above the line, and half the ATR is below the line.", group=g8, display=display.none)
+showProx = input.bool(false, "Toggle Visibility", "This will hide levels by default, and only show a level when price is proximal to a given line.", inline="prox vis", group=g8, display=display.none)
+extend   = input.bool(false, "Line Length Override", "This will extend the line back to its origin when price is proximal to a given line and \"Max Line Length\" is enabled.", inline="extend", group=g8, display=display.none)
+prxRng   = input.float(0.025, "Range of Proximity ( % )", 0, tooltip="How close price needs to be for an enabled proximity setting to take effect. This is a percentage (not monetary) value.", group=g8, display=display.none)
+
+// Market Hours Settings
+mktHrs = input.session("0930-1600", "Start / End Time", tooltip = "A 24 hour format, where 0930 is 9:30 AM, 1600 is 4:00 PM, etc.", group=g9, display=display.none)
+zone   = input("America/New_York", "Time Zone", "Any IANA time zone ID. Ex: America/New_York\n\nYou can also use \"syminfo.timezone\", which inherits the time zone of the exchange of the chart.", group=g9, display=display.none)
+var timezone = zone == "syminfo.timezone" ? syminfo.timezone : zone
+
+
+
+// ------------------------------------------------------ CORE ----------------------------------------------------- //
+
+// Store the number of milliseconds per bar
+var mspb =
+ timeframe.multiplier * (
+ timeframe.isseconds ? 1000 :
+ timeframe.isminutes ? 60000 :
+ timeframe.isdaily   ? 86400000 :
+ timeframe.isweekly  ? 604800000 :
+ timeframe.ismonthly ? 2629800000 :
+ 1)
+
+// @function Gets a standardized set of values from higher timeframes.
+// @returns  [open, open[1], high, high[1], low, low[1], close, close[1], time, time[1]]
+reqSec(string tf) => request.security(ticker.modify(syminfo.tickerid, session.extended), tf, [open, open[1], high, high[1], low, low[1], close, close[1], time, time[1]], lookahead=barmerge.lookahead_on)
+
+// @function Gets a standardized set of values from a one minute timeframe.
+// @returns  [open, high, low, close, time, session.ismarket]
+GetOneMinBarVals() => request.security_lower_tf(ticker.modify(syminfo.tickerid, session.extended), "1", [open, high, low, close, time, session.ismarket])
+
+// @type Object to store bar values.
+type barVals
+    array<float> Opens
+    array<float> Highs
+    array<float> Lows
+    array<float> Closes
+    array<int>   Times
+    float Open
+    float High
+    float Low
+    float Close
+    int   Index
+    bool  isrealtime
+
+// Store 1m bar values alongside the charts timeframe bar values
+[mO, mH, mL, mC, mT, mM] = GetOneMinBarVals()
+bar = barVals.new(mO, mH, mL, mC, mT, open, high, low, close, time, math.floor(time / mspb) == math.floor(timenow / mspb)), BI1 = bar.Index[1]
+
+// Track when there's a new one minute bar
+varip bts = array.new_int(2, 0), bts.push(bar.Times.size()), bts.shift()
+newOneMinueBar = bar.isrealtime ? timeframe.multiplier == 1 and timeframe.isminutes ? barstate.isnew : bts.range() > 0 and bar.Times.size() > 0 : true
+
+// Store 1D bar values
+[dO, dO1, dH, dH1, dL, dL1, dC, dC1, dT, dT1] = reqSec("D")
+dailyBar = barVals.new(array.from(dO, dO1), array.from(dH, dH1), array.from(dL, dL1), array.from(dC, dC1), array.from(dT, dT1), dO, dH, dL, dC, dT)
+
+// @type Object to track key levels.
+type level
+    bool   InitState
+    bool   Show
+    color  Color
+    string Name
+    string ToolTip
+    float  Level
+    float  Price
+    int    Index
+    int    OldIndex
+    line   Line
+    label  Label
+    box    Range
+
+// @variable An array of all key levels in this script.
+var keyLevels = array.new<level>()
+
+// Constants to make working with keyLevels more human friendly
+const int TD = 0, const int OR = 2, const int NO = 4, const int PM = 6, const int ON = 8, const int AH = 10, const int YD = 12, const int TW = 14, const int LW = 19, const int TM = 24, const int LM = 29, const int TQ = 34, const int LQ = 39, const int TY = 44, const int LY = 49, const int TDH = 0, const int TDL = 1, const int ORH = 2, const int ORL = 3, const int NOH = 4, const int NOL = 5, const int PMH = 6, const int PML = 7, const int ONH = 8, const int ONL = 9, const int AHH = 10, const int AHL = 11, const int YDH = 12, const int YDL = 13, const int TWO = 14, const int TWH = 15, const int TWL = 16, const int TWA = 18, const int LWO = 19, const int LWH = 20, const int LWL = 21, const int LWC = 22, const int LWA = 23, const int TMO = 24, const int TMH = 25, const int TML = 26, const int TMA = 28, const int LMO = 29, const int LMH = 30, const int LML = 31, const int LMC = 32, const int LMA = 33, const int TQO = 34, const int TQH = 35, const int TQL = 36, const int TQA = 38, const int LQO = 39, const int LQH = 40, const int LQL = 41, const int LQC = 42, const int LQA = 43, const int TYO = 44, const int TYH = 45, const int TYL = 46, const int TYA = 48, const int LYO = 49, const int LYH = 50, const int LYL = 51, const int LYC = 52, const int LYA = 53, const int TDO = 54, const int TDC = 55, const int TDA = 56, const int YDO = 57, const int YDC = 58, const int YDA = 59, const int TDVWAP = 60, const int YDVWAP = 61, const int TDMA1 = 62, const int YDMA1 = 63, const int TDMA2 = 64, const int YDMA2 = 65, const int CUSTOM1 = 66, const int CUSTOM2 = 67
+
+// @function Checks if an integer is an even number.
+evenNum(int i) => i % 2 == 0
+
+// @function Transforms a label string into an acronym.
+acronym(string fullStr) =>
+    wordList = str.split(fullStr, " "), firstCharacters = ""
+    for word in wordList
+        firstCharacters += str.match(word, "\\w")
+    firstCharacters
+
+// @function Assembles the name and tooltip for labels.
+labelStrings(int i, string abrvStr, string fullStr) =>
+    ohlca = "", thisLast = "", possesive = ""
+    if i <= YDL
+        ohlca := evenNum(i) ? "High" : "Low"
+    else if TWO <= i and i <= LYA
+        thisLast := math.floor((i - TWO) / 5) % 2 == 0 ? "This " : "Last "
+        ohlca := switch (i - TWO) % 5
+            0 => "Open"
+            1 => "High"
+            2 => "Low"
+            3 => "Close"
+            4 => "Average"
+    else
+        ohlca := switch (i - TDO) % 3
+            0 => "Open"
+            1 => "Close"
+            2 => "Average"
+
+    if  i <= TDL or (YDH <= i and i <= YDA)
+        possesive := "s"
+
+    name = abbreviate ? " " + acronym(thisLast) + abrvStr + acronym(ohlca) + " " : " " + ohlca + " • " + thisLast + fullStr + " "
+    
+    if ohlca == "Average"
+        ohlca := switch i
+            TDA => str.upper(tdAvgSrc)
+            YDA => str.upper(ydAvgSrc)
+            TWA => str.upper(twAvgSrc)
+            LWA => str.upper(lwAvgSrc)
+            TMA => str.upper(tmAvgSrc)
+            LMA => str.upper(lmAvgSrc)
+            TQA => str.upper(tqAvgSrc)
+            LQA => str.upper(lqAvgSrc)
+            TYA => str.upper(tyAvgSrc)
+            LYA => str.upper(lyAvgSrc)
+
+    tooltip = " " + thisLast + fullStr + possesive + " " + ohlca + " "
+    [name, tooltip]
+
+// Initialize keyLevels array
+var Levels_Not_Initialized = true
+if Levels_Not_Initialized
+
+    // Create temporary arrays to help initialize the keyLevels object array
+    fullStr = array.from("Today", "Opening Range", "Near Open", "Premarket", "Overnight", "After Hours", "Yesterday", "Week", "Month", "Quarter", "Year")
+    abrvStr = array.from("TD", "OR", "NO", "PM", "ON", "AH", "YD", "W", "M", "Q", "Y")
+    colors  = array.from(tdHiClr, tdLoClr, orClr,  orClr,  noHiClr, noLoClr, pmHiClr, pmLoClr, onHiClr, onLoClr, ahHiClr, ahLoClr, ydHiClr, ydLoClr, twOpClr, twHiClr, twLoClr, none,  twAvClr, lwOpClr, lwHiClr, lwLoClr, lwClClr, lwAvClr, tmOpClr, tmHiClr, tmLoClr, none,  tmAvClr, lmOpClr, lmHiClr, lmLoClr, lmClClr, lmAvClr, tqOpClr, tqHiClr, tqLoClr, none,  tqAvClr, lqOpClr, lqHiClr, lqLoClr, lqClClr, lqAvClr, tyOpClr, tyHiClr, tyLoClr, none,  tyAvClr, lyOpClr, lyHiClr, lyLoClr, lyClClr, lyAvClr, tdOpnClr, none,  tdAvgClr, ydOpnClr, ydClsClr, ydAvgClr, tdVpClr, ydVpClr, tdMa1Clr, ydMa1Clr, tdMa2Clr, ydMa2Clr, c1Clr, c2Clr)
+    lvlVis  = array.from(tdHiLo,  tdHiLo,  orHiLo, orHiLo, noHiLo,  noHiLo,  pmHiLo,  pmHiLo,  onHiLo,  onHiLo,  ahHiLo,  ahHiLo,  ydHiLo,  ydHiLo,  twOpn,   twHi,    twLo,    false, twAvg,   lwOpn,   lwHi,    lwLo,    lwCls,   lwAvg,   tmOpn,   tmHi,    tmLo,    false, tmAvg,   lmOpn,   lmHi,    lmLo,    lmCls,   lmAvg,   tqOpn,   tqHi,    tqLo,    false, tqAvg,   lqOpn,   lqHi,    lqLo,    lqCls,   lqAvg,   tyOpn,   tyHi,    tyLo,    false, tyAvg,   lyOpn,   lyHi,    lyLo,    lyCls,   lyAvg,   tdOpn,    false, tdAvg,    ydOpn,    ydCls,    ydAvg,    tdVWAP,  ydVWAP,  tdMA1,    ydMA1,    tdMA2,    ydMA2,    cstm1, cstm2)
+    
+    // Set visibility
+    for v in lvlVis
+        keyLevels.push(level.new(v,v))
+
+    // Set strings
+    for [i, kl] in keyLevels
+        if kl.Show
+            kl.Color := colors.get(i)
+
+            // All Open, High, Low, Close, & Average levels from Today through Last Year
+            if i < TDVWAP
+                j = switch true
+                    i <= YDL => math.floor(i/2)
+                    TWO <= i and i <= LYA => math.floor((i - TWO) / 10) + 7
+                    TDO <= i and i <= YDA => (i <= TDA ? TD : YD)/2
+                [name, tooltip] = labelStrings(i, abrvStr.get(j), fullStr.get(j))
+                kl.Name := name
+                kl.ToolTip := tooltip
+
+            // Today & Yesterdays VWAP, MA1, & MA2
+            else if i < CUSTOM1
+                d = evenNum(i) ? TD : YD
+                full = fullStr.get(d/2)
+                abrv = abrvStr.get(d/2)
+                day = abbreviate ? abrv : full
+                maSrc = i < TDMA2 ? maSrc1 : maSrc2
+                maLen = i < TDMA2 ? maLen1 : maLen2
+                maTyp = i < TDMA2 ? maTyp1 : maTyp2
+                nStr  = i < TDMA1 ? "VWAP" : str.tostring(maLen) + " " + str.tostring(maTyp)
+                tStr  = i < TDMA1 ? "s " + "VWAP using " + str.upper(vwapSrc) + " " : "s " + str.tostring(maLen) + " " + str.tostring(maTyp) + " using " + str.upper(maSrc) + " "
+                prefix = "", suffix = "", delim  = ""
+                if abbreviate
+                    prefix := " " + day + " ", suffix := " ", delim := ""
+                else
+                    prefix := " ", suffix := day + " ", delim := " • "
+                kl.Name := prefix + nStr + delim + suffix
+                kl.ToolTip := " " + full + tStr + " "
+            
+            // Custom Levels
+            else
+                cStr = i == CUSTOM1 ? c1Lbl : c2Lbl
+                cLvl = i == CUSTOM2 ? c1Num : c2Num
+                kl.Name := " " + (abbreviate ? acronym(cStr) : cStr) + " "
+                kl.ToolTip := " " + cStr + " "
+                kl.Level := cLvl
+
+    Levels_Not_Initialized := false
+
+
+
+// --------------------------------------------------- TIME LOGIC -------------------------------------------------- //
+
+// @function Converts a bar_index into a bar_time.
+numOfBars(int t) => t * mspb
+
+// @function Converts an integer into a 4 character time string.
+normalizeTime(float t) =>
+    s = str.tostring(int(t))
+    while str.length(s) < 4
+        s := "0" + s
+    s
+
+// @function Calculates the Near Open start time.
+setNearOpenStartTime(string mst) =>
+    t  = str.tonumber(mst)
+    r  = noRange
+    hr = math.floor(t / 100)
+    m  = t % 100, m := m - r
+    if m < 0
+        while m < 0
+            hr -= 1
+            m += 60
+    normalizeTime(hr * 100 + m)
+
+// @function Returns the first 4 characters in a 9 character time range string. Ex: "0000" in "0000-2400".
+startTime(string t) => str.substring(t, 0, 4)
+
+// @function Returns the last 4 characters in a 9 character time range string. Ex: "2400" in "0000-2400".
+stopTime(string t)  => str.substring(t, 5, 9)
+
+// Convert trader specified market time variables into strings
+var string mktStartTime = na, var string mktEndTime = na, var string marketHours = na, var string preMktHours = na, var string bfrMktHours = na, var string noStartTime = na, var string nearOpenMin = na, var string openEndTime = na, var string openingMins = na, var string minutesInDay = na, var string mktCloseToMidnight = na
+var Strings_Not_Initialized = true
+if Strings_Not_Initialized
+    mktStartTime := startTime(mktHrs)
+    mktEndTime   := stopTime(mktHrs)
+    marketHours  := mktHrs
+    preMktHours  := "0000-" + mktStartTime
+    bfrMktHours  := mktEndTime + "-" + mktStartTime
+    noStartTime  := setNearOpenStartTime(mktStartTime)
+    nearOpenMin  := noStartTime + "-" + mktStartTime
+    openEndTime  := normalizeTime(str.tonumber(mktStartTime) + orRange)
+    openingMins  := mktStartTime + "-" + openEndTime
+    minutesInDay := "1440"
+    mktCloseToMidnight := mktEndTime + "-2400"
+    Strings_Not_Initialized := false
+
+// @function Converts UNIX time into a 4 character hour-minute string.
+Time(int t, string output = "string") =>
+    h = str.tostring(hour(t, timezone)),   h := str.length(h) < 2 ? "0" + h : h
+    m = str.tostring(minute(t, timezone)), m := str.length(m) < 2 ? "0" + m : m
+    str.format("{0}{1}", h, m)
+
+// @function Checks if a bar_time occurs within a time range.
+evalTime(string beg, int barTime, string end) =>
+    t = str.tonumber(Time(barTime))
+    str.tonumber(beg) <= t and t < str.tonumber(end)
+
+// @function Iterates through an array of 1m bars and checks if any of them occur within a segment.
+method isSegment(string segment = na) =>
+    result = false
+    beg = startTime(segment)
+    end = stopTime(segment)
+    pmh = str.tonumber(beg) > str.tonumber(end)
+    for barTime in bar.Times
+        if pmh ? evalTime(beg, barTime, "2400") or evalTime("0000", barTime, end) : evalTime(beg, barTime, end)
+            result := true, break
+    result
+
+// @function Iterates through an array of 1m bars and checks if any are session.ismarket.
+sessionIsMarket() =>
+    result = false
+    for [i, sessionIsMarket] in mM
+        if sessionIsMarket
+            result := true, break
+    result
+
+// Update segments only when there's a new one minute bar (rather than each chart update)
+var newSession = false, var preSession = false, var mktSession = false, var premarket = false, var nearOpen = false, var market = false, var marketOpen = false, var afterHours = false, var overnight = false, var PMS1 = false, var MKS1 = false, var PM1 = false, var NO1 = false, var MK1 = false, var AH1 = false, var ON1 = false, var mctm = false, var newSessionBeforeMidnight = false, var newDailyBar = false, var newWeek = false, var newMonth = false, var newQuarter = false, var newYear = false, var session = -1, var firstMarketBar = false
+if newOneMinueBar
+
+    // Common intraday segments
+    newSession  := session.isfirstbar
+    preSession  := session.ispremarket,    PMS1 := preSession[1]
+    mktSession  := sessionIsMarket(),      MKS1 := mktSession[1]
+    premarket   := isSegment(preMktHours), PM1  := premarket[1]
+    nearOpen    := isSegment(nearOpenMin), NO1  := nearOpen[1]
+    market      := isSegment(marketHours), MK1  := market[1]
+    marketOpen  := isSegment(openingMins)
+
+    // Less common intraday segments
+    mctm        := isSegment(mktCloseToMidnight)
+    newSessionBeforeMidnight := newSession ? hour(time, timezone) * 60 + minute(time, timezone) < 1440 : market ? false : newSessionBeforeMidnight
+    afterHours  := mctm and not newSessionBeforeMidnight, AH1 := afterHours[1]
+    overnight   := mctm and newSessionBeforeMidnight,     ON1 := overnight[1]
+
+    // Common annual segments
+    newDailyBar := mktSession and (not MKS1 or newSession)
+    newWeek     := twOHLA or lwOHLCA ? timeframe.change("W")   : false
+    newMonth    := tmOHLA or lmOHLCA ? timeframe.change("M")   : false
+    newQuarter  := tqOHLA or lqOHLCA ? timeframe.change("3M")  : false
+    newYear     := tyOHLA or lyOHLCA ? timeframe.change("12M") : false
+
+    // Increment the session count. Used to disregard incomplete data from the first session on the chart
+    session += newSession and session < 1 ? 1 : 0
+
+    // Track first market bar
+    firstMarketBar := market and (not MK1 or newSession)
+
+// @function Helper for segment().
+getTradingHours(bool ifTrue) => ifTrue ? marketHours : "0000-2400"
+
+// @function Checks if any part of the current bar occurred within a given segment.
+segment(int i) =>        
+    switch i
+        OR  => openingMins
+        NO  => nearOpenMin
+        PM  => onHiLo ? preMktHours : bfrMktHours
+        ON  => mktCloseToMidnight
+        AH  => mktCloseToMidnight
+        TD  => getTradingHours(tdRTH)
+        YD  => getTradingHours(ydRTH)
+        TDO => getTradingHours(tdoRTH)
+        YDO => getTradingHours(ydoRTH)
+        TDA => getTradingHours(tdRTH)
+
+// @function Helper for isFirstMinOf() function.
+getFirstMin(bool ifTrue) => ifTrue ? firstMarketBar : newDailyBar
+
+// @function Checks if any part of the current bar occurred during the first minute of a given segment.
+isFirstMinOf(int i) =>
+    switch i
+        OR  => getFirstMin(true)
+        NO  => nearOpen and (not NO1 or newSession)
+        PM  => onHiLo ? premarket and (not PM1 or newSession) : (overnight and newSession) or (not ON1 and premarket and (not PM1 or newSession))
+        ON  => overnight and newSession
+        AH  => afterHours and not AH1
+        TD  => getFirstMin(tdRTH)
+        YD  => getFirstMin(ydRTH)
+        TDO => getFirstMin(tdoRTH)
+        YDO => getFirstMin(ydoRTH)
+        TDA => getFirstMin(tdRTH or (tdoRTH and tdAvgSrc == OHLC4))
+        YDA => getFirstMin(ydRTH or (ydoRTH and ydAvgSrc == OHLC4))
+        YDC => ydcRTH ? MK1 and (not market or newSession) : MKS1 and (not mktSession or newSession)
+
+
+
+// ----------------------------------------------- RECENT LEVEL LOGIC ---------------------------------------------- //
+
+// @function Calculates bar averages.
+avg(string src, float o, float h, float l, float c) =>
+    switch src
+        HL2   => math.avg(h, l)
+        HLC3  => math.avg(h, l, c)
+        OHLC4 => math.avg(o, h, l, c)
+        HLCC4 => math.avg(h, l, c, c)
+
+// @function Synthesizes standard bar values.
+method src(barVals b, string src, int n = na) =>
+    float o = na, float h = na, float l = na, float c = na
+    switch na(n)
+        true  => o := b.Open, h := b.High, l := b.Low, c := b.Close
+        false => o := b.Opens.get(n), h := b.Highs.get(n), l := b.Lows.get(n), c := b.Closes.get(n)
+    switch src
+        O => o
+        H => h
+        L => l
+        C => c
+        => avg(src, o, h, l, c)
+
+// @function Saves the old indices of key levels.
+saveOldIndices(int first, int last = na) =>
+    for i = first to (na(last) ? first : last)
+        kl = keyLevels.get(i)
+        kl.OldIndex := kl.Index
+
+// @function Sets the Level and Index fields of a level object.
+method set(int i, float lvl, int idx = na) =>
+    kl = keyLevels.get(i)
+    kl.Level := lvl
+    kl.Index := na(idx) ? bar.Index : idx
+
+// The syminfo.session variable is "us_regular" (rather than "regular") when using a RTH chart with Futures,
+// indicating the daily open, high, and low may have already occurred. Other tradables may have similar
+// conditions, thus str.contains(syminfo.session, "_") was used instead of syminfo.type == "futures".
+var irregularRTH = str.contains(syminfo.session, "_")
+
+// @function Sets the high and low levels of a segment.
+method set_high_low(int hi, bool True = true) =>
+    if True
+        lo = hi + 1
+        useDailyBar = switch hi
+            TD => not tdRTH
+            YD => not ydRTH
+            => false
+        if isFirstMinOf(hi)
+            saveOldIndices(hi, lo)
+            if useDailyBar and irregularRTH
+                hi.set(dailyBar.High)
+                lo.set(dailyBar.Low)
+            else
+                hi.set(bar.Open)
+                lo.set(bar.Open)
+        seg = segment(hi), beg = startTime(seg), end = stopTime(seg), pmh = str.tonumber(beg) > str.tonumber(end)
+        for [i, t] in bar.Times
+            if pmh ? evalTime(beg, t, "2400") or evalTime("0000", t, end) : evalTime(beg, t, end)
+                if bar.Highs.get(i) >= keyLevels.get(hi).Level
+                    hi.set(bar.Highs.get(i))
+                if bar.Lows.get(i)  <= keyLevels.get(lo).Level
+                    lo.set(bar.Lows.get(i))
+
+// @function Sets the daily opening value.
+method set_open(int o, bool True = true) =>
+    if True and bar.Times.size() > 0        
+        int n = na, bool rth = na, string src = na
+        switch o
+            TDO => rth := tdoRTH, src := tdOpnSrc
+            YDO => rth := ydoRTH, src := ydOpnSrc        
+        if rth
+            for [i, t] in bar.Times
+                if str.tonumber(Time(t)) == str.tonumber(startTime(marketHours))
+                    n := i, break
+        else if not irregularRTH
+            for [i, sessionIsMarket] in mM
+                if sessionIsMarket and (not MKS1 or newSession)
+                    n := i, break
+        v = not na(n) ? bar.src(src, n) : dailyBar.Open
+        o.set(v)
+
+// @function Sets the daily closing value.
+method set_close(int c, bool True = true) =>
+    if True and not na(bar[1])
+        int n = na, bool rth = na, barVals b = na, array<bool> m = na
+        switch c
+            TDC => b := bar,    m := mM,    rth := tdAvgSrc == OHLC4 ? tdoRTH : tdRTH
+            YDC => b := bar[1], m := mM[1], rth := ydcRTH
+        if rth
+            for [i, t] in b.Times
+                if evalTime(mktStartTime, t, mktEndTime)
+                    n := i
+        else if b.Closes.size() > 0
+            for [i, sessionIsMarket] in m
+                if sessionIsMarket
+                    n := i
+        v = not na(n) ? b.src(ydClsSrc, n) : market ? keyLevels.get(TDC).Level : dailyBar.Close
+        c.set(v, b.Index)
+
+// @function Checks if a level should be set.
+ifOkayToSet(int i) =>
+    switch i
+        OR => orHiLo and marketOpen
+        NO => noHiLo and nearOpen
+        PM => pmHiLo and ((overnight and not onHiLo) or (premarket and ((not noHiLo) or (noHiLo and not nearOpen))))
+        ON => onHiLo and overnight
+        AH => ahHiLo and afterHours
+        TD => (tdHiLo or tdAvg) and not newSession and (tdRTH ? market : mktSession)
+        YD => (ydHiLo or ydAvg) and not newSession and (ydRTH ? market : mktSession)
+        TDA => tdAvg and not newSession
+        YDA => ydAvg and not newSession
+        => false
+
+// Unchanging variables placed outside ifOkayToSet() to reduce computational overhead
+var ifOkayToSetTDO = tdOpn or tdAvg 
+var ifOkayToSetYDC = ydCls or ydAvg
+var ifOkayToSetTDC = (tdAvg and tdAvgSrc != HL2) or (ydAvg and ydAvgSrc != HL2) or (twAvg and twAvgSrc != HL2) or (tmAvg and tmAvgSrc != HL2) or (tqAvg and tqAvgSrc != HL2) or (tyAvg and tyAvgSrc != HL2)
+
+// Save specific bar indices that are necessary for showing old levels correctly, but may be overwritten
+if newSession
+    saveOldIndices(TDH, ONL)
+    saveOldIndices(TDVWAP, CUSTOM2)
+    saveOldIndices(TDO, TDA)
+
+// Track the recent highs & lows
+for i = TD to YD
+    i.set_high_low(ifOkayToSet(i))
+
+// Track the todays open & yesterdays close
+TDO.set_open(ifOkayToSetTDO and isFirstMinOf(TDO))
+YDC.set_close(ifOkayToSetYDC and isFirstMinOf(YDC))
+
+// Track todays close only when an enabled average requires it.
+TDC.set_close(ifOkayToSetTDC)
+
+// @function Sets the daily average value.
+method set_avg(int a, bool True = true) =>
+    if True
+        string src = na, float o = na, float h = na, float l = na, float c = na
+        switch a
+            TDA => src := tdAvgSrc, o := keyLevels.get(TDO).Level, h := keyLevels.get(TDH).Level, l := keyLevels.get(TDL).Level, c := keyLevels.get(TDC).Level
+            YDA => src := ydAvgSrc, o := keyLevels.get(YDO).Level, h := keyLevels.get(YDH).Level, l := keyLevels.get(YDL).Level, c := keyLevels.get(YDC).Level
+        if isFirstMinOf(a)
+            a.set(avg(src, o, h, l, c))
+        else
+            kl = keyLevels.get(a)
+            kl.Level := avg(src, o, h, l, c)
+
+// Track daily averages
+TDA.set_avg(ifOkayToSet(TDA))
+YDA.set_avg(ifOkayToSet(YDA))
+
+// Track VWAP within the charts timeframe
+if tdVWAP
+    vwapVal = ta.vwap(bar.src(vwapSrc))
+    kl = keyLevels.get(TDVWAP)
+    kl.Level := vwapVal
+    if newSession
+        YDVWAP.set(vwapVal[1])
+
+// Track moving averages within the charts timeframe
+// Pine does not compile when these are abstracted into a function
+if ma1
+    maVal = switch maTyp1
+        "SMA"  => ta.sma(bar.src(maSrc1), maLen1)
+        "EMA"  => ta.ema(bar.src(maSrc1), maLen1)
+        "WMA"  => ta.wma(bar.src(maSrc1), maLen1)
+        "VWMA" => ta.vwma(bar.src(maSrc1), maLen1)
+        "SMMA (RMA)" => ta.rma(bar.src(maSrc1), maLen1)
+    if tdMA1
+        TDMA1.set(maVal, bar.Index - numOfBars(maLen1 - 1))
+    if ydMA1 and newSession
+        YDMA1.set(maVal[1])
+if ma2
+    maVal = switch maTyp2
+        "SMA"  => ta.sma(bar.src(maSrc2), maLen2)
+        "EMA"  => ta.ema(bar.src(maSrc2), maLen2)
+        "WMA"  => ta.wma(bar.src(maSrc2), maLen2)
+        "VWMA" => ta.vwma(bar.src(maSrc2), maLen2)
+        "SMMA (RMA)" => ta.rma(bar.src(maSrc2), maLen2)
+    if tdMA2
+        TDMA2.set(maVal, bar.Index - numOfBars(maLen2 - 1))
+    if ydMA2 and newSession
+        YDMA2.set(maVal[1])
+
+// Set first market bar index
+var firstMarketBarIndex = time
+if isFirstMinOf(OR) and not newSession
+    firstMarketBarIndex := bar.Index
+else if isFirstMinOf(OR)[1] and newSession[1]
+    firstMarketBarIndex := bar.Index[1]
+
+// Set last market bar index.
+var lastMarketBarIndex = time
+if MK1 and (not market or newSession)
+    lastMarketBarIndex := bar.Index[1]
+
+
+
+// ---------------------------------------------- DISTANT LEVEL LOGIC ---------------------------------------------- //
+
+// @function Sets a given distant level.
+method set_dist_OHLCA(int i, float newLevelValue, bool newPeriod, bool thisPeriod, bool High, bool Low, bool Close) =>
+    kl = keyLevels.get(i)
+    levelTouched = High ? kl.Level <= bar.High : Low ? bar.Low <= kl.Level : Close ? bar.Close == kl.Level : false
+
+    // Set value if empty, or if symbol has extended hours and it's the first market bar
+    if na(kl.Level) or (PMS1 and mktSession)
+        kl.Level := newLevelValue
+
+    // If THIS week / month / quarter / year…
+    // Because LAST WMQY references the index of THIS WMQY, thisPeriod must be tracked even if disabled
+    if thisPeriod
+        if newPeriod or levelTouched
+            kl.OldIndex := kl.Index
+            kl.Level := newLevelValue
+            kl.Index := bar.Index
+            if levelTouched
+                kl.Line.set_x1(kl.Index)
+            // If a new month starts in the middle of a weekly bar…
+            if (TMO <= i and i <= TQA) and timeframe.isweekly and dayofmonth > 3 and not levelTouched
+                kl.Index := BI1
+
+    // If LAST week / month / quarter / year…
+    else if kl.Show and newPeriod
+        kl.Level := preSession ? keyLevels.get(i - 5).Level : newLevelValue
+        kl.Index := keyLevels.get(i - 5).OldIndex
+
+// Loop through distant periods when enabled
+var distTF = array.from("1W", "1M", "3M", "12M")
+var distLevelEnabled = array.from(twOHLA, tmOHLA, tqOHLA, tyOHLA, lwOHLCA, lmOHLCA, lqOHLCA, lyOHLCA).some()
+if distLevelEnabled
+    for i =  0 to 3
+        bool thisPeriod = na, bool lastPeriod = na, int idx = na, string thisAvgSrc = na, string lastAvgSrc = na, bool newPeriod = na
+        switch i
+            0 => thisPeriod := twOHLA, lastPeriod := lwOHLCA, idx := TW, thisAvgSrc := twAvgSrc, lastAvgSrc := lwAvgSrc, newPeriod := newWeek
+            1 => thisPeriod := tmOHLA, lastPeriod := lmOHLCA, idx := TM, thisAvgSrc := tmAvgSrc, lastAvgSrc := lmAvgSrc, newPeriod := newMonth
+            2 => thisPeriod := tqOHLA, lastPeriod := lqOHLCA, idx := TQ, thisAvgSrc := tqAvgSrc, lastAvgSrc := lqAvgSrc, newPeriod := newQuarter
+            3 => thisPeriod := tyOHLA, lastPeriod := lyOHLCA, idx := TY, thisAvgSrc := tyAvgSrc, lastAvgSrc := lyAvgSrc, newPeriod := newYear
+
+        // If either this or last period is enabled…
+        if thisPeriod or lastPeriod
+
+            // Get this & last period values
+            [o, o1, h, h1, l, l1, c, c1, _, _] = reqSec(distTF.get(i))
+
+            // Set this and last period levels
+            vals = array.from(o, h, l, c, avg(thisAvgSrc, o, h, l, c), o1, h1, l1, c1, avg(lastAvgSrc, o1, h1, l1, c1))
+            for [j, v] in vals
+                (idx + j).set_dist_OHLCA(v, newPeriod, j < 5, j == 1, j == 2, j == 3)
+
+
+
+// -------------------------------------------- OBJECT UPDATE FUNCTIONS -------------------------------------------- //
+
+// @function Assembles the text and tooltip strings for a label.
+method new_label_string(level kl, string Type, array<string> strArr = na, array<float> fltArr = na) =>
+    price = str.tostring(math.round_to_mintick(kl.Price)) + " "
+    if Type == "text"
+        if na(strArr)
+            kl.Name + (inclPrice ? "• " + price : "" )
+        else
+            strArr.join(abbreviate ? "/" : " / ") + (inclPrice ? "• " + (not na(fltArr) and fltArr.range() == 0 ? price : str.tostring(fltArr.min()) + " → " + str.tostring(fltArr.max())) : "")
+    else if not na(strArr) and not na(fltArr)
+        for [i, str] in strArr
+            strArr.set(i, str + "• " + str.tostring(fltArr.get(i)))
+        strArr.join("\n")
+    else
+        kl.ToolTip + "• " + price
+
+// @function Creates a new line for a level.
+method new_line(level kl, int x1) =>
+    kl.Line  := line.new(x1, kl.Level, bar.Index + numOfBars(fwdLen ), kl.Level, xloc.bar_time, extend.none, kl.Color, lineStyle, width)
+    kl.Price := kl.Level
+
+// @function Creates a new label for a level.
+method new_label(level kl, array<string> nameArr = na, array<string> toolArr = na, array<float> priceArr = na) =>
+    if showLabel
+        x = bar.Index + numOfBars(fwdLen)
+        y = na(priceArr) ? kl.Price : math.avg(priceArr.min(), priceArr.max())
+        bgc = not na(nameArr) ? mergeBgColor : lblClrMatch ? kl.Color : lblClr
+        fgc = not na(nameArr) ? colorIsNotTransparent(mergeFgColor) ? mergeFgColor : color.new(chart.fg_color, 25) : txtClrMatch ? color.new(kl.Color, color.t(kl.Color) / 2) : colorIsNotTransparent(mergeFgColor) ? txtClr : color.new(chart.fg_color, 50)
+        Text = kl.new_label_string("text", nameArr, priceArr)
+        Tool = kl.new_label_string("tool", toolArr, priceArr)
+        kl.Label := label.new(x, y, Text, xloc.bar_time, yloc.price, bgc, label.style_label_left, fgc, size.normal, text.align_center, Tool)
+
+// @function Iterates through and displays a set of levels on their first bar.
+showFirstBarLevels(int first, int last) =>
+    for i = first to last
+        kl = keyLevels.get(i)
+        if kl.Show
+            kl.new_line(kl.Index)
+            kl.new_label()
+
+// @function Updates the Y coordinate of a levels line and label.
+method update_y(level kl) =>
+    kl.Price := kl.Level
+    kl.Line.set_y1(kl.Level)
+    kl.Line.set_y2(kl.Level)
+    kl.Label.set_y(kl.Level)
+
+// @function Updates the label strings of a level.
+method update_label_strings(level kl) =>
+    if not na(kl.Label)
+        kl.Label.set_text(kl.new_label_string("text"))
+        kl.Label.set_tooltip(kl.new_label_string("tool"))
+
+// @function Updates how a level displays on the chart.
+method updateLevel(int i) =>
+    kl = keyLevels.get(i)
+    if kl.Show and kl.Price != kl.Level
+        kl.update_y()
+        kl.update_label_strings()
+        falseIf = array.from(ORH, ORL, TDA, TDVWAP)
+        if not falseIf.includes(i)
+            kl.Line.set_x1(kl.Index)
+
+// @function Manages recent high and low levels.
+method manage_high_low(int hi, bool True = true) =>
+    if True
+        lo = hi < TDO ? hi + 1 : hi
+        if isFirstMinOf(hi)
+            showFirstBarLevels(hi, lo)
+        if isSegment(segment(hi))
+            hi.updateLevel()
+            lo.updateLevel()
+    if hi == OR and not timeframe.isdwm
+        orBox.set_right(bar.Index + numOfBars(fwdLen))
+        if isFirstMinOf(OR)
+            orBox.set_left(bar.Index)
+            orBox.set_border_width(0)
+            orBox.set_border_color(none)
+            orBox.set_bgcolor(orBoxClr)
+        if marketOpen
+            orBox.set_top(keyLevels.get(ORH).Level)
+            orBox.set_bottom(keyLevels.get(ORL).Level)
+
+// @function Manages distant levels.
+method manage_dist_high_low(int dist, bool True = true) =>
+    kl = keyLevels.get(dist)
+    if kl.Show
+        dist.updateLevel()
+
+// @function Manages recent average levels.
+method manage_avg(int avg, bool True = true) =>
+    if True
+        if isFirstMinOf(avg)
+            showFirstBarLevels(avg, avg)
+        avg.updateLevel()
+
+// @function Iterates through and hides a set of levels. 
+hideLevel(int first, int last) =>
+    for i = first to last
+        kl = keyLevels.get(i)
+        kl.Show := false
+
+
+
+// ----------------------------------------------- NEW SESSION LOGIC ----------------------------------------------- //
+
+// On the first bar of a new session with complete data…
+if newSession and session > 0
+
+    // Reset level visibility to their intial states
+    for kl in keyLevels
+        kl.Show := kl.InitState
+
+    // Disable levels that are not meaningful or measurable…
+    if timeframe.isdwm
+        // Disable intrabar levels
+        hideLevel(TDO, YDMA2)
+        hideLevel(TDH, timeframe.isweekly ? LWA : timeframe.ismonthly ? timeframe.multiplier < 3 ? LMA : LQA : YDL)
+    else
+        if market and MK1
+            // Disable all levels that are not part of market hours
+            hideLevel(NOH, AHL)
+        else
+            if not AH1
+                // Disable after hours levels
+                hideLevel(AHH, AHL)
+            if market
+                // Disable near open, premarket, and overnight levels
+                hideLevel(NOH, ONL)
+            else if premarket
+                // Disable overnight Levels
+                hideLevel(ONH, ONL)
+        
+    // If the trader wants levels from the previous session to remain visible…
+    if showOldLevels and not showProx
+
+        // Reformat opening range box
+        orBox.set_bgcolor(color.new(oldColor, 95))
+        orBox.set_left(firstMarketBarIndex)
+        orBox.set_right(lastMarketBarIndex)
+
+        // Only reformat lines and labels of recent levels
+        for [i, kl] in keyLevels
+            if (i < TWH or LYL < i ) and timeframe.isintraday
+                openingRange = i == ORH or i == ORL
+                // Lines
+                kl.Line.set_x1(openingRange ? firstMarketBarIndex : kl.OldIndex)
+                kl.Line.set_x2(openingRange ? lastMarketBarIndex  : bar.Index[1])
+                kl.Line.set_color(oldColor)
+                kl.Line.set_style(line.style_dotted)
+                kl.Line.set_width(1)
+                kl.Line.set_extend(extend.none)
+                // Labels
+                kl.Label.set_x(openingRange ? lastMarketBarIndex : bar.Index[1])
+                kl.Label.set_color(none)
+                kl.Label.set_textcolor(oldColor)
+                kl.Label.set_style(label.style_label_lower_right)
+            else
+                kl.Line.delete()
+                kl.Label.delete()
+    else 
+        // Otherwise, delete the old stuff
+        orBox.delete()
+        for kl in keyLevels
+            kl.Line.delete()
+            kl.Label.delete()
+
+    // Create new opening range box for current sesison
+    orBox := box.new(na, na, na, na, xloc = xloc.bar_time)
+
+    // Create new levels for the current session
+    for [i, kl] in keyLevels
+        if kl.Show
+            x1 = i < TDVWAP ? kl.Index : bar.Index
+            kl.new_line(x1)
+            kl.new_label()
+            if i < AHH or (TDO <= i and i <= TDA)
+                kl.Line.delete()
+                kl.Label.delete()
+            if CUSTOM1 <= i and i <= CUSTOM2
+                if timeframe.isdwm
+                    kl.Line.set_x1(na)
+                else if (i == CUSTOM1 and c1Ext) or (i == CUSTOM2 and c2Ext)
+                    kl.Line.set_extend(extend.left)
+
+    // Reset bar indices…
+    for [i, kl] in keyLevels
+        // If key level will extend into the next session…
+        if (AHH <= i and i <= YDL) or i == TDO or i == YDO or i == YDC
+            kl.OldIndex := kl.Index
+        // If key level is recent…
+        else if i < TWO or LYA < i
+            kl.Index := bar.Index
+
+    // Reset daily levels
+    TD.set_high_low(tdHiLo or tdAvg)
+    YD.set_high_low(ydHiLo or ydAvg)
+    TDA.set_avg(tdAvg)
+    YDA.set_avg(ydAvg)
+
+
+
+// ----------------------------------------------- BAR BY BAR LOGIC ------------------------------------------------ //
+
+// @function Checks if a recent level should be managed.
+manageCriteria(i) =>
+    switch i
+        OR => orHiLo and marketOpen
+        NO => noHiLo and nearOpen
+        PM => pmHiLo and (premarket or (overnight and not onHiLo))
+        ON => onHiLo and overnight
+        TD => tdHiLo and mktSession
+        TDO => tdOpn and isFirstMinOf(TDO)
+        YDO => (ydOpn or ydAvg) and isFirstMinOf(YDO)
+        TDA => tdAvg
+        TDVWAP => tdVWAP
+        TDMA1 => tdMA1
+        TDMA2 => tdMA2
+        => false
+
+// Update recent levels
+TDO.manage_high_low(manageCriteria(TDO))
+YDO.set_open(manageCriteria(YDO))
+for i = TD to ON
+    i.manage_high_low(manageCriteria(i))
+
+// Update recent averages
+var avgs = array.from(TDA, TDVWAP, TDMA1, TDMA2)
+for i in avgs
+    i.manage_avg(manageCriteria(i))
+
+// Update distant levels
+for i = TWO to LYA
+    i.manage_dist_high_low()
+
+// Adjust lines and labels
+overlapped = map.new<float, string>()
+x1Adj = bar.Index - numOfBars(truncLen)
+x2Adj = bar.Index + numOfBars(fwdLen)
+var lastKeyLevelsIndex = keyLevels.size() - 1
+for [i, kl] in keyLevels
+    if kl.Show and not na(kl.Line)
+        kl.Line.set_x2(x2Adj)
+
+        if truncate
+            kl.Line.set_x1(x1Adj)
+
+            if i == OR
+                orBox.set_left(x1Adj)
+
+        if showLabel
+            if mergeLabels
+                price = math.round_to_mintick(math.round(kl.Price / mergeThreshold) * mergeThreshold)
+                overlapped.put(price, overlapped.get(price) + str.tostring(i) + " ")
+            else
+                kl.Label.set_x(x2Adj)
+
+// Merge labels with identical levels
+if showLabel and mergeLabels
+    nameArr = array.new_string()
+    toolArr = array.new_string()
+    pricArr = array.new_float()
+    for val in overlapped.values()
+        str = str.trim(val)
+        arr = str.split(str, " ")
+        i   = int(str.tonumber(arr.get(0)))
+        kl  = keyLevels.get(i)
+
+        // When more than one level has an identical rounded value…
+        if arr.size() > 1
+
+            // Get the names of each key level and delete its label
+            for idx in arr
+                lvl = keyLevels.get(int(str.tonumber(idx)))
+                nameArr.push(lvl.Name)
+                toolArr.push(lvl.ToolTip)
+                pricArr.push(math.round_to_mintick(lvl.Price))
+                lvl.Label.delete()
+
+            // Give one of the levels a new label with all the names
+            kl.new_label(nameArr, toolArr, pricArr)
+
+            // Clear arrays for next iteration
+            nameArr.clear(), toolArr.clear(), pricArr.clear()
+
+        // Othewise give the unique value a new label when the line is displayed
+        else if not na(kl.Line)
+            kl.Label.delete()
+            kl.new_label()
+
+
+
+// ----------------------------------------- PRICE & LEVEL PROXIMITY LOGIC ----------------------------------------- //
+
+// @function Calculates the ATR around a level.
+getLevelRange(kl) =>
+    lvlRng   = kl.Price * (prxRng / 100)
+    lvlRngHi = kl.Price + lvlRng
+    lvlRngLo = kl.Price - lvlRng
+    [kl.Price, lvlRng, lvlRngHi, lvlRngLo]
+
+// @function Checks if price is (or was) proximal to a level.
+proximal(kl) =>
+    result = false
+    [lvl, lvlRng, lvlRngHi, lvlRngLo] = getLevelRange(kl)
+    result :=
+     (bar.High < lvlRngHi and bar.High > lvlRngLo) or
+     (bar.Low  < lvlRngHi and bar.Low  > lvlRngLo) or
+     (bar.High > lvlRngHi and bar.Low  < lvlRngLo) or
+     (bar.High[1] < lvlRngHi and bar.High[1] > lvlRngLo) or
+     (bar.Low[1]  < lvlRngHi and bar.Low[1]  > lvlRngLo) or
+     (bar.High[1] > lvlRngHi and bar.Low[1]  < lvlRngLo)
+    
+// If proximity settings are enabled…
+if (truncate and extend) or showProx or atrZone
+    // Set proximity ATR value
+    prxAtr = ta.atr(5) / 2
+    // Check if bars are proximal to key levels
+    for [i, kl] in keyLevels
+        if kl.Show
+            if proximal(kl)
+                if truncate and extend
+                    // Override truncated line length
+                    x1 = i == ORH or i == ORL ? firstMarketBarIndex
+                     : i == YDH or i == YDL ? kl.OldIndex
+                     : kl.Index
+                    kl.Line.set_x1(x1)
+                if showProx
+                    // Show level and label
+                    kl.Line.set_color(kl.Color)
+                    labelColor = i < ONH and overnight ? none : lblClr
+                    textColor = i < ONH and overnight ? none : txtClr
+                    if showLabel
+                        kl.Label.delete()
+                        kl.new_label()
+                if atrZone
+                    // Show average true range zone around level
+                    [lvl, lvlRng, lvlRngHi, lvlRngLo] = getLevelRange(kl)
+                    boxBgClr = i < ONH and overnight ? none : color.new(kl.Color, 90)
+                    boxBorderClr = i < ONH and overnight ? none : color.new(kl.Color, 80)
+                    kl.Range.delete()
+                    kl.Range := box.new(kl.Line.get_x1(), lvl + prxAtr, kl.Line.get_x2(), lvl - prxAtr, boxBorderClr, 1, bgcolor = boxBgClr, xloc = xloc.bar_time)
+            else
+                if truncate and extend
+                    // Re-truncate lines
+                    kl.Line.set_x1(bar.Index - numOfBars(truncLen))
+                if showProx
+                    // Hide level and label
+                    orBox.delete()
+                    kl.Line.set_color(none)
+                    if showLabel
+                        kl.Label.delete()
+                if atrZone
+                    // Hide ATR zone
+                    kl.Range.delete()
+                    kl.Range := box.new(na, na, na, na, xloc = xloc.bar_time)

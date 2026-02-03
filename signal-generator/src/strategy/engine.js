@@ -1,0 +1,793 @@
+// Strategy engine that coordinates strategy evaluation on candle closes
+import { createLogger, messageBus, CHANNELS } from '../../../shared/index.js';
+import { CandleBuffer } from '../utils/candle-buffer.js';
+import { createStrategy, getStrategyConstant, requiresIVData, supportsBreakevenStop } from './strategy-factory.js';
+import config from '../utils/config.js';
+
+const logger = createLogger('strategy-engine');
+
+class StrategyEngine {
+  constructor(gexCalculator, redisPublisher) {
+    this.gexCalculator = gexCalculator;
+    this.redisPublisher = redisPublisher;
+
+    // Strategy selection from config
+    this.strategyName = config.ACTIVE_STRATEGY;
+    this.strategyConstant = getStrategyConstant(this.strategyName);
+    this.requiresIV = requiresIVData(this.strategyName);
+    this.supportsBreakeven = supportsBreakevenStop(this.strategyName);
+
+    // Initialize strategy using factory
+    this.strategy = createStrategy(this.strategyName, config);
+
+    // IV Skew Calculator reference (set by main service if needed)
+    this.ivSkewCalculator = null;
+
+    logger.info(`📊 Active strategy: ${this.strategyName} (${this.strategyConstant})`);
+    logger.info(`   Requires IV data: ${this.requiresIV}, Supports breakeven: ${this.supportsBreakeven}`);
+
+    // Initialize candle buffer for NQ 1-minute data (scalping)
+    this.candleBuffer = new CandleBuffer({
+      symbol: 'NQ',
+      timeframe: '1',
+      maxSize: 100
+    });
+
+    this.currentLtLevels = null;
+    this.enabled = config.STRATEGY_ENABLED;
+    this.inSession = false;
+    this.sessionStart = config.SESSION_START_HOUR;
+    this.sessionEnd = config.SESSION_END_HOUR;
+    this.prevCandle = null;
+
+    // Pending order tracking for limit order timeout
+    // Map: signalId -> { symbol, side, price, candleCount, placedAt, strategy }
+    this.pendingOrders = new Map();
+    this.orderTimeoutCandles = this.strategy.params?.limitOrderTimeout || 3;
+
+    // Position state tracking
+    this.inPosition = false;
+    this.currentPosition = null; // { symbol, side, entryPrice, entryTime, strategy }
+
+    // GF (Zero Gamma) Early Exit configuration
+    // Matches backtest behavior: check every 15 minutes, trigger breakeven after 2+ consecutive adverse moves
+    this.gfEarlyExitConfig = {
+      enabled: config.GF_EARLY_EXIT_ENABLED ?? false,
+      breakevenThreshold: config.GF_BREAKEVEN_THRESHOLD ?? 2,  // Consecutive adverse moves to trigger breakeven
+      checkIntervalMs: 15 * 60 * 1000  // Check every 15 minutes (matches backtest GEX data resolution)
+    };
+
+    // GF tracking state (initialized when position opens)
+    this.gfTrackingState = null;
+
+    // Subscribe to order and position events
+    this.subscribeToOrderEvents();
+    this.subscribeToPositionEvents();
+
+    if (this.gfEarlyExitConfig.enabled) {
+      logger.info(`🛡️ GF Early Exit enabled: breakeven after ${this.gfEarlyExitConfig.breakevenThreshold} consecutive adverse moves (15-min intervals)`);
+    }
+  }
+
+  /**
+   * Sync position state from Tradovate service on startup
+   * Prevents duplicate signals if service restarts while in a position
+   */
+  async syncPositionState() {
+    const maxRetries = 3;
+    const delayMs = 3000; // 3 seconds between retries
+
+    // Get account ID from config
+    const accountId = config.TRADOVATE_ACCOUNT_ID;
+    if (!accountId) {
+      logger.warn('No TRADOVATE_ACCOUNT_ID configured, skipping position sync');
+      return;
+    }
+
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        logger.info(`🔄 Syncing position state from Tradovate (attempt ${attempt}/${maxRetries})...`);
+
+        // Fetch positions from Tradovate service
+        const response = await fetch(`http://localhost:3011/positions/${accountId}`);
+        if (!response.ok) {
+          throw new Error(`Failed to fetch positions: ${response.status}`);
+        }
+
+        const positions = await response.json();
+
+        // Look for any open position
+        const openPosition = positions.find(p => p.netPos !== 0);
+
+        if (openPosition) {
+          this.inPosition = true;
+          this.currentPosition = {
+            symbol: openPosition.symbol || `Contract ${openPosition.contractId}`,
+            side: openPosition.netPos > 0 ? 'long' : 'short',
+            entryPrice: openPosition.netPrice || 0,
+            entryTime: openPosition.timestamp || new Date().toISOString(),
+            strategy: this.strategyConstant,
+            quantity: Math.abs(openPosition.netPos)
+          };
+
+          logger.info(`📈 Found existing position: ${this.currentPosition.side} ${this.currentPosition.symbol} @ ${this.currentPosition.entryPrice} (qty: ${this.currentPosition.quantity})`);
+        } else {
+          logger.info('✅ No open positions found - starting fresh');
+        }
+
+        return; // Success
+
+      } catch (error) {
+        logger.warn(`Position sync attempt ${attempt} failed: ${error.message}`);
+
+        if (attempt < maxRetries) {
+          await new Promise(resolve => setTimeout(resolve, delayMs));
+        } else {
+          logger.warn('⚠️ Continuing without position sync - may generate duplicate signals if position exists');
+        }
+      }
+    }
+  }
+
+  /**
+   * Subscribe to order events for tracking pending limit orders
+   */
+  subscribeToOrderEvents() {
+    // Track when our orders are placed
+    messageBus.subscribe(CHANNELS.ORDER_PLACED, (message) => {
+      this.handleOrderPlaced(message);
+    });
+
+    // Remove from tracking when filled (entry fill means we're now in position)
+    messageBus.subscribe(CHANNELS.ORDER_FILLED, (message) => {
+      this.handleOrderFilled(message);
+    });
+
+    // Remove from tracking when cancelled
+    messageBus.subscribe(CHANNELS.ORDER_CANCELLED, (message) => {
+      this.handleOrderCancelled(message);
+    });
+
+    logger.info('Subscribed to order events for limit order timeout tracking');
+  }
+
+  /**
+   * Subscribe to position events to track when we're in/out of a position
+   */
+  subscribeToPositionEvents() {
+    // Subscribe to POSITION_UPDATE - trade-orchestrator publishes all position changes here
+    messageBus.subscribe(CHANNELS.POSITION_UPDATE, (message) => {
+      this.handlePositionUpdate(message);
+    });
+
+    // Also subscribe to POSITION_CLOSED for explicit close events
+    messageBus.subscribe(CHANNELS.POSITION_CLOSED, (message) => {
+      this.handlePositionClosed(message);
+    });
+
+    logger.info('Subscribed to position events for state tracking');
+  }
+
+  /**
+   * Handle position update - detect opens and closes
+   */
+  handlePositionUpdate(message) {
+    // Check if this is a position close (netPos = 0 or source indicates closure)
+    if (message.netPos === 0 || message.source === 'position_closed') {
+      this.handlePositionClosed(message);
+      return;
+    }
+
+    // Otherwise it's a new or updated position
+    if (message.netPos !== 0) {
+      this.handlePositionOpened(message);
+    }
+  }
+
+  /**
+   * Handle position opened - mark as in position
+   */
+  handlePositionOpened(message) {
+    // Only track positions from our strategy
+    if (message.strategy !== this.strategyConstant) {
+      return;
+    }
+
+    this.inPosition = true;
+    this.currentPosition = {
+      symbol: message.symbol,
+      side: message.side || (message.action === 'Buy' ? 'long' : 'short'),
+      entryPrice: message.price || message.entryPrice,
+      entryTime: message.timestamp || new Date().toISOString(),
+      strategy: message.strategy,
+      orderStrategyId: message.orderStrategyId || message.order_strategy_id,
+      stopOrderId: message.stopOrderId || message.stop_order_id
+    };
+
+    logger.info(`📈 Position opened: ${this.currentPosition.side} ${this.currentPosition.symbol} @ ${this.currentPosition.entryPrice}`);
+
+    // Initialize GF tracking state for early exit monitoring
+    if (this.gfEarlyExitConfig.enabled) {
+      this.initializeGFTracking();
+    }
+  }
+
+  /**
+   * Handle position closed - reset state for next signal
+   */
+  handlePositionClosed(message) {
+    // Only track positions from our strategy
+    if (message.strategy !== this.strategyConstant && this.currentPosition?.strategy !== this.strategyConstant) {
+      return;
+    }
+
+    const exitInfo = message.exitPrice ? ` @ ${message.exitPrice}` : '';
+    const pnlInfo = message.pnl ? ` (P&L: ${message.pnl > 0 ? '+' : ''}${message.pnl})` : '';
+    const reasonInfo = message.reason ? ` - ${message.reason}` : '';
+
+    logger.info(`📉 Position closed${exitInfo}${pnlInfo}${reasonInfo}`);
+
+    // Reset position state
+    this.inPosition = false;
+    this.currentPosition = null;
+
+    // Reset GF tracking state
+    this.gfTrackingState = null;
+
+    // Reset strategy cooldown so we're immediately ready for next signal
+    this.strategy.lastSignalTime = 0;
+
+    logger.info('✅ Strategy reset and ready for next signal');
+  }
+
+  /**
+   * Initialize GF tracking state when a position is opened
+   * Records the entry GF level for comparison during the trade
+   */
+  initializeGFTracking() {
+    const gexLevels = this.gexCalculator.getCurrentLevels();
+    if (!gexLevels || gexLevels.gammaFlip == null) {
+      logger.warn('Cannot initialize GF tracking - no GEX levels available');
+      return;
+    }
+
+    // Calculate current 15-minute period (aligned to clock time)
+    // This ensures we evaluate on GEX update boundaries, not relative to position entry
+    const now = Date.now();
+    const periodMs = this.gfEarlyExitConfig.checkIntervalMs;
+    const currentPeriod = Math.floor(now / periodMs);
+
+    this.gfTrackingState = {
+      entryGF: gexLevels.gammaFlip,
+      lastGF: gexLevels.gammaFlip,
+      lastCheckPeriod: currentPeriod,  // Track which 15-min period was last evaluated
+      consecutiveAdverse: 0,
+      breakevenTriggered: false
+    };
+
+    logger.info(`🛡️ GF tracking initialized: entry GF = ${gexLevels.gammaFlip.toFixed(2)}, period = ${currentPeriod}`);
+  }
+
+  /**
+   * Check for adverse GF movement and trigger breakeven if threshold reached
+   * Uses period-based checking aligned to 15-minute clock boundaries (matches backtest behavior)
+   *
+   * Example: If GEX updates at :00, :15, :30, :45 and position opens at 10:14:30:
+   * - Entry period = 40 (10:00-10:14:59)
+   * - At 10:15:00, current period = 41, so we evaluate
+   * - This ensures we check on each new GEX data period, not relative to entry time
+   */
+  checkGFEarlyExit() {
+    // Skip if not enabled or not in position
+    if (!this.gfEarlyExitConfig.enabled || !this.inPosition || !this.gfTrackingState) {
+      return;
+    }
+
+    // Calculate current 15-minute period (aligned to clock time)
+    const now = Date.now();
+    const periodMs = this.gfEarlyExitConfig.checkIntervalMs;
+    const currentPeriod = Math.floor(now / periodMs);
+
+    // Only evaluate once per 15-minute period
+    if (currentPeriod <= this.gfTrackingState.lastCheckPeriod) {
+      return;
+    }
+
+    // Get current GF level
+    const gexLevels = this.gexCalculator.getCurrentLevels();
+    if (!gexLevels || gexLevels.gammaFlip == null) {
+      logger.debug('No GEX levels available for GF early exit check');
+      return;
+    }
+
+    const currentGF = gexLevels.gammaFlip;
+    const gfDelta = currentGF - this.gfTrackingState.lastGF;
+    const isLong = this.currentPosition.side === 'long' || this.currentPosition.side === 'buy';
+
+    // Determine if movement is adverse to position
+    const isAdverse = isLong ? gfDelta < 0 : gfDelta > 0;
+
+    // Update tracking state - mark this period as checked
+    this.gfTrackingState.lastCheckPeriod = currentPeriod;
+
+    // Only count significant moves (filter noise)
+    if (isAdverse && Math.abs(gfDelta) > 0.5) {
+      this.gfTrackingState.consecutiveAdverse++;
+      logger.info(`📉 [GF-EXIT] Adverse move #${this.gfTrackingState.consecutiveAdverse}: GF ${this.gfTrackingState.lastGF.toFixed(2)} → ${currentGF.toFixed(2)} (Δ${gfDelta.toFixed(2)})`);
+    } else if (!isAdverse && Math.abs(gfDelta) > 0.5) {
+      // Reset consecutive count on favorable move
+      if (this.gfTrackingState.consecutiveAdverse > 0) {
+        logger.info(`📈 [GF-EXIT] Favorable move, resetting consecutive count (was ${this.gfTrackingState.consecutiveAdverse})`);
+      }
+      this.gfTrackingState.consecutiveAdverse = 0;
+    }
+
+    this.gfTrackingState.lastGF = currentGF;
+
+    // Check if breakeven threshold reached
+    if (this.gfTrackingState.consecutiveAdverse >= this.gfEarlyExitConfig.breakevenThreshold &&
+        !this.gfTrackingState.breakevenTriggered) {
+      logger.info(`🛡️ [GF-EXIT] Breakeven threshold reached (${this.gfTrackingState.consecutiveAdverse} consecutive adverse moves)`);
+      this.gfTrackingState.breakevenTriggered = true;
+      this.sendBreakevenStopModification();
+    }
+  }
+
+  /**
+   * Send modify_stop signal to move stop to breakeven (entry price)
+   */
+  async sendBreakevenStopModification() {
+    if (!this.currentPosition) {
+      logger.warn('Cannot send breakeven modification - no current position');
+      return;
+    }
+
+    const modifyStopSignal = {
+      webhook_type: 'trade_signal',
+      action: 'modify_stop',
+      strategy: this.currentPosition.strategy,
+      symbol: this.currentPosition.symbol,
+      new_stop_price: this.currentPosition.entryPrice,
+      reason: 'gf_adverse_breakeven',
+      order_strategy_id: this.currentPosition.orderStrategyId,
+      order_id: this.currentPosition.stopOrderId,
+      metadata: {
+        entryPrice: this.currentPosition.entryPrice,
+        consecutiveAdverse: this.gfTrackingState.consecutiveAdverse,
+        entryGF: this.gfTrackingState.entryGF,
+        currentGF: this.gfTrackingState.lastGF
+      },
+      timestamp: new Date().toISOString()
+    };
+
+    try {
+      await messageBus.publish(CHANNELS.TRADE_SIGNAL, modifyStopSignal);
+      logger.info(`🛡️ [GF-EXIT] Breakeven stop modification sent: ${this.currentPosition.symbol} stop → ${this.currentPosition.entryPrice}`);
+    } catch (error) {
+      logger.error('Failed to send breakeven stop modification:', error);
+    }
+  }
+
+  /**
+   * Handle order placed event - start tracking for timeout
+   */
+  handleOrderPlaced(message) {
+    // Only track orders from our strategy
+    if (message.strategy !== this.strategyConstant) {
+      return;
+    }
+
+    const orderId = message.orderId || message.strategyId;
+    if (!orderId) {
+      logger.warn('Order placed without orderId, cannot track for timeout');
+      return;
+    }
+
+    this.pendingOrders.set(orderId, {
+      orderId: orderId,
+      symbol: message.symbol,
+      side: message.action === 'Buy' ? 'buy' : 'sell',
+      price: message.price,
+      candleCount: 0,
+      placedAt: new Date().toISOString(),
+      strategy: message.strategy
+    });
+
+    logger.info(`📋 Tracking pending order ${orderId} for timeout (${this.orderTimeoutCandles} candles)`);
+  }
+
+  /**
+   * Handle order filled event - remove from tracking
+   */
+  handleOrderFilled(message) {
+    const orderId = message.orderId || message.strategyId;
+    if (orderId && this.pendingOrders.has(orderId)) {
+      this.pendingOrders.delete(orderId);
+      logger.info(`✅ Order ${orderId} filled, removed from timeout tracking`);
+    }
+  }
+
+  /**
+   * Handle order cancelled event - remove from tracking
+   */
+  handleOrderCancelled(message) {
+    const orderId = message.orderId || message.strategyId;
+    if (orderId && this.pendingOrders.has(orderId)) {
+      this.pendingOrders.delete(orderId);
+      logger.info(`🚫 Order ${orderId} cancelled, removed from timeout tracking`);
+    }
+  }
+
+  /**
+   * Check for timed out orders and send cancel signals
+   * Called after each candle close
+   */
+  async checkOrderTimeouts() {
+    if (this.pendingOrders.size === 0) {
+      return;
+    }
+
+    const ordersToCancel = [];
+
+    // Increment candle count and check for timeouts
+    for (const [orderId, order] of this.pendingOrders) {
+      order.candleCount++;
+      logger.debug(`Order ${orderId} candle count: ${order.candleCount}/${this.orderTimeoutCandles}`);
+
+      if (order.candleCount >= this.orderTimeoutCandles) {
+        ordersToCancel.push(order);
+      }
+    }
+
+    // Send cancel signals for timed out orders
+    for (const order of ordersToCancel) {
+      logger.info(`⏰ Order ${order.orderId} timed out after ${order.candleCount} candles, sending cancel_limit`);
+
+      const cancelSignal = {
+        webhook_type: 'trade_signal',
+        action: 'cancel_limit',
+        symbol: order.symbol,
+        side: order.side,
+        strategy: order.strategy,
+        reason: `Limit order timeout after ${order.candleCount} candles (${order.candleCount} minutes)`,
+        original_price: order.price,
+        placed_at: order.placedAt,
+        timestamp: new Date().toISOString()
+      };
+
+      await this.publishSignal(cancelSignal);
+
+      // Remove from tracking (will also be removed when ORDER_CANCELLED event comes back)
+      this.pendingOrders.delete(order.orderId);
+    }
+  }
+
+  setLtLevels(ltLevels) {
+    this.currentLtLevels = ltLevels;
+    logger.debug(`LT levels updated: ${JSON.stringify(ltLevels)}`);
+  }
+
+  setGexCalculator(gexCalculator) {
+    this.gexCalculator = gexCalculator;
+    logger.info('GEX calculator updated in strategy engine');
+  }
+
+  setIVSkewCalculator(ivSkewCalculator) {
+    this.ivSkewCalculator = ivSkewCalculator;
+    logger.info('IV Skew calculator set in strategy engine');
+  }
+
+  /**
+   * Process incoming candle data from TradingView
+   * @param {object} candleData - Raw candle data with TradingView timestamp
+   * @returns {boolean} True if new candle was closed
+   */
+  processCandle(candleData) {
+    // Add candle to buffer and check if it's a new closed candle
+    return this.candleBuffer.addCandle(candleData);
+  }
+
+  isInTradingSession() {
+    // Check if we're in the trading session (6PM - 4PM EST)
+    const now = new Date();
+    const hour = now.getHours();
+
+    // Session runs from 18:00 to 16:00 next day
+    if (this.sessionStart > this.sessionEnd) {
+      // Session crosses midnight
+      return hour >= this.sessionStart || hour < this.sessionEnd;
+    } else {
+      // Session within same day
+      return hour >= this.sessionStart && hour < this.sessionEnd;
+    }
+  }
+
+  async evaluateCandle(candle) {
+    if (!this.enabled) {
+      logger.debug('Strategy evaluation disabled');
+      return;
+    }
+
+    // Check if we're in trading session
+    if (!this.isInTradingSession()) {
+      logger.debug('Outside trading session, skipping evaluation');
+      return;
+    }
+
+    // Skip if already in a position - wait for position to close
+    if (this.inPosition) {
+      logger.info(`⏸️ Skipping evaluation - already in position (${this.currentPosition?.side} ${this.currentPosition?.symbol})`);
+      return;
+    }
+
+    // Only evaluate NQ candles
+    if (!candle.symbol.includes('NQ')) {
+      logger.debug(`Skipping non-NQ symbol: ${candle.symbol}`);
+      return;
+    }
+
+    try {
+      // Get current GEX levels
+      const gexLevels = this.gexCalculator.getCurrentLevels();
+      if (!gexLevels) {
+        logger.warn('No GEX levels available, skipping evaluation');
+        return;
+      }
+
+      // Debug: Log candle and configured trading levels
+      const tradeLevels = this.strategy.params.tradeLevels || [1];
+      const levelInfo = tradeLevels.map(level => {
+        const idx = level - 1;  // tradeLevels are 1-indexed, arrays are 0-indexed
+        const sLevel = gexLevels.support?.[idx];
+        const rLevel = gexLevels.resistance?.[idx];
+        const sDist = sLevel ? Math.abs(candle.close - sLevel).toFixed(2) : 'N/A';
+        const rDist = rLevel ? Math.abs(candle.close - rLevel).toFixed(2) : 'N/A';
+        return `S${level}=${sLevel}(${sDist}) R${level}=${rLevel}(${rDist})`;
+      }).join(', ');
+
+      // Prepare market data for strategy
+      const marketData = {
+        gexLevels: gexLevels
+      };
+
+      // Add IV data for strategies that require it
+      if (this.requiresIV && this.ivSkewCalculator) {
+        const ivData = this.ivSkewCalculator.getCurrentIVSkew();
+        if (ivData) {
+          // Set live IV data on strategy for getIVAtTime() method
+          if (typeof this.strategy.setLiveIVData === 'function') {
+            this.strategy.setLiveIVData(ivData);
+          }
+          marketData.ivData = ivData;
+          logger.info(`📊 Evaluating: close=${candle.close}, ${levelInfo}, IV=${(ivData.iv * 100).toFixed(2)}%, Skew=${(ivData.skew * 100).toFixed(3)}%`);
+        } else {
+          logger.debug(`📊 Evaluating: close=${candle.close}, ${levelInfo} (no IV data)`);
+        }
+      } else {
+        logger.info(`📊 Evaluating: close=${candle.close}, ${levelInfo}, vol=${candle.volume}`);
+      }
+
+      // Generate signal using shared strategy logic
+      const signal = this.strategy.evaluateSignal(
+        candle,
+        this.prevCandle,
+        marketData
+      );
+
+      // Update previous candle for next evaluation
+      this.prevCandle = candle;
+
+      if (signal) {
+        // Add webhook format fields for compatibility
+        signal.webhook_type = 'trade_signal';
+
+        // Add breakeven parameters if strategy supports it and is configured
+        if (this.supportsBreakeven && this.strategy.params.breakevenStop) {
+          signal.breakeven_trigger = this.strategy.params.breakevenTrigger;
+          signal.breakeven_offset = this.strategy.params.breakevenOffset;
+        }
+
+        await this.publishSignal(signal);
+      }
+
+      // Check for timed out limit orders after each candle close
+      await this.checkOrderTimeouts();
+
+    } catch (error) {
+      logger.error('Error evaluating candle:', error);
+    }
+  }
+
+  async publishSignal(signal) {
+    try {
+      // Publish trade signal via message bus
+      await messageBus.publish(CHANNELS.TRADE_SIGNAL, signal);
+      logger.info(`Published trade signal: ${JSON.stringify(signal)}`);
+
+      // Also publish to monitoring service
+      await messageBus.publish(CHANNELS.SERVICE_HEALTH, {
+        service: 'signal-generator',
+        event: 'signal_generated',
+        signal: signal,
+        timestamp: new Date().toISOString()
+      });
+
+    } catch (error) {
+      logger.error('Failed to publish signal:', error);
+    }
+  }
+
+  resetStrategy() {
+    this.strategy.reset();
+    this.prevCandle = null;
+    this.candleBuffer.clear();
+    this.pendingOrders.clear();
+    // Note: Do NOT reset position state here - it's managed by position events and startup sync
+    // this.inPosition and this.currentPosition should persist across session resets
+    this.gfTrackingState = null;
+    logger.info('Strategy engine reset for new session');
+  }
+
+  /**
+   * Get candle buffer statistics
+   * @returns {object} Buffer statistics
+   */
+  getCandleBufferStats() {
+    return this.candleBuffer.getStats();
+  }
+
+  enable() {
+    this.enabled = true;
+    logger.info('Strategy engine enabled');
+  }
+
+  disable() {
+    this.enabled = false;
+    logger.info('Strategy engine disabled');
+  }
+
+  async publishStrategyStatus() {
+    try {
+      const gexLevels = this.gexCalculator.getCurrentLevels();
+      const now = new Date();
+
+      // Get IV data if available
+      const ivData = this.ivSkewCalculator?.getCurrentIVSkew() || null;
+
+      const status = {
+        strategy: {
+          name: this.strategy.getName(),
+          type: this.strategyName,
+          constant: this.strategyConstant,
+          enabled: this.enabled,
+          requires_iv: this.requiresIV,
+          supports_breakeven: this.supportsBreakeven,
+          session: {
+            in_session: this.inSession,
+            current_hour: now.getHours(),
+            session_hours: `${this.sessionStart}:00 - ${this.sessionEnd}:00`
+          },
+          cooldown: {
+            in_cooldown: !this.strategy.checkCooldown(now.getTime(), this.strategy.params.signalCooldownMs),
+            formatted: this.strategy.checkCooldown(now.getTime(), this.strategy.params.signalCooldownMs) ? "Ready" : "In cooldown",
+            seconds_remaining: Math.max(0, Math.ceil((this.strategy.lastSignalTime + this.strategy.params.signalCooldownMs - now.getTime()) / 1000))
+          }
+        },
+        iv_data: ivData ? {
+          symbol: ivData.symbol,
+          iv: ivData.iv,
+          skew: ivData.skew,
+          call_iv: ivData.callIV,
+          put_iv: ivData.putIV,
+          signal: ivData.signal,
+          atm_strike: ivData.atmStrike,
+          timestamp: ivData.timestamp
+        } : null,
+        gex_levels: gexLevels ? {
+          put_wall: gexLevels.putWall,
+          call_wall: gexLevels.callWall,
+          support: gexLevels.support || [],
+          resistance: gexLevels.resistance || [],
+          regime: gexLevels.regime,
+          total_gex: gexLevels.totalGex
+        } : null,
+        candle_buffer: {
+          count: this.candleBuffer.getStats().count,
+          initialized: this.candleBuffer.getStats().initialized,
+          last_candle_time: this.candleBuffer.getStats().lastCandleTime
+        },
+        pending_orders: {
+          count: this.pendingOrders.size,
+          timeout_candles: this.orderTimeoutCandles,
+          orders: Array.from(this.pendingOrders.values()).map(o => ({
+            orderId: o.orderId,
+            side: o.side,
+            price: o.price,
+            candleCount: o.candleCount,
+            placedAt: o.placedAt
+          }))
+        },
+        position: {
+          in_position: this.inPosition,
+          current: this.currentPosition ? {
+            symbol: this.currentPosition.symbol,
+            side: this.currentPosition.side,
+            entry_price: this.currentPosition.entryPrice,
+            entry_time: this.currentPosition.entryTime
+          } : null
+        },
+        gf_early_exit: {
+          enabled: this.gfEarlyExitConfig.enabled,
+          breakeven_threshold: this.gfEarlyExitConfig.breakevenThreshold,
+          check_interval_minutes: this.gfEarlyExitConfig.checkIntervalMs / 60000,
+          tracking_active: !!this.gfTrackingState,
+          state: this.gfTrackingState ? {
+            entry_gf: this.gfTrackingState.entryGF,
+            current_gf: this.gfTrackingState.lastGF,
+            consecutive_adverse: this.gfTrackingState.consecutiveAdverse,
+            breakeven_triggered: this.gfTrackingState.breakevenTriggered,
+            last_check_period: this.gfTrackingState.lastCheckPeriod,
+            // Convert period back to time for readability
+            last_check_time: new Date(this.gfTrackingState.lastCheckPeriod * this.gfEarlyExitConfig.checkIntervalMs).toISOString()
+          } : null
+        },
+        evaluation_readiness: {
+          ready: this.enabled && this.inSession && !!gexLevels && !this.inPosition,
+          conditions_met: [],
+          blockers: []
+        },
+        timestamp: now.toISOString()
+      };
+
+      // Add condition details
+      if (this.enabled) status.evaluation_readiness.conditions_met.push("Strategy enabled");
+      else status.evaluation_readiness.blockers.push("Strategy disabled");
+
+      if (this.inSession) status.evaluation_readiness.conditions_met.push("In trading session");
+      else status.evaluation_readiness.blockers.push("Outside trading session");
+
+      if (gexLevels) status.evaluation_readiness.conditions_met.push("GEX levels available");
+      else status.evaluation_readiness.blockers.push("GEX levels unavailable");
+
+      await messageBus.publish(CHANNELS.STRATEGY_STATUS, status);
+      logger.debug('📈 Strategy status published');
+    } catch (error) {
+      logger.error('Failed to publish strategy status:', error);
+    }
+  }
+
+  async run() {
+    logger.info('Strategy engine started');
+
+    while (true) {
+      try {
+        // Check for session change
+        const inSessionNow = this.isInTradingSession();
+        if (inSessionNow !== this.inSession) {
+          this.inSession = inSessionNow;
+          if (inSessionNow) {
+            logger.info('Trading session started');
+            this.resetStrategy();
+          } else {
+            logger.info('Trading session ended');
+          }
+        }
+
+        // Publish strategy status
+        await this.publishStrategyStatus();
+
+        // Check GF early exit conditions (only evaluates every 15 minutes internally)
+        this.checkGFEarlyExit();
+
+        // Sleep and continue
+        await new Promise(resolve => setTimeout(resolve, 30000)); // Check every 30 seconds
+
+      } catch (error) {
+        logger.error('Error in strategy engine run loop:', error);
+        await new Promise(resolve => setTimeout(resolve, 5000));
+      }
+    }
+  }
+}
+
+export default StrategyEngine;

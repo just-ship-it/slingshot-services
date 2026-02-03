@@ -7,11 +7,10 @@ echo "🧹 Clearing logs for Slingshot Services..."
 
 # Define the services
 services=(
-    "market-data-service"
     "monitoring-service"
     "trade-orchestrator"
     "tradovate-service"
-    "webhook-gateway"
+    "signal-generator"
 )
 
 # Clear logs for each service

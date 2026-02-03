@@ -1,0 +1,243 @@
+// This Pine Script™ code is subject to the terms of the Mozilla Public License 2.0
+// https://mozilla.org/MPL/2.0/
+// © Slingshot Backtest Visualizer
+
+//@version=6
+indicator("ICT Trade Reconstructor", overlay=true, max_lines_count=20, max_boxes_count=5, max_labels_count=10)
+
+// ============================================================================
+// PASTE YOUR TRADE CSV HERE
+// ============================================================================
+// Format: side,entry_price,exit_price,entry_time,exit_time,ob_high,ob_low,ob_time,ob_type,choch_level,choch_time,mss_level,swing_high,swing_low,signal_type,stop_price
+// Times in EST as: YYYY-MM-DD HH:MM
+// stop_price is optional (16th field) - if omitted, uses OB boundary
+//
+// Example:
+// buy,25451,25525.75,2025-12-02 11:34,2025-12-02 11:55,25509,25492.25,2025-12-02 09:15,bullish,25333.5,2025-12-01 10:15,25508.75,25508.75,25471.25,W_PATTERN,25411
+// ============================================================================
+
+i_csv = input.text_area(
+     "buy,25451,25525.75,2025-12-02 11:34,2025-12-02 11:55,25509,25492.25,2025-12-02 09:15,bullish,25333.5,2025-12-01 10:15,25508.75,25508.75,25471.25,W_PATTERN",
+     "Paste Trade CSV", group="Trade Data")
+
+i_target_price = input.float(0, "Target Price (0 = hide)", group="Trade Data")
+
+// ============================================================================
+// DISPLAY OPTIONS
+// ============================================================================
+
+grp_display = "Display Options"
+i_show_ob = input.bool(true, "Show Order Block", group=grp_display)
+i_show_struct = input.bool(true, "Show Structure Levels", group=grp_display)
+i_show_swings = input.bool(true, "Show Swing High/Low", group=grp_display)
+i_extend_lines = input.bool(false, "Extend Lines Right", group=grp_display)
+i_line_width = input.int(2, "Line Width", minval=1, maxval=4, group=grp_display)
+
+// ============================================================================
+// COLORS
+// ============================================================================
+
+grp_colors = "Colors"
+c_entry = input.color(color.blue, "Entry", group=grp_colors)
+c_exit = input.color(color.purple, "Exit", group=grp_colors)
+c_stop = input.color(color.red, "Stop Loss", group=grp_colors)
+c_target = input.color(color.green, "Target", group=grp_colors)
+c_ob_bull = input.color(color.new(color.green, 70), "OB Bullish", group=grp_colors)
+c_ob_bear = input.color(color.new(color.red, 70), "OB Bearish", group=grp_colors)
+c_choch = input.color(color.orange, "CHoCH", group=grp_colors)
+c_mss = input.color(color.yellow, "MSS", group=grp_colors)
+c_swing = input.color(color.gray, "Swings", group=grp_colors)
+
+// ============================================================================
+// CSV PARSING FUNCTIONS
+// ============================================================================
+
+// Parse datetime string "YYYY-MM-DD HH:MM" to timestamp
+parse_datetime(dt_str) =>
+    // Split by space: ["YYYY-MM-DD", "HH:MM"]
+    parts = str.split(dt_str, " ")
+    date_part = array.get(parts, 0)
+    time_part = array.size(parts) > 1 ? array.get(parts, 1) : "00:00"
+
+    // Split date: ["YYYY", "MM", "DD"]
+    date_parts = str.split(date_part, "-")
+    year = int(str.tonumber(array.get(date_parts, 0)))
+    month = int(str.tonumber(array.get(date_parts, 1)))
+    day = int(str.tonumber(array.get(date_parts, 2)))
+
+    // Split time: ["HH", "MM"]
+    time_parts = str.split(time_part, ":")
+    hour = int(str.tonumber(array.get(time_parts, 0)))
+    minute = int(str.tonumber(array.get(time_parts, 1)))
+
+    timestamp("America/New_York", year, month, day, hour, minute, 0)
+
+// ============================================================================
+// PARSE CSV INPUT
+// ============================================================================
+
+var string trade_side = "long"
+var float entry_price = 0.0
+var float exit_price = 0.0
+var int entry_time = 0
+var int exit_time = 0
+var float ob_high = 0.0
+var float ob_low = 0.0
+var int ob_time = 0
+var string ob_type = "bullish"
+var float choch_level = 0.0
+var int choch_time = 0
+var float mss_level = 0.0
+var float swing_high = 0.0
+var float swing_low = 0.0
+var string signal_type = ""
+var float stop_price_input = 0.0  // Optional 16th field
+
+if barstate.isfirst
+    // Clean up input: remove newlines, extra spaces, and trim
+    clean_csv = str.replace_all(i_csv, "\n", "")
+    clean_csv := str.replace_all(clean_csv, "\r", "")
+    clean_csv := str.replace_all(clean_csv, "  ", " ")  // double space to single
+    clean_csv := str.trim(clean_csv)
+
+    fields = str.split(clean_csv, ",")
+
+    if array.size(fields) >= 15
+        trade_side := str.lower(str.trim(array.get(fields, 0)))
+        // Normalize "buy" to "long" and "sell" to "short"
+        if trade_side == "buy"
+            trade_side := "long"
+        if trade_side == "sell"
+            trade_side := "short"
+        entry_price := str.tonumber(str.trim(array.get(fields, 1)))
+        exit_price := str.tonumber(str.trim(array.get(fields, 2)))
+        entry_time := parse_datetime(str.trim(array.get(fields, 3)))
+        exit_time := parse_datetime(str.trim(array.get(fields, 4)))
+        ob_high := str.tonumber(str.trim(array.get(fields, 5)))
+        ob_low := str.tonumber(str.trim(array.get(fields, 6)))
+        ob_time := parse_datetime(str.trim(array.get(fields, 7)))
+        ob_type := str.trim(array.get(fields, 8))
+        choch_level := str.tonumber(str.trim(array.get(fields, 9)))
+        choch_time := parse_datetime(str.trim(array.get(fields, 10)))
+        mss_level := str.tonumber(str.trim(array.get(fields, 11)))
+        swing_high := str.tonumber(str.trim(array.get(fields, 12)))
+        swing_low := str.tonumber(str.trim(array.get(fields, 13)))
+        signal_type := str.trim(array.get(fields, 14))
+        // Optional 16th field: explicit stop price
+        if array.size(fields) >= 16
+            stop_price_input := str.tonumber(str.trim(array.get(fields, 15)))
+
+// Stop price - only use if explicitly provided (no inference)
+stop_price = stop_price_input
+ext = i_extend_lines ? extend.right : extend.none
+
+// ============================================================================
+// DRAWING LOGIC
+// ============================================================================
+
+if barstate.islast and entry_price > 0
+    // --- ENTRY LINE ---
+    line.new(entry_time, entry_price, exit_time, entry_price,
+             xloc=xloc.bar_time, color=c_entry, width=i_line_width, style=line.style_solid, extend=ext)
+    label.new(entry_time, entry_price,
+              "ENTRY " + str.tostring(entry_price, "#.##"),
+              xloc=xloc.bar_time, yloc=yloc.price, style=label.style_label_right, color=c_entry, textcolor=color.white, size=size.small)
+
+    // --- EXIT LINE ---
+    line.new(entry_time, exit_price, exit_time, exit_price,
+             xloc=xloc.bar_time, color=c_exit, width=i_line_width, style=line.style_solid, extend=ext)
+    label.new(exit_time, exit_price,
+              "EXIT " + str.tostring(exit_price, "#.##"),
+              xloc=xloc.bar_time, yloc=yloc.price, style=label.style_label_left, color=c_exit, textcolor=color.white, size=size.small)
+
+    // --- STOP LOSS LINE (only if explicitly provided) ---
+    if stop_price > 0
+        line.new(entry_time, stop_price, exit_time, stop_price,
+                 xloc=xloc.bar_time, color=c_stop, width=i_line_width, style=line.style_dashed, extend=ext)
+        label.new(exit_time, stop_price, "STOP " + str.tostring(stop_price, "#.##"),
+                  xloc=xloc.bar_time, yloc=yloc.price, style=label.style_label_left, color=c_stop, textcolor=color.white, size=size.tiny)
+
+    // --- TARGET LINE ---
+    if i_target_price != 0
+        line.new(entry_time, i_target_price, exit_time, i_target_price,
+                 xloc=xloc.bar_time, color=c_target, width=i_line_width, style=line.style_dashed, extend=ext)
+        label.new(exit_time, i_target_price, "TARGET " + str.tostring(i_target_price, "#.##"),
+                  xloc=xloc.bar_time, yloc=yloc.price, style=label.style_label_left, color=c_target, textcolor=color.white, size=size.tiny)
+
+    // --- ORDER BLOCK BOX ---
+    if i_show_ob and ob_high > 0
+        ob_color = ob_type == "bullish" ? c_ob_bull : c_ob_bear
+        ob_border = ob_type == "bullish" ? color.green : color.red
+        box.new(ob_time, ob_high, entry_time, ob_low,
+                xloc=xloc.bar_time, bgcolor=ob_color, border_color=ob_border, border_width=1)
+        label.new(ob_time, ob_high, "OB",
+                  xloc=xloc.bar_time, yloc=yloc.price, style=label.style_label_lower_right, color=ob_border, textcolor=color.white, size=size.tiny)
+
+    // --- STRUCTURE LEVELS ---
+    if i_show_struct and choch_level > 0
+        // CHoCH
+        line.new(choch_time, choch_level, entry_time, choch_level,
+                 xloc=xloc.bar_time, color=c_choch, width=1, style=line.style_dotted)
+        label.new(choch_time, choch_level, "CHoCH",
+                  xloc=xloc.bar_time, yloc=yloc.price, style=label.style_label_right, color=c_choch, textcolor=color.white, size=size.tiny)
+
+        // MSS (only if different from CHoCH)
+        if mss_level != choch_level and mss_level > 0
+            line.new(choch_time, mss_level, entry_time, mss_level,
+                     xloc=xloc.bar_time, color=c_mss, width=1, style=line.style_dotted)
+            label.new(choch_time, mss_level, "MSS",
+                      xloc=xloc.bar_time, yloc=yloc.price, style=label.style_label_right, color=c_mss, textcolor=color.white, size=size.tiny)
+
+    // --- SWING HIGH/LOW ---
+    if i_show_swings
+        if swing_high > 0
+            line.new(entry_time, swing_high, exit_time, swing_high,
+                     xloc=xloc.bar_time, color=c_swing, width=1, style=line.style_dotted)
+            label.new(exit_time, swing_high, "SwH",
+                      xloc=xloc.bar_time, yloc=yloc.price, style=label.style_label_left, color=c_swing, textcolor=color.white, size=size.tiny)
+
+        if swing_low > 0
+            line.new(entry_time, swing_low, exit_time, swing_low,
+                     xloc=xloc.bar_time, color=c_swing, width=1, style=line.style_dotted)
+            label.new(exit_time, swing_low, "SwL",
+                      xloc=xloc.bar_time, yloc=yloc.price, style=label.style_label_left, color=c_swing, textcolor=color.white, size=size.tiny)
+
+// ============================================================================
+// INFO TABLE
+// ============================================================================
+
+var table info = table.new(position.top_right, 2, 10, bgcolor=color.new(color.black, 80), border_width=1)
+
+if barstate.islast and entry_price > 0
+    pnl_points = trade_side == "long" ? (exit_price - entry_price) : (entry_price - exit_price)
+    result_color = pnl_points >= 0 ? color.green : color.red
+
+    table.cell(info, 0, 0, "Signal", text_color=color.white, text_size=size.small)
+    table.cell(info, 1, 0, signal_type, text_color=color.aqua, text_size=size.small)
+
+    table.cell(info, 0, 1, "Side", text_color=color.white, text_size=size.small)
+    table.cell(info, 1, 1, str.upper(trade_side), text_color=trade_side == "long" ? color.green : color.red, text_size=size.small)
+
+    table.cell(info, 0, 2, "Entry", text_color=color.white, text_size=size.small)
+    table.cell(info, 1, 2, str.tostring(entry_price, "#.##"), text_color=c_entry, text_size=size.small)
+
+    table.cell(info, 0, 3, "Exit", text_color=color.white, text_size=size.small)
+    table.cell(info, 1, 3, str.tostring(exit_price, "#.##"), text_color=c_exit, text_size=size.small)
+
+    table.cell(info, 0, 4, "P&L (pts)", text_color=color.white, text_size=size.small)
+    table.cell(info, 1, 4, str.tostring(pnl_points, "#.##"), text_color=result_color, text_size=size.small)
+
+    table.cell(info, 0, 5, "Stop", text_color=color.white, text_size=size.small)
+    table.cell(info, 1, 5, stop_price > 0 ? str.tostring(stop_price, "#.##") : "-", text_color=c_stop, text_size=size.small)
+
+    table.cell(info, 0, 6, "OB Range", text_color=color.white, text_size=size.small)
+    table.cell(info, 1, 6, str.tostring(ob_low, "#.##") + " - " + str.tostring(ob_high, "#.##"), text_color=color.gray, text_size=size.small)
+
+    table.cell(info, 0, 7, "OB Type", text_color=color.white, text_size=size.small)
+    table.cell(info, 1, 7, str.upper(ob_type), text_color=ob_type == "bullish" ? color.green : color.red, text_size=size.small)
+
+    table.cell(info, 0, 8, "CHoCH", text_color=color.white, text_size=size.small)
+    table.cell(info, 1, 8, str.tostring(choch_level, "#.##"), text_color=c_choch, text_size=size.small)
+
+    table.cell(info, 0, 9, "MSS", text_color=color.white, text_size=size.small)
+    table.cell(info, 1, 9, str.tostring(mss_level, "#.##"), text_color=c_mss, text_size=size.small)

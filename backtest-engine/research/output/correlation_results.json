@@ -1,0 +1,2709 @@
+{
+  "pearson": {
+    "price_return_15m__price_return_15m": {
+      "var1": "price_return_15m",
+      "var2": "price_return_15m",
+      "correlation": 1,
+      "pValue": 0,
+      "n": 5700
+    },
+    "price_return_15m__price_return_1h": {
+      "var1": "price_return_15m",
+      "var2": "price_return_1h",
+      "correlation": 0.5044534692171347,
+      "pValue": 0,
+      "n": 5700
+    },
+    "price_return_15m__price_range_15m": {
+      "var1": "price_return_15m",
+      "var2": "price_range_15m",
+      "correlation": 0.06428413110781607,
+      "pValue": 0.000002408730334343291,
+      "n": 5700
+    },
+    "price_return_15m__price_volatility_1h": {
+      "var1": "price_return_15m",
+      "var2": "price_volatility_1h",
+      "correlation": -0.07229906139571352,
+      "pValue": 9.189024700431538e-8,
+      "n": 5700
+    },
+    "price_return_15m__gex_dist_gamma_flip": {
+      "var1": "price_return_15m",
+      "var2": "gex_dist_gamma_flip",
+      "correlation": 0.24496269339730606,
+      "pValue": 8.634675260159354e-81,
+      "n": 5700
+    },
+    "price_return_15m__gex_dist_support_1": {
+      "var1": "price_return_15m",
+      "var2": "gex_dist_support_1",
+      "correlation": 0.3905812421870182,
+      "pValue": 9.183977730403687e-225,
+      "n": 5700
+    },
+    "price_return_15m__gex_dist_resistance_1": {
+      "var1": "price_return_15m",
+      "var2": "gex_dist_resistance_1",
+      "correlation": -0.41125300352915134,
+      "pValue": 6.4494635051500314e-254,
+      "n": 5700
+    },
+    "price_return_15m__gex_regime_encoded": {
+      "var1": "price_return_15m",
+      "var2": "gex_regime_encoded",
+      "correlation": 0.007690464250020185,
+      "pValue": 1,
+      "n": 5700
+    },
+    "price_return_15m__total_gex": {
+      "var1": "price_return_15m",
+      "var2": "total_gex",
+      "correlation": 0.003027204418535292,
+      "pValue": 1,
+      "n": 5700
+    },
+    "price_return_15m__iv": {
+      "var1": "price_return_15m",
+      "var2": "iv",
+      "correlation": 0.009032345928871307,
+      "pValue": 1,
+      "n": 5700
+    },
+    "price_return_15m__iv_skew": {
+      "var1": "price_return_15m",
+      "var2": "iv_skew",
+      "correlation": -0.2877982405719528,
+      "pValue": 1.539973234546751e-113,
+      "n": 5696
+    },
+    "price_return_15m__iv_change_15m": {
+      "var1": "price_return_15m",
+      "var2": "iv_change_15m",
+      "correlation": 0.006381064057819449,
+      "pValue": 1,
+      "n": 5625
+    },
+    "price_return_15m__iv_percentile_all": {
+      "var1": "price_return_15m",
+      "var2": "iv_percentile_all",
+      "correlation": 0.004957884403116004,
+      "pValue": 1,
+      "n": 5700
+    },
+    "price_return_15m__liq_sentiment_encoded": {
+      "var1": "price_return_15m",
+      "var2": "liq_sentiment_encoded",
+      "correlation": 0.08162697027629817,
+      "pValue": 1.2954133938182192e-9,
+      "n": 5700
+    },
+    "price_return_15m__liq_spacing_avg": {
+      "var1": "price_return_15m",
+      "var2": "liq_spacing_avg",
+      "correlation": 0.000991033881098052,
+      "pValue": 1,
+      "n": 5700
+    },
+    "price_return_15m__liq_momentum": {
+      "var1": "price_return_15m",
+      "var2": "liq_momentum",
+      "correlation": -0.1537511242163828,
+      "pValue": 1.4988722401966387e-31,
+      "n": 5700
+    },
+    "price_return_15m__liq_max_change": {
+      "var1": "price_return_15m",
+      "var2": "liq_max_change",
+      "correlation": 0.04525705371644475,
+      "pValue": 0.0013474940306239457,
+      "n": 5700
+    },
+    "price_return_15m__liq_dist_nearest": {
+      "var1": "price_return_15m",
+      "var2": "liq_dist_nearest",
+      "correlation": 0.13595876760424405,
+      "pValue": 7.684194054894134e-25,
+      "n": 5700
+    },
+    "price_return_1h__price_return_1h": {
+      "var1": "price_return_1h",
+      "var2": "price_return_1h",
+      "correlation": 1,
+      "pValue": 0,
+      "n": 5700
+    },
+    "price_return_1h__price_range_15m": {
+      "var1": "price_return_1h",
+      "var2": "price_range_15m",
+      "correlation": 0.03085517605482175,
+      "pValue": 0.04534039115024928,
+      "n": 5700
+    },
+    "price_return_1h__price_volatility_1h": {
+      "var1": "price_return_1h",
+      "var2": "price_volatility_1h",
+      "correlation": -0.01130026065044351,
+      "pValue": 1,
+      "n": 5700
+    },
+    "price_return_1h__gex_dist_gamma_flip": {
+      "var1": "price_return_1h",
+      "var2": "gex_dist_gamma_flip",
+      "correlation": 0.28146314967916075,
+      "pValue": 2.5299059810521446e-108,
+      "n": 5700
+    },
+    "price_return_1h__gex_dist_support_1": {
+      "var1": "price_return_1h",
+      "var2": "gex_dist_support_1",
+      "correlation": 0.31983745326461155,
+      "pValue": 6.341985995515881e-143,
+      "n": 5700
+    },
+    "price_return_1h__gex_dist_resistance_1": {
+      "var1": "price_return_1h",
+      "var2": "gex_dist_resistance_1",
+      "correlation": -0.3363030930398512,
+      "pValue": 9.728394088434707e-160,
+      "n": 5700
+    },
+    "price_return_1h__gex_regime_encoded": {
+      "var1": "price_return_1h",
+      "var2": "gex_regime_encoded",
+      "correlation": 0.09810285814013393,
+      "pValue": 2.0303650044853966e-13,
+      "n": 5700
+    },
+    "price_return_1h__total_gex": {
+      "var1": "price_return_1h",
+      "var2": "total_gex",
+      "correlation": 0.10390149137720882,
+      "pValue": 6.353401681533142e-15,
+      "n": 5700
+    },
+    "price_return_1h__iv": {
+      "var1": "price_return_1h",
+      "var2": "iv",
+      "correlation": -0.041693951404332005,
+      "pValue": 0.0035481273475995454,
+      "n": 5700
+    },
+    "price_return_1h__iv_skew": {
+      "var1": "price_return_1h",
+      "var2": "iv_skew",
+      "correlation": -0.22780199604965842,
+      "pValue": 1.909369883532576e-69,
+      "n": 5696
+    },
+    "price_return_1h__iv_change_15m": {
+      "var1": "price_return_1h",
+      "var2": "iv_change_15m",
+      "correlation": -0.04749372166505405,
+      "pValue": 0.0007770288403983689,
+      "n": 5625
+    },
+    "price_return_1h__iv_percentile_all": {
+      "var1": "price_return_1h",
+      "var2": "iv_percentile_all",
+      "correlation": -0.02955187071259075,
+      "pValue": 0.059270016535461496,
+      "n": 5700
+    },
+    "price_return_1h__liq_sentiment_encoded": {
+      "var1": "price_return_1h",
+      "var2": "liq_sentiment_encoded",
+      "correlation": 0.23279606770365494,
+      "pValue": 1.1203167779485686e-72,
+      "n": 5700
+    },
+    "price_return_1h__liq_spacing_avg": {
+      "var1": "price_return_1h",
+      "var2": "liq_spacing_avg",
+      "correlation": -0.024599438634870338,
+      "pValue": 0.15306134678307715,
+      "n": 5700
+    },
+    "price_return_1h__liq_momentum": {
+      "var1": "price_return_1h",
+      "var2": "liq_momentum",
+      "correlation": -0.030853400738696923,
+      "pValue": 0.04535718394024994,
+      "n": 5700
+    },
+    "price_return_1h__liq_max_change": {
+      "var1": "price_return_1h",
+      "var2": "liq_max_change",
+      "correlation": 0.03967272819476819,
+      "pValue": 0.005967316914363409,
+      "n": 5700
+    },
+    "price_return_1h__liq_dist_nearest": {
+      "var1": "price_return_1h",
+      "var2": "liq_dist_nearest",
+      "correlation": 0.23849056944522073,
+      "pValue": 2.06832131749051e-76,
+      "n": 5700
+    },
+    "price_range_15m__price_range_15m": {
+      "var1": "price_range_15m",
+      "var2": "price_range_15m",
+      "correlation": 1,
+      "pValue": 0,
+      "n": 5700
+    },
+    "price_range_15m__price_volatility_1h": {
+      "var1": "price_range_15m",
+      "var2": "price_volatility_1h",
+      "correlation": 0.37881951165713024,
+      "pValue": 2.5407764296317215e-209,
+      "n": 5700
+    },
+    "price_range_15m__gex_dist_gamma_flip": {
+      "var1": "price_range_15m",
+      "var2": "gex_dist_gamma_flip",
+      "correlation": -0.17416678871390778,
+      "pValue": 2.348707048231856e-40,
+      "n": 5700
+    },
+    "price_range_15m__gex_dist_support_1": {
+      "var1": "price_range_15m",
+      "var2": "gex_dist_support_1",
+      "correlation": 0.022327433908640556,
+      "pValue": 0.2285808632633371,
+      "n": 5700
+    },
+    "price_range_15m__gex_dist_resistance_1": {
+      "var1": "price_range_15m",
+      "var2": "gex_dist_resistance_1",
+      "correlation": 0.05227797570756091,
+      "pValue": 0.0001642066222913793,
+      "n": 5700
+    },
+    "price_range_15m__gex_regime_encoded": {
+      "var1": "price_range_15m",
+      "var2": "gex_regime_encoded",
+      "correlation": -0.25929149011892816,
+      "pValue": 5.172478150324868e-91,
+      "n": 5700
+    },
+    "price_range_15m__total_gex": {
+      "var1": "price_range_15m",
+      "var2": "total_gex",
+      "correlation": -0.2534135686904165,
+      "pValue": 9.913965826223149e-87,
+      "n": 5700
+    },
+    "price_range_15m__iv": {
+      "var1": "price_range_15m",
+      "var2": "iv",
+      "correlation": 0.22051394606337463,
+      "pValue": 5.370138281003653e-65,
+      "n": 5700
+    },
+    "price_range_15m__iv_skew": {
+      "var1": "price_range_15m",
+      "var2": "iv_skew",
+      "correlation": -0.04503466645728296,
+      "pValue": 0.001440570622856831,
+      "n": 5696
+    },
+    "price_range_15m__iv_change_15m": {
+      "var1": "price_range_15m",
+      "var2": "iv_change_15m",
+      "correlation": 0.02183779112952613,
+      "pValue": 0.254744760059715,
+      "n": 5625
+    },
+    "price_range_15m__iv_percentile_all": {
+      "var1": "price_range_15m",
+      "var2": "iv_percentile_all",
+      "correlation": 0.24676681746708576,
+      "pValue": 4.891019021993997e-82,
+      "n": 5700
+    },
+    "price_range_15m__liq_sentiment_encoded": {
+      "var1": "price_range_15m",
+      "var2": "liq_sentiment_encoded",
+      "correlation": -0.10521217259702942,
+      "pValue": 2.8238482982631415e-15,
+      "n": 5700
+    },
+    "price_range_15m__liq_spacing_avg": {
+      "var1": "price_range_15m",
+      "var2": "liq_spacing_avg",
+      "correlation": 0.15575287205712068,
+      "pValue": 2.3193056276805006e-32,
+      "n": 5700
+    },
+    "price_range_15m__liq_momentum": {
+      "var1": "price_range_15m",
+      "var2": "liq_momentum",
+      "correlation": -0.04227429095896452,
+      "pValue": 0.0030442352220701467,
+      "n": 5700
+    },
+    "price_range_15m__liq_max_change": {
+      "var1": "price_range_15m",
+      "var2": "liq_max_change",
+      "correlation": 0.22312989369632727,
+      "pValue": 1.3682591880672545e-66,
+      "n": 5700
+    },
+    "price_range_15m__liq_dist_nearest": {
+      "var1": "price_range_15m",
+      "var2": "liq_dist_nearest",
+      "correlation": 0.2449166882504298,
+      "pValue": 9.28733263607475e-81,
+      "n": 5700
+    },
+    "price_volatility_1h__price_volatility_1h": {
+      "var1": "price_volatility_1h",
+      "var2": "price_volatility_1h",
+      "correlation": 1,
+      "pValue": 0,
+      "n": 5700
+    },
+    "price_volatility_1h__gex_dist_gamma_flip": {
+      "var1": "price_volatility_1h",
+      "var2": "gex_dist_gamma_flip",
+      "correlation": -0.13990930604960436,
+      "pValue": 2.9624033305141076e-26,
+      "n": 5700
+    },
+    "price_volatility_1h__gex_dist_support_1": {
+      "var1": "price_volatility_1h",
+      "var2": "gex_dist_support_1",
+      "correlation": 0.0695325777150525,
+      "pValue": 2.956030375234962e-7,
+      "n": 5700
+    },
+    "price_volatility_1h__gex_dist_resistance_1": {
+      "var1": "price_volatility_1h",
+      "var2": "gex_dist_resistance_1",
+      "correlation": -0.04117941007127409,
+      "pValue": 0.004058298048254521,
+      "n": 5700
+    },
+    "price_volatility_1h__gex_regime_encoded": {
+      "var1": "price_volatility_1h",
+      "var2": "gex_regime_encoded",
+      "correlation": -0.257745224084608,
+      "pValue": 7.119384428909016e-90,
+      "n": 5700
+    },
+    "price_volatility_1h__total_gex": {
+      "var1": "price_volatility_1h",
+      "var2": "total_gex",
+      "correlation": -0.2186868674034466,
+      "pValue": 6.758151587856098e-64,
+      "n": 5700
+    },
+    "price_volatility_1h__iv": {
+      "var1": "price_volatility_1h",
+      "var2": "iv",
+      "correlation": 0.3365389926725924,
+      "pValue": 5.4699371547283664e-160,
+      "n": 5700
+    },
+    "price_volatility_1h__iv_skew": {
+      "var1": "price_volatility_1h",
+      "var2": "iv_skew",
+      "correlation": -0.0061237502239733545,
+      "pValue": 1,
+      "n": 5696
+    },
+    "price_volatility_1h__iv_change_15m": {
+      "var1": "price_volatility_1h",
+      "var2": "iv_change_15m",
+      "correlation": 0.0030839921464875897,
+      "pValue": 1,
+      "n": 5625
+    },
+    "price_volatility_1h__iv_percentile_all": {
+      "var1": "price_volatility_1h",
+      "var2": "iv_percentile_all",
+      "correlation": 0.30759209916821256,
+      "pValue": 3.290427336082772e-131,
+      "n": 5700
+    },
+    "price_volatility_1h__liq_sentiment_encoded": {
+      "var1": "price_volatility_1h",
+      "var2": "liq_sentiment_encoded",
+      "correlation": -0.07499368495586396,
+      "pValue": 2.8237982785194684e-8,
+      "n": 5700
+    },
+    "price_volatility_1h__liq_spacing_avg": {
+      "var1": "price_volatility_1h",
+      "var2": "liq_spacing_avg",
+      "correlation": 0.21753761609937947,
+      "pValue": 3.281298011424895e-63,
+      "n": 5700
+    },
+    "price_volatility_1h__liq_momentum": {
+      "var1": "price_volatility_1h",
+      "var2": "liq_momentum",
+      "correlation": -0.03964508744588633,
+      "pValue": 0.00600901782309833,
+      "n": 5700
+    },
+    "price_volatility_1h__liq_max_change": {
+      "var1": "price_volatility_1h",
+      "var2": "liq_max_change",
+      "correlation": 0.1998552257451762,
+      "pValue": 3.45845750083649e-53,
+      "n": 5700
+    },
+    "price_volatility_1h__liq_dist_nearest": {
+      "var1": "price_volatility_1h",
+      "var2": "liq_dist_nearest",
+      "correlation": 0.26697347680309896,
+      "pValue": 8.43038195926307e-97,
+      "n": 5700
+    },
+    "gex_dist_gamma_flip__gex_dist_gamma_flip": {
+      "var1": "gex_dist_gamma_flip",
+      "var2": "gex_dist_gamma_flip",
+      "correlation": 1,
+      "pValue": 0,
+      "n": 5700
+    },
+    "gex_dist_gamma_flip__gex_dist_support_1": {
+      "var1": "gex_dist_gamma_flip",
+      "var2": "gex_dist_support_1",
+      "correlation": 0.38597147136304905,
+      "pValue": 1.2899348162851245e-218,
+      "n": 5700
+    },
+    "gex_dist_gamma_flip__gex_dist_resistance_1": {
+      "var1": "gex_dist_gamma_flip",
+      "var2": "gex_dist_resistance_1",
+      "correlation": -0.45851637004777734,
+      "pValue": 0,
+      "n": 5700
+    },
+    "gex_dist_gamma_flip__gex_regime_encoded": {
+      "var1": "gex_dist_gamma_flip",
+      "var2": "gex_regime_encoded",
+      "correlation": 0.48593305092305933,
+      "pValue": 0,
+      "n": 5700
+    },
+    "gex_dist_gamma_flip__total_gex": {
+      "var1": "gex_dist_gamma_flip",
+      "var2": "total_gex",
+      "correlation": 0.5851001006566624,
+      "pValue": 0,
+      "n": 5700
+    },
+    "gex_dist_gamma_flip__iv": {
+      "var1": "gex_dist_gamma_flip",
+      "var2": "iv",
+      "correlation": -0.31875617747786356,
+      "pValue": 7.298075018813937e-142,
+      "n": 5700
+    },
+    "gex_dist_gamma_flip__iv_skew": {
+      "var1": "gex_dist_gamma_flip",
+      "var2": "iv_skew",
+      "correlation": -0.08945284111764218,
+      "pValue": 2.5025700141810266e-11,
+      "n": 5696
+    },
+    "gex_dist_gamma_flip__iv_change_15m": {
+      "var1": "gex_dist_gamma_flip",
+      "var2": "iv_change_15m",
+      "correlation": 0.00736594845363895,
+      "pValue": 1,
+      "n": 5625
+    },
+    "gex_dist_gamma_flip__iv_percentile_all": {
+      "var1": "gex_dist_gamma_flip",
+      "var2": "iv_percentile_all",
+      "correlation": -0.2830140755656655,
+      "pValue": 1.3233324972288384e-109,
+      "n": 5700
+    },
+    "gex_dist_gamma_flip__liq_sentiment_encoded": {
+      "var1": "gex_dist_gamma_flip",
+      "var2": "liq_sentiment_encoded",
+      "correlation": 0.27485604035708283,
+      "pValue": 5.716372930838482e-103,
+      "n": 5700
+    },
+    "gex_dist_gamma_flip__liq_spacing_avg": {
+      "var1": "gex_dist_gamma_flip",
+      "var2": "liq_spacing_avg",
+      "correlation": -0.1924845808902476,
+      "pValue": 2.667755025118588e-49,
+      "n": 5700
+    },
+    "gex_dist_gamma_flip__liq_momentum": {
+      "var1": "gex_dist_gamma_flip",
+      "var2": "liq_momentum",
+      "correlation": 0.04096843329973523,
+      "pValue": 0.004286423726507479,
+      "n": 5700
+    },
+    "gex_dist_gamma_flip__liq_max_change": {
+      "var1": "gex_dist_gamma_flip",
+      "var2": "liq_max_change",
+      "correlation": -0.11818618332104135,
+      "pValue": 5.272550522960728e-19,
+      "n": 5700
+    },
+    "gex_dist_gamma_flip__liq_dist_nearest": {
+      "var1": "gex_dist_gamma_flip",
+      "var2": "liq_dist_nearest",
+      "correlation": -0.010023235307581242,
+      "pValue": 1,
+      "n": 5700
+    },
+    "gex_dist_support_1__gex_dist_support_1": {
+      "var1": "gex_dist_support_1",
+      "var2": "gex_dist_support_1",
+      "correlation": 1,
+      "pValue": 0,
+      "n": 5700
+    },
+    "gex_dist_support_1__gex_dist_resistance_1": {
+      "var1": "gex_dist_support_1",
+      "var2": "gex_dist_resistance_1",
+      "correlation": -0.6770783356447566,
+      "pValue": 0,
+      "n": 5700
+    },
+    "gex_dist_support_1__gex_regime_encoded": {
+      "var1": "gex_dist_support_1",
+      "var2": "gex_regime_encoded",
+      "correlation": -0.060144353962387674,
+      "pValue": 0.000011301108116677592,
+      "n": 5700
+    },
+    "gex_dist_support_1__total_gex": {
+      "var1": "gex_dist_support_1",
+      "var2": "total_gex",
+      "correlation": -0.05582194609736107,
+      "pValue": 0.00005128862923697287,
+      "n": 5700
+    },
+    "gex_dist_support_1__iv": {
+      "var1": "gex_dist_support_1",
+      "var2": "iv",
+      "correlation": 0.003946548076565706,
+      "pValue": 1,
+      "n": 5700
+    },
+    "gex_dist_support_1__iv_skew": {
+      "var1": "gex_dist_support_1",
+      "var2": "iv_skew",
+      "correlation": -0.1625332366738456,
+      "pValue": 3.6243227975110104e-35,
+      "n": 5696
+    },
+    "gex_dist_support_1__iv_change_15m": {
+      "var1": "gex_dist_support_1",
+      "var2": "iv_change_15m",
+      "correlation": 0.021864151912062434,
+      "pValue": 0.2536139286892489,
+      "n": 5625
+    },
+    "gex_dist_support_1__iv_percentile_all": {
+      "var1": "gex_dist_support_1",
+      "var2": "iv_percentile_all",
+      "correlation": 0.014929586887554703,
+      "pValue": 0.7501792956287341,
+      "n": 5700
+    },
+    "gex_dist_support_1__liq_sentiment_encoded": {
+      "var1": "gex_dist_support_1",
+      "var2": "liq_sentiment_encoded",
+      "correlation": -0.04796112724076118,
+      "pValue": 0.0006180480238995468,
+      "n": 5700
+    },
+    "gex_dist_support_1__liq_spacing_avg": {
+      "var1": "gex_dist_support_1",
+      "var2": "liq_spacing_avg",
+      "correlation": -0.021119635056292652,
+      "pValue": 0.2806680763660642,
+      "n": 5700
+    },
+    "gex_dist_support_1__liq_momentum": {
+      "var1": "gex_dist_support_1",
+      "var2": "liq_momentum",
+      "correlation": -0.07601237611360667,
+      "pValue": 1.788211068185806e-8,
+      "n": 5700
+    },
+    "gex_dist_support_1__liq_max_change": {
+      "var1": "gex_dist_support_1",
+      "var2": "liq_max_change",
+      "correlation": -0.005324955685558021,
+      "pValue": 1,
+      "n": 5700
+    },
+    "gex_dist_support_1__liq_dist_nearest": {
+      "var1": "gex_dist_support_1",
+      "var2": "liq_dist_nearest",
+      "correlation": 0.07033322811038409,
+      "pValue": 2.1173323606068927e-7,
+      "n": 5700
+    },
+    "gex_dist_resistance_1__gex_dist_resistance_1": {
+      "var1": "gex_dist_resistance_1",
+      "var2": "gex_dist_resistance_1",
+      "correlation": 1,
+      "pValue": 0,
+      "n": 5700
+    },
+    "gex_dist_resistance_1__gex_regime_encoded": {
+      "var1": "gex_dist_resistance_1",
+      "var2": "gex_regime_encoded",
+      "correlation": -0.007276811573333221,
+      "pValue": 1,
+      "n": 5700
+    },
+    "gex_dist_resistance_1__total_gex": {
+      "var1": "gex_dist_resistance_1",
+      "var2": "total_gex",
+      "correlation": 0.0011728037602940357,
+      "pValue": 1,
+      "n": 5700
+    },
+    "gex_dist_resistance_1__iv": {
+      "var1": "gex_dist_resistance_1",
+      "var2": "iv",
+      "correlation": 0.010503811499657957,
+      "pValue": 1,
+      "n": 5700
+    },
+    "gex_dist_resistance_1__iv_skew": {
+      "var1": "gex_dist_resistance_1",
+      "var2": "iv_skew",
+      "correlation": 0.1548880443444987,
+      "pValue": 5.474938177803154e-32,
+      "n": 5696
+    },
+    "gex_dist_resistance_1__iv_change_15m": {
+      "var1": "gex_dist_resistance_1",
+      "var2": "iv_change_15m",
+      "correlation": -0.02218539699750912,
+      "pValue": 0.2401819734039696,
+      "n": 5625
+    },
+    "gex_dist_resistance_1__iv_percentile_all": {
+      "var1": "gex_dist_resistance_1",
+      "var2": "iv_percentile_all",
+      "correlation": 0.0407858568730404,
+      "pValue": 0.004493331949767864,
+      "n": 5700
+    },
+    "gex_dist_resistance_1__liq_sentiment_encoded": {
+      "var1": "gex_dist_resistance_1",
+      "var2": "liq_sentiment_encoded",
+      "correlation": -0.08288430149810355,
+      "pValue": 7.019320749074676e-10,
+      "n": 5700
+    },
+    "gex_dist_resistance_1__liq_spacing_avg": {
+      "var1": "gex_dist_resistance_1",
+      "var2": "liq_spacing_avg",
+      "correlation": 0.025486135995614403,
+      "pValue": 0.1301542739461358,
+      "n": 5700
+    },
+    "gex_dist_resistance_1__liq_momentum": {
+      "var1": "gex_dist_resistance_1",
+      "var2": "liq_momentum",
+      "correlation": 0.08196185289433958,
+      "pValue": 1.1013333702215598e-9,
+      "n": 5700
+    },
+    "gex_dist_resistance_1__liq_max_change": {
+      "var1": "gex_dist_resistance_1",
+      "var2": "liq_max_change",
+      "correlation": 0.0011629540736948615,
+      "pValue": 1,
+      "n": 5700
+    },
+    "gex_dist_resistance_1__liq_dist_nearest": {
+      "var1": "gex_dist_resistance_1",
+      "var2": "liq_dist_nearest",
+      "correlation": -0.07804272488926549,
+      "pValue": 7.067351493332534e-9,
+      "n": 5700
+    },
+    "gex_regime_encoded__gex_regime_encoded": {
+      "var1": "gex_regime_encoded",
+      "var2": "gex_regime_encoded",
+      "correlation": 1,
+      "pValue": 0,
+      "n": 5700
+    },
+    "gex_regime_encoded__total_gex": {
+      "var1": "gex_regime_encoded",
+      "var2": "total_gex",
+      "correlation": 0.8606799378378972,
+      "pValue": 0,
+      "n": 5700
+    },
+    "gex_regime_encoded__iv": {
+      "var1": "gex_regime_encoded",
+      "var2": "iv",
+      "correlation": -0.4107716946043197,
+      "pValue": 3.303055028336461e-253,
+      "n": 5700
+    },
+    "gex_regime_encoded__iv_skew": {
+      "var1": "gex_regime_encoded",
+      "var2": "iv_skew",
+      "correlation": 0.02761430157054503,
+      "pValue": 0.0871762054814352,
+      "n": 5696
+    },
+    "gex_regime_encoded__iv_change_15m": {
+      "var1": "gex_regime_encoded",
+      "var2": "iv_change_15m",
+      "correlation": -0.02497209240989604,
+      "pValue": 0.1473962701379722,
+      "n": 5625
+    },
+    "gex_regime_encoded__iv_percentile_all": {
+      "var1": "gex_regime_encoded",
+      "var2": "iv_percentile_all",
+      "correlation": -0.46315578768692417,
+      "pValue": 0,
+      "n": 5700
+    },
+    "gex_regime_encoded__liq_sentiment_encoded": {
+      "var1": "gex_regime_encoded",
+      "var2": "liq_sentiment_encoded",
+      "correlation": 0.2857665863715023,
+      "pValue": 6.669357804923683e-112,
+      "n": 5700
+    },
+    "gex_regime_encoded__liq_spacing_avg": {
+      "var1": "gex_regime_encoded",
+      "var2": "liq_spacing_avg",
+      "correlation": -0.2884384235663846,
+      "pValue": 3.673240121151846e-114,
+      "n": 5700
+    },
+    "gex_regime_encoded__liq_momentum": {
+      "var1": "gex_regime_encoded",
+      "var2": "liq_momentum",
+      "correlation": 0.08482852691355558,
+      "pValue": 2.6728153112251627e-10,
+      "n": 5700
+    },
+    "gex_regime_encoded__liq_max_change": {
+      "var1": "gex_regime_encoded",
+      "var2": "liq_max_change",
+      "correlation": -0.1479290417217487,
+      "pValue": 2.9413413590086107e-29,
+      "n": 5700
+    },
+    "gex_regime_encoded__liq_dist_nearest": {
+      "var1": "gex_regime_encoded",
+      "var2": "liq_dist_nearest",
+      "correlation": -0.08234089403494446,
+      "pValue": 9.157868413724094e-10,
+      "n": 5700
+    },
+    "total_gex__total_gex": {
+      "var1": "total_gex",
+      "var2": "total_gex",
+      "correlation": 1,
+      "pValue": 0,
+      "n": 5700
+    },
+    "total_gex__iv": {
+      "var1": "total_gex",
+      "var2": "iv",
+      "correlation": -0.4121244640341302,
+      "pValue": 3.3209301157484928e-255,
+      "n": 5700
+    },
+    "total_gex__iv_skew": {
+      "var1": "total_gex",
+      "var2": "iv_skew",
+      "correlation": 0.028575143414082342,
+      "pValue": 0.07222244107845843,
+      "n": 5696
+    },
+    "total_gex__iv_change_15m": {
+      "var1": "total_gex",
+      "var2": "iv_change_15m",
+      "correlation": -0.017302938538066002,
+      "pValue": 0.5298204731599031,
+      "n": 5625
+    },
+    "total_gex__iv_percentile_all": {
+      "var1": "total_gex",
+      "var2": "iv_percentile_all",
+      "correlation": -0.46900031685703775,
+      "pValue": 0,
+      "n": 5700
+    },
+    "total_gex__liq_sentiment_encoded": {
+      "var1": "total_gex",
+      "var2": "liq_sentiment_encoded",
+      "correlation": 0.33036635642756973,
+      "pValue": 1.5658367217212485e-153,
+      "n": 5700
+    },
+    "total_gex__liq_spacing_avg": {
+      "var1": "total_gex",
+      "var2": "liq_spacing_avg",
+      "correlation": -0.2856292184827628,
+      "pValue": 8.69880578946521e-112,
+      "n": 5700
+    },
+    "total_gex__liq_momentum": {
+      "var1": "total_gex",
+      "var2": "liq_momentum",
+      "correlation": 0.10969284432266493,
+      "pValue": 1.6333684910626685e-16,
+      "n": 5700
+    },
+    "total_gex__liq_max_change": {
+      "var1": "total_gex",
+      "var2": "liq_max_change",
+      "correlation": -0.1634818375112633,
+      "pValue": 1.3461327074336105e-35,
+      "n": 5700
+    },
+    "total_gex__liq_dist_nearest": {
+      "var1": "total_gex",
+      "var2": "liq_dist_nearest",
+      "correlation": -0.1058848847073009,
+      "pValue": 1.855043885338815e-15,
+      "n": 5700
+    },
+    "iv__iv": {
+      "var1": "iv",
+      "var2": "iv",
+      "correlation": 1,
+      "pValue": 0,
+      "n": 5700
+    },
+    "iv__iv_skew": {
+      "var1": "iv",
+      "var2": "iv_skew",
+      "correlation": -0.13102472366038653,
+      "pValue": 4.044664160516027e-23,
+      "n": 5696
+    },
+    "iv__iv_change_15m": {
+      "var1": "iv",
+      "var2": "iv_change_15m",
+      "correlation": 0.14114938866816526,
+      "pValue": 2.2536170736885842e-26,
+      "n": 5625
+    },
+    "iv__iv_percentile_all": {
+      "var1": "iv",
+      "var2": "iv_percentile_all",
+      "correlation": 0.8185782287378076,
+      "pValue": 0,
+      "n": 5700
+    },
+    "iv__liq_sentiment_encoded": {
+      "var1": "iv",
+      "var2": "liq_sentiment_encoded",
+      "correlation": -0.07153516185896787,
+      "pValue": 1.274302553199218e-7,
+      "n": 5700
+    },
+    "iv__liq_spacing_avg": {
+      "var1": "iv",
+      "var2": "liq_spacing_avg",
+      "correlation": 0.6529754762844032,
+      "pValue": 0,
+      "n": 5700
+    },
+    "iv__liq_momentum": {
+      "var1": "iv",
+      "var2": "liq_momentum",
+      "correlation": -0.047746524906364454,
+      "pValue": 0.0006584218156616413,
+      "n": 5700
+    },
+    "iv__liq_max_change": {
+      "var1": "iv",
+      "var2": "liq_max_change",
+      "correlation": 0.31017668065751697,
+      "pValue": 1.2558474033611651e-133,
+      "n": 5700
+    },
+    "iv__liq_dist_nearest": {
+      "var1": "iv",
+      "var2": "liq_dist_nearest",
+      "correlation": 0.2378862948941351,
+      "pValue": 5.213064377512039e-76,
+      "n": 5700
+    },
+    "iv_skew__iv_skew": {
+      "var1": "iv_skew",
+      "var2": "iv_skew",
+      "correlation": 1,
+      "pValue": 0,
+      "n": 5696
+    },
+    "iv_skew__iv_change_15m": {
+      "var1": "iv_skew",
+      "var2": "iv_change_15m",
+      "correlation": -0.045981211921862934,
+      "pValue": 0.0012006224879807087,
+      "n": 5622
+    },
+    "iv_skew__iv_percentile_all": {
+      "var1": "iv_skew",
+      "var2": "iv_percentile_all",
+      "correlation": -0.07684068830391029,
+      "pValue": 1.2430660201921203e-8,
+      "n": 5696
+    },
+    "iv_skew__liq_sentiment_encoded": {
+      "var1": "iv_skew",
+      "var2": "liq_sentiment_encoded",
+      "correlation": -0.12546366564662778,
+      "pValue": 2.812693740568199e-21,
+      "n": 5696
+    },
+    "iv_skew__liq_spacing_avg": {
+      "var1": "iv_skew",
+      "var2": "liq_spacing_avg",
+      "correlation": -0.0748978661256622,
+      "pValue": 2.9813748581554945e-8,
+      "n": 5696
+    },
+    "iv_skew__liq_momentum": {
+      "var1": "iv_skew",
+      "var2": "liq_momentum",
+      "correlation": 0.24966369791114,
+      "pValue": 5.262468748843465e-84,
+      "n": 5696
+    },
+    "iv_skew__liq_max_change": {
+      "var1": "iv_skew",
+      "var2": "liq_max_change",
+      "correlation": -0.0895292060291216,
+      "pValue": 2.4034723487354957e-11,
+      "n": 5696
+    },
+    "iv_skew__liq_dist_nearest": {
+      "var1": "iv_skew",
+      "var2": "liq_dist_nearest",
+      "correlation": -0.0981757695349784,
+      "pValue": 1.9851854874611886e-13,
+      "n": 5696
+    },
+    "iv_change_15m__iv_change_15m": {
+      "var1": "iv_change_15m",
+      "var2": "iv_change_15m",
+      "correlation": 1,
+      "pValue": 0,
+      "n": 5625
+    },
+    "iv_change_15m__iv_percentile_all": {
+      "var1": "iv_change_15m",
+      "var2": "iv_percentile_all",
+      "correlation": 0.07860047689011836,
+      "pValue": 6.931444415701814e-9,
+      "n": 5625
+    },
+    "iv_change_15m__liq_sentiment_encoded": {
+      "var1": "iv_change_15m",
+      "var2": "liq_sentiment_encoded",
+      "correlation": -0.017579686100097226,
+      "pValue": 0.5075056545268898,
+      "n": 5625
+    },
+    "iv_change_15m__liq_spacing_avg": {
+      "var1": "iv_change_15m",
+      "var2": "liq_spacing_avg",
+      "correlation": -0.0007823400761205164,
+      "pValue": 1,
+      "n": 5625
+    },
+    "iv_change_15m__liq_momentum": {
+      "var1": "iv_change_15m",
+      "var2": "liq_momentum",
+      "correlation": -0.07429297892110044,
+      "pValue": 4.7762110269534384e-8,
+      "n": 5625
+    },
+    "iv_change_15m__liq_max_change": {
+      "var1": "iv_change_15m",
+      "var2": "liq_max_change",
+      "correlation": -0.04789071145820339,
+      "pValue": 0.0006924156316275179,
+      "n": 5625
+    },
+    "iv_change_15m__liq_dist_nearest": {
+      "var1": "iv_change_15m",
+      "var2": "liq_dist_nearest",
+      "correlation": -0.02913160430795664,
+      "pValue": 0.06704076289108914,
+      "n": 5625
+    },
+    "iv_percentile_all__iv_percentile_all": {
+      "var1": "iv_percentile_all",
+      "var2": "iv_percentile_all",
+      "correlation": 1,
+      "pValue": 0,
+      "n": 5700
+    },
+    "iv_percentile_all__liq_sentiment_encoded": {
+      "var1": "iv_percentile_all",
+      "var2": "liq_sentiment_encoded",
+      "correlation": -0.061541062302423725,
+      "pValue": 0.00000678042439211947,
+      "n": 5700
+    },
+    "iv_percentile_all__liq_spacing_avg": {
+      "var1": "iv_percentile_all",
+      "var2": "liq_spacing_avg",
+      "correlation": 0.512530449352369,
+      "pValue": 0,
+      "n": 5700
+    },
+    "iv_percentile_all__liq_momentum": {
+      "var1": "iv_percentile_all",
+      "var2": "liq_momentum",
+      "correlation": -0.030854677731731964,
+      "pValue": 0.04534510424913471,
+      "n": 5700
+    },
+    "iv_percentile_all__liq_max_change": {
+      "var1": "iv_percentile_all",
+      "var2": "liq_max_change",
+      "correlation": 0.22978243046368088,
+      "pValue": 9.564631602930017e-71,
+      "n": 5700
+    },
+    "iv_percentile_all__liq_dist_nearest": {
+      "var1": "iv_percentile_all",
+      "var2": "liq_dist_nearest",
+      "correlation": 0.1776456269858134,
+      "pValue": 5.615214965954185e-42,
+      "n": 5700
+    },
+    "liq_sentiment_encoded__liq_sentiment_encoded": {
+      "var1": "liq_sentiment_encoded",
+      "var2": "liq_sentiment_encoded",
+      "correlation": 1,
+      "pValue": 0,
+      "n": 5700
+    },
+    "liq_sentiment_encoded__liq_spacing_avg": {
+      "var1": "liq_sentiment_encoded",
+      "var2": "liq_spacing_avg",
+      "correlation": -0.011461919258793939,
+      "pValue": 1,
+      "n": 5700
+    },
+    "liq_sentiment_encoded__liq_momentum": {
+      "var1": "liq_sentiment_encoded",
+      "var2": "liq_momentum",
+      "correlation": 0.06174009376972706,
+      "pValue": 0.000006298797752036035,
+      "n": 5700
+    },
+    "liq_sentiment_encoded__liq_max_change": {
+      "var1": "liq_sentiment_encoded",
+      "var2": "liq_max_change",
+      "correlation": -0.04260700785426818,
+      "pValue": 0.0027861074308765496,
+      "n": 5700
+    },
+    "liq_sentiment_encoded__liq_dist_nearest": {
+      "var1": "liq_sentiment_encoded",
+      "var2": "liq_dist_nearest",
+      "correlation": 0.0330632636917116,
+      "pValue": 0.028278022304806878,
+      "n": 5700
+    },
+    "liq_spacing_avg__liq_spacing_avg": {
+      "var1": "liq_spacing_avg",
+      "var2": "liq_spacing_avg",
+      "correlation": 1,
+      "pValue": 0,
+      "n": 5700
+    },
+    "liq_spacing_avg__liq_momentum": {
+      "var1": "liq_spacing_avg",
+      "var2": "liq_momentum",
+      "correlation": -0.006202934420017542,
+      "pValue": 1,
+      "n": 5700
+    },
+    "liq_spacing_avg__liq_max_change": {
+      "var1": "liq_spacing_avg",
+      "var2": "liq_max_change",
+      "correlation": 0.3328108237256514,
+      "pValue": 4.561885958537381e-156,
+      "n": 5700
+    },
+    "liq_spacing_avg__liq_dist_nearest": {
+      "var1": "liq_spacing_avg",
+      "var2": "liq_dist_nearest",
+      "correlation": 0.10658894099607377,
+      "pValue": 1.1915175729897023e-15,
+      "n": 5700
+    },
+    "liq_momentum__liq_momentum": {
+      "var1": "liq_momentum",
+      "var2": "liq_momentum",
+      "correlation": 1,
+      "pValue": 0,
+      "n": 5700
+    },
+    "liq_momentum__liq_max_change": {
+      "var1": "liq_momentum",
+      "var2": "liq_max_change",
+      "correlation": -0.0098745451985853,
+      "pValue": 1,
+      "n": 5700
+    },
+    "liq_momentum__liq_dist_nearest": {
+      "var1": "liq_momentum",
+      "var2": "liq_dist_nearest",
+      "correlation": 0.045371499368907726,
+      "pValue": 0.001304792618119102,
+      "n": 5700
+    },
+    "liq_max_change__liq_max_change": {
+      "var1": "liq_max_change",
+      "var2": "liq_max_change",
+      "correlation": 1,
+      "pValue": 0,
+      "n": 5700
+    },
+    "liq_max_change__liq_dist_nearest": {
+      "var1": "liq_max_change",
+      "var2": "liq_dist_nearest",
+      "correlation": 0.3482230626234695,
+      "pValue": 1.0395162940324074e-172,
+      "n": 5700
+    },
+    "liq_dist_nearest__liq_dist_nearest": {
+      "var1": "liq_dist_nearest",
+      "var2": "liq_dist_nearest",
+      "correlation": 1,
+      "pValue": 0,
+      "n": 5700
+    }
+  },
+  "spearman": {
+    "price_return_15m__price_return_15m": {
+      "var1": "price_return_15m",
+      "var2": "price_return_15m",
+      "correlation": 1,
+      "pValue": 0,
+      "n": 5700
+    },
+    "price_return_15m__price_return_1h": {
+      "var1": "price_return_15m",
+      "var2": "price_return_1h",
+      "correlation": 0.4611537376413443,
+      "pValue": 0,
+      "n": 5700
+    },
+    "price_return_15m__price_range_15m": {
+      "var1": "price_return_15m",
+      "var2": "price_range_15m",
+      "correlation": 0.04169098345891725,
+      "pValue": 0.0035508918624962533,
+      "n": 5700
+    },
+    "price_return_15m__price_volatility_1h": {
+      "var1": "price_return_15m",
+      "var2": "price_volatility_1h",
+      "correlation": -0.05397246566868611,
+      "pValue": 0.00009494456686370979,
+      "n": 5700
+    },
+    "price_return_15m__gex_dist_gamma_flip": {
+      "var1": "price_return_15m",
+      "var2": "gex_dist_gamma_flip",
+      "correlation": 0.2397445482744787,
+      "pValue": 3.009312114711733e-77,
+      "n": 5700
+    },
+    "price_return_15m__gex_dist_support_1": {
+      "var1": "price_return_15m",
+      "var2": "gex_dist_support_1",
+      "correlation": 0.3736054364828791,
+      "pValue": 9.974531830445183e-203,
+      "n": 5700
+    },
+    "price_return_15m__gex_dist_resistance_1": {
+      "var1": "price_return_15m",
+      "var2": "gex_dist_resistance_1",
+      "correlation": -0.37123518694911223,
+      "pValue": 8.844763006619058e-200,
+      "n": 5700
+    },
+    "price_return_15m__gex_regime_encoded": {
+      "var1": "price_return_15m",
+      "var2": "gex_regime_encoded",
+      "correlation": 0.0080051615229979,
+      "pValue": 1,
+      "n": 5700
+    },
+    "price_return_15m__total_gex": {
+      "var1": "price_return_15m",
+      "var2": "total_gex",
+      "correlation": 0.006922813385708877,
+      "pValue": 1,
+      "n": 5700
+    },
+    "price_return_15m__iv": {
+      "var1": "price_return_15m",
+      "var2": "iv",
+      "correlation": 0.016226391239606466,
+      "pValue": 0.6151297635911136,
+      "n": 5700
+    },
+    "price_return_15m__iv_skew": {
+      "var1": "price_return_15m",
+      "var2": "iv_skew",
+      "correlation": -0.3846996797314925,
+      "pValue": 8.626147167838705e-217,
+      "n": 5696
+    },
+    "price_return_15m__iv_change_15m": {
+      "var1": "price_return_15m",
+      "var2": "iv_change_15m",
+      "correlation": 0.027373439417209874,
+      "pValue": 0.0943826116042957,
+      "n": 5625
+    },
+    "price_return_15m__iv_percentile_all": {
+      "var1": "price_return_15m",
+      "var2": "iv_percentile_all",
+      "correlation": 0.016226391239606466,
+      "pValue": 0.6151297635911136,
+      "n": 5700
+    },
+    "price_return_15m__liq_sentiment_encoded": {
+      "var1": "price_return_15m",
+      "var2": "liq_sentiment_encoded",
+      "correlation": 0.12107083381863389,
+      "pValue": 6.79924996484868e-20,
+      "n": 5700
+    },
+    "price_return_15m__liq_spacing_avg": {
+      "var1": "price_return_15m",
+      "var2": "liq_spacing_avg",
+      "correlation": 0.012548957790410742,
+      "pValue": 1,
+      "n": 5700
+    },
+    "price_return_15m__liq_momentum": {
+      "var1": "price_return_15m",
+      "var2": "liq_momentum",
+      "correlation": -0.26972813065097845,
+      "pValue": 6.263963878860781e-99,
+      "n": 5700
+    },
+    "price_return_15m__liq_max_change": {
+      "var1": "price_return_15m",
+      "var2": "liq_max_change",
+      "correlation": -0.0031084807463113463,
+      "pValue": 1,
+      "n": 5700
+    },
+    "price_return_15m__liq_dist_nearest": {
+      "var1": "price_return_15m",
+      "var2": "liq_dist_nearest",
+      "correlation": 0.04861084385949542,
+      "pValue": 0.0005095273623230206,
+      "n": 5700
+    },
+    "price_return_1h__price_return_1h": {
+      "var1": "price_return_1h",
+      "var2": "price_return_1h",
+      "correlation": 1,
+      "pValue": 0,
+      "n": 5700
+    },
+    "price_return_1h__price_range_15m": {
+      "var1": "price_return_1h",
+      "var2": "price_range_15m",
+      "correlation": -0.015390865688728113,
+      "pValue": 0.6992518863405549,
+      "n": 5700
+    },
+    "price_return_1h__price_volatility_1h": {
+      "var1": "price_return_1h",
+      "var2": "price_volatility_1h",
+      "correlation": -0.05556157034122229,
+      "pValue": 0.00005599706794944512,
+      "n": 5700
+    },
+    "price_return_1h__gex_dist_gamma_flip": {
+      "var1": "price_return_1h",
+      "var2": "gex_dist_gamma_flip",
+      "correlation": 0.27691482130405626,
+      "pValue": 1.2791864099592134e-104,
+      "n": 5700
+    },
+    "price_return_1h__gex_dist_support_1": {
+      "var1": "price_return_1h",
+      "var2": "gex_dist_support_1",
+      "correlation": 0.27481378705015364,
+      "pValue": 6.177566397648349e-103,
+      "n": 5700
+    },
+    "price_return_1h__gex_dist_resistance_1": {
+      "var1": "price_return_1h",
+      "var2": "gex_dist_resistance_1",
+      "correlation": -0.2937731857420734,
+      "pValue": 9.303838321835045e-119,
+      "n": 5700
+    },
+    "price_return_1h__gex_regime_encoded": {
+      "var1": "price_return_1h",
+      "var2": "gex_regime_encoded",
+      "correlation": 0.10086333350404886,
+      "pValue": 4.000981412700257e-14,
+      "n": 5700
+    },
+    "price_return_1h__total_gex": {
+      "var1": "price_return_1h",
+      "var2": "total_gex",
+      "correlation": 0.10823333455354958,
+      "pValue": 4.1882232508639895e-16,
+      "n": 5700
+    },
+    "price_return_1h__iv": {
+      "var1": "price_return_1h",
+      "var2": "iv",
+      "correlation": -0.029435269171666213,
+      "pValue": 0.0606846019565406,
+      "n": 5700
+    },
+    "price_return_1h__iv_skew": {
+      "var1": "price_return_1h",
+      "var2": "iv_skew",
+      "correlation": -0.1892583678047331,
+      "pValue": 1.2807039904527152e-47,
+      "n": 5696
+    },
+    "price_return_1h__iv_change_15m": {
+      "var1": "price_return_1h",
+      "var2": "iv_change_15m",
+      "correlation": -0.03382319381678869,
+      "pValue": 0.02512274136755986,
+      "n": 5625
+    },
+    "price_return_1h__iv_percentile_all": {
+      "var1": "price_return_1h",
+      "var2": "iv_percentile_all",
+      "correlation": -0.029435269171666213,
+      "pValue": 0.0606846019565406,
+      "n": 5700
+    },
+    "price_return_1h__liq_sentiment_encoded": {
+      "var1": "price_return_1h",
+      "var2": "liq_sentiment_encoded",
+      "correlation": 0.2783721823099026,
+      "pValue": 8.490207094348239e-106,
+      "n": 5700
+    },
+    "price_return_1h__liq_spacing_avg": {
+      "var1": "price_return_1h",
+      "var2": "liq_spacing_avg",
+      "correlation": 0.00039148989742829137,
+      "pValue": 1,
+      "n": 5700
+    },
+    "price_return_1h__liq_momentum": {
+      "var1": "price_return_1h",
+      "var2": "liq_momentum",
+      "correlation": 0.048894820308892306,
+      "pValue": 0.00046795944865270884,
+      "n": 5700
+    },
+    "price_return_1h__liq_max_change": {
+      "var1": "price_return_1h",
+      "var2": "liq_max_change",
+      "correlation": -0.027818642111009616,
+      "pValue": 0.08362604179004593,
+      "n": 5700
+    },
+    "price_return_1h__liq_dist_nearest": {
+      "var1": "price_return_1h",
+      "var2": "liq_dist_nearest",
+      "correlation": 0.05513675138252427,
+      "pValue": 0.00006457337069383138,
+      "n": 5700
+    },
+    "price_range_15m__price_range_15m": {
+      "var1": "price_range_15m",
+      "var2": "price_range_15m",
+      "correlation": 1,
+      "pValue": 0,
+      "n": 5700
+    },
+    "price_range_15m__price_volatility_1h": {
+      "var1": "price_range_15m",
+      "var2": "price_volatility_1h",
+      "correlation": 0.42946912083858446,
+      "pValue": 6.649273068878779e-282,
+      "n": 5700
+    },
+    "price_range_15m__gex_dist_gamma_flip": {
+      "var1": "price_range_15m",
+      "var2": "gex_dist_gamma_flip",
+      "correlation": -0.2213992149722389,
+      "pValue": 1.5600621691123463e-65,
+      "n": 5700
+    },
+    "price_range_15m__gex_dist_support_1": {
+      "var1": "price_range_15m",
+      "var2": "gex_dist_support_1",
+      "correlation": 0.04566867799664366,
+      "pValue": 0.001199735766268563,
+      "n": 5700
+    },
+    "price_range_15m__gex_dist_resistance_1": {
+      "var1": "price_range_15m",
+      "var2": "gex_dist_resistance_1",
+      "correlation": 0.07512597533863304,
+      "pValue": 2.662027568136186e-8,
+      "n": 5700
+    },
+    "price_range_15m__gex_regime_encoded": {
+      "var1": "price_range_15m",
+      "var2": "gex_regime_encoded",
+      "correlation": -0.3399908027239019,
+      "pValue": 1.118460582153245e-163,
+      "n": 5700
+    },
+    "price_range_15m__total_gex": {
+      "var1": "price_range_15m",
+      "var2": "total_gex",
+      "correlation": -0.3190200452465107,
+      "pValue": 4.0250685306663994e-142,
+      "n": 5700
+    },
+    "price_range_15m__iv": {
+      "var1": "price_range_15m",
+      "var2": "iv",
+      "correlation": 0.2671479751494528,
+      "pValue": 6.191951883855931e-97,
+      "n": 5700
+    },
+    "price_range_15m__iv_skew": {
+      "var1": "price_range_15m",
+      "var2": "iv_skew",
+      "correlation": 0.03193630413105235,
+      "pValue": 0.03617362743052489,
+      "n": 5696
+    },
+    "price_range_15m__iv_change_15m": {
+      "var1": "price_range_15m",
+      "var2": "iv_change_15m",
+      "correlation": 0.02702679405615688,
+      "pValue": 0.10080695754578073,
+      "n": 5625
+    },
+    "price_range_15m__iv_percentile_all": {
+      "var1": "price_range_15m",
+      "var2": "iv_percentile_all",
+      "correlation": 0.2671479751494528,
+      "pValue": 6.191951883855931e-97,
+      "n": 5700
+    },
+    "price_range_15m__liq_sentiment_encoded": {
+      "var1": "price_range_15m",
+      "var2": "liq_sentiment_encoded",
+      "correlation": -0.16603632951463815,
+      "pValue": 1.0512986561050877e-36,
+      "n": 5700
+    },
+    "price_range_15m__liq_spacing_avg": {
+      "var1": "price_range_15m",
+      "var2": "liq_spacing_avg",
+      "correlation": 0.15803619957480025,
+      "pValue": 2.673354847695506e-33,
+      "n": 5700
+    },
+    "price_range_15m__liq_momentum": {
+      "var1": "price_range_15m",
+      "var2": "liq_momentum",
+      "correlation": -0.12126931786473048,
+      "pValue": 5.894363896964863e-20,
+      "n": 5700
+    },
+    "price_range_15m__liq_max_change": {
+      "var1": "price_range_15m",
+      "var2": "liq_max_change",
+      "correlation": 0.29238018503148777,
+      "pValue": 1.5134819135655884e-117,
+      "n": 5700
+    },
+    "price_range_15m__liq_dist_nearest": {
+      "var1": "price_range_15m",
+      "var2": "liq_dist_nearest",
+      "correlation": 0.23894191009750781,
+      "pValue": 1.0349756807459192e-76,
+      "n": 5700
+    },
+    "price_volatility_1h__price_volatility_1h": {
+      "var1": "price_volatility_1h",
+      "var2": "price_volatility_1h",
+      "correlation": 1,
+      "pValue": 0,
+      "n": 5700
+    },
+    "price_volatility_1h__gex_dist_gamma_flip": {
+      "var1": "price_volatility_1h",
+      "var2": "gex_dist_gamma_flip",
+      "correlation": -0.17682999748033962,
+      "pValue": 1.3575025077688117e-41,
+      "n": 5700
+    },
+    "price_volatility_1h__gex_dist_support_1": {
+      "var1": "price_volatility_1h",
+      "var2": "gex_dist_support_1",
+      "correlation": 0.07819510559416935,
+      "pValue": 6.585430872866673e-9,
+      "n": 5700
+    },
+    "price_volatility_1h__gex_dist_resistance_1": {
+      "var1": "price_volatility_1h",
+      "var2": "gex_dist_resistance_1",
+      "correlation": -0.015518519008075679,
+      "pValue": 0.68574273618789,
+      "n": 5700
+    },
+    "price_volatility_1h__gex_regime_encoded": {
+      "var1": "price_volatility_1h",
+      "var2": "gex_regime_encoded",
+      "correlation": -0.29691467743905203,
+      "pValue": 1.6135903969507e-121,
+      "n": 5700
+    },
+    "price_volatility_1h__total_gex": {
+      "var1": "price_volatility_1h",
+      "var2": "total_gex",
+      "correlation": -0.260892835236139,
+      "pValue": 3.350980165736184e-92,
+      "n": 5700
+    },
+    "price_volatility_1h__iv": {
+      "var1": "price_volatility_1h",
+      "var2": "iv",
+      "correlation": 0.38017015908160684,
+      "pValue": 4.699506394511876e-211,
+      "n": 5700
+    },
+    "price_volatility_1h__iv_skew": {
+      "var1": "price_volatility_1h",
+      "var2": "iv_skew",
+      "correlation": 0.07533776960943783,
+      "pValue": 2.4502687088975908e-8,
+      "n": 5696
+    },
+    "price_volatility_1h__iv_change_15m": {
+      "var1": "price_volatility_1h",
+      "var2": "iv_change_15m",
+      "correlation": 0.014973114981482419,
+      "pValue": 0.7565165819083045,
+      "n": 5625
+    },
+    "price_volatility_1h__iv_percentile_all": {
+      "var1": "price_volatility_1h",
+      "var2": "iv_percentile_all",
+      "correlation": 0.38017015908160684,
+      "pValue": 4.699506394511876e-211,
+      "n": 5700
+    },
+    "price_volatility_1h__liq_sentiment_encoded": {
+      "var1": "price_volatility_1h",
+      "var2": "liq_sentiment_encoded",
+      "correlation": -0.11778457451363146,
+      "pValue": 6.984105170010666e-19,
+      "n": 5700
+    },
+    "price_volatility_1h__liq_spacing_avg": {
+      "var1": "price_volatility_1h",
+      "var2": "liq_spacing_avg",
+      "correlation": 0.19705842579449123,
+      "pValue": 1.0807244340388987e-51,
+      "n": 5700
+    },
+    "price_volatility_1h__liq_momentum": {
+      "var1": "price_volatility_1h",
+      "var2": "liq_momentum",
+      "correlation": -0.07018766279487354,
+      "pValue": 2.2503705870527563e-7,
+      "n": 5700
+    },
+    "price_volatility_1h__liq_max_change": {
+      "var1": "price_volatility_1h",
+      "var2": "liq_max_change",
+      "correlation": 0.26829659460176236,
+      "pValue": 8.068740916979328e-98,
+      "n": 5700
+    },
+    "price_volatility_1h__liq_dist_nearest": {
+      "var1": "price_volatility_1h",
+      "var2": "liq_dist_nearest",
+      "correlation": 0.2676602526845496,
+      "pValue": 2.4987607661070294e-97,
+      "n": 5700
+    },
+    "gex_dist_gamma_flip__gex_dist_gamma_flip": {
+      "var1": "gex_dist_gamma_flip",
+      "var2": "gex_dist_gamma_flip",
+      "correlation": 1,
+      "pValue": 0,
+      "n": 5700
+    },
+    "gex_dist_gamma_flip__gex_dist_support_1": {
+      "var1": "gex_dist_gamma_flip",
+      "var2": "gex_dist_support_1",
+      "correlation": 0.35577592542112063,
+      "pValue": 2.718566842698353e-181,
+      "n": 5700
+    },
+    "gex_dist_gamma_flip__gex_dist_resistance_1": {
+      "var1": "gex_dist_gamma_flip",
+      "var2": "gex_dist_resistance_1",
+      "correlation": -0.5285870727920486,
+      "pValue": 0,
+      "n": 5700
+    },
+    "gex_dist_gamma_flip__gex_regime_encoded": {
+      "var1": "gex_dist_gamma_flip",
+      "var2": "gex_regime_encoded",
+      "correlation": 0.49727599530966377,
+      "pValue": 0,
+      "n": 5700
+    },
+    "gex_dist_gamma_flip__total_gex": {
+      "var1": "gex_dist_gamma_flip",
+      "var2": "total_gex",
+      "correlation": 0.5670813192559375,
+      "pValue": 0,
+      "n": 5700
+    },
+    "gex_dist_gamma_flip__iv": {
+      "var1": "gex_dist_gamma_flip",
+      "var2": "iv",
+      "correlation": -0.27206537429086847,
+      "pValue": 9.289587745613569e-101,
+      "n": 5700
+    },
+    "gex_dist_gamma_flip__iv_skew": {
+      "var1": "gex_dist_gamma_flip",
+      "var2": "iv_skew",
+      "correlation": -0.09145052260173055,
+      "pValue": 8.59962437008712e-12,
+      "n": 5696
+    },
+    "gex_dist_gamma_flip__iv_change_15m": {
+      "var1": "gex_dist_gamma_flip",
+      "var2": "iv_change_15m",
+      "correlation": 0.010654059745928673,
+      "pValue": 1,
+      "n": 5625
+    },
+    "gex_dist_gamma_flip__iv_percentile_all": {
+      "var1": "gex_dist_gamma_flip",
+      "var2": "iv_percentile_all",
+      "correlation": -0.27206537429086847,
+      "pValue": 9.289587745613569e-101,
+      "n": 5700
+    },
+    "gex_dist_gamma_flip__liq_sentiment_encoded": {
+      "var1": "gex_dist_gamma_flip",
+      "var2": "liq_sentiment_encoded",
+      "correlation": 0.2915278793931672,
+      "pValue": 8.264773638089847e-117,
+      "n": 5700
+    },
+    "gex_dist_gamma_flip__liq_spacing_avg": {
+      "var1": "gex_dist_gamma_flip",
+      "var2": "liq_spacing_avg",
+      "correlation": -0.15875537946736704,
+      "pValue": 1.344134592834888e-33,
+      "n": 5700
+    },
+    "gex_dist_gamma_flip__liq_momentum": {
+      "var1": "gex_dist_gamma_flip",
+      "var2": "liq_momentum",
+      "correlation": 0.16525197741731462,
+      "pValue": 2.310718729491323e-36,
+      "n": 5700
+    },
+    "gex_dist_gamma_flip__liq_max_change": {
+      "var1": "gex_dist_gamma_flip",
+      "var2": "liq_max_change",
+      "correlation": -0.12960994595679584,
+      "pValue": 1.1708444503949983e-22,
+      "n": 5700
+    },
+    "gex_dist_gamma_flip__liq_dist_nearest": {
+      "var1": "gex_dist_gamma_flip",
+      "var2": "liq_dist_nearest",
+      "correlation": -0.013208836563624985,
+      "pValue": 0.9734013537681396,
+      "n": 5700
+    },
+    "gex_dist_support_1__gex_dist_support_1": {
+      "var1": "gex_dist_support_1",
+      "var2": "gex_dist_support_1",
+      "correlation": 1,
+      "pValue": 0,
+      "n": 5700
+    },
+    "gex_dist_support_1__gex_dist_resistance_1": {
+      "var1": "gex_dist_support_1",
+      "var2": "gex_dist_resistance_1",
+      "correlation": -0.610783644706747,
+      "pValue": 0,
+      "n": 5700
+    },
+    "gex_dist_support_1__gex_regime_encoded": {
+      "var1": "gex_dist_support_1",
+      "var2": "gex_regime_encoded",
+      "correlation": -0.10801657936871777,
+      "pValue": 4.811578003608509e-16,
+      "n": 5700
+    },
+    "gex_dist_support_1__total_gex": {
+      "var1": "gex_dist_support_1",
+      "var2": "total_gex",
+      "correlation": -0.13790345087943642,
+      "pValue": 1.5664958539304521e-25,
+      "n": 5700
+    },
+    "gex_dist_support_1__iv": {
+      "var1": "gex_dist_support_1",
+      "var2": "iv",
+      "correlation": 0.03888144518521794,
+      "pValue": 0.007272592968755474,
+      "n": 5700
+    },
+    "gex_dist_support_1__iv_skew": {
+      "var1": "gex_dist_support_1",
+      "var2": "iv_skew",
+      "correlation": -0.1780824088097598,
+      "pValue": 3.7312330379829295e-42,
+      "n": 5696
+    },
+    "gex_dist_support_1__iv_change_15m": {
+      "var1": "gex_dist_support_1",
+      "var2": "iv_change_15m",
+      "correlation": 0.024108153276670898,
+      "pValue": 0.17203752922662388,
+      "n": 5625
+    },
+    "gex_dist_support_1__iv_percentile_all": {
+      "var1": "gex_dist_support_1",
+      "var2": "iv_percentile_all",
+      "correlation": 0.03888144518521794,
+      "pValue": 0.007272592968755474,
+      "n": 5700
+    },
+    "gex_dist_support_1__liq_sentiment_encoded": {
+      "var1": "gex_dist_support_1",
+      "var2": "liq_sentiment_encoded",
+      "correlation": -0.06937617987313383,
+      "pValue": 3.153793801936449e-7,
+      "n": 5700
+    },
+    "gex_dist_support_1__liq_spacing_avg": {
+      "var1": "gex_dist_support_1",
+      "var2": "liq_spacing_avg",
+      "correlation": 0.01138984979958343,
+      "pValue": 1,
+      "n": 5700
+    },
+    "gex_dist_support_1__liq_momentum": {
+      "var1": "gex_dist_support_1",
+      "var2": "liq_momentum",
+      "correlation": -0.13406844608858412,
+      "pValue": 3.523963639939832e-24,
+      "n": 5700
+    },
+    "gex_dist_support_1__liq_max_change": {
+      "var1": "gex_dist_support_1",
+      "var2": "liq_max_change",
+      "correlation": -0.020501639784260114,
+      "pValue": 0.3111355655185488,
+      "n": 5700
+    },
+    "gex_dist_support_1__liq_dist_nearest": {
+      "var1": "gex_dist_support_1",
+      "var2": "liq_dist_nearest",
+      "correlation": 0.042851214642133886,
+      "pValue": 0.002609725080020595,
+      "n": 5700
+    },
+    "gex_dist_resistance_1__gex_dist_resistance_1": {
+      "var1": "gex_dist_resistance_1",
+      "var2": "gex_dist_resistance_1",
+      "correlation": 1,
+      "pValue": 0,
+      "n": 5700
+    },
+    "gex_dist_resistance_1__gex_regime_encoded": {
+      "var1": "gex_dist_resistance_1",
+      "var2": "gex_regime_encoded",
+      "correlation": -0.020305539928625452,
+      "pValue": 0.321391928333495,
+      "n": 5700
+    },
+    "gex_dist_resistance_1__total_gex": {
+      "var1": "gex_dist_resistance_1",
+      "var2": "total_gex",
+      "correlation": -0.04113089560064417,
+      "pValue": 0.004109740488091023,
+      "n": 5700
+    },
+    "gex_dist_resistance_1__iv": {
+      "var1": "gex_dist_resistance_1",
+      "var2": "iv",
+      "correlation": 0.04501525440892797,
+      "pValue": 0.0014420362326443164,
+      "n": 5700
+    },
+    "gex_dist_resistance_1__iv_skew": {
+      "var1": "gex_dist_resistance_1",
+      "var2": "iv_skew",
+      "correlation": 0.14928258747686754,
+      "pValue": 9.203661927006228e-30,
+      "n": 5696
+    },
+    "gex_dist_resistance_1__iv_change_15m": {
+      "var1": "gex_dist_resistance_1",
+      "var2": "iv_change_15m",
+      "correlation": -0.018255003480514575,
+      "pValue": 0.4565595555960713,
+      "n": 5625
+    },
+    "gex_dist_resistance_1__iv_percentile_all": {
+      "var1": "gex_dist_resistance_1",
+      "var2": "iv_percentile_all",
+      "correlation": 0.04501525440892797,
+      "pValue": 0.0014420362326443164,
+      "n": 5700
+    },
+    "gex_dist_resistance_1__liq_sentiment_encoded": {
+      "var1": "gex_dist_resistance_1",
+      "var2": "liq_sentiment_encoded",
+      "correlation": -0.1026095922912617,
+      "pValue": 1.3987964148589945e-14,
+      "n": 5700
+    },
+    "gex_dist_resistance_1__liq_spacing_avg": {
+      "var1": "gex_dist_resistance_1",
+      "var2": "liq_spacing_avg",
+      "correlation": 0.013866805222985133,
+      "pValue": 0.8813038097942818,
+      "n": 5700
+    },
+    "gex_dist_resistance_1__liq_momentum": {
+      "var1": "gex_dist_resistance_1",
+      "var2": "liq_momentum",
+      "correlation": 0.06839813025698627,
+      "pValue": 4.7135664505070404e-7,
+      "n": 5700
+    },
+    "gex_dist_resistance_1__liq_max_change": {
+      "var1": "gex_dist_resistance_1",
+      "var2": "liq_max_change",
+      "correlation": 0.02031266953492281,
+      "pValue": 0.3210138957669743,
+      "n": 5700
+    },
+    "gex_dist_resistance_1__liq_dist_nearest": {
+      "var1": "gex_dist_resistance_1",
+      "var2": "liq_dist_nearest",
+      "correlation": -0.06082578045075635,
+      "pValue": 0.000008819947161310933,
+      "n": 5700
+    },
+    "gex_regime_encoded__gex_regime_encoded": {
+      "var1": "gex_regime_encoded",
+      "var2": "gex_regime_encoded",
+      "correlation": 1,
+      "pValue": 0,
+      "n": 5700
+    },
+    "gex_regime_encoded__total_gex": {
+      "var1": "gex_regime_encoded",
+      "var2": "total_gex",
+      "correlation": 0.8811093840583368,
+      "pValue": 0,
+      "n": 5700
+    },
+    "gex_regime_encoded__iv": {
+      "var1": "gex_regime_encoded",
+      "var2": "iv",
+      "correlation": -0.46690615808828706,
+      "pValue": 0,
+      "n": 5700
+    },
+    "gex_regime_encoded__iv_skew": {
+      "var1": "gex_regime_encoded",
+      "var2": "iv_skew",
+      "correlation": 0.009544060958316496,
+      "pValue": 1,
+      "n": 5696
+    },
+    "gex_regime_encoded__iv_change_15m": {
+      "var1": "gex_regime_encoded",
+      "var2": "iv_change_15m",
+      "correlation": -0.019810394558051274,
+      "pValue": 0.3561463710692499,
+      "n": 5625
+    },
+    "gex_regime_encoded__iv_percentile_all": {
+      "var1": "gex_regime_encoded",
+      "var2": "iv_percentile_all",
+      "correlation": -0.46690615808828706,
+      "pValue": 0,
+      "n": 5700
+    },
+    "gex_regime_encoded__liq_sentiment_encoded": {
+      "var1": "gex_regime_encoded",
+      "var2": "liq_sentiment_encoded",
+      "correlation": 0.2925804457731502,
+      "pValue": 1.014663020066326e-117,
+      "n": 5700
+    },
+    "gex_regime_encoded__liq_spacing_avg": {
+      "var1": "gex_regime_encoded",
+      "var2": "liq_spacing_avg",
+      "correlation": -0.3345625835497613,
+      "pValue": 6.68143129213043e-158,
+      "n": 5700
+    },
+    "gex_regime_encoded__liq_momentum": {
+      "var1": "gex_regime_encoded",
+      "var2": "liq_momentum",
+      "correlation": 0.2347773389947947,
+      "pValue": 5.792223664993742e-74,
+      "n": 5700
+    },
+    "gex_regime_encoded__liq_max_change": {
+      "var1": "gex_regime_encoded",
+      "var2": "liq_max_change",
+      "correlation": -0.24859458942280943,
+      "pValue": 2.5971807485633076e-83,
+      "n": 5700
+    },
+    "gex_regime_encoded__liq_dist_nearest": {
+      "var1": "gex_regime_encoded",
+      "var2": "liq_dist_nearest",
+      "correlation": -0.12090830456104246,
+      "pValue": 7.641369985690066e-20,
+      "n": 5700
+    },
+    "total_gex__total_gex": {
+      "var1": "total_gex",
+      "var2": "total_gex",
+      "correlation": 1,
+      "pValue": 0,
+      "n": 5700
+    },
+    "total_gex__iv": {
+      "var1": "total_gex",
+      "var2": "iv",
+      "correlation": -0.46092090244446754,
+      "pValue": 0,
+      "n": 5700
+    },
+    "total_gex__iv_skew": {
+      "var1": "total_gex",
+      "var2": "iv_skew",
+      "correlation": 0.021359419021955216,
+      "pValue": 0.2699121332752318,
+      "n": 5696
+    },
+    "total_gex__iv_change_15m": {
+      "var1": "total_gex",
+      "var2": "iv_change_15m",
+      "correlation": -0.02268216558904228,
+      "pValue": 0.22063570525391746,
+      "n": 5625
+    },
+    "total_gex__iv_percentile_all": {
+      "var1": "total_gex",
+      "var2": "iv_percentile_all",
+      "correlation": -0.46092090244446754,
+      "pValue": 0,
+      "n": 5700
+    },
+    "total_gex__liq_sentiment_encoded": {
+      "var1": "total_gex",
+      "var2": "liq_sentiment_encoded",
+      "correlation": 0.35252347050610955,
+      "pValue": 1.4638178555673288e-177,
+      "n": 5700
+    },
+    "total_gex__liq_spacing_avg": {
+      "var1": "total_gex",
+      "var2": "liq_spacing_avg",
+      "correlation": -0.33061840679138405,
+      "pValue": 8.60173904571577e-154,
+      "n": 5700
+    },
+    "total_gex__liq_momentum": {
+      "var1": "total_gex",
+      "var2": "liq_momentum",
+      "correlation": 0.27637429076710857,
+      "pValue": 3.481518855590747e-104,
+      "n": 5700
+    },
+    "total_gex__liq_max_change": {
+      "var1": "total_gex",
+      "var2": "liq_max_change",
+      "correlation": -0.23279210594514593,
+      "pValue": 1.1269378242472183e-72,
+      "n": 5700
+    },
+    "total_gex__liq_dist_nearest": {
+      "var1": "total_gex",
+      "var2": "liq_dist_nearest",
+      "correlation": -0.10955461638144132,
+      "pValue": 1.7867102632658384e-16,
+      "n": 5700
+    },
+    "iv__iv": {
+      "var1": "iv",
+      "var2": "iv",
+      "correlation": 1,
+      "pValue": 0,
+      "n": 5700
+    },
+    "iv__iv_skew": {
+      "var1": "iv",
+      "var2": "iv_skew",
+      "correlation": -0.061574234904197105,
+      "pValue": 0.0000067513153723794965,
+      "n": 5696
+    },
+    "iv__iv_change_15m": {
+      "var1": "iv",
+      "var2": "iv_change_15m",
+      "correlation": 0.11825238130235394,
+      "pValue": 8.623828746550802e-19,
+      "n": 5625
+    },
+    "iv__iv_percentile_all": {
+      "var1": "iv",
+      "var2": "iv_percentile_all",
+      "correlation": 1,
+      "pValue": 0,
+      "n": 5700
+    },
+    "iv__liq_sentiment_encoded": {
+      "var1": "iv",
+      "var2": "liq_sentiment_encoded",
+      "correlation": -0.06128115230072216,
+      "pValue": 0.000007462763179068731,
+      "n": 5700
+    },
+    "iv__liq_spacing_avg": {
+      "var1": "iv",
+      "var2": "liq_spacing_avg",
+      "correlation": 0.550759540275882,
+      "pValue": 0,
+      "n": 5700
+    },
+    "iv__liq_momentum": {
+      "var1": "iv",
+      "var2": "liq_momentum",
+      "correlation": -0.05682989007898708,
+      "pValue": 0.00003637782942499171,
+      "n": 5700
+    },
+    "iv__liq_max_change": {
+      "var1": "iv",
+      "var2": "liq_max_change",
+      "correlation": 0.34340001040366863,
+      "pValue": 2.2309301903399703e-167,
+      "n": 5700
+    },
+    "iv__liq_dist_nearest": {
+      "var1": "iv",
+      "var2": "liq_dist_nearest",
+      "correlation": 0.1858688039085454,
+      "pValue": 5.9326909446702536e-46,
+      "n": 5700
+    },
+    "iv_skew__iv_skew": {
+      "var1": "iv_skew",
+      "var2": "iv_skew",
+      "correlation": 1,
+      "pValue": 0,
+      "n": 5696
+    },
+    "iv_skew__iv_change_15m": {
+      "var1": "iv_skew",
+      "var2": "iv_change_15m",
+      "correlation": -0.03753736326209198,
+      "pValue": 0.01074836267032657,
+      "n": 5622
+    },
+    "iv_skew__iv_percentile_all": {
+      "var1": "iv_skew",
+      "var2": "iv_percentile_all",
+      "correlation": -0.061574234904197105,
+      "pValue": 0.0000067513153723794965,
+      "n": 5696
+    },
+    "iv_skew__liq_sentiment_encoded": {
+      "var1": "iv_skew",
+      "var2": "liq_sentiment_encoded",
+      "correlation": -0.1355171716245532,
+      "pValue": 1.1412807193503009e-24,
+      "n": 5696
+    },
+    "iv_skew__liq_spacing_avg": {
+      "var1": "iv_skew",
+      "var2": "liq_spacing_avg",
+      "correlation": -0.042416551872212396,
+      "pValue": 0.0029428877610457862,
+      "n": 5696
+    },
+    "iv_skew__liq_momentum": {
+      "var1": "iv_skew",
+      "var2": "liq_momentum",
+      "correlation": 0.27152829990495725,
+      "pValue": 2.879849676908602e-100,
+      "n": 5696
+    },
+    "iv_skew__liq_max_change": {
+      "var1": "iv_skew",
+      "var2": "liq_max_change",
+      "correlation": 0.005758727325670409,
+      "pValue": 1,
+      "n": 5696
+    },
+    "iv_skew__liq_dist_nearest": {
+      "var1": "iv_skew",
+      "var2": "liq_dist_nearest",
+      "correlation": 0.04492208473491895,
+      "pValue": 0.001486608519513621,
+      "n": 5696
+    },
+    "iv_change_15m__iv_change_15m": {
+      "var1": "iv_change_15m",
+      "var2": "iv_change_15m",
+      "correlation": 1,
+      "pValue": 0,
+      "n": 5625
+    },
+    "iv_change_15m__iv_percentile_all": {
+      "var1": "iv_change_15m",
+      "var2": "iv_percentile_all",
+      "correlation": 0.11825238130235394,
+      "pValue": 8.623828746550802e-19,
+      "n": 5625
+    },
+    "iv_change_15m__liq_sentiment_encoded": {
+      "var1": "iv_change_15m",
+      "var2": "liq_sentiment_encoded",
+      "correlation": -0.026282214877017603,
+      "pValue": 0.11592211337489562,
+      "n": 5625
+    },
+    "iv_change_15m__liq_spacing_avg": {
+      "var1": "iv_change_15m",
+      "var2": "liq_spacing_avg",
+      "correlation": -0.001280555346394327,
+      "pValue": 1,
+      "n": 5625
+    },
+    "iv_change_15m__liq_momentum": {
+      "var1": "iv_change_15m",
+      "var2": "liq_momentum",
+      "correlation": -0.07467197158923593,
+      "pValue": 4.047207401215319e-8,
+      "n": 5625
+    },
+    "iv_change_15m__liq_max_change": {
+      "var1": "iv_change_15m",
+      "var2": "liq_max_change",
+      "correlation": -0.0035561833433149174,
+      "pValue": 1,
+      "n": 5625
+    },
+    "iv_change_15m__liq_dist_nearest": {
+      "var1": "iv_change_15m",
+      "var2": "liq_dist_nearest",
+      "correlation": 0.013253079906152546,
+      "pValue": 0.9797800084603926,
+      "n": 5625
+    },
+    "iv_percentile_all__iv_percentile_all": {
+      "var1": "iv_percentile_all",
+      "var2": "iv_percentile_all",
+      "correlation": 1,
+      "pValue": 0,
+      "n": 5700
+    },
+    "iv_percentile_all__liq_sentiment_encoded": {
+      "var1": "iv_percentile_all",
+      "var2": "liq_sentiment_encoded",
+      "correlation": -0.06128115230072216,
+      "pValue": 0.000007462763179068731,
+      "n": 5700
+    },
+    "iv_percentile_all__liq_spacing_avg": {
+      "var1": "iv_percentile_all",
+      "var2": "liq_spacing_avg",
+      "correlation": 0.550759540275882,
+      "pValue": 0,
+      "n": 5700
+    },
+    "iv_percentile_all__liq_momentum": {
+      "var1": "iv_percentile_all",
+      "var2": "liq_momentum",
+      "correlation": -0.05682989007898708,
+      "pValue": 0.00003637782942499171,
+      "n": 5700
+    },
+    "iv_percentile_all__liq_max_change": {
+      "var1": "iv_percentile_all",
+      "var2": "liq_max_change",
+      "correlation": 0.34340001040366863,
+      "pValue": 2.2309301903399703e-167,
+      "n": 5700
+    },
+    "iv_percentile_all__liq_dist_nearest": {
+      "var1": "iv_percentile_all",
+      "var2": "liq_dist_nearest",
+      "correlation": 0.1858688039085454,
+      "pValue": 5.9326909446702536e-46,
+      "n": 5700
+    },
+    "liq_sentiment_encoded__liq_sentiment_encoded": {
+      "var1": "liq_sentiment_encoded",
+      "var2": "liq_sentiment_encoded",
+      "correlation": 1,
+      "pValue": 0,
+      "n": 5700
+    },
+    "liq_sentiment_encoded__liq_spacing_avg": {
+      "var1": "liq_sentiment_encoded",
+      "var2": "liq_spacing_avg",
+      "correlation": -0.007824775571361456,
+      "pValue": 1,
+      "n": 5700
+    },
+    "liq_sentiment_encoded__liq_momentum": {
+      "var1": "liq_sentiment_encoded",
+      "var2": "liq_momentum",
+      "correlation": 0.2712979093535842,
+      "pValue": 3.7222736601781697e-100,
+      "n": 5700
+    },
+    "liq_sentiment_encoded__liq_max_change": {
+      "var1": "liq_sentiment_encoded",
+      "var2": "liq_max_change",
+      "correlation": -0.03506323587370563,
+      "pValue": 0.01806910870941725,
+      "n": 5700
+    },
+    "liq_sentiment_encoded__liq_dist_nearest": {
+      "var1": "liq_sentiment_encoded",
+      "var2": "liq_dist_nearest",
+      "correlation": 0.0032795416060005782,
+      "pValue": 1,
+      "n": 5700
+    },
+    "liq_spacing_avg__liq_spacing_avg": {
+      "var1": "liq_spacing_avg",
+      "var2": "liq_spacing_avg",
+      "correlation": 1,
+      "pValue": 0,
+      "n": 5700
+    },
+    "liq_spacing_avg__liq_momentum": {
+      "var1": "liq_spacing_avg",
+      "var2": "liq_momentum",
+      "correlation": 0.007102774869075891,
+      "pValue": 1,
+      "n": 5700
+    },
+    "liq_spacing_avg__liq_max_change": {
+      "var1": "liq_spacing_avg",
+      "var2": "liq_max_change",
+      "correlation": 0.27808993594062686,
+      "pValue": 1.4378255063672494e-105,
+      "n": 5700
+    },
+    "liq_spacing_avg__liq_dist_nearest": {
+      "var1": "liq_spacing_avg",
+      "var2": "liq_dist_nearest",
+      "correlation": 0.08124727556648714,
+      "pValue": 1.555929519091234e-9,
+      "n": 5700
+    },
+    "liq_momentum__liq_momentum": {
+      "var1": "liq_momentum",
+      "var2": "liq_momentum",
+      "correlation": 1,
+      "pValue": 0,
+      "n": 5700
+    },
+    "liq_momentum__liq_max_change": {
+      "var1": "liq_momentum",
+      "var2": "liq_max_change",
+      "correlation": 0.007904712472662528,
+      "pValue": 1,
+      "n": 5700
+    },
+    "liq_momentum__liq_dist_nearest": {
+      "var1": "liq_momentum",
+      "var2": "liq_dist_nearest",
+      "correlation": 0.006426007850456411,
+      "pValue": 1,
+      "n": 5700
+    },
+    "liq_max_change__liq_max_change": {
+      "var1": "liq_max_change",
+      "var2": "liq_max_change",
+      "correlation": 1,
+      "pValue": 0,
+      "n": 5700
+    },
+    "liq_max_change__liq_dist_nearest": {
+      "var1": "liq_max_change",
+      "var2": "liq_dist_nearest",
+      "correlation": 0.3094243375563889,
+      "pValue": 6.3950599446782795e-133,
+      "n": 5700
+    },
+    "liq_dist_nearest__liq_dist_nearest": {
+      "var1": "liq_dist_nearest",
+      "var2": "liq_dist_nearest",
+      "correlation": 1,
+      "pValue": 0,
+      "n": 5700
+    }
+  },
+  "keyFindings": [
+    {
+      "type": "pearson",
+      "var1": "gex_regime_encoded",
+      "var2": "total_gex",
+      "correlation": 0.8606799378378972,
+      "pValue": 0,
+      "n": 5700,
+      "strength": "strong",
+      "direction": "positive"
+    },
+    {
+      "type": "pearson",
+      "var1": "iv",
+      "var2": "iv_percentile_all",
+      "correlation": 0.8185782287378076,
+      "pValue": 0,
+      "n": 5700,
+      "strength": "strong",
+      "direction": "positive"
+    },
+    {
+      "type": "pearson",
+      "var1": "gex_dist_support_1",
+      "var2": "gex_dist_resistance_1",
+      "correlation": -0.6770783356447566,
+      "pValue": 0,
+      "n": 5700,
+      "strength": "strong",
+      "direction": "negative"
+    },
+    {
+      "type": "pearson",
+      "var1": "iv",
+      "var2": "liq_spacing_avg",
+      "correlation": 0.6529754762844032,
+      "pValue": 0,
+      "n": 5700,
+      "strength": "strong",
+      "direction": "positive"
+    },
+    {
+      "type": "pearson",
+      "var1": "gex_dist_gamma_flip",
+      "var2": "total_gex",
+      "correlation": 0.5851001006566624,
+      "pValue": 0,
+      "n": 5700,
+      "strength": "strong",
+      "direction": "positive"
+    },
+    {
+      "type": "pearson",
+      "var1": "iv_percentile_all",
+      "var2": "liq_spacing_avg",
+      "correlation": 0.512530449352369,
+      "pValue": 0,
+      "n": 5700,
+      "strength": "strong",
+      "direction": "positive"
+    },
+    {
+      "type": "pearson",
+      "var1": "price_return_15m",
+      "var2": "price_return_1h",
+      "correlation": 0.5044534692171347,
+      "pValue": 0,
+      "n": 5700,
+      "strength": "strong",
+      "direction": "positive"
+    },
+    {
+      "type": "pearson",
+      "var1": "gex_dist_gamma_flip",
+      "var2": "gex_regime_encoded",
+      "correlation": 0.48593305092305933,
+      "pValue": 0,
+      "n": 5700,
+      "strength": "moderate",
+      "direction": "positive"
+    },
+    {
+      "type": "pearson",
+      "var1": "total_gex",
+      "var2": "iv_percentile_all",
+      "correlation": -0.46900031685703775,
+      "pValue": 0,
+      "n": 5700,
+      "strength": "moderate",
+      "direction": "negative"
+    },
+    {
+      "type": "pearson",
+      "var1": "gex_regime_encoded",
+      "var2": "iv_percentile_all",
+      "correlation": -0.46315578768692417,
+      "pValue": 0,
+      "n": 5700,
+      "strength": "moderate",
+      "direction": "negative"
+    },
+    {
+      "type": "pearson",
+      "var1": "gex_dist_gamma_flip",
+      "var2": "gex_dist_resistance_1",
+      "correlation": -0.45851637004777734,
+      "pValue": 0,
+      "n": 5700,
+      "strength": "moderate",
+      "direction": "negative"
+    },
+    {
+      "type": "pearson",
+      "var1": "total_gex",
+      "var2": "iv",
+      "correlation": -0.4121244640341302,
+      "pValue": 3.3209301157484928e-255,
+      "n": 5700,
+      "strength": "moderate",
+      "direction": "negative"
+    },
+    {
+      "type": "pearson",
+      "var1": "price_return_15m",
+      "var2": "gex_dist_resistance_1",
+      "correlation": -0.41125300352915134,
+      "pValue": 6.4494635051500314e-254,
+      "n": 5700,
+      "strength": "moderate",
+      "direction": "negative"
+    },
+    {
+      "type": "pearson",
+      "var1": "gex_regime_encoded",
+      "var2": "iv",
+      "correlation": -0.4107716946043197,
+      "pValue": 3.303055028336461e-253,
+      "n": 5700,
+      "strength": "moderate",
+      "direction": "negative"
+    },
+    {
+      "type": "pearson",
+      "var1": "price_return_15m",
+      "var2": "gex_dist_support_1",
+      "correlation": 0.3905812421870182,
+      "pValue": 9.183977730403687e-225,
+      "n": 5700,
+      "strength": "moderate",
+      "direction": "positive"
+    },
+    {
+      "type": "pearson",
+      "var1": "gex_dist_gamma_flip",
+      "var2": "gex_dist_support_1",
+      "correlation": 0.38597147136304905,
+      "pValue": 1.2899348162851245e-218,
+      "n": 5700,
+      "strength": "moderate",
+      "direction": "positive"
+    },
+    {
+      "type": "pearson",
+      "var1": "price_range_15m",
+      "var2": "price_volatility_1h",
+      "correlation": 0.37881951165713024,
+      "pValue": 2.5407764296317215e-209,
+      "n": 5700,
+      "strength": "moderate",
+      "direction": "positive"
+    },
+    {
+      "type": "pearson",
+      "var1": "liq_max_change",
+      "var2": "liq_dist_nearest",
+      "correlation": 0.3482230626234695,
+      "pValue": 1.0395162940324074e-172,
+      "n": 5700,
+      "strength": "moderate",
+      "direction": "positive"
+    },
+    {
+      "type": "pearson",
+      "var1": "price_volatility_1h",
+      "var2": "iv",
+      "correlation": 0.3365389926725924,
+      "pValue": 5.4699371547283664e-160,
+      "n": 5700,
+      "strength": "moderate",
+      "direction": "positive"
+    },
+    {
+      "type": "pearson",
+      "var1": "price_return_1h",
+      "var2": "gex_dist_resistance_1",
+      "correlation": -0.3363030930398512,
+      "pValue": 9.728394088434707e-160,
+      "n": 5700,
+      "strength": "moderate",
+      "direction": "negative"
+    },
+    {
+      "type": "pearson",
+      "var1": "liq_spacing_avg",
+      "var2": "liq_max_change",
+      "correlation": 0.3328108237256514,
+      "pValue": 4.561885958537381e-156,
+      "n": 5700,
+      "strength": "moderate",
+      "direction": "positive"
+    },
+    {
+      "type": "pearson",
+      "var1": "total_gex",
+      "var2": "liq_sentiment_encoded",
+      "correlation": 0.33036635642756973,
+      "pValue": 1.5658367217212485e-153,
+      "n": 5700,
+      "strength": "moderate",
+      "direction": "positive"
+    },
+    {
+      "type": "pearson",
+      "var1": "price_return_1h",
+      "var2": "gex_dist_support_1",
+      "correlation": 0.31983745326461155,
+      "pValue": 6.341985995515881e-143,
+      "n": 5700,
+      "strength": "moderate",
+      "direction": "positive"
+    },
+    {
+      "type": "pearson",
+      "var1": "gex_dist_gamma_flip",
+      "var2": "iv",
+      "correlation": -0.31875617747786356,
+      "pValue": 7.298075018813937e-142,
+      "n": 5700,
+      "strength": "moderate",
+      "direction": "negative"
+    },
+    {
+      "type": "pearson",
+      "var1": "iv",
+      "var2": "liq_max_change",
+      "correlation": 0.31017668065751697,
+      "pValue": 1.2558474033611651e-133,
+      "n": 5700,
+      "strength": "moderate",
+      "direction": "positive"
+    },
+    {
+      "type": "pearson",
+      "var1": "price_volatility_1h",
+      "var2": "iv_percentile_all",
+      "correlation": 0.30759209916821256,
+      "pValue": 3.290427336082772e-131,
+      "n": 5700,
+      "strength": "moderate",
+      "direction": "positive"
+    },
+    {
+      "type": "pearson",
+      "var1": "gex_regime_encoded",
+      "var2": "liq_spacing_avg",
+      "correlation": -0.2884384235663846,
+      "pValue": 3.673240121151846e-114,
+      "n": 5700,
+      "strength": "weak",
+      "direction": "negative"
+    },
+    {
+      "type": "pearson",
+      "var1": "price_return_15m",
+      "var2": "iv_skew",
+      "correlation": -0.2877982405719528,
+      "pValue": 1.539973234546751e-113,
+      "n": 5696,
+      "strength": "weak",
+      "direction": "negative"
+    },
+    {
+      "type": "pearson",
+      "var1": "gex_regime_encoded",
+      "var2": "liq_sentiment_encoded",
+      "correlation": 0.2857665863715023,
+      "pValue": 6.669357804923683e-112,
+      "n": 5700,
+      "strength": "weak",
+      "direction": "positive"
+    },
+    {
+      "type": "pearson",
+      "var1": "total_gex",
+      "var2": "liq_spacing_avg",
+      "correlation": -0.2856292184827628,
+      "pValue": 8.69880578946521e-112,
+      "n": 5700,
+      "strength": "weak",
+      "direction": "negative"
+    }
+  ],
+  "metadata": {
+    "totalRecords": 22630,
+    "rthRecords": 5700,
+    "correlationPairs": 171,
+    "significantFindings": 59,
+    "analysisDate": "2026-01-21T06:04:34.357Z"
+  }
+}

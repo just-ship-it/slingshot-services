@@ -1,0 +1,2562 @@
+🔧 Testing Pullback Strategy with Proper Data Seeding
+============================================================
+
+📊 Seeding Requirements:
+   Rolling Window: 100 candles (needs 100 candles minimum)
+   Seeding Period: 480 candles (120.0 hours)
+
+📅 Seeding Period: 2025-09-26T00:00:00.000Z to 2025-10-01T00:00:00.000Z
+📅 Test Period: 2025-10-01T00:00:00.000Z to 2025-10-02T00:00:00.000Z
+🎯 Strategy: GEX-LDPM Confluence with Pullback System
+
+📊 GEX-LDPM Confluence Strategy initialized with params: {
+  confluenceThreshold: 5,
+  entryDistance: 10,
+  volumeConfirmationPct: 20,
+  stopLossPoints: 50,
+  targetAtCenter: true,
+  maxRisk: 50,
+  positiveRegimeSize: 1,
+  negativeRegimeSize: 1.3,
+  transitionRegimeSize: 0.7,
+  rthOnly: false,
+  overnightReduced: true,
+  overnightSizeMultiplier: 0.8,
+  useSessionFilter: false,
+  blockedSessions: [],
+  useLTOrderingFilter: false,
+  requireLT4BelowLT5: true,
+  requireLT1AboveLT2: false,
+  requireLT2AboveLT3: false,
+  signalCooldownMs: 300000,
+  tradingSymbol: 'NQ',
+  defaultQuantity: 1,
+  volumeLookbackPeriods: 20,
+  avoidNewsMinutes: 30,
+  useLTLevelEntries: false,
+  ltEntryTimeoutCandles: 6,
+  ltMinSpacing: 15,
+  ltMaxDistance: 150,
+  ltFallbackToSignal: true,
+  useFVGEntries: false,
+  fvgTimeframe: '15m',
+  fvgLookback: 100,
+  fvgMinSize: 5,
+  fvgMaxAge: 48,
+  ltFvgProximity: 50,
+  fvgEntryBuffer: 2,
+  fvgFillThreshold: 0.8,
+  enablePullbackSystem: true,
+  maxPullbackWait: 24,
+  maxPullbackDistance: 100,
+  minPullbackDistance: 5,
+  structuralLevelWeight: 1,
+  sessionLevelWeight: 1.2,
+  fibonacciLevelWeight: 0.8
+}
+🔄 Loading and processing data...
+📊 Loading OHLCV data from data/ohlcv/NQ_ohlcv_1m.csv...
+📈 Loading GEX data from data/gex/NQ_gex_levels.csv...
+📊 Loading liquidity data from data/liquidity/NQ_liquidity_levels.csv...
+✅ Loaded 5 GEX level records
+✅ Loaded 369 liquidity trigger records
+✅ Loaded 5521 candles for NQ (filtered from 5737 total)
+✅ Loaded 150 calendar spread records
+📊 Aggregated 5521 1m candles to 369 15m candles
+✅ Loaded 369 total candles (including seeding period)
+   📊 Seeding candles: 276
+   📊 Test candles: 93
+
+🌱 Seeding indicators with historical data...
+Session change: null -> overnight at 2025-09-26T00:00:00.000Z
+Finalized overnight levels: H:24672.25 L:24573.75 O:24616.75 C:24646
+Session change: overnight -> premarket at 2025-09-26T08:00:00.000Z
+Finalized premarket levels: H:24747.5 L:24569.25 O:24647 C:24653.75
+Session change: premarket -> rth at 2025-09-26T13:30:00.000Z
+Finalized rth levels: H:24737 L:24520 O:24654.25 C:24725.5
+Session change: rth -> overnight at 2025-09-26T20:00:00.000Z
+Finalized overnight levels: H:24864.25 L:24721.5 O:24725.75 C:24853.5
+Session change: overnight -> premarket at 2025-09-29T08:00:00.000Z
+Finalized premarket levels: H:24909.5 L:24846.5 O:24852.75 C:24850.75
+Session change: premarket -> rth at 2025-09-29T13:30:00.000Z
+Finalized rth levels: H:24975.5 L:24780.5 O:24850.75 C:24837.25
+Session change: rth -> overnight at 2025-09-29T20:00:00.000Z
+Finalized overnight levels: H:24856.75 L:24754.75 O:24837.5 C:24790.75
+Session change: overnight -> premarket at 2025-09-30T08:00:00.000Z
+Finalized premarket levels: H:24845 L:24763 O:24790 C:24821
+Session change: premarket -> rth at 2025-09-30T13:30:00.000Z
+Finalized rth levels: H:24913.75 L:24722.25 O:24820.5 C:24898.25
+Session change: rth -> overnight at 2025-09-30T20:00:00.000Z
+Rolling window swing detected: High=24975.50, Low=24520.00, Size=455.5 pts, Direction=up
+Calculated 5 fibonacci levels from 1 swings
+✅ Indicators initialized with seeding data
+   Structural levels: 0
+   Session levels: 0
+   Fibonacci levels: 5
+   Fibonacci swings stored: 1
+   First swing: High=$NaN, Low=$NaN, Size=455.5 pts
+
+
+============================================================
+🎯 Running backtest on test period...
+============================================================
+🎯 Running hybrid simulation (entry: 15m, exits: 1m)...
+📊 Strategy evaluation: 93 15m candles
+📈 Exit monitoring: 5521 1-minute candles
+📊 Initializing 150 calendar spread records for price conversion...
+✅ Calendar spread lookup initialized: 150 time periods with spread data
+Finalized overnight levels: H:24901.25 L:24573.75 O:24898 C:24646
+Session change: overnight -> premarket at 2025-09-26T08:00:00.000Z
+Finalized premarket levels: H:24747.5 L:24569.25 O:24647 C:24653.75
+Session change: premarket -> rth at 2025-09-26T13:30:00.000Z
+Finalized rth levels: H:24737 L:24520 O:24654.25 C:24725.5
+Session change: rth -> overnight at 2025-09-26T20:00:00.000Z
+Finalized overnight levels: H:24864.25 L:24721.5 O:24725.75 C:24853.5
+Session change: overnight -> premarket at 2025-09-29T08:00:00.000Z
+Finalized premarket levels: H:24909.5 L:24846.5 O:24852.75 C:24850.75
+Session change: premarket -> rth at 2025-09-29T13:30:00.000Z
+Finalized rth levels: H:24975.5 L:24780.5 O:24850.75 C:24837.25
+Session change: rth -> overnight at 2025-09-29T20:00:00.000Z
+Finalized overnight levels: H:24856.75 L:24754.75 O:24837.5 C:24790.75
+Session change: overnight -> premarket at 2025-09-30T08:00:00.000Z
+Finalized premarket levels: H:24845 L:24763 O:24790 C:24821
+Session change: premarket -> rth at 2025-09-30T13:30:00.000Z
+Finalized rth levels: H:24913.75 L:24722.25 O:24820.5 C:24898.25
+Session change: rth -> overnight at 2025-09-30T20:00:00.000Z
+Rolling window swing detected: High=24975.50, Low=24520.00, Size=455.5 pts, Direction=up
+Calculated 5 fibonacci levels from 1 swings
+Finalized overnight levels: H:24901.25 L:24573.75 O:24898 C:24646
+Session change: overnight -> premarket at 2025-09-26T08:00:00.000Z
+Finalized premarket levels: H:24747.5 L:24569.25 O:24647 C:24653.75
+Session change: premarket -> rth at 2025-09-26T13:30:00.000Z
+Finalized rth levels: H:24737 L:24520 O:24654.25 C:24725.5
+Session change: rth -> overnight at 2025-09-26T20:00:00.000Z
+Finalized overnight levels: H:24864.25 L:24721.5 O:24725.75 C:24853.5
+Session change: overnight -> premarket at 2025-09-29T08:00:00.000Z
+Finalized premarket levels: H:24909.5 L:24846.5 O:24852.75 C:24850.75
+Session change: premarket -> rth at 2025-09-29T13:30:00.000Z
+Finalized rth levels: H:24975.5 L:24780.5 O:24850.75 C:24837.25
+Session change: rth -> overnight at 2025-09-29T20:00:00.000Z
+Finalized overnight levels: H:24856.75 L:24754.75 O:24837.5 C:24790.75
+Session change: overnight -> premarket at 2025-09-30T08:00:00.000Z
+Finalized premarket levels: H:24845 L:24763 O:24790 C:24821
+Session change: premarket -> rth at 2025-09-30T13:30:00.000Z
+Finalized rth levels: H:24913.75 L:24722.25 O:24820.5 C:24898.25
+Session change: rth -> overnight at 2025-09-30T20:00:00.000Z
+Rolling window swing detected: High=24975.50, Low=24520.00, Size=455.5 pts, Direction=up
+Calculated 5 fibonacci levels from 1 swings
+Finalized overnight levels: H:24901.25 L:24573.75 O:24898 C:24646
+Session change: overnight -> premarket at 2025-09-26T08:00:00.000Z
+Finalized premarket levels: H:24747.5 L:24569.25 O:24647 C:24653.75
+Session change: premarket -> rth at 2025-09-26T13:30:00.000Z
+Finalized rth levels: H:24737 L:24520 O:24654.25 C:24725.5
+Session change: rth -> overnight at 2025-09-26T20:00:00.000Z
+Finalized overnight levels: H:24864.25 L:24721.5 O:24725.75 C:24853.5
+Session change: overnight -> premarket at 2025-09-29T08:00:00.000Z
+Finalized premarket levels: H:24909.5 L:24846.5 O:24852.75 C:24850.75
+Session change: premarket -> rth at 2025-09-29T13:30:00.000Z
+Finalized rth levels: H:24975.5 L:24780.5 O:24850.75 C:24837.25
+Session change: rth -> overnight at 2025-09-29T20:00:00.000Z
+Finalized overnight levels: H:24856.75 L:24754.75 O:24837.5 C:24790.75
+Session change: overnight -> premarket at 2025-09-30T08:00:00.000Z
+Finalized premarket levels: H:24845 L:24763 O:24790 C:24821
+Session change: premarket -> rth at 2025-09-30T13:30:00.000Z
+Finalized rth levels: H:24913.75 L:24722.25 O:24820.5 C:24898.25
+Session change: rth -> overnight at 2025-09-30T20:00:00.000Z
+Rolling window swing detected: High=24975.50, Low=24520.00, Size=455.5 pts, Direction=up
+Calculated 5 fibonacci levels from 1 swings
+Finalized overnight levels: H:24901.25 L:24573.75 O:24898 C:24646
+Session change: overnight -> premarket at 2025-09-26T08:00:00.000Z
+Finalized premarket levels: H:24747.5 L:24569.25 O:24647 C:24653.75
+Session change: premarket -> rth at 2025-09-26T13:30:00.000Z
+Finalized rth levels: H:24737 L:24520 O:24654.25 C:24725.5
+Session change: rth -> overnight at 2025-09-26T20:00:00.000Z
+Finalized overnight levels: H:24864.25 L:24721.5 O:24725.75 C:24853.5
+Session change: overnight -> premarket at 2025-09-29T08:00:00.000Z
+Finalized premarket levels: H:24909.5 L:24846.5 O:24852.75 C:24850.75
+Session change: premarket -> rth at 2025-09-29T13:30:00.000Z
+Finalized rth levels: H:24975.5 L:24780.5 O:24850.75 C:24837.25
+Session change: rth -> overnight at 2025-09-29T20:00:00.000Z
+Finalized overnight levels: H:24856.75 L:24754.75 O:24837.5 C:24790.75
+Session change: overnight -> premarket at 2025-09-30T08:00:00.000Z
+Finalized premarket levels: H:24845 L:24763 O:24790 C:24821
+Session change: premarket -> rth at 2025-09-30T13:30:00.000Z
+Finalized rth levels: H:24913.75 L:24722.25 O:24820.5 C:24898.25
+Session change: rth -> overnight at 2025-09-30T20:00:00.000Z
+Rolling window swing detected: High=24975.50, Low=24520.00, Size=455.5 pts, Direction=up
+Calculated 5 fibonacci levels from 1 swings
+Finalized overnight levels: H:24901.25 L:24573.75 O:24898 C:24646
+Session change: overnight -> premarket at 2025-09-26T08:00:00.000Z
+Finalized premarket levels: H:24747.5 L:24569.25 O:24647 C:24653.75
+Session change: premarket -> rth at 2025-09-26T13:30:00.000Z
+Finalized rth levels: H:24737 L:24520 O:24654.25 C:24725.5
+Session change: rth -> overnight at 2025-09-26T20:00:00.000Z
+Finalized overnight levels: H:24864.25 L:24721.5 O:24725.75 C:24853.5
+Session change: overnight -> premarket at 2025-09-29T08:00:00.000Z
+Finalized premarket levels: H:24909.5 L:24846.5 O:24852.75 C:24850.75
+Session change: premarket -> rth at 2025-09-29T13:30:00.000Z
+Finalized rth levels: H:24975.5 L:24780.5 O:24850.75 C:24837.25
+Session change: rth -> overnight at 2025-09-29T20:00:00.000Z
+Finalized overnight levels: H:24856.75 L:24754.75 O:24837.5 C:24790.75
+Session change: overnight -> premarket at 2025-09-30T08:00:00.000Z
+Finalized premarket levels: H:24845 L:24763 O:24790 C:24821
+Session change: premarket -> rth at 2025-09-30T13:30:00.000Z
+Finalized rth levels: H:24913.75 L:24722.25 O:24820.5 C:24898.25
+Session change: rth -> overnight at 2025-09-30T20:00:00.000Z
+Rolling window swing detected: High=24975.50, Low=24520.00, Size=455.5 pts, Direction=up
+Calculated 5 fibonacci levels from 1 swings
+Finalized overnight levels: H:24901.25 L:24573.75 O:24898 C:24646
+Session change: overnight -> premarket at 2025-09-26T08:00:00.000Z
+Finalized premarket levels: H:24747.5 L:24569.25 O:24647 C:24653.75
+Session change: premarket -> rth at 2025-09-26T13:30:00.000Z
+Finalized rth levels: H:24737 L:24520 O:24654.25 C:24725.5
+Session change: rth -> overnight at 2025-09-26T20:00:00.000Z
+Finalized overnight levels: H:24864.25 L:24721.5 O:24725.75 C:24853.5
+Session change: overnight -> premarket at 2025-09-29T08:00:00.000Z
+Finalized premarket levels: H:24909.5 L:24846.5 O:24852.75 C:24850.75
+Session change: premarket -> rth at 2025-09-29T13:30:00.000Z
+Finalized rth levels: H:24975.5 L:24780.5 O:24850.75 C:24837.25
+Session change: rth -> overnight at 2025-09-29T20:00:00.000Z
+Finalized overnight levels: H:24856.75 L:24754.75 O:24837.5 C:24790.75
+Session change: overnight -> premarket at 2025-09-30T08:00:00.000Z
+Finalized premarket levels: H:24845 L:24763 O:24790 C:24821
+Session change: premarket -> rth at 2025-09-30T13:30:00.000Z
+Finalized rth levels: H:24913.75 L:24722.25 O:24820.5 C:24898.25
+Session change: rth -> overnight at 2025-09-30T20:00:00.000Z
+Rolling window swing detected: High=24975.50, Low=24520.00, Size=455.5 pts, Direction=up
+Calculated 5 fibonacci levels from 1 swings
+Finalized overnight levels: H:24901.25 L:24573.75 O:24898 C:24646
+Session change: overnight -> premarket at 2025-09-26T08:00:00.000Z
+Finalized premarket levels: H:24747.5 L:24569.25 O:24647 C:24653.75
+Session change: premarket -> rth at 2025-09-26T13:30:00.000Z
+Finalized rth levels: H:24737 L:24520 O:24654.25 C:24725.5
+Session change: rth -> overnight at 2025-09-26T20:00:00.000Z
+Finalized overnight levels: H:24864.25 L:24721.5 O:24725.75 C:24853.5
+Session change: overnight -> premarket at 2025-09-29T08:00:00.000Z
+Finalized premarket levels: H:24909.5 L:24846.5 O:24852.75 C:24850.75
+Session change: premarket -> rth at 2025-09-29T13:30:00.000Z
+Finalized rth levels: H:24975.5 L:24780.5 O:24850.75 C:24837.25
+Session change: rth -> overnight at 2025-09-29T20:00:00.000Z
+Finalized overnight levels: H:24856.75 L:24754.75 O:24837.5 C:24790.75
+Session change: overnight -> premarket at 2025-09-30T08:00:00.000Z
+Finalized premarket levels: H:24845 L:24763 O:24790 C:24821
+Session change: premarket -> rth at 2025-09-30T13:30:00.000Z
+Finalized rth levels: H:24913.75 L:24722.25 O:24820.5 C:24898.25
+Session change: rth -> overnight at 2025-09-30T20:00:00.000Z
+Rolling window swing detected: High=24975.50, Low=24520.00, Size=455.5 pts, Direction=up
+Calculated 5 fibonacci levels from 1 swings
+Finalized overnight levels: H:24901.25 L:24573.75 O:24898 C:24646
+Session change: overnight -> premarket at 2025-09-26T08:00:00.000Z
+Finalized premarket levels: H:24747.5 L:24569.25 O:24647 C:24653.75
+Session change: premarket -> rth at 2025-09-26T13:30:00.000Z
+Finalized rth levels: H:24737 L:24520 O:24654.25 C:24725.5
+Session change: rth -> overnight at 2025-09-26T20:00:00.000Z
+Finalized overnight levels: H:24864.25 L:24721.5 O:24725.75 C:24853.5
+Session change: overnight -> premarket at 2025-09-29T08:00:00.000Z
+Finalized premarket levels: H:24909.5 L:24846.5 O:24852.75 C:24850.75
+Session change: premarket -> rth at 2025-09-29T13:30:00.000Z
+Finalized rth levels: H:24975.5 L:24780.5 O:24850.75 C:24837.25
+Session change: rth -> overnight at 2025-09-29T20:00:00.000Z
+Finalized overnight levels: H:24856.75 L:24754.75 O:24837.5 C:24790.75
+Session change: overnight -> premarket at 2025-09-30T08:00:00.000Z
+Finalized premarket levels: H:24845 L:24763 O:24790 C:24821
+Session change: premarket -> rth at 2025-09-30T13:30:00.000Z
+Finalized rth levels: H:24913.75 L:24722.25 O:24820.5 C:24898.25
+Session change: rth -> overnight at 2025-09-30T20:00:00.000Z
+Rolling window swing detected: High=24975.50, Low=24520.00, Size=455.5 pts, Direction=up
+Calculated 5 fibonacci levels from 1 swings
+Finalized overnight levels: H:24901.25 L:24573.75 O:24898 C:24646
+Session change: overnight -> premarket at 2025-09-26T08:00:00.000Z
+Finalized premarket levels: H:24747.5 L:24569.25 O:24647 C:24653.75
+Session change: premarket -> rth at 2025-09-26T13:30:00.000Z
+Finalized rth levels: H:24737 L:24520 O:24654.25 C:24725.5
+Session change: rth -> overnight at 2025-09-26T20:00:00.000Z
+Finalized overnight levels: H:24864.25 L:24721.5 O:24725.75 C:24853.5
+Session change: overnight -> premarket at 2025-09-29T08:00:00.000Z
+Finalized premarket levels: H:24909.5 L:24846.5 O:24852.75 C:24850.75
+Session change: premarket -> rth at 2025-09-29T13:30:00.000Z
+Finalized rth levels: H:24975.5 L:24780.5 O:24850.75 C:24837.25
+Session change: rth -> overnight at 2025-09-29T20:00:00.000Z
+Finalized overnight levels: H:24856.75 L:24754.75 O:24837.5 C:24790.75
+Session change: overnight -> premarket at 2025-09-30T08:00:00.000Z
+Finalized premarket levels: H:24845 L:24763 O:24790 C:24821
+Session change: premarket -> rth at 2025-09-30T13:30:00.000Z
+Finalized rth levels: H:24913.75 L:24722.25 O:24820.5 C:24898.25
+Session change: rth -> overnight at 2025-09-30T20:00:00.000Z
+Rolling window swing detected: High=24975.50, Low=24520.00, Size=455.5 pts, Direction=up
+Calculated 5 fibonacci levels from 1 swings
+Finalized overnight levels: H:24901.25 L:24573.75 O:24898 C:24646
+Session change: overnight -> premarket at 2025-09-26T08:00:00.000Z
+Finalized premarket levels: H:24747.5 L:24569.25 O:24647 C:24653.75
+Session change: premarket -> rth at 2025-09-26T13:30:00.000Z
+Finalized rth levels: H:24737 L:24520 O:24654.25 C:24725.5
+Session change: rth -> overnight at 2025-09-26T20:00:00.000Z
+Finalized overnight levels: H:24864.25 L:24721.5 O:24725.75 C:24853.5
+Session change: overnight -> premarket at 2025-09-29T08:00:00.000Z
+Finalized premarket levels: H:24909.5 L:24846.5 O:24852.75 C:24850.75
+Session change: premarket -> rth at 2025-09-29T13:30:00.000Z
+Finalized rth levels: H:24975.5 L:24780.5 O:24850.75 C:24837.25
+Session change: rth -> overnight at 2025-09-29T20:00:00.000Z
+Finalized overnight levels: H:24856.75 L:24754.75 O:24837.5 C:24790.75
+Session change: overnight -> premarket at 2025-09-30T08:00:00.000Z
+Finalized premarket levels: H:24845 L:24763 O:24790 C:24821
+Session change: premarket -> rth at 2025-09-30T13:30:00.000Z
+Finalized rth levels: H:24913.75 L:24722.25 O:24820.5 C:24898.25
+Session change: rth -> overnight at 2025-09-30T20:00:00.000Z
+Rolling window swing detected: High=24975.50, Low=24520.00, Size=455.5 pts, Direction=up
+Calculated 5 fibonacci levels from 1 swings
+Finalized overnight levels: H:24901.25 L:24573.75 O:24898 C:24646
+Session change: overnight -> premarket at 2025-09-26T08:00:00.000Z
+Finalized premarket levels: H:24747.5 L:24569.25 O:24647 C:24653.75
+Session change: premarket -> rth at 2025-09-26T13:30:00.000Z
+Finalized rth levels: H:24737 L:24520 O:24654.25 C:24725.5
+Session change: rth -> overnight at 2025-09-26T20:00:00.000Z
+Finalized overnight levels: H:24864.25 L:24721.5 O:24725.75 C:24853.5
+Session change: overnight -> premarket at 2025-09-29T08:00:00.000Z
+Finalized premarket levels: H:24909.5 L:24846.5 O:24852.75 C:24850.75
+Session change: premarket -> rth at 2025-09-29T13:30:00.000Z
+Finalized rth levels: H:24975.5 L:24780.5 O:24850.75 C:24837.25
+Session change: rth -> overnight at 2025-09-29T20:00:00.000Z
+Finalized overnight levels: H:24856.75 L:24754.75 O:24837.5 C:24790.75
+Session change: overnight -> premarket at 2025-09-30T08:00:00.000Z
+Finalized premarket levels: H:24845 L:24763 O:24790 C:24821
+Session change: premarket -> rth at 2025-09-30T13:30:00.000Z
+Finalized rth levels: H:24913.75 L:24722.25 O:24820.5 C:24898.25
+Session change: rth -> overnight at 2025-09-30T20:00:00.000Z
+Rolling window swing detected: High=24975.50, Low=24520.00, Size=455.5 pts, Direction=up
+Calculated 5 fibonacci levels from 1 swings
+Finalized overnight levels: H:24901.25 L:24573.75 O:24898 C:24646
+Session change: overnight -> premarket at 2025-09-26T08:00:00.000Z
+Finalized premarket levels: H:24747.5 L:24569.25 O:24647 C:24653.75
+Session change: premarket -> rth at 2025-09-26T13:30:00.000Z
+Finalized rth levels: H:24737 L:24520 O:24654.25 C:24725.5
+Session change: rth -> overnight at 2025-09-26T20:00:00.000Z
+Finalized overnight levels: H:24864.25 L:24721.5 O:24725.75 C:24853.5
+Session change: overnight -> premarket at 2025-09-29T08:00:00.000Z
+Finalized premarket levels: H:24909.5 L:24846.5 O:24852.75 C:24850.75
+Session change: premarket -> rth at 2025-09-29T13:30:00.000Z
+Finalized rth levels: H:24975.5 L:24780.5 O:24850.75 C:24837.25
+Session change: rth -> overnight at 2025-09-29T20:00:00.000Z
+Finalized overnight levels: H:24856.75 L:24754.75 O:24837.5 C:24790.75
+Session change: overnight -> premarket at 2025-09-30T08:00:00.000Z
+Finalized premarket levels: H:24845 L:24763 O:24790 C:24821
+Session change: premarket -> rth at 2025-09-30T13:30:00.000Z
+Finalized rth levels: H:24913.75 L:24722.25 O:24820.5 C:24898.25
+Session change: rth -> overnight at 2025-09-30T20:00:00.000Z
+Rolling window swing detected: High=24975.50, Low=24520.00, Size=455.5 pts, Direction=up
+Calculated 5 fibonacci levels from 1 swings
+📊 GEX-LDPM Confluence Signal Generated at 2025-10-01T03:00:00.000Z: {
+  side: 'buy',
+  price: 24772.75,
+  zone: 24882.478957022566,
+  distance: 109.72895702256574,
+  regime: 'positive',
+  volume: '1.28x avg',
+  timestamp: 1759287600000,
+  time: '2025-10-01T03:00:00.000Z'
+}
+   Debug - Available swings: 1
+   First swing: {
+  id: '1758896100000-1759154400000',
+  start: {
+    timestamp: 1758896100000,
+    symbol: 'NQZ5',
+    open: 24605,
+    high: 24614.75,
+    low: 24520,
+    close: 24569,
+    volume: 33664,
+    candleCount: 15,
+    periodStart: '2025-09-26T14:15:00.000Z',
+    originalTimespan: { start: 1758896100000, end: 1758896940000 }
+  },
+  end: {
+    timestamp: 1759154400000,
+    symbol: 'NQZ5',
+    open: 24942,
+    high: 24975.5,
+    low: 24920,
+    close: 24956,
+    volume: 26124,
+    candleCount: 15,
+    periodStart: '2025-09-29T14:00:00.000Z',
+    originalTimespan: { start: 1759154400000, end: 1759155240000 }
+  },
+  size: 455.5,
+  direction: 'up',
+  timestamp: 1759154400000,
+  high: 24975.5,
+  low: 24520,
+  age: 0
+}
+
+📊 Signal 1 at 2025-10-01T03:00:00.000Z
+   Side: BUY
+   Price: $24772.75
+   Confluence Zone: $24882.478957022566
+
+   🎯 Detected Pullback Levels (3 total):
+   Fibonacci Levels:
+     - $24747.75 (50.0% Fib (half_retracement), from swing H:24975.50 L:24520.00)
+     - $24694.00 (61.8% Fib (golden_retracement), from swing H:24975.50 L:24520.00)
+     - $24617.48 (78.6% Fib (deep_retracement), from swing H:24975.50 L:24520.00)
+   Fibonacci Swings (used for calculations):
+     Swing 1: High=$24975.50, Low=$24520.00, Direction=up, Size=455.5 pts
+Finalized overnight levels: H:24901.25 L:24573.75 O:24898 C:24646
+Session change: overnight -> premarket at 2025-09-26T08:00:00.000Z
+Finalized premarket levels: H:24747.5 L:24569.25 O:24647 C:24653.75
+Session change: premarket -> rth at 2025-09-26T13:30:00.000Z
+Finalized rth levels: H:24737 L:24520 O:24654.25 C:24725.5
+Session change: rth -> overnight at 2025-09-26T20:00:00.000Z
+Finalized overnight levels: H:24864.25 L:24721.5 O:24725.75 C:24853.5
+Session change: overnight -> premarket at 2025-09-29T08:00:00.000Z
+Finalized premarket levels: H:24909.5 L:24846.5 O:24852.75 C:24850.75
+Session change: premarket -> rth at 2025-09-29T13:30:00.000Z
+Finalized rth levels: H:24975.5 L:24780.5 O:24850.75 C:24837.25
+Session change: rth -> overnight at 2025-09-29T20:00:00.000Z
+Finalized overnight levels: H:24856.75 L:24754.75 O:24837.5 C:24790.75
+Session change: overnight -> premarket at 2025-09-30T08:00:00.000Z
+Finalized premarket levels: H:24845 L:24763 O:24790 C:24821
+Session change: premarket -> rth at 2025-09-30T13:30:00.000Z
+Finalized rth levels: H:24913.75 L:24722.25 O:24820.5 C:24898.25
+Session change: rth -> overnight at 2025-09-30T20:00:00.000Z
+Rolling window swing detected: High=24975.50, Low=24520.00, Size=455.5 pts, Direction=up
+Calculated 5 fibonacci levels from 1 swings
+Finalized overnight levels: H:24901.25 L:24573.75 O:24898 C:24646
+Session change: overnight -> premarket at 2025-09-26T08:00:00.000Z
+Finalized premarket levels: H:24747.5 L:24569.25 O:24647 C:24653.75
+Session change: premarket -> rth at 2025-09-26T13:30:00.000Z
+Finalized rth levels: H:24737 L:24520 O:24654.25 C:24725.5
+Session change: rth -> overnight at 2025-09-26T20:00:00.000Z
+Finalized overnight levels: H:24864.25 L:24721.5 O:24725.75 C:24853.5
+Session change: overnight -> premarket at 2025-09-29T08:00:00.000Z
+Finalized premarket levels: H:24909.5 L:24846.5 O:24852.75 C:24850.75
+Session change: premarket -> rth at 2025-09-29T13:30:00.000Z
+Finalized rth levels: H:24975.5 L:24780.5 O:24850.75 C:24837.25
+Session change: rth -> overnight at 2025-09-29T20:00:00.000Z
+Finalized overnight levels: H:24856.75 L:24754.75 O:24837.5 C:24790.75
+Session change: overnight -> premarket at 2025-09-30T08:00:00.000Z
+Finalized premarket levels: H:24845 L:24763 O:24790 C:24821
+Session change: premarket -> rth at 2025-09-30T13:30:00.000Z
+Finalized rth levels: H:24913.75 L:24722.25 O:24820.5 C:24898.25
+Session change: rth -> overnight at 2025-09-30T20:00:00.000Z
+Rolling window swing detected: High=24975.50, Low=24520.00, Size=455.5 pts, Direction=up
+Calculated 5 fibonacci levels from 1 swings
+Finalized overnight levels: H:24901.25 L:24573.75 O:24898 C:24646
+Session change: overnight -> premarket at 2025-09-26T08:00:00.000Z
+Finalized premarket levels: H:24747.5 L:24569.25 O:24647 C:24653.75
+Session change: premarket -> rth at 2025-09-26T13:30:00.000Z
+Finalized rth levels: H:24737 L:24520 O:24654.25 C:24725.5
+Session change: rth -> overnight at 2025-09-26T20:00:00.000Z
+Finalized overnight levels: H:24864.25 L:24721.5 O:24725.75 C:24853.5
+Session change: overnight -> premarket at 2025-09-29T08:00:00.000Z
+Finalized premarket levels: H:24909.5 L:24846.5 O:24852.75 C:24850.75
+Session change: premarket -> rth at 2025-09-29T13:30:00.000Z
+Finalized rth levels: H:24975.5 L:24780.5 O:24850.75 C:24837.25
+Session change: rth -> overnight at 2025-09-29T20:00:00.000Z
+Finalized overnight levels: H:24856.75 L:24754.75 O:24837.5 C:24790.75
+Session change: overnight -> premarket at 2025-09-30T08:00:00.000Z
+Finalized premarket levels: H:24845 L:24763 O:24790 C:24821
+Session change: premarket -> rth at 2025-09-30T13:30:00.000Z
+Finalized rth levels: H:24913.75 L:24722.25 O:24820.5 C:24898.25
+Session change: rth -> overnight at 2025-09-30T20:00:00.000Z
+Rolling window swing detected: High=24975.50, Low=24520.00, Size=455.5 pts, Direction=up
+Calculated 5 fibonacci levels from 1 swings
+Finalized overnight levels: H:24901.25 L:24573.75 O:24898 C:24646
+Session change: overnight -> premarket at 2025-09-26T08:00:00.000Z
+Finalized premarket levels: H:24747.5 L:24569.25 O:24647 C:24653.75
+Session change: premarket -> rth at 2025-09-26T13:30:00.000Z
+Finalized rth levels: H:24737 L:24520 O:24654.25 C:24725.5
+Session change: rth -> overnight at 2025-09-26T20:00:00.000Z
+Finalized overnight levels: H:24864.25 L:24721.5 O:24725.75 C:24853.5
+Session change: overnight -> premarket at 2025-09-29T08:00:00.000Z
+Finalized premarket levels: H:24909.5 L:24846.5 O:24852.75 C:24850.75
+Session change: premarket -> rth at 2025-09-29T13:30:00.000Z
+Finalized rth levels: H:24975.5 L:24780.5 O:24850.75 C:24837.25
+Session change: rth -> overnight at 2025-09-29T20:00:00.000Z
+Finalized overnight levels: H:24856.75 L:24754.75 O:24837.5 C:24790.75
+Session change: overnight -> premarket at 2025-09-30T08:00:00.000Z
+Finalized premarket levels: H:24845 L:24763 O:24790 C:24821
+Session change: premarket -> rth at 2025-09-30T13:30:00.000Z
+Finalized rth levels: H:24913.75 L:24722.25 O:24820.5 C:24898.25
+Session change: rth -> overnight at 2025-09-30T20:00:00.000Z
+Rolling window swing detected: High=24975.50, Low=24520.00, Size=455.5 pts, Direction=up
+Calculated 5 fibonacci levels from 1 swings
+Finalized overnight levels: H:24901.25 L:24573.75 O:24898 C:24646
+Session change: overnight -> premarket at 2025-09-26T08:00:00.000Z
+Finalized premarket levels: H:24747.5 L:24569.25 O:24647 C:24653.75
+Session change: premarket -> rth at 2025-09-26T13:30:00.000Z
+Finalized rth levels: H:24737 L:24520 O:24654.25 C:24725.5
+Session change: rth -> overnight at 2025-09-26T20:00:00.000Z
+Finalized overnight levels: H:24864.25 L:24721.5 O:24725.75 C:24853.5
+Session change: overnight -> premarket at 2025-09-29T08:00:00.000Z
+Finalized premarket levels: H:24909.5 L:24846.5 O:24852.75 C:24850.75
+Session change: premarket -> rth at 2025-09-29T13:30:00.000Z
+Finalized rth levels: H:24975.5 L:24780.5 O:24850.75 C:24837.25
+Session change: rth -> overnight at 2025-09-29T20:00:00.000Z
+Finalized overnight levels: H:24856.75 L:24754.75 O:24837.5 C:24790.75
+Session change: overnight -> premarket at 2025-09-30T08:00:00.000Z
+Finalized premarket levels: H:24845 L:24763 O:24790 C:24821
+Session change: premarket -> rth at 2025-09-30T13:30:00.000Z
+Finalized rth levels: H:24913.75 L:24722.25 O:24820.5 C:24898.25
+Session change: rth -> overnight at 2025-09-30T20:00:00.000Z
+Rolling window swing detected: High=24975.50, Low=24520.00, Size=455.5 pts, Direction=up
+Calculated 5 fibonacci levels from 1 swings
+Finalized overnight levels: H:24901.25 L:24573.75 O:24898 C:24646
+Session change: overnight -> premarket at 2025-09-26T08:00:00.000Z
+Finalized premarket levels: H:24747.5 L:24569.25 O:24647 C:24653.75
+Session change: premarket -> rth at 2025-09-26T13:30:00.000Z
+Finalized rth levels: H:24737 L:24520 O:24654.25 C:24725.5
+Session change: rth -> overnight at 2025-09-26T20:00:00.000Z
+Finalized overnight levels: H:24864.25 L:24721.5 O:24725.75 C:24853.5
+Session change: overnight -> premarket at 2025-09-29T08:00:00.000Z
+Finalized premarket levels: H:24909.5 L:24846.5 O:24852.75 C:24850.75
+Session change: premarket -> rth at 2025-09-29T13:30:00.000Z
+Finalized rth levels: H:24975.5 L:24780.5 O:24850.75 C:24837.25
+Session change: rth -> overnight at 2025-09-29T20:00:00.000Z
+Finalized overnight levels: H:24856.75 L:24754.75 O:24837.5 C:24790.75
+Session change: overnight -> premarket at 2025-09-30T08:00:00.000Z
+Finalized premarket levels: H:24845 L:24763 O:24790 C:24821
+Session change: premarket -> rth at 2025-09-30T13:30:00.000Z
+Finalized rth levels: H:24913.75 L:24722.25 O:24820.5 C:24898.25
+Session change: rth -> overnight at 2025-09-30T20:00:00.000Z
+Rolling window swing detected: High=24975.50, Low=24520.00, Size=455.5 pts, Direction=up
+Calculated 5 fibonacci levels from 1 swings
+Finalized overnight levels: H:24901.25 L:24573.75 O:24898 C:24646
+Session change: overnight -> premarket at 2025-09-26T08:00:00.000Z
+Finalized premarket levels: H:24747.5 L:24569.25 O:24647 C:24653.75
+Session change: premarket -> rth at 2025-09-26T13:30:00.000Z
+Finalized rth levels: H:24737 L:24520 O:24654.25 C:24725.5
+Session change: rth -> overnight at 2025-09-26T20:00:00.000Z
+Finalized overnight levels: H:24864.25 L:24721.5 O:24725.75 C:24853.5
+Session change: overnight -> premarket at 2025-09-29T08:00:00.000Z
+Finalized premarket levels: H:24909.5 L:24846.5 O:24852.75 C:24850.75
+Session change: premarket -> rth at 2025-09-29T13:30:00.000Z
+Finalized rth levels: H:24975.5 L:24780.5 O:24850.75 C:24837.25
+Session change: rth -> overnight at 2025-09-29T20:00:00.000Z
+Finalized overnight levels: H:24856.75 L:24754.75 O:24837.5 C:24790.75
+Session change: overnight -> premarket at 2025-09-30T08:00:00.000Z
+Finalized premarket levels: H:24845 L:24763 O:24790 C:24821
+Session change: premarket -> rth at 2025-09-30T13:30:00.000Z
+Finalized rth levels: H:24913.75 L:24722.25 O:24820.5 C:24898.25
+Session change: rth -> overnight at 2025-09-30T20:00:00.000Z
+Rolling window swing detected: High=24975.50, Low=24520.00, Size=455.5 pts, Direction=up
+Calculated 5 fibonacci levels from 1 swings
+Finalized overnight levels: H:24901.25 L:24573.75 O:24898 C:24646
+Session change: overnight -> premarket at 2025-09-26T08:00:00.000Z
+Finalized premarket levels: H:24747.5 L:24569.25 O:24647 C:24653.75
+Session change: premarket -> rth at 2025-09-26T13:30:00.000Z
+Finalized rth levels: H:24737 L:24520 O:24654.25 C:24725.5
+Session change: rth -> overnight at 2025-09-26T20:00:00.000Z
+Finalized overnight levels: H:24864.25 L:24721.5 O:24725.75 C:24853.5
+Session change: overnight -> premarket at 2025-09-29T08:00:00.000Z
+Finalized premarket levels: H:24909.5 L:24846.5 O:24852.75 C:24850.75
+Session change: premarket -> rth at 2025-09-29T13:30:00.000Z
+Finalized rth levels: H:24975.5 L:24780.5 O:24850.75 C:24837.25
+Session change: rth -> overnight at 2025-09-29T20:00:00.000Z
+Finalized overnight levels: H:24856.75 L:24754.75 O:24837.5 C:24790.75
+Session change: overnight -> premarket at 2025-09-30T08:00:00.000Z
+Finalized premarket levels: H:24845 L:24763 O:24790 C:24821
+Session change: premarket -> rth at 2025-09-30T13:30:00.000Z
+Finalized rth levels: H:24913.75 L:24722.25 O:24820.5 C:24898.25
+Session change: rth -> overnight at 2025-09-30T20:00:00.000Z
+Rolling window swing detected: High=24975.50, Low=24520.00, Size=455.5 pts, Direction=up
+Calculated 5 fibonacci levels from 1 swings
+Finalized overnight levels: H:24901.25 L:24573.75 O:24898 C:24646
+Session change: overnight -> premarket at 2025-09-26T08:00:00.000Z
+Finalized premarket levels: H:24747.5 L:24569.25 O:24647 C:24653.75
+Session change: premarket -> rth at 2025-09-26T13:30:00.000Z
+Finalized rth levels: H:24737 L:24520 O:24654.25 C:24725.5
+Session change: rth -> overnight at 2025-09-26T20:00:00.000Z
+Finalized overnight levels: H:24864.25 L:24721.5 O:24725.75 C:24853.5
+Session change: overnight -> premarket at 2025-09-29T08:00:00.000Z
+Finalized premarket levels: H:24909.5 L:24846.5 O:24852.75 C:24850.75
+Session change: premarket -> rth at 2025-09-29T13:30:00.000Z
+Finalized rth levels: H:24975.5 L:24780.5 O:24850.75 C:24837.25
+Session change: rth -> overnight at 2025-09-29T20:00:00.000Z
+Finalized overnight levels: H:24856.75 L:24754.75 O:24837.5 C:24790.75
+Session change: overnight -> premarket at 2025-09-30T08:00:00.000Z
+Finalized premarket levels: H:24845 L:24763 O:24790 C:24821
+Session change: premarket -> rth at 2025-09-30T13:30:00.000Z
+Finalized rth levels: H:24913.75 L:24722.25 O:24820.5 C:24898.25
+Session change: rth -> overnight at 2025-09-30T20:00:00.000Z
+Rolling window swing detected: High=24975.50, Low=24520.00, Size=455.5 pts, Direction=up
+Calculated 5 fibonacci levels from 1 swings
+Finalized overnight levels: H:24901.25 L:24573.75 O:24898 C:24646
+Session change: overnight -> premarket at 2025-09-26T08:00:00.000Z
+Finalized premarket levels: H:24747.5 L:24569.25 O:24647 C:24653.75
+Session change: premarket -> rth at 2025-09-26T13:30:00.000Z
+Finalized rth levels: H:24737 L:24520 O:24654.25 C:24725.5
+Session change: rth -> overnight at 2025-09-26T20:00:00.000Z
+Finalized overnight levels: H:24864.25 L:24721.5 O:24725.75 C:24853.5
+Session change: overnight -> premarket at 2025-09-29T08:00:00.000Z
+Finalized premarket levels: H:24909.5 L:24846.5 O:24852.75 C:24850.75
+Session change: premarket -> rth at 2025-09-29T13:30:00.000Z
+Finalized rth levels: H:24975.5 L:24780.5 O:24850.75 C:24837.25
+Session change: rth -> overnight at 2025-09-29T20:00:00.000Z
+Finalized overnight levels: H:24856.75 L:24754.75 O:24837.5 C:24790.75
+Session change: overnight -> premarket at 2025-09-30T08:00:00.000Z
+Finalized premarket levels: H:24845 L:24763 O:24790 C:24821
+Session change: premarket -> rth at 2025-09-30T13:30:00.000Z
+Finalized rth levels: H:24913.75 L:24722.25 O:24820.5 C:24898.25
+Session change: rth -> overnight at 2025-09-30T20:00:00.000Z
+Rolling window swing detected: High=24975.50, Low=24520.00, Size=455.5 pts, Direction=up
+Calculated 5 fibonacci levels from 1 swings
+Finalized overnight levels: H:24901.25 L:24573.75 O:24898 C:24646
+Session change: overnight -> premarket at 2025-09-26T08:00:00.000Z
+Finalized premarket levels: H:24747.5 L:24569.25 O:24647 C:24653.75
+Session change: premarket -> rth at 2025-09-26T13:30:00.000Z
+Finalized rth levels: H:24737 L:24520 O:24654.25 C:24725.5
+Session change: rth -> overnight at 2025-09-26T20:00:00.000Z
+Finalized overnight levels: H:24864.25 L:24721.5 O:24725.75 C:24853.5
+Session change: overnight -> premarket at 2025-09-29T08:00:00.000Z
+Finalized premarket levels: H:24909.5 L:24846.5 O:24852.75 C:24850.75
+Session change: premarket -> rth at 2025-09-29T13:30:00.000Z
+Finalized rth levels: H:24975.5 L:24780.5 O:24850.75 C:24837.25
+Session change: rth -> overnight at 2025-09-29T20:00:00.000Z
+Finalized overnight levels: H:24856.75 L:24754.75 O:24837.5 C:24790.75
+Session change: overnight -> premarket at 2025-09-30T08:00:00.000Z
+Finalized premarket levels: H:24845 L:24763 O:24790 C:24821
+Session change: premarket -> rth at 2025-09-30T13:30:00.000Z
+Finalized rth levels: H:24913.75 L:24722.25 O:24820.5 C:24898.25
+Session change: rth -> overnight at 2025-09-30T20:00:00.000Z
+Rolling window swing detected: High=24975.50, Low=24520.00, Size=455.5 pts, Direction=up
+Calculated 5 fibonacci levels from 1 swings
+Finalized overnight levels: H:24901.25 L:24573.75 O:24898 C:24646
+Session change: overnight -> premarket at 2025-09-26T08:00:00.000Z
+Finalized premarket levels: H:24747.5 L:24569.25 O:24647 C:24653.75
+Session change: premarket -> rth at 2025-09-26T13:30:00.000Z
+Finalized rth levels: H:24737 L:24520 O:24654.25 C:24725.5
+Session change: rth -> overnight at 2025-09-26T20:00:00.000Z
+Finalized overnight levels: H:24864.25 L:24721.5 O:24725.75 C:24853.5
+Session change: overnight -> premarket at 2025-09-29T08:00:00.000Z
+Finalized premarket levels: H:24909.5 L:24846.5 O:24852.75 C:24850.75
+Session change: premarket -> rth at 2025-09-29T13:30:00.000Z
+Finalized rth levels: H:24975.5 L:24780.5 O:24850.75 C:24837.25
+Session change: rth -> overnight at 2025-09-29T20:00:00.000Z
+Finalized overnight levels: H:24856.75 L:24754.75 O:24837.5 C:24790.75
+Session change: overnight -> premarket at 2025-09-30T08:00:00.000Z
+Finalized premarket levels: H:24845 L:24763 O:24790 C:24821
+Session change: premarket -> rth at 2025-09-30T13:30:00.000Z
+Finalized rth levels: H:24913.75 L:24722.25 O:24820.5 C:24898.25
+Session change: rth -> overnight at 2025-09-30T20:00:00.000Z
+Rolling window swing detected: High=24975.50, Low=24520.00, Size=455.5 pts, Direction=up
+Calculated 5 fibonacci levels from 1 swings
+📊 GEX-LDPM Confluence Signal Generated at 2025-10-01T06:00:00.000Z: {
+  side: 'buy',
+  price: 24758.25,
+  zone: 24790.81732101654,
+  distance: 32.56732101654052,
+  regime: 'positive',
+  volume: '1.30x avg',
+  timestamp: 1759298400000,
+  time: '2025-10-01T06:00:00.000Z'
+}
+   Debug - Available swings: 1
+   First swing: {
+  id: '1758896100000-1759154400000',
+  start: {
+    timestamp: 1758896100000,
+    symbol: 'NQZ5',
+    open: 24605,
+    high: 24614.75,
+    low: 24520,
+    close: 24569,
+    volume: 33664,
+    candleCount: 15,
+    periodStart: '2025-09-26T14:15:00.000Z',
+    originalTimespan: { start: 1758896100000, end: 1758896940000 }
+  },
+  end: {
+    timestamp: 1759154400000,
+    symbol: 'NQZ5',
+    open: 24942,
+    high: 24975.5,
+    low: 24920,
+    close: 24956,
+    volume: 26124,
+    candleCount: 15,
+    periodStart: '2025-09-29T14:00:00.000Z',
+    originalTimespan: { start: 1759154400000, end: 1759155240000 }
+  },
+  size: 455.5,
+  direction: 'up',
+  timestamp: 1759154400000,
+  high: 24975.5,
+  low: 24520,
+  age: 0
+}
+
+📊 Signal 2 at 2025-10-01T06:00:00.000Z
+   Side: BUY
+   Price: $24758.25
+   Confluence Zone: $24790.81732101654
+
+   🎯 Detected Pullback Levels (3 total):
+   Fibonacci Levels:
+     - $24747.75 (50.0% Fib (half_retracement), from swing H:24975.50 L:24520.00)
+     - $24694.00 (61.8% Fib (golden_retracement), from swing H:24975.50 L:24520.00)
+     - $24617.48 (78.6% Fib (deep_retracement), from swing H:24975.50 L:24520.00)
+   Fibonacci Swings (used for calculations):
+     Swing 1: High=$24975.50, Low=$24520.00, Direction=up, Size=455.5 pts
+Finalized overnight levels: H:24901.25 L:24573.75 O:24898 C:24646
+Session change: overnight -> premarket at 2025-09-26T08:00:00.000Z
+Finalized premarket levels: H:24747.5 L:24569.25 O:24647 C:24653.75
+Session change: premarket -> rth at 2025-09-26T13:30:00.000Z
+Finalized rth levels: H:24737 L:24520 O:24654.25 C:24725.5
+Session change: rth -> overnight at 2025-09-26T20:00:00.000Z
+Finalized overnight levels: H:24864.25 L:24721.5 O:24725.75 C:24853.5
+Session change: overnight -> premarket at 2025-09-29T08:00:00.000Z
+Finalized premarket levels: H:24909.5 L:24846.5 O:24852.75 C:24850.75
+Session change: premarket -> rth at 2025-09-29T13:30:00.000Z
+Finalized rth levels: H:24975.5 L:24780.5 O:24850.75 C:24837.25
+Session change: rth -> overnight at 2025-09-29T20:00:00.000Z
+Finalized overnight levels: H:24856.75 L:24754.75 O:24837.5 C:24790.75
+Session change: overnight -> premarket at 2025-09-30T08:00:00.000Z
+Finalized premarket levels: H:24845 L:24763 O:24790 C:24821
+Session change: premarket -> rth at 2025-09-30T13:30:00.000Z
+Finalized rth levels: H:24913.75 L:24722.25 O:24820.5 C:24898.25
+Session change: rth -> overnight at 2025-09-30T20:00:00.000Z
+Rolling window swing detected: High=24975.50, Low=24520.00, Size=455.5 pts, Direction=up
+Calculated 5 fibonacci levels from 1 swings
+Finalized overnight levels: H:24901.25 L:24573.75 O:24898 C:24646
+Session change: overnight -> premarket at 2025-09-26T08:00:00.000Z
+Finalized premarket levels: H:24747.5 L:24569.25 O:24647 C:24653.75
+Session change: premarket -> rth at 2025-09-26T13:30:00.000Z
+Finalized rth levels: H:24737 L:24520 O:24654.25 C:24725.5
+Session change: rth -> overnight at 2025-09-26T20:00:00.000Z
+Finalized overnight levels: H:24864.25 L:24721.5 O:24725.75 C:24853.5
+Session change: overnight -> premarket at 2025-09-29T08:00:00.000Z
+Finalized premarket levels: H:24909.5 L:24846.5 O:24852.75 C:24850.75
+Session change: premarket -> rth at 2025-09-29T13:30:00.000Z
+Finalized rth levels: H:24975.5 L:24780.5 O:24850.75 C:24837.25
+Session change: rth -> overnight at 2025-09-29T20:00:00.000Z
+Finalized overnight levels: H:24856.75 L:24754.75 O:24837.5 C:24790.75
+Session change: overnight -> premarket at 2025-09-30T08:00:00.000Z
+Finalized premarket levels: H:24845 L:24763 O:24790 C:24821
+Session change: premarket -> rth at 2025-09-30T13:30:00.000Z
+Finalized rth levels: H:24913.75 L:24722.25 O:24820.5 C:24898.25
+Session change: rth -> overnight at 2025-09-30T20:00:00.000Z
+Rolling window swing detected: High=24975.50, Low=24520.00, Size=455.5 pts, Direction=up
+Calculated 5 fibonacci levels from 1 swings
+Finalized overnight levels: H:24901.25 L:24573.75 O:24898 C:24646
+Session change: overnight -> premarket at 2025-09-26T08:00:00.000Z
+Finalized premarket levels: H:24747.5 L:24569.25 O:24647 C:24653.75
+Session change: premarket -> rth at 2025-09-26T13:30:00.000Z
+Finalized rth levels: H:24737 L:24520 O:24654.25 C:24725.5
+Session change: rth -> overnight at 2025-09-26T20:00:00.000Z
+Finalized overnight levels: H:24864.25 L:24721.5 O:24725.75 C:24853.5
+Session change: overnight -> premarket at 2025-09-29T08:00:00.000Z
+Finalized premarket levels: H:24909.5 L:24846.5 O:24852.75 C:24850.75
+Session change: premarket -> rth at 2025-09-29T13:30:00.000Z
+Finalized rth levels: H:24975.5 L:24780.5 O:24850.75 C:24837.25
+Session change: rth -> overnight at 2025-09-29T20:00:00.000Z
+Finalized overnight levels: H:24856.75 L:24754.75 O:24837.5 C:24790.75
+Session change: overnight -> premarket at 2025-09-30T08:00:00.000Z
+Finalized premarket levels: H:24845 L:24763 O:24790 C:24821
+Session change: premarket -> rth at 2025-09-30T13:30:00.000Z
+Finalized rth levels: H:24913.75 L:24722.25 O:24820.5 C:24898.25
+Session change: rth -> overnight at 2025-09-30T20:00:00.000Z
+Rolling window swing detected: High=24975.50, Low=24520.00, Size=455.5 pts, Direction=up
+Calculated 5 fibonacci levels from 1 swings
+📊 GEX-LDPM Confluence Signal Generated at 2025-10-01T06:45:00.000Z: {
+  side: 'buy',
+  price: 24652,
+  zone: 24868.420423892807,
+  distance: 216.42042389280687,
+  regime: 'positive',
+  volume: '6.40x avg',
+  timestamp: 1759301100000,
+  time: '2025-10-01T06:45:00.000Z'
+}
+   Debug - Available swings: 1
+   First swing: {
+  id: '1758896100000-1759154400000',
+  start: {
+    timestamp: 1758896100000,
+    symbol: 'NQZ5',
+    open: 24605,
+    high: 24614.75,
+    low: 24520,
+    close: 24569,
+    volume: 33664,
+    candleCount: 15,
+    periodStart: '2025-09-26T14:15:00.000Z',
+    originalTimespan: { start: 1758896100000, end: 1758896940000 }
+  },
+  end: {
+    timestamp: 1759154400000,
+    symbol: 'NQZ5',
+    open: 24942,
+    high: 24975.5,
+    low: 24920,
+    close: 24956,
+    volume: 26124,
+    candleCount: 15,
+    periodStart: '2025-09-29T14:00:00.000Z',
+    originalTimespan: { start: 1759154400000, end: 1759155240000 }
+  },
+  size: 455.5,
+  direction: 'up',
+  timestamp: 1759154400000,
+  high: 24975.5,
+  low: 24520,
+  age: 0
+}
+
+📊 Signal 3 at 2025-10-01T06:45:00.000Z
+   Side: BUY
+   Price: $24652
+   Confluence Zone: $24868.420423892807
+
+   🎯 Detected Pullback Levels (1 total):
+   Fibonacci Levels:
+     - $24617.48 (78.6% Fib (deep_retracement), from swing H:24975.50 L:24520.00)
+   Fibonacci Swings (used for calculations):
+     Swing 1: High=$24975.50, Low=$24520.00, Direction=up, Size=455.5 pts
+Finalized overnight levels: H:24901.25 L:24573.75 O:24898 C:24646
+Session change: overnight -> premarket at 2025-09-26T08:00:00.000Z
+Finalized premarket levels: H:24747.5 L:24569.25 O:24647 C:24653.75
+Session change: premarket -> rth at 2025-09-26T13:30:00.000Z
+Finalized rth levels: H:24737 L:24520 O:24654.25 C:24725.5
+Session change: rth -> overnight at 2025-09-26T20:00:00.000Z
+Finalized overnight levels: H:24864.25 L:24721.5 O:24725.75 C:24853.5
+Session change: overnight -> premarket at 2025-09-29T08:00:00.000Z
+Finalized premarket levels: H:24909.5 L:24846.5 O:24852.75 C:24850.75
+Session change: premarket -> rth at 2025-09-29T13:30:00.000Z
+Finalized rth levels: H:24975.5 L:24780.5 O:24850.75 C:24837.25
+Session change: rth -> overnight at 2025-09-29T20:00:00.000Z
+Finalized overnight levels: H:24856.75 L:24754.75 O:24837.5 C:24790.75
+Session change: overnight -> premarket at 2025-09-30T08:00:00.000Z
+Finalized premarket levels: H:24845 L:24763 O:24790 C:24821
+Session change: premarket -> rth at 2025-09-30T13:30:00.000Z
+Finalized rth levels: H:24913.75 L:24722.25 O:24820.5 C:24898.25
+Session change: rth -> overnight at 2025-09-30T20:00:00.000Z
+Rolling window swing detected: High=24975.50, Low=24520.00, Size=455.5 pts, Direction=up
+Calculated 5 fibonacci levels from 1 swings
+📊 GEX-LDPM Confluence Signal Generated at 2025-10-01T07:00:00.000Z: {
+  side: 'buy',
+  price: 24654.25,
+  zone: 24870.66978919357,
+  distance: 216.41978919356916,
+  regime: 'positive',
+  volume: '3.33x avg',
+  timestamp: 1759302000000,
+  time: '2025-10-01T07:00:00.000Z'
+}
+Finalized overnight levels: H:24901.25 L:24573.75 O:24898 C:24646
+Session change: overnight -> premarket at 2025-09-26T08:00:00.000Z
+Finalized premarket levels: H:24747.5 L:24569.25 O:24647 C:24653.75
+Session change: premarket -> rth at 2025-09-26T13:30:00.000Z
+Finalized rth levels: H:24737 L:24520 O:24654.25 C:24725.5
+Session change: rth -> overnight at 2025-09-26T20:00:00.000Z
+Finalized overnight levels: H:24864.25 L:24721.5 O:24725.75 C:24853.5
+Session change: overnight -> premarket at 2025-09-29T08:00:00.000Z
+Finalized premarket levels: H:24909.5 L:24846.5 O:24852.75 C:24850.75
+Session change: premarket -> rth at 2025-09-29T13:30:00.000Z
+Finalized rth levels: H:24975.5 L:24780.5 O:24850.75 C:24837.25
+Session change: rth -> overnight at 2025-09-29T20:00:00.000Z
+Finalized overnight levels: H:24856.75 L:24754.75 O:24837.5 C:24790.75
+Session change: overnight -> premarket at 2025-09-30T08:00:00.000Z
+Finalized premarket levels: H:24845 L:24763 O:24790 C:24821
+Session change: premarket -> rth at 2025-09-30T13:30:00.000Z
+Finalized rth levels: H:24913.75 L:24722.25 O:24820.5 C:24898.25
+Session change: rth -> overnight at 2025-09-30T20:00:00.000Z
+Rolling window swing detected: High=24975.50, Low=24520.00, Size=455.5 pts, Direction=up
+Calculated 5 fibonacci levels from 1 swings
+📊 GEX-LDPM Confluence Signal Generated at 2025-10-01T07:15:00.000Z: {
+  side: 'buy',
+  price: 24672.25,
+  zone: 24790.81732101654,
+  distance: 118.56732101654052,
+  regime: 'positive',
+  volume: '1.64x avg',
+  timestamp: 1759302900000,
+  time: '2025-10-01T07:15:00.000Z'
+}
+Finalized overnight levels: H:24901.25 L:24573.75 O:24898 C:24646
+Session change: overnight -> premarket at 2025-09-26T08:00:00.000Z
+Finalized premarket levels: H:24747.5 L:24569.25 O:24647 C:24653.75
+Session change: premarket -> rth at 2025-09-26T13:30:00.000Z
+Finalized rth levels: H:24737 L:24520 O:24654.25 C:24725.5
+Session change: rth -> overnight at 2025-09-26T20:00:00.000Z
+Finalized overnight levels: H:24864.25 L:24721.5 O:24725.75 C:24853.5
+Session change: overnight -> premarket at 2025-09-29T08:00:00.000Z
+Finalized premarket levels: H:24909.5 L:24846.5 O:24852.75 C:24850.75
+Session change: premarket -> rth at 2025-09-29T13:30:00.000Z
+Finalized rth levels: H:24975.5 L:24780.5 O:24850.75 C:24837.25
+Session change: rth -> overnight at 2025-09-29T20:00:00.000Z
+Finalized overnight levels: H:24856.75 L:24754.75 O:24837.5 C:24790.75
+Session change: overnight -> premarket at 2025-09-30T08:00:00.000Z
+Finalized premarket levels: H:24845 L:24763 O:24790 C:24821
+Session change: premarket -> rth at 2025-09-30T13:30:00.000Z
+Finalized rth levels: H:24913.75 L:24722.25 O:24820.5 C:24898.25
+Session change: rth -> overnight at 2025-09-30T20:00:00.000Z
+Rolling window swing detected: High=24975.50, Low=24520.00, Size=455.5 pts, Direction=up
+Calculated 5 fibonacci levels from 1 swings
+📊 GEX-LDPM Confluence Signal Generated at 2025-10-01T07:30:00.000Z: {
+  side: 'buy',
+  price: 24663,
+  zone: 24789.69263836616,
+  distance: 126.69263836615937,
+  regime: 'positive',
+  volume: '1.33x avg',
+  timestamp: 1759303800000,
+  time: '2025-10-01T07:30:00.000Z'
+}
+Finalized overnight levels: H:24901.25 L:24573.75 O:24898 C:24646
+Session change: overnight -> premarket at 2025-09-26T08:00:00.000Z
+Finalized premarket levels: H:24747.5 L:24569.25 O:24647 C:24653.75
+Session change: premarket -> rth at 2025-09-26T13:30:00.000Z
+Finalized rth levels: H:24737 L:24520 O:24654.25 C:24725.5
+Session change: rth -> overnight at 2025-09-26T20:00:00.000Z
+Finalized overnight levels: H:24864.25 L:24721.5 O:24725.75 C:24853.5
+Session change: overnight -> premarket at 2025-09-29T08:00:00.000Z
+Finalized premarket levels: H:24909.5 L:24846.5 O:24852.75 C:24850.75
+Session change: premarket -> rth at 2025-09-29T13:30:00.000Z
+Finalized rth levels: H:24975.5 L:24780.5 O:24850.75 C:24837.25
+Session change: rth -> overnight at 2025-09-29T20:00:00.000Z
+Finalized overnight levels: H:24856.75 L:24754.75 O:24837.5 C:24790.75
+Session change: overnight -> premarket at 2025-09-30T08:00:00.000Z
+Finalized premarket levels: H:24845 L:24763 O:24790 C:24821
+Session change: premarket -> rth at 2025-09-30T13:30:00.000Z
+Finalized rth levels: H:24913.75 L:24722.25 O:24820.5 C:24898.25
+Session change: rth -> overnight at 2025-09-30T20:00:00.000Z
+Rolling window swing detected: High=24975.50, Low=24520.00, Size=455.5 pts, Direction=up
+Calculated 5 fibonacci levels from 1 swings
+Finalized overnight levels: H:24901.25 L:24573.75 O:24898 C:24646
+Session change: overnight -> premarket at 2025-09-26T08:00:00.000Z
+Finalized premarket levels: H:24747.5 L:24569.25 O:24647 C:24653.75
+Session change: premarket -> rth at 2025-09-26T13:30:00.000Z
+Finalized rth levels: H:24737 L:24520 O:24654.25 C:24725.5
+Session change: rth -> overnight at 2025-09-26T20:00:00.000Z
+Finalized overnight levels: H:24864.25 L:24721.5 O:24725.75 C:24853.5
+Session change: overnight -> premarket at 2025-09-29T08:00:00.000Z
+Finalized premarket levels: H:24909.5 L:24846.5 O:24852.75 C:24850.75
+Session change: premarket -> rth at 2025-09-29T13:30:00.000Z
+Finalized rth levels: H:24975.5 L:24780.5 O:24850.75 C:24837.25
+Session change: rth -> overnight at 2025-09-29T20:00:00.000Z
+Finalized overnight levels: H:24856.75 L:24754.75 O:24837.5 C:24790.75
+Session change: overnight -> premarket at 2025-09-30T08:00:00.000Z
+Finalized premarket levels: H:24845 L:24763 O:24790 C:24821
+Session change: premarket -> rth at 2025-09-30T13:30:00.000Z
+Finalized rth levels: H:24913.75 L:24722.25 O:24820.5 C:24898.25
+Session change: rth -> overnight at 2025-09-30T20:00:00.000Z
+Finalized overnight levels: H:24901.25 L:24633.25 O:24898 C:24671.5
+Session change: overnight -> premarket at 2025-10-01T08:00:00.000Z
+Rolling window swing detected: High=24975.50, Low=24520.00, Size=455.5 pts, Direction=up
+Calculated 5 fibonacci levels from 1 swings
+📊 GEX-LDPM Confluence Signal Generated at 2025-10-01T08:00:00.000Z: {
+  side: 'buy',
+  price: 24669.5,
+  zone: 24870.10744786838,
+  distance: 200.6074478683804,
+  regime: 'positive',
+  volume: '1.67x avg',
+  timestamp: 1759305600000,
+  time: '2025-10-01T08:00:00.000Z'
+}
+Finalized premarket levels: H:24678 L:24653.25 O:24670.75 C:24669.5
+Session change: premarket -> overnight at 2025-09-26T00:00:00.000Z
+Finalized overnight levels: H:24672.25 L:24573.75 O:24616.75 C:24646
+Session change: overnight -> premarket at 2025-09-26T08:00:00.000Z
+Finalized premarket levels: H:24747.5 L:24569.25 O:24647 C:24653.75
+Session change: premarket -> rth at 2025-09-26T13:30:00.000Z
+Finalized rth levels: H:24737 L:24520 O:24654.25 C:24725.5
+Session change: rth -> overnight at 2025-09-26T20:00:00.000Z
+Finalized overnight levels: H:24864.25 L:24721.5 O:24725.75 C:24853.5
+Session change: overnight -> premarket at 2025-09-29T08:00:00.000Z
+Finalized premarket levels: H:24909.5 L:24846.5 O:24852.75 C:24850.75
+Session change: premarket -> rth at 2025-09-29T13:30:00.000Z
+Finalized rth levels: H:24975.5 L:24780.5 O:24850.75 C:24837.25
+Session change: rth -> overnight at 2025-09-29T20:00:00.000Z
+Finalized overnight levels: H:24856.75 L:24754.75 O:24837.5 C:24790.75
+Session change: overnight -> premarket at 2025-09-30T08:00:00.000Z
+Finalized premarket levels: H:24845 L:24763 O:24790 C:24821
+Session change: premarket -> rth at 2025-09-30T13:30:00.000Z
+Finalized rth levels: H:24913.75 L:24722.25 O:24820.5 C:24898.25
+Session change: rth -> overnight at 2025-09-30T20:00:00.000Z
+Finalized overnight levels: H:24901.25 L:24633.25 O:24898 C:24671.5
+Session change: overnight -> premarket at 2025-10-01T08:00:00.000Z
+Rolling window swing detected: High=24975.50, Low=24520.00, Size=455.5 pts, Direction=up
+Calculated 5 fibonacci levels from 1 swings
+Finalized premarket levels: H:24679.75 L:24653.25 O:24670.75 C:24678.75
+Session change: premarket -> overnight at 2025-09-26T00:00:00.000Z
+Finalized overnight levels: H:24672.25 L:24573.75 O:24616.75 C:24646
+Session change: overnight -> premarket at 2025-09-26T08:00:00.000Z
+Finalized premarket levels: H:24747.5 L:24569.25 O:24647 C:24653.75
+Session change: premarket -> rth at 2025-09-26T13:30:00.000Z
+Finalized rth levels: H:24737 L:24520 O:24654.25 C:24725.5
+Session change: rth -> overnight at 2025-09-26T20:00:00.000Z
+Finalized overnight levels: H:24864.25 L:24721.5 O:24725.75 C:24853.5
+Session change: overnight -> premarket at 2025-09-29T08:00:00.000Z
+Finalized premarket levels: H:24909.5 L:24846.5 O:24852.75 C:24850.75
+Session change: premarket -> rth at 2025-09-29T13:30:00.000Z
+Finalized rth levels: H:24975.5 L:24780.5 O:24850.75 C:24837.25
+Session change: rth -> overnight at 2025-09-29T20:00:00.000Z
+Finalized overnight levels: H:24856.75 L:24754.75 O:24837.5 C:24790.75
+Session change: overnight -> premarket at 2025-09-30T08:00:00.000Z
+Finalized premarket levels: H:24845 L:24763 O:24790 C:24821
+Session change: premarket -> rth at 2025-09-30T13:30:00.000Z
+Finalized rth levels: H:24913.75 L:24722.25 O:24820.5 C:24898.25
+Session change: rth -> overnight at 2025-09-30T20:00:00.000Z
+Finalized overnight levels: H:24901.25 L:24633.25 O:24898 C:24671.5
+Session change: overnight -> premarket at 2025-10-01T08:00:00.000Z
+Rolling window swing detected: High=24975.50, Low=24520.00, Size=455.5 pts, Direction=up
+Calculated 5 fibonacci levels from 1 swings
+📊 GEX-LDPM Confluence Signal Generated at 2025-10-01T08:30:00.000Z: {
+  side: 'buy',
+  price: 24726.5,
+  zone: 24867.295741242426,
+  distance: 140.79574124242572,
+  regime: 'positive',
+  volume: '2.21x avg',
+  timestamp: 1759307400000,
+  time: '2025-10-01T08:30:00.000Z'
+}
+Finalized premarket levels: H:24729 L:24653.25 O:24670.75 C:24726.5
+Session change: premarket -> overnight at 2025-09-26T00:00:00.000Z
+Finalized overnight levels: H:24672.25 L:24573.75 O:24616.75 C:24646
+Session change: overnight -> premarket at 2025-09-26T08:00:00.000Z
+Finalized premarket levels: H:24747.5 L:24569.25 O:24647 C:24653.75
+Session change: premarket -> rth at 2025-09-26T13:30:00.000Z
+Finalized rth levels: H:24737 L:24520 O:24654.25 C:24725.5
+Session change: rth -> overnight at 2025-09-26T20:00:00.000Z
+Finalized overnight levels: H:24864.25 L:24721.5 O:24725.75 C:24853.5
+Session change: overnight -> premarket at 2025-09-29T08:00:00.000Z
+Finalized premarket levels: H:24909.5 L:24846.5 O:24852.75 C:24850.75
+Session change: premarket -> rth at 2025-09-29T13:30:00.000Z
+Finalized rth levels: H:24975.5 L:24780.5 O:24850.75 C:24837.25
+Session change: rth -> overnight at 2025-09-29T20:00:00.000Z
+Finalized overnight levels: H:24856.75 L:24754.75 O:24837.5 C:24790.75
+Session change: overnight -> premarket at 2025-09-30T08:00:00.000Z
+Finalized premarket levels: H:24845 L:24763 O:24790 C:24821
+Session change: premarket -> rth at 2025-09-30T13:30:00.000Z
+Finalized rth levels: H:24913.75 L:24722.25 O:24820.5 C:24898.25
+Session change: rth -> overnight at 2025-09-30T20:00:00.000Z
+Finalized overnight levels: H:24901.25 L:24633.25 O:24898 C:24671.5
+Session change: overnight -> premarket at 2025-10-01T08:00:00.000Z
+Rolling window swing detected: High=24975.50, Low=24520.00, Size=455.5 pts, Direction=up
+Calculated 5 fibonacci levels from 1 swings
+Finalized premarket levels: H:24732.5 L:24653.25 O:24670.75 C:24720.25
+Session change: premarket -> overnight at 2025-09-26T00:00:00.000Z
+Finalized overnight levels: H:24672.25 L:24573.75 O:24616.75 C:24646
+Session change: overnight -> premarket at 2025-09-26T08:00:00.000Z
+Finalized premarket levels: H:24747.5 L:24569.25 O:24647 C:24653.75
+Session change: premarket -> rth at 2025-09-26T13:30:00.000Z
+Finalized rth levels: H:24737 L:24520 O:24654.25 C:24725.5
+Session change: rth -> overnight at 2025-09-26T20:00:00.000Z
+Finalized overnight levels: H:24864.25 L:24721.5 O:24725.75 C:24853.5
+Session change: overnight -> premarket at 2025-09-29T08:00:00.000Z
+Finalized premarket levels: H:24909.5 L:24846.5 O:24852.75 C:24850.75
+Session change: premarket -> rth at 2025-09-29T13:30:00.000Z
+Finalized rth levels: H:24975.5 L:24780.5 O:24850.75 C:24837.25
+Session change: rth -> overnight at 2025-09-29T20:00:00.000Z
+Finalized overnight levels: H:24856.75 L:24754.75 O:24837.5 C:24790.75
+Session change: overnight -> premarket at 2025-09-30T08:00:00.000Z
+Finalized premarket levels: H:24845 L:24763 O:24790 C:24821
+Session change: premarket -> rth at 2025-09-30T13:30:00.000Z
+Finalized rth levels: H:24913.75 L:24722.25 O:24820.5 C:24898.25
+Session change: rth -> overnight at 2025-09-30T20:00:00.000Z
+Finalized overnight levels: H:24901.25 L:24633.25 O:24898 C:24671.5
+Session change: overnight -> premarket at 2025-10-01T08:00:00.000Z
+Rolling window swing detected: High=24975.50, Low=24520.00, Size=455.5 pts, Direction=up
+Calculated 5 fibonacci levels from 1 swings
+Finalized premarket levels: H:24745.75 L:24653.25 O:24670.75 C:24738.25
+Session change: premarket -> overnight at 2025-09-26T00:00:00.000Z
+Finalized overnight levels: H:24672.25 L:24573.75 O:24616.75 C:24646
+Session change: overnight -> premarket at 2025-09-26T08:00:00.000Z
+Finalized premarket levels: H:24747.5 L:24569.25 O:24647 C:24653.75
+Session change: premarket -> rth at 2025-09-26T13:30:00.000Z
+Finalized rth levels: H:24737 L:24520 O:24654.25 C:24725.5
+Session change: rth -> overnight at 2025-09-26T20:00:00.000Z
+Finalized overnight levels: H:24864.25 L:24721.5 O:24725.75 C:24853.5
+Session change: overnight -> premarket at 2025-09-29T08:00:00.000Z
+Finalized premarket levels: H:24909.5 L:24846.5 O:24852.75 C:24850.75
+Session change: premarket -> rth at 2025-09-29T13:30:00.000Z
+Finalized rth levels: H:24975.5 L:24780.5 O:24850.75 C:24837.25
+Session change: rth -> overnight at 2025-09-29T20:00:00.000Z
+Finalized overnight levels: H:24856.75 L:24754.75 O:24837.5 C:24790.75
+Session change: overnight -> premarket at 2025-09-30T08:00:00.000Z
+Finalized premarket levels: H:24845 L:24763 O:24790 C:24821
+Session change: premarket -> rth at 2025-09-30T13:30:00.000Z
+Finalized rth levels: H:24913.75 L:24722.25 O:24820.5 C:24898.25
+Session change: rth -> overnight at 2025-09-30T20:00:00.000Z
+Finalized overnight levels: H:24901.25 L:24633.25 O:24898 C:24671.5
+Session change: overnight -> premarket at 2025-10-01T08:00:00.000Z
+Rolling window swing detected: High=24975.50, Low=24520.00, Size=455.5 pts, Direction=up
+Calculated 5 fibonacci levels from 1 swings
+Finalized premarket levels: H:24766.75 L:24653.25 O:24670.75 C:24760.75
+Session change: premarket -> overnight at 2025-09-26T00:00:00.000Z
+Finalized overnight levels: H:24672.25 L:24573.75 O:24616.75 C:24646
+Session change: overnight -> premarket at 2025-09-26T08:00:00.000Z
+Finalized premarket levels: H:24747.5 L:24569.25 O:24647 C:24653.75
+Session change: premarket -> rth at 2025-09-26T13:30:00.000Z
+Finalized rth levels: H:24737 L:24520 O:24654.25 C:24725.5
+Session change: rth -> overnight at 2025-09-26T20:00:00.000Z
+Finalized overnight levels: H:24864.25 L:24721.5 O:24725.75 C:24853.5
+Session change: overnight -> premarket at 2025-09-29T08:00:00.000Z
+Finalized premarket levels: H:24909.5 L:24846.5 O:24852.75 C:24850.75
+Session change: premarket -> rth at 2025-09-29T13:30:00.000Z
+Finalized rth levels: H:24975.5 L:24780.5 O:24850.75 C:24837.25
+Session change: rth -> overnight at 2025-09-29T20:00:00.000Z
+Finalized overnight levels: H:24856.75 L:24754.75 O:24837.5 C:24790.75
+Session change: overnight -> premarket at 2025-09-30T08:00:00.000Z
+Finalized premarket levels: H:24845 L:24763 O:24790 C:24821
+Session change: premarket -> rth at 2025-09-30T13:30:00.000Z
+Finalized rth levels: H:24913.75 L:24722.25 O:24820.5 C:24898.25
+Session change: rth -> overnight at 2025-09-30T20:00:00.000Z
+Finalized overnight levels: H:24901.25 L:24633.25 O:24898 C:24671.5
+Session change: overnight -> premarket at 2025-10-01T08:00:00.000Z
+Rolling window swing detected: High=24975.50, Low=24520.00, Size=455.5 pts, Direction=up
+Calculated 5 fibonacci levels from 1 swings
+Finalized premarket levels: H:24766.75 L:24653.25 O:24670.75 C:24744.5
+Session change: premarket -> overnight at 2025-09-26T00:00:00.000Z
+Finalized overnight levels: H:24672.25 L:24573.75 O:24616.75 C:24646
+Session change: overnight -> premarket at 2025-09-26T08:00:00.000Z
+Finalized premarket levels: H:24747.5 L:24569.25 O:24647 C:24653.75
+Session change: premarket -> rth at 2025-09-26T13:30:00.000Z
+Finalized rth levels: H:24737 L:24520 O:24654.25 C:24725.5
+Session change: rth -> overnight at 2025-09-26T20:00:00.000Z
+Finalized overnight levels: H:24864.25 L:24721.5 O:24725.75 C:24853.5
+Session change: overnight -> premarket at 2025-09-29T08:00:00.000Z
+Finalized premarket levels: H:24909.5 L:24846.5 O:24852.75 C:24850.75
+Session change: premarket -> rth at 2025-09-29T13:30:00.000Z
+Finalized rth levels: H:24975.5 L:24780.5 O:24850.75 C:24837.25
+Session change: rth -> overnight at 2025-09-29T20:00:00.000Z
+Finalized overnight levels: H:24856.75 L:24754.75 O:24837.5 C:24790.75
+Session change: overnight -> premarket at 2025-09-30T08:00:00.000Z
+Finalized premarket levels: H:24845 L:24763 O:24790 C:24821
+Session change: premarket -> rth at 2025-09-30T13:30:00.000Z
+Finalized rth levels: H:24913.75 L:24722.25 O:24820.5 C:24898.25
+Session change: rth -> overnight at 2025-09-30T20:00:00.000Z
+Finalized overnight levels: H:24901.25 L:24633.25 O:24898 C:24671.5
+Session change: overnight -> premarket at 2025-10-01T08:00:00.000Z
+Rolling window swing detected: High=24975.50, Low=24520.00, Size=455.5 pts, Direction=up
+Calculated 5 fibonacci levels from 1 swings
+Finalized premarket levels: H:24766.75 L:24653.25 O:24670.75 C:24745.75
+Session change: premarket -> overnight at 2025-09-26T00:00:00.000Z
+Finalized overnight levels: H:24672.25 L:24573.75 O:24616.75 C:24646
+Session change: overnight -> premarket at 2025-09-26T08:00:00.000Z
+Finalized premarket levels: H:24747.5 L:24569.25 O:24647 C:24653.75
+Session change: premarket -> rth at 2025-09-26T13:30:00.000Z
+Finalized rth levels: H:24737 L:24520 O:24654.25 C:24725.5
+Session change: rth -> overnight at 2025-09-26T20:00:00.000Z
+Finalized overnight levels: H:24864.25 L:24721.5 O:24725.75 C:24853.5
+Session change: overnight -> premarket at 2025-09-29T08:00:00.000Z
+Finalized premarket levels: H:24909.5 L:24846.5 O:24852.75 C:24850.75
+Session change: premarket -> rth at 2025-09-29T13:30:00.000Z
+Finalized rth levels: H:24975.5 L:24780.5 O:24850.75 C:24837.25
+Session change: rth -> overnight at 2025-09-29T20:00:00.000Z
+Finalized overnight levels: H:24856.75 L:24754.75 O:24837.5 C:24790.75
+Session change: overnight -> premarket at 2025-09-30T08:00:00.000Z
+Finalized premarket levels: H:24845 L:24763 O:24790 C:24821
+Session change: premarket -> rth at 2025-09-30T13:30:00.000Z
+Finalized rth levels: H:24913.75 L:24722.25 O:24820.5 C:24898.25
+Session change: rth -> overnight at 2025-09-30T20:00:00.000Z
+Finalized overnight levels: H:24901.25 L:24633.25 O:24898 C:24671.5
+Session change: overnight -> premarket at 2025-10-01T08:00:00.000Z
+Rolling window swing detected: High=24975.50, Low=24520.00, Size=455.5 pts, Direction=up
+Calculated 5 fibonacci levels from 1 swings
+Finalized premarket levels: H:24766.75 L:24653.25 O:24670.75 C:24750.5
+Session change: premarket -> overnight at 2025-09-26T00:00:00.000Z
+Finalized overnight levels: H:24672.25 L:24573.75 O:24616.75 C:24646
+Session change: overnight -> premarket at 2025-09-26T08:00:00.000Z
+Finalized premarket levels: H:24747.5 L:24569.25 O:24647 C:24653.75
+Session change: premarket -> rth at 2025-09-26T13:30:00.000Z
+Finalized rth levels: H:24737 L:24520 O:24654.25 C:24725.5
+Session change: rth -> overnight at 2025-09-26T20:00:00.000Z
+Finalized overnight levels: H:24864.25 L:24721.5 O:24725.75 C:24853.5
+Session change: overnight -> premarket at 2025-09-29T08:00:00.000Z
+Finalized premarket levels: H:24909.5 L:24846.5 O:24852.75 C:24850.75
+Session change: premarket -> rth at 2025-09-29T13:30:00.000Z
+Finalized rth levels: H:24975.5 L:24780.5 O:24850.75 C:24837.25
+Session change: rth -> overnight at 2025-09-29T20:00:00.000Z
+Finalized overnight levels: H:24856.75 L:24754.75 O:24837.5 C:24790.75
+Session change: overnight -> premarket at 2025-09-30T08:00:00.000Z
+Finalized premarket levels: H:24845 L:24763 O:24790 C:24821
+Session change: premarket -> rth at 2025-09-30T13:30:00.000Z
+Finalized rth levels: H:24913.75 L:24722.25 O:24820.5 C:24898.25
+Session change: rth -> overnight at 2025-09-30T20:00:00.000Z
+Finalized overnight levels: H:24901.25 L:24633.25 O:24898 C:24671.5
+Session change: overnight -> premarket at 2025-10-01T08:00:00.000Z
+Rolling window swing detected: High=24975.50, Low=24520.00, Size=455.5 pts, Direction=up
+Calculated 5 fibonacci levels from 1 swings
+Finalized premarket levels: H:24766.75 L:24653.25 O:24670.75 C:24742.25
+Session change: premarket -> overnight at 2025-09-26T00:00:00.000Z
+Finalized overnight levels: H:24672.25 L:24573.75 O:24616.75 C:24646
+Session change: overnight -> premarket at 2025-09-26T08:00:00.000Z
+Finalized premarket levels: H:24747.5 L:24569.25 O:24647 C:24653.75
+Session change: premarket -> rth at 2025-09-26T13:30:00.000Z
+Finalized rth levels: H:24737 L:24520 O:24654.25 C:24725.5
+Session change: rth -> overnight at 2025-09-26T20:00:00.000Z
+Finalized overnight levels: H:24864.25 L:24721.5 O:24725.75 C:24853.5
+Session change: overnight -> premarket at 2025-09-29T08:00:00.000Z
+Finalized premarket levels: H:24909.5 L:24846.5 O:24852.75 C:24850.75
+Session change: premarket -> rth at 2025-09-29T13:30:00.000Z
+Finalized rth levels: H:24975.5 L:24780.5 O:24850.75 C:24837.25
+Session change: rth -> overnight at 2025-09-29T20:00:00.000Z
+Finalized overnight levels: H:24856.75 L:24754.75 O:24837.5 C:24790.75
+Session change: overnight -> premarket at 2025-09-30T08:00:00.000Z
+Finalized premarket levels: H:24845 L:24763 O:24790 C:24821
+Session change: premarket -> rth at 2025-09-30T13:30:00.000Z
+Finalized rth levels: H:24913.75 L:24722.25 O:24820.5 C:24898.25
+Session change: rth -> overnight at 2025-09-30T20:00:00.000Z
+Finalized overnight levels: H:24901.25 L:24633.25 O:24898 C:24671.5
+Session change: overnight -> premarket at 2025-10-01T08:00:00.000Z
+Rolling window swing detected: High=24975.50, Low=24520.00, Size=455.5 pts, Direction=up
+Calculated 5 fibonacci levels from 1 swings
+Finalized premarket levels: H:24766.75 L:24653.25 O:24670.75 C:24726.25
+Session change: premarket -> overnight at 2025-09-26T00:00:00.000Z
+Finalized overnight levels: H:24672.25 L:24573.75 O:24616.75 C:24646
+Session change: overnight -> premarket at 2025-09-26T08:00:00.000Z
+Finalized premarket levels: H:24747.5 L:24569.25 O:24647 C:24653.75
+Session change: premarket -> rth at 2025-09-26T13:30:00.000Z
+Finalized rth levels: H:24737 L:24520 O:24654.25 C:24725.5
+Session change: rth -> overnight at 2025-09-26T20:00:00.000Z
+Finalized overnight levels: H:24864.25 L:24721.5 O:24725.75 C:24853.5
+Session change: overnight -> premarket at 2025-09-29T08:00:00.000Z
+Finalized premarket levels: H:24909.5 L:24846.5 O:24852.75 C:24850.75
+Session change: premarket -> rth at 2025-09-29T13:30:00.000Z
+Finalized rth levels: H:24975.5 L:24780.5 O:24850.75 C:24837.25
+Session change: rth -> overnight at 2025-09-29T20:00:00.000Z
+Finalized overnight levels: H:24856.75 L:24754.75 O:24837.5 C:24790.75
+Session change: overnight -> premarket at 2025-09-30T08:00:00.000Z
+Finalized premarket levels: H:24845 L:24763 O:24790 C:24821
+Session change: premarket -> rth at 2025-09-30T13:30:00.000Z
+Finalized rth levels: H:24913.75 L:24722.25 O:24820.5 C:24898.25
+Session change: rth -> overnight at 2025-09-30T20:00:00.000Z
+Finalized overnight levels: H:24901.25 L:24633.25 O:24898 C:24671.5
+Session change: overnight -> premarket at 2025-10-01T08:00:00.000Z
+Rolling window swing detected: High=24975.50, Low=24520.00, Size=455.5 pts, Direction=up
+Calculated 5 fibonacci levels from 1 swings
+Finalized premarket levels: H:24766.75 L:24653.25 O:24670.75 C:24731.5
+Session change: premarket -> overnight at 2025-09-26T00:00:00.000Z
+Finalized overnight levels: H:24672.25 L:24573.75 O:24616.75 C:24646
+Session change: overnight -> premarket at 2025-09-26T08:00:00.000Z
+Finalized premarket levels: H:24747.5 L:24569.25 O:24647 C:24653.75
+Session change: premarket -> rth at 2025-09-26T13:30:00.000Z
+Finalized rth levels: H:24737 L:24520 O:24654.25 C:24725.5
+Session change: rth -> overnight at 2025-09-26T20:00:00.000Z
+Finalized overnight levels: H:24864.25 L:24721.5 O:24725.75 C:24853.5
+Session change: overnight -> premarket at 2025-09-29T08:00:00.000Z
+Finalized premarket levels: H:24909.5 L:24846.5 O:24852.75 C:24850.75
+Session change: premarket -> rth at 2025-09-29T13:30:00.000Z
+Finalized rth levels: H:24975.5 L:24780.5 O:24850.75 C:24837.25
+Session change: rth -> overnight at 2025-09-29T20:00:00.000Z
+Finalized overnight levels: H:24856.75 L:24754.75 O:24837.5 C:24790.75
+Session change: overnight -> premarket at 2025-09-30T08:00:00.000Z
+Finalized premarket levels: H:24845 L:24763 O:24790 C:24821
+Session change: premarket -> rth at 2025-09-30T13:30:00.000Z
+Finalized rth levels: H:24913.75 L:24722.25 O:24820.5 C:24898.25
+Session change: rth -> overnight at 2025-09-30T20:00:00.000Z
+Finalized overnight levels: H:24901.25 L:24633.25 O:24898 C:24671.5
+Session change: overnight -> premarket at 2025-10-01T08:00:00.000Z
+Rolling window swing detected: High=24975.50, Low=24520.00, Size=455.5 pts, Direction=up
+Calculated 5 fibonacci levels from 1 swings
+Finalized premarket levels: H:24770.5 L:24653.25 O:24670.75 C:24767.75
+Session change: premarket -> overnight at 2025-09-26T00:00:00.000Z
+Finalized overnight levels: H:24672.25 L:24573.75 O:24616.75 C:24646
+Session change: overnight -> premarket at 2025-09-26T08:00:00.000Z
+Finalized premarket levels: H:24747.5 L:24569.25 O:24647 C:24653.75
+Session change: premarket -> rth at 2025-09-26T13:30:00.000Z
+Finalized rth levels: H:24737 L:24520 O:24654.25 C:24725.5
+Session change: rth -> overnight at 2025-09-26T20:00:00.000Z
+Finalized overnight levels: H:24864.25 L:24721.5 O:24725.75 C:24853.5
+Session change: overnight -> premarket at 2025-09-29T08:00:00.000Z
+Finalized premarket levels: H:24909.5 L:24846.5 O:24852.75 C:24850.75
+Session change: premarket -> rth at 2025-09-29T13:30:00.000Z
+Finalized rth levels: H:24975.5 L:24780.5 O:24850.75 C:24837.25
+Session change: rth -> overnight at 2025-09-29T20:00:00.000Z
+Finalized overnight levels: H:24856.75 L:24754.75 O:24837.5 C:24790.75
+Session change: overnight -> premarket at 2025-09-30T08:00:00.000Z
+Finalized premarket levels: H:24845 L:24763 O:24790 C:24821
+Session change: premarket -> rth at 2025-09-30T13:30:00.000Z
+Finalized rth levels: H:24913.75 L:24722.25 O:24820.5 C:24898.25
+Session change: rth -> overnight at 2025-09-30T20:00:00.000Z
+Finalized overnight levels: H:24901.25 L:24633.25 O:24898 C:24671.5
+Session change: overnight -> premarket at 2025-10-01T08:00:00.000Z
+Rolling window swing detected: High=24975.50, Low=24520.00, Size=455.5 pts, Direction=up
+Calculated 5 fibonacci levels from 1 swings
+Finalized premarket levels: H:24780.75 L:24653.25 O:24670.75 C:24779.75
+Session change: premarket -> overnight at 2025-09-26T00:00:00.000Z
+Finalized overnight levels: H:24672.25 L:24573.75 O:24616.75 C:24646
+Session change: overnight -> premarket at 2025-09-26T08:00:00.000Z
+Finalized premarket levels: H:24747.5 L:24569.25 O:24647 C:24653.75
+Session change: premarket -> rth at 2025-09-26T13:30:00.000Z
+Finalized rth levels: H:24737 L:24520 O:24654.25 C:24725.5
+Session change: rth -> overnight at 2025-09-26T20:00:00.000Z
+Finalized overnight levels: H:24864.25 L:24721.5 O:24725.75 C:24853.5
+Session change: overnight -> premarket at 2025-09-29T08:00:00.000Z
+Finalized premarket levels: H:24909.5 L:24846.5 O:24852.75 C:24850.75
+Session change: premarket -> rth at 2025-09-29T13:30:00.000Z
+Finalized rth levels: H:24975.5 L:24780.5 O:24850.75 C:24837.25
+Session change: rth -> overnight at 2025-09-29T20:00:00.000Z
+Finalized overnight levels: H:24856.75 L:24754.75 O:24837.5 C:24790.75
+Session change: overnight -> premarket at 2025-09-30T08:00:00.000Z
+Finalized premarket levels: H:24845 L:24763 O:24790 C:24821
+Session change: premarket -> rth at 2025-09-30T13:30:00.000Z
+Finalized rth levels: H:24913.75 L:24722.25 O:24820.5 C:24898.25
+Session change: rth -> overnight at 2025-09-30T20:00:00.000Z
+Finalized overnight levels: H:24901.25 L:24633.25 O:24898 C:24671.5
+Session change: overnight -> premarket at 2025-10-01T08:00:00.000Z
+Rolling window swing detected: High=24975.50, Low=24520.00, Size=455.5 pts, Direction=up
+Calculated 5 fibonacci levels from 1 swings
+Finalized premarket levels: H:24791.75 L:24653.25 O:24670.75 C:24781.25
+Session change: premarket -> overnight at 2025-09-26T00:00:00.000Z
+Finalized overnight levels: H:24672.25 L:24573.75 O:24616.75 C:24646
+Session change: overnight -> premarket at 2025-09-26T08:00:00.000Z
+Finalized premarket levels: H:24747.5 L:24569.25 O:24647 C:24653.75
+Session change: premarket -> rth at 2025-09-26T13:30:00.000Z
+Finalized rth levels: H:24737 L:24520 O:24654.25 C:24725.5
+Session change: rth -> overnight at 2025-09-26T20:00:00.000Z
+Finalized overnight levels: H:24864.25 L:24721.5 O:24725.75 C:24853.5
+Session change: overnight -> premarket at 2025-09-29T08:00:00.000Z
+Finalized premarket levels: H:24909.5 L:24846.5 O:24852.75 C:24850.75
+Session change: premarket -> rth at 2025-09-29T13:30:00.000Z
+Finalized rth levels: H:24975.5 L:24780.5 O:24850.75 C:24837.25
+Session change: rth -> overnight at 2025-09-29T20:00:00.000Z
+Finalized overnight levels: H:24856.75 L:24754.75 O:24837.5 C:24790.75
+Session change: overnight -> premarket at 2025-09-30T08:00:00.000Z
+Finalized premarket levels: H:24845 L:24763 O:24790 C:24821
+Session change: premarket -> rth at 2025-09-30T13:30:00.000Z
+Finalized rth levels: H:24913.75 L:24722.25 O:24820.5 C:24898.25
+Session change: rth -> overnight at 2025-09-30T20:00:00.000Z
+Finalized overnight levels: H:24901.25 L:24633.25 O:24898 C:24671.5
+Session change: overnight -> premarket at 2025-10-01T08:00:00.000Z
+Rolling window swing detected: High=24975.50, Low=24520.00, Size=455.5 pts, Direction=up
+Calculated 5 fibonacci levels from 1 swings
+Finalized premarket levels: H:24803.25 L:24653.25 O:24670.75 C:24798.5
+Session change: premarket -> overnight at 2025-09-26T00:00:00.000Z
+Finalized overnight levels: H:24672.25 L:24573.75 O:24616.75 C:24646
+Session change: overnight -> premarket at 2025-09-26T08:00:00.000Z
+Finalized premarket levels: H:24747.5 L:24569.25 O:24647 C:24653.75
+Session change: premarket -> rth at 2025-09-26T13:30:00.000Z
+Finalized rth levels: H:24737 L:24520 O:24654.25 C:24725.5
+Session change: rth -> overnight at 2025-09-26T20:00:00.000Z
+Finalized overnight levels: H:24864.25 L:24721.5 O:24725.75 C:24853.5
+Session change: overnight -> premarket at 2025-09-29T08:00:00.000Z
+Finalized premarket levels: H:24909.5 L:24846.5 O:24852.75 C:24850.75
+Session change: premarket -> rth at 2025-09-29T13:30:00.000Z
+Finalized rth levels: H:24975.5 L:24780.5 O:24850.75 C:24837.25
+Session change: rth -> overnight at 2025-09-29T20:00:00.000Z
+Finalized overnight levels: H:24856.75 L:24754.75 O:24837.5 C:24790.75
+Session change: overnight -> premarket at 2025-09-30T08:00:00.000Z
+Finalized premarket levels: H:24845 L:24763 O:24790 C:24821
+Session change: premarket -> rth at 2025-09-30T13:30:00.000Z
+Finalized rth levels: H:24913.75 L:24722.25 O:24820.5 C:24898.25
+Session change: rth -> overnight at 2025-09-30T20:00:00.000Z
+Finalized overnight levels: H:24901.25 L:24633.25 O:24898 C:24671.5
+Session change: overnight -> premarket at 2025-10-01T08:00:00.000Z
+Rolling window swing detected: High=24975.50, Low=24520.00, Size=455.5 pts, Direction=up
+Calculated 5 fibonacci levels from 1 swings
+Finalized premarket levels: H:24805.5 L:24653.25 O:24670.75 C:24786.75
+Session change: premarket -> overnight at 2025-09-26T00:00:00.000Z
+Finalized overnight levels: H:24672.25 L:24573.75 O:24616.75 C:24646
+Session change: overnight -> premarket at 2025-09-26T08:00:00.000Z
+Finalized premarket levels: H:24747.5 L:24569.25 O:24647 C:24653.75
+Session change: premarket -> rth at 2025-09-26T13:30:00.000Z
+Finalized rth levels: H:24737 L:24520 O:24654.25 C:24725.5
+Session change: rth -> overnight at 2025-09-26T20:00:00.000Z
+Finalized overnight levels: H:24864.25 L:24721.5 O:24725.75 C:24853.5
+Session change: overnight -> premarket at 2025-09-29T08:00:00.000Z
+Finalized premarket levels: H:24909.5 L:24846.5 O:24852.75 C:24850.75
+Session change: premarket -> rth at 2025-09-29T13:30:00.000Z
+Finalized rth levels: H:24975.5 L:24780.5 O:24850.75 C:24837.25
+Session change: rth -> overnight at 2025-09-29T20:00:00.000Z
+Finalized overnight levels: H:24856.75 L:24754.75 O:24837.5 C:24790.75
+Session change: overnight -> premarket at 2025-09-30T08:00:00.000Z
+Finalized premarket levels: H:24845 L:24763 O:24790 C:24821
+Session change: premarket -> rth at 2025-09-30T13:30:00.000Z
+Finalized rth levels: H:24913.75 L:24722.25 O:24820.5 C:24898.25
+Session change: rth -> overnight at 2025-09-30T20:00:00.000Z
+Finalized overnight levels: H:24901.25 L:24633.25 O:24898 C:24671.5
+Session change: overnight -> premarket at 2025-10-01T08:00:00.000Z
+Rolling window swing detected: High=24975.50, Low=24520.00, Size=455.5 pts, Direction=up
+Calculated 5 fibonacci levels from 1 swings
+📊 GEX-LDPM Confluence Signal Generated at 2025-10-01T12:15:00.000Z: {
+  side: 'buy',
+  price: 24779,
+  zone: 24866.17105859205,
+  distance: 87.17105859204821,
+  regime: 'positive',
+  volume: '3.41x avg',
+  timestamp: 1759320900000,
+  time: '2025-10-01T12:15:00.000Z'
+}
+Finalized premarket levels: H:24805.5 L:24653.25 O:24670.75 C:24779
+Session change: premarket -> overnight at 2025-09-26T00:00:00.000Z
+Finalized overnight levels: H:24672.25 L:24573.75 O:24616.75 C:24646
+Session change: overnight -> premarket at 2025-09-26T08:00:00.000Z
+Finalized premarket levels: H:24747.5 L:24569.25 O:24647 C:24653.75
+Session change: premarket -> rth at 2025-09-26T13:30:00.000Z
+Finalized rth levels: H:24737 L:24520 O:24654.25 C:24725.5
+Session change: rth -> overnight at 2025-09-26T20:00:00.000Z
+Finalized overnight levels: H:24864.25 L:24721.5 O:24725.75 C:24853.5
+Session change: overnight -> premarket at 2025-09-29T08:00:00.000Z
+Finalized premarket levels: H:24909.5 L:24846.5 O:24852.75 C:24850.75
+Session change: premarket -> rth at 2025-09-29T13:30:00.000Z
+Finalized rth levels: H:24975.5 L:24780.5 O:24850.75 C:24837.25
+Session change: rth -> overnight at 2025-09-29T20:00:00.000Z
+Finalized overnight levels: H:24856.75 L:24754.75 O:24837.5 C:24790.75
+Session change: overnight -> premarket at 2025-09-30T08:00:00.000Z
+Finalized premarket levels: H:24845 L:24763 O:24790 C:24821
+Session change: premarket -> rth at 2025-09-30T13:30:00.000Z
+Finalized rth levels: H:24913.75 L:24722.25 O:24820.5 C:24898.25
+Session change: rth -> overnight at 2025-09-30T20:00:00.000Z
+Finalized overnight levels: H:24901.25 L:24633.25 O:24898 C:24671.5
+Session change: overnight -> premarket at 2025-10-01T08:00:00.000Z
+Rolling window swing detected: High=24975.50, Low=24520.00, Size=455.5 pts, Direction=up
+Calculated 5 fibonacci levels from 1 swings
+Finalized premarket levels: H:24805.5 L:24653.25 O:24670.75 C:24780
+Session change: premarket -> overnight at 2025-09-26T00:00:00.000Z
+Finalized overnight levels: H:24672.25 L:24573.75 O:24616.75 C:24646
+Session change: overnight -> premarket at 2025-09-26T08:00:00.000Z
+Finalized premarket levels: H:24747.5 L:24569.25 O:24647 C:24653.75
+Session change: premarket -> rth at 2025-09-26T13:30:00.000Z
+Finalized rth levels: H:24737 L:24520 O:24654.25 C:24725.5
+Session change: rth -> overnight at 2025-09-26T20:00:00.000Z
+Finalized overnight levels: H:24864.25 L:24721.5 O:24725.75 C:24853.5
+Session change: overnight -> premarket at 2025-09-29T08:00:00.000Z
+Finalized premarket levels: H:24909.5 L:24846.5 O:24852.75 C:24850.75
+Session change: premarket -> rth at 2025-09-29T13:30:00.000Z
+Finalized rth levels: H:24975.5 L:24780.5 O:24850.75 C:24837.25
+Session change: rth -> overnight at 2025-09-29T20:00:00.000Z
+Finalized overnight levels: H:24856.75 L:24754.75 O:24837.5 C:24790.75
+Session change: overnight -> premarket at 2025-09-30T08:00:00.000Z
+Finalized premarket levels: H:24845 L:24763 O:24790 C:24821
+Session change: premarket -> rth at 2025-09-30T13:30:00.000Z
+Finalized rth levels: H:24913.75 L:24722.25 O:24820.5 C:24898.25
+Session change: rth -> overnight at 2025-09-30T20:00:00.000Z
+Finalized overnight levels: H:24901.25 L:24633.25 O:24898 C:24671.5
+Session change: overnight -> premarket at 2025-10-01T08:00:00.000Z
+Rolling window swing detected: High=24975.50, Low=24520.00, Size=455.5 pts, Direction=up
+Calculated 5 fibonacci levels from 1 swings
+Finalized premarket levels: H:24805.5 L:24653.25 O:24670.75 C:24777
+Session change: premarket -> overnight at 2025-09-26T00:00:00.000Z
+Finalized overnight levels: H:24672.25 L:24573.75 O:24616.75 C:24646
+Session change: overnight -> premarket at 2025-09-26T08:00:00.000Z
+Finalized premarket levels: H:24747.5 L:24569.25 O:24647 C:24653.75
+Session change: premarket -> rth at 2025-09-26T13:30:00.000Z
+Finalized rth levels: H:24737 L:24520 O:24654.25 C:24725.5
+Session change: rth -> overnight at 2025-09-26T20:00:00.000Z
+Finalized overnight levels: H:24864.25 L:24721.5 O:24725.75 C:24853.5
+Session change: overnight -> premarket at 2025-09-29T08:00:00.000Z
+Finalized premarket levels: H:24909.5 L:24846.5 O:24852.75 C:24850.75
+Session change: premarket -> rth at 2025-09-29T13:30:00.000Z
+Finalized rth levels: H:24975.5 L:24780.5 O:24850.75 C:24837.25
+Session change: rth -> overnight at 2025-09-29T20:00:00.000Z
+Finalized overnight levels: H:24856.75 L:24754.75 O:24837.5 C:24790.75
+Session change: overnight -> premarket at 2025-09-30T08:00:00.000Z
+Finalized premarket levels: H:24845 L:24763 O:24790 C:24821
+Session change: premarket -> rth at 2025-09-30T13:30:00.000Z
+Finalized rth levels: H:24913.75 L:24722.25 O:24820.5 C:24898.25
+Session change: rth -> overnight at 2025-09-30T20:00:00.000Z
+Finalized overnight levels: H:24901.25 L:24633.25 O:24898 C:24671.5
+Session change: overnight -> premarket at 2025-10-01T08:00:00.000Z
+Rolling window swing detected: High=24975.50, Low=24520.00, Size=455.5 pts, Direction=up
+Calculated 5 fibonacci levels from 1 swings
+Finalized premarket levels: H:24805.5 L:24653.25 O:24670.75 C:24787.5
+Session change: premarket -> overnight at 2025-09-26T00:00:00.000Z
+Finalized overnight levels: H:24672.25 L:24573.75 O:24616.75 C:24646
+Session change: overnight -> premarket at 2025-09-26T08:00:00.000Z
+Finalized premarket levels: H:24747.5 L:24569.25 O:24647 C:24653.75
+Session change: premarket -> rth at 2025-09-26T13:30:00.000Z
+Finalized rth levels: H:24737 L:24520 O:24654.25 C:24725.5
+Session change: rth -> overnight at 2025-09-26T20:00:00.000Z
+Finalized overnight levels: H:24864.25 L:24721.5 O:24725.75 C:24853.5
+Session change: overnight -> premarket at 2025-09-29T08:00:00.000Z
+Finalized premarket levels: H:24909.5 L:24846.5 O:24852.75 C:24850.75
+Session change: premarket -> rth at 2025-09-29T13:30:00.000Z
+Finalized rth levels: H:24975.5 L:24780.5 O:24850.75 C:24837.25
+Session change: rth -> overnight at 2025-09-29T20:00:00.000Z
+Finalized overnight levels: H:24856.75 L:24754.75 O:24837.5 C:24790.75
+Session change: overnight -> premarket at 2025-09-30T08:00:00.000Z
+Finalized premarket levels: H:24845 L:24763 O:24790 C:24821
+Session change: premarket -> rth at 2025-09-30T13:30:00.000Z
+Finalized rth levels: H:24913.75 L:24722.25 O:24820.5 C:24898.25
+Session change: rth -> overnight at 2025-09-30T20:00:00.000Z
+Finalized overnight levels: H:24901.25 L:24633.25 O:24898 C:24671.5
+Session change: overnight -> premarket at 2025-10-01T08:00:00.000Z
+Rolling window swing detected: High=24975.50, Low=24520.00, Size=455.5 pts, Direction=up
+Calculated 5 fibonacci levels from 1 swings
+📊 GEX-LDPM Confluence Signal Generated at 2025-10-01T13:15:00.000Z: {
+  side: 'buy',
+  price: 24763.25,
+  zone: 24866.733399917237,
+  distance: 103.48339991723697,
+  regime: 'positive',
+  volume: '1.97x avg',
+  timestamp: 1759324500000,
+  time: '2025-10-01T13:15:00.000Z'
+}
+Finalized premarket levels: H:24805.5 L:24653.25 O:24670.75 C:24763.25
+Session change: premarket -> overnight at 2025-09-26T00:00:00.000Z
+Finalized overnight levels: H:24672.25 L:24573.75 O:24616.75 C:24646
+Session change: overnight -> premarket at 2025-09-26T08:00:00.000Z
+Finalized premarket levels: H:24747.5 L:24569.25 O:24647 C:24653.75
+Session change: premarket -> rth at 2025-09-26T13:30:00.000Z
+Finalized rth levels: H:24737 L:24520 O:24654.25 C:24725.5
+Session change: rth -> overnight at 2025-09-26T20:00:00.000Z
+Finalized overnight levels: H:24864.25 L:24721.5 O:24725.75 C:24853.5
+Session change: overnight -> premarket at 2025-09-29T08:00:00.000Z
+Finalized premarket levels: H:24909.5 L:24846.5 O:24852.75 C:24850.75
+Session change: premarket -> rth at 2025-09-29T13:30:00.000Z
+Finalized rth levels: H:24975.5 L:24780.5 O:24850.75 C:24837.25
+Session change: rth -> overnight at 2025-09-29T20:00:00.000Z
+Finalized overnight levels: H:24856.75 L:24754.75 O:24837.5 C:24790.75
+Session change: overnight -> premarket at 2025-09-30T08:00:00.000Z
+Finalized premarket levels: H:24845 L:24763 O:24790 C:24821
+Session change: premarket -> rth at 2025-09-30T13:30:00.000Z
+Finalized rth levels: H:24913.75 L:24722.25 O:24820.5 C:24898.25
+Session change: rth -> overnight at 2025-09-30T20:00:00.000Z
+Finalized overnight levels: H:24901.25 L:24633.25 O:24898 C:24671.5
+Session change: overnight -> premarket at 2025-10-01T08:00:00.000Z
+Finalized premarket levels: H:24805.5 L:24653.25 O:24670.75 C:24763.25
+Session change: premarket -> rth at 2025-10-01T13:30:00.000Z
+Rolling window swing detected: High=24975.50, Low=24520.00, Size=455.5 pts, Direction=up
+Calculated 5 fibonacci levels from 1 swings
+Finalized rth levels: H:24841.5 L:24742.75 O:24763 C:24829
+Session change: rth -> overnight at 2025-09-26T00:00:00.000Z
+Finalized overnight levels: H:24672.25 L:24573.75 O:24616.75 C:24646
+Session change: overnight -> premarket at 2025-09-26T08:00:00.000Z
+Finalized premarket levels: H:24747.5 L:24569.25 O:24647 C:24653.75
+Session change: premarket -> rth at 2025-09-26T13:30:00.000Z
+Finalized rth levels: H:24737 L:24520 O:24654.25 C:24725.5
+Session change: rth -> overnight at 2025-09-26T20:00:00.000Z
+Finalized overnight levels: H:24864.25 L:24721.5 O:24725.75 C:24853.5
+Session change: overnight -> premarket at 2025-09-29T08:00:00.000Z
+Finalized premarket levels: H:24909.5 L:24846.5 O:24852.75 C:24850.75
+Session change: premarket -> rth at 2025-09-29T13:30:00.000Z
+Finalized rth levels: H:24975.5 L:24780.5 O:24850.75 C:24837.25
+Session change: rth -> overnight at 2025-09-29T20:00:00.000Z
+Finalized overnight levels: H:24856.75 L:24754.75 O:24837.5 C:24790.75
+Session change: overnight -> premarket at 2025-09-30T08:00:00.000Z
+Finalized premarket levels: H:24845 L:24763 O:24790 C:24821
+Session change: premarket -> rth at 2025-09-30T13:30:00.000Z
+Finalized rth levels: H:24913.75 L:24722.25 O:24820.5 C:24898.25
+Session change: rth -> overnight at 2025-09-30T20:00:00.000Z
+Finalized overnight levels: H:24901.25 L:24633.25 O:24898 C:24671.5
+Session change: overnight -> premarket at 2025-10-01T08:00:00.000Z
+Finalized premarket levels: H:24805.5 L:24653.25 O:24670.75 C:24763.25
+Session change: premarket -> rth at 2025-10-01T13:30:00.000Z
+Rolling window swing detected: High=24975.50, Low=24520.00, Size=455.5 pts, Direction=up
+Calculated 5 fibonacci levels from 1 swings
+📊 GEX-LDPM Confluence Signal Generated at 2025-10-01T13:45:00.000Z: {
+  side: 'buy',
+  price: 24784.75,
+  zone: 24867.295741242426,
+  distance: 82.54574124242572,
+  regime: 'positive',
+  volume: '5.76x avg',
+  timestamp: 1759326300000,
+  time: '2025-10-01T13:45:00.000Z'
+}
+Finalized rth levels: H:24841.5 L:24726 O:24763 C:24784.75
+Session change: rth -> overnight at 2025-09-26T00:00:00.000Z
+Finalized overnight levels: H:24672.25 L:24573.75 O:24616.75 C:24646
+Session change: overnight -> premarket at 2025-09-26T08:00:00.000Z
+Finalized premarket levels: H:24747.5 L:24569.25 O:24647 C:24653.75
+Session change: premarket -> rth at 2025-09-26T13:30:00.000Z
+Finalized rth levels: H:24737 L:24520 O:24654.25 C:24725.5
+Session change: rth -> overnight at 2025-09-26T20:00:00.000Z
+Finalized overnight levels: H:24864.25 L:24721.5 O:24725.75 C:24853.5
+Session change: overnight -> premarket at 2025-09-29T08:00:00.000Z
+Finalized premarket levels: H:24909.5 L:24846.5 O:24852.75 C:24850.75
+Session change: premarket -> rth at 2025-09-29T13:30:00.000Z
+Finalized rth levels: H:24975.5 L:24780.5 O:24850.75 C:24837.25
+Session change: rth -> overnight at 2025-09-29T20:00:00.000Z
+Finalized overnight levels: H:24856.75 L:24754.75 O:24837.5 C:24790.75
+Session change: overnight -> premarket at 2025-09-30T08:00:00.000Z
+Finalized premarket levels: H:24845 L:24763 O:24790 C:24821
+Session change: premarket -> rth at 2025-09-30T13:30:00.000Z
+Finalized rth levels: H:24913.75 L:24722.25 O:24820.5 C:24898.25
+Session change: rth -> overnight at 2025-09-30T20:00:00.000Z
+Finalized overnight levels: H:24901.25 L:24633.25 O:24898 C:24671.5
+Session change: overnight -> premarket at 2025-10-01T08:00:00.000Z
+Finalized premarket levels: H:24805.5 L:24653.25 O:24670.75 C:24763.25
+Session change: premarket -> rth at 2025-10-01T13:30:00.000Z
+Rolling window swing detected: High=24975.50, Low=24520.00, Size=455.5 pts, Direction=up
+Calculated 5 fibonacci levels from 1 swings
+Finalized rth levels: H:24841.5 L:24726 O:24763 C:24830.75
+Session change: rth -> overnight at 2025-09-26T00:00:00.000Z
+Finalized overnight levels: H:24672.25 L:24573.75 O:24616.75 C:24646
+Session change: overnight -> premarket at 2025-09-26T08:00:00.000Z
+Finalized premarket levels: H:24747.5 L:24569.25 O:24647 C:24653.75
+Session change: premarket -> rth at 2025-09-26T13:30:00.000Z
+Finalized rth levels: H:24737 L:24520 O:24654.25 C:24725.5
+Session change: rth -> overnight at 2025-09-26T20:00:00.000Z
+Finalized overnight levels: H:24864.25 L:24721.5 O:24725.75 C:24853.5
+Session change: overnight -> premarket at 2025-09-29T08:00:00.000Z
+Finalized premarket levels: H:24909.5 L:24846.5 O:24852.75 C:24850.75
+Session change: premarket -> rth at 2025-09-29T13:30:00.000Z
+Finalized rth levels: H:24975.5 L:24780.5 O:24850.75 C:24837.25
+Session change: rth -> overnight at 2025-09-29T20:00:00.000Z
+Finalized overnight levels: H:24856.75 L:24754.75 O:24837.5 C:24790.75
+Session change: overnight -> premarket at 2025-09-30T08:00:00.000Z
+Finalized premarket levels: H:24845 L:24763 O:24790 C:24821
+Session change: premarket -> rth at 2025-09-30T13:30:00.000Z
+Finalized rth levels: H:24913.75 L:24722.25 O:24820.5 C:24898.25
+Session change: rth -> overnight at 2025-09-30T20:00:00.000Z
+Finalized overnight levels: H:24901.25 L:24633.25 O:24898 C:24671.5
+Session change: overnight -> premarket at 2025-10-01T08:00:00.000Z
+Finalized premarket levels: H:24805.5 L:24653.25 O:24670.75 C:24763.25
+Session change: premarket -> rth at 2025-10-01T13:30:00.000Z
+Rolling window swing detected: High=24975.50, Low=24520.00, Size=455.5 pts, Direction=up
+Calculated 5 fibonacci levels from 1 swings
+Finalized rth levels: H:24893 L:24726 O:24763 C:24883.25
+Session change: rth -> overnight at 2025-09-26T00:00:00.000Z
+Finalized overnight levels: H:24672.25 L:24573.75 O:24616.75 C:24646
+Session change: overnight -> premarket at 2025-09-26T08:00:00.000Z
+Finalized premarket levels: H:24747.5 L:24569.25 O:24647 C:24653.75
+Session change: premarket -> rth at 2025-09-26T13:30:00.000Z
+Finalized rth levels: H:24737 L:24520 O:24654.25 C:24725.5
+Session change: rth -> overnight at 2025-09-26T20:00:00.000Z
+Finalized overnight levels: H:24864.25 L:24721.5 O:24725.75 C:24853.5
+Session change: overnight -> premarket at 2025-09-29T08:00:00.000Z
+Finalized premarket levels: H:24909.5 L:24846.5 O:24852.75 C:24850.75
+Session change: premarket -> rth at 2025-09-29T13:30:00.000Z
+Finalized rth levels: H:24975.5 L:24780.5 O:24850.75 C:24837.25
+Session change: rth -> overnight at 2025-09-29T20:00:00.000Z
+Finalized overnight levels: H:24856.75 L:24754.75 O:24837.5 C:24790.75
+Session change: overnight -> premarket at 2025-09-30T08:00:00.000Z
+Finalized premarket levels: H:24845 L:24763 O:24790 C:24821
+Session change: premarket -> rth at 2025-09-30T13:30:00.000Z
+Finalized rth levels: H:24913.75 L:24722.25 O:24820.5 C:24898.25
+Session change: rth -> overnight at 2025-09-30T20:00:00.000Z
+Finalized overnight levels: H:24901.25 L:24633.25 O:24898 C:24671.5
+Session change: overnight -> premarket at 2025-10-01T08:00:00.000Z
+Finalized premarket levels: H:24805.5 L:24653.25 O:24670.75 C:24763.25
+Session change: premarket -> rth at 2025-10-01T13:30:00.000Z
+Rolling window swing detected: High=24975.50, Low=24520.00, Size=455.5 pts, Direction=up
+Calculated 5 fibonacci levels from 1 swings
+📊 GEX-LDPM Confluence Signal Generated at 2025-10-01T14:30:00.000Z: {
+  side: 'sell',
+  price: 24890.5,
+  zone: 24866.17105859205,
+  distance: 24.32894140795179,
+  regime: 'positive',
+  volume: '2.23x avg',
+  timestamp: 1759329000000,
+  time: '2025-10-01T14:30:00.000Z'
+}
+❌ No pullback levels detected - this needs to be fixed
+Finalized rth levels: H:24912 L:24726 O:24763 C:24890.5
+Session change: rth -> overnight at 2025-09-26T00:00:00.000Z
+Finalized overnight levels: H:24672.25 L:24573.75 O:24616.75 C:24646
+Session change: overnight -> premarket at 2025-09-26T08:00:00.000Z
+Finalized premarket levels: H:24747.5 L:24569.25 O:24647 C:24653.75
+Session change: premarket -> rth at 2025-09-26T13:30:00.000Z
+Finalized rth levels: H:24737 L:24520 O:24654.25 C:24725.5
+Session change: rth -> overnight at 2025-09-26T20:00:00.000Z
+Finalized overnight levels: H:24864.25 L:24721.5 O:24725.75 C:24853.5
+Session change: overnight -> premarket at 2025-09-29T08:00:00.000Z
+Finalized premarket levels: H:24909.5 L:24846.5 O:24852.75 C:24850.75
+Session change: premarket -> rth at 2025-09-29T13:30:00.000Z
+Finalized rth levels: H:24975.5 L:24780.5 O:24850.75 C:24837.25
+Session change: rth -> overnight at 2025-09-29T20:00:00.000Z
+Finalized overnight levels: H:24856.75 L:24754.75 O:24837.5 C:24790.75
+Session change: overnight -> premarket at 2025-09-30T08:00:00.000Z
+Finalized premarket levels: H:24845 L:24763 O:24790 C:24821
+Session change: premarket -> rth at 2025-09-30T13:30:00.000Z
+Finalized rth levels: H:24913.75 L:24722.25 O:24820.5 C:24898.25
+Session change: rth -> overnight at 2025-09-30T20:00:00.000Z
+Finalized overnight levels: H:24901.25 L:24633.25 O:24898 C:24671.5
+Session change: overnight -> premarket at 2025-10-01T08:00:00.000Z
+Finalized premarket levels: H:24805.5 L:24653.25 O:24670.75 C:24763.25
+Session change: premarket -> rth at 2025-10-01T13:30:00.000Z
+Rolling window swing detected: High=24975.50, Low=24520.00, Size=455.5 pts, Direction=up
+Calculated 5 fibonacci levels from 1 swings
+📊 GEX-LDPM Confluence Signal Generated at 2025-10-01T14:45:00.000Z: {
+  side: 'sell',
+  price: 24897.5,
+  zone: 24866.733399917237,
+  distance: 30.766600082763034,
+  regime: 'positive',
+  volume: '1.49x avg',
+  timestamp: 1759329900000,
+  time: '2025-10-01T14:45:00.000Z'
+}
+❌ No pullback levels detected - this needs to be fixed
+Finalized rth levels: H:24912 L:24726 O:24763 C:24897.5
+Session change: rth -> overnight at 2025-09-26T00:00:00.000Z
+Finalized overnight levels: H:24672.25 L:24573.75 O:24616.75 C:24646
+Session change: overnight -> premarket at 2025-09-26T08:00:00.000Z
+Finalized premarket levels: H:24747.5 L:24569.25 O:24647 C:24653.75
+Session change: premarket -> rth at 2025-09-26T13:30:00.000Z
+Finalized rth levels: H:24737 L:24520 O:24654.25 C:24725.5
+Session change: rth -> overnight at 2025-09-26T20:00:00.000Z
+Finalized overnight levels: H:24864.25 L:24721.5 O:24725.75 C:24853.5
+Session change: overnight -> premarket at 2025-09-29T08:00:00.000Z
+Finalized premarket levels: H:24909.5 L:24846.5 O:24852.75 C:24850.75
+Session change: premarket -> rth at 2025-09-29T13:30:00.000Z
+Finalized rth levels: H:24975.5 L:24780.5 O:24850.75 C:24837.25
+Session change: rth -> overnight at 2025-09-29T20:00:00.000Z
+Finalized overnight levels: H:24856.75 L:24754.75 O:24837.5 C:24790.75
+Session change: overnight -> premarket at 2025-09-30T08:00:00.000Z
+Finalized premarket levels: H:24845 L:24763 O:24790 C:24821
+Session change: premarket -> rth at 2025-09-30T13:30:00.000Z
+Finalized rth levels: H:24913.75 L:24722.25 O:24820.5 C:24898.25
+Session change: rth -> overnight at 2025-09-30T20:00:00.000Z
+Finalized overnight levels: H:24901.25 L:24633.25 O:24898 C:24671.5
+Session change: overnight -> premarket at 2025-10-01T08:00:00.000Z
+Finalized premarket levels: H:24805.5 L:24653.25 O:24670.75 C:24763.25
+Session change: premarket -> rth at 2025-10-01T13:30:00.000Z
+Rolling window swing detected: High=24975.50, Low=24520.00, Size=455.5 pts, Direction=up
+Calculated 5 fibonacci levels from 1 swings
+📊 GEX-LDPM Confluence Signal Generated at 2025-10-01T15:00:00.000Z: {
+  side: 'sell',
+  price: 24900.25,
+  zone: 24867.295741242426,
+  distance: 32.95425875757428,
+  regime: 'positive',
+  volume: '1.70x avg',
+  timestamp: 1759330800000,
+  time: '2025-10-01T15:00:00.000Z'
+}
+❌ No pullback levels detected - this needs to be fixed
+Finalized rth levels: H:24920.75 L:24726 O:24763 C:24900.25
+Session change: rth -> overnight at 2025-09-26T00:00:00.000Z
+Finalized overnight levels: H:24672.25 L:24573.75 O:24616.75 C:24646
+Session change: overnight -> premarket at 2025-09-26T08:00:00.000Z
+Finalized premarket levels: H:24747.5 L:24569.25 O:24647 C:24653.75
+Session change: premarket -> rth at 2025-09-26T13:30:00.000Z
+Finalized rth levels: H:24737 L:24520 O:24654.25 C:24725.5
+Session change: rth -> overnight at 2025-09-26T20:00:00.000Z
+Finalized overnight levels: H:24864.25 L:24721.5 O:24725.75 C:24853.5
+Session change: overnight -> premarket at 2025-09-29T08:00:00.000Z
+Finalized premarket levels: H:24909.5 L:24846.5 O:24852.75 C:24850.75
+Session change: premarket -> rth at 2025-09-29T13:30:00.000Z
+Finalized rth levels: H:24975.5 L:24780.5 O:24850.75 C:24837.25
+Session change: rth -> overnight at 2025-09-29T20:00:00.000Z
+Finalized overnight levels: H:24856.75 L:24754.75 O:24837.5 C:24790.75
+Session change: overnight -> premarket at 2025-09-30T08:00:00.000Z
+Finalized premarket levels: H:24845 L:24763 O:24790 C:24821
+Session change: premarket -> rth at 2025-09-30T13:30:00.000Z
+Finalized rth levels: H:24913.75 L:24722.25 O:24820.5 C:24898.25
+Session change: rth -> overnight at 2025-09-30T20:00:00.000Z
+Finalized overnight levels: H:24901.25 L:24633.25 O:24898 C:24671.5
+Session change: overnight -> premarket at 2025-10-01T08:00:00.000Z
+Finalized premarket levels: H:24805.5 L:24653.25 O:24670.75 C:24763.25
+Session change: premarket -> rth at 2025-10-01T13:30:00.000Z
+Rolling window swing detected: High=24975.50, Low=24520.00, Size=455.5 pts, Direction=up
+Calculated 5 fibonacci levels from 1 swings
+Finalized rth levels: H:24920.75 L:24726 O:24763 C:24890.75
+Session change: rth -> overnight at 2025-09-26T00:00:00.000Z
+Finalized overnight levels: H:24672.25 L:24573.75 O:24616.75 C:24646
+Session change: overnight -> premarket at 2025-09-26T08:00:00.000Z
+Finalized premarket levels: H:24747.5 L:24569.25 O:24647 C:24653.75
+Session change: premarket -> rth at 2025-09-26T13:30:00.000Z
+Finalized rth levels: H:24737 L:24520 O:24654.25 C:24725.5
+Session change: rth -> overnight at 2025-09-26T20:00:00.000Z
+Finalized overnight levels: H:24864.25 L:24721.5 O:24725.75 C:24853.5
+Session change: overnight -> premarket at 2025-09-29T08:00:00.000Z
+Finalized premarket levels: H:24909.5 L:24846.5 O:24852.75 C:24850.75
+Session change: premarket -> rth at 2025-09-29T13:30:00.000Z
+Finalized rth levels: H:24975.5 L:24780.5 O:24850.75 C:24837.25
+Session change: rth -> overnight at 2025-09-29T20:00:00.000Z
+Finalized overnight levels: H:24856.75 L:24754.75 O:24837.5 C:24790.75
+Session change: overnight -> premarket at 2025-09-30T08:00:00.000Z
+Finalized premarket levels: H:24845 L:24763 O:24790 C:24821
+Session change: premarket -> rth at 2025-09-30T13:30:00.000Z
+Finalized rth levels: H:24913.75 L:24722.25 O:24820.5 C:24898.25
+Session change: rth -> overnight at 2025-09-30T20:00:00.000Z
+Finalized overnight levels: H:24901.25 L:24633.25 O:24898 C:24671.5
+Session change: overnight -> premarket at 2025-10-01T08:00:00.000Z
+Finalized premarket levels: H:24805.5 L:24653.25 O:24670.75 C:24763.25
+Session change: premarket -> rth at 2025-10-01T13:30:00.000Z
+Rolling window swing detected: High=24975.50, Low=24520.00, Size=455.5 pts, Direction=up
+Calculated 5 fibonacci levels from 1 swings
+Finalized rth levels: H:24932.75 L:24726 O:24763 C:24930.5
+Session change: rth -> overnight at 2025-09-26T00:00:00.000Z
+Finalized overnight levels: H:24672.25 L:24573.75 O:24616.75 C:24646
+Session change: overnight -> premarket at 2025-09-26T08:00:00.000Z
+Finalized premarket levels: H:24747.5 L:24569.25 O:24647 C:24653.75
+Session change: premarket -> rth at 2025-09-26T13:30:00.000Z
+Finalized rth levels: H:24737 L:24520 O:24654.25 C:24725.5
+Session change: rth -> overnight at 2025-09-26T20:00:00.000Z
+Finalized overnight levels: H:24864.25 L:24721.5 O:24725.75 C:24853.5
+Session change: overnight -> premarket at 2025-09-29T08:00:00.000Z
+Finalized premarket levels: H:24909.5 L:24846.5 O:24852.75 C:24850.75
+Session change: premarket -> rth at 2025-09-29T13:30:00.000Z
+Finalized rth levels: H:24975.5 L:24780.5 O:24850.75 C:24837.25
+Session change: rth -> overnight at 2025-09-29T20:00:00.000Z
+Finalized overnight levels: H:24856.75 L:24754.75 O:24837.5 C:24790.75
+Session change: overnight -> premarket at 2025-09-30T08:00:00.000Z
+Finalized premarket levels: H:24845 L:24763 O:24790 C:24821
+Session change: premarket -> rth at 2025-09-30T13:30:00.000Z
+Finalized rth levels: H:24913.75 L:24722.25 O:24820.5 C:24898.25
+Session change: rth -> overnight at 2025-09-30T20:00:00.000Z
+Finalized overnight levels: H:24901.25 L:24633.25 O:24898 C:24671.5
+Session change: overnight -> premarket at 2025-10-01T08:00:00.000Z
+Finalized premarket levels: H:24805.5 L:24653.25 O:24670.75 C:24763.25
+Session change: premarket -> rth at 2025-10-01T13:30:00.000Z
+Rolling window swing detected: High=24975.50, Low=24520.00, Size=455.5 pts, Direction=up
+Calculated 5 fibonacci levels from 1 swings
+Finalized rth levels: H:24938.5 L:24726 O:24763 C:24931
+Session change: rth -> overnight at 2025-09-26T00:00:00.000Z
+Finalized overnight levels: H:24672.25 L:24573.75 O:24616.75 C:24646
+Session change: overnight -> premarket at 2025-09-26T08:00:00.000Z
+Finalized premarket levels: H:24747.5 L:24569.25 O:24647 C:24653.75
+Session change: premarket -> rth at 2025-09-26T13:30:00.000Z
+Finalized rth levels: H:24737 L:24520 O:24654.25 C:24725.5
+Session change: rth -> overnight at 2025-09-26T20:00:00.000Z
+Finalized overnight levels: H:24864.25 L:24721.5 O:24725.75 C:24853.5
+Session change: overnight -> premarket at 2025-09-29T08:00:00.000Z
+Finalized premarket levels: H:24909.5 L:24846.5 O:24852.75 C:24850.75
+Session change: premarket -> rth at 2025-09-29T13:30:00.000Z
+Finalized rth levels: H:24975.5 L:24780.5 O:24850.75 C:24837.25
+Session change: rth -> overnight at 2025-09-29T20:00:00.000Z
+Finalized overnight levels: H:24856.75 L:24754.75 O:24837.5 C:24790.75
+Session change: overnight -> premarket at 2025-09-30T08:00:00.000Z
+Finalized premarket levels: H:24845 L:24763 O:24790 C:24821
+Session change: premarket -> rth at 2025-09-30T13:30:00.000Z
+Finalized rth levels: H:24913.75 L:24722.25 O:24820.5 C:24898.25
+Session change: rth -> overnight at 2025-09-30T20:00:00.000Z
+Finalized overnight levels: H:24901.25 L:24633.25 O:24898 C:24671.5
+Session change: overnight -> premarket at 2025-10-01T08:00:00.000Z
+Finalized premarket levels: H:24805.5 L:24653.25 O:24670.75 C:24763.25
+Session change: premarket -> rth at 2025-10-01T13:30:00.000Z
+Rolling window swing detected: High=24975.50, Low=24520.00, Size=455.5 pts, Direction=up
+Calculated 5 fibonacci levels from 1 swings
+Finalized rth levels: H:24946.75 L:24726 O:24763 C:24940.25
+Session change: rth -> overnight at 2025-09-26T00:00:00.000Z
+Finalized overnight levels: H:24672.25 L:24573.75 O:24616.75 C:24646
+Session change: overnight -> premarket at 2025-09-26T08:00:00.000Z
+Finalized premarket levels: H:24747.5 L:24569.25 O:24647 C:24653.75
+Session change: premarket -> rth at 2025-09-26T13:30:00.000Z
+Finalized rth levels: H:24737 L:24520 O:24654.25 C:24725.5
+Session change: rth -> overnight at 2025-09-26T20:00:00.000Z
+Finalized overnight levels: H:24864.25 L:24721.5 O:24725.75 C:24853.5
+Session change: overnight -> premarket at 2025-09-29T08:00:00.000Z
+Finalized premarket levels: H:24909.5 L:24846.5 O:24852.75 C:24850.75
+Session change: premarket -> rth at 2025-09-29T13:30:00.000Z
+Finalized rth levels: H:24975.5 L:24780.5 O:24850.75 C:24837.25
+Session change: rth -> overnight at 2025-09-29T20:00:00.000Z
+Finalized overnight levels: H:24856.75 L:24754.75 O:24837.5 C:24790.75
+Session change: overnight -> premarket at 2025-09-30T08:00:00.000Z
+Finalized premarket levels: H:24845 L:24763 O:24790 C:24821
+Session change: premarket -> rth at 2025-09-30T13:30:00.000Z
+Finalized rth levels: H:24913.75 L:24722.25 O:24820.5 C:24898.25
+Session change: rth -> overnight at 2025-09-30T20:00:00.000Z
+Finalized overnight levels: H:24901.25 L:24633.25 O:24898 C:24671.5
+Session change: overnight -> premarket at 2025-10-01T08:00:00.000Z
+Finalized premarket levels: H:24805.5 L:24653.25 O:24670.75 C:24763.25
+Session change: premarket -> rth at 2025-10-01T13:30:00.000Z
+Rolling window swing detected: High=24975.50, Low=24520.00, Size=455.5 pts, Direction=up
+Calculated 5 fibonacci levels from 1 swings
+Finalized rth levels: H:24948.75 L:24726 O:24763 C:24943.75
+Session change: rth -> overnight at 2025-09-26T00:00:00.000Z
+Finalized overnight levels: H:24672.25 L:24573.75 O:24616.75 C:24646
+Session change: overnight -> premarket at 2025-09-26T08:00:00.000Z
+Finalized premarket levels: H:24747.5 L:24569.25 O:24647 C:24653.75
+Session change: premarket -> rth at 2025-09-26T13:30:00.000Z
+Finalized rth levels: H:24737 L:24520 O:24654.25 C:24725.5
+Session change: rth -> overnight at 2025-09-26T20:00:00.000Z
+Finalized overnight levels: H:24864.25 L:24721.5 O:24725.75 C:24853.5
+Session change: overnight -> premarket at 2025-09-29T08:00:00.000Z
+Finalized premarket levels: H:24909.5 L:24846.5 O:24852.75 C:24850.75
+Session change: premarket -> rth at 2025-09-29T13:30:00.000Z
+Finalized rth levels: H:24975.5 L:24780.5 O:24850.75 C:24837.25
+Session change: rth -> overnight at 2025-09-29T20:00:00.000Z
+Finalized overnight levels: H:24856.75 L:24754.75 O:24837.5 C:24790.75
+Session change: overnight -> premarket at 2025-09-30T08:00:00.000Z
+Finalized premarket levels: H:24845 L:24763 O:24790 C:24821
+Session change: premarket -> rth at 2025-09-30T13:30:00.000Z
+Finalized rth levels: H:24913.75 L:24722.25 O:24820.5 C:24898.25
+Session change: rth -> overnight at 2025-09-30T20:00:00.000Z
+Finalized overnight levels: H:24901.25 L:24633.25 O:24898 C:24671.5
+Session change: overnight -> premarket at 2025-10-01T08:00:00.000Z
+Finalized premarket levels: H:24805.5 L:24653.25 O:24670.75 C:24763.25
+Session change: premarket -> rth at 2025-10-01T13:30:00.000Z
+Rolling window swing detected: High=24975.50, Low=24520.00, Size=455.5 pts, Direction=up
+Calculated 5 fibonacci levels from 1 swings
+Finalized rth levels: H:24952.5 L:24726 O:24763 C:24934.75
+Session change: rth -> overnight at 2025-09-26T00:00:00.000Z
+Finalized overnight levels: H:24672.25 L:24573.75 O:24616.75 C:24646
+Session change: overnight -> premarket at 2025-09-26T08:00:00.000Z
+Finalized premarket levels: H:24747.5 L:24569.25 O:24647 C:24653.75
+Session change: premarket -> rth at 2025-09-26T13:30:00.000Z
+Finalized rth levels: H:24737 L:24520 O:24654.25 C:24725.5
+Session change: rth -> overnight at 2025-09-26T20:00:00.000Z
+Finalized overnight levels: H:24864.25 L:24721.5 O:24725.75 C:24853.5
+Session change: overnight -> premarket at 2025-09-29T08:00:00.000Z
+Finalized premarket levels: H:24909.5 L:24846.5 O:24852.75 C:24850.75
+Session change: premarket -> rth at 2025-09-29T13:30:00.000Z
+Finalized rth levels: H:24975.5 L:24780.5 O:24850.75 C:24837.25
+Session change: rth -> overnight at 2025-09-29T20:00:00.000Z
+Finalized overnight levels: H:24856.75 L:24754.75 O:24837.5 C:24790.75
+Session change: overnight -> premarket at 2025-09-30T08:00:00.000Z
+Finalized premarket levels: H:24845 L:24763 O:24790 C:24821
+Session change: premarket -> rth at 2025-09-30T13:30:00.000Z
+Finalized rth levels: H:24913.75 L:24722.25 O:24820.5 C:24898.25
+Session change: rth -> overnight at 2025-09-30T20:00:00.000Z
+Finalized overnight levels: H:24901.25 L:24633.25 O:24898 C:24671.5
+Session change: overnight -> premarket at 2025-10-01T08:00:00.000Z
+Finalized premarket levels: H:24805.5 L:24653.25 O:24670.75 C:24763.25
+Session change: premarket -> rth at 2025-10-01T13:30:00.000Z
+Rolling window swing detected: High=24975.50, Low=24520.00, Size=455.5 pts, Direction=up
+Calculated 5 fibonacci levels from 1 swings
+Finalized rth levels: H:24957.75 L:24726 O:24763 C:24955
+Session change: rth -> overnight at 2025-09-26T00:00:00.000Z
+Finalized overnight levels: H:24672.25 L:24573.75 O:24616.75 C:24646
+Session change: overnight -> premarket at 2025-09-26T08:00:00.000Z
+Finalized premarket levels: H:24747.5 L:24569.25 O:24647 C:24653.75
+Session change: premarket -> rth at 2025-09-26T13:30:00.000Z
+Finalized rth levels: H:24737 L:24520 O:24654.25 C:24725.5
+Session change: rth -> overnight at 2025-09-26T20:00:00.000Z
+Finalized overnight levels: H:24864.25 L:24721.5 O:24725.75 C:24853.5
+Session change: overnight -> premarket at 2025-09-29T08:00:00.000Z
+Finalized premarket levels: H:24909.5 L:24846.5 O:24852.75 C:24850.75
+Session change: premarket -> rth at 2025-09-29T13:30:00.000Z
+Finalized rth levels: H:24975.5 L:24780.5 O:24850.75 C:24837.25
+Session change: rth -> overnight at 2025-09-29T20:00:00.000Z
+Finalized overnight levels: H:24856.75 L:24754.75 O:24837.5 C:24790.75
+Session change: overnight -> premarket at 2025-09-30T08:00:00.000Z
+Finalized premarket levels: H:24845 L:24763 O:24790 C:24821
+Session change: premarket -> rth at 2025-09-30T13:30:00.000Z
+Finalized rth levels: H:24913.75 L:24722.25 O:24820.5 C:24898.25
+Session change: rth -> overnight at 2025-09-30T20:00:00.000Z
+Finalized overnight levels: H:24901.25 L:24633.25 O:24898 C:24671.5
+Session change: overnight -> premarket at 2025-10-01T08:00:00.000Z
+Finalized premarket levels: H:24805.5 L:24653.25 O:24670.75 C:24763.25
+Session change: premarket -> rth at 2025-10-01T13:30:00.000Z
+Rolling window swing detected: High=24980.50, Low=24520.00, Size=460.5 pts, Direction=up
+Calculated 5 fibonacci levels from 1 swings
+Finalized rth levels: H:24980.5 L:24726 O:24763 C:24969.75
+Session change: rth -> overnight at 2025-09-26T00:00:00.000Z
+Finalized overnight levels: H:24672.25 L:24573.75 O:24616.75 C:24646
+Session change: overnight -> premarket at 2025-09-26T08:00:00.000Z
+Finalized premarket levels: H:24747.5 L:24569.25 O:24647 C:24653.75
+Session change: premarket -> rth at 2025-09-26T13:30:00.000Z
+Finalized rth levels: H:24737 L:24520 O:24654.25 C:24725.5
+Session change: rth -> overnight at 2025-09-26T20:00:00.000Z
+Finalized overnight levels: H:24864.25 L:24721.5 O:24725.75 C:24853.5
+Session change: overnight -> premarket at 2025-09-29T08:00:00.000Z
+Finalized premarket levels: H:24909.5 L:24846.5 O:24852.75 C:24850.75
+Session change: premarket -> rth at 2025-09-29T13:30:00.000Z
+Finalized rth levels: H:24975.5 L:24780.5 O:24850.75 C:24837.25
+Session change: rth -> overnight at 2025-09-29T20:00:00.000Z
+Finalized overnight levels: H:24856.75 L:24754.75 O:24837.5 C:24790.75
+Session change: overnight -> premarket at 2025-09-30T08:00:00.000Z
+Finalized premarket levels: H:24845 L:24763 O:24790 C:24821
+Session change: premarket -> rth at 2025-09-30T13:30:00.000Z
+Finalized rth levels: H:24913.75 L:24722.25 O:24820.5 C:24898.25
+Session change: rth -> overnight at 2025-09-30T20:00:00.000Z
+Finalized overnight levels: H:24901.25 L:24633.25 O:24898 C:24671.5
+Session change: overnight -> premarket at 2025-10-01T08:00:00.000Z
+Finalized premarket levels: H:24805.5 L:24653.25 O:24670.75 C:24763.25
+Session change: premarket -> rth at 2025-10-01T13:30:00.000Z
+Rolling window swing detected: High=24990.00, Low=24520.00, Size=470.0 pts, Direction=up
+Calculated 5 fibonacci levels from 1 swings
+Finalized rth levels: H:24990 L:24726 O:24763 C:24983.5
+Session change: rth -> overnight at 2025-09-26T00:00:00.000Z
+Finalized overnight levels: H:24672.25 L:24573.75 O:24616.75 C:24646
+Session change: overnight -> premarket at 2025-09-26T08:00:00.000Z
+Finalized premarket levels: H:24747.5 L:24569.25 O:24647 C:24653.75
+Session change: premarket -> rth at 2025-09-26T13:30:00.000Z
+Finalized rth levels: H:24737 L:24520 O:24654.25 C:24725.5
+Session change: rth -> overnight at 2025-09-26T20:00:00.000Z
+Finalized overnight levels: H:24864.25 L:24721.5 O:24725.75 C:24853.5
+Session change: overnight -> premarket at 2025-09-29T08:00:00.000Z
+Finalized premarket levels: H:24909.5 L:24846.5 O:24852.75 C:24850.75
+Session change: premarket -> rth at 2025-09-29T13:30:00.000Z
+Finalized rth levels: H:24975.5 L:24780.5 O:24850.75 C:24837.25
+Session change: rth -> overnight at 2025-09-29T20:00:00.000Z
+Finalized overnight levels: H:24856.75 L:24754.75 O:24837.5 C:24790.75
+Session change: overnight -> premarket at 2025-09-30T08:00:00.000Z
+Finalized premarket levels: H:24845 L:24763 O:24790 C:24821
+Session change: premarket -> rth at 2025-09-30T13:30:00.000Z
+Finalized rth levels: H:24913.75 L:24722.25 O:24820.5 C:24898.25
+Session change: rth -> overnight at 2025-09-30T20:00:00.000Z
+Finalized overnight levels: H:24901.25 L:24633.25 O:24898 C:24671.5
+Session change: overnight -> premarket at 2025-10-01T08:00:00.000Z
+Finalized premarket levels: H:24805.5 L:24653.25 O:24670.75 C:24763.25
+Session change: premarket -> rth at 2025-10-01T13:30:00.000Z
+Rolling window swing detected: High=24990.00, Low=24520.00, Size=470.0 pts, Direction=up
+Calculated 5 fibonacci levels from 1 swings
+Finalized rth levels: H:24990 L:24726 O:24763 C:24972.5
+Session change: rth -> overnight at 2025-09-26T00:00:00.000Z
+Finalized overnight levels: H:24672.25 L:24573.75 O:24616.75 C:24646
+Session change: overnight -> premarket at 2025-09-26T08:00:00.000Z
+Finalized premarket levels: H:24747.5 L:24569.25 O:24647 C:24653.75
+Session change: premarket -> rth at 2025-09-26T13:30:00.000Z
+Finalized rth levels: H:24737 L:24520 O:24654.25 C:24725.5
+Session change: rth -> overnight at 2025-09-26T20:00:00.000Z
+Finalized overnight levels: H:24864.25 L:24721.5 O:24725.75 C:24853.5
+Session change: overnight -> premarket at 2025-09-29T08:00:00.000Z
+Finalized premarket levels: H:24909.5 L:24846.5 O:24852.75 C:24850.75
+Session change: premarket -> rth at 2025-09-29T13:30:00.000Z
+Finalized rth levels: H:24975.5 L:24780.5 O:24850.75 C:24837.25
+Session change: rth -> overnight at 2025-09-29T20:00:00.000Z
+Finalized overnight levels: H:24856.75 L:24754.75 O:24837.5 C:24790.75
+Session change: overnight -> premarket at 2025-09-30T08:00:00.000Z
+Finalized premarket levels: H:24845 L:24763 O:24790 C:24821
+Session change: premarket -> rth at 2025-09-30T13:30:00.000Z
+Finalized rth levels: H:24913.75 L:24722.25 O:24820.5 C:24898.25
+Session change: rth -> overnight at 2025-09-30T20:00:00.000Z
+Finalized overnight levels: H:24901.25 L:24633.25 O:24898 C:24671.5
+Session change: overnight -> premarket at 2025-10-01T08:00:00.000Z
+Finalized premarket levels: H:24805.5 L:24653.25 O:24670.75 C:24763.25
+Session change: premarket -> rth at 2025-10-01T13:30:00.000Z
+Rolling window swing detected: High=24990.00, Low=24520.00, Size=470.0 pts, Direction=up
+Calculated 5 fibonacci levels from 1 swings
+Finalized rth levels: H:24990 L:24726 O:24763 C:24983.5
+Session change: rth -> overnight at 2025-09-26T00:00:00.000Z
+Finalized overnight levels: H:24672.25 L:24573.75 O:24616.75 C:24646
+Session change: overnight -> premarket at 2025-09-26T08:00:00.000Z
+Finalized premarket levels: H:24747.5 L:24569.25 O:24647 C:24653.75
+Session change: premarket -> rth at 2025-09-26T13:30:00.000Z
+Finalized rth levels: H:24737 L:24520 O:24654.25 C:24725.5
+Session change: rth -> overnight at 2025-09-26T20:00:00.000Z
+Finalized overnight levels: H:24864.25 L:24721.5 O:24725.75 C:24853.5
+Session change: overnight -> premarket at 2025-09-29T08:00:00.000Z
+Finalized premarket levels: H:24909.5 L:24846.5 O:24852.75 C:24850.75
+Session change: premarket -> rth at 2025-09-29T13:30:00.000Z
+Finalized rth levels: H:24975.5 L:24780.5 O:24850.75 C:24837.25
+Session change: rth -> overnight at 2025-09-29T20:00:00.000Z
+Finalized overnight levels: H:24856.75 L:24754.75 O:24837.5 C:24790.75
+Session change: overnight -> premarket at 2025-09-30T08:00:00.000Z
+Finalized premarket levels: H:24845 L:24763 O:24790 C:24821
+Session change: premarket -> rth at 2025-09-30T13:30:00.000Z
+Finalized rth levels: H:24913.75 L:24722.25 O:24820.5 C:24898.25
+Session change: rth -> overnight at 2025-09-30T20:00:00.000Z
+Finalized overnight levels: H:24901.25 L:24633.25 O:24898 C:24671.5
+Session change: overnight -> premarket at 2025-10-01T08:00:00.000Z
+Finalized premarket levels: H:24805.5 L:24653.25 O:24670.75 C:24763.25
+Session change: premarket -> rth at 2025-10-01T13:30:00.000Z
+Rolling window swing detected: High=25015.25, Low=24520.00, Size=495.3 pts, Direction=up
+Calculated 5 fibonacci levels from 1 swings
+Finalized rth levels: H:25015.25 L:24726 O:24763 C:25012
+Session change: rth -> overnight at 2025-09-26T00:00:00.000Z
+Finalized overnight levels: H:24672.25 L:24573.75 O:24616.75 C:24646
+Session change: overnight -> premarket at 2025-09-26T08:00:00.000Z
+Finalized premarket levels: H:24747.5 L:24569.25 O:24647 C:24653.75
+Session change: premarket -> rth at 2025-09-26T13:30:00.000Z
+Finalized rth levels: H:24737 L:24520 O:24654.25 C:24725.5
+Session change: rth -> overnight at 2025-09-26T20:00:00.000Z
+Finalized overnight levels: H:24864.25 L:24721.5 O:24725.75 C:24853.5
+Session change: overnight -> premarket at 2025-09-29T08:00:00.000Z
+Finalized premarket levels: H:24909.5 L:24846.5 O:24852.75 C:24850.75
+Session change: premarket -> rth at 2025-09-29T13:30:00.000Z
+Finalized rth levels: H:24975.5 L:24780.5 O:24850.75 C:24837.25
+Session change: rth -> overnight at 2025-09-29T20:00:00.000Z
+Finalized overnight levels: H:24856.75 L:24754.75 O:24837.5 C:24790.75
+Session change: overnight -> premarket at 2025-09-30T08:00:00.000Z
+Finalized premarket levels: H:24845 L:24763 O:24790 C:24821
+Session change: premarket -> rth at 2025-09-30T13:30:00.000Z
+Finalized rth levels: H:24913.75 L:24722.25 O:24820.5 C:24898.25
+Session change: rth -> overnight at 2025-09-30T20:00:00.000Z
+Finalized overnight levels: H:24901.25 L:24633.25 O:24898 C:24671.5
+Session change: overnight -> premarket at 2025-10-01T08:00:00.000Z
+Finalized premarket levels: H:24805.5 L:24653.25 O:24670.75 C:24763.25
+Session change: premarket -> rth at 2025-10-01T13:30:00.000Z
+Rolling window swing detected: High=25024.00, Low=24520.00, Size=504.0 pts, Direction=up
+Calculated 5 fibonacci levels from 1 swings
+Finalized rth levels: H:25024 L:24726 O:24763 C:25012.5
+Session change: rth -> overnight at 2025-09-26T00:00:00.000Z
+Finalized overnight levels: H:24672.25 L:24573.75 O:24616.75 C:24646
+Session change: overnight -> premarket at 2025-09-26T08:00:00.000Z
+Finalized premarket levels: H:24747.5 L:24569.25 O:24647 C:24653.75
+Session change: premarket -> rth at 2025-09-26T13:30:00.000Z
+Finalized rth levels: H:24737 L:24520 O:24654.25 C:24725.5
+Session change: rth -> overnight at 2025-09-26T20:00:00.000Z
+Finalized overnight levels: H:24864.25 L:24721.5 O:24725.75 C:24853.5
+Session change: overnight -> premarket at 2025-09-29T08:00:00.000Z
+Finalized premarket levels: H:24909.5 L:24846.5 O:24852.75 C:24850.75
+Session change: premarket -> rth at 2025-09-29T13:30:00.000Z
+Finalized rth levels: H:24975.5 L:24780.5 O:24850.75 C:24837.25
+Session change: rth -> overnight at 2025-09-29T20:00:00.000Z
+Finalized overnight levels: H:24856.75 L:24754.75 O:24837.5 C:24790.75
+Session change: overnight -> premarket at 2025-09-30T08:00:00.000Z
+Finalized premarket levels: H:24845 L:24763 O:24790 C:24821
+Session change: premarket -> rth at 2025-09-30T13:30:00.000Z
+Finalized rth levels: H:24913.75 L:24722.25 O:24820.5 C:24898.25
+Session change: rth -> overnight at 2025-09-30T20:00:00.000Z
+Finalized overnight levels: H:24901.25 L:24633.25 O:24898 C:24671.5
+Session change: overnight -> premarket at 2025-10-01T08:00:00.000Z
+Finalized premarket levels: H:24805.5 L:24653.25 O:24670.75 C:24763.25
+Session change: premarket -> rth at 2025-10-01T13:30:00.000Z
+Rolling window swing detected: High=25034.00, Low=24520.00, Size=514.0 pts, Direction=up
+Calculated 5 fibonacci levels from 1 swings
+Finalized rth levels: H:25034 L:24726 O:24763 C:25026.75
+Session change: rth -> overnight at 2025-09-26T00:00:00.000Z
+Finalized overnight levels: H:24672.25 L:24573.75 O:24616.75 C:24646
+Session change: overnight -> premarket at 2025-09-26T08:00:00.000Z
+Finalized premarket levels: H:24747.5 L:24569.25 O:24647 C:24653.75
+Session change: premarket -> rth at 2025-09-26T13:30:00.000Z
+Finalized rth levels: H:24737 L:24520 O:24654.25 C:24725.5
+Session change: rth -> overnight at 2025-09-26T20:00:00.000Z
+Finalized overnight levels: H:24864.25 L:24721.5 O:24725.75 C:24853.5
+Session change: overnight -> premarket at 2025-09-29T08:00:00.000Z
+Finalized premarket levels: H:24909.5 L:24846.5 O:24852.75 C:24850.75
+Session change: premarket -> rth at 2025-09-29T13:30:00.000Z
+Finalized rth levels: H:24975.5 L:24780.5 O:24850.75 C:24837.25
+Session change: rth -> overnight at 2025-09-29T20:00:00.000Z
+Finalized overnight levels: H:24856.75 L:24754.75 O:24837.5 C:24790.75
+Session change: overnight -> premarket at 2025-09-30T08:00:00.000Z
+Finalized premarket levels: H:24845 L:24763 O:24790 C:24821
+Session change: premarket -> rth at 2025-09-30T13:30:00.000Z
+Finalized rth levels: H:24913.75 L:24722.25 O:24820.5 C:24898.25
+Session change: rth -> overnight at 2025-09-30T20:00:00.000Z
+Finalized overnight levels: H:24901.25 L:24633.25 O:24898 C:24671.5
+Session change: overnight -> premarket at 2025-10-01T08:00:00.000Z
+Finalized premarket levels: H:24805.5 L:24653.25 O:24670.75 C:24763.25
+Session change: premarket -> rth at 2025-10-01T13:30:00.000Z
+Rolling window swing detected: High=25034.75, Low=24520.00, Size=514.8 pts, Direction=up
+Calculated 5 fibonacci levels from 1 swings
+Finalized rth levels: H:25034.75 L:24726 O:24763 C:25024
+Session change: rth -> overnight at 2025-09-26T00:00:00.000Z
+Finalized overnight levels: H:24672.25 L:24573.75 O:24616.75 C:24646
+Session change: overnight -> premarket at 2025-09-26T08:00:00.000Z
+Finalized premarket levels: H:24747.5 L:24569.25 O:24647 C:24653.75
+Session change: premarket -> rth at 2025-09-26T13:30:00.000Z
+Finalized rth levels: H:24737 L:24520 O:24654.25 C:24725.5
+Session change: rth -> overnight at 2025-09-26T20:00:00.000Z
+Finalized overnight levels: H:24864.25 L:24721.5 O:24725.75 C:24853.5
+Session change: overnight -> premarket at 2025-09-29T08:00:00.000Z
+Finalized premarket levels: H:24909.5 L:24846.5 O:24852.75 C:24850.75
+Session change: premarket -> rth at 2025-09-29T13:30:00.000Z
+Finalized rth levels: H:24975.5 L:24780.5 O:24850.75 C:24837.25
+Session change: rth -> overnight at 2025-09-29T20:00:00.000Z
+Finalized overnight levels: H:24856.75 L:24754.75 O:24837.5 C:24790.75
+Session change: overnight -> premarket at 2025-09-30T08:00:00.000Z
+Finalized premarket levels: H:24845 L:24763 O:24790 C:24821
+Session change: premarket -> rth at 2025-09-30T13:30:00.000Z
+Finalized rth levels: H:24913.75 L:24722.25 O:24820.5 C:24898.25
+Session change: rth -> overnight at 2025-09-30T20:00:00.000Z
+Finalized overnight levels: H:24901.25 L:24633.25 O:24898 C:24671.5
+Session change: overnight -> premarket at 2025-10-01T08:00:00.000Z
+Finalized premarket levels: H:24805.5 L:24653.25 O:24670.75 C:24763.25
+Session change: premarket -> rth at 2025-10-01T13:30:00.000Z
+Rolling window swing detected: High=25036.75, Low=24520.00, Size=516.8 pts, Direction=up
+Calculated 5 fibonacci levels from 1 swings
+Finalized rth levels: H:25036.75 L:24726 O:24763 C:25025.75
+Session change: rth -> overnight at 2025-09-26T00:00:00.000Z
+Finalized overnight levels: H:24672.25 L:24573.75 O:24616.75 C:24646
+Session change: overnight -> premarket at 2025-09-26T08:00:00.000Z
+Finalized premarket levels: H:24747.5 L:24569.25 O:24647 C:24653.75
+Session change: premarket -> rth at 2025-09-26T13:30:00.000Z
+Finalized rth levels: H:24737 L:24520 O:24654.25 C:24725.5
+Session change: rth -> overnight at 2025-09-26T20:00:00.000Z
+Finalized overnight levels: H:24864.25 L:24721.5 O:24725.75 C:24853.5
+Session change: overnight -> premarket at 2025-09-29T08:00:00.000Z
+Finalized premarket levels: H:24909.5 L:24846.5 O:24852.75 C:24850.75
+Session change: premarket -> rth at 2025-09-29T13:30:00.000Z
+Finalized rth levels: H:24975.5 L:24780.5 O:24850.75 C:24837.25
+Session change: rth -> overnight at 2025-09-29T20:00:00.000Z
+Finalized overnight levels: H:24856.75 L:24754.75 O:24837.5 C:24790.75
+Session change: overnight -> premarket at 2025-09-30T08:00:00.000Z
+Finalized premarket levels: H:24845 L:24763 O:24790 C:24821
+Session change: premarket -> rth at 2025-09-30T13:30:00.000Z
+Finalized rth levels: H:24913.75 L:24722.25 O:24820.5 C:24898.25
+Session change: rth -> overnight at 2025-09-30T20:00:00.000Z
+Finalized overnight levels: H:24901.25 L:24633.25 O:24898 C:24671.5
+Session change: overnight -> premarket at 2025-10-01T08:00:00.000Z
+Finalized premarket levels: H:24805.5 L:24653.25 O:24670.75 C:24763.25
+Session change: premarket -> rth at 2025-10-01T13:30:00.000Z
+Rolling window swing detected: High=25036.75, Low=24520.00, Size=516.8 pts, Direction=up
+Calculated 5 fibonacci levels from 1 swings
+Finalized rth levels: H:25036.75 L:24726 O:24763 C:25024.25
+Session change: rth -> overnight at 2025-09-26T00:00:00.000Z
+Finalized overnight levels: H:24672.25 L:24573.75 O:24616.75 C:24646
+Session change: overnight -> premarket at 2025-09-26T08:00:00.000Z
+Finalized premarket levels: H:24747.5 L:24569.25 O:24647 C:24653.75
+Session change: premarket -> rth at 2025-09-26T13:30:00.000Z
+Finalized rth levels: H:24737 L:24520 O:24654.25 C:24725.5
+Session change: rth -> overnight at 2025-09-26T20:00:00.000Z
+Finalized overnight levels: H:24864.25 L:24721.5 O:24725.75 C:24853.5
+Session change: overnight -> premarket at 2025-09-29T08:00:00.000Z
+Finalized premarket levels: H:24909.5 L:24846.5 O:24852.75 C:24850.75
+Session change: premarket -> rth at 2025-09-29T13:30:00.000Z
+Finalized rth levels: H:24975.5 L:24780.5 O:24850.75 C:24837.25
+Session change: rth -> overnight at 2025-09-29T20:00:00.000Z
+Finalized overnight levels: H:24856.75 L:24754.75 O:24837.5 C:24790.75
+Session change: overnight -> premarket at 2025-09-30T08:00:00.000Z
+Finalized premarket levels: H:24845 L:24763 O:24790 C:24821
+Session change: premarket -> rth at 2025-09-30T13:30:00.000Z
+Finalized rth levels: H:24913.75 L:24722.25 O:24820.5 C:24898.25
+Session change: rth -> overnight at 2025-09-30T20:00:00.000Z
+Finalized overnight levels: H:24901.25 L:24633.25 O:24898 C:24671.5
+Session change: overnight -> premarket at 2025-10-01T08:00:00.000Z
+Finalized premarket levels: H:24805.5 L:24653.25 O:24670.75 C:24763.25
+Session change: premarket -> rth at 2025-10-01T13:30:00.000Z
+Rolling window swing detected: High=25036.75, Low=24520.00, Size=516.8 pts, Direction=up
+Calculated 5 fibonacci levels from 1 swings
+Finalized rth levels: H:25036.75 L:24726 O:24763 C:25007
+Session change: rth -> overnight at 2025-09-26T00:00:00.000Z
+Finalized overnight levels: H:24672.25 L:24573.75 O:24616.75 C:24646
+Session change: overnight -> premarket at 2025-09-26T08:00:00.000Z
+Finalized premarket levels: H:24747.5 L:24569.25 O:24647 C:24653.75
+Session change: premarket -> rth at 2025-09-26T13:30:00.000Z
+Finalized rth levels: H:24737 L:24520 O:24654.25 C:24725.5
+Session change: rth -> overnight at 2025-09-26T20:00:00.000Z
+Finalized overnight levels: H:24864.25 L:24721.5 O:24725.75 C:24853.5
+Session change: overnight -> premarket at 2025-09-29T08:00:00.000Z
+Finalized premarket levels: H:24909.5 L:24846.5 O:24852.75 C:24850.75
+Session change: premarket -> rth at 2025-09-29T13:30:00.000Z
+Finalized rth levels: H:24975.5 L:24780.5 O:24850.75 C:24837.25
+Session change: rth -> overnight at 2025-09-29T20:00:00.000Z
+Finalized overnight levels: H:24856.75 L:24754.75 O:24837.5 C:24790.75
+Session change: overnight -> premarket at 2025-09-30T08:00:00.000Z
+Finalized premarket levels: H:24845 L:24763 O:24790 C:24821
+Session change: premarket -> rth at 2025-09-30T13:30:00.000Z
+Finalized rth levels: H:24913.75 L:24722.25 O:24820.5 C:24898.25
+Session change: rth -> overnight at 2025-09-30T20:00:00.000Z
+Finalized overnight levels: H:24901.25 L:24633.25 O:24898 C:24671.5
+Session change: overnight -> premarket at 2025-10-01T08:00:00.000Z
+Finalized premarket levels: H:24805.5 L:24653.25 O:24670.75 C:24763.25
+Session change: premarket -> rth at 2025-10-01T13:30:00.000Z
+Rolling window swing detected: High=25036.75, Low=24520.00, Size=516.8 pts, Direction=up
+Calculated 5 fibonacci levels from 1 swings
+Finalized rth levels: H:25036.75 L:24726 O:24763 C:25011.75
+Session change: rth -> overnight at 2025-09-26T00:00:00.000Z
+Finalized overnight levels: H:24672.25 L:24573.75 O:24616.75 C:24646
+Session change: overnight -> premarket at 2025-09-26T08:00:00.000Z
+Finalized premarket levels: H:24747.5 L:24569.25 O:24647 C:24653.75
+Session change: premarket -> rth at 2025-09-26T13:30:00.000Z
+Finalized rth levels: H:24737 L:24520 O:24654.25 C:24725.5
+Session change: rth -> overnight at 2025-09-26T20:00:00.000Z
+Finalized overnight levels: H:24864.25 L:24721.5 O:24725.75 C:24853.5
+Session change: overnight -> premarket at 2025-09-29T08:00:00.000Z
+Finalized premarket levels: H:24909.5 L:24846.5 O:24852.75 C:24850.75
+Session change: premarket -> rth at 2025-09-29T13:30:00.000Z
+Finalized rth levels: H:24975.5 L:24780.5 O:24850.75 C:24837.25
+Session change: rth -> overnight at 2025-09-29T20:00:00.000Z
+Finalized overnight levels: H:24856.75 L:24754.75 O:24837.5 C:24790.75
+Session change: overnight -> premarket at 2025-09-30T08:00:00.000Z
+Finalized premarket levels: H:24845 L:24763 O:24790 C:24821
+Session change: premarket -> rth at 2025-09-30T13:30:00.000Z
+Finalized rth levels: H:24913.75 L:24722.25 O:24820.5 C:24898.25
+Session change: rth -> overnight at 2025-09-30T20:00:00.000Z
+Finalized overnight levels: H:24901.25 L:24633.25 O:24898 C:24671.5
+Session change: overnight -> premarket at 2025-10-01T08:00:00.000Z
+Finalized premarket levels: H:24805.5 L:24653.25 O:24670.75 C:24763.25
+Session change: premarket -> rth at 2025-10-01T13:30:00.000Z
+Finalized rth levels: H:25036.75 L:24726 O:24763 C:25011.75
+Session change: rth -> overnight at 2025-10-01T20:00:00.000Z
+Rolling window swing detected: High=25036.75, Low=24520.00, Size=516.8 pts, Direction=up
+Calculated 5 fibonacci levels from 1 swings
+Finalized overnight levels: H:25012.75 L:24573.75 O:25011.5 C:24646
+Session change: overnight -> premarket at 2025-09-26T08:00:00.000Z
+Finalized premarket levels: H:24747.5 L:24569.25 O:24647 C:24653.75
+Session change: premarket -> rth at 2025-09-26T13:30:00.000Z
+Finalized rth levels: H:24737 L:24520 O:24654.25 C:24725.5
+Session change: rth -> overnight at 2025-09-26T20:00:00.000Z
+Finalized overnight levels: H:24864.25 L:24721.5 O:24725.75 C:24853.5
+Session change: overnight -> premarket at 2025-09-29T08:00:00.000Z
+Finalized premarket levels: H:24909.5 L:24846.5 O:24852.75 C:24850.75
+Session change: premarket -> rth at 2025-09-29T13:30:00.000Z
+Finalized rth levels: H:24975.5 L:24780.5 O:24850.75 C:24837.25
+Session change: rth -> overnight at 2025-09-29T20:00:00.000Z
+Finalized overnight levels: H:24856.75 L:24754.75 O:24837.5 C:24790.75
+Session change: overnight -> premarket at 2025-09-30T08:00:00.000Z
+Finalized premarket levels: H:24845 L:24763 O:24790 C:24821
+Session change: premarket -> rth at 2025-09-30T13:30:00.000Z
+Finalized rth levels: H:24913.75 L:24722.25 O:24820.5 C:24898.25
+Session change: rth -> overnight at 2025-09-30T20:00:00.000Z
+Finalized overnight levels: H:24901.25 L:24633.25 O:24898 C:24671.5
+Session change: overnight -> premarket at 2025-10-01T08:00:00.000Z
+Finalized premarket levels: H:24805.5 L:24653.25 O:24670.75 C:24763.25
+Session change: premarket -> rth at 2025-10-01T13:30:00.000Z
+Finalized rth levels: H:25036.75 L:24726 O:24763 C:25011.75
+Session change: rth -> overnight at 2025-10-01T20:00:00.000Z
+Rolling window swing detected: High=25036.75, Low=24520.00, Size=516.8 pts, Direction=up
+Calculated 5 fibonacci levels from 1 swings
+Finalized overnight levels: H:25012.75 L:24573.75 O:25011.5 C:24646
+Session change: overnight -> premarket at 2025-09-26T08:00:00.000Z
+Finalized premarket levels: H:24747.5 L:24569.25 O:24647 C:24653.75
+Session change: premarket -> rth at 2025-09-26T13:30:00.000Z
+Finalized rth levels: H:24737 L:24520 O:24654.25 C:24725.5
+Session change: rth -> overnight at 2025-09-26T20:00:00.000Z
+Finalized overnight levels: H:24864.25 L:24721.5 O:24725.75 C:24853.5
+Session change: overnight -> premarket at 2025-09-29T08:00:00.000Z
+Finalized premarket levels: H:24909.5 L:24846.5 O:24852.75 C:24850.75
+Session change: premarket -> rth at 2025-09-29T13:30:00.000Z
+Finalized rth levels: H:24975.5 L:24780.5 O:24850.75 C:24837.25
+Session change: rth -> overnight at 2025-09-29T20:00:00.000Z
+Finalized overnight levels: H:24856.75 L:24754.75 O:24837.5 C:24790.75
+Session change: overnight -> premarket at 2025-09-30T08:00:00.000Z
+Finalized premarket levels: H:24845 L:24763 O:24790 C:24821
+Session change: premarket -> rth at 2025-09-30T13:30:00.000Z
+Finalized rth levels: H:24913.75 L:24722.25 O:24820.5 C:24898.25
+Session change: rth -> overnight at 2025-09-30T20:00:00.000Z
+Finalized overnight levels: H:24901.25 L:24633.25 O:24898 C:24671.5
+Session change: overnight -> premarket at 2025-10-01T08:00:00.000Z
+Finalized premarket levels: H:24805.5 L:24653.25 O:24670.75 C:24763.25
+Session change: premarket -> rth at 2025-10-01T13:30:00.000Z
+Finalized rth levels: H:25036.75 L:24726 O:24763 C:25011.75
+Session change: rth -> overnight at 2025-10-01T20:00:00.000Z
+Rolling window swing detected: High=25036.75, Low=24520.00, Size=516.8 pts, Direction=up
+Calculated 5 fibonacci levels from 1 swings
+Finalized overnight levels: H:25014.75 L:24573.75 O:25011.5 C:24646
+Session change: overnight -> premarket at 2025-09-26T08:00:00.000Z
+Finalized premarket levels: H:24747.5 L:24569.25 O:24647 C:24653.75
+Session change: premarket -> rth at 2025-09-26T13:30:00.000Z
+Finalized rth levels: H:24737 L:24520 O:24654.25 C:24725.5
+Session change: rth -> overnight at 2025-09-26T20:00:00.000Z
+Finalized overnight levels: H:24864.25 L:24721.5 O:24725.75 C:24853.5
+Session change: overnight -> premarket at 2025-09-29T08:00:00.000Z
+Finalized premarket levels: H:24909.5 L:24846.5 O:24852.75 C:24850.75
+Session change: premarket -> rth at 2025-09-29T13:30:00.000Z
+Finalized rth levels: H:24975.5 L:24780.5 O:24850.75 C:24837.25
+Session change: rth -> overnight at 2025-09-29T20:00:00.000Z
+Finalized overnight levels: H:24856.75 L:24754.75 O:24837.5 C:24790.75
+Session change: overnight -> premarket at 2025-09-30T08:00:00.000Z
+Finalized premarket levels: H:24845 L:24763 O:24790 C:24821
+Session change: premarket -> rth at 2025-09-30T13:30:00.000Z
+Finalized rth levels: H:24913.75 L:24722.25 O:24820.5 C:24898.25
+Session change: rth -> overnight at 2025-09-30T20:00:00.000Z
+Finalized overnight levels: H:24901.25 L:24633.25 O:24898 C:24671.5
+Session change: overnight -> premarket at 2025-10-01T08:00:00.000Z
+Finalized premarket levels: H:24805.5 L:24653.25 O:24670.75 C:24763.25
+Session change: premarket -> rth at 2025-10-01T13:30:00.000Z
+Finalized rth levels: H:25036.75 L:24726 O:24763 C:25011.75
+Session change: rth -> overnight at 2025-10-01T20:00:00.000Z
+Rolling window swing detected: High=25036.75, Low=24520.00, Size=516.8 pts, Direction=up
+Calculated 5 fibonacci levels from 1 swings
+Finalized overnight levels: H:25014.75 L:24573.75 O:25011.5 C:24646
+Session change: overnight -> premarket at 2025-09-26T08:00:00.000Z
+Finalized premarket levels: H:24747.5 L:24569.25 O:24647 C:24653.75
+Session change: premarket -> rth at 2025-09-26T13:30:00.000Z
+Finalized rth levels: H:24737 L:24520 O:24654.25 C:24725.5
+Session change: rth -> overnight at 2025-09-26T20:00:00.000Z
+Finalized overnight levels: H:24864.25 L:24721.5 O:24725.75 C:24853.5
+Session change: overnight -> premarket at 2025-09-29T08:00:00.000Z
+Finalized premarket levels: H:24909.5 L:24846.5 O:24852.75 C:24850.75
+Session change: premarket -> rth at 2025-09-29T13:30:00.000Z
+Finalized rth levels: H:24975.5 L:24780.5 O:24850.75 C:24837.25
+Session change: rth -> overnight at 2025-09-29T20:00:00.000Z
+Finalized overnight levels: H:24856.75 L:24754.75 O:24837.5 C:24790.75
+Session change: overnight -> premarket at 2025-09-30T08:00:00.000Z
+Finalized premarket levels: H:24845 L:24763 O:24790 C:24821
+Session change: premarket -> rth at 2025-09-30T13:30:00.000Z
+Finalized rth levels: H:24913.75 L:24722.25 O:24820.5 C:24898.25
+Session change: rth -> overnight at 2025-09-30T20:00:00.000Z
+Finalized overnight levels: H:24901.25 L:24633.25 O:24898 C:24671.5
+Session change: overnight -> premarket at 2025-10-01T08:00:00.000Z
+Finalized premarket levels: H:24805.5 L:24653.25 O:24670.75 C:24763.25
+Session change: premarket -> rth at 2025-10-01T13:30:00.000Z
+Finalized rth levels: H:25036.75 L:24726 O:24763 C:25011.75
+Session change: rth -> overnight at 2025-10-01T20:00:00.000Z
+Rolling window swing detected: High=25036.75, Low=24520.00, Size=516.8 pts, Direction=up
+Calculated 5 fibonacci levels from 1 swings
+Finalized overnight levels: H:25019.75 L:24573.75 O:25011.5 C:24646
+Session change: overnight -> premarket at 2025-09-26T08:00:00.000Z
+Finalized premarket levels: H:24747.5 L:24569.25 O:24647 C:24653.75
+Session change: premarket -> rth at 2025-09-26T13:30:00.000Z
+Finalized rth levels: H:24737 L:24520 O:24654.25 C:24725.5
+Session change: rth -> overnight at 2025-09-26T20:00:00.000Z
+Finalized overnight levels: H:24864.25 L:24721.5 O:24725.75 C:24853.5
+Session change: overnight -> premarket at 2025-09-29T08:00:00.000Z
+Finalized premarket levels: H:24909.5 L:24846.5 O:24852.75 C:24850.75
+Session change: premarket -> rth at 2025-09-29T13:30:00.000Z
+Finalized rth levels: H:24975.5 L:24780.5 O:24850.75 C:24837.25
+Session change: rth -> overnight at 2025-09-29T20:00:00.000Z
+Finalized overnight levels: H:24856.75 L:24754.75 O:24837.5 C:24790.75
+Session change: overnight -> premarket at 2025-09-30T08:00:00.000Z
+Finalized premarket levels: H:24845 L:24763 O:24790 C:24821
+Session change: premarket -> rth at 2025-09-30T13:30:00.000Z
+Finalized rth levels: H:24913.75 L:24722.25 O:24820.5 C:24898.25
+Session change: rth -> overnight at 2025-09-30T20:00:00.000Z
+Finalized overnight levels: H:24901.25 L:24633.25 O:24898 C:24671.5
+Session change: overnight -> premarket at 2025-10-01T08:00:00.000Z
+Finalized premarket levels: H:24805.5 L:24653.25 O:24670.75 C:24763.25
+Session change: premarket -> rth at 2025-10-01T13:30:00.000Z
+Finalized rth levels: H:25036.75 L:24726 O:24763 C:25011.75
+Session change: rth -> overnight at 2025-10-01T20:00:00.000Z
+Rolling window swing detected: High=25036.75, Low=24520.00, Size=516.8 pts, Direction=up
+Calculated 5 fibonacci levels from 1 swings
+Finalized overnight levels: H:25019.75 L:24573.75 O:25011.5 C:24646
+Session change: overnight -> premarket at 2025-09-26T08:00:00.000Z
+Finalized premarket levels: H:24747.5 L:24569.25 O:24647 C:24653.75
+Session change: premarket -> rth at 2025-09-26T13:30:00.000Z
+Finalized rth levels: H:24737 L:24520 O:24654.25 C:24725.5
+Session change: rth -> overnight at 2025-09-26T20:00:00.000Z
+Finalized overnight levels: H:24864.25 L:24721.5 O:24725.75 C:24853.5
+Session change: overnight -> premarket at 2025-09-29T08:00:00.000Z
+Finalized premarket levels: H:24909.5 L:24846.5 O:24852.75 C:24850.75
+Session change: premarket -> rth at 2025-09-29T13:30:00.000Z
+Finalized rth levels: H:24975.5 L:24780.5 O:24850.75 C:24837.25
+Session change: rth -> overnight at 2025-09-29T20:00:00.000Z
+Finalized overnight levels: H:24856.75 L:24754.75 O:24837.5 C:24790.75
+Session change: overnight -> premarket at 2025-09-30T08:00:00.000Z
+Finalized premarket levels: H:24845 L:24763 O:24790 C:24821
+Session change: premarket -> rth at 2025-09-30T13:30:00.000Z
+Finalized rth levels: H:24913.75 L:24722.25 O:24820.5 C:24898.25
+Session change: rth -> overnight at 2025-09-30T20:00:00.000Z
+Finalized overnight levels: H:24901.25 L:24633.25 O:24898 C:24671.5
+Session change: overnight -> premarket at 2025-10-01T08:00:00.000Z
+Finalized premarket levels: H:24805.5 L:24653.25 O:24670.75 C:24763.25
+Session change: premarket -> rth at 2025-10-01T13:30:00.000Z
+Finalized rth levels: H:25036.75 L:24726 O:24763 C:25011.75
+Session change: rth -> overnight at 2025-10-01T20:00:00.000Z
+Rolling window swing detected: High=25036.75, Low=24520.00, Size=516.8 pts, Direction=up
+Calculated 5 fibonacci levels from 1 swings
+Finalized overnight levels: H:25019.75 L:24573.75 O:25011.5 C:24646
+Session change: overnight -> premarket at 2025-09-26T08:00:00.000Z
+Finalized premarket levels: H:24747.5 L:24569.25 O:24647 C:24653.75
+Session change: premarket -> rth at 2025-09-26T13:30:00.000Z
+Finalized rth levels: H:24737 L:24520 O:24654.25 C:24725.5
+Session change: rth -> overnight at 2025-09-26T20:00:00.000Z
+Finalized overnight levels: H:24864.25 L:24721.5 O:24725.75 C:24853.5
+Session change: overnight -> premarket at 2025-09-29T08:00:00.000Z
+Finalized premarket levels: H:24909.5 L:24846.5 O:24852.75 C:24850.75
+Session change: premarket -> rth at 2025-09-29T13:30:00.000Z
+Finalized rth levels: H:24975.5 L:24780.5 O:24850.75 C:24837.25
+Session change: rth -> overnight at 2025-09-29T20:00:00.000Z
+Finalized overnight levels: H:24856.75 L:24754.75 O:24837.5 C:24790.75
+Session change: overnight -> premarket at 2025-09-30T08:00:00.000Z
+Finalized premarket levels: H:24845 L:24763 O:24790 C:24821
+Session change: premarket -> rth at 2025-09-30T13:30:00.000Z
+Finalized rth levels: H:24913.75 L:24722.25 O:24820.5 C:24898.25
+Session change: rth -> overnight at 2025-09-30T20:00:00.000Z
+Finalized overnight levels: H:24901.25 L:24633.25 O:24898 C:24671.5
+Session change: overnight -> premarket at 2025-10-01T08:00:00.000Z
+Finalized premarket levels: H:24805.5 L:24653.25 O:24670.75 C:24763.25
+Session change: premarket -> rth at 2025-10-01T13:30:00.000Z
+Finalized rth levels: H:25036.75 L:24726 O:24763 C:25011.75
+Session change: rth -> overnight at 2025-10-01T20:00:00.000Z
+Rolling window swing detected: High=25036.75, Low=24520.00, Size=516.8 pts, Direction=up
+Calculated 5 fibonacci levels from 1 swings
+Finalized overnight levels: H:25020.25 L:24573.75 O:25011.5 C:24646
+Session change: overnight -> premarket at 2025-09-26T08:00:00.000Z
+Finalized premarket levels: H:24747.5 L:24569.25 O:24647 C:24653.75
+Session change: premarket -> rth at 2025-09-26T13:30:00.000Z
+Finalized rth levels: H:24737 L:24520 O:24654.25 C:24725.5
+Session change: rth -> overnight at 2025-09-26T20:00:00.000Z
+Finalized overnight levels: H:24864.25 L:24721.5 O:24725.75 C:24853.5
+Session change: overnight -> premarket at 2025-09-29T08:00:00.000Z
+Finalized premarket levels: H:24909.5 L:24846.5 O:24852.75 C:24850.75
+Session change: premarket -> rth at 2025-09-29T13:30:00.000Z
+Finalized rth levels: H:24975.5 L:24780.5 O:24850.75 C:24837.25
+Session change: rth -> overnight at 2025-09-29T20:00:00.000Z
+Finalized overnight levels: H:24856.75 L:24754.75 O:24837.5 C:24790.75
+Session change: overnight -> premarket at 2025-09-30T08:00:00.000Z
+Finalized premarket levels: H:24845 L:24763 O:24790 C:24821
+Session change: premarket -> rth at 2025-09-30T13:30:00.000Z
+Finalized rth levels: H:24913.75 L:24722.25 O:24820.5 C:24898.25
+Session change: rth -> overnight at 2025-09-30T20:00:00.000Z
+Finalized overnight levels: H:24901.25 L:24633.25 O:24898 C:24671.5
+Session change: overnight -> premarket at 2025-10-01T08:00:00.000Z
+Finalized premarket levels: H:24805.5 L:24653.25 O:24670.75 C:24763.25
+Session change: premarket -> rth at 2025-10-01T13:30:00.000Z
+Finalized rth levels: H:25036.75 L:24726 O:24763 C:25011.75
+Session change: rth -> overnight at 2025-10-01T20:00:00.000Z
+Rolling window swing detected: High=25036.75, Low=24520.00, Size=516.8 pts, Direction=up
+Calculated 5 fibonacci levels from 1 swings
+Finalized overnight levels: H:25020.25 L:24573.75 O:25011.5 C:24646
+Session change: overnight -> premarket at 2025-09-26T08:00:00.000Z
+Finalized premarket levels: H:24747.5 L:24569.25 O:24647 C:24653.75
+Session change: premarket -> rth at 2025-09-26T13:30:00.000Z
+Finalized rth levels: H:24737 L:24520 O:24654.25 C:24725.5
+Session change: rth -> overnight at 2025-09-26T20:00:00.000Z
+Finalized overnight levels: H:24864.25 L:24721.5 O:24725.75 C:24853.5
+Session change: overnight -> premarket at 2025-09-29T08:00:00.000Z
+Finalized premarket levels: H:24909.5 L:24846.5 O:24852.75 C:24850.75
+Session change: premarket -> rth at 2025-09-29T13:30:00.000Z
+Finalized rth levels: H:24975.5 L:24780.5 O:24850.75 C:24837.25
+Session change: rth -> overnight at 2025-09-29T20:00:00.000Z
+Finalized overnight levels: H:24856.75 L:24754.75 O:24837.5 C:24790.75
+Session change: overnight -> premarket at 2025-09-30T08:00:00.000Z
+Finalized premarket levels: H:24845 L:24763 O:24790 C:24821
+Session change: premarket -> rth at 2025-09-30T13:30:00.000Z
+Finalized rth levels: H:24913.75 L:24722.25 O:24820.5 C:24898.25
+Session change: rth -> overnight at 2025-09-30T20:00:00.000Z
+Finalized overnight levels: H:24901.25 L:24633.25 O:24898 C:24671.5
+Session change: overnight -> premarket at 2025-10-01T08:00:00.000Z
+Finalized premarket levels: H:24805.5 L:24653.25 O:24670.75 C:24763.25
+Session change: premarket -> rth at 2025-10-01T13:30:00.000Z
+Finalized rth levels: H:25036.75 L:24726 O:24763 C:25011.75
+Session change: rth -> overnight at 2025-10-01T20:00:00.000Z
+Rolling window swing detected: High=25036.75, Low=24520.00, Size=516.8 pts, Direction=up
+Calculated 5 fibonacci levels from 1 swings
+Finalized overnight levels: H:25029 L:24573.75 O:25011.5 C:24646
+Session change: overnight -> premarket at 2025-09-26T08:00:00.000Z
+Finalized premarket levels: H:24747.5 L:24569.25 O:24647 C:24653.75
+Session change: premarket -> rth at 2025-09-26T13:30:00.000Z
+Finalized rth levels: H:24737 L:24520 O:24654.25 C:24725.5
+Session change: rth -> overnight at 2025-09-26T20:00:00.000Z
+Finalized overnight levels: H:24864.25 L:24721.5 O:24725.75 C:24853.5
+Session change: overnight -> premarket at 2025-09-29T08:00:00.000Z
+Finalized premarket levels: H:24909.5 L:24846.5 O:24852.75 C:24850.75
+Session change: premarket -> rth at 2025-09-29T13:30:00.000Z
+Finalized rth levels: H:24975.5 L:24780.5 O:24850.75 C:24837.25
+Session change: rth -> overnight at 2025-09-29T20:00:00.000Z
+Finalized overnight levels: H:24856.75 L:24754.75 O:24837.5 C:24790.75
+Session change: overnight -> premarket at 2025-09-30T08:00:00.000Z
+Finalized premarket levels: H:24845 L:24763 O:24790 C:24821
+Session change: premarket -> rth at 2025-09-30T13:30:00.000Z
+Finalized rth levels: H:24913.75 L:24722.25 O:24820.5 C:24898.25
+Session change: rth -> overnight at 2025-09-30T20:00:00.000Z
+Finalized overnight levels: H:24901.25 L:24633.25 O:24898 C:24671.5
+Session change: overnight -> premarket at 2025-10-01T08:00:00.000Z
+Finalized premarket levels: H:24805.5 L:24653.25 O:24670.75 C:24763.25
+Session change: premarket -> rth at 2025-10-01T13:30:00.000Z
+Finalized rth levels: H:25036.75 L:24726 O:24763 C:25011.75
+Session change: rth -> overnight at 2025-10-01T20:00:00.000Z
+Rolling window swing detected: High=25036.75, Low=24520.00, Size=516.8 pts, Direction=up
+Calculated 5 fibonacci levels from 1 swings
+Finalized overnight levels: H:25029 L:24573.75 O:25011.5 C:24646
+Session change: overnight -> premarket at 2025-09-26T08:00:00.000Z
+Finalized premarket levels: H:24747.5 L:24569.25 O:24647 C:24653.75
+Session change: premarket -> rth at 2025-09-26T13:30:00.000Z
+Finalized rth levels: H:24737 L:24520 O:24654.25 C:24725.5
+Session change: rth -> overnight at 2025-09-26T20:00:00.000Z
+Finalized overnight levels: H:24864.25 L:24721.5 O:24725.75 C:24853.5
+Session change: overnight -> premarket at 2025-09-29T08:00:00.000Z
+Finalized premarket levels: H:24909.5 L:24846.5 O:24852.75 C:24850.75
+Session change: premarket -> rth at 2025-09-29T13:30:00.000Z
+Finalized rth levels: H:24975.5 L:24780.5 O:24850.75 C:24837.25
+Session change: rth -> overnight at 2025-09-29T20:00:00.000Z
+Finalized overnight levels: H:24856.75 L:24754.75 O:24837.5 C:24790.75
+Session change: overnight -> premarket at 2025-09-30T08:00:00.000Z
+Finalized premarket levels: H:24845 L:24763 O:24790 C:24821
+Session change: premarket -> rth at 2025-09-30T13:30:00.000Z
+Finalized rth levels: H:24913.75 L:24722.25 O:24820.5 C:24898.25
+Session change: rth -> overnight at 2025-09-30T20:00:00.000Z
+Finalized overnight levels: H:24901.25 L:24633.25 O:24898 C:24671.5
+Session change: overnight -> premarket at 2025-10-01T08:00:00.000Z
+Finalized premarket levels: H:24805.5 L:24653.25 O:24670.75 C:24763.25
+Session change: premarket -> rth at 2025-10-01T13:30:00.000Z
+Finalized rth levels: H:25036.75 L:24726 O:24763 C:25011.75
+Session change: rth -> overnight at 2025-10-01T20:00:00.000Z
+Rolling window swing detected: High=25036.75, Low=24520.00, Size=516.8 pts, Direction=up
+Calculated 5 fibonacci levels from 1 swings
+Finalized overnight levels: H:25029 L:24573.75 O:25011.5 C:24646
+Session change: overnight -> premarket at 2025-09-26T08:00:00.000Z
+Finalized premarket levels: H:24747.5 L:24569.25 O:24647 C:24653.75
+Session change: premarket -> rth at 2025-09-26T13:30:00.000Z
+Finalized rth levels: H:24737 L:24520 O:24654.25 C:24725.5
+Session change: rth -> overnight at 2025-09-26T20:00:00.000Z
+Finalized overnight levels: H:24864.25 L:24721.5 O:24725.75 C:24853.5
+Session change: overnight -> premarket at 2025-09-29T08:00:00.000Z
+Finalized premarket levels: H:24909.5 L:24846.5 O:24852.75 C:24850.75
+Session change: premarket -> rth at 2025-09-29T13:30:00.000Z
+Finalized rth levels: H:24975.5 L:24780.5 O:24850.75 C:24837.25
+Session change: rth -> overnight at 2025-09-29T20:00:00.000Z
+Finalized overnight levels: H:24856.75 L:24754.75 O:24837.5 C:24790.75
+Session change: overnight -> premarket at 2025-09-30T08:00:00.000Z
+Finalized premarket levels: H:24845 L:24763 O:24790 C:24821
+Session change: premarket -> rth at 2025-09-30T13:30:00.000Z
+Finalized rth levels: H:24913.75 L:24722.25 O:24820.5 C:24898.25
+Session change: rth -> overnight at 2025-09-30T20:00:00.000Z
+Finalized overnight levels: H:24901.25 L:24633.25 O:24898 C:24671.5
+Session change: overnight -> premarket at 2025-10-01T08:00:00.000Z
+Finalized premarket levels: H:24805.5 L:24653.25 O:24670.75 C:24763.25
+Session change: premarket -> rth at 2025-10-01T13:30:00.000Z
+Finalized rth levels: H:25036.75 L:24726 O:24763 C:25011.75
+Session change: rth -> overnight at 2025-10-01T20:00:00.000Z
+Rolling window swing detected: High=25036.75, Low=24520.00, Size=516.8 pts, Direction=up
+Calculated 5 fibonacci levels from 1 swings
+                                                                                                                        ✅ Simulation completed in 0.14s (664 candles/sec)
+📈 Final equity: $99,615 | Total trades: 2
+
+============================================================
+📈 BACKTEST COMPLETE
+============================================================
+
+Total Signals Generated: 14
+Trades Executed: 2
+
+✅ Results saved to: /home/drew/projects/slingshot-services/backtest-engine/results/pullback-with-seeding.json

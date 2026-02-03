@@ -1,0 +1,57 @@
+//@version=5
+indicator("Swing Pivots High Low", "Swing Pivots High Low", overlay=true, max_labels_count=500)
+tf = input.timeframe(title="Timeframe", defval="")
+
+gr="LENGTH LEFT / RIGHT"
+leftLenH = input.int(title="Pivot High", defval=5, minval=1, inline="Pivot High",group=gr)
+rightLenH = input.int(title="/", defval=5, minval=1, inline="Pivot High",group=gr)
+colorH = input(title="", defval=color.red, inline="Pivot High",group=gr)
+
+leftLenL = input.int(title="Pivot Low", defval=5, minval=1, inline="Pivot Low", group=gr)
+rightLenL = input.int(title="/", defval=5, minval=1, inline="Pivot Low",group=gr)
+colorL = input(title="", defval=color.blue, inline="Pivot Low",group=gr)
+
+pivotHigh(ll, rl) =>
+    maxLen = 1000
+    float ph = ta.pivothigh(ll, rl)
+    int offset = 0
+    while offset < maxLen
+        if not na(ph[offset])
+            break 
+        offset := offset + 1
+    ph[offset]
+
+pivotLow(ll, rl) =>
+    maxLen = 1000
+    float pl = ta.pivotlow(ll, rl)
+    int offset = 0
+    while offset < maxLen
+        if not na(pl[offset])
+            break 
+        offset := offset + 1
+    pl[offset]
+
+ph = request.security(syminfo.tickerid, tf, pivotHigh(leftLenH, rightLenH), barmerge.gaps_off, barmerge.lookahead_on)
+pl = request.security(syminfo.tickerid, tf, pivotLow(leftLenL, rightLenL), barmerge.gaps_off, barmerge.lookahead_on) 
+
+drawLabel(_offset, _pivot, _style, _color) =>
+    if not na(_pivot)
+        label.new(bar_index[_offset], _pivot, str.tostring(_pivot, format.mintick), style=_style, color=_color, textcolor=#131722)
+
+// TODO: Need to calculate offset for different selected timeframe. 
+// Theres an issue with finding the correct high/low bar as the high may be in the middle of a bar (for example: daily bar has alot of 5min bars)
+// Lower timeframes have maximum available bars and it wont work when using higher timeframes - daily, weekly, monthly on smaller 5min/Nmin charts
+// For now will not draw labels if different timeframe is selected.
+
+if (timeframe.period == tf or tf == "")
+    drawLabel(rightLenH, ta.pivothigh(leftLenH, rightLenH), label.style_label_down, colorH)
+    drawLabel(rightLenL, ta.pivotlow(leftLenL, rightLenL), label.style_label_up, colorL)
+
+plotshape(ph, "PH", style=shape.circle, location=location.absolute, color=colorH)
+plotshape(pl, "PL", style=shape.circle, location=location.absolute, color=colorL)
+
+alertcondition(ta.crossover(close, ph), "PH Crossover", "Price crossed over current pivot high")
+alertcondition(ta.crossunder(close, ph), "PH Crossunder", "Price crossed under current pivot high")
+
+alertcondition(ta.crossover(close, pl), "PL Crossover", "Price crossed over current pivot low")
+alertcondition(ta.crossunder(close, pl), "PL Crossunder", "Price crossed under current pivot low")

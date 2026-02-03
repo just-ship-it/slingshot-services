@@ -579,6 +579,10 @@ const tradingState = {
   // Key: individual orderId, Value: strategyId
   orderToStrategy: new Map(),
 
+  // Filled Entry Orders: Store filled entry orders for price recovery
+  // Key: orderId, Value: { id, symbol, fillPrice, price, quantity, timestamp, signalId }
+  filledEntryOrders: new Map(),
+
   // Position reconciliation tracking
   lastPositionReconciliation: 0,
 
@@ -934,6 +938,33 @@ app.get('/api/trading/enhanced-status', (req, res) => {
       return false;
     }
 
+    // BRACKET ORDER DETECTION: Identify orphaned bracket orders
+    // These are Stop/Limit orders that belong to existing positions but weren't linked
+    const matchingPosition = positions.find(pos => pos.symbol === order.symbol);
+    if (matchingPosition && (order.orderType === 'Stop' || order.orderType === 'StopLimit' || order.orderType === 'Limit')) {
+      // Check if this is a bracket order based on direction
+      const isLongPosition = matchingPosition.netPos > 0;
+      const isSellOrder = order.action === 'Sell';
+      const isBuyOrder = order.action === 'Buy';
+
+      // For long positions: Sell orders are exits (stop/target)
+      // For short positions: Buy orders are exits (stop/target)
+      const isBracketOrder = (isLongPosition && isSellOrder) || (!isLongPosition && isBuyOrder);
+
+      if (isBracketOrder && !order.signalId) {
+        // This is an orphaned bracket order - link it now
+        const orderRole = order.orderType === 'Stop' || order.orderType === 'StopLimit' ? 'stop_loss' : 'take_profit';
+        tradingState.orderRelationships.set(order.id, {
+          orderRole: orderRole,
+          positionSymbol: matchingPosition.symbol,
+          linkedAt: new Date().toISOString(),
+          linkMethod: 'orphan_detection'
+        });
+        logger.info(`🔗 Auto-linked orphaned bracket order ${order.id} (${orderRole}) to position ${matchingPosition.symbol}`);
+        return false; // Hide it
+      }
+    }
+
     // SIGNAL-BASED FILTERING: The key simplification
     // If this order has a signalId and that signal already has a position, hide it
     if (order.signalId) {
@@ -1000,7 +1031,7 @@ app.get('/api/trading/enhanced-status', (req, res) => {
       action: order.action,
       quantity: order.quantity,
       orderType: order.orderType,
-      price: order.price,
+      price: order.orderType === 'Stop' || order.orderType === 'StopLimit' ? order.stopPrice : order.price,
 
       // Signal context (original trade signal details)
       signalContext: signalContext ? {
@@ -1167,7 +1198,7 @@ app.get('/api/trading/positions/:symbol', (req, res) => {
 // Process webhook signals
 async function handleWebhookReceived(message) {
   try {
-    logger.info('Processing webhook signal:', message.id);
+    logger.info('Processing webhook signal:', message.id || message.strategy);
 
     // Check if trading is enabled
     if (!tradingState.tradingEnabled) {
@@ -1181,7 +1212,9 @@ async function handleWebhookReceived(message) {
     }
 
     // Parse and validate trading signal
-    const signal = parseTradeSignal(message.body);
+    // Handle both webhook format (message.body) and direct signal format (from signal-generator)
+    const signalBody = message.body || message;
+    const signal = parseTradeSignal(signalBody);
     if (!signal) {
       logger.warn('Invalid trade signal format');
       await messageBus.publish(CHANNELS.TRADE_REJECTED, {
@@ -1218,9 +1251,10 @@ async function handleWebhookReceived(message) {
       logger.info(`📊 Position sizing: ${positionSizing.quantity} ${positionSizing.symbol} (${positionSizing.reason})`);
     }
 
-    // Special handling for direct tradovate service actions (position_closed, cancel_limit, update_limit)
-    if (signal.action === 'position_closed' || signal.action === 'cancel_limit' || signal.action === 'update_limit') {
-      const actionType = signal.action === 'update_limit' ? 'order update' : 'position liquidation';
+    // Special handling for direct tradovate service actions (position_closed, cancel_limit, update_limit, modify_stop)
+    if (signal.action === 'position_closed' || signal.action === 'cancel_limit' || signal.action === 'update_limit' || signal.action === 'modify_stop') {
+      const actionType = signal.action === 'update_limit' ? 'order update' :
+                        signal.action === 'modify_stop' ? 'stop modification' : 'position liquidation';
       logger.info(`🔄 ${actionType} requested for ${positionSizing.symbol} (action: ${signal.action})`);
 
       // Send request directly to tradovate-service via webhook channel
@@ -1276,6 +1310,25 @@ async function handleWebhookReceived(message) {
             timestamp: new Date().toISOString()
           }
         };
+      } else if (signal.action === 'modify_stop') {
+        // For modify_stop, route directly to tradovate-service for stop loss modification
+        logger.info(`🎯 Routing modify_stop for strategy ${signal.strategy}: new stop = ${signal.new_stop_price}`);
+
+        routeMessage = {
+          id: message.id,
+          type: 'trade_signal',
+          body: {
+            action: 'modify_stop',
+            symbol: positionSizing.symbol, // Use converted symbol
+            strategy: signal.strategy,
+            new_stop_price: signal.new_stop_price,
+            order_strategy_id: signal.order_strategy_id,
+            order_id: signal.order_id,
+            reason: signal.reason || 'breakeven_triggered',
+            accountId: signal.accountId || getDefaultAccountId(),
+            timestamp: new Date().toISOString()
+          }
+        };
       }
 
       // Route directly to tradovate service webhook handler
@@ -1283,6 +1336,8 @@ async function handleWebhookReceived(message) {
 
       if (signal.action === 'update_limit') {
         logger.info(`Order update signal routed to tradovate-service: ${positionSizing.symbol} ${signal.old_price} → ${signal.new_price}`);
+      } else if (signal.action === 'modify_stop') {
+        logger.info(`Stop modification signal routed to tradovate-service: ${positionSizing.symbol} new stop = ${signal.new_stop_price}`);
       } else {
         logger.info(`Position liquidation signal routed to tradovate-service: ${positionSizing.symbol} (${signal.action} → position_closed)`);
       }
@@ -1298,7 +1353,8 @@ async function handleWebhookReceived(message) {
     // Handle different action types
     if (signal.action === 'place_limit') {
       // Bracket limit order
-      mappedAction = signal.side === 'buy' ? 'Buy' : 'Sell';
+      // Support both conventions: 'buy'/'sell' and 'long'/'short'
+      mappedAction = (signal.side === 'buy' || signal.side === 'long') ? 'Buy' : 'Sell';
       mappedOrderType = 'Limit';
       mappedPrice = signal.price;
       mappedStopPrice = signal.stop_loss; // Frontend sends stop_loss → tradovate needs stopPrice
@@ -1411,6 +1467,9 @@ async function handleWebhookReceived(message) {
       trailingTrigger: signal.trailing_trigger,
       // Legacy support for existing trailingStop field
       trailingStop: signal.trailingStop,
+      // Breakeven stop configuration
+      breakevenTrigger: signal.breakeven_trigger,
+      breakevenOffset: signal.breakeven_offset,
       notes: signal.notes
     });
 
@@ -1479,15 +1538,18 @@ function parseTradeSignal(body) {
     }
 
     // Format 2: Test interface format with bracket order support
-    if (body.symbol && (body.side || body.action === 'place_limit' || body.action === 'update_limit' || body.action === 'cancel_limit' || body.action === 'position_closed')) {
+    if (body.symbol && (body.side || body.action === 'place_limit' || body.action === 'update_limit' || body.action === 'cancel_limit' || body.action === 'position_closed' || body.action === 'modify_stop')) {
       return {
         symbol: body.symbol,
-        action: body.action, // Preserve original action (e.g., 'place_limit', 'update_limit')
+        action: body.action, // Preserve original action (e.g., 'place_limit', 'update_limit', 'modify_stop')
         side: body.side, // Preserve side for bracket order mapping
         orderType: body.type || 'Market',
         price: body.price,
         old_price: body.old_price, // For update_limit actions
         new_price: body.new_price, // For update_limit actions
+        new_stop_price: body.new_stop_price, // For modify_stop actions
+        order_strategy_id: body.order_strategy_id, // For modify_stop actions
+        order_id: body.order_id, // For modify_stop actions
         stop_loss: body.stop_loss, // Preserve for bracket orders
         take_profit: body.take_profit, // Preserve for bracket orders
         stopPrice: body.stop_price,
@@ -1496,15 +1558,16 @@ function parseTradeSignal(body) {
         trailing_trigger: body.trailing_trigger,
         trailing_offset: body.trailing_offset,
         strategy: body.strategy, // Preserve strategy field
-        reason: body.reason // For cancel_limit actions
+        reason: body.reason // For cancel_limit and modify_stop actions
       };
     }
 
     // Format 3: Custom format (legacy)
+    // Support both conventions: 'buy'/'sell' and 'long'/'short'
     if (body.symbol && body.side && !body.action) {
       return {
         symbol: body.symbol,
-        action: body.side === 'long' ? 'Buy' : 'Sell',
+        action: (body.side === 'long' || body.side === 'buy') ? 'Buy' : 'Sell',
         orderType: body.type || 'Market',
         price: body.limit_price,
         stopPrice: body.stop_price,
@@ -1540,6 +1603,11 @@ async function validateTradeSignal(signal) {
   // Check required fields
   if (!signal.symbol || !signal.action) {
     return { valid: false, reason: 'Missing required fields' };
+  }
+
+  // Skip position limit checks for non-order actions (cancel, modify, close)
+  if (signal.action === 'modify_stop' || signal.action === 'cancel_limit' || signal.action === 'position_closed') {
+    return { valid: true };
   }
 
   // Check position limits
@@ -1942,6 +2010,56 @@ async function handleOrderCancelled(message) {
   logger.info(`💼 Working orders after cancellation: ${tradingState.workingOrders.size}`);
 }
 
+/**
+ * Recover entry price for a position with zero/missing netPrice
+ * Checks signal context, order fill history, and existing position data
+ */
+async function recoverEntryPrice(position) {
+  // 1. Check if we already have a valid entry price
+  if (position.netPrice && position.netPrice > 0) {
+    return position.netPrice;
+  }
+  if (position.entryPrice && position.entryPrice > 0) {
+    return position.entryPrice;
+  }
+
+  logger.warn(`🔍 Attempting to recover entry price for position ${position.symbol} (netPos: ${position.netPos})`);
+
+  // 2. Try signal context (most reliable)
+  for (const [signalId, signalContext] of tradingState.signalContext.entries()) {
+    if ((signalContext.symbol === position.symbol ||
+         signalContext.originalSymbol === position.symbol ||
+         signalContext.originalSymbol === position.baseSymbol) &&
+        signalContext.price) {
+
+      logger.info(`✅ Recovered entry price ${signalContext.price} from signal ${signalId}`);
+      return signalContext.price;
+    }
+  }
+
+  // 3. Try filled entry orders for this symbol
+  const filledEntryOrders = Array.from(tradingState.filledEntryOrders.values()).filter(
+    order => order.symbol === position.symbol
+  );
+
+  if (filledEntryOrders.length > 0) {
+    // Use most recent fill
+    const mostRecent = filledEntryOrders.sort((a, b) =>
+      new Date(b.timestamp) - new Date(a.timestamp)
+    )[0];
+
+    if (mostRecent.fillPrice || mostRecent.price) {
+      const recoveredPrice = mostRecent.fillPrice || mostRecent.price;
+      logger.info(`✅ Recovered entry price ${recoveredPrice} from filled order ${mostRecent.id}`);
+      return recoveredPrice;
+    }
+  }
+
+  // 4. No recovery possible
+  logger.error(`❌ Could not recover entry price for ${position.symbol} - position will show $0.00 entry`);
+  return 0;
+}
+
 // Handle position updates from Tradovate (for real-time P&L)
 async function handlePositionUpdate(message) {
   logger.info(`📊 Processing position update from ${message.source || 'unknown'}`);
@@ -2066,6 +2184,111 @@ async function handlePositionClosed(message) {
 
 // ===== HELPER FUNCTIONS FOR POSITION MANAGEMENT =====
 
+/**
+ * Check if breakeven stop should be triggered for a position
+ * When position profit reaches breakevenTrigger points, move stop to entry + breakevenOffset
+ *
+ * @param {Object} position - Trading position object
+ * @param {number} currentPrice - Current market price
+ */
+async function checkBreakevenTrigger(position, currentPrice) {
+  // Skip if no breakeven config or already triggered
+  if (!position.breakevenConfig || position.breakevenConfig.triggered) {
+    return;
+  }
+
+  const { trigger, offset, originalStopPrice } = position.breakevenConfig;
+  const entryPrice = position.entryPrice || position.netPrice;
+  const isLong = position.netPos > 0;
+
+  // Calculate profit in points
+  const profitPoints = isLong
+    ? currentPrice - entryPrice
+    : entryPrice - currentPrice;
+
+  // Check if profit meets trigger threshold
+  if (profitPoints >= trigger) {
+    // Calculate new stop price: entry + offset (offset is typically negative like -45)
+    const newStopPrice = entryPrice + offset;
+
+    logger.info(`🎯 BREAKEVEN TRIGGERED for ${position.symbol}:`);
+    logger.info(`   Entry: ${entryPrice}, Current: ${currentPrice}, Profit: ${profitPoints.toFixed(2)} pts`);
+    logger.info(`   Trigger threshold: ${trigger} pts, Offset: ${offset}`);
+    logger.info(`   Moving stop: ${originalStopPrice} → ${newStopPrice}`);
+
+    // Mark as triggered BEFORE sending signal to prevent duplicate triggers
+    position.breakevenConfig.triggered = true;
+    position.breakevenConfig.triggeredAt = new Date().toISOString();
+    position.breakevenConfig.newStopPrice = newStopPrice;
+
+    // Find the order strategy ID or stop order ID for modification
+    let orderStrategyId = null;
+    let stopOrderId = null;
+
+    // Check for order strategy ID in signal context
+    if (position.signalContext?.orderStrategyId) {
+      orderStrategyId = position.signalContext.orderStrategyId;
+    }
+
+    // Check working orders for associated stop order
+    for (const [orderId, relationship] of tradingState.orderRelationships.entries()) {
+      if (relationship.positionSymbol === position.symbol && relationship.orderRole === 'stop_loss') {
+        stopOrderId = orderId;
+        break;
+      }
+    }
+
+    // Also check if stop loss order is directly on the position
+    if (!stopOrderId && position.stopLossOrder?.orderId) {
+      stopOrderId = position.stopLossOrder.orderId;
+    }
+
+    // Build the modify_stop signal
+    const modifyStopSignal = {
+      webhook_type: 'trade_signal',
+      action: 'modify_stop',
+      strategy: position.strategy || position.signalContext?.strategy || 'IV_SKEW_GEX',
+      symbol: position.symbol,
+      new_stop_price: newStopPrice,
+      reason: 'breakeven_triggered',
+      order_strategy_id: orderStrategyId,
+      order_id: stopOrderId,
+      metadata: {
+        entryPrice,
+        currentPrice,
+        profitPoints,
+        trigger,
+        offset,
+        originalStopPrice
+      },
+      timestamp: new Date().toISOString()
+    };
+
+    try {
+      // Publish the modify_stop signal to tradovate-service
+      await messageBus.publish(CHANNELS.TRADE_SIGNAL, modifyStopSignal);
+      logger.info(`✅ Breakeven stop modification signal sent for ${position.symbol}`);
+
+      // Also publish a notification for monitoring
+      await messageBus.publish(CHANNELS.SERVICE_HEALTH, {
+        service: 'trade-orchestrator',
+        event: 'breakeven_triggered',
+        symbol: position.symbol,
+        entryPrice,
+        currentPrice,
+        profitPoints,
+        newStopPrice,
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      logger.error(`❌ Failed to send breakeven stop modification: ${error.message}`);
+      // Reset triggered flag so it can retry
+      position.breakevenConfig.triggered = false;
+      position.breakevenConfig.triggeredAt = null;
+    }
+  }
+}
+
 // Create or update position when an entry order fills
 async function updatePositionFromFill(fillMessage) {
   const symbol = fillMessage.symbol;
@@ -2096,8 +2319,25 @@ async function updatePositionFromFill(fillMessage) {
 
     if (newQuantity === 0) {
       // Position closed
+      const closedPosition = { ...existing, netPos: 0 };
       tradingState.tradingPositions.delete(symbol);
       logger.info(`📊 Position closed via fill: ${symbol}`);
+
+      // Broadcast position closure to monitoring service
+      await messageBus.publish(CHANNELS.POSITION_UPDATE, {
+        symbol: closedPosition.symbol,
+        netPos: 0,
+        netPrice: closedPosition.netPrice,
+        entryPrice: closedPosition.entryPrice,
+        currentPrice: fillMessage.fillPrice,
+        unrealizedPnL: 0,
+        side: 'flat',
+        accountId: closedPosition.accountId,
+        strategy: closedPosition.strategy,
+        timestamp: new Date().toISOString(),
+        source: 'position_closed'
+      });
+      logger.info(`📡 Broadcasted position closure for ${symbol} to monitoring service`);
     } else {
       // Determine if we're adding, reducing, or flipping the position
       const isAdding = (oldNetPos > 0 && signedFillQuantity > 0) || (oldNetPos < 0 && signedFillQuantity < 0);
@@ -2149,6 +2389,22 @@ async function updatePositionFromFill(fillMessage) {
       logger.info(`🔗 Created order relationship for filled order ${fillMessage.orderId} -> existing position ${symbol}`);
 
       logger.info(`📊 Updated position: ${symbol} = ${newQuantity} @ ${newEntryPrice.toFixed(2)}`);
+
+      // Broadcast position update to monitoring service for dashboard
+      await messageBus.publish(CHANNELS.POSITION_UPDATE, {
+        symbol: existing.symbol,
+        netPos: existing.netPos,
+        netPrice: existing.netPrice,
+        entryPrice: existing.entryPrice,
+        currentPrice: existing.currentPrice,
+        unrealizedPnL: existing.unrealizedPnL,
+        side: existing.side,
+        accountId: existing.accountId,
+        strategy: existing.strategy,
+        timestamp: new Date().toISOString(),
+        source: 'order_fill_update'
+      });
+      logger.info(`📡 Broadcasted position update for ${symbol} to monitoring service`);
     }
   } else {
     // Look up signal context for this order using SignalRegistry first (needed for action fallback)
@@ -2249,10 +2505,11 @@ async function updatePositionFromFill(fillMessage) {
       isBuyFill = false;
     } else if (signalContext) {
       // Fallback: If action is not recognized, use signal context
-      if (signalContext.side === 'buy') {
+      // Support both conventions: 'buy'/'sell' and 'long'/'short'
+      if (signalContext.side === 'buy' || signalContext.side === 'long') {
         isBuyFill = true;
         logger.info(`📡 Using signal context to determine action: ${signalContext.side} → BUY`);
-      } else if (signalContext.side === 'sell') {
+      } else if (signalContext.side === 'sell' || signalContext.side === 'short') {
         isBuyFill = false;
         logger.info(`📡 Using signal context to determine action: ${signalContext.side} → SELL`);
       } else {
@@ -2293,15 +2550,52 @@ async function updatePositionFromFill(fillMessage) {
       // Signal context from trade signal
       signalContext: signalContext,
 
+      // Breakeven stop configuration (from signal)
+      breakevenConfig: signalContext?.breakevenTrigger ? {
+        trigger: signalContext.breakevenTrigger,       // Points in profit to trigger
+        offset: signalContext.breakevenOffset,         // Offset from entry (-45 means entry-45)
+        triggered: false,                               // Has breakeven been triggered?
+        triggeredAt: null,                             // When was it triggered
+        originalStopPrice: signalContext.stopPrice     // Original stop for reference
+      } : null,
+
       // Metadata
       createdAt: fillMessage.timestamp,
       lastUpdate: fillMessage.timestamp,
-      strategy: signalContext?.source || 'unknown',
+      strategy: signalContext?.strategy || signalContext?.source || 'unknown',
       riskParams: {}
     };
 
     tradingState.tradingPositions.set(symbol, newPosition);
     logger.info(`🆕 New position created: ${symbol} = ${quantity} @ ${fillMessage.fillPrice}`);
+
+    // Broadcast position update to monitoring service for dashboard
+    await messageBus.publish(CHANNELS.POSITION_UPDATE, {
+      symbol: newPosition.symbol,
+      netPos: newPosition.netPos,
+      netPrice: newPosition.netPrice,
+      entryPrice: newPosition.entryPrice,
+      currentPrice: newPosition.currentPrice,
+      unrealizedPnL: newPosition.unrealizedPnL,
+      side: newPosition.side,
+      accountId: newPosition.accountId,
+      strategy: newPosition.strategy,
+      timestamp: new Date().toISOString(),
+      source: 'order_fill'
+    });
+    logger.info(`📡 Broadcasted new position update for ${symbol} to monitoring service`);
+
+    // Store filled entry order for price recovery
+    tradingState.filledEntryOrders.set(fillMessage.orderId, {
+      id: fillMessage.orderId,
+      symbol: symbol,
+      fillPrice: fillMessage.fillPrice,
+      price: fillMessage.price,
+      quantity: fillMessage.quantity,
+      timestamp: fillMessage.timestamp || new Date().toISOString(),
+      signalId: signalContext?.signalId
+    });
+    logger.debug(`📝 Stored filled entry order ${fillMessage.orderId} for recovery`);
 
     // Create order relationship to mark this filled entry order
     // This is crucial for the dashboard filtering logic to properly hide filled orders
@@ -2343,7 +2637,38 @@ async function updatePositionFromFill(fillMessage) {
 // Link bracket orders to a newly created position
 async function linkBracketOrdersToPosition(position, signalContext, entryOrderId) {
   if (!signalContext) {
-    logger.warn(`⚠️ No signal context available to link bracket orders for ${position.symbol}`);
+    logger.warn(`⚠️ No signal context - attempting fallback bracket order linking for ${position.symbol}`);
+
+    // FALLBACK: Link by symbol + order strategy + timing
+    const orders = Array.from(tradingState.workingOrders.values()).filter(
+      order => order.symbol === position.symbol &&
+               (order.orderType === 'Stop' || order.orderType === 'Limit')
+    );
+
+    for (const order of orders) {
+      // Check if order timestamp is close to position timestamp (within 2 minutes)
+      const orderTime = new Date(order.timestamp);
+      const posTime = position.timestamp ? new Date(position.timestamp) : new Date();
+      const timeDiff = Math.abs(posTime - orderTime) / (1000 * 60);
+
+      if (timeDiff < 2) {
+        const isBuy = order.action === 'Buy';
+        const isPositionLong = position.netPos > 0;
+
+        // Buy order on short position = stop loss
+        // Sell order on long position = stop loss
+        const isStopOrder = (isBuy && !isPositionLong) || (!isBuy && isPositionLong);
+
+        tradingState.orderRelationships.set(order.id, {
+          positionSymbol: position.symbol,
+          orderRole: isStopOrder ? 'stop_loss' : 'take_profit',
+          linkedAt: new Date().toISOString(),
+          linkMethod: 'fallback_timing'
+        });
+
+        logger.info(`🔗 Fallback linked ${order.id} as ${isStopOrder ? 'stop' : 'target'} to ${position.symbol}`);
+      }
+    }
     return;
   }
 
@@ -2408,11 +2733,48 @@ async function linkBracketOrdersForSyncedPosition(position) {
   for (const [signalId, signalContext] of tradingState.signalContext.entries()) {
     // Check if this signal is for the same symbol and has bracket order prices
     if (signalContext.originalSymbol === position.baseSymbol || signalContext.originalSymbol === position.symbol) {
-      // Check if position price is close to signal entry price
-      if (signalContext.price && Math.abs(position.entryPrice - signalContext.price) < 10) {
+      // Check if position price is close to signal entry price OR if entry price is zero
+      if (signalContext.price &&
+          (position.entryPrice === 0 ||  // Match if entry price unknown
+           Math.abs(position.entryPrice - signalContext.price) < 10)) {
         matchingSignalContext = signalContext;
         logger.info(`🎯 Found matching signal context ${signalId} for position ${position.symbol}`);
+
+        // If position has zero entry price, use signal price
+        if (position.entryPrice === 0 && signalContext.price) {
+          position.netPrice = signalContext.price;
+          position.entryPrice = signalContext.price;
+          logger.info(`📌 Set entry price to ${signalContext.price} from signal context`);
+        }
         break;
+      }
+    }
+  }
+
+  // If still no match and position has zero entry price, try symbol+time matching
+  if (!matchingSignalContext && (position.entryPrice === 0 || !position.entryPrice)) {
+    for (const [signalId, signalContext] of tradingState.signalContext.entries()) {
+      // Match by symbol only if position has no entry price
+      if (signalContext.originalSymbol === position.baseSymbol ||
+          signalContext.originalSymbol === position.symbol) {
+
+        // Additional check: ensure signal timestamp is recent (within 5 minutes of position)
+        const signalTime = new Date(signalContext.timestamp);
+        const positionTime = position.timestamp ? new Date(position.timestamp) : new Date();
+        const timeDiffMinutes = Math.abs(positionTime - signalTime) / (1000 * 60);
+
+        if (timeDiffMinutes < 5) {
+          matchingSignalContext = signalContext;
+          logger.info(`🎯 Matched signal ${signalId} to position ${position.symbol} by symbol+time (entry price was zero)`);
+
+          // Use signal price as entry price
+          if (signalContext.price) {
+            position.netPrice = signalContext.price;
+            position.entryPrice = signalContext.price;
+            logger.info(`📌 Set entry price to ${signalContext.price} from signal context`);
+          }
+          break;
+        }
       }
     }
   }
@@ -2552,10 +2914,17 @@ async function updateTradingPositionFromMarketData(posData, accountId) {
     if (updateSource === 'websocket_position_update' || updateSource === 'websocket_update' || updateSource === 'websocket_sync') {
       // WebSocket data from Tradovate is always authoritative
       shouldUpdateEntryPrice = true;
-      if (posData.netPrice && posData.netPrice > 0) {
+
+      // If incoming position has zero/invalid netPrice, preserve existing entry price
+      if ((!posData.netPrice || posData.netPrice === 0) && position.netPrice && position.netPrice > 0) {
+        logger.debug(`📌 Preserving existing entry price ${position.netPrice} for ${position.symbol} (incoming netPrice was ${posData.netPrice || 0})`);
+        newEntryPrice = position.netPrice; // Keep existing
+      } else if (posData.netPrice && posData.netPrice > 0) {
         newEntryPrice = posData.netPrice;
       } else if (posData.averagePrice && posData.averagePrice > 0) {
         newEntryPrice = posData.averagePrice;
+      } else if (posData.entryPrice && posData.entryPrice > 0) {
+        newEntryPrice = posData.entryPrice;
       }
       logger.info(`📡 WebSocket position update: ${newEntryPrice} from ${updateSource}`);
     } else if (updateSource === 'fill_update') {
@@ -2577,6 +2946,15 @@ async function updateTradingPositionFromMarketData(posData, accountId) {
         shouldUpdateEntryPrice = true;
         newEntryPrice = posData.averagePrice;
         logger.info(`📈 Setting missing entry price from average: ${newEntryPrice}`);
+      }
+    }
+
+    // FALLBACK: Use recovery function if we still have zero entry price for an open position
+    if ((!newEntryPrice || newEntryPrice === 0) && posData.netPos !== 0) {
+      logger.warn(`⚠️ Position ${posData.symbol} has netPos ${posData.netPos} but no entry price - attempting recovery`);
+      newEntryPrice = await recoverEntryPrice(position);
+      if (newEntryPrice > 0) {
+        shouldUpdateEntryPrice = true;
       }
     }
 
@@ -2777,6 +3155,9 @@ async function handlePriceUpdate(message) {
 
         logger.debug(`💰 Updated P&L for ${position.symbol}: ${position.netPos} @ ${position.netPrice} → current ${currentPrice} = $${unrealizedPnL.toFixed(2)}`);
         logger.debug(`✅ Position object after update: unrealizedPnL=${position.unrealizedPnL}, currentPrice=${position.currentPrice}`);
+
+        // Check breakeven stop trigger
+        await checkBreakevenTrigger(position, currentPrice);
 
         // Broadcast real-time position update for dashboard
         await messageBus.publish(CHANNELS.POSITION_REALTIME_UPDATE, {
@@ -3225,6 +3606,8 @@ async function startup() {
 
     // Subscribe to relevant channels
     await messageBus.subscribe(CHANNELS.WEBHOOK_RECEIVED, handleWebhookReceived);
+    // Also listen for internal trade signals from signal-generator (same handler, different source)
+    await messageBus.subscribe(CHANNELS.TRADE_SIGNAL, handleWebhookReceived);
     await messageBus.subscribe(CHANNELS.ORDER_PLACED, handleOrderPlaced);
     await messageBus.subscribe(CHANNELS.ORDER_FILLED, handleOrderFilled);
     await messageBus.subscribe(CHANNELS.ORDER_REJECTED, handleOrderRejected);

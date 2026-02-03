@@ -1,0 +1,72 @@
+{
+  "overall_stats": {
+    "total_trades": 1962,
+    "win_rate": 0.4138634046890928,
+    "average_pnl": 59.689092762487256,
+    "total_pnl": 117110.0
+  },
+  "lt_ordering_analysis": [
+    {
+      "pattern": "DESCENDING",
+      "total_trades": 92,
+      "wins": 40,
+      "losses": 52,
+      "win_rate": 0.4348,
+      "avg_pnl": 205.8152,
+      "total_pnl": 18935
+    },
+    {
+      "pattern": "MIXED",
+      "total_trades": 1744,
+      "wins": 724,
+      "losses": 1020,
+      "win_rate": 0.4151,
+      "avg_pnl": 52.4255,
+      "total_pnl": 91430
+    },
+    {
+      "pattern": "ASCENDING",
+      "total_trades": 126,
+      "wins": 48,
+      "losses": 78,
+      "win_rate": 0.381,
+      "avg_pnl": 53.5317,
+      "total_pnl": 6745
+    }
+  ],
+  "lt4_vs_lt5_analysis": [
+    {
+      "pattern": "ASCENDING",
+      "total_trades": 1029,
+      "wins": 437,
+      "losses": 592,
+      "win_rate": 0.4247,
+      "avg_pnl": 82.1234,
+      "total_pnl": 84505
+    },
+    {
+      "pattern": "DESCENDING",
+      "total_trades": 930,
+      "wins": 374,
+      "losses": 556,
+      "win_rate": 0.4022,
+      "avg_pnl": 35.129,
+      "total_pnl": 32670
+    },
+    {
+      "pattern": "EQUAL",
+      "total_trades": 3,
+      "wins": 1,
+      "losses": 2,
+      "win_rate": 0.3333,
+      "avg_pnl": -21.6667,
+      "total_pnl": -65
+    }
+  ],
+  "recommendations": {
+    "best_ordering_pattern": "DESCENDING",
+    "worst_ordering_pattern": "ASCENDING",
+    "best_lt4_lt5_pattern": "ASCENDING",
+    "worst_lt4_lt5_pattern": "EQUAL"
+  }
+}

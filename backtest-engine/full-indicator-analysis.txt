@@ -1,0 +1,190 @@
+====================================================================
+            INDICATOR ANALYSIS: GEX RECOIL STRATEGY               
+====================================================================
+
+DATASET OVERVIEW:
+  Total trades: 608
+  Trades with indicators: 607
+  Date range: undefined to undefined
+  Net P&L: $36075
+  Win Rate: 54.77%
+
+====================================================================
+
+TRADE OUTCOME DISTRIBUTION:
+  Winning trades with indicators: 332 (54.7%)
+  Losing trades with indicators: 273 (45.0%)
+
+====================================================================
+                    INDIVIDUAL INDICATOR ANALYSIS                   
+====================================================================
+
+
+SQUEEZE_MOMENTUM_VALUE:
+  Winning Trades:
+    Mean: -8.557 ± 102.512
+    Quartiles: [-51.64, -5.53, 25.99]
+    Range: [-308.50, 1184.62]
+  Losing Trades:
+    Mean: -11.839 ± 64.182
+    Quartiles: [-39.71, -9.57, 21.89]
+    Range: [-289.66, 312.60]
+  Statistical Significance:
+    Mean difference: 3.282
+    Effect size (Cohen's d): 0.038
+    - Negligible difference between win/loss
+
+RSI_14:
+  Winning Trades:
+    Mean: 41.811 ± 13.260
+    Quartiles: [32.49, 41.37, 50.09]
+    Range: [7.19, 84.39]
+  Losing Trades:
+    Mean: 41.777 ± 12.849
+    Quartiles: [31.91, 41.44, 51.78]
+    Range: [12.16, 72.10]
+  Statistical Significance:
+    Mean difference: 0.034
+    Effect size (Cohen's d): 0.003
+    - Negligible difference between win/loss
+
+WILLIAMS_R_14:
+  Winning Trades:
+    Mean: -69.832 ± 28.234
+    Quartiles: [-94.52, -80.92, -49.33]
+    Range: [-100.00, -6.09]
+  Losing Trades:
+    Mean: -69.891 ± 27.403
+    Quartiles: [-94.77, -78.89, -46.67]
+    Range: [-100.00, -9.26]
+  Statistical Significance:
+    Mean difference: 0.058
+    Effect size (Cohen's d): 0.002
+    - Negligible difference between win/loss
+
+STOCHASTIC_K:
+  Winning Trades:
+    Mean: 30.168 ± 28.234
+    Quartiles: [5.48, 19.08, 50.67]
+    Range: [0.00, 93.91]
+  Losing Trades:
+    Mean: 30.109 ± 27.403
+    Quartiles: [5.23, 21.11, 53.33]
+    Range: [0.00, 90.74]
+  Statistical Significance:
+    Mean difference: 0.058
+    Effect size (Cohen's d): 0.002
+    - Negligible difference between win/loss
+
+STOCHASTIC_D:
+  Winning Trades:
+    Mean: 43.639 ± 26.667
+    Quartiles: [21.43, 39.52, 64.77]
+    Range: [1.74, 96.94]
+  Losing Trades:
+    Mean: 42.682 ± 27.663
+    Quartiles: [16.30, 37.11, 67.92]
+    Range: [1.65, 95.67]
+  Statistical Significance:
+    Mean difference: 0.957
+    Effect size (Cohen's d): 0.035
+    - Negligible difference between win/loss
+
+CCI_20:
+  Winning Trades:
+    Mean: -66.980 ± 126.722
+    Quartiles: [-149.57, -72.87, 24.73]
+    Range: [-456.10, 360.43]
+  Losing Trades:
+    Mean: -66.790 ± 127.002
+    Quartiles: [-156.00, -76.34, 34.03]
+    Range: [-474.13, 211.00]
+  Statistical Significance:
+    Mean difference: 0.190
+    Effect size (Cohen's d): 0.001
+    - Negligible difference between win/loss
+
+====================================================================
+                      CORRELATION ANALYSIS                          
+====================================================================
+
+INDICATOR CORRELATIONS WITH TRADE OUTCOME:
+
+  squeeze_momentum_value:
+    Correlation with win/loss: 0.0199
+    Correlation with P&L: 0.0064
+  rsi_14:
+    Correlation with win/loss: 0.0024
+    Correlation with P&L: 0.0071
+  williams_r_14:
+    Correlation with win/loss: 0.0024
+    Correlation with P&L: 0.0046
+  stochastic_k:
+    Correlation with win/loss: 0.0024
+    Correlation with P&L: 0.0046
+  stochastic_d:
+    Correlation with win/loss: 0.0204
+    Correlation with P&L: 0.0171
+  cci_20:
+    Correlation with win/loss: -0.0000
+    Correlation with P&L: 0.0069
+
+====================================================================
+                    CONFLUENCE ANALYSIS                             
+====================================================================
+
+CONFLUENCE PATTERN PERFORMANCE:
+
+
+Oversold Confluence:
+  Occurrences: 111 (18.3% of trades)
+  Win rate: 54.1% (baseline: 54.77%)
+  Average P&L: $56.71
+
+Overbought Confluence:
+  Occurrences: 9 (1.5% of trades)
+  Win rate: 88.9% (baseline: 54.77%)
+  Average P&L: $350.56
+  >>> POSITIVE edge: +34.1%
+
+Momentum Alignment:
+  Occurrences: 133 (21.9% of trades)
+  Win rate: 50.4% (baseline: 54.77%)
+  Average P&L: $37.52
+
+Bearish Momentum:
+  Occurrences: 311 (51.2% of trades)
+  Win rate: 52.4% (baseline: 54.77%)
+  Average P&L: $44.42
+
+Extreme CCI:
+  Occurrences: 304 (50.1% of trades)
+  Win rate: 52.3% (baseline: 54.77%)
+  Average P&L: $41.99
+
+Stochastic Divergence:
+  Occurrences: 136 (22.4% of trades)
+  Win rate: 64.0% (baseline: 54.77%)
+  Average P&L: $118.20
+  >>> POSITIVE edge: +9.2%
+
+====================================================================
+                    OPTIMAL THRESHOLD ANALYSIS                      
+====================================================================
+
+
+SQUEEZE_MOMENTUM_VALUE:
+  Optimal condition: squeeze_momentum_value above 63.40
+file:///home/drew/projects/slingshot-services/backtest-engine/analyze-indicators.js:305
+        console.log(`  Win rate: ${bestWinRate.toFixed(1)}% (baseline: ${data.summary.winRate.toFixed(1)}%)`);
+                                                                                      ^
+
+TypeError: Cannot read properties of undefined (reading 'winRate')
+    at file:///home/drew/projects/slingshot-services/backtest-engine/analyze-indicators.js:305:87
+    at Array.forEach (<anonymous>)
+    at file:///home/drew/projects/slingshot-services/backtest-engine/analyze-indicators.js:256:12
+    at ModuleJob.run (node:internal/modules/esm/module_job:343:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:647:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5)
+
+Node.js v22.18.0

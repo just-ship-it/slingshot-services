@@ -68,3 +68,6 @@ data/
 *.rpm
 *.exe
 *.msi
+
+# Skunkworks projects
+skunkworks/

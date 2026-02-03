@@ -14,7 +14,14 @@ function createLogger(serviceName, options = {}) {
       winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
       winston.format.errors({ stack: true }),
       winston.format.printf(({ timestamp, level, message, service, ...meta }) => {
-        const metaStr = Object.keys(meta).length ? ` ${JSON.stringify(meta)}` : '';
+        let metaStr = '';
+        if (Object.keys(meta).length) {
+          try {
+            metaStr = ` ${JSON.stringify(meta)}`;
+          } catch (e) {
+            metaStr = ` [Object with circular reference]`;
+          }
+        }
         return `${timestamp} [${service}] ${level.toUpperCase()}: ${message}${metaStr}`;
       })
     ),
@@ -24,7 +31,18 @@ function createLogger(serviceName, options = {}) {
       new winston.transports.Console({
         format: winston.format.combine(
           winston.format.colorize(),
-          winston.format.simple()
+          winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
+          winston.format.printf(({ timestamp, level, message, service, ...meta }) => {
+            let metaStr = '';
+            if (Object.keys(meta).length) {
+              try {
+                metaStr = ` ${JSON.stringify(meta)}`;
+              } catch (e) {
+                metaStr = ` [Object with circular reference]`;
+              }
+            }
+            return `${timestamp} [${service}] ${level}: ${message}${metaStr}`;
+          })
         )
       }),
       // File transport

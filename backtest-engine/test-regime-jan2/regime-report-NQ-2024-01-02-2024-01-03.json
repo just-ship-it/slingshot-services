@@ -1,0 +1,74 @@
+{
+  "stability": {
+    "totalRegimes": 5,
+    "medianDurationCandles": 110,
+    "medianDurationMinutes": 330,
+    "meanDurationCandles": "82.20",
+    "meanDurationMinutes": "246.6",
+    "flappingRate": "0.0%",
+    "totalTransitions": 5,
+    "durationDistribution": {
+      "<5 candles": 0,
+      "5-10 candles": 0,
+      "10-20 candles": 0,
+      "20+ candles": 5
+    }
+  },
+  "distribution": {
+    "BOUNCING_SUPPORT": {
+      "count": 130,
+      "percentage": "31.63%",
+      "avgConfidence": "0.675"
+    },
+    "SESSION_BLOCKED": {
+      "count": 130,
+      "percentage": "31.63%",
+      "avgConfidence": "1.000"
+    },
+    "SESSION_OPENING": {
+      "count": 130,
+      "percentage": "31.63%",
+      "avgConfidence": "0.661"
+    },
+    "NEUTRAL": {
+      "count": 21,
+      "percentage": "5.11%",
+      "avgConfidence": "0.469"
+    }
+  },
+  "accuracy": {
+    "overallAccuracy": "17.0%",
+    "correctPredictions": 68,
+    "totalPredictions": 401,
+    "lookforwardCandles": 10,
+    "lookforwardMinutes": 30,
+    "perRegime": {
+      "BOUNCING_SUPPORT": {
+        "accuracy": "52.3%",
+        "correct": 68,
+        "total": 130
+      },
+      "SESSION_BLOCKED": {
+        "accuracy": "0.0%",
+        "correct": 0,
+        "total": 130
+      },
+      "SESSION_OPENING": {
+        "accuracy": "0.0%",
+        "correct": 0,
+        "total": 130
+      },
+      "NEUTRAL": {
+        "accuracy": "0.0%",
+        "correct": 0,
+        "total": 11
+      }
+    }
+  },
+  "config": {
+    "ticker": "NQ",
+    "startDate": "2024-01-02",
+    "endDate": "2024-01-03",
+    "outputDir": "./test-regime-jan2"
+  }
+}

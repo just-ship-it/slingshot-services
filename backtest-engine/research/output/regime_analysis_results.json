@@ -1,0 +1,689 @@
+{
+  "regimes": {
+    "HIGH_IV|NEG_GEX|BULL_LIQ": {
+      "count": 620,
+      "frequency": 0.10877192982456141,
+      "returns": {
+        "15m": {
+          "mean": 0.08244529565163423,
+          "median": 0.053653700355747354,
+          "std": 0.6657143322612687,
+          "min": -2.0231511695805997,
+          "max": 4.55585072379356,
+          "winRate": 0.5741935483870968,
+          "sharpe": 0.12384485605347827,
+          "n": 620
+        },
+        "1h": {
+          "mean": 0.14163998129566926,
+          "median": 0.040203857205358934,
+          "std": 1.1275304613889185,
+          "min": -4.261612481433994,
+          "max": 8.47249753996663,
+          "winRate": 0.5225806451612903,
+          "sharpe": 0.1256196494427244,
+          "n": 620
+        },
+        "4h": {
+          "mean": 0.34799755346142175,
+          "median": 0.2567364133923049,
+          "std": 1.851444263776252,
+          "min": -5.07920543122957,
+          "max": 11.20833869514863,
+          "winRate": 0.5919354838709677,
+          "sharpe": 0.18796004841735675,
+          "n": 620
+        }
+      },
+      "volatility": {
+        "mean": 0.5094600128403689,
+        "median": 0.44136409857364484,
+        "std": 0.39709731041950735,
+        "min": 0.0280649435551745,
+        "max": 3.3472652597095576,
+        "winRate": 1,
+        "sharpe": 1.2829601195287816,
+        "n": 620
+      },
+      "range": {
+        "mean": 285.39677419354837,
+        "median": 285.5,
+        "std": 112.9619602583127,
+        "min": 18.75,
+        "max": 1528,
+        "winRate": 1,
+        "sharpe": 2.526485673061312,
+        "n": 620
+      },
+      "autocorrelation": -0.2736714638509466,
+      "meanReversionStrength": 0.2736714638509466,
+      "trendStrength": 0
+    },
+    "HIGH_IV|NEG_GEX|BEAR_LIQ": {
+      "count": 1001,
+      "frequency": 0.1756140350877193,
+      "returns": {
+        "15m": {
+          "mean": -0.061432680839629605,
+          "median": -0.03247092113045193,
+          "std": 0.6405224776057142,
+          "min": -2.041747304395908,
+          "max": 2.2192663119574347,
+          "winRate": 0.4645354645354645,
+          "sharpe": -0.09591026542778981,
+          "n": 1001
+        },
+        "1h": {
+          "mean": -0.020018607263414527,
+          "median": 0.02568353218613556,
+          "std": 0.944319109706609,
+          "min": -4.7949131530186495,
+          "max": 4.643399504740536,
+          "winRate": 0.5184815184815185,
+          "sharpe": -0.021198985658178748,
+          "n": 1001
+        },
+        "4h": {
+          "mean": 0.014460643391371842,
+          "median": 0.02106340083651792,
+          "std": 1.771359094076729,
+          "min": -6.241296534528719,
+          "max": 11.678510600810478,
+          "winRate": 0.5064935064935064,
+          "sharpe": 0.008163586615343539,
+          "n": 1001
+        }
+      },
+      "volatility": {
+        "mean": 0.49997884589654146,
+        "median": 0.4932583840706686,
+        "std": 0.33028158931275386,
+        "min": 0.01296313486852477,
+        "max": 1.4710680827191505,
+        "winRate": 1,
+        "sharpe": 1.513795688512011,
+        "n": 1001
+      },
+      "range": {
+        "mean": 291.2764735264735,
+        "median": 292.75,
+        "std": 101.0127379355016,
+        "min": 13.25,
+        "max": 765,
+        "winRate": 1,
+        "sharpe": 2.8835618109119925,
+        "n": 1001
+      },
+      "autocorrelation": -0.3017690945252581,
+      "meanReversionStrength": 0.3017690945252581,
+      "trendStrength": 0
+    },
+    "HIGH_IV|POS_GEX|BEAR_LIQ": {
+      "count": 451,
+      "frequency": 0.07912280701754386,
+      "returns": {
+        "15m": {
+          "mean": -0.025273342526808778,
+          "median": -0.013360818445564207,
+          "std": 0.473224021217189,
+          "min": -1.4933874036019,
+          "max": 1.550675518826315,
+          "winRate": 0.4611973392461197,
+          "sharpe": -0.05340671942603993,
+          "n": 451
+        },
+        "1h": {
+          "mean": 0.021748893616115025,
+          "median": 0.04447773772180346,
+          "std": 0.7218223491843175,
+          "min": -3.07450250848531,
+          "max": 2.8517360736828237,
+          "winRate": 0.5432372505543237,
+          "sharpe": 0.03013053508344813,
+          "n": 451
+        },
+        "4h": {
+          "mean": 0.2850958229898245,
+          "median": 0.3039620692892686,
+          "std": 1.2241192506812373,
+          "min": -3.841326626411962,
+          "max": 4.656657070191972,
+          "winRate": 0.6297117516629712,
+          "sharpe": 0.23289873338007322,
+          "n": 451
+        }
+      },
+      "volatility": {
+        "mean": 0.3496915937025265,
+        "median": 0.24024937893361484,
+        "std": 0.2741987347807879,
+        "min": 0.008379589572655218,
+        "max": 1.1939870285831915,
+        "winRate": 1,
+        "sharpe": 1.275321689511414,
+        "n": 451
+      },
+      "range": {
+        "mean": 240.3608647450111,
+        "median": 267.75,
+        "std": 107.60753484777435,
+        "min": 14.25,
+        "max": 535.25,
+        "winRate": 1,
+        "sharpe": 2.233680616185796,
+        "n": 451
+      },
+      "autocorrelation": -0.25218797844839624,
+      "meanReversionStrength": 0.25218797844839624,
+      "trendStrength": 0
+    },
+    "HIGH_IV|POS_GEX|BULL_LIQ": {
+      "count": 776,
+      "frequency": 0.13614035087719298,
+      "returns": {
+        "15m": {
+          "mean": 0.045350254925415535,
+          "median": 0.02608508273507763,
+          "std": 0.4514904302248127,
+          "min": -1.9615898120571018,
+          "max": 2.063800794307078,
+          "winRate": 0.586340206185567,
+          "sharpe": 0.10044566150125059,
+          "n": 776
+        },
+        "1h": {
+          "mean": -0.016087080816949106,
+          "median": 0.01504045883426417,
+          "std": 0.8069313954341784,
+          "min": -5.734344637372281,
+          "max": 3.242229700363835,
+          "winRate": 0.520618556701031,
+          "sharpe": -0.01993611961063093,
+          "n": 776
+        },
+        "4h": {
+          "mean": -0.05797741124844357,
+          "median": 0.0011657729074376311,
+          "std": 1.2800011260821986,
+          "min": -5.858983356727491,
+          "max": 4.653705199080688,
+          "winRate": 0.5012886597938144,
+          "sharpe": -0.04529481268965727,
+          "n": 776
+        }
+      },
+      "volatility": {
+        "mean": 0.3046193188295589,
+        "median": 0.13925908922841265,
+        "std": 0.3047342471024591,
+        "min": 0.006401996447881022,
+        "max": 1.7320376117522989,
+        "winRate": 1,
+        "sharpe": 0.999622857378214,
+        "n": 776
+      },
+      "range": {
+        "mean": 217.98711340206185,
+        "median": 244.75,
+        "std": 114.82170735341882,
+        "min": 15,
+        "max": 703,
+        "winRate": 1,
+        "sharpe": 1.8984834699513924,
+        "n": 776
+      },
+      "autocorrelation": -0.27889980080938515,
+      "meanReversionStrength": 0.27889980080938515,
+      "trendStrength": 0
+    },
+    "LOW_IV|POS_GEX|BULL_LIQ": {
+      "count": 1348,
+      "frequency": 0.23649122807017545,
+      "returns": {
+        "15m": {
+          "mean": 0.02254555937837359,
+          "median": 0.010606907989894509,
+          "std": 0.41289666154616544,
+          "min": -1.691701410703067,
+          "max": 1.5239334437347212,
+          "winRate": 0.5563798219584569,
+          "sharpe": 0.05460339469432305,
+          "n": 1348
+        },
+        "1h": {
+          "mean": null,
+          "median": 0.03332974948930223,
+          "std": null,
+          "min": null,
+          "max": null,
+          "winRate": 0.5756676557863502,
+          "sharpe": 0,
+          "n": 1348
+        },
+        "4h": {
+          "mean": null,
+          "median": 0.10973966708679211,
+          "std": null,
+          "min": null,
+          "max": null,
+          "winRate": 0.5890207715133531,
+          "sharpe": 0,
+          "n": 1348
+        }
+      },
+      "volatility": {
+        "mean": 0.2602516966903913,
+        "median": 0.08011572518845307,
+        "std": 0.2985610794650137,
+        "min": 0.0017154834119194136,
+        "max": 1.1018586554850345,
+        "winRate": 1,
+        "sharpe": 0.8716866148686616,
+        "n": 1348
+      },
+      "range": {
+        "mean": 207.68694362017803,
+        "median": 253,
+        "std": 114.6597680095583,
+        "min": 6,
+        "max": 607.5,
+        "winRate": 1,
+        "sharpe": 1.8113323201810836,
+        "n": 1348
+      },
+      "autocorrelation": -0.37031131146822616,
+      "meanReversionStrength": 0.37031131146822616,
+      "trendStrength": 0
+    },
+    "LOW_IV|POS_GEX|BEAR_LIQ": {
+      "count": 918,
+      "frequency": 0.16105263157894736,
+      "returns": {
+        "15m": {
+          "mean": -0.03359209153454704,
+          "median": -0.013556170962681796,
+          "std": 0.41040129274995585,
+          "min": -1.803479812625474,
+          "max": 1.9889525969798163,
+          "winRate": 0.4324618736383442,
+          "sharpe": -0.08185181705802669,
+          "n": 918
+        },
+        "1h": {
+          "mean": 0.005424178854726347,
+          "median": 0.011495794455195142,
+          "std": 0.5368185039685717,
+          "min": -2.7645134308130483,
+          "max": 2.2282218256819077,
+          "winRate": 0.5261437908496732,
+          "sharpe": 0.010104306790147287,
+          "n": 918
+        },
+        "4h": {
+          "mean": 0.02757494945317956,
+          "median": 0.11334745762711863,
+          "std": 0.8319412642387071,
+          "min": -3.688011858829466,
+          "max": 2.2889261709107616,
+          "winRate": 0.5751633986928104,
+          "sharpe": 0.03314530801451813,
+          "n": 918
+        }
+      },
+      "volatility": {
+        "mean": 0.2722999993176852,
+        "median": 0.10467272462793362,
+        "std": 0.2926777988723322,
+        "min": 0.006787967832520806,
+        "max": 1.3894545220036465,
+        "winRate": 1,
+        "sharpe": 0.9303746316489968,
+        "n": 918
+      },
+      "range": {
+        "mean": 217.13126361655773,
+        "median": 257,
+        "std": 121.68001396361448,
+        "min": 11.75,
+        "max": 604,
+        "winRate": 1,
+        "sharpe": 1.784444762485692,
+        "n": 918
+      },
+      "autocorrelation": -0.28453563211267313,
+      "meanReversionStrength": 0.28453563211267313,
+      "trendStrength": 0
+    },
+    "LOW_IV|NEG_GEX|BULL_LIQ": {
+      "count": 106,
+      "frequency": 0.018596491228070177,
+      "returns": {
+        "15m": {
+          "mean": 0.08206968411635297,
+          "median": 0.03969983054950375,
+          "std": 0.42128004809523567,
+          "min": -1.0091533180778032,
+          "max": 1.3133048126060192,
+          "winRate": 0.6792452830188679,
+          "sharpe": 0.19481027997271802,
+          "n": 106
+        },
+        "1h": {
+          "mean": 0.07676344024897135,
+          "median": 0.03656195728344658,
+          "std": 0.5977343239819652,
+          "min": -1.8301364445323314,
+          "max": 1.9547402450943538,
+          "winRate": 0.5754716981132075,
+          "sharpe": 0.12842401242343152,
+          "n": 106
+        },
+        "4h": {
+          "mean": 0.0005734922124155358,
+          "median": 0.2981821784139878,
+          "std": 0.8613209164575141,
+          "min": -2.641365610274416,
+          "max": 2.0710059171597637,
+          "winRate": 0.6226415094339622,
+          "sharpe": 0.0006658287305667958,
+          "n": 106
+        }
+      },
+      "volatility": {
+        "mean": 0.25061779581993693,
+        "median": 0.09027592482536541,
+        "std": 0.2883593145845143,
+        "min": 0.010981796532557354,
+        "max": 0.9779365316522256,
+        "winRate": 1,
+        "sharpe": 0.869116352912138,
+        "n": 106
+      },
+      "range": {
+        "mean": 223.39150943396226,
+        "median": 273.75,
+        "std": 111.24227246252778,
+        "min": 14.5,
+        "max": 357.5,
+        "winRate": 1,
+        "sharpe": 2.008153056287233,
+        "n": 106
+      },
+      "autocorrelation": -0.3821237902875021,
+      "meanReversionStrength": 0.3821237902875021,
+      "trendStrength": 0
+    },
+    "LOW_IV|NEG_GEX|BEAR_LIQ": {
+      "count": 480,
+      "frequency": 0.08421052631578947,
+      "returns": {
+        "15m": {
+          "mean": -0.014769547542632303,
+          "median": -0.009690757171160306,
+          "std": 0.4764458877787054,
+          "min": -1.5966585698204872,
+          "max": 1.4300958383612739,
+          "winRate": 0.48125,
+          "sharpe": -0.030999422854694272,
+          "n": 480
+        },
+        "1h": {
+          "mean": -0.014259667209922158,
+          "median": 0.007015574575557738,
+          "std": 0.5896671864426452,
+          "min": -2.1578103237243065,
+          "max": 1.7682386744150878,
+          "winRate": 0.5104166666666666,
+          "sharpe": -0.024182568638333322,
+          "n": 480
+        },
+        "4h": {
+          "mean": -0.07788167582162511,
+          "median": -0.01831679434549784,
+          "std": 0.8933195426524143,
+          "min": -2.638977266153757,
+          "max": 2.40382628816991,
+          "winRate": 0.4875,
+          "sharpe": -0.08718232625962874,
+          "n": 480
+        }
+      },
+      "volatility": {
+        "mean": 0.33887480098427836,
+        "median": 0.18110303209787482,
+        "std": 0.3024061146046844,
+        "min": 0.015683247233454642,
+        "max": 1.2430723263825156,
+        "winRate": 1,
+        "sharpe": 1.120595069406143,
+        "n": 480
+      },
+      "range": {
+        "mean": 252.10416666666666,
+        "median": 273,
+        "std": 115.77006927946539,
+        "min": 13.75,
+        "max": 590.5,
+        "winRate": 1,
+        "sharpe": 2.1776281921201495,
+        "n": 480
+      },
+      "autocorrelation": -0.3315397485626289,
+      "meanReversionStrength": 0.3315397485626289,
+      "trendStrength": 0
+    }
+  },
+  "transitions": {
+    "LOW_IV|POS_GEX|BULL_LIQ → LOW_IV|POS_GEX|BEAR_LIQ": {
+      "count": 92,
+      "avgReturn1h": -0.004163948262495399,
+      "winRate1h": 0.4782608695652174
+    },
+    "LOW_IV|POS_GEX|BEAR_LIQ → LOW_IV|POS_GEX|BULL_LIQ": {
+      "count": 82,
+      "avgReturn1h": 0.030499427527339654,
+      "winRate1h": 0.5975609756097561
+    },
+    "HIGH_IV|NEG_GEX|BEAR_LIQ → HIGH_IV|NEG_GEX|BULL_LIQ": {
+      "count": 75,
+      "avgReturn1h": 0.04162192679445126,
+      "winRate1h": 0.4666666666666667
+    },
+    "HIGH_IV|POS_GEX|BULL_LIQ → LOW_IV|POS_GEX|BULL_LIQ": {
+      "count": 75,
+      "avgReturn1h": 0.05819559712837468,
+      "winRate1h": 0.5066666666666667
+    },
+    "LOW_IV|POS_GEX|BULL_LIQ → HIGH_IV|POS_GEX|BULL_LIQ": {
+      "count": 67,
+      "avgReturn1h": 0.10126188781653328,
+      "winRate1h": 0.5223880597014925
+    },
+    "HIGH_IV|NEG_GEX|BULL_LIQ → HIGH_IV|NEG_GEX|BEAR_LIQ": {
+      "count": 59,
+      "avgReturn1h": 0.222913545912306,
+      "winRate1h": 0.6779661016949152
+    },
+    "HIGH_IV|POS_GEX|BEAR_LIQ → LOW_IV|POS_GEX|BEAR_LIQ": {
+      "count": 53,
+      "avgReturn1h": 0.03471711895949289,
+      "winRate1h": 0.5283018867924528
+    },
+    "LOW_IV|POS_GEX|BEAR_LIQ → HIGH_IV|POS_GEX|BEAR_LIQ": {
+      "count": 51,
+      "avgReturn1h": -0.04014129573022387,
+      "winRate1h": 0.5294117647058824
+    },
+    "HIGH_IV|POS_GEX|BULL_LIQ → HIGH_IV|POS_GEX|BEAR_LIQ": {
+      "count": 50,
+      "avgReturn1h": -0.01657028346421654,
+      "winRate1h": 0.52
+    },
+    "HIGH_IV|POS_GEX|BEAR_LIQ → HIGH_IV|POS_GEX|BULL_LIQ": {
+      "count": 43,
+      "avgReturn1h": 0.14386993956299618,
+      "winRate1h": 0.5581395348837209
+    },
+    "LOW_IV|NEG_GEX|BEAR_LIQ → HIGH_IV|NEG_GEX|BEAR_LIQ": {
+      "count": 42,
+      "avgReturn1h": -0.023541869033028566,
+      "winRate1h": 0.4523809523809524
+    },
+    "LOW_IV|POS_GEX|BEAR_LIQ → LOW_IV|NEG_GEX|BEAR_LIQ": {
+      "count": 39,
+      "avgReturn1h": -0.19426328348731892,
+      "winRate1h": 0.4358974358974359
+    },
+    "HIGH_IV|NEG_GEX|BEAR_LIQ → LOW_IV|NEG_GEX|BEAR_LIQ": {
+      "count": 37,
+      "avgReturn1h": 0.020271141884609607,
+      "winRate1h": 0.43243243243243246
+    },
+    "LOW_IV|NEG_GEX|BEAR_LIQ → LOW_IV|POS_GEX|BEAR_LIQ": {
+      "count": 33,
+      "avgReturn1h": -0.01287527768319701,
+      "winRate1h": 0.5454545454545454
+    },
+    "HIGH_IV|POS_GEX|BEAR_LIQ → HIGH_IV|NEG_GEX|BEAR_LIQ": {
+      "count": 29,
+      "avgReturn1h": -0.34811819495989327,
+      "winRate1h": 0.41379310344827586
+    },
+    "HIGH_IV|NEG_GEX|BULL_LIQ → HIGH_IV|POS_GEX|BULL_LIQ": {
+      "count": 29,
+      "avgReturn1h": -0.025371768854237007,
+      "winRate1h": 0.6551724137931034
+    },
+    "LOW_IV|NEG_GEX|BEAR_LIQ → LOW_IV|NEG_GEX|BULL_LIQ": {
+      "count": 23,
+      "avgReturn1h": 0.0017885629973813256,
+      "winRate1h": 0.4782608695652174
+    },
+    "HIGH_IV|POS_GEX|BULL_LIQ → HIGH_IV|NEG_GEX|BULL_LIQ": {
+      "count": 18,
+      "avgReturn1h": 0.00039523170871624206,
+      "winRate1h": 0.4444444444444444
+    },
+    "LOW_IV|NEG_GEX|BULL_LIQ → LOW_IV|NEG_GEX|BEAR_LIQ": {
+      "count": 18,
+      "avgReturn1h": -0.057449228979327124,
+      "winRate1h": 0.5555555555555556
+    },
+    "HIGH_IV|NEG_GEX|BEAR_LIQ → HIGH_IV|POS_GEX|BEAR_LIQ": {
+      "count": 16,
+      "avgReturn1h": -0.07994771365316372,
+      "winRate1h": 0.5625
+    }
+  },
+  "optimalStrategies": {
+    "HIGH_IV|NEG_GEX|BULL_LIQ": {
+      "regime": "HIGH_IV|NEG_GEX|BULL_LIQ",
+      "recommendation": "MEAN_REVERSION",
+      "confidence": "HIGH",
+      "metrics": {
+        "meanReversionStrength": 0.2736714638509466,
+        "winRate1h": 0.5225806451612903,
+        "avgReturn1h": 0.14163998129566926,
+        "sharpe1h": 0.1256196494427244
+      },
+      "bias": "BULLISH",
+      "volatilityLevel": "HIGH"
+    },
+    "HIGH_IV|NEG_GEX|BEAR_LIQ": {
+      "regime": "HIGH_IV|NEG_GEX|BEAR_LIQ",
+      "recommendation": "MEAN_REVERSION",
+      "confidence": "HIGH",
+      "metrics": {
+        "meanReversionStrength": 0.3017690945252581,
+        "winRate1h": 0.5184815184815185,
+        "avgReturn1h": -0.020018607263414527,
+        "sharpe1h": -0.021198985658178748
+      },
+      "bias": "BEARISH",
+      "volatilityLevel": "HIGH"
+    },
+    "HIGH_IV|POS_GEX|BEAR_LIQ": {
+      "regime": "HIGH_IV|POS_GEX|BEAR_LIQ",
+      "recommendation": "MEAN_REVERSION",
+      "confidence": "HIGH",
+      "metrics": {
+        "meanReversionStrength": 0.25218797844839624,
+        "winRate1h": 0.5432372505543237,
+        "avgReturn1h": 0.021748893616115025,
+        "sharpe1h": 0.03013053508344813
+      },
+      "bias": "BULLISH",
+      "volatilityLevel": "HIGH"
+    },
+    "HIGH_IV|POS_GEX|BULL_LIQ": {
+      "regime": "HIGH_IV|POS_GEX|BULL_LIQ",
+      "recommendation": "MEAN_REVERSION",
+      "confidence": "HIGH",
+      "metrics": {
+        "meanReversionStrength": 0.27889980080938515,
+        "winRate1h": 0.520618556701031,
+        "avgReturn1h": -0.016087080816949106,
+        "sharpe1h": -0.01993611961063093
+      },
+      "bias": "NEUTRAL",
+      "volatilityLevel": "HIGH"
+    },
+    "LOW_IV|POS_GEX|BULL_LIQ": {
+      "regime": "LOW_IV|POS_GEX|BULL_LIQ",
+      "recommendation": "MEAN_REVERSION",
+      "confidence": "HIGH",
+      "metrics": {
+        "meanReversionStrength": 0.37031131146822616,
+        "winRate1h": 0.5756676557863502,
+        "avgReturn1h": null,
+        "sharpe1h": 0
+      },
+      "bias": "NEUTRAL",
+      "volatilityLevel": "HIGH"
+    },
+    "LOW_IV|POS_GEX|BEAR_LIQ": {
+      "regime": "LOW_IV|POS_GEX|BEAR_LIQ",
+      "recommendation": "MEAN_REVERSION",
+      "confidence": "HIGH",
+      "metrics": {
+        "meanReversionStrength": 0.28453563211267313,
+        "winRate1h": 0.5261437908496732,
+        "avgReturn1h": 0.005424178854726347,
+        "sharpe1h": 0.010104306790147287
+      },
+      "bias": "NEUTRAL",
+      "volatilityLevel": "HIGH"
+    },
+    "LOW_IV|NEG_GEX|BULL_LIQ": {
+      "regime": "LOW_IV|NEG_GEX|BULL_LIQ",
+      "recommendation": "MEAN_REVERSION",
+      "confidence": "HIGH",
+      "metrics": {
+        "meanReversionStrength": 0.3821237902875021,
+        "winRate1h": 0.5754716981132075,
+        "avgReturn1h": 0.07676344024897135,
+        "sharpe1h": 0.12842401242343152
+      },
+      "bias": "BULLISH",
+      "volatilityLevel": "HIGH"
+    },
+    "LOW_IV|NEG_GEX|BEAR_LIQ": {
+      "regime": "LOW_IV|NEG_GEX|BEAR_LIQ",
+      "recommendation": "MEAN_REVERSION",
+      "confidence": "HIGH",
+      "metrics": {
+        "meanReversionStrength": 0.3315397485626289,
+        "winRate1h": 0.5104166666666666,
+        "avgReturn1h": -0.014259667209922158,
+        "sharpe1h": -0.024182568638333322
+      },
+      "bias": "NEUTRAL",
+      "volatilityLevel": "HIGH"
+    }
+  },
+  "metadata": {
+    "totalRecords": 5700,
+    "regimeCount": 8,
+    "analysisDate": "2026-01-21T06:09:05.227Z"
+  }
+}
