@@ -1,5 +1,6 @@
 import { createLogger } from '../../../shared/index.js';
 import TradierClient from './tradier-client.js';
+import { isGexCalculationHours, getCurrentSession } from '../utils/session-utils.js';
 
 const logger = createLogger('options-chain-manager');
 
@@ -78,10 +79,21 @@ class OptionsChainManager {
 
   /**
    * Poll all options chains
+   * Skips polling outside GEX calculation hours (9:30 AM - 4:30 PM EST)
+   * Allows initial poll on startup to populate cache
    */
   async pollChains() {
+    // Skip polling outside GEX calculation hours, but allow initial sync if no cached data
+    const hasCachedData = this.chainCache.size > 0;
+    if (!isGexCalculationHours() && hasCachedData) {
+      const session = getCurrentSession();
+      logger.debug(`Skipping options chain poll - outside GEX hours (session: ${session})`);
+      return;
+    }
+
     const startTime = Date.now();
-    logger.info('Starting options chain poll...');
+    const isInitialSync = !hasCachedData;
+    logger.info(`Starting options chain poll...${isInitialSync ? ' (initial sync)' : ''}`);
 
     try {
       const results = await Promise.allSettled(

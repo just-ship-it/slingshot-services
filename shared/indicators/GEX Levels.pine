@@ -1,0 +1,371 @@
+//@version=6
+indicator("GEX Levels - Dual Source", overlay=true, max_lines_count=500, max_labels_count=500)
+
+// ============================================================================
+// GEX LEVELS INDICATOR - DUAL SOURCE
+// Displays Gamma Exposure levels from both CBOE and Tradier data
+// CBOE: Longer-term positioning (all expirations)
+// Tradier: Short-term positioning (0-30 DTE)
+// Paste combined CSV data from dashboard into input below
+// ============================================================================
+
+// === INPUT GROUPS ===
+g_main = "Main Levels"
+g_resist = "Resistance Levels"
+g_support = "Support Levels"
+g_magnets = "Gamma Magnets"
+g_style = "Style Settings"
+g_data = "Quick Data Entry"
+g_sources = "Data Sources"
+
+// === QUICK DATA ENTRY (paste CSV from dashboard) ===
+// Format: cboe_zero,cboe_call,cboe_put,cboe_r1,cboe_r2,cboe_r3,cboe_r4,cboe_r5,cboe_s1,cboe_s2,cboe_s3,cboe_s4,cboe_s5,tradier_zero,tradier_call,tradier_put,tradier_r1,tradier_r2,tradier_r3,tradier_r4,tradier_r5,tradier_s1,tradier_s2,tradier_s3,tradier_s4,tradier_s5
+i_csvData = input.string("", "Paste Combined CSV Data", group=g_data,
+     tooltip="Paste the combined CSV from dashboard. Format: cboe_zero,cboe_call,cboe_put,cboe_r1-5,cboe_s1-5,tradier_zero,tradier_call,tradier_put,tradier_r1-5,tradier_s1-5")
+i_useCSV = input.bool(false, "Use CSV Data (overrides manual inputs)", group=g_data)
+i_legacyMode = input.bool(false, "Legacy Mode (13 values)", group=g_data, tooltip="Use old 13-value format for backward compatibility")
+
+// === DATA SOURCE SETTINGS ===
+i_showCBOE = input.bool(true, "Show CBOE Levels (Long-term)", group=g_sources, tooltip="CBOE data represents longer-term positioning across all expirations")
+i_showTradier = input.bool(true, "Show Tradier Levels (0-30 DTE)", group=g_sources, tooltip="Tradier data represents short-term positioning (0-30 DTE)")
+i_consolidateOverlaps = input.bool(true, "Consolidate Overlapping Levels", group=g_sources, tooltip="When levels are very close, draw single line with combined label")
+
+// === MAIN LEVELS ===
+i_zeroGamma = input.float(0, "Zero Gamma (Flip Level)", group=g_main, tooltip="Level where dealer gamma flips from positive to negative")
+i_callWall = input.float(0, "Call Wall", group=g_main, tooltip="Strike with highest call open interest - acts as resistance")
+i_putWall = input.float(0, "Put Wall", group=g_main, tooltip="Strike with highest put open interest - acts as support")
+i_totalGamma = input.string("", "Total Gamma ($Bn)", group=g_main, tooltip="For reference only - displays in label")
+i_gammaStatus = input.string("positive", "Gamma Status", options=["positive", "negative"], group=g_main)
+
+// === RESISTANCE LEVELS ===
+i_r1 = input.float(0, "Resistance 1", group=g_resist)
+i_r2 = input.float(0, "Resistance 2", group=g_resist)
+i_r3 = input.float(0, "Resistance 3", group=g_resist)
+i_r4 = input.float(0, "Resistance 4", group=g_resist)
+i_r5 = input.float(0, "Resistance 5", group=g_resist)
+
+// === SUPPORT LEVELS ===
+i_s1 = input.float(0, "Support 1", group=g_support)
+i_s2 = input.float(0, "Support 2", group=g_support)
+i_s3 = input.float(0, "Support 3", group=g_support)
+i_s4 = input.float(0, "Support 4", group=g_support)
+i_s5 = input.float(0, "Support 5", group=g_support)
+
+// === GAMMA MAGNETS (optional) ===
+i_showMagnets = input.bool(false, "Show Gamma Magnets", group=g_magnets)
+i_m1 = input.float(0, "Magnet 1", group=g_magnets)
+i_m2 = input.float(0, "Magnet 2", group=g_magnets)
+i_m3 = input.float(0, "Magnet 3", group=g_magnets)
+
+// === STYLE SETTINGS ===
+i_showLabels = input.bool(true, "Show Labels", group=g_style)
+i_extendLines = input.string("right", "Extend Lines", options=["none", "left", "right", "both"], group=g_style)
+i_lineWidth = input.int(1, "Line Width", minval=1, maxval=4, group=g_style)
+
+// CBOE Colors (cooler tones for longer-term data)
+i_cboe_zeroGammaColor = input.color(color.orange, "CBOE Zero Gamma", group=g_style)
+i_cboe_callWallColor = input.color(color.new(color.blue, 40), "CBOE Call Wall", group=g_style)
+i_cboe_putWallColor = input.color(color.new(color.blue, 10), "CBOE Put Wall", group=g_style)
+i_cboe_resistColor = input.color(color.new(color.purple, 50), "CBOE Resistance", group=g_style)
+i_cboe_supportColor = input.color(color.new(color.teal, 20), "CBOE Support", group=g_style)
+
+// Tradier Colors (warmer tones for short-term data)
+i_tradier_zeroGammaColor = input.color(color.yellow, "Tradier Zero Gamma", group=g_style)
+i_tradier_callWallColor = input.color(color.new(color.red, 40), "Tradier Call Wall", group=g_style)
+i_tradier_putWallColor = input.color(color.new(color.green, 10), "Tradier Put Wall", group=g_style)
+i_tradier_resistColor = input.color(color.new(color.orange, 50), "Tradier Resistance", group=g_style)
+i_tradier_supportColor = input.color(color.new(color.lime, 20), "Tradier Support", group=g_style)
+
+// Legacy colors (for backward compatibility)
+i_zeroGammaColor = input.color(color.orange, "Legacy Zero Gamma", group=g_style)
+i_callWallColor = input.color(color.new(color.gray, 60), "Legacy Call Wall", group=g_style)
+i_putWallColor = input.color(color.green, "Legacy Put Wall", group=g_style)
+i_resistColor = input.color(color.new(color.gray, 60), "Legacy Resistance", group=g_style)
+i_supportColor = input.color(color.green, "Legacy Support", group=g_style)
+i_magnetColor = input.color(color.new(color.white, 70), "Magnet Color", group=g_style)
+
+// === ARRAYS TO STORE DRAWING OBJECTS ===
+var array<line> gexLines = array.new<line>()
+var array<label> gexLabels = array.new<label>()
+
+// === CSV PARSING ===
+// Legacy format variables
+var float csv_zeroGamma = na, var float csv_callWall = na, var float csv_putWall = na
+var float csv_r1 = na, var float csv_r2 = na, var float csv_r3 = na, var float csv_r4 = na, var float csv_r5 = na
+var float csv_s1 = na, var float csv_s2 = na, var float csv_s3 = na, var float csv_s4 = na, var float csv_s5 = na
+
+// CBOE data variables
+var float cboe_zeroGamma = na, var float cboe_callWall = na, var float cboe_putWall = na
+var float cboe_r1 = na, var float cboe_r2 = na, var float cboe_r3 = na, var float cboe_r4 = na, var float cboe_r5 = na
+var float cboe_s1 = na, var float cboe_s2 = na, var float cboe_s3 = na, var float cboe_s4 = na, var float cboe_s5 = na
+
+// Tradier data variables
+var float tradier_zeroGamma = na, var float tradier_callWall = na, var float tradier_putWall = na
+var float tradier_r1 = na, var float tradier_r2 = na, var float tradier_r3 = na, var float tradier_r4 = na, var float tradier_r5 = na
+var float tradier_s1 = na, var float tradier_s2 = na, var float tradier_s3 = na, var float tradier_s4 = na, var float tradier_s5 = na
+
+if barstate.isfirst and i_useCSV and str.length(i_csvData) > 0
+    parts = str.split(i_csvData, ",")
+    partsCount = array.size(parts)
+
+    if i_legacyMode and partsCount >= 13
+        // Legacy 13-value format
+        csv_zeroGamma := str.tonumber(array.get(parts, 0))
+        csv_callWall := str.tonumber(array.get(parts, 1))
+        csv_putWall := str.tonumber(array.get(parts, 2))
+        csv_r1 := str.tonumber(array.get(parts, 3))
+        csv_r2 := str.tonumber(array.get(parts, 4))
+        csv_r3 := str.tonumber(array.get(parts, 5))
+        csv_r4 := str.tonumber(array.get(parts, 6))
+        csv_r5 := str.tonumber(array.get(parts, 7))
+        csv_s1 := str.tonumber(array.get(parts, 8))
+        csv_s2 := str.tonumber(array.get(parts, 9))
+        csv_s3 := str.tonumber(array.get(parts, 10))
+        csv_s4 := str.tonumber(array.get(parts, 11))
+        csv_s5 := str.tonumber(array.get(parts, 12))
+    else if partsCount >= 26
+        // New 26-value format: CBOE (0-12), Tradier (13-25)
+        // CBOE data
+        cboe_zeroGamma := str.tonumber(array.get(parts, 0))
+        cboe_callWall := str.tonumber(array.get(parts, 1))
+        cboe_putWall := str.tonumber(array.get(parts, 2))
+        cboe_r1 := str.tonumber(array.get(parts, 3))
+        cboe_r2 := str.tonumber(array.get(parts, 4))
+        cboe_r3 := str.tonumber(array.get(parts, 5))
+        cboe_r4 := str.tonumber(array.get(parts, 6))
+        cboe_r5 := str.tonumber(array.get(parts, 7))
+        cboe_s1 := str.tonumber(array.get(parts, 8))
+        cboe_s2 := str.tonumber(array.get(parts, 9))
+        cboe_s3 := str.tonumber(array.get(parts, 10))
+        cboe_s4 := str.tonumber(array.get(parts, 11))
+        cboe_s5 := str.tonumber(array.get(parts, 12))
+
+        // Tradier data
+        tradier_zeroGamma := str.tonumber(array.get(parts, 13))
+        tradier_callWall := str.tonumber(array.get(parts, 14))
+        tradier_putWall := str.tonumber(array.get(parts, 15))
+        tradier_r1 := str.tonumber(array.get(parts, 16))
+        tradier_r2 := str.tonumber(array.get(parts, 17))
+        tradier_r3 := str.tonumber(array.get(parts, 18))
+        tradier_r4 := str.tonumber(array.get(parts, 19))
+        tradier_r5 := str.tonumber(array.get(parts, 20))
+        tradier_s1 := str.tonumber(array.get(parts, 21))
+        tradier_s2 := str.tonumber(array.get(parts, 22))
+        tradier_s3 := str.tonumber(array.get(parts, 23))
+        tradier_s4 := str.tonumber(array.get(parts, 24))
+        tradier_s5 := str.tonumber(array.get(parts, 25))
+
+// === RESOLVE VALUES (CSV or manual) ===
+float zeroGamma = i_useCSV and not na(csv_zeroGamma) ? csv_zeroGamma : i_zeroGamma
+float callWall = i_useCSV and not na(csv_callWall) ? csv_callWall : i_callWall
+float putWall = i_useCSV and not na(csv_putWall) ? csv_putWall : i_putWall
+float r1 = i_useCSV and not na(csv_r1) ? csv_r1 : i_r1
+float r2 = i_useCSV and not na(csv_r2) ? csv_r2 : i_r2
+float r3 = i_useCSV and not na(csv_r3) ? csv_r3 : i_r3
+float r4 = i_useCSV and not na(csv_r4) ? csv_r4 : i_r4
+float r5 = i_useCSV and not na(csv_r5) ? csv_r5 : i_r5
+float s1 = i_useCSV and not na(csv_s1) ? csv_s1 : i_s1
+float s2 = i_useCSV and not na(csv_s2) ? csv_s2 : i_s2
+float s3 = i_useCSV and not na(csv_s3) ? csv_s3 : i_s3
+float s4 = i_useCSV and not na(csv_s4) ? csv_s4 : i_s4
+float s5 = i_useCSV and not na(csv_s5) ? csv_s5 : i_s5
+
+// === HELPER FUNCTION: Get line extension ===
+getExtend() =>
+    switch i_extendLines
+        "none" => extend.none
+        "left" => extend.left
+        "right" => extend.right
+        "both" => extend.both
+        => extend.right
+
+// === HELPER FUNCTION: Check if two levels overlap ===
+levelsOverlap(float level1, float level2) =>
+    if na(level1) or na(level2) or level1 <= 0 or level2 <= 0
+        false
+    else
+        math.abs(level1 - level2) < 0.01
+
+// === CLEANUP FUNCTION: Remove all existing lines and labels ===
+clearAll() =>
+    if array.size(gexLines) > 0
+        for i = 0 to array.size(gexLines) - 1
+            line.delete(array.get(gexLines, i))
+        array.clear(gexLines)
+
+    if array.size(gexLabels) > 0
+        for i = 0 to array.size(gexLabels) - 1
+            label.delete(array.get(gexLabels, i))
+        array.clear(gexLabels)
+
+// === HELPER FUNCTION: Draw level ===
+drawLevel(float price, color lineColor, string labelText) =>
+    if price > 0 and not na(price)
+        // Draw line
+        newLine = line.new(bar_index - 50, price, bar_index + 10, price,
+                          xloc=xloc.bar_index, extend=getExtend(),
+                          color=lineColor, width=i_lineWidth)
+        array.push(gexLines, newLine)
+
+        // Draw label
+        if i_showLabels
+            newLabel = label.new(bar_index + 5, price, labelText,
+                               xloc=xloc.bar_index, yloc=yloc.price,
+                               color=color.new(lineColor, 80), textcolor=lineColor,
+                               style=label.style_label_left, size=size.small)
+            array.push(gexLabels, newLabel)
+
+// === Create maps to track unique levels and their labels ===
+var levelMap = map.new<float, string>()
+var colorMap = map.new<float, color>()
+
+// === Helper function to add level to map with dual source support ===
+addToMap(float price, string labelText, color levelColor, string lineStyle = "solid") =>
+    if price > 0 and not na(price)
+        existingLabel = ""
+        existingPrice = float(na)
+        foundOverlap = false
+
+        // Check for overlaps with existing levels
+        keys = map.keys(levelMap)
+        if array.size(keys) > 0
+            for i = 0 to array.size(keys) - 1
+                key = array.get(keys, i)
+                if levelsOverlap(price, key)
+                    existingLabel := map.get(levelMap, key)
+                    existingPrice := key
+                    foundOverlap := true
+                    break
+
+        if foundOverlap and i_consolidateOverlaps
+            // Average the prices and combine labels
+            avgPrice = (price + existingPrice) / 2
+            newLabel = ""
+            if str.contains(existingLabel, "/")
+                // Already a combined label, add to it
+                newLabel := existingLabel + "/" + labelText
+            else
+                // First combination
+                newLabel := existingLabel + "/" + labelText
+
+            // Save existing color BEFORE removing from maps
+            existingColor = map.get(colorMap, existingPrice)
+
+            // Remove old entry and add new averaged one
+            map.remove(levelMap, existingPrice)
+            map.remove(colorMap, existingPrice)
+            map.put(levelMap, avgPrice, newLabel)
+            if str.contains(labelText, "Zero") or str.contains(existingLabel, "Zero")
+                map.put(colorMap, avgPrice, str.contains(labelText, "Zero") ? levelColor : existingColor)
+            else if str.contains(labelText, "Put") or str.contains(existingLabel, "Put")
+                if not (str.contains(labelText, "Zero") or str.contains(existingLabel, "Zero"))
+                    map.put(colorMap, avgPrice, str.contains(labelText, "Put") ? levelColor : existingColor)
+            else
+                map.put(colorMap, avgPrice, levelColor)
+        else
+            // Add new level
+            map.put(levelMap, price, labelText)
+            map.put(colorMap, price, levelColor)
+
+// === DRAW LEVELS (only on last bar to avoid duplicates) ===
+if barstate.islast
+    // Clear previous drawings first
+    clearAll()
+
+    // Clear maps for fresh start
+    map.clear(levelMap)
+    map.clear(colorMap)
+
+    // Determine which data to use based on mode
+    if i_legacyMode and i_useCSV
+        // Legacy mode - use original logic
+        addToMap(zeroGamma, "Zero Gamma", i_zeroGammaColor)
+        addToMap(putWall, "Put Wall", i_putWallColor)
+        addToMap(callWall, "Call Wall", i_callWallColor)
+        addToMap(r1, "R1", color.new(i_resistColor, 30))
+        addToMap(r2, "R2", color.new(i_resistColor, 30))
+        addToMap(r3, "R3", color.new(i_resistColor, 30))
+        addToMap(r4, "R4", color.new(i_resistColor, 30))
+        addToMap(r5, "R5", color.new(i_resistColor, 30))
+        addToMap(s1, "S1", color.new(i_supportColor, 30))
+        addToMap(s2, "S2", color.new(i_supportColor, 30))
+        addToMap(s3, "S3", color.new(i_supportColor, 30))
+        addToMap(s4, "S4", color.new(i_supportColor, 30))
+        addToMap(s5, "S5", color.new(i_supportColor, 30))
+    else if i_useCSV
+        // Dual source mode
+        // Add CBOE levels (longer-term positioning)
+        if i_showCBOE
+            addToMap(cboe_zeroGamma, "CBOE-Zero", i_cboe_zeroGammaColor, "solid")
+            addToMap(cboe_putWall, "CBOE-Put", i_cboe_putWallColor, "solid")
+            addToMap(cboe_callWall, "CBOE-Call", i_cboe_callWallColor, "solid")
+            addToMap(cboe_r1, "CBOE-R1", i_cboe_resistColor, "solid")
+            addToMap(cboe_r2, "CBOE-R2", i_cboe_resistColor, "solid")
+            addToMap(cboe_r3, "CBOE-R3", i_cboe_resistColor, "solid")
+            addToMap(cboe_r4, "CBOE-R4", i_cboe_resistColor, "solid")
+            addToMap(cboe_r5, "CBOE-R5", i_cboe_resistColor, "solid")
+            addToMap(cboe_s1, "CBOE-S1", i_cboe_supportColor, "solid")
+            addToMap(cboe_s2, "CBOE-S2", i_cboe_supportColor, "solid")
+            addToMap(cboe_s3, "CBOE-S3", i_cboe_supportColor, "solid")
+            addToMap(cboe_s4, "CBOE-S4", i_cboe_supportColor, "solid")
+            addToMap(cboe_s5, "CBOE-S5", i_cboe_supportColor, "solid")
+
+        // Add Tradier levels (0-30 DTE positioning)
+        if i_showTradier
+            addToMap(tradier_zeroGamma, "TR-Zero", i_tradier_zeroGammaColor, "dashed")
+            addToMap(tradier_putWall, "TR-Put", i_tradier_putWallColor, "dashed")
+            addToMap(tradier_callWall, "TR-Call", i_tradier_callWallColor, "dashed")
+            addToMap(tradier_r1, "TR-R1", i_tradier_resistColor, "dashed")
+            addToMap(tradier_r2, "TR-R2", i_tradier_resistColor, "dashed")
+            addToMap(tradier_r3, "TR-R3", i_tradier_resistColor, "dashed")
+            addToMap(tradier_r4, "TR-R4", i_tradier_resistColor, "dashed")
+            addToMap(tradier_r5, "TR-R5", i_tradier_resistColor, "dashed")
+            addToMap(tradier_s1, "TR-S1", i_tradier_supportColor, "dashed")
+            addToMap(tradier_s2, "TR-S2", i_tradier_supportColor, "dashed")
+            addToMap(tradier_s3, "TR-S3", i_tradier_supportColor, "dashed")
+            addToMap(tradier_s4, "TR-S4", i_tradier_supportColor, "dashed")
+            addToMap(tradier_s5, "TR-S5", i_tradier_supportColor, "dashed")
+    else
+        // Manual input mode - use manual inputs with legacy colors
+        addToMap(i_zeroGamma, "Zero Gamma", i_zeroGammaColor)
+        addToMap(i_putWall, "Put Wall", i_putWallColor)
+        addToMap(i_callWall, "Call Wall", i_callWallColor)
+        addToMap(i_r1, "R1", color.new(i_resistColor, 30))
+        addToMap(i_r2, "R2", color.new(i_resistColor, 30))
+        addToMap(i_r3, "R3", color.new(i_resistColor, 30))
+        addToMap(i_r4, "R4", color.new(i_resistColor, 30))
+        addToMap(i_r5, "R5", color.new(i_resistColor, 30))
+        addToMap(i_s1, "S1", color.new(i_supportColor, 30))
+        addToMap(i_s2, "S2", color.new(i_supportColor, 30))
+        addToMap(i_s3, "S3", color.new(i_supportColor, 30))
+        addToMap(i_s4, "S4", color.new(i_supportColor, 30))
+        addToMap(i_s5, "S5", color.new(i_supportColor, 30))
+
+    // Add gamma magnets if enabled
+    if i_showMagnets
+        addToMap(i_m1, "Mag", color.new(i_magnetColor, 50))
+        addToMap(i_m2, "Mag", color.new(i_magnetColor, 50))
+        addToMap(i_m3, "Mag", color.new(i_magnetColor, 50))
+
+    // Draw unique levels from the map
+    uniqueLevels = map.keys(levelMap)
+    for i = 0 to array.size(uniqueLevels) - 1
+        price = array.get(uniqueLevels, i)
+        label = map.get(levelMap, price)
+        levelColor = map.get(colorMap, price)
+        drawLevel(price, levelColor, label)
+
+// === PLOT VALUES FOR PRICE SCALE ===
+plot(zeroGamma > 0 ? zeroGamma : na, "Zero Gamma", color=color.new(i_zeroGammaColor, 90), linewidth=1, display=display.price_scale)
+plot(callWall > 0 ? callWall : na, "Call Wall", color=color.new(i_callWallColor, 90), linewidth=1, display=display.price_scale)
+plot(putWall > 0 ? putWall : na, "Put Wall", color=color.new(i_putWallColor, 90), linewidth=1, display=display.price_scale)
+plot(r1 > 0 ? r1 : na, "R1", color=color.new(i_resistColor, 90), linewidth=1, display=display.price_scale)
+plot(r2 > 0 ? r2 : na, "R2", color=color.new(i_resistColor, 90), linewidth=1, display=display.price_scale)
+plot(r3 > 0 ? r3 : na, "R3", color=color.new(i_resistColor, 90), linewidth=1, display=display.price_scale)
+plot(r4 > 0 ? r4 : na, "R4", color=color.new(i_resistColor, 90), linewidth=1, display=display.price_scale)
+plot(r5 > 0 ? r5 : na, "R5", color=color.new(i_resistColor, 90), linewidth=1, display=display.price_scale)
+plot(s1 > 0 ? s1 : na, "S1", color=color.new(i_supportColor, 90), linewidth=1, display=display.price_scale)
+plot(s2 > 0 ? s2 : na, "S2", color=color.new(i_supportColor, 90), linewidth=1, display=display.price_scale)
+plot(s3 > 0 ? s3 : na, "S3", color=color.new(i_supportColor, 90), linewidth=1, display=display.price_scale)
+plot(s4 > 0 ? s4 : na, "S4", color=color.new(i_supportColor, 90), linewidth=1, display=display.price_scale)
+plot(s5 > 0 ? s5 : na, "S5", color=color.new(i_supportColor, 90), linewidth=1, display=display.price_scale)

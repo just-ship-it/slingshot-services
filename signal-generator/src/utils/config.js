@@ -89,6 +89,14 @@ const config = {
   GF_EARLY_EXIT_ENABLED: process.env.GF_EARLY_EXIT_ENABLED?.toLowerCase() === 'true',
   GF_BREAKEVEN_THRESHOLD: parseInt(process.env.GF_BREAKEVEN_THRESHOLD || '2'), // Consecutive adverse moves to trigger breakeven
 
+  // Time-Based Trailing Stop Configuration
+  // Progressive trailing stops that tighten based on bars held and MFE (Maximum Favorable Excursion)
+  // Rules format: "bars,mfe,action" where action is "breakeven" or "trail:N"
+  // Example: "20,35,trail:20" means after 20 bars, if MFE >= 35 pts, trail 20 pts behind peak
+  // Multiple rules separated by pipe: "20,35,trail:20|35,50,trail:10"
+  TIME_BASED_TRAILING_ENABLED: process.env.TIME_BASED_TRAILING_ENABLED?.toLowerCase() === 'true',
+  TIME_BASED_TRAILING_RULES: process.env.TIME_BASED_TRAILING_RULES || '20,35,trail:20|35,50,trail:10',
+
   // Service Configuration
   HTTP_PORT: parseInt(process.env.HTTP_PORT || '3015'),
   LOG_LEVEL: process.env.LOG_LEVEL || 'INFO',

@@ -5,6 +5,7 @@ import ExposureCalculator from './exposure-calculator.js';
 import FuturesConverter from './futures-converter.js';
 import IVSkewCalculator from './iv-skew-calculator.js';
 import config from '../utils/config.js';
+import { isGexCalculationHours, getCurrentSession } from '../utils/session-utils.js';
 
 const logger = createLogger('tradier-exposure-service');
 
@@ -269,8 +270,18 @@ class TradierExposureService {
 
   /**
    * Calculate exposures for all symbols
+   * Skips calculations outside GEX calculation hours (9:30 AM - 4:30 PM EST)
+   * Allows initial calculation on startup to populate cache
    */
   async calculateExposures(force = false) {
+    // Skip calculations outside GEX hours, but allow initial sync if no cached data
+    const hasCachedData = this.currentExposures !== null;
+    if (!isGexCalculationHours() && hasCachedData) {
+      const session = getCurrentSession();
+      logger.debug(`Skipping exposure calculation - outside GEX hours (session: ${session})`);
+      return this.currentExposures;
+    }
+
     if (this.isCalculating && !force) {
       logger.debug('Exposure calculation already in progress');
       return this.currentExposures;
@@ -278,9 +289,10 @@ class TradierExposureService {
 
     this.isCalculating = true;
     const startTime = Date.now();
+    const isInitialSync = !hasCachedData;
 
     try {
-      logger.info('Calculating exposures...');
+      logger.info(`Calculating exposures...${isInitialSync ? ' (initial sync)' : ''}`);
 
       // Get latest chains data
       const chainsData = this.chainManager.getAllCachedChains();

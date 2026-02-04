@@ -2,7 +2,7 @@
 import { createLogger } from '../../../shared/index.js';
 import GexCalculator from './gex-calculator.js';
 import TradierExposureService from '../tradier/tradier-exposure-service.js';
-import { isOptionsRTH, isOptionsRTHCached, getCurrentSession, tradierMarketClock } from '../utils/session-utils.js';
+import { isOptionsRTH, isOptionsRTHCached, getCurrentSession, tradierMarketClock, isGexCalculationHoursAsync, isGexCalculationHours } from '../utils/session-utils.js';
 
 const logger = createLogger('hybrid-gex-calculator');
 
@@ -157,26 +157,29 @@ class HybridGexCalculator {
   /**
    * Refresh Tradier data
    * Skips refresh during off-hours (including holidays) since options data doesn't change
-   * Uses Tradier market clock API for holiday awareness
+   * Uses GEX calculation hours (9:30 AM - 4:30 PM EST) for holiday awareness
+   * Allows initial refresh on startup to populate cache
    */
   async refreshTradierData() {
     if (!this.options.tradierEnabled || !this.tradierService) {
       return null;
     }
 
-    // Use Tradier-aware RTH check (handles holidays)
-    const inRTH = await isOptionsRTH();
+    // Use GEX calculation hours check (9:30 AM - 4:30 PM EST, handles holidays)
+    const inGexHours = await isGexCalculationHoursAsync();
     const session = getCurrentSession();
     const marketDesc = tradierMarketClock.getDescription();
+    const hasCachedData = this.rthCache.levels !== null;
 
-    // Skip refresh during off-hours (or holidays) - options data is static
-    if (!inRTH) {
+    // Skip refresh during off-hours (or holidays) - but allow initial sync
+    if (!inGexHours && hasCachedData) {
       const reason = marketDesc || session;
-      if (this.rthCache.levels) {
-        logger.debug(`Options market closed (${reason}) - skipping Tradier refresh, using cached levels from ${this.rthCache.timestamp}`);
-        return this.currentData.tradier.data;
-      }
-      logger.debug(`Options market closed (${reason}) - no cached levels available, will attempt refresh`);
+      logger.debug(`Outside GEX hours (${reason}) - skipping Tradier refresh, using cached levels from ${this.rthCache.timestamp}`);
+      return this.currentData.tradier.data;
+    }
+
+    if (!inGexHours && !hasCachedData) {
+      logger.info('Outside GEX hours but no cached levels - performing initial sync');
     }
 
     try {
@@ -193,15 +196,15 @@ class HybridGexCalculator {
           dataTimestamp: exposures.timestamp
         };
 
-        // Cache levels during RTH for use during off-hours
-        if (inRTH) {
+        // Cache levels during GEX hours for use during off-hours
+        if (inGexHours) {
           this.cacheRTHLevels(tradierData, 'tradier');
         }
 
         // Update CBOE's fallback ratio from Tradier
         this.updateCBOEFallbackRatio();
 
-        logger.debug('Tradier GEX data refreshed successfully' + (inRTH ? ' (RTH - cached)' : ''));
+        logger.debug('Tradier GEX data refreshed successfully' + (inGexHours ? ' (GEX hours - cached)' : ''));
         this.updateHybridData();
         return tradierData;
       }
@@ -216,26 +219,29 @@ class HybridGexCalculator {
   /**
    * Refresh CBOE data
    * Skips refresh during off-hours (including holidays) since options data doesn't change
-   * Uses Tradier market clock API for holiday awareness
+   * Uses GEX calculation hours (9:30 AM - 4:30 PM EST) for holiday awareness
+   * Allows initial refresh on startup to populate cache
    */
   async refreshCBOEData() {
     if (!this.options.cboeEnabled) {
       return null;
     }
 
-    // Use Tradier-aware RTH check (handles holidays)
-    const inRTH = await isOptionsRTH();
+    // Use GEX calculation hours check (9:30 AM - 4:30 PM EST, handles holidays)
+    const inGexHours = await isGexCalculationHoursAsync();
     const session = getCurrentSession();
     const marketDesc = tradierMarketClock.getDescription();
+    const hasCachedData = this.rthCache.levels !== null;
 
-    // Skip refresh during off-hours (or holidays) - options data is static
-    if (!inRTH) {
+    // Skip refresh during off-hours (or holidays) - but allow initial sync
+    if (!inGexHours && hasCachedData) {
       const reason = marketDesc || session;
-      if (this.rthCache.levels) {
-        logger.debug(`Options market closed (${reason}) - skipping CBOE refresh, using cached levels from ${this.rthCache.timestamp}`);
-        return this.currentData.cboe.data;
-      }
-      logger.debug(`Options market closed (${reason}) - no cached levels available, will attempt refresh`);
+      logger.debug(`Outside GEX hours (${reason}) - skipping CBOE refresh, using cached levels from ${this.rthCache.timestamp}`);
+      return this.currentData.cboe.data;
+    }
+
+    if (!inGexHours && !hasCachedData) {
+      logger.info('Outside GEX hours but no cached levels - performing initial CBOE sync');
     }
 
     try {
@@ -250,12 +256,12 @@ class HybridGexCalculator {
           dataTimestamp: cboeData.timestamp
         };
 
-        // Cache levels during RTH for use during off-hours
-        if (inRTH) {
+        // Cache levels during GEX hours for use during off-hours
+        if (inGexHours) {
           this.cacheRTHLevels(cboeData, 'cboe');
         }
 
-        logger.debug('CBOE GEX data refreshed successfully' + (inRTH ? ' (RTH - cached)' : ''));
+        logger.debug('CBOE GEX data refreshed successfully' + (inGexHours ? ' (GEX hours - cached)' : ''));
         this.updateHybridData();
         return cboeData;
       }

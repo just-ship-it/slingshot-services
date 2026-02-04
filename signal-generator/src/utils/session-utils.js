@@ -306,6 +306,60 @@ export function getTimeUntilRTH(date = new Date()) {
 }
 
 /**
+ * Check if the current time is within GEX calculation hours
+ * GEX calculations should run from 9:30 AM to 4:30 PM EST
+ * (Options close at 4:15 PM + 15 min CBOE delay = 4:30 PM cutoff)
+ *
+ * @param {Date} date - Optional date to check (defaults to now)
+ * @returns {boolean} - True if within GEX calculation hours
+ */
+export function isGexCalculationHours(date = new Date()) {
+  // Convert to EST/EDT (America/New_York handles DST automatically)
+  const estString = date.toLocaleString('en-US', { timeZone: 'America/New_York' });
+  const est = new Date(estString);
+
+  const day = est.getDay(); // 0=Sun, 6=Sat
+  const hour = est.getHours();
+  const min = est.getMinutes();
+  const timeDecimal = hour + min / 60;
+
+  // GEX calculation hours: Mon-Fri, 9:30 AM (9.5) - 4:30 PM (16.5) EST
+  const isWeekday = day >= 1 && day <= 5;
+  const isGexTime = timeDecimal >= 9.5 && timeDecimal < 16.5;
+
+  return isWeekday && isGexTime;
+}
+
+/**
+ * Holiday-aware GEX calculation hours check
+ * Uses Tradier market clock for holiday awareness, extends RTH by 30 min for CBOE delay
+ *
+ * @returns {Promise<boolean>} - True if GEX calculations should run
+ */
+export async function isGexCalculationHoursAsync() {
+  // First check Tradier market clock for holiday awareness
+  const tradierState = await tradierMarketClock.getMarketState();
+
+  if (tradierState !== null) {
+    // During market hours ('open'), always calculate
+    if (tradierState === 'open') {
+      return true;
+    }
+
+    // During 'postmarket' state, check if we're within the 30-min CBOE delay window
+    if (tradierState === 'postmarket') {
+      return isGexCalculationHours();
+    }
+
+    // Other states (premarket, closed) - no GEX calculations
+    return false;
+  }
+
+  // Fallback to time-based check if Tradier unavailable
+  return isGexCalculationHours();
+}
+
+/**
  * Holiday-aware RTH check using Tradier market clock
  * This is the preferred method for determining if options are trading
  *
@@ -356,5 +410,7 @@ export default {
   getTimeUntilRTH,
   isOptionsRTH,
   isOptionsRTHCached,
+  isGexCalculationHours,
+  isGexCalculationHoursAsync,
   tradierMarketClock
 };
