@@ -49,6 +49,10 @@ class StrategyEngine {
     this.inPosition = false;
     this.currentPosition = null; // { symbol, side, entryPrice, entryTime, strategy }
 
+    // Position reconciliation tracking
+    this.reconciliationConfirmed = false; // Log confirmation once after first successful check
+    this.lastInPositionLogTime = 0; // Rate-limit the "skipping evaluation" info log
+
     // GF (Zero Gamma) Early Exit configuration
     // Matches backtest behavior: check every 15 minutes, trigger breakeven after 2+ consecutive adverse moves
     this.gfEarlyExitConfig = {
@@ -60,6 +64,16 @@ class StrategyEngine {
     // GF tracking state (initialized when position opens)
     this.gfTrackingState = null;
 
+    // Time-Based Trailing Stop configuration
+    // Progressive trailing that tightens based on bars held and MFE
+    this.timeBasedTrailingConfig = {
+      enabled: config.TIME_BASED_TRAILING_ENABLED ?? false,
+      rules: this.parseTimeBasedTrailingRules(config.TIME_BASED_TRAILING_RULES || '')
+    };
+
+    // Time-based trailing state (initialized when position opens)
+    this.timeBasedTrailingState = null;
+
     // Subscribe to order and position events
     this.subscribeToOrderEvents();
     this.subscribeToPositionEvents();
@@ -67,6 +81,68 @@ class StrategyEngine {
     if (this.gfEarlyExitConfig.enabled) {
       logger.info(`🛡️ GF Early Exit enabled: breakeven after ${this.gfEarlyExitConfig.breakevenThreshold} consecutive adverse moves (15-min intervals)`);
     }
+
+    if (this.timeBasedTrailingConfig.enabled) {
+      logger.info(`⏱️ Time-Based Trailing enabled with ${this.timeBasedTrailingConfig.rules.length} rules:`);
+      this.timeBasedTrailingConfig.rules.forEach((rule, i) => {
+        const actionStr = rule.action === 'breakeven' ? 'breakeven' : `trail:${rule.trailDistance}`;
+        logger.info(`   Rule ${i + 1}: After ${rule.afterBars} bars, if MFE >= ${rule.ifMFE} pts → ${actionStr}`);
+      });
+    }
+  }
+
+  /**
+   * Parse time-based trailing rules from config string
+   * Format: "bars,mfe,action|bars,mfe,action" where action is "breakeven" or "trail:N"
+   * Example: "20,35,trail:20|35,50,trail:10"
+   * @param {string} rulesStr - Rules configuration string
+   * @returns {Array} Parsed rules array
+   */
+  parseTimeBasedTrailingRules(rulesStr) {
+    if (!rulesStr || rulesStr.trim() === '') return [];
+
+    const rules = [];
+    const ruleParts = rulesStr.split('|');
+
+    for (const part of ruleParts) {
+      const [barsStr, mfeStr, actionStr] = part.split(',').map(s => s.trim());
+
+      if (!barsStr || !mfeStr || !actionStr) {
+        logger.warn(`Invalid time-based trailing rule: "${part}" - skipping`);
+        continue;
+      }
+
+      const afterBars = parseInt(barsStr, 10);
+      const ifMFE = parseFloat(mfeStr);
+
+      if (isNaN(afterBars) || isNaN(ifMFE)) {
+        logger.warn(`Invalid numeric values in rule: "${part}" - skipping`);
+        continue;
+      }
+
+      let action, trailDistance;
+      if (actionStr === 'breakeven') {
+        action = 'breakeven';
+        trailDistance = 0;
+      } else if (actionStr.startsWith('trail:')) {
+        action = 'trail';
+        trailDistance = parseFloat(actionStr.substring(6));
+        if (isNaN(trailDistance)) {
+          logger.warn(`Invalid trail distance in rule: "${part}" - skipping`);
+          continue;
+        }
+      } else {
+        logger.warn(`Unknown action in rule: "${part}" - skipping`);
+        continue;
+      }
+
+      rules.push({ afterBars, ifMFE, action, trailDistance });
+    }
+
+    // Sort rules by afterBars ascending so we apply them in order
+    rules.sort((a, b) => a.afterBars - b.afterBars);
+
+    return rules;
   }
 
   /**
@@ -126,6 +202,65 @@ class StrategyEngine {
           logger.warn('⚠️ Continuing without position sync - may generate duplicate signals if position exists');
         }
       }
+    }
+  }
+
+  /**
+   * Periodically reconcile internal position state against Tradovate
+   * Catches stale state from missed WebSocket events (e.g., disconnects during fills)
+   */
+  async reconcilePositionState() {
+    const accountId = config.TRADOVATE_ACCOUNT_ID;
+    if (!accountId) {
+      return; // No account configured, skip
+    }
+
+    try {
+      const response = await fetch(`http://localhost:3011/positions/${accountId}`);
+      if (!response.ok) {
+        logger.debug(`[RECONCILE] Failed to fetch positions: ${response.status}`);
+        return;
+      }
+
+      const positions = await response.json();
+      const openPosition = positions.find(p => p.netPos !== 0);
+
+      if (this.inPosition && !openPosition) {
+        // STALE: We think we're in a position but Tradovate says flat
+        logger.warn(`[RECONCILE] Stale position detected! Internal state: ${this.currentPosition?.side} ${this.currentPosition?.symbol} @ ${this.currentPosition?.entryPrice} — Tradovate: flat. Resetting.`);
+        this.inPosition = false;
+        this.currentPosition = null;
+        this.gfTrackingState = null;
+        this.timeBasedTrailingState = null;
+        this.strategy.lastSignalTime = 0;
+        this.reconciliationConfirmed = false;
+        logger.warn('[RECONCILE] Position state reset — strategy ready for next signal');
+
+      } else if (!this.inPosition && openPosition) {
+        // MISSED OPEN: Tradovate has a position we don't know about
+        this.inPosition = true;
+        this.currentPosition = {
+          symbol: openPosition.symbol || `Contract ${openPosition.contractId}`,
+          side: openPosition.netPos > 0 ? 'long' : 'short',
+          entryPrice: openPosition.netPrice || 0,
+          entryTime: openPosition.timestamp || new Date().toISOString(),
+          strategy: this.strategyConstant,
+          quantity: Math.abs(openPosition.netPos)
+        };
+        this.reconciliationConfirmed = false;
+        logger.warn(`[RECONCILE] Missed position open detected! Now tracking: ${this.currentPosition.side} ${this.currentPosition.symbol} @ ${this.currentPosition.entryPrice} (qty: ${this.currentPosition.quantity})`);
+
+      } else if (!this.reconciliationConfirmed) {
+        // States match — log once on first successful check
+        const stateDesc = this.inPosition
+          ? `in position (${this.currentPosition?.side} ${this.currentPosition?.symbol})`
+          : 'flat';
+        logger.info(`[RECONCILE] Position state confirmed: ${stateDesc}`);
+        this.reconciliationConfirmed = true;
+      }
+
+    } catch (error) {
+      logger.debug(`[RECONCILE] Check skipped (fetch error): ${error.message}`);
     }
   }
 
@@ -210,6 +345,11 @@ class StrategyEngine {
     if (this.gfEarlyExitConfig.enabled) {
       this.initializeGFTracking();
     }
+
+    // Initialize time-based trailing state
+    if (this.timeBasedTrailingConfig.enabled) {
+      this.initializeTimeBasedTrailing();
+    }
   }
 
   /**
@@ -233,6 +373,9 @@ class StrategyEngine {
 
     // Reset GF tracking state
     this.gfTrackingState = null;
+
+    // Reset time-based trailing state
+    this.timeBasedTrailingState = null;
 
     // Reset strategy cooldown so we're immediately ready for next signal
     this.strategy.lastSignalTime = 0;
@@ -365,6 +508,194 @@ class StrategyEngine {
       logger.info(`🛡️ [GF-EXIT] Breakeven stop modification sent: ${this.currentPosition.symbol} stop → ${this.currentPosition.entryPrice}`);
     } catch (error) {
       logger.error('Failed to send breakeven stop modification:', error);
+    }
+  }
+
+  /**
+   * Initialize time-based trailing state when a position is opened
+   * Tracks MFE (Maximum Favorable Excursion), bars in trade, and current stop level
+   */
+  initializeTimeBasedTrailing() {
+    if (!this.currentPosition) {
+      logger.warn('Cannot initialize time-based trailing - no current position');
+      return;
+    }
+
+    this.timeBasedTrailingState = {
+      entryPrice: this.currentPosition.entryPrice,
+      barsInTrade: 0,
+      mfe: 0,                    // Maximum Favorable Excursion in points
+      peakPrice: this.currentPosition.entryPrice,  // High water mark price
+      currentStopPrice: null,   // Will be set when first rule triggers
+      activeRuleIndex: -1,      // Index of the most recently applied rule
+      lastModificationBar: -1,  // Bar when stop was last modified (prevent spam)
+      rulesTriggered: []        // Track which rules have been triggered
+    };
+
+    logger.info(`⏱️ [TB-TRAIL] Initialized: entry @ ${this.currentPosition.entryPrice}, ${this.timeBasedTrailingConfig.rules.length} rules active`);
+  }
+
+  /**
+   * Update time-based trailing on each candle
+   * Called when a new 1-minute candle closes while in position
+   * @param {Object} candle - The closed candle with OHLC data
+   */
+  updateTimeBasedTrailing(candle) {
+    if (!this.timeBasedTrailingConfig.enabled || !this.inPosition || !this.timeBasedTrailingState) {
+      return;
+    }
+
+    const state = this.timeBasedTrailingState;
+    const isLong = this.currentPosition.side === 'long' || this.currentPosition.side === 'buy';
+    const entryPrice = state.entryPrice;
+
+    // Increment bars in trade
+    state.barsInTrade++;
+
+    // Update peak price and MFE
+    if (isLong) {
+      if (candle.high > state.peakPrice) {
+        state.peakPrice = candle.high;
+        state.mfe = state.peakPrice - entryPrice;
+      }
+    } else {
+      // For shorts, peak is the lowest price (most favorable)
+      if (candle.low < state.peakPrice) {
+        state.peakPrice = candle.low;
+        state.mfe = entryPrice - state.peakPrice;
+      }
+    }
+
+    // Log status every 5 bars
+    if (state.barsInTrade % 5 === 0) {
+      logger.info(`⏱️ [TB-TRAIL] Bar ${state.barsInTrade}: MFE=${state.mfe.toFixed(1)} pts, Peak=${state.peakPrice.toFixed(2)}, Current=${candle.close.toFixed(2)}`);
+    }
+
+    // Check rules in order (they're sorted by afterBars)
+    this.checkTimeBasedTrailingRules(candle);
+  }
+
+  /**
+   * Check time-based trailing rules and apply if conditions are met
+   * @param {Object} candle - Current candle data
+   */
+  checkTimeBasedTrailingRules(candle) {
+    const state = this.timeBasedTrailingState;
+    const rules = this.timeBasedTrailingConfig.rules;
+    const isLong = this.currentPosition.side === 'long' || this.currentPosition.side === 'buy';
+
+    for (let i = 0; i < rules.length; i++) {
+      const rule = rules[i];
+
+      // Skip if already triggered this rule
+      if (state.rulesTriggered.includes(i)) {
+        continue;
+      }
+
+      // Check if rule conditions are met
+      if (state.barsInTrade >= rule.afterBars && state.mfe >= rule.ifMFE) {
+        // Calculate new stop price based on rule action
+        let newStopPrice;
+
+        if (rule.action === 'breakeven') {
+          newStopPrice = state.entryPrice;
+        } else {
+          // Trail: stop is trailDistance behind peak
+          if (isLong) {
+            newStopPrice = state.peakPrice - rule.trailDistance;
+          } else {
+            newStopPrice = state.peakPrice + rule.trailDistance;
+          }
+        }
+
+        // Only modify if new stop is better (tighter) than current
+        const shouldUpdate = this.shouldUpdateStop(newStopPrice, isLong);
+
+        if (shouldUpdate) {
+          logger.info(`⏱️ [TB-TRAIL] Rule ${i + 1} triggered: bars=${state.barsInTrade} >= ${rule.afterBars}, MFE=${state.mfe.toFixed(1)} >= ${rule.ifMFE}`);
+          logger.info(`⏱️ [TB-TRAIL] Moving stop: ${state.currentStopPrice?.toFixed(2) || 'initial'} → ${newStopPrice.toFixed(2)} (${rule.action === 'breakeven' ? 'breakeven' : `trail:${rule.trailDistance}`})`);
+
+          // Mark rule as triggered
+          state.rulesTriggered.push(i);
+          state.activeRuleIndex = i;
+          state.lastModificationBar = state.barsInTrade;
+
+          // Send the stop modification
+          this.sendTimeBasedTrailingModification(newStopPrice, rule, i);
+        }
+      }
+    }
+  }
+
+  /**
+   * Check if new stop price is better (tighter) than current
+   * @param {number} newStopPrice - Proposed new stop price
+   * @param {boolean} isLong - True if long position
+   * @returns {boolean} True if stop should be updated
+   */
+  shouldUpdateStop(newStopPrice, isLong) {
+    const state = this.timeBasedTrailingState;
+
+    // Always update if no stop has been set yet
+    if (state.currentStopPrice === null) {
+      return true;
+    }
+
+    // For longs, higher stop is better (tighter)
+    // For shorts, lower stop is better (tighter)
+    if (isLong) {
+      return newStopPrice > state.currentStopPrice;
+    } else {
+      return newStopPrice < state.currentStopPrice;
+    }
+  }
+
+  /**
+   * Send modify_stop signal for time-based trailing
+   * @param {number} newStopPrice - New stop price
+   * @param {Object} rule - The rule that triggered this modification
+   * @param {number} ruleIndex - Index of the rule
+   */
+  async sendTimeBasedTrailingModification(newStopPrice, rule, ruleIndex) {
+    if (!this.currentPosition) {
+      logger.warn('Cannot send time-based trailing modification - no current position');
+      return;
+    }
+
+    const state = this.timeBasedTrailingState;
+    const actionStr = rule.action === 'breakeven' ? 'breakeven' : `trail:${rule.trailDistance}`;
+
+    const modifyStopSignal = {
+      webhook_type: 'trade_signal',
+      action: 'modify_stop',
+      strategy: this.currentPosition.strategy,
+      symbol: this.currentPosition.symbol,
+      new_stop_price: newStopPrice,
+      reason: `time_based_trailing_rule_${ruleIndex + 1}`,
+      order_strategy_id: this.currentPosition.orderStrategyId,
+      order_id: this.currentPosition.stopOrderId,
+      metadata: {
+        entryPrice: state.entryPrice,
+        barsInTrade: state.barsInTrade,
+        mfe: state.mfe,
+        peakPrice: state.peakPrice,
+        ruleIndex: ruleIndex,
+        ruleCondition: `bars>=${rule.afterBars}, MFE>=${rule.ifMFE}`,
+        ruleAction: actionStr,
+        previousStop: state.currentStopPrice
+      },
+      timestamp: new Date().toISOString()
+    };
+
+    try {
+      await messageBus.publish(CHANNELS.TRADE_SIGNAL, modifyStopSignal);
+
+      // Update state with new stop price
+      state.currentStopPrice = newStopPrice;
+
+      logger.info(`⏱️ [TB-TRAIL] Stop modification sent: ${this.currentPosition.symbol} stop → ${newStopPrice.toFixed(2)} (Rule ${ruleIndex + 1}: ${actionStr})`);
+    } catch (error) {
+      logger.error('Failed to send time-based trailing stop modification:', error);
     }
   }
 
@@ -514,9 +845,17 @@ class StrategyEngine {
       return;
     }
 
-    // Skip if already in a position - wait for position to close
+    // If in position, update time-based trailing but skip new signal evaluation
     if (this.inPosition) {
-      logger.info(`⏸️ Skipping evaluation - already in position (${this.currentPosition?.side} ${this.currentPosition?.symbol})`);
+      // Update time-based trailing on each candle close
+      if (this.timeBasedTrailingConfig.enabled && this.timeBasedTrailingState) {
+        this.updateTimeBasedTrailing(candle);
+      }
+      const now = Date.now();
+      if (now - this.lastInPositionLogTime >= 60000) {
+        logger.info(`Skipping signal evaluation - in position: ${this.currentPosition?.side} ${this.currentPosition?.symbol} @ ${this.currentPosition?.entryPrice}`);
+        this.lastInPositionLogTime = now;
+      }
       return;
     }
 
@@ -625,6 +964,9 @@ class StrategyEngine {
     // Note: Do NOT reset position state here - it's managed by position events and startup sync
     // this.inPosition and this.currentPosition should persist across session resets
     this.gfTrackingState = null;
+    this.timeBasedTrailingState = null;
+    this.reconciliationConfirmed = false;
+    this.lastInPositionLogTime = 0;
     logger.info('Strategy engine reset for new session');
   }
 
@@ -731,6 +1073,24 @@ class StrategyEngine {
             last_check_time: new Date(this.gfTrackingState.lastCheckPeriod * this.gfEarlyExitConfig.checkIntervalMs).toISOString()
           } : null
         },
+        time_based_trailing: {
+          enabled: this.timeBasedTrailingConfig.enabled,
+          rules_count: this.timeBasedTrailingConfig.rules.length,
+          rules: this.timeBasedTrailingConfig.rules.map(r => ({
+            after_bars: r.afterBars,
+            if_mfe: r.ifMFE,
+            action: r.action === 'breakeven' ? 'breakeven' : `trail:${r.trailDistance}`
+          })),
+          tracking_active: !!this.timeBasedTrailingState,
+          state: this.timeBasedTrailingState ? {
+            bars_in_trade: this.timeBasedTrailingState.barsInTrade,
+            mfe: this.timeBasedTrailingState.mfe,
+            peak_price: this.timeBasedTrailingState.peakPrice,
+            current_stop: this.timeBasedTrailingState.currentStopPrice,
+            active_rule_index: this.timeBasedTrailingState.activeRuleIndex,
+            rules_triggered: this.timeBasedTrailingState.rulesTriggered
+          } : null
+        },
         evaluation_readiness: {
           ready: this.enabled && this.inSession && !!gexLevels && !this.inPosition,
           conditions_met: [],
@@ -758,6 +1118,8 @@ class StrategyEngine {
 
   async run() {
     logger.info('Strategy engine started');
+    let lastReconciliationTime = 0;
+    const reconciliationIntervalMs = 5 * 60 * 1000; // 5 minutes
 
     while (true) {
       try {
@@ -771,6 +1133,13 @@ class StrategyEngine {
           } else {
             logger.info('Trading session ended');
           }
+        }
+
+        // Periodically reconcile position state against Tradovate
+        const now = Date.now();
+        if (now - lastReconciliationTime >= reconciliationIntervalMs) {
+          await this.reconcilePositionState();
+          lastReconciliationTime = now;
         }
 
         // Publish strategy status
