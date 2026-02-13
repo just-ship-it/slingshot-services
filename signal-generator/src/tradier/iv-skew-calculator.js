@@ -20,6 +20,10 @@ class IVSkewCalculator {
     this.symbol = options.symbol || 'QQQ';
     this.publishToRedis = options.publishToRedis !== false;
 
+    // Minimum DTE filter - backtest data uses 7+ DTE exclusively
+    // 0-DTE options have massively inflated IV that doesn't match backtest conditions
+    this.minDTE = options.minDTE ?? 7;
+
     // Current IV skew data
     this.currentSkew = null;
 
@@ -55,11 +59,11 @@ class IVSkewCalculator {
       return null;
     }
 
-    // Get call and put IV at ATM strike (use shortest expiration for most sensitivity)
-    const { callIV, putIV, expiration, callOI, putOI } = this.getATMIVData(atmStrike, chains);
+    // Get call and put IV at ATM strike (use shortest expiration >= minDTE)
+    const { callIV, putIV, expiration, callOI, putOI, dte } = this.getATMIVData(atmStrike, chains);
 
     if (callIV === null || putIV === null) {
-      logger.warn(`Could not find ATM call/put IV for ${this.symbol} at strike ${atmStrike}`);
+      logger.warn(`Could not find ATM call/put IV for ${this.symbol} at strike ${atmStrike} (minDTE=${this.minDTE})`);
       return null;
     }
 
@@ -77,6 +81,7 @@ class IVSkewCalculator {
       spotPrice,
       atmStrike,
       expiration,
+      dte,
       callIV,
       putIV,
       iv,
@@ -97,7 +102,7 @@ class IVSkewCalculator {
     }
 
     logger.info(`📊 IV Skew: ${this.symbol} @ ${spotPrice.toFixed(2)} | ` +
-      `ATM=${atmStrike} | Call IV=${(callIV * 100).toFixed(2)}% | ` +
+      `ATM=${atmStrike} (${dte}DTE) | Call IV=${(callIV * 100).toFixed(2)}% | ` +
       `Put IV=${(putIV * 100).toFixed(2)}% | Skew=${(skew * 100).toFixed(3)}% | ` +
       `Signal=${skewData.signal}`);
 
@@ -146,8 +151,20 @@ class IVSkewCalculator {
   }
 
   /**
+   * Calculate days to expiration from expiration date string
+   * @param {string} expirationDate - Date string in YYYY-MM-DD format
+   * @returns {number} Days until expiration
+   */
+  calculateDTE(expirationDate) {
+    const expDate = new Date(expirationDate + 'T16:00:00-05:00'); // 4 PM ET expiration
+    const now = new Date();
+    const diffMs = expDate - now;
+    return Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+  }
+
+  /**
    * Get call and put IV for ATM strike
-   * Uses the shortest expiration for maximum sensitivity
+   * Uses the shortest expiration >= minDTE for consistency with backtest data
    */
   getATMIVData(atmStrike, chains) {
     // Group options by expiration to find shortest one with ATM data
@@ -176,28 +193,40 @@ class IVSkewCalculator {
       }
     }
 
-    // Find shortest expiration that has both call and put IV
+    // Find shortest expiration >= minDTE that has both call and put IV
+    // This matches backtest data which uses 7+ DTE exclusively
     const expirations = Array.from(byExpiration.keys())
       .filter(exp => {
         const data = byExpiration.get(exp);
-        return data.call !== null && data.put !== null;
+        if (data.call === null || data.put === null) return false;
+
+        // Filter out expirations below minDTE threshold
+        const dte = this.calculateDTE(exp);
+        if (dte < this.minDTE) {
+          logger.debug(`Skipping expiration ${exp} (DTE=${dte} < minDTE=${this.minDTE})`);
+          return false;
+        }
+        return true;
       })
       .sort();
 
     if (expirations.length === 0) {
-      return { callIV: null, putIV: null, expiration: null, callOI: 0, putOI: 0 };
+      logger.warn(`No expirations found with DTE >= ${this.minDTE} for ATM strike ${atmStrike}`);
+      return { callIV: null, putIV: null, expiration: null, callOI: 0, putOI: 0, dte: null };
     }
 
-    // Use shortest expiration
+    // Use shortest valid expiration
     const shortestExp = expirations[0];
     const data = byExpiration.get(shortestExp);
+    const dte = this.calculateDTE(shortestExp);
 
     return {
       callIV: data.call,
       putIV: data.put,
       expiration: shortestExp,
       callOI: data.callOI,
-      putOI: data.putOI
+      putOI: data.putOI,
+      dte
     };
   }
 

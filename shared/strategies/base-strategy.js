@@ -6,6 +6,17 @@
  */
 
 export class BaseStrategy {
+  /**
+   * Declare which data sources this strategy requires.
+   * Subclasses override; null = use config defaults (backward compatible).
+   * Called before instantiation to drive conditional service initialization.
+   *
+   * @returns {Object|null} Data requirements manifest or null for defaults
+   */
+  static getDataRequirements() {
+    return null;
+  }
+
   constructor(params = {}) {
     this.params = params;
     this.lastSignalTime = 0;

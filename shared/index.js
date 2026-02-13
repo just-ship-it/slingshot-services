@@ -83,7 +83,10 @@ export const CHANNELS = {
   IV_UPDATE: 'iv.update',
 
   // Analytics events
-  ANALYTICS: 'analytics.update'
+  ANALYTICS: 'analytics.update',
+
+  // Macro Briefing events
+  MACRO_BRIEFING: 'macro.briefing'
 };
 
 // Service health check helper

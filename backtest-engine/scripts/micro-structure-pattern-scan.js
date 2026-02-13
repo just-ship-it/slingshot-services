@@ -25,7 +25,7 @@ import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
 
 import { CSVLoader } from '../src/data/csv-loader.js';
-import { CandleAggregator } from '../src/data/candle-aggregator.js';
+import { CandleAggregator } from '../../shared/utils/candle-aggregator.js';
 import { PATTERNS } from '../../shared/strategies/patterns/index.js';
 
 const __filename = fileURLToPath(import.meta.url);

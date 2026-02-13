@@ -37,14 +37,22 @@ const config = {
 
   // GEX Calculator Configuration
   GEX_SYMBOL: process.env.GEX_SYMBOL || 'QQQ',
+  GEX_FUTURES_SYMBOL: process.env.GEX_FUTURES_SYMBOL || 'NQ',
+  GEX_DEFAULT_MULTIPLIER: parseFloat(process.env.GEX_DEFAULT_MULTIPLIER || '41.5'),
   GEX_FETCH_TIME: process.env.GEX_FETCH_TIME || '16:35',
   GEX_COOLDOWN_MINUTES: parseInt(process.env.GEX_COOLDOWN_MINUTES || '5'),
   GEX_CACHE_FILE: process.env.GEX_CACHE_FILE || './data/gex_cache.json',
+
+  // Symbol Configuration
+  // CANDLE_BASE_SYMBOL determines which candle stream feeds the strategy engine
+  // Default 'NQ' for existing instance; set to 'ES' for ES instance
+  CANDLE_BASE_SYMBOL: process.env.CANDLE_BASE_SYMBOL || 'NQ',
 
   // Strategy Configuration
   STRATEGY_ENABLED: process.env.STRATEGY_ENABLED?.toLowerCase() === 'true',
   TRADING_SYMBOL: process.env.TRADING_SYMBOL || 'NQH5',
   DEFAULT_QUANTITY: parseInt(process.env.DEFAULT_QUANTITY || '1'),
+  EVAL_TIMEFRAME: process.env.EVAL_TIMEFRAME || '1m',
 
   // Strategy Parameters
   TARGET_POINTS: parseFloat(process.env.TARGET_POINTS || '25.0'),
@@ -83,6 +91,16 @@ const config = {
   IV_SKEW_MIN_IV: parseFloat(process.env.IV_SKEW_MIN_IV || '0.18'),
   IV_SKEW_COOLDOWN_MS: parseInt(process.env.IV_SKEW_COOLDOWN_MS || '1800000'), // 30 minutes
 
+  // ES Cross-Signal Strategy Parameters
+  ES_CROSS_TARGET_POINTS: parseFloat(process.env.ES_CROSS_TARGET_POINTS || '10'),
+  ES_CROSS_STOP_POINTS: parseFloat(process.env.ES_CROSS_STOP_POINTS || '10'),
+  ES_CROSS_BREAKEVEN_STOP: process.env.ES_CROSS_BREAKEVEN_STOP?.toLowerCase() !== 'false', // Default true
+  ES_CROSS_BREAKEVEN_TRIGGER: parseFloat(process.env.ES_CROSS_BREAKEVEN_TRIGGER || '3'),
+  ES_CROSS_BREAKEVEN_OFFSET: parseFloat(process.env.ES_CROSS_BREAKEVEN_OFFSET || '0'),
+  ES_CROSS_FILTER_REGIME_SIDE: process.env.ES_CROSS_FILTER_REGIME_SIDE || 'strong_positive_buy',
+  ES_CROSS_FILTER_LT_SPACING_MAX: parseFloat(process.env.ES_CROSS_FILTER_LT_SPACING_MAX || '40'),
+  ES_CROSS_COOLDOWN_MS: parseInt(process.env.ES_CROSS_COOLDOWN_MS || '300000'), // 5 minutes
+
   // GF (Zero Gamma) Early Exit Configuration
   // Monitors Zero Gamma movement during trades and moves stop to breakeven after consecutive adverse moves
   // Check interval is fixed at 15 minutes to match backtest GEX data resolution
@@ -100,7 +118,7 @@ const config = {
   // Service Configuration
   HTTP_PORT: parseInt(process.env.HTTP_PORT || '3015'),
   LOG_LEVEL: process.env.LOG_LEVEL || 'INFO',
-  SERVICE_NAME: process.env.SERVICE_NAME || 'signal-generator',
+  SERVICE_NAME: process.env.SERVICE_NAME || 'siggen-nq-ivskew',
 
   // Tradovate Account ID (for position sync on startup)
   TRADOVATE_ACCOUNT_ID: process.env.TRADOVATE_DEFAULT_ACCOUNT_ID || '',
@@ -176,7 +194,39 @@ const config = {
 
       // Session filter (reuse from common config)
       useSessionFilter: this.USE_SESSION_FILTER,
-      allowedSessions: this.ALLOWED_SESSIONS
+      allowedSessions: this.ALLOWED_SESSIONS,
+
+      // Evaluation timeframe
+      evalTimeframe: this.EVAL_TIMEFRAME
+    };
+  },
+
+  getESCrossSignalParams() {
+    return {
+      // Exit parameters
+      targetPoints: this.ES_CROSS_TARGET_POINTS,
+      stopPoints: this.ES_CROSS_STOP_POINTS,
+
+      // Breakeven stop configuration
+      breakevenStop: this.ES_CROSS_BREAKEVEN_STOP,
+      breakevenTrigger: this.ES_CROSS_BREAKEVEN_TRIGGER,
+      breakevenOffset: this.ES_CROSS_BREAKEVEN_OFFSET,
+
+      // Entry filters
+      filterRegimeSide: this.ES_CROSS_FILTER_REGIME_SIDE
+        ? this.ES_CROSS_FILTER_REGIME_SIDE.split(',').map(s => s.trim())
+        : null,
+      filterLtSpacingMax: this.ES_CROSS_FILTER_LT_SPACING_MAX,
+
+      // Signal cooldown
+      signalCooldownMs: this.ES_CROSS_COOLDOWN_MS,
+
+      // Session filter (reuse from common config)
+      useSessionFilter: this.USE_SESSION_FILTER,
+      allowedSessions: this.ALLOWED_SESSIONS,
+
+      // Evaluation timeframe
+      evalTimeframe: this.EVAL_TIMEFRAME
     };
   },
 

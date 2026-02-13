@@ -29,6 +29,13 @@ class HybridGexCalculator {
       ...options
     };
 
+    // Futures/ETF symbol configuration — determines which key to read from Tradier exposures
+    // and which ratio pair to use for fallback. Defaults to NQ/QQQ for backward compatibility.
+    this.futuresSymbol = options.cboe?.futuresSymbol || 'NQ';
+    this.etfSymbol = options.cboe?.etfSymbol || options.cboe?.symbol || 'QQQ';
+    // Map futures symbol to the ratio key used by FuturesConverter (e.g., NQ→NQ_QQQ, ES→ES_SPY)
+    this.ratioKey = this.futuresSymbol === 'ES' ? 'ES_SPY' : 'NQ_QQQ';
+
     // Initialize both calculators
     this.cboeCalculator = new GexCalculator(options.cboe || {});
     this.tradierService = options.tradierService || null;
@@ -92,15 +99,20 @@ class HybridGexCalculator {
     }
 
     try {
-      const tradierRatio = this.tradierService.getNQRatio();
+      // Use the correct ratio pair for this instance (NQ_QQQ or ES_SPY)
+      const ratioInfo = this.tradierService.futuresConverter?.getRatioInfo();
+      if (!ratioInfo) return;
 
-      if (tradierRatio && tradierRatio.multiplier) {
-        this.cboeCalculator.setFallbackRatio(
-          tradierRatio.multiplier,
-          tradierRatio.source,
-          tradierRatio.timestamp
-        );
-        logger.debug(`Updated CBOE fallback ratio from Tradier: ${tradierRatio.multiplier.toFixed(4)} (${tradierRatio.source})`);
+      // Check RTH cache first, then current ratio
+      const rthRatio = ratioInfo.rthCache?.[this.ratioKey];
+      const currentRatio = ratioInfo.current?.[this.ratioKey];
+      const multiplier = rthRatio || currentRatio;
+      const source = rthRatio ? 'tradier-rth-cache' : 'tradier-current';
+      const timestamp = rthRatio ? ratioInfo.rthCache.timestamp : ratioInfo.current?.lastUpdate;
+
+      if (multiplier) {
+        this.cboeCalculator.setFallbackRatio(multiplier, source, timestamp);
+        logger.debug(`Updated CBOE fallback ratio from Tradier (${this.ratioKey}): ${multiplier.toFixed(4)} (${source})`);
       }
     } catch (error) {
       logger.warn('Failed to update CBOE fallback ratio:', error.message);
@@ -186,8 +198,9 @@ class HybridGexCalculator {
       logger.debug('Refreshing Tradier GEX data...');
       const exposures = await this.tradierService.calculateExposures(true);
 
-      if (exposures && exposures.futures.NQ) {
-        const tradierData = this.convertTradierToGexFormat(exposures.futures.NQ, exposures.timestamp);
+      const futuresData = exposures?.futures?.[this.futuresSymbol];
+      if (futuresData) {
+        const tradierData = this.convertTradierToGexFormat(futuresData, exposures.timestamp);
 
         this.currentData.tradier = {
           data: tradierData,
@@ -292,28 +305,31 @@ class HybridGexCalculator {
   /**
    * Convert Tradier exposure data to GEX format for compatibility
    */
-  convertTradierToGexFormat(nqData, timestamp) {
+  convertTradierToGexFormat(futuresData, timestamp) {
     return {
       timestamp,
-      nqSpot: nqData.futuresPrice,
-      qqqSpot: nqData.originalSpotPrice,
-      totalGex: nqData.totals.gex / 1e9, // Convert to billions
-      regime: nqData.regime.gex,
-      gammaFlip: nqData.levels.gammaFlip,
-      callWall: nqData.levels.callWall,
-      putWall: nqData.levels.putWall,
-      resistance: nqData.levels.resistance,
-      support: nqData.levels.support,
+      futures_spot: futuresData.futuresPrice,
+      etfSpot: futuresData.originalSpotPrice,
+      // Backward compat field names (used by some consumers)
+      nqSpot: futuresData.futuresPrice,
+      qqqSpot: futuresData.originalSpotPrice,
+      totalGex: futuresData.totals.gex / 1e9, // Convert to billions
+      regime: futuresData.regime.gex,
+      gammaFlip: futuresData.levels.gammaFlip,
+      callWall: futuresData.levels.callWall,
+      putWall: futuresData.levels.putWall,
+      resistance: futuresData.levels.resistance,
+      support: futuresData.levels.support,
       fromCache: false,
       usedLivePrices: true,
       dataSource: 'tradier',
 
       // Additional Tradier-specific data
-      totalVex: nqData.totals.vex / 1e9,
-      totalCex: nqData.totals.cex / 1e9,
-      overallRegime: nqData.regime.overall,
-      vexRegime: nqData.regime.vex,
-      cexRegime: nqData.regime.cex
+      totalVex: futuresData.totals.vex / 1e9,
+      totalCex: futuresData.totals.cex / 1e9,
+      overallRegime: futuresData.regime.overall,
+      vexRegime: futuresData.regime.vex,
+      cexRegime: futuresData.regime.cex
     };
   }
 

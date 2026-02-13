@@ -199,7 +199,8 @@ class TradingViewClient extends EventEmitter {
       'language', 'exchange', 'fractional', 'is_tradable', 'lp', 'lp_time',
       'minmov', 'minmove2', 'original_name', 'pricescale', 'pro_name',
       'short_name', 'type', 'update_mode', 'volume', 'currency_code',
-      'rchp', 'rtc'
+      'rchp', 'rtc',
+      'open_price', 'high_price', 'low_price', 'prev_close_price'
     ]);
 
     logger.info('Sessions initialized with proper handshake sequence');
@@ -319,27 +320,48 @@ class TradingViewClient extends EventEmitter {
     const payload = data.p;
     if (payload && payload.length >= 2) {
       const quoteData = payload[1];
-      const symbol = quoteData.n;
+      let symbol = quoteData.n;
       const values = quoteData.v || {};
 
+      // TradingView echoes resolve-format strings back as the symbol identifier
+      // e.g. '={"adjustment":"splits","symbol":"CME_MINI:MES1!"}' — extract the actual symbol
+      if (symbol && symbol.startsWith('=')) {
+        try {
+          const resolved = JSON.parse(symbol.slice(1));
+          symbol = resolved.symbol || symbol;
+        } catch {
+          // Not valid JSON after '=' — use as-is
+        }
+      }
+
       const baseSymbol = this.extractBaseSymbol(symbol);
+      // qsd provides session-level data — emit under distinct names so they
+      // don't collide with candle open/high/low from du/timescale_update.
+      // Only set close from lp (last price); do NOT set open/high/low here.
       const quote = {
         symbol: symbol,
         baseSymbol: baseSymbol,
         close: values.lp,
-        open: values.open_price,
-        high: values.high_price,
-        low: values.low_price,
-        previousClose: values.prev_close_price,
         volume: values.volume,
+        sessionOpen: values.open_price,
+        sessionHigh: values.high_price,
+        sessionLow: values.low_price,
+        prevClose: values.prev_close_price,
+        change: values.ch,
+        changePercent: values.chp,
         timestamp: new Date().toISOString(),
         source: 'tradingview'
       };
 
-      // Store latest quote in Redis for GEX calculator
-      if (quote.close) {
-        this.storeLatestQuote(baseSymbol, quote);
+      // Skip qsd messages with no last price — TradingView sends periodic
+      // incremental updates with only volume/change fields that aren't useful
+      // without a price. Session data (open, prev close) arrives with lp set.
+      if (!values.lp) {
+        return;
       }
+
+      // Store latest quote in Redis for GEX calculator
+      this.storeLatestQuote(baseSymbol, quote);
 
       this.emit('quote', quote);
     }
@@ -563,9 +585,7 @@ class TradingViewClient extends EventEmitter {
       await new Promise(resolve => setTimeout(resolve, 1000)); // 1 second delay between subscriptions
     }
 
-    // Hibernate quote session after all symbols are added (like Python implementation)
-    this.sendMessage('quote_hibernate_all', [this.quoteSession]);
-    logger.info('Quote session hibernated after adding all symbols');
+    logger.info('Quote session active - qsd messages will provide session-level data');
   }
 
   async subscribeToSymbol(symbolFull) {

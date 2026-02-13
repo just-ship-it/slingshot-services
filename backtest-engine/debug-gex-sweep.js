@@ -4,7 +4,7 @@
 // Tests the squeeze momentum indicator and GEX level detection
 
 import { CSVLoader } from './src/data/csv-loader.js';
-import { CandleAggregator } from './src/data/candle-aggregator.js';
+import { CandleAggregator } from '../shared/utils/candle-aggregator.js';
 import { GexLevelSweepStrategy } from '../shared/strategies/gex-level-sweep.js';
 import { SqueezeMomentumIndicator } from '../shared/indicators/squeeze-momentum.js';
 import fs from 'fs';

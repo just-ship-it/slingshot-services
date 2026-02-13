@@ -9,7 +9,7 @@ import { messageBus, CHANNELS, createLogger, configManager, healthCheck } from '
 const SERVICE_NAME = 'monitoring-service';
 const logger = createLogger(SERVICE_NAME);
 
-// Debug PM2 vs direct execution - compare with signal-generator
+// Debug PM2 vs direct execution - compare with siggen-nq-ivskew
 console.log('📊 MONITORING PRE-LOGGER: stdout.isTTY:', process.stdout.isTTY);
 console.log('🚀 MONITORING CONSOLE LOG: Monitoring service starting...');
 console.error('🚀 MONITORING CONSOLE ERROR: Monitoring service starting...');
@@ -132,7 +132,7 @@ const monitoringState = {
   maxNewsSize: 200,
   positionSizing: null, // Will be loaded async on startup
   contractMappings: null, // Will be loaded async on startup
-  strategyStatus: null, // Strategy status from signal-generator
+  strategyStatus: null, // Strategy status from siggen-nq-ivskew
   squeezeData: null, // Current squeeze momentum data
   analyticsData: new Map(), // Analytics data by type
   gexLevels: { cboe: null, tradier: null }, // GEX levels from both sources
@@ -202,6 +202,33 @@ async function handleTradeSignalDiscord(signal) {
   await sendDiscordNotification({
     title: `${actionEmoji} ${(signal.action || 'SIGNAL').toUpperCase().replace('_', ' ')}`,
     color: sideColor,
+    fields,
+    timestamp: new Date().toISOString()
+  });
+}
+
+/**
+ * Handle trade rejected for Discord notification
+ */
+async function handleTradeRejectedDiscord(message) {
+  const rejected = message.rejectedSignal || {};
+  const fields = [
+    { name: 'Reason', value: message.reason || 'Unknown', inline: false },
+    { name: 'Strategy', value: rejected.strategy || 'N/A', inline: true },
+    { name: 'Symbol', value: rejected.symbol || 'N/A', inline: true },
+    { name: 'Action', value: rejected.action || 'N/A', inline: true }
+  ];
+
+  if (rejected.price) {
+    fields.push({ name: 'Price', value: rejected.price.toFixed(2), inline: true });
+  }
+  if (rejected.quantity) {
+    fields.push({ name: 'Qty', value: rejected.quantity.toString(), inline: true });
+  }
+
+  await sendDiscordNotification({
+    title: '⛔ Signal Rejected',
+    color: 0xf59e0b, // amber
     fields,
     timestamp: new Date().toISOString()
   });
@@ -982,7 +1009,9 @@ app.get('/api/services', dashboardAuth, async (req, res) => {
     { name: 'monitoring-service', url: `http://localhost:${config.service.port}`, port: config.service.port },
     { name: 'trade-orchestrator', url: process.env.TRADE_ORCHESTRATOR_URL || 'http://localhost:3013', port: 3013 },
     { name: 'tradovate-service', url: process.env.TRADOVATE_SERVICE_URL || 'http://localhost:3011', port: 3011 },
-    { name: 'signal-generator', url: process.env.SIGNAL_GENERATOR_URL || 'http://localhost:3015', port: 3015 }
+    { name: 'siggen-nq-ivskew', url: process.env.SIGNAL_GENERATOR_URL || 'http://localhost:3015', port: 3015 },
+    { name: 'siggen-es-cross', url: process.env.SIGNAL_GENERATOR_ES_URL || 'http://localhost:3016', port: 3016 },
+    { name: 'macro-briefing', url: process.env.MACRO_BRIEFING_URL || 'http://localhost:3017', port: 3017 }
   ];
 
   // Perform health checks for all internal services
@@ -1040,7 +1069,7 @@ app.get('/api/services', dashboardAuth, async (req, res) => {
   res.json(Array.from(servicesMap.values()));
 });
 
-// Signal generator detailed connection status endpoint
+// Signal generator (NQ) detailed connection status endpoint
 app.get('/api/signal-generator/status', dashboardAuth, async (req, res) => {
   try {
     const signalGeneratorUrl = process.env.SIGNAL_GENERATOR_URL || 'http://localhost:3015';
@@ -1099,7 +1128,9 @@ app.get('/api/signal-generator/status', dashboardAuth, async (req, res) => {
 
       // Basic component status
       status.connections.tradingview.connected = health.components?.tradingview === 'connected';
-      status.connections.ltMonitor.connected = health.components?.lt_monitor === 'connected';
+      const ltStatus = health.components?.lt_monitor;
+      status.connections.ltMonitor.connected = ltStatus === 'connected';
+      status.connections.ltMonitor.notRequired = ltStatus === 'not_required';
 
       // Connection details if available
       if (health.connectionDetails) {
@@ -1191,7 +1222,148 @@ app.get('/api/signal-generator/status', dashboardAuth, async (req, res) => {
 
     res.json(status);
   } catch (error) {
-    logger.error('Failed to fetch signal-generator status:', error.message);
+    logger.error('Failed to fetch siggen-nq-ivskew status:', error.message);
+    res.status(500).json({
+      timestamp: new Date().toISOString(),
+      overall: 'unavailable',
+      error: error.message,
+      connections: null
+    });
+  }
+});
+
+// Signal generator (ES) detailed connection status endpoint
+app.get('/api/es-signal-generator/status', dashboardAuth, async (req, res) => {
+  try {
+    const esSignalGeneratorUrl = process.env.SIGNAL_GENERATOR_ES_URL || 'http://localhost:3016';
+
+    const [healthResponse, gexHealthResponse, tradierStatusResponse] = await Promise.allSettled([
+      axios.get(`${esSignalGeneratorUrl}/health`, { timeout: 5000 }),
+      axios.get(`${esSignalGeneratorUrl}/gex/health`, { timeout: 5000 }),
+      axios.get(`${esSignalGeneratorUrl}/tradier/status`, { timeout: 5000 })
+    ]);
+
+    const status = {
+      timestamp: new Date().toISOString(),
+      overall: 'unknown',
+      connections: {
+        tradingview: {
+          connected: false,
+          lastHeartbeat: null,
+          lastQuoteReceived: null,
+          symbols: [],
+          reconnectAttempts: 0
+        },
+        ltMonitor: {
+          connected: false,
+          notRequired: false,
+          hasLevels: false,
+          lastHeartbeat: null
+        },
+        tradier: {
+          available: false,
+          active: false,
+          running: false,
+          connectionType: null,
+          lastCalculation: null,
+          hasToken: false,
+          displayStatus: 'Unknown',
+          websocketStatus: 'initializing'
+        },
+        cboe: {
+          enabled: true,
+          hasData: false,
+          lastFetch: null,
+          ageMinutes: null
+        },
+        hybridGex: {
+          enabled: false,
+          primarySource: null,
+          usingRTHCache: false,
+          tradierFresh: false
+        }
+      }
+    };
+
+    if (healthResponse.status === 'fulfilled') {
+      const health = healthResponse.value.data;
+      status.connections.tradingview.connected = health.components?.tradingview === 'connected';
+      const ltStatus = health.components?.lt_monitor;
+      status.connections.ltMonitor.connected = ltStatus === 'connected';
+      status.connections.ltMonitor.notRequired = ltStatus === 'not_required';
+
+      if (health.connectionDetails) {
+        const tvDetails = health.connectionDetails.tradingview;
+        if (tvDetails) {
+          status.connections.tradingview.lastHeartbeat = tvDetails.lastHeartbeat;
+          status.connections.tradingview.lastQuoteReceived = tvDetails.lastQuoteReceived;
+          status.connections.tradingview.reconnectAttempts = tvDetails.reconnectAttempts || 0;
+        }
+        const ltDetails = health.connectionDetails.ltMonitor;
+        if (ltDetails) {
+          status.connections.ltMonitor.lastHeartbeat = ltDetails.lastHeartbeat;
+          status.connections.ltMonitor.hasLevels = ltDetails.hasLevels;
+        }
+      }
+
+      status.connections.tradingview.symbols = health.config?.symbols || [];
+
+      if (health.tradier) {
+        status.connections.tradier.available = health.tradier.available;
+        status.connections.tradier.active = health.tradier.active;
+        status.connections.tradier.running = health.tradier.running;
+        status.connections.tradier.hasToken = health.tradier.config?.hasToken || false;
+        status.connections.tradier.displayStatus = health.tradier.displayStatus || 'Unknown';
+        status.connections.tradier.websocketStatus = health.tradier.websocketStatus || 'initializing';
+      }
+    }
+
+    if (gexHealthResponse.status === 'fulfilled') {
+      const gexHealth = gexHealthResponse.value.data;
+      status.connections.hybridGex.enabled = gexHealth.hybrid || false;
+      if (gexHealth.details) {
+        if (gexHealth.details.cboe) {
+          status.connections.cboe.enabled = gexHealth.details.cboe.enabled !== false;
+          status.connections.cboe.hasData = gexHealth.details.cboe.hasData || false;
+          status.connections.cboe.lastFetch = gexHealth.details.cboe.lastUpdate || null;
+          status.connections.cboe.ageMinutes = gexHealth.details.cboe.ageMinutes || null;
+        }
+        if (gexHealth.details.hybrid) {
+          status.connections.hybridGex.primarySource = gexHealth.details.hybrid.primarySource || null;
+        }
+        if (gexHealth.details.session) {
+          status.connections.hybridGex.usingRTHCache = gexHealth.details.session.usingRTHCache || false;
+        }
+        if (gexHealth.details.tradier) {
+          status.connections.hybridGex.tradierFresh = (gexHealth.details.tradier.ageMinutes || 999) < 5;
+        }
+      }
+    }
+
+    if (tradierStatusResponse.status === 'fulfilled') {
+      const tradierStatus = tradierStatusResponse.value.data;
+      if (tradierStatus.health) {
+        status.connections.tradier.lastCalculation = tradierStatus.health.lastCalculation || null;
+        status.connections.tradier.connectionType = tradierStatus.health.spotPrices ? 'rest_polling' : null;
+      }
+    }
+
+    const tvConnected = status.connections.tradingview.connected;
+    const hasGexData = status.connections.tradier.active || status.connections.cboe.hasData;
+
+    if (tvConnected && hasGexData) {
+      status.overall = 'healthy';
+    } else if (tvConnected) {
+      status.overall = 'degraded';
+    } else if (healthResponse.status === 'fulfilled') {
+      status.overall = 'unhealthy';
+    } else {
+      status.overall = 'unavailable';
+    }
+
+    res.json(status);
+  } catch (error) {
+    logger.error('Failed to fetch siggen-es-cross status:', error.message);
     res.status(500).json({
       timestamp: new Date().toISOString(),
       overall: 'unavailable',
@@ -1280,10 +1452,10 @@ app.post('/api/position-sizing/convert', dashboardAuth, (req, res) => {
   res.json(result);
 });
 
-// GEX levels endpoint - proxy to signal-generator service
+// GEX levels endpoint - proxy to siggen-nq-ivskew service
 app.get('/api/gex/levels', dashboardAuth, async (req, res) => {
   try {
-    logger.info('📊 Fetching GEX levels from signal-generator');
+    logger.info('📊 Fetching GEX levels from siggen-nq-ivskew');
     const response = await axios.get('http://127.0.0.1:3015/gex/levels', {
       timeout: 5000
     });
@@ -1366,7 +1538,109 @@ app.post('/api/gex/refresh', dashboardAuth, async (req, res) => {
   }
 });
 
-// Candle history endpoint - proxy to signal-generator service
+// ES GEX levels endpoint - proxy to siggen-es-cross service (port 3016)
+app.get('/api/es/gex/levels', dashboardAuth, async (req, res) => {
+  try {
+    logger.info('📊 Fetching ES GEX levels from siggen-es-cross');
+    const response = await axios.get('http://127.0.0.1:3016/gex/levels', {
+      timeout: 5000
+    });
+
+    const rawData = response.data;
+
+    // Transform data to format expected by frontend (same as NQ route)
+    const transformedData = {
+      timestamp: rawData.timestamp || new Date().toISOString(),
+      levels: {
+        gamma_flip: rawData.gammaFlip,
+        zero_gamma: rawData.gammaFlip,
+        call_wall: rawData.callWall,
+        put_wall: rawData.putWall,
+        resistance: rawData.resistance,
+        support: rawData.support,
+        regime: rawData.regime,
+        total_gex: rawData.totalGex,
+        spy_spot: rawData.spySpot,
+        es_spot: rawData.esSpot,
+        multiplier: rawData.multiplier,
+        data_source: rawData.dataSource,
+        used_live_prices: rawData.usedLivePrices
+      }
+    };
+
+    logger.info('✅ ES GEX levels fetched and transformed successfully');
+    res.json(transformedData);
+  } catch (error) {
+    logger.error('❌ Failed to fetch ES GEX levels:', error.message);
+    res.status(500).json({
+      error: 'Failed to fetch ES GEX levels',
+      message: error.message
+    });
+  }
+});
+
+// ES GEX refresh endpoint - trigger recalculation of ES GEX levels
+app.post('/api/es/gex/refresh', dashboardAuth, async (req, res) => {
+  try {
+    logger.info('🔄 Triggering ES GEX levels refresh...');
+    const response = await axios.post('http://127.0.0.1:3016/gex/refresh', {
+      force: true
+    }, {
+      timeout: 30000
+    });
+
+    const rawData = response.data;
+
+    const transformedData = {
+      timestamp: rawData.timestamp || new Date().toISOString(),
+      levels: {
+        gamma_flip: rawData.gammaFlip,
+        zero_gamma: rawData.gammaFlip,
+        call_wall: rawData.callWall,
+        put_wall: rawData.putWall,
+        resistance: rawData.resistance,
+        support: rawData.support,
+        regime: rawData.regime,
+        total_gex: rawData.totalGex,
+        spy_spot: rawData.spySpot,
+        es_spot: rawData.esSpot,
+        multiplier: rawData.multiplier,
+        data_source: rawData.dataSource,
+        used_live_prices: rawData.usedLivePrices
+      }
+    };
+
+    logger.info('✅ ES GEX levels refreshed and transformed successfully');
+    res.json(transformedData);
+  } catch (error) {
+    logger.error('❌ Failed to refresh ES GEX levels:', error.message);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to refresh ES GEX levels',
+      message: error.message
+    });
+  }
+});
+
+// ES candle history endpoint - proxy to siggen-es-cross service (port 3016)
+app.get('/api/es/candles', dashboardAuth, async (req, res) => {
+  try {
+    const count = req.query.count || 60;
+    const response = await axios.get(`http://127.0.0.1:3016/candles?count=${count}`, {
+      timeout: 5000
+    });
+    res.json(response.data);
+  } catch (error) {
+    logger.error('Failed to fetch ES candle history:', error.message);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch ES candle history',
+      message: error.message
+    });
+  }
+});
+
+// Candle history endpoint - proxy to siggen-nq-ivskew service
 app.get('/api/candles', dashboardAuth, async (req, res) => {
   try {
     const count = req.query.count || 60;
@@ -1384,10 +1658,10 @@ app.get('/api/candles', dashboardAuth, async (req, res) => {
   }
 });
 
-// IV Skew endpoint - proxy to signal-generator service
+// IV Skew endpoint - proxy to siggen-nq-ivskew service
 app.get('/api/iv/skew', dashboardAuth, async (req, res) => {
   try {
-    logger.info('📊 Fetching IV skew from signal-generator');
+    logger.info('📊 Fetching IV skew from siggen-nq-ivskew');
     const response = await axios.get('http://127.0.0.1:3015/iv/skew', {
       timeout: 5000
     });
@@ -1411,7 +1685,7 @@ app.get('/api/iv/skew', dashboardAuth, async (req, res) => {
   }
 });
 
-// IV Skew history endpoint - proxy to signal-generator service
+// IV Skew history endpoint - proxy to siggen-nq-ivskew service
 app.get('/api/iv/history', dashboardAuth, async (req, res) => {
   try {
     const response = await axios.get('http://127.0.0.1:3015/iv/history', {
@@ -1431,7 +1705,7 @@ app.get('/api/iv/history', dashboardAuth, async (req, res) => {
 // Tradier GEX levels endpoint - get enhanced options data from Tradier
 app.get('/api/tradier/gex/levels', dashboardAuth, async (req, res) => {
   try {
-    logger.info('📊 Fetching Tradier GEX levels from signal-generator');
+    logger.info('📊 Fetching Tradier GEX levels from siggen-nq-ivskew');
     const response = await axios.get('http://127.0.0.1:3015/exposure/levels', {
       timeout: 5000
     });
@@ -1512,10 +1786,142 @@ app.post('/api/tradier/gex/refresh', dashboardAuth, async (req, res) => {
   }
 });
 
+// ES Tradier GEX levels endpoint - get enhanced options data from Tradier via siggen-es-cross
+app.get('/api/es/tradier/gex/levels', dashboardAuth, async (req, res) => {
+  try {
+    logger.info('📊 Fetching ES Tradier GEX levels from siggen-es-cross');
+    const response = await axios.get('http://127.0.0.1:3016/exposure/levels', {
+      timeout: 5000
+    });
+
+    if (response.data && response.data.futures && response.data.futures.ES) {
+      const esData = response.data.futures.ES;
+
+      // Transform to dashboard format
+      const transformedData = {
+        timestamp: response.data.timestamp,
+        source: 'tradier',
+        esSpot: esData.spotPrice,
+        gammaFlip: esData.levels.gammaFlip,
+        callWall: esData.levels.callWall,
+        putWall: esData.levels.putWall,
+        resistance: esData.levels.resistance,
+        support: esData.levels.support,
+        totalGex: esData.totals.gex,
+        totalVex: esData.totals.vex,
+        totalCex: esData.totals.cex,
+        maxCallOI: esData.levels.maxCallOI,
+        maxPutOI: esData.levels.maxPutOI,
+        regime: esData.regime?.gex || 'neutral'
+      };
+
+      res.json(transformedData);
+      logger.info('✅ ES Tradier GEX levels fetched and transformed successfully');
+    } else {
+      throw new Error('No ES data in Tradier response');
+    }
+  } catch (error) {
+    logger.error('❌ Failed to fetch ES Tradier GEX levels:', error.message);
+    res.status(500).json({
+      error: 'Failed to fetch ES Tradier GEX levels',
+      message: error.message
+    });
+  }
+});
+
+// Force ES Tradier exposure recalculation
+app.post('/api/es/tradier/gex/refresh', dashboardAuth, async (req, res) => {
+  try {
+    logger.info('🔄 Forcing ES Tradier exposure recalculation...');
+    const response = await axios.post('http://127.0.0.1:3016/exposure/refresh', {}, {
+      timeout: 30000
+    });
+
+    if (response.data && response.data.futures && response.data.futures.ES) {
+      const esData = response.data.futures.ES;
+
+      // Transform to dashboard format
+      const transformedData = {
+        timestamp: response.data.timestamp,
+        source: 'tradier',
+        esSpot: esData.futuresPrice,
+        gammaFlip: esData.levels.gammaFlip,
+        callWall: esData.levels.callWall,
+        putWall: esData.levels.putWall,
+        resistance: esData.levels.resistance,
+        support: esData.levels.support,
+        totalGex: esData.totals.gex,
+        regime: esData.regime?.gex || 'neutral'
+      };
+
+      res.json(transformedData);
+      logger.info('✅ ES Tradier exposure recalculated successfully');
+    } else {
+      throw new Error('No ES data in Tradier refresh response');
+    }
+  } catch (error) {
+    logger.error('❌ Failed to refresh ES Tradier exposures:', error.message);
+    res.status(500).json({
+      error: 'Failed to refresh ES Tradier exposures',
+      message: error.message
+    });
+  }
+});
+
+// Macro Briefing proxy endpoints (macro-briefing service on port 3017)
+app.get('/api/briefing/status', dashboardAuth, async (req, res) => {
+  try {
+    const response = await axios.get('http://127.0.0.1:3017/briefing/status', { timeout: 5000 });
+    res.json(response.data);
+  } catch (error) {
+    logger.error('Failed to fetch briefing status:', error.message);
+    res.status(500).json({ error: 'Failed to fetch briefing status', message: error.message });
+  }
+});
+
+app.get('/api/briefing/latest', dashboardAuth, async (req, res) => {
+  try {
+    const response = await axios.get('http://127.0.0.1:3017/briefing/latest', { timeout: 5000 });
+    res.json(response.data);
+  } catch (error) {
+    if (error.response?.status === 404) {
+      return res.status(404).json(error.response.data);
+    }
+    logger.error('Failed to fetch latest briefing:', error.message);
+    res.status(500).json({ error: 'Failed to fetch latest briefing', message: error.message });
+  }
+});
+
+app.get('/api/briefing/latest/markdown', dashboardAuth, async (req, res) => {
+  try {
+    const response = await axios.get('http://127.0.0.1:3017/briefing/latest/markdown', { timeout: 5000 });
+    res.type('text/markdown').send(response.data);
+  } catch (error) {
+    if (error.response?.status === 404) {
+      return res.status(404).json(error.response.data);
+    }
+    logger.error('Failed to fetch briefing markdown:', error.message);
+    res.status(500).json({ error: 'Failed to fetch briefing markdown', message: error.message });
+  }
+});
+
+app.post('/api/briefing/generate', dashboardAuth, async (req, res) => {
+  try {
+    const response = await axios.post('http://127.0.0.1:3017/briefing/generate', {}, { timeout: 180000 });
+    res.json(response.data);
+  } catch (error) {
+    if (error.response?.status === 429) {
+      return res.status(429).json(error.response.data);
+    }
+    logger.error('Failed to generate briefing:', error.message);
+    res.status(500).json({ error: 'Failed to generate briefing', message: error.message });
+  }
+});
+
 // Strategy status endpoint - get latest GEX scalp strategy status
 app.get('/api/strategy/gex-scalp/status', dashboardAuth, async (req, res) => {
   try {
-    // Check if we have real strategy status from signal-generator
+    // Check if we have real strategy status from siggen-nq-ivskew
     if (monitoringState.strategyStatus) {
       res.json({
         success: true,
@@ -1591,6 +1997,25 @@ app.get('/api/strategy/gex-scalp/status', dashboardAuth, async (req, res) => {
       error: 'Failed to fetch strategy status',
       details: error.message
     });
+  }
+});
+
+// ES Cross-Signal strategy status - proxied from siggen-es-cross on port 3016
+app.get('/api/strategy/es-cross-signal/status', dashboardAuth, async (req, res) => {
+  try {
+    const response = await axios.get('http://127.0.0.1:3016/strategy/status', { timeout: 5000 });
+    res.json({ success: true, ...response.data });
+  } catch (error) {
+    if (error.code === 'ECONNREFUSED') {
+      res.json({
+        success: false,
+        error: 'siggen-es-cross not running',
+        message: 'Start siggen-es-cross: pm2 start ecosystem.config.cjs --only siggen-es-cross'
+      });
+    } else {
+      logger.error('Failed to fetch ES cross-signal status:', error.message);
+      res.status(500).json({ error: 'Failed to fetch ES cross-signal status', details: error.message });
+    }
   }
 });
 
@@ -2459,18 +2884,39 @@ async function handlePriceUpdate(message) {
 
   logger.debug(`🔔 PRICE_UPDATE received: ${message.baseSymbol || message.symbol} = ${message.close} (source: ${message.source})`);
 
+  // Merge with existing stored data so session fields (from qsd) persist
+  // across candle updates (from du), and vice versa. Each broadcast then
+  // carries complete data — the frontend doesn't need to merge.
+  const key = message.baseSymbol || message.symbol;
+  const existing = monitoringState.prices.get(key) || {};
   const quoteData = {
+    ...existing,
+    // Always overwrite core fields
     symbol: message.symbol,
     baseSymbol: message.baseSymbol,
-    open: message.open,
-    high: message.high,
-    low: message.low,
     close: message.close,
-    previousClose: message.previousClose,
-    volume: message.volume,
     timestamp: message.timestamp,
-    source: message.source
+    source: message.source,
   };
+  // Only update fields that are actually present in this message
+  if (message.open != null) quoteData.open = message.open;
+  if (message.high != null) quoteData.high = message.high;
+  if (message.low != null) quoteData.low = message.low;
+  if (message.volume != null) quoteData.volume = message.volume;
+  if (message.previousClose != null) quoteData.previousClose = message.previousClose;
+  if (message.sessionOpen != null) quoteData.sessionOpen = message.sessionOpen;
+  if (message.sessionHigh != null) quoteData.sessionHigh = message.sessionHigh;
+  if (message.sessionLow != null) quoteData.sessionLow = message.sessionLow;
+  if (message.prevClose != null) quoteData.prevClose = message.prevClose;
+  if (message.change != null) quoteData.change = message.change;
+  if (message.changePercent != null) quoteData.changePercent = message.changePercent;
+  // candleTimestamp: only carry forward when present, otherwise clear it
+  // so qsd broadcasts don't carry a stale candle timestamp
+  if (message.candleTimestamp != null) {
+    quoteData.candleTimestamp = message.candleTimestamp;
+  } else {
+    delete quoteData.candleTimestamp;
+  }
 
   // Store by full contract symbol (e.g., "NQZ2024")
   monitoringState.prices.set(message.symbol, quoteData);
@@ -2823,6 +3269,7 @@ async function startup() {
       [CHANNELS.IV_SKEW, handleIVSkew],
       // Discord notification subscriptions
       [CHANNELS.TRADE_SIGNAL, handleTradeSignalDiscord],
+      [CHANNELS.TRADE_REJECTED, handleTradeRejectedDiscord],
       [CHANNELS.ORDER_FILLED, handleOrderFilledDiscord],
       [CHANNELS.POSITION_OPENED, handlePositionOpenedDiscord],
       [CHANNELS.POSITION_CLOSED, handlePositionClosedDiscord]

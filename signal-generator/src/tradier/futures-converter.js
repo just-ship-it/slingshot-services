@@ -146,29 +146,45 @@ class FuturesConverter {
       // Get latest prices from multiple sources
       const prices = await this.getLatestPrices();
 
+      let anyUpdated = false;
+
       if (prices.ES && prices.SPY) {
         this.ratios.ES_SPY = prices.ES / prices.SPY;
+        anyUpdated = true;
         logger.debug(`Updated ES/SPY ratio: ${this.ratios.ES_SPY.toFixed(4)} (ES=${prices.ES}, SPY=${prices.SPY})`);
       }
 
       if (prices.NQ && prices.QQQ) {
         this.ratios.NQ_QQQ = prices.NQ / prices.QQQ;
+        anyUpdated = true;
         logger.debug(`Updated NQ/QQQ ratio: ${this.ratios.NQ_QQQ.toFixed(4)} (NQ=${prices.NQ}, QQQ=${prices.QQQ})`);
+      }
+
+      // If no live prices available yet (e.g. startup before data streams connect),
+      // fall back to cached RTH ratios rather than leaving ratios null
+      if (!anyUpdated && this.rthCache.NQ_QQQ) {
+        this.ratios.ES_SPY = this.rthCache.ES_SPY;
+        this.ratios.NQ_QQQ = this.rthCache.NQ_QQQ;
+        this.ratios.lastUpdate = this.rthCache.timestamp;
+        this.lastRatioUpdate = now;
+        logger.info(`No live prices available yet - using cached RTH ratios: NQ/QQQ=${this.rthCache.NQ_QQQ?.toFixed(4)}, ES/SPY=${this.rthCache.ES_SPY?.toFixed(4)}`);
+        return this.ratios;
       }
 
       this.ratios.lastUpdate = new Date().toISOString();
       this.lastRatioUpdate = now;
 
       // Cache ratios during RTH for use during off-hours and persist to Redis
-      if (inRTH) {
+      // Only update cache if we actually got live prices (don't overwrite with nulls)
+      if (inRTH && anyUpdated) {
         this.rthCache = {
-          ES_SPY: this.ratios.ES_SPY,
-          NQ_QQQ: this.ratios.NQ_QQQ,
+          ES_SPY: this.ratios.ES_SPY ?? this.rthCache.ES_SPY,
+          NQ_QQQ: this.ratios.NQ_QQQ ?? this.rthCache.NQ_QQQ,
           timestamp: this.ratios.lastUpdate,
-          qqqSpot: prices.QQQ,
-          nqSpot: prices.NQ,
-          spySpot: prices.SPY,
-          esSpot: prices.ES
+          qqqSpot: prices.QQQ ?? this.rthCache.qqqSpot,
+          nqSpot: prices.NQ ?? this.rthCache.nqSpot,
+          spySpot: prices.SPY ?? this.rthCache.spySpot,
+          esSpot: prices.ES ?? this.rthCache.esSpot
         };
         await this.saveRTHCacheToRedis();
       }
@@ -268,7 +284,12 @@ class FuturesConverter {
     // Use fallback if no live ratio available
     if (!ratio) {
       ratio = this.fallbackRatios.ES_SPY;
-      logger.warn(`Using fallback ES/SPY ratio: ${ratio}`);
+      if (!this._warnedFallbackES) {
+        logger.warn(`Using fallback ES/SPY ratio: ${ratio} (will not repeat)`);
+        this._warnedFallbackES = true;
+      }
+    } else {
+      this._warnedFallbackES = false;
     }
 
     return spyValue * ratio;
@@ -283,7 +304,12 @@ class FuturesConverter {
     // Use fallback if no live ratio available
     if (!ratio) {
       ratio = this.fallbackRatios.NQ_QQQ;
-      logger.warn(`Using fallback NQ/QQQ ratio: ${ratio}`);
+      if (!this._warnedFallbackNQ) {
+        logger.warn(`Using fallback NQ/QQQ ratio: ${ratio} (will not repeat)`);
+        this._warnedFallbackNQ = true;
+      }
+    } else {
+      this._warnedFallbackNQ = false;
     }
 
     return qqqValue * ratio;

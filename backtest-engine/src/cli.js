@@ -68,7 +68,7 @@ export class CLI {
         type: 'string',
         description: 'Strategy to backtest',
         default: 'gex-recoil',
-        choices: ['gex-recoil', 'gex-recoil-enhanced', 'gex-ldpm-confluence', 'gex-ldpm-confluence-pullback', 'contrarian-bounce', 'gex-scalp', 'gex-scalp-confirmed', 'ict-smc', 'ict-ob', 'ldpm-level-sweep', 'order-flow-momentum', 'ofm', 'contrarian-orderflow', 'cof', 'gex-absorption', 'absorption', 'iv-skew-gex', 'iv-skew', 'cbbo-lt-volatility', 'cbbo-lt', 'gex-mean-reversion', 'gex-mr', 'lt-failed-breakdown', 'lt-fb', 'lt-level-crossing', 'lt-cross', 'lt-level-migration', 'lt-mig', 'regime-scalp', 'rs', 'gex-level-sweep', 'gex-sweep', 'sweep', 'micro-structure-scalper', 'micro-scalper', 'mss', 'trend-scalp', 'ts', 'level-bounce', 'lb']
+        choices: ['gex-recoil', 'gex-recoil-enhanced', 'gex-ldpm-confluence', 'gex-ldpm-confluence-pullback', 'contrarian-bounce', 'gex-scalp', 'gex-scalp-confirmed', 'ict-smc', 'ict-ob', 'ldpm-level-sweep', 'order-flow-momentum', 'ofm', 'contrarian-orderflow', 'cof', 'gex-absorption', 'absorption', 'iv-skew-gex', 'iv-skew', 'cbbo-lt-volatility', 'cbbo-lt', 'gex-mean-reversion', 'gex-mr', 'lt-failed-breakdown', 'lt-fb', 'lt-level-crossing', 'lt-cross', 'lt-level-migration', 'lt-mig', 'regime-scalp', 'rs', 'gex-level-sweep', 'gex-sweep', 'sweep', 'micro-structure-scalper', 'micro-scalper', 'mss', 'trend-scalp', 'ts', 'level-bounce', 'lb', 'overnight-gex-touch', 'overnight-gex', 'ogt', 'overnight-charm-vanna', 'ocv', 'es-cross-signal', 'es-cross', 'ecs']
       })
 
       .option('timeframe', {
@@ -873,6 +873,60 @@ export class CLI {
         default: false
       })
 
+      // ES Cross-Signal Entry Filters
+      .option('filter-regime-side', {
+        type: 'string',
+        description: 'Comma-separated regime_side combos to block (e.g. "strong_positive_buy,strong_negative_buy")'
+      })
+
+      .option('filter-lt-spacing-max', {
+        type: 'number',
+        description: 'Block signals when LT avg level spacing exceeds this (points)'
+      })
+
+      // Overnight Charm/Vanna Strategy Parameters
+      .group(['entry-hour-et', 'exit-hour-et', 'min-cex-percentile', 'require-vex-confirmation', 'use-vix-filter', 'max-vix', 'use-day-filter', 'blocked-days'], 'Overnight Charm/Vanna Strategy:')
+
+      .option('entry-hour-et', {
+        type: 'number',
+        description: 'Entry hour in ET (16 = 4pm EOD, 18 = 6pm futures open)'
+      })
+
+      .option('exit-hour-et', {
+        type: 'number',
+        description: 'Exit hour in ET (9.5 = 9:30am RTH open, 2 = 2am early exit)'
+      })
+
+      .option('min-cex-percentile', {
+        type: 'number',
+        description: 'Minimum CEX magnitude percentile to trade (0-100, higher = stronger signals only)'
+      })
+
+      .option('require-vex-confirmation', {
+        type: 'boolean',
+        description: 'Require VEX (vanna) to agree with CEX direction'
+      })
+
+      .option('use-vix-filter', {
+        type: 'boolean',
+        description: 'Filter by VIX regime (skip extremes)'
+      })
+
+      .option('max-vix', {
+        type: 'number',
+        description: 'Max VIX level (above = crisis, skip trade)'
+      })
+
+      .option('use-day-filter', {
+        type: 'boolean',
+        description: 'Enable day-of-week filter'
+      })
+
+      .option('blocked-days', {
+        type: 'string',
+        description: 'Comma-separated days to skip (e.g., Friday,Monday)'
+      })
+
       .help('h')
       .alias('h', 'help')
       .version('1.0.0')
@@ -1022,8 +1076,10 @@ export class CLI {
       strategyParams.longOnly = true;
     }
 
-    // GEX level selection
-    if (args.gexLevels) strategyParams.tradeLevels = args.gexLevels.split(',').map(s => parseInt(s.trim(), 10));
+    // GEX level selection — only override if strategy doesn't already use string-based level names
+    if (args.gexLevels && (!Array.isArray(strategyParams.tradeLevels) || typeof strategyParams.tradeLevels[0] !== 'string')) {
+      strategyParams.tradeLevels = args.gexLevels.split(',').map(s => parseInt(s.trim(), 10));
+    }
 
     // Level type filtering parameters
     if (args.blockedLevelTypes) strategyParams.blockedLevelTypes = args.blockedLevelTypes.split(',').map(s => s.trim());
@@ -1166,6 +1222,26 @@ export class CLI {
     // Invert signals (test inverse strategy)
     if (args.invertSignals !== undefined) {
       strategyParams.invertSignals = args.invertSignals;
+    }
+
+    // ES Cross-Signal entry filters
+    if (args.filterRegimeSide) {
+      strategyParams.filterRegimeSide = args.filterRegimeSide.split(',').map(s => s.trim());
+    }
+    if (args.filterLtSpacingMax !== undefined) {
+      strategyParams.filterLtSpacingMax = args.filterLtSpacingMax;
+    }
+
+    // Overnight Charm/Vanna Strategy Parameters
+    if (args.entryHourEt !== undefined) strategyParams.entryHourET = args.entryHourEt;
+    if (args.exitHourEt !== undefined) strategyParams.exitHourET = args.exitHourEt;
+    if (args.minCexPercentile !== undefined) strategyParams.minCexPercentile = args.minCexPercentile;
+    if (args.requireVexConfirmation !== undefined) strategyParams.requireVexConfirmation = args.requireVexConfirmation;
+    if (args.useVixFilter !== undefined) strategyParams.useVixFilter = args.useVixFilter;
+    if (args.maxVix !== undefined) strategyParams.maxVix = args.maxVix;
+    if (args.useDayFilter !== undefined) strategyParams.useDayFilter = args.useDayFilter;
+    if (args.blockedDays && typeof args.blockedDays === 'string') {
+      strategyParams.blockedDays = args.blockedDays.split(',').map(s => s.trim());
     }
 
     // Create backtest configuration

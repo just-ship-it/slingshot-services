@@ -386,11 +386,17 @@ Historical data for backtesting is stored in `/backtest-engine/data/`:
 
 | Data Type | Location | Format | Date Range | Frequency |
 |-----------|----------|--------|------------|-----------|
-| NQ OHLCV | `ohlcv/NQ_ohlcv_1m.csv` | CSV | Dec 2020 - Dec 2025 | 1-minute |
-| QQQ OHLCV | `ohlcv/QQQ_ohlcv_1m.csv` | CSV | Dec 2020 - present | 1-minute |
-| GEX Levels | `gex/NQ_gex_levels.csv` | CSV | Mar 2023 - Dec 2025 | Daily |
-| GEX Intraday | `gex/nq_gex_*.json` | JSON | Mar 2023 - Dec 2025 | 15-min snapshots |
-| LT Levels | `liquidity/NQ_liquidity_levels.csv` | CSV | Mar 2023 - Dec 2025 | 15-minute |
+| NQ OHLCV | `ohlcv/nq/NQ_ohlcv_1m.csv` | CSV | Dec 2020 - Dec 2025 | 1-minute |
+| ES OHLCV | `ohlcv/es/ES_ohlcv_1m.csv` | CSV | Jan 2021 - Jan 2026 | 1-minute |
+| QQQ OHLCV | `ohlcv/qqq/QQQ_ohlcv_1m.csv` | CSV | Dec 2020 - present | 1-minute |
+| SPY OHLCV | `ohlcv/spy/SPY_ohlcv_1m.csv` | CSV | Dec 2020 - present | 1-minute |
+| NQ GEX Daily | `gex/nq/NQ_gex_levels.csv` | CSV | Mar 2023 - Dec 2025 | Daily |
+| NQ GEX Intraday | `gex/nq/nq_gex_*.json` | JSON | Mar 2023 - Jan 2026 | 15-min snapshots |
+| ES GEX Intraday | `gex/es/es_gex_*.json` | JSON | Mar 2023 - Jan 2026 | 15-min snapshots |
+| NQ LT Levels | `liquidity/nq/NQ_liquidity_levels.csv` | CSV | Mar 2023 - Dec 2025 | 15-minute |
+| ES LT Levels (Daily) | `liquidity/es/ES_liquidity_levels_1D.csv` | CSV | Apr 2000 - Feb 2026 | Daily |
+| ES LT Levels (Hourly) | `liquidity/es/ES_liquidity_levels_1h.csv` | CSV | Feb 2020 - Feb 2026 | Hourly |
+| ES LT Levels (15m) | `liquidity/es/ES_liquidity_levels_15m.csv` | CSV | Jan 2020 - Feb 2026 | 15-minute |
 | ATM IV | `iv/qqq_atm_iv_15m.csv` | CSV | Jan 2025 - Dec 2025 | 15-minute |
 | Options CBBO | `cbbo-1m/*.csv` | CSV | Jan 2025 | 1-minute |
 | Options Definitions | `definition/*.csv` | CSV | Jan 2021 - present | Daily |
@@ -401,19 +407,21 @@ Historical data for backtesting is stored in `/backtest-engine/data/`:
 | QQQ Options TCBBO | `tcbbo/qqq/*.csv` | CSV | Jan 2025 - Jan 2026 | Tick-level |
 
 ### OHLCV Data
-Price data with columns: `ts_event, open, high, low, close, volume, symbol`
-- NQ futures: ~2.5M 1-minute bars
+Price data with columns: `ts_event, rtype, publisher_id, instrument_id, open, high, low, close, volume, symbol`
+- NQ futures: ~2.5M 1-minute bars (also 1-second available)
+- ES futures: ~10.2M 1-minute bars (also 1-second available, ~6.3GB)
 - QQQ ETF: ~1M 1-minute bars
+- SPY ETF: ~1M 1-minute bars
 - VIX options: 1-minute bars per contract (Jan 2021 - Jan 2026, ~600MB)
-- 1-second data available (large files)
+- 1-second data available for NQ and ES (large files)
 
-**IMPORTANT: Calendar Spread Filtering**: The NQ OHLCV files contain calendar spread entries that must be filtered out during backtesting. These are NOT actual price quotes - they represent the price difference between two contracts with different expiries. Calendar spreads have a dash between two symbols:
+**IMPORTANT: Calendar Spread Filtering**: The NQ and ES OHLCV files contain calendar spread entries that must be filtered out during backtesting. These are NOT actual price quotes - they represent the price difference between two contracts with different expiries. Calendar spreads have a dash between two symbols:
 ```
 2020-12-28T09:00:00.000000000Z,33,1,20987,-14.850000000,-14.850000000,-14.850000000,-14.850000000,1,NQH1-NQM1
 ```
 Filter by checking if the `symbol` column contains a dash (e.g., `NQH1-NQM1`).
 
-**IMPORTANT: Primary Contract Filtering**: The NQ OHLCV files contain multiple contract months at the same timestamps (e.g., NQH5 at 21200 and NQM5 at 21425 simultaneously). These different contracts have ~100-250 point price differences. If you load all candles without filtering, your analysis will see artificial price swings when switching between contracts, causing FALSE signals and INVALID results.
+**IMPORTANT: Primary Contract Filtering**: The NQ and ES OHLCV files contain multiple contract months at the same timestamps (e.g., NQH5 at 21200 and NQM5 at 21425 simultaneously, or ESH6 and ESM6). These different contracts have significant price differences. If you load all candles without filtering, your analysis will see artificial price swings when switching between contracts, causing FALSE signals and INVALID results.
 
 **You MUST use `filterPrimaryContract()` when loading OHLCV data for any analysis or backtesting.** This function:
 1. Groups candles by hour
@@ -423,9 +431,30 @@ Filter by checking if the `symbol` column contains a dash (e.g., `NQH1-NQM1`).
 The backtest engine implements this in `csv-loader.js`. Any standalone analysis scripts must also implement this filtering. Failure to do so will produce dramatically wrong results (e.g., 84% win rate when actual is 30%).
 
 ### GEX Levels
-Gamma exposure levels calculated from QQQ options:
-- **Daily CSV**: `date, nq_gamma_flip, nq_put_wall_1/2/3, nq_call_wall_1/2/3, total_gex, regime`
-- **Intraday JSON**: 15-min snapshots with `gamma_flip, call_wall, put_wall, resistance[], support[]`
+Gamma exposure levels calculated from ETF options and translated to futures prices:
+- **NQ GEX** (from QQQ options): `gex/nq/` — daily CSV + 15-min intraday JSON
+- **ES GEX** (from SPY options): `gex/es/` — 15-min intraday JSON
+
+**Daily CSV** (NQ only): `date, nq_gamma_flip, nq_put_wall_1/2/3, nq_call_wall_1/2/3, total_gex, regime`
+
+**Intraday JSON** (both NQ and ES): 15-min snapshots with fields:
+- `{futures}_spot`, `{etf}_spot`, `multiplier` — price translation ratio
+- `gamma_flip`, `call_wall`, `put_wall` — key levels (in futures price space)
+- `resistance[0-4]`, `support[0-4]` — 5 levels each
+- `total_gex`, `total_vex`, `total_cex` — aggregate Greeks
+- `regime` — `strong_positive`, `positive`, `neutral`, `negative`, `strong_negative`
+- `options_count` — number of contracts in calculation
+
+**Generation**: Both products use `backtest-engine/scripts/generate-intraday-gex.py`:
+```bash
+# NQ (default)
+python3 generate-intraday-gex.py --start 2023-03-28 --end 2026-01-28
+
+# ES
+python3 generate-intraday-gex.py --product es --start 2023-03-28 --end 2026-01-28
+```
+
+The script uses Brenner-Subrahmanyam IV approximation from OPRA statistics (OI + close prices), computes Black-Scholes gamma/vega/charm per contract, aggregates by strike, and translates ETF levels to futures using the intraday spot ratio.
 
 **TradingView Indicator Format**: The GEX levels can be exported in a CSV format compatible with the TradingView GEX indicator:
 ```
@@ -433,7 +462,23 @@ cboe_zero,cboe_call,cboe_put,cboe_r1,cboe_r2,cboe_r3,cboe_r4,cboe_r5,cboe_s1,cbo
 ```
 
 ### Liquidity Trigger Levels
-TradingView-sourced support/resistance: `datetime, sentiment, level_1-5`
+TradingView-sourced support/resistance levels exported from the Liquidity Data Exporter indicator.
+
+**NQ**: `liquidity/nq/NQ_liquidity_levels.csv` — 15-minute, Mar 2023 - Dec 2025
+**ES**: Multi-timeframe coverage in `liquidity/es/`:
+- `ES_liquidity_levels_1D.csv` — Daily, Apr 2000 - Feb 2026 (6,531 snapshots)
+- `ES_liquidity_levels_1h.csv` — Hourly, Feb 2020 - Feb 2026 (35,408 snapshots)
+- `ES_liquidity_levels_15m.csv` — 15-minute, Jan 2020 - Feb 2026 (143,181 snapshots)
+
+**Important**: LT levels are fundamentally different across timeframes — different Fibonacci lookback periods on different chart resolutions produce distinct level sets. They should NOT be merged; each timeframe captures different liquidity dynamics.
+
+**CSV format**: `datetime,unix_timestamp,sentiment,level_1,level_2,level_3,level_4,level_5`
+
+**Conversion**: Raw TradingView xlsx exports are converted via `scripts/convert-lt-excel.py`:
+```bash
+python3 scripts/convert-lt-excel.py <input.xlsx> <output.csv>
+```
+
 - Sentiment: BULLISH or BEARISH (derived from level configuration — not independently predictive, see LT Configuration Filters below)
 - 5 price levels per timestamp, each corresponding to a Fibonacci lookback period:
 

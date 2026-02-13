@@ -15,7 +15,7 @@
  */
 
 import { BaseStrategy } from './base-strategy.js';
-import { CandleAggregator } from '../../backtest-engine/src/data/candle-aggregator.js';
+import { CandleAggregator } from '../utils/candle-aggregator.js';
 import { ICTStructureAnalyzer } from '../indicators/ict-structure-analyzer.js';
 import { ICTStateMachine } from './ict-smc/ict-state-machine.js';
 import { MWPatternDetector } from './ict-smc/pattern-detector.js';

@@ -26,6 +26,19 @@ import { CVDCalculator, CVDFilter } from '../indicators/cvd.js';
 import { BookImbalanceCalculator, BookImbalanceFilter } from '../indicators/book-imbalance.js';
 
 export class GexScalpStrategy extends BaseStrategy {
+  static getDataRequirements() {
+    return {
+      candles: {
+        baseSymbol: 'NQ',
+        quoteSymbols: ['CME_MINI:NQ1!', 'CME_MINI:MNQ1!', 'NASDAQ:QQQ']
+      },
+      gex: { etfSymbol: 'QQQ', futuresSymbol: 'NQ', defaultMultiplier: 41.5 },
+      lt: false,
+      tradier: false,
+      ivSkew: false
+    };
+  }
+
   constructor(params = {}) {
     super(params);
 

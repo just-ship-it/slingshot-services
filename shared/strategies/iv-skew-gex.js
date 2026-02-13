@@ -18,6 +18,20 @@
 import { BaseStrategy } from './base-strategy.js';
 
 export class IVSkewGexStrategy extends BaseStrategy {
+  static getDataRequirements() {
+    return {
+      candles: {
+        baseSymbol: 'NQ',
+        quoteSymbols: ['CME_MINI:NQ1!', 'CME_MINI:MNQ1!', 'NASDAQ:QQQ']
+      },
+      gex: { etfSymbol: 'QQQ', futuresSymbol: 'NQ', defaultMultiplier: 41.5 },
+      lt: false,
+      tradier: true,
+      tradierSymbols: ['QQQ'],
+      ivSkew: true
+    };
+  }
+
   constructor(params = {}) {
     super(params);
 

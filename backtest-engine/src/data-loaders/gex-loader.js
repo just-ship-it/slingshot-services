@@ -13,6 +13,7 @@ export class GexLoader {
     // Check for ticker subdirectory (new structure) or flat (old structure)
     const tickerSubdir = path.join(dataDirectory, ticker.toLowerCase());
     this.dataDirectory = fs.existsSync(tickerSubdir) ? tickerSubdir : dataDirectory;
+    this.ticker = ticker.toLowerCase();
     this.loadedData = new Map();
     this.sortedTimestamps = [];
     this.intervalMs = 15 * 60 * 1000; // 15-minute intervals
@@ -33,14 +34,24 @@ export class GexLoader {
     while (current <= endDate) {
       const dateStr = current.toISOString().split('T')[0];
 
-      // Try new NQ format first, then legacy QQQ format
+      // Try ticker-specific format first, then NQ, then legacy QQQ
+      const tickerFilename = `${this.ticker}_gex_${dateStr}.json`;
+      const tickerFilepath = path.join(this.dataDirectory, tickerFilename);
       const nqFilename = `nq_gex_${dateStr}.json`;
       const nqFilepath = path.join(this.dataDirectory, nqFilename);
       const qqFilename = `qqq_gex_${dateStr}.json`;
       const qqFilepath = path.join(this.dataDirectory, qqFilename);
 
       try {
-        if (fs.existsSync(nqFilepath)) {
+        if (fs.existsSync(tickerFilepath)) {
+          const fileData = JSON.parse(fs.readFileSync(tickerFilepath, 'utf8'));
+          this.processNQFileData(fileData);
+          loadedFiles.push(tickerFilename);
+        } else if (this.ticker !== 'nq' && fs.existsSync(nqFilepath)) {
+          const fileData = JSON.parse(fs.readFileSync(nqFilepath, 'utf8'));
+          this.processNQFileData(fileData);
+          loadedFiles.push(nqFilename);
+        } else if (fs.existsSync(nqFilepath)) {
           const fileData = JSON.parse(fs.readFileSync(nqFilepath, 'utf8'));
           this.processNQFileData(fileData);
           loadedFiles.push(nqFilename);
@@ -77,10 +88,18 @@ export class GexLoader {
       const timestamp = new Date(record.timestamp);
       const timestampKey = timestamp.getTime();
 
+      // Handle both NQ and ES spot field names
+      const futuresSpot = record.nq_spot ?? record.es_spot ?? null;
+      const etfSpot = record.qqq_spot ?? record.spy_spot ?? null;
+
       this.loadedData.set(timestampKey, {
         timestamp,
         nq_spot: record.nq_spot,
+        es_spot: record.es_spot,
         qqq_spot: record.qqq_spot,
+        spy_spot: record.spy_spot,
+        futures_spot: futuresSpot,
+        etf_spot: etfSpot,
         multiplier: record.multiplier,
         gamma_flip: record.gamma_flip,
         call_wall: record.call_wall,
@@ -97,7 +116,7 @@ export class GexLoader {
         isNegativeGEX: record.total_gex < -1e9,
         gexMagnitude: Math.abs(record.total_gex),
         // Compatibility aliases for strategies expecting legacy field names
-        spot_price: record.nq_spot,
+        spot_price: futuresSpot,
         nq_gamma_flip: record.gamma_flip,
         nq_put_wall_1: record.put_wall,
         nq_put_wall_2: record.support?.[1] || null,

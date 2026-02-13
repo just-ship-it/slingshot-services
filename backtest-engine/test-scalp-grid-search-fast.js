@@ -8,7 +8,7 @@
 import fs from 'fs';
 import path from 'path';
 import { CSVLoader } from './src/data/csv-loader.js';
-import { CandleAggregator } from './src/data/candle-aggregator.js';
+import { CandleAggregator } from '../shared/utils/candle-aggregator.js';
 import { TradeSimulator } from './src/execution/trade-simulator.js';
 import { PerformanceCalculator } from './src/analytics/performance-calculator.js';
 import { ContrarianBounceStrategy } from '../shared/strategies/contrarian-bounce.js';

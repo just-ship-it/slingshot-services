@@ -8,7 +8,7 @@
 import fs from 'fs';
 import path from 'path';
 import { CSVLoader, SecondDataProvider } from './data/csv-loader.js';
-import { CandleAggregator } from './data/candle-aggregator.js';
+import { CandleAggregator } from '../../shared/utils/candle-aggregator.js';
 import { TradeSimulator } from './execution/trade-simulator.js';
 import { PerformanceCalculator } from './analytics/performance-calculator.js';
 import { LTLevelAnalyzer } from './analytics/lt-level-analyzer.js';
@@ -37,10 +37,14 @@ import { GexLevelSweepStrategy } from '../../shared/strategies/gex-level-sweep.j
 import { MicroStructureScalperStrategy } from '../../shared/strategies/micro-structure-scalper.js';
 import { TrendScalpStrategy } from '../../shared/strategies/trend-scalp.js';
 import { LevelBounceStrategy } from '../../shared/strategies/level-bounce.js';
+import { OvernightGexTouchStrategy } from '../../shared/strategies/overnight-gex-touch.js';
+import { OvernightCharmVannaStrategy } from '../../shared/strategies/overnight-charm-vanna.js';
+import { ESCrossSignalStrategy } from '../../shared/strategies/es-cross-signal.js';
 import { SqueezeMomentumIndicator } from '../../shared/indicators/squeeze-momentum.js';
 import { GexLoader } from './data-loaders/gex-loader.js';
 import { IVLoader } from './data-loaders/iv-loader.js';
 import { CBBOLoader } from './data-loaders/cbbo-loader.js';
+import { CharmVannaLoader } from './data-loaders/charm-vanna-loader.js';
 import { DatabentoTradeLoader } from './data/databento-loader.js';
 import { MBPLoader } from './data/mbp-loader.js';
 
@@ -59,8 +63,8 @@ export class BacktestEngine {
       commission: config.commission,
       slippage: this.defaultConfig.backtesting.slippage,
       contractSpecs: this.defaultConfig.contracts,
-      forceCloseAtMarketClose: this.defaultConfig.backtesting.forceCloseAtMarketClose,
-      marketCloseTimeUTC: this.defaultConfig.backtesting.marketCloseTimeUTC,
+      forceCloseAtMarketClose: config.strategyParams?.forceCloseAtMarketClose ?? this.defaultConfig.backtesting.forceCloseAtMarketClose,
+      marketCloseTimeUTC: config.strategyParams?.marketCloseTimeUTC ?? this.defaultConfig.backtesting.marketCloseTimeUTC,
       verbose: config.verbose,
       debugMode: config.debugMode,
       // Hybrid trailing stop configuration
@@ -129,6 +133,10 @@ export class BacktestEngine {
     const cbboDir = config.cbboDataDir || path.join(config.dataDir, 'cbbo-1m', 'qqq');
     this.cbboLoader = new CBBOLoader(cbboDir);
     this.cbboDataLoaded = false;
+
+    // Initialize Charm/Vanna loader for overnight ES strategy
+    this.charmVannaLoader = new CharmVannaLoader(config.dataDir);
+    this.charmVannaDataLoaded = false;
 
     // Initialize strategy
     this.strategy = this.createStrategy(config.strategy, config.strategyParams);
@@ -286,27 +294,38 @@ export class BacktestEngine {
     const calendarSpreads = ohlcvResult.calendarSpreads;
 
     // Initialize 1-second data provider if available and enabled
+    const ohlcvFilePath = this.csvLoader.getOHLCVFilePath(this.config.ticker);
+    const isContinuousOHLCV = ohlcvFilePath.includes('_continuous');
+
     if (this.useSecondResolution) {
       const tickerLower = this.config.ticker.toLowerCase();
       const tickerUpper = this.config.ticker.toUpperCase();
 
-      // Check multiple path patterns (subdirectory structure and legacy flat structure)
-      const secondFilePaths = [
-        path.join(this.config.dataDir, 'ohlcv', tickerLower, `${tickerUpper}_ohlcv_1s.csv`),
-        path.join(this.config.dataDir, 'ohlcv', `${tickerUpper}_ohlcv_1s.csv`),
-      ];
+      // Check multiple path patterns; prefer continuous 1s when using continuous 1m
+      const secondFilePaths = isContinuousOHLCV
+        ? [
+            path.join(this.config.dataDir, 'ohlcv', tickerLower, `${tickerUpper}_ohlcv_1s_continuous.csv`),
+          ]
+        : [
+            path.join(this.config.dataDir, 'ohlcv', tickerLower, `${tickerUpper}_ohlcv_1s.csv`),
+            path.join(this.config.dataDir, 'ohlcv', `${tickerUpper}_ohlcv_1s.csv`),
+          ];
 
       const secondFilePath = secondFilePaths.find(p => fs.existsSync(p));
 
       if (secondFilePath) {
         if (!this.config.quiet) {
-          console.log(`🔬 Initializing 1-second data provider for accurate trade execution...`);
+          const label = isContinuousOHLCV ? ' (back-adjusted continuous)' : '';
+          console.log(`🔬 Initializing 1-second data provider${label} for accurate trade execution...`);
         }
         this.secondDataProvider = new SecondDataProvider(secondFilePath);
         await this.secondDataProvider.initialize();
       } else {
         if (!this.config.quiet) {
-          console.log('⚠️  No 1-second data file found, using 1-minute resolution for exits');
+          const reason = isContinuousOHLCV
+            ? 'No continuous 1-second file found (run build-es-1s-continuous.py)'
+            : 'No 1-second data file found';
+          console.log(`⚠️  ${reason}, using 1-minute resolution for exits`);
         }
       }
     }
@@ -478,6 +497,21 @@ export class BacktestEngine {
       }
     }
 
+    // Load Charm/Vanna data for overnight ES strategy
+    const isCharmVannaStrategy = this.config.strategy === 'overnight-charm-vanna' ||
+                                  this.config.strategy === 'ocv';
+    if (isCharmVannaStrategy) {
+      await this.charmVannaLoader.loadDaily(this.config.startDate, this.config.endDate);
+      const cvStats = this.charmVannaLoader.getStats();
+      if (!this.config.quiet && cvStats.dailyCount > 0) {
+        console.log(`📊 Charm/Vanna data: ${cvStats.dailyCount} daily records (${cvStats.startDate} to ${cvStats.endDate})`);
+        console.log(`   Avg CEX: ${cvStats.avgCex?.toExponential(2)} | Avg VEX: ${cvStats.avgVex?.toExponential(2)}`);
+      } else if (!this.config.quiet && cvStats.dailyCount === 0) {
+        console.warn('⚠️  No Charm/Vanna data found - run scripts/precompute-charm-vanna.py first');
+      }
+      this.charmVannaDataLoaded = cvStats.dailyCount > 0;
+    }
+
     return {
       candles: aggregatedCandles,        // For strategy entry signals
       originalCandles: ohlcvData,        // For 1m exit monitoring
@@ -490,7 +524,8 @@ export class BacktestEngine {
       cvdMap: this.cvdMap,               // CVD data aligned to candle timestamps (Phase 3)
       bookImbalanceMap: this.bookImbalanceMap,  // Book imbalance data (Phase 4)
       ivLoader: this.ivLoader,           // IV data for IV Skew GEX strategy
-      cbboLoader: this.cbboDataLoaded ? this.cbboLoader : null  // CBBO data for volatility strategy
+      cbboLoader: this.cbboDataLoaded ? this.cbboLoader : null,  // CBBO data for volatility strategy
+      charmVannaLoader: this.charmVannaDataLoaded ? this.charmVannaLoader : null  // Charm/Vanna data
     };
   }
 
@@ -553,6 +588,15 @@ export class BacktestEngine {
       }
     }
 
+    // Load Charm/Vanna data into strategy if available (Overnight Charm/Vanna strategy)
+    if (data.charmVannaLoader && this.strategy.loadCharmVannaData) {
+      this.strategy.loadCharmVannaData(data.charmVannaLoader);
+      const stats = data.charmVannaLoader.getStats();
+      if (!this.config.quiet) {
+        console.log(`📊 Charm/Vanna data loaded into strategy (${stats.dailyCount} days)`);
+      }
+    }
+
     // Initialize trade simulator with calendar spread data
     if (data.calendarSpreads && data.calendarSpreads.length > 0) {
       this.tradeSimulator.initializeCalendarSpreads(data.calendarSpreads);
@@ -590,6 +634,9 @@ export class BacktestEngine {
       // This ensures signals generated at 08:45 (end of this period) can only fill on 08:45+ candles
       const candleStartTime = candle.timestamp; // Period start (not shifted back 14 minutes)
       const candleEndTime = candle.timestamp + timeframeMs; // Period end (exclusive)
+
+      // Save start index for potential same-candle fill replay after signal generation
+      const periodCandle1mStart = candleIndex1m;
 
       // Process all 1-minute candles within this 15-minute period for exit monitoring
       while (candleIndex1m < data.originalCandles.length) {
@@ -708,6 +755,8 @@ export class BacktestEngine {
       // IMPORTANT: Signal is generated at candle CLOSE time, not START time
       // The candle.timestamp is the period START, so close time = timestamp + timeframeMs
       // NOTE: GEX levels check removed to allow non-GEX strategies (e.g., LT Failed Breakdown)
+      let signal = null;
+      let order = null;
       if (prevCandle) {
         // Prepare historical candles for momentum calculation (need enough for squeeze indicator)
         const historicalCandles = data.candles.slice(Math.max(0, i - 49), i + 1); // 50 candles for proper momentum calculation
@@ -735,7 +784,7 @@ export class BacktestEngine {
           }
         }
 
-        const signal = this.strategy.evaluateSignal(candle, prevCandle, marketData, options);
+        signal = this.strategy.evaluateSignal(candle, prevCandle, marketData, options);
 
         if (signal) {
           // Track the contract symbol for rollover handling
@@ -793,7 +842,7 @@ export class BacktestEngine {
           }
 
           // Process signal through trade simulator with correct signal time
-          const order = this.tradeSimulator.processSignal(signal, signalTime);
+          order = this.tradeSimulator.processSignal(signal, signalTime);
           if (order && !this.config.quiet && this.config.verbose) {
             const signalDate = new Date(signalTime).toISOString();
             console.log(`\n📊 Signal generated: ${signal.side.toUpperCase()} ${signal.symbol} @ ${signal.price || signal.entryPrice} (${signalDate})`);
@@ -803,6 +852,57 @@ export class BacktestEngine {
             if (!this.config.quiet && this.config.verbose) {
               const signalDate = new Date(signalTime).toISOString();
               console.log(`\n⏸️  Signal rejected: ${signal.side.toUpperCase()} ${signal.symbol} @ ${signal.price || signal.entryPrice} (${signalDate}) - Position already active`);
+            }
+          }
+        }
+      }
+
+      // Same-candle fill: replay 1-second data to fill limit orders on the signal candle.
+      // This enables strategies that detect events (e.g., GEX level touch) on a higher
+      // timeframe candle, then fill the limit order at exact 1s resolution within that candle.
+      if (signal && signal.sameCandleFill && this.secondDataProvider && this.tradeSimulator.hasActiveTrades()) {
+        const pendingOrders = this.tradeSimulator.getPendingOrders();
+        if (pendingOrders.length > 0) {
+          for (let j = periodCandle1mStart; j < candleIndex1m; j++) {
+            const replayCandle1m = data.originalCandles[j];
+            if (replayCandle1m.timestamp < candleStartTime) continue;
+
+            if (!this.tradeSimulator.hasActiveTrades()) break;
+
+            const secondCandles = await this.secondDataProvider.getSecondsForMinute(replayCandle1m.timestamp);
+            const replayUpdates = this.tradeSimulator.updateActiveTradesWithSeconds(secondCandles, replayCandle1m);
+
+            // Track LT level hits during replay
+            this.tradeSimulator.getActiveTrades().forEach(activeTrade => {
+              ltAnalyzer.updateLevelHits(activeTrade.id, replayCandle1m);
+            });
+
+            replayUpdates.forEach(update => {
+              if (update.status === 'completed') {
+                ltAnalyzer.completeTradeAnalysis(update.id, update);
+                trades.push(update);
+                currentEquity += update.netPnL;
+                equityCurve.push({
+                  timestamp: update.exitTime,
+                  equity: currentEquity,
+                  trade: update
+                });
+                if (!this.config.quiet && this.config.verbose) {
+                  const pnlColor = update.netPnL >= 0 ? '✅' : '❌';
+                  console.log(`\n${pnlColor} Trade ${update.id} completed (same-candle): ${update.exitReason} | P&L: $${update.netPnL.toFixed(2)}`);
+                }
+              }
+            });
+          }
+
+          // Cancel any pending orders that didn't fill during replay
+          const stillPending = this.tradeSimulator.getPendingOrders();
+          for (const pending of stillPending) {
+            if (pending.signal?.sameCandleFill) {
+              this.tradeSimulator.cancelPendingOrder(pending.id, 'same_candle_no_fill');
+              if (!this.config.quiet && this.config.verbose) {
+                console.log(`\n⏸️  Same-candle limit at ${pending.entryPrice} did not fill on 1s data — cancelled`);
+              }
             }
           }
         }
@@ -1109,6 +1209,17 @@ export class BacktestEngine {
       case 'level-bounce':
       case 'lb':
         return new LevelBounceStrategy(params);
+      case 'overnight-gex-touch':
+      case 'overnight-gex':
+      case 'ogt':
+        return new OvernightGexTouchStrategy(params);
+      case 'overnight-charm-vanna':
+      case 'ocv':
+        return new OvernightCharmVannaStrategy(params);
+      case 'es-cross-signal':
+      case 'es-cross':
+      case 'ecs':
+        return new ESCrossSignalStrategy(params);
       default:
         throw new Error(`Unknown strategy: ${strategyName}`);
     }

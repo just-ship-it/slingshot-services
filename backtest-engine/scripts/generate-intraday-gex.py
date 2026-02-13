@@ -10,8 +10,14 @@ Methodology matches gex-engine/src/gex/gex_calculator.py:
 - Calculates gamma, vega, charm per contract
 - Aggregates to strike-level GEX/VEX/CEX
 
+Supports both NQ (from QQQ options) and ES (from SPY options).
+
 Usage:
+    # NQ (default, backward compatible)
     python generate-intraday-gex.py --start 2025-12-29 --end 2026-01-28
+
+    # ES
+    python generate-intraday-gex.py --product es --start 2023-03-28 --end 2026-01-28
 """
 
 import os
@@ -25,12 +31,30 @@ from pathlib import Path
 from scipy.stats import norm
 import subprocess
 
-# Paths
+# Base data directory
 BASE_DIR = Path('/home/drew/projects/slingshot-services/backtest-engine/data')
-STATS_DIR = BASE_DIR / 'statistics' / 'qqq'
-QQQ_OHLCV = BASE_DIR / 'ohlcv' / 'qqq' / 'QQQ_ohlcv_1m.csv'
-NQ_OHLCV = BASE_DIR / 'ohlcv' / 'nq' / 'NQ_ohlcv_1m.csv'
-OUTPUT_DIR = BASE_DIR / 'gex' / 'nq'
+
+# Product configurations: options ETF -> futures contract
+PRODUCTS = {
+    'nq': {
+        'futures_symbol': 'NQ',
+        'etf_symbol': 'QQQ',
+        'stats_dir': BASE_DIR / 'statistics' / 'qqq',
+        'etf_ohlcv': BASE_DIR / 'ohlcv' / 'qqq' / 'QQQ_ohlcv_1m.csv',
+        'futures_ohlcv': BASE_DIR / 'ohlcv' / 'nq' / 'NQ_ohlcv_1m.csv',
+        'output_dir': BASE_DIR / 'gex' / 'nq',
+        'output_prefix': 'nq_gex',
+    },
+    'es': {
+        'futures_symbol': 'ES',
+        'etf_symbol': 'SPY',
+        'stats_dir': BASE_DIR / 'statistics' / 'spy',
+        'etf_ohlcv': BASE_DIR / 'ohlcv' / 'spy' / 'SPY_ohlcv_1m.csv',
+        'futures_ohlcv': BASE_DIR / 'ohlcv' / 'es' / 'ES_ohlcv_1m.csv',
+        'output_dir': BASE_DIR / 'gex' / 'es',
+        'output_prefix': 'es_gex',
+    },
+}
 
 # Constants
 RISK_FREE_RATE = 0.05
@@ -52,9 +76,9 @@ def implied_vol_approx(price, S, K, T, opt_type):
     return max(0.05, min(2.0, iv))  # Clamp between 5% and 200%
 
 
-def load_statistics(date_str):
+def load_statistics(stats_dir, date_str):
     """Load statistics file for a date, return OI and close prices per contract."""
-    csv_path = STATS_DIR / f'opra-pillar-{date_str.replace("-", "")}.statistics.csv'
+    csv_path = stats_dir / f'opra-pillar-{date_str.replace("-", "")}.statistics.csv'
 
     if not csv_path.exists():
         return None
@@ -77,7 +101,7 @@ def load_statistics(date_str):
         return None
 
     # Vectorized symbol parsing
-    # Format: "QQQ   YYMMDDTSSSSSSSS" where T is C/P
+    # Format: "QQQ   YYMMDDTSSSSSSSS" or "SPY   YYMMDDTSSSSSSSS" where T is C/P
     symbols = merged['symbol'].str.strip()
     contracts = symbols.str.split().str[-1]
 
@@ -286,34 +310,36 @@ def calculate_gex_at_spot(stats_df, spot, ref_date):
     }
 
 
-def generate_day(date_str, stats_df, qqq_prices, nq_prices):
+def generate_day(date_str, stats_df, etf_prices, futures_prices, config):
     """Generate intraday GEX JSON for a single day."""
     snapshots = []
     ref_date = datetime.strptime(date_str, '%Y-%m-%d')
+    futures_sym = config['futures_symbol'].lower()
+    etf_sym = config['etf_symbol'].lower()
 
     # Get all 15-minute buckets for the day
-    for bucket_key in sorted(qqq_prices.keys()):
-        qqq_spot = qqq_prices[bucket_key]
-        nq_spot = nq_prices.get(bucket_key)
+    for bucket_key in sorted(etf_prices.keys()):
+        etf_spot = etf_prices[bucket_key]
+        futures_spot = futures_prices.get(bucket_key)
 
-        if qqq_spot is None or qqq_spot <= 0:
+        if etf_spot is None or etf_spot <= 0:
             continue
-        if nq_spot is None or nq_spot <= 0:
+        if futures_spot is None or futures_spot <= 0:
             continue
 
-        # Calculate GEX at this spot
-        gex = calculate_gex_at_spot(stats_df, qqq_spot, ref_date)
+        # Calculate GEX at ETF spot price
+        gex = calculate_gex_at_spot(stats_df, etf_spot, ref_date)
         if gex is None:
             continue
 
-        # Calculate multiplier
-        multiplier = nq_spot / qqq_spot
+        # Calculate multiplier (futures / ETF)
+        multiplier = futures_spot / etf_spot
 
-        # Translate levels to NQ
+        # Translate levels to futures
         snapshot = {
             'timestamp': bucket_key,
-            'nq_spot': round(nq_spot, 2),
-            'qqq_spot': round(qqq_spot, 2),
+            f'{futures_sym}_spot': round(futures_spot, 2),
+            f'{etf_sym}_spot': round(etf_spot, 2),
             'multiplier': round(multiplier, 4),
             'gamma_flip': round(gex['gamma_flip'] * multiplier, 2) if gex['gamma_flip'] else None,
             'call_wall': round(gex['call_wall'] * multiplier, 2) if gex['call_wall'] else None,
@@ -333,8 +359,8 @@ def generate_day(date_str, stats_df, qqq_prices, nq_prices):
 
     return {
         'metadata': {
-            'symbol': 'NQ',
-            'source_symbol': 'QQQ',
+            'symbol': config['futures_symbol'],
+            'source_symbol': config['etf_symbol'],
             'date': date_str,
             'interval_minutes': 15,
             'generated': datetime.now().isoformat(),
@@ -346,18 +372,23 @@ def generate_day(date_str, stats_df, qqq_prices, nq_prices):
 
 def main():
     parser = argparse.ArgumentParser(description='Generate intraday GEX JSON files')
+    parser.add_argument('--product', choices=list(PRODUCTS.keys()), default='nq',
+                        help='Product to generate GEX for (default: nq)')
     parser.add_argument('--start', required=True, help='Start date (YYYY-MM-DD)')
     parser.add_argument('--end', required=True, help='End date (YYYY-MM-DD)')
     args = parser.parse_args()
 
+    config = PRODUCTS[args.product]
     start_date = datetime.strptime(args.start, '%Y-%m-%d')
     end_date = datetime.strptime(args.end, '%Y-%m-%d')
 
-    print(f"Generating intraday GEX from {args.start} to {args.end}")
-    print(f"Output directory: {OUTPUT_DIR}")
+    print(f"Generating {config['futures_symbol']} intraday GEX from {config['etf_symbol']} options")
+    print(f"Date range: {args.start} to {args.end}")
+    print(f"Stats dir: {config['stats_dir']}")
+    print(f"Output dir: {config['output_dir']}")
 
     # Ensure output directory exists
-    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+    config['output_dir'].mkdir(parents=True, exist_ok=True)
 
     # Process each day
     current = start_date
@@ -374,28 +405,28 @@ def main():
         print(f"Processing {date_str}...", end=' ', flush=True)
 
         # Load statistics (OI + close prices)
-        stats_df = load_statistics(date_str)
+        stats_df = load_statistics(config['stats_dir'], date_str)
         if stats_df is None:
             print("no statistics data")
             current += timedelta(days=1)
             continue
 
         # Load OHLCV prices
-        qqq_prices = load_ohlcv_for_date(QQQ_OHLCV, date_str)
-        nq_prices = load_ohlcv_for_date(NQ_OHLCV, date_str)
+        etf_prices = load_ohlcv_for_date(config['etf_ohlcv'], date_str)
+        futures_prices = load_ohlcv_for_date(config['futures_ohlcv'], date_str)
 
-        if not qqq_prices:
-            print("no QQQ OHLCV data")
+        if not etf_prices:
+            print(f"no {config['etf_symbol']} OHLCV data")
             current += timedelta(days=1)
             continue
 
-        if not nq_prices:
-            print("no NQ OHLCV data")
+        if not futures_prices:
+            print(f"no {config['futures_symbol']} OHLCV data")
             current += timedelta(days=1)
             continue
 
         # Generate JSON
-        result = generate_day(date_str, stats_df, qqq_prices, nq_prices)
+        result = generate_day(date_str, stats_df, etf_prices, futures_prices, config)
 
         if result is None:
             print("failed to generate")
@@ -403,7 +434,7 @@ def main():
             continue
 
         # Write output
-        output_path = OUTPUT_DIR / f'nq_gex_{date_str}.json'
+        output_path = config['output_dir'] / f"{config['output_prefix']}_{date_str}.json"
         with open(output_path, 'w') as f:
             json.dump(result, f, indent=2)
 

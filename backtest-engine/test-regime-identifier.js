@@ -10,7 +10,7 @@
 
 import { RegimeIdentifier, REGIME_PRESETS } from '../shared/indicators/regime-identifier.js';
 import { CSVLoader } from './src/data/csv-loader.js';
-import { CandleAggregator } from './src/data/candle-aggregator.js';
+import { CandleAggregator } from '../shared/utils/candle-aggregator.js';
 import fs from 'fs';
 import path from 'path';
 

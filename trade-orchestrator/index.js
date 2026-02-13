@@ -2,6 +2,7 @@ import express from 'express';
 import axios from 'axios';
 // File system imports removed - using Redis for persistence
 import { messageBus, CHANNELS, createLogger, configManager, healthCheck } from '../shared/index.js';
+import { evaluateCrossStrategyRules, getCrossStrategyRules } from './cross-strategy-filter.js';
 
 const SERVICE_NAME = 'trade-orchestrator';
 const logger = createLogger(SERVICE_NAME);
@@ -135,21 +136,27 @@ async function saveStrategyState() {
       return;
     }
 
-    // Convert Map to object for JSON serialization
+    // Convert Maps to objects for JSON serialization
+    const positionsData = {};
+    for (const [underlying, posInfo] of tradingState.strategyState.positions) {
+      positionsData[underlying] = posInfo;
+    }
+
     const pendingOrdersData = {};
     for (const [orderId, orderInfo] of tradingState.strategyState.pendingOrders) {
       pendingOrdersData[orderId] = orderInfo;
     }
 
     const dataToSave = {
-      position: tradingState.strategyState.position,
-      positionSource: tradingState.strategyState.positionSource,
+      positions: positionsData,
       pendingOrders: pendingOrdersData,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
+      version: '2.0'
     };
 
     await messageBus.publisher.set('multi-strategy:state', JSON.stringify(dataToSave));
-    logger.info(`💾 Multi-strategy state saved to Redis (${tradingState.strategyState.pendingOrders.size} pending orders)`);
+    const posSummary = Array.from(tradingState.strategyState.positions.entries()).map(([u, p]) => `${u}:${p.position}(${p.source})`).join(', ') || 'flat';
+    logger.info(`💾 Multi-strategy state saved to Redis: [${posSummary}], ${tradingState.strategyState.pendingOrders.size} pending orders`);
   } catch (error) {
     logger.error('❌ Failed to save multi-strategy state to Redis:', error);
   }
@@ -166,9 +173,18 @@ async function loadStrategyState() {
     if (data) {
       const parsedData = JSON.parse(data);
 
-      // Restore strategy state from Redis
-      tradingState.strategyState.position = parsedData.position || 'flat';
-      tradingState.strategyState.positionSource = parsedData.positionSource || null;
+      // Restore positions Map
+      tradingState.strategyState.positions.clear();
+      if (parsedData.version === '2.0' && parsedData.positions) {
+        // v2.0 format: per-underlying positions map
+        for (const [underlying, posInfo] of Object.entries(parsedData.positions)) {
+          tradingState.strategyState.positions.set(underlying, posInfo);
+        }
+      } else if (parsedData.position && parsedData.position !== 'flat') {
+        // v1.0 backward compat: migrate single global position
+        logger.warn(`🔄 Migrating v1 strategy state: position=${parsedData.position}, source=${parsedData.positionSource} — will be corrected by reconciliation`);
+        // Don't migrate — let reconciliation set the correct per-underlying state on next sync
+      }
 
       // Restore pending orders Map
       tradingState.strategyState.pendingOrders.clear();
@@ -178,7 +194,8 @@ async function loadStrategyState() {
         }
       }
 
-      logger.info(`🔄 Loaded multi-strategy state from Redis: position=${parsedData.position}, source=${parsedData.positionSource}, pending=${tradingState.strategyState.pendingOrders.size} (saved: ${parsedData.timestamp})`);
+      const posSummary = Array.from(tradingState.strategyState.positions.entries()).map(([u, p]) => `${u}:${p.position}(${p.source})`).join(', ') || 'flat';
+      logger.info(`🔄 Loaded multi-strategy state from Redis: [${posSummary}], pending=${tradingState.strategyState.pendingOrders.size} (saved: ${parsedData.timestamp})`);
     } else {
       logger.info('📂 No existing multi-strategy state found in Redis, starting fresh');
     }
@@ -610,10 +627,9 @@ const tradingState = {
     dailyPnL: 0
   },
 
-  // Multi-strategy state tracking
+  // Multi-strategy state tracking (per-underlying: NQ, ES, etc.)
   strategyState: {
-    position: 'flat', // 'flat' | 'long' | 'short'
-    positionSource: null, // null | 'LDPS' | 'OES' - which strategy owns current position
+    positions: new Map(), // underlying (e.g., 'NQ') -> { position: 'long'|'short', source: strategyName }
     pendingOrders: new Map() // orderId -> { strategy, direction, price, createdAt, symbol }
   }
 };
@@ -634,6 +650,33 @@ function parseBaseSymbol(symbol) {
   const fallback = symbol.toUpperCase().replace(/[^A-Z]/g, '');
   logger.warn(`Unknown symbol pattern for ${symbol}, using fallback: ${fallback}`);
   return fallback;
+}
+
+/**
+ * Normalize any symbol to its underlying product (NQ or ES)
+ * NQ, MNQ, NQH6, MNQH6 → 'NQ'
+ * ES, MES, ESH6, MESH6 → 'ES'
+ */
+function getUnderlyingSymbol(symbol) {
+  const base = parseBaseSymbol(symbol);
+  // MNQ → NQ, MES → ES
+  if (base.startsWith('M')) {
+    return base.substring(1);
+  }
+  return base;
+}
+
+/**
+ * Check if tradingPositions Map has any entry matching the given underlying
+ * tradingPositions is keyed by contract symbol (e.g., 'MNQH6')
+ */
+function hasPositionForUnderlying(underlying) {
+  for (const [symbol] of tradingState.tradingPositions) {
+    if (getUnderlyingSymbol(symbol) === underlying) {
+      return true;
+    }
+  }
+  return false;
 }
 
 /**
@@ -821,7 +864,11 @@ app.get('/health', async (req, res) => {
     tradingEnabled: tradingState.tradingEnabled,
     tradingPositions: tradingState.tradingPositions.size,
     workingOrders: tradingState.workingOrders.size,
-    stats: tradingState.stats
+    stats: tradingState.stats,
+    crossStrategyFilter: {
+      enabled: process.env.CROSS_STRATEGY_FILTER_ENABLED !== 'false',
+      rules: getCrossStrategyRules(),
+    }
   });
   res.json(health);
 });
@@ -1198,6 +1245,11 @@ app.get('/api/trading/positions/:symbol', (req, res) => {
 // Process webhook signals
 async function handleWebhookReceived(message) {
   try {
+    // Generate signal ID if missing - critical for strategy→order→position tracking
+    if (!message.id) {
+      message.id = `sig_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+    }
+
     logger.info('Processing webhook signal:', message.id || message.strategy);
 
     // Check if trading is enabled
@@ -1212,7 +1264,7 @@ async function handleWebhookReceived(message) {
     }
 
     // Parse and validate trading signal
-    // Handle both webhook format (message.body) and direct signal format (from signal-generator)
+    // Handle both webhook format (message.body) and direct signal format (from siggen-nq-ivskew)
     const signalBody = message.body || message;
     const signal = parseTradeSignal(signalBody);
     if (!signal) {
@@ -1238,6 +1290,28 @@ async function handleWebhookReceived(message) {
       return;
     }
 
+    // Cross-strategy filter
+    const signalUnderlying = getUnderlyingSymbol(signal.symbol);
+    const signalDirection = (signal.side === 'buy' || signal.side === 'long') ? 'long' : 'short';
+    const crossFilterResult = evaluateCrossStrategyRules(
+      signal, signalUnderlying, signalDirection,
+      tradingState.strategyState.positions
+    );
+
+    if (!crossFilterResult.allowed) {
+      logger.warn(`[CROSS-FILTER] Signal rejected: ${crossFilterResult.reason}`);
+      await messageBus.publish(CHANNELS.TRADE_REJECTED, {
+        reason: crossFilterResult.reason,
+        filter: 'cross_strategy',
+        ruleName: crossFilterResult.ruleName,
+        signal: { strategy: signal.strategy, symbol: signal.symbol, side: signal.side, action: signal.action, price: signal.price },
+        crossStrategyState: Object.fromEntries(tradingState.strategyState.positions),
+        originalSignal: message,
+        timestamp: new Date().toISOString()
+      });
+      return;
+    }
+
     // Sync latest position sizing settings before processing
     await syncPositionSizingSettings();
 
@@ -1249,6 +1323,13 @@ async function handleWebhookReceived(message) {
       logger.info(`🔄 Position sizing conversion: ${positionSizing.originalQuantity} ${positionSizing.originalSymbol} → ${positionSizing.quantity} ${positionSizing.symbol} (${positionSizing.reason})`);
     } else {
       logger.info(`📊 Position sizing: ${positionSizing.quantity} ${positionSizing.symbol} (${positionSizing.reason})`);
+    }
+
+    // Apply cross-strategy quantity adjustment if applicable
+    if (crossFilterResult.adjustments?.quantityMultiplier) {
+      const originalQty = positionSizing.quantity;
+      positionSizing.quantity = Math.round(positionSizing.quantity * crossFilterResult.adjustments.quantityMultiplier);
+      logger.info(`[CROSS-FILTER] Quantity adjusted: ${originalQty} → ${positionSizing.quantity} (x${crossFilterResult.adjustments.quantityMultiplier}, rule: ${crossFilterResult.ruleName})`);
     }
 
     // Special handling for direct tradovate service actions (position_closed, cancel_limit, update_limit, modify_stop)
@@ -1388,19 +1469,32 @@ async function handleWebhookReceived(message) {
         }
       }
 
-      // Multi-strategy position check - first-come-first-serve with first-fill-wins
+      // Multi-strategy position check - per-underlying (NQ, ES trade independently)
       const strategy = signal.strategy || 'UNKNOWN';
+      const signalUnderlying = getUnderlyingSymbol(positionSizing.symbol);
 
-      // Check if already in a position (any strategy)
-      if (tradingState.strategyState.position !== 'flat') {
-        logger.warn(`📊 [${strategy}] Signal skipped - already in ${tradingState.strategyState.position} position from ${tradingState.strategyState.positionSource}`);
+      // Check if already in a filled position for THIS underlying
+      const existingPos = tradingState.strategyState.positions.get(signalUnderlying);
+
+      // Also check if there's already a pending order for this underlying
+      let existingPending = null;
+      for (const [, orderInfo] of tradingState.strategyState.pendingOrders) {
+        if (getUnderlyingSymbol(orderInfo.symbol) === signalUnderlying) {
+          existingPending = orderInfo;
+          break;
+        }
+      }
+
+      if (existingPos) {
+        logger.warn(`📊 [${strategy}] Signal skipped - ${signalUnderlying} already in ${existingPos.position} position from ${existingPos.source}`);
         logger.warn(`📊 Signal attempted: ${mappedAction} ${positionSizing.quantity} ${positionSizing.symbol} @ ${mappedPrice}`);
 
         await messageBus.publish(CHANNELS.TRADE_REJECTED, {
-          reason: `Already in ${tradingState.strategyState.position} position from ${tradingState.strategyState.positionSource} strategy`,
+          reason: `${signalUnderlying} already in ${existingPos.position} position from ${existingPos.source} strategy`,
           currentPosition: {
-            state: tradingState.strategyState.position,
-            source: tradingState.strategyState.positionSource
+            underlying: signalUnderlying,
+            state: existingPos.position,
+            source: existingPos.source
           },
           rejectedSignal: {
             strategy: strategy,
@@ -1413,10 +1507,36 @@ async function handleWebhookReceived(message) {
           timestamp: new Date().toISOString()
         });
 
-        return; // Exit early - already in position
+        return; // Exit early - already in position for this underlying
       }
 
-      logger.info(`✅ [${strategy}] Position validation passed: Currently flat, allowing ${mappedAction} order`);
+      if (existingPending) {
+        logger.warn(`📊 [${strategy}] Signal skipped - ${signalUnderlying} already has pending ${existingPending.direction} order from ${existingPending.strategy}`);
+        logger.warn(`📊 Signal attempted: ${mappedAction} ${positionSizing.quantity} ${positionSizing.symbol} @ ${mappedPrice}`);
+
+        await messageBus.publish(CHANNELS.TRADE_REJECTED, {
+          reason: `${signalUnderlying} already has pending ${existingPending.direction} order from ${existingPending.strategy} strategy`,
+          pendingOrder: {
+            underlying: signalUnderlying,
+            direction: existingPending.direction,
+            source: existingPending.strategy,
+            symbol: existingPending.symbol
+          },
+          rejectedSignal: {
+            strategy: strategy,
+            symbol: positionSizing.symbol,
+            action: mappedAction,
+            quantity: positionSizing.quantity,
+            price: mappedPrice
+          },
+          originalSignal: message,
+          timestamp: new Date().toISOString()
+        });
+
+        return; // Exit early - already has pending order for this underlying
+      }
+
+      logger.info(`✅ [${strategy}] Position validation passed: ${signalUnderlying} is flat with no pending orders, allowing ${mappedAction} order`);
     }
 
     // Prepare order request with potentially converted symbol and quantity
@@ -1558,7 +1678,9 @@ function parseTradeSignal(body) {
         trailing_trigger: body.trailing_trigger,
         trailing_offset: body.trailing_offset,
         strategy: body.strategy, // Preserve strategy field
-        reason: body.reason // For cancel_limit and modify_stop actions
+        reason: body.reason, // For cancel_limit and modify_stop actions
+        breakeven_trigger: body.breakeven_trigger,
+        breakeven_offset: body.breakeven_offset
       };
     }
 
@@ -1743,6 +1865,14 @@ function getBaseSymbol(contractSymbol) {
   return symbol; // Return original if no match
 }
 
+// Normalize micro and standard contracts to the same underlying for price matching.
+// Position sizing may convert ES→MES or NQ→MNQ, but price updates arrive as ES/NQ
+// from TradingView. Both need to match for P&L and breakeven calculations.
+function getPriceSymbol(baseSymbol) {
+  const microToStandard = { 'MNQ': 'NQ', 'MES': 'ES', 'M2K': 'RTY' };
+  return microToStandard[baseSymbol] || baseSymbol;
+}
+
 
 // Calculate unrealized P&L for a position
 function calculateUnrealizedPnL(position, currentPrice) {
@@ -1898,48 +2028,60 @@ async function handleOrderFilled(message) {
     // Don't delete the order relationship for entry orders - we need it for dashboard filtering
     logger.info(`🔗 Keeping order relationship for filled entry order ${message.orderId} for dashboard tracking`);
 
-    // Multi-strategy: Cancel ALL other pending entry orders when ANY order fills
+    // Multi-strategy: Cancel other pending entry orders for the SAME underlying when an order fills
     const filledOrderInfo = tradingState.strategyState.pendingOrders.get(message.orderId);
     if (filledOrderInfo) {
       const filledStrategy = filledOrderInfo.strategy;
       const filledDirection = filledOrderInfo.direction;
+      const filledUnderlying = getUnderlyingSymbol(filledOrderInfo.symbol);
 
-      // Update strategy state - we now have a position
-      tradingState.strategyState.position = filledDirection;
-      tradingState.strategyState.positionSource = filledStrategy;
+      // Update strategy state - set position for this underlying
+      tradingState.strategyState.positions.set(filledUnderlying, {
+        position: filledDirection,
+        source: filledStrategy
+      });
 
-      // Get list of all OTHER pending orders to cancel
+      // Get list of other pending orders for the SAME underlying to cancel
       const ordersToCancel = [];
+      const ordersToKeep = [];
       for (const [orderId, orderInfo] of tradingState.strategyState.pendingOrders) {
-        if (orderId !== message.orderId) {
+        if (orderId === message.orderId) continue;
+        const orderUnderlying = getUnderlyingSymbol(orderInfo.symbol);
+        if (orderUnderlying === filledUnderlying) {
           ordersToCancel.push({ orderId, ...orderInfo });
+        } else {
+          ordersToKeep.push(orderId);
         }
       }
 
       if (ordersToCancel.length > 0) {
-        logger.info(`🎯 [${filledStrategy}] Order filled - cancelling ${ordersToCancel.length} other pending orders from all strategies`);
+        logger.info(`🎯 [${filledStrategy}] Order filled for ${filledUnderlying} - cancelling ${ordersToCancel.length} other pending ${filledUnderlying} orders`);
 
         // Send cancel requests for each order
         for (const orderToCancel of ordersToCancel) {
-          logger.info(`❌ Cancelling ${orderToCancel.strategy} ${orderToCancel.direction} order ${orderToCancel.orderId}`);
+          logger.info(`❌ Cancelling ${orderToCancel.strategy} ${orderToCancel.direction} order ${orderToCancel.orderId} (${filledUnderlying})`);
 
           // Publish cancel request to tradovate-service
           await messageBus.publish(CHANNELS.ORDER_CANCEL_REQUEST, {
             orderId: orderToCancel.orderId,
-            reason: `${filledStrategy} order filled first`,
+            reason: `${filledStrategy} order filled first for ${filledUnderlying}`,
             filledOrderId: message.orderId,
             timestamp: new Date().toISOString()
           });
         }
       }
 
-      // Clear all pending orders since we now have a position
-      tradingState.strategyState.pendingOrders.clear();
+      // Remove the filled order and cancelled orders, keep orders for other underlyings
+      tradingState.strategyState.pendingOrders.delete(message.orderId);
+      for (const order of ordersToCancel) {
+        tradingState.strategyState.pendingOrders.delete(order.orderId);
+      }
 
       // Save updated strategy state to Redis
       await saveStrategyState();
 
-      logger.info(`📊 Multi-strategy state updated: position=${tradingState.strategyState.position}, source=${filledStrategy}, pending=0`);
+      const posSummary = Array.from(tradingState.strategyState.positions.entries()).map(([u, p]) => `${u}:${p.position}(${p.source})`).join(', ');
+      logger.info(`📊 Multi-strategy state updated: [${posSummary}], pending=${tradingState.strategyState.pendingOrders.size}`);
     } else {
       logger.warn(`⚠️ Filled order ${message.orderId} not found in pending orders tracking`);
     }
@@ -2165,17 +2307,23 @@ async function handlePositionClosed(message) {
     logger.info(`🗑️ Removed associated order: ${orderId}`);
   }
 
-  // Multi-strategy: Reset state when position is closed
-  const previousSource = tradingState.strategyState.positionSource;
-  tradingState.strategyState.position = 'flat';
-  tradingState.strategyState.positionSource = null;
-  // Note: pendingOrders should already be empty, but clear just in case
-  tradingState.strategyState.pendingOrders.clear();
+  // Multi-strategy: Reset state for this underlying when position is closed
+  const closedUnderlying = getUnderlyingSymbol(message.symbol);
+  const previousPos = tradingState.strategyState.positions.get(closedUnderlying);
+  tradingState.strategyState.positions.delete(closedUnderlying);
+
+  // Remove any pending orders for this underlying (should already be empty, but clean up)
+  for (const [orderId, orderInfo] of tradingState.strategyState.pendingOrders) {
+    if (getUnderlyingSymbol(orderInfo.symbol) === closedUnderlying) {
+      tradingState.strategyState.pendingOrders.delete(orderId);
+    }
+  }
 
   // Save updated strategy state to Redis
   await saveStrategyState();
 
-  logger.info(`📊 Multi-strategy state reset to flat (was ${previousSource} position)`);
+  const posSummary = Array.from(tradingState.strategyState.positions.entries()).map(([u, p]) => `${u}:${p.position}(${p.source})`).join(', ') || 'flat';
+  logger.info(`📊 ${closedUnderlying} position closed (was ${previousPos?.source || 'unknown'}). Remaining: [${posSummary}]`);
 
   // Update statistics
   tradingState.stats.totalPositions = tradingState.tradingPositions.size;
@@ -2727,18 +2875,32 @@ async function linkBracketOrdersForSyncedPosition(position) {
   let stopOrdersLinked = 0;
   let targetOrdersLinked = 0;
 
-  // Look through all signal contexts to find one that matches this position
+  // Look through all signal contexts to find one that matches this position.
+  // Search both active contexts and the stash (populated during full sync to preserve
+  // our metadata while the broker provides ground truth for positions/orders).
   let matchingSignalContext = null;
+  let matchingSignalId = null;
+  let matchedFromStash = false;
 
-  for (const [signalId, signalContext] of tradingState.signalContext.entries()) {
-    // Check if this signal is for the same symbol and has bracket order prices
-    if (signalContext.originalSymbol === position.baseSymbol || signalContext.originalSymbol === position.symbol) {
+  const contextsToSearch = new Map([
+    ...tradingState.signalContext.entries(),
+    ...(tradingState.stashedSignalContext ? tradingState.stashedSignalContext.entries() : [])
+  ]);
+
+  for (const [signalId, signalContext] of contextsToSearch.entries()) {
+    // Check if this signal is for the same symbol (normalize micro/standard)
+    const signalBase = getBaseSymbol(signalContext.originalSymbol || signalContext.symbol);
+    const positionBase = getBaseSymbol(position.symbol);
+    if (signalContext.originalSymbol === positionBase || signalContext.originalSymbol === position.symbol ||
+        getPriceSymbol(signalBase) === getPriceSymbol(positionBase)) {
       // Check if position price is close to signal entry price OR if entry price is zero
       if (signalContext.price &&
           (position.entryPrice === 0 ||  // Match if entry price unknown
            Math.abs(position.entryPrice - signalContext.price) < 10)) {
         matchingSignalContext = signalContext;
-        logger.info(`🎯 Found matching signal context ${signalId} for position ${position.symbol}`);
+        matchingSignalId = signalId;
+        matchedFromStash = !tradingState.signalContext.has(signalId);
+        logger.info(`🎯 Found matching signal context ${signalId} for position ${position.symbol}${matchedFromStash ? ' (restored from stash)' : ''}`);
 
         // If position has zero entry price, use signal price
         if (position.entryPrice === 0 && signalContext.price) {
@@ -2753,10 +2915,13 @@ async function linkBracketOrdersForSyncedPosition(position) {
 
   // If still no match and position has zero entry price, try symbol+time matching
   if (!matchingSignalContext && (position.entryPrice === 0 || !position.entryPrice)) {
-    for (const [signalId, signalContext] of tradingState.signalContext.entries()) {
+    for (const [signalId, signalContext] of contextsToSearch.entries()) {
       // Match by symbol only if position has no entry price
-      if (signalContext.originalSymbol === position.baseSymbol ||
-          signalContext.originalSymbol === position.symbol) {
+      const signalBase2 = getBaseSymbol(signalContext.originalSymbol || signalContext.symbol);
+      const positionBase2 = getBaseSymbol(position.symbol);
+      if (signalContext.originalSymbol === positionBase2 ||
+          signalContext.originalSymbol === position.symbol ||
+          getPriceSymbol(signalBase2) === getPriceSymbol(positionBase2)) {
 
         // Additional check: ensure signal timestamp is recent (within 5 minutes of position)
         const signalTime = new Date(signalContext.timestamp);
@@ -2765,7 +2930,9 @@ async function linkBracketOrdersForSyncedPosition(position) {
 
         if (timeDiffMinutes < 5) {
           matchingSignalContext = signalContext;
-          logger.info(`🎯 Matched signal ${signalId} to position ${position.symbol} by symbol+time (entry price was zero)`);
+          matchingSignalId = signalId;
+          matchedFromStash = !tradingState.signalContext.has(signalId);
+          logger.info(`🎯 Matched signal ${signalId} to position ${position.symbol} by symbol+time${matchedFromStash ? ' (restored from stash)' : ''}`);
 
           // Use signal price as entry price
           if (signalContext.price) {
@@ -2782,6 +2949,13 @@ async function linkBracketOrdersForSyncedPosition(position) {
   if (!matchingSignalContext) {
     logger.info(`⚠️ No matching signal context found for position ${position.symbol}`);
     return;
+  }
+
+  // If matched from stash, promote back to active signal contexts
+  if (matchedFromStash && matchingSignalId) {
+    tradingState.signalContext.set(matchingSignalId, matchingSignalContext);
+    tradingState.stashedSignalContext.delete(matchingSignalId);
+    logger.info(`📥 Promoted signal context ${matchingSignalId} from stash to active`);
   }
 
   // Now use the matching signal context to link bracket orders
@@ -2823,8 +2997,45 @@ async function linkBracketOrdersForSyncedPosition(position) {
 
   logger.info(`✅ Bracket order linking complete for synced position ${position.symbol}: ${stopOrdersLinked} stop orders, ${targetOrdersLinked} target orders`);
 
-  // Update position with signal context and refresh bracket order info
+  // Update position with signal context, strategy, and breakeven config
   position.signalContext = matchingSignalContext;
+  position.strategy = matchingSignalContext.strategy || matchingSignalContext.source || position.strategy;
+
+  // Restore breakeven config from signal context (lost on restart since it's only
+  // created in the order-fill path, not the startup sync path)
+  if (!position.breakevenConfig) {
+    let beTrigger = matchingSignalContext.breakevenTrigger;
+    let beOffset = matchingSignalContext.breakevenOffset;
+
+    // Fall back to strategy defaults if signal context doesn't have breakeven fields
+    // (e.g. signals created before breakeven was wired into signal payload)
+    if (!beTrigger) {
+      const strategy = matchingSignalContext.strategy;
+      const STRATEGY_BREAKEVEN_DEFAULTS = {
+        'ES_CROSS_SIGNAL': { trigger: 3, offset: 0 },
+        'IV_SKEW_GEX': { trigger: 3, offset: 0 },
+        'GEX_SCALP': { trigger: 3, offset: 1 }
+      };
+      const defaults = STRATEGY_BREAKEVEN_DEFAULTS[strategy];
+      if (defaults) {
+        beTrigger = defaults.trigger;
+        beOffset = defaults.offset;
+        logger.info(`🎯 Using strategy default breakeven for ${strategy}: trigger=${beTrigger}, offset=${beOffset}`);
+      }
+    }
+
+    if (beTrigger) {
+      position.breakevenConfig = {
+        trigger: beTrigger,
+        offset: beOffset || 0,
+        triggered: false,
+        triggeredAt: null,
+        originalStopPrice: matchingSignalContext.stopPrice
+      };
+      logger.info(`🎯 Restored breakeven config for ${position.symbol}: trigger=${beTrigger} pts, offset=${beOffset || 0}`);
+    }
+  }
+
   await linkAssociatedOrders(position);
 }
 
@@ -3112,9 +3323,10 @@ async function handlePriceUpdate(message) {
   try {
     const symbol = message.symbol;
     const baseSymbol = message.baseSymbol || getBaseSymbol(symbol);
+    const priceSymbol = getPriceSymbol(baseSymbol);
     const currentPrice = message.close || message.price;
 
-    logger.debug(`📈 Price update received: ${symbol} (base: ${baseSymbol}) = ${currentPrice}`);
+    logger.debug(`📈 Price update received: ${symbol} (base: ${baseSymbol}, price: ${priceSymbol}) = ${currentPrice}`);
 
     if (!currentPrice) {
       logger.warn(`📈 No price in update for ${symbol}`);
@@ -3136,12 +3348,10 @@ async function handlePriceUpdate(message) {
 
     for (const position of tradingState.tradingPositions.values()) {
       const positionBaseSymbol = getBaseSymbol(position.symbol);
-      logger.debug(`📊 Position ${position.symbol} -> base: ${positionBaseSymbol} (looking for: ${baseSymbol})`);
-      logger.debug(`🔍 String comparison: "${positionBaseSymbol}" === "${baseSymbol}" = ${positionBaseSymbol === baseSymbol}`);
-      logger.debug(`🔍 Types: ${typeof positionBaseSymbol} vs ${typeof baseSymbol}`);
-      logger.debug(`🔍 Lengths: ${positionBaseSymbol.length} vs ${baseSymbol.length}`);
+      const positionPriceSymbol = getPriceSymbol(positionBaseSymbol);
+      logger.debug(`📊 Position ${position.symbol} -> base: ${positionBaseSymbol} -> price: ${positionPriceSymbol} (looking for: ${priceSymbol})`);
 
-      if (positionBaseSymbol === baseSymbol) {
+      if (positionPriceSymbol === priceSymbol) {
         hasPositions = true;
         logger.debug(`🎯 MATCH! Processing P&L for ${position.symbol}: ${positionBaseSymbol} === ${baseSymbol}`);
 
@@ -3180,7 +3390,7 @@ async function handlePriceUpdate(message) {
     // Broadcast real-time updates for pending orders with matching base symbol
     for (const order of tradingState.workingOrders.values()) {
       const orderBaseSymbol = getBaseSymbol(order.symbol);
-      if (orderBaseSymbol === baseSymbol) {
+      if (getPriceSymbol(orderBaseSymbol) === priceSymbol) {
         // Calculate market distance for this order
         const calculateMarketDistance = (orderPrice, currentPrice, isLong) => {
           if (!orderPrice || !currentPrice) return null;
@@ -3273,20 +3483,57 @@ async function handleTradovateSyncCompleted(message) {
       logger.info('✅ No stale orders found - pending orders state is synchronized');
     }
 
-    // Strategy state reconciliation: check if we think we have a position but actually don't
-    if (tradingState.strategyState.position !== 'flat') {
-      const hasActualPositions = tradingState.tradingPositions.size > 0;
-      if (!hasActualPositions) {
-        logger.warn(`🔄 Strategy state reconciliation: resetting state - claimed position "${tradingState.strategyState.position}" from ${tradingState.strategyState.positionSource} but no actual positions exist`);
-        tradingState.strategyState.position = 'flat';
-        tradingState.strategyState.positionSource = null;
-        tradingState.strategyState.pendingOrders.clear();
-        await saveStrategyState(tradingState.strategyState);
-        logger.info('✅ Strategy state reconciled and reset to flat');
-      } else {
-        logger.info(`✅ Strategy state verified: position "${tradingState.strategyState.position}" from ${tradingState.strategyState.positionSource} matches ${tradingState.tradingPositions.size} actual positions`);
+    // Strategy state reconciliation: check each underlying for stale position entries
+    let strategyStateChanged = false;
+
+    if (tradingState.strategyState.positions.size > 0) {
+      for (const [underlying, posInfo] of tradingState.strategyState.positions) {
+        if (!hasPositionForUnderlying(underlying)) {
+          logger.warn(`🔄 Strategy state reconciliation: removing stale ${underlying} position "${posInfo.position}" from ${posInfo.source} — no actual positions exist for ${underlying}`);
+          tradingState.strategyState.positions.delete(underlying);
+          // Remove pending orders for this underlying
+          for (const [orderId, orderInfo] of tradingState.strategyState.pendingOrders) {
+            if (getUnderlyingSymbol(orderInfo.symbol) === underlying) {
+              tradingState.strategyState.pendingOrders.delete(orderId);
+            }
+          }
+          strategyStateChanged = true;
+        }
       }
     }
+
+    // Also clean orphaned pending orders — if a pending order no longer exists
+    // as a working order, it was either filled or cancelled and we missed the cleanup
+    if (tradingState.strategyState.pendingOrders.size > 0) {
+      for (const [orderId, orderInfo] of tradingState.strategyState.pendingOrders) {
+        if (!tradingState.workingOrders.has(orderId)) {
+          logger.warn(`🔄 Strategy state reconciliation: removing orphaned pending order ${orderId} (${orderInfo.strategy} ${orderInfo.direction} ${orderInfo.symbol}) — no longer a working order`);
+          tradingState.strategyState.pendingOrders.delete(orderId);
+          strategyStateChanged = true;
+        }
+      }
+    }
+
+    if (strategyStateChanged) {
+      await saveStrategyState();
+      const posSummary = Array.from(tradingState.strategyState.positions.entries()).map(([u, p]) => `${u}:${p.position}(${p.source})`).join(', ') || 'flat';
+      logger.info(`✅ Strategy state reconciled. Positions: [${posSummary}], pending: ${tradingState.strategyState.pendingOrders.size}`);
+    } else {
+      const posSummary = Array.from(tradingState.strategyState.positions.entries()).map(([u, p]) => `${u}:${p.position}(${p.source})`).join(', ') || 'flat';
+      logger.info(`✅ Strategy state verified: [${posSummary}], pending: ${tradingState.strategyState.pendingOrders.size}, actual positions: ${tradingState.tradingPositions.size}`);
+    }
+
+    // Discard remaining stashed signal contexts — anything not matched to a real
+    // position is truly orphaned (order was cancelled/closed while services were down)
+    if (tradingState.stashedSignalContext && tradingState.stashedSignalContext.size > 0) {
+      logger.info(`🗑️ Discarding ${tradingState.stashedSignalContext.size} orphaned signal contexts from stash`);
+      tradingState.stashedSignalContext.clear();
+    }
+    tradingState.stashedSignalContext = null;
+
+    // Persist the surviving signal contexts (only those matched to real positions)
+    await saveSignalContext();
+    logger.info(`💾 Saved ${tradingState.signalContext.size} active signal contexts after sync`);
 
   } catch (error) {
     logger.error('Failed to handle Tradovate sync completion:', error.message);
@@ -3300,15 +3547,18 @@ async function handleFullSyncStarted(message) {
   const previousPositionCount = tradingState.tradingPositions.size;
 
   tradingState.workingOrders.clear();
-  tradingState.signalContext.clear();
   tradingState.tradingPositions.clear();
   tradingState.stats.totalWorkingOrders = 0;
   tradingState.stats.totalPositions = 0;
 
-  // Clear Redis signal context data too
-  await saveSignalContext(); // This saves empty signalContext to Redis, effectively clearing it
+  // Stash signal contexts instead of clearing — they contain our metadata (breakeven config,
+  // strategy, entry price) that the broker doesn't provide. linkBracketOrdersForSyncedPosition
+  // will pull matched contexts back from the stash as positions arrive from the broker.
+  // Any unmatched stash entries are discarded in handleTradovateSyncCompleted.
+  tradingState.stashedSignalContext = new Map(tradingState.signalContext);
+  tradingState.signalContext.clear();
 
-  logger.info(`🔄 Full sync started - cleared ${previousCount} working orders, ${previousSignalCount} signal contexts, and ${previousPositionCount} positions to prepare for ground truth from broker`);
+  logger.info(`🔄 Full sync started - cleared ${previousCount} working orders and ${previousPositionCount} positions, stashed ${previousSignalCount} signal contexts for re-matching`);
 }
 
 // Initialize P&L system with initial price data
@@ -3606,7 +3856,7 @@ async function startup() {
 
     // Subscribe to relevant channels
     await messageBus.subscribe(CHANNELS.WEBHOOK_RECEIVED, handleWebhookReceived);
-    // Also listen for internal trade signals from signal-generator (same handler, different source)
+    // Also listen for internal trade signals from signal generators (same handler, different source)
     await messageBus.subscribe(CHANNELS.TRADE_SIGNAL, handleWebhookReceived);
     await messageBus.subscribe(CHANNELS.ORDER_PLACED, handleOrderPlaced);
     await messageBus.subscribe(CHANNELS.ORDER_FILLED, handleOrderFilled);

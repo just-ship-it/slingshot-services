@@ -1,0 +1,908 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Slingshot Dashboard — Compact Layout Mockup</title>
+<style>
+  :root {
+    --bg-primary: #0d1117;
+    --bg-card: #161b22;
+    --bg-card-inner: #1c2129;
+    --border: #30363d;
+    --text-primary: #e6edf3;
+    --text-secondary: #8b949e;
+    --text-muted: #6e7681;
+    --green: #3fb950;
+    --red: #f85149;
+    --yellow: #d29922;
+    --blue: #58a6ff;
+    --orange: #f0883e;
+    --cyan: #39d353;
+    --purple: #bc8cff;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-family: 'SF Mono', 'Cascadia Code', 'Fira Code', 'JetBrains Mono', monospace;
+    font-size: 12px;
+    line-height: 1.4;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* === COMPACT HEADER === */
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 16px;
+    background: var(--bg-card);
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+    height: 36px;
+  }
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .logo {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--blue);
+    letter-spacing: -0.5px;
+  }
+  .nav-link {
+    padding: 3px 10px;
+    border-radius: 4px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-size: 11px;
+  }
+  .nav-link.active {
+    background: var(--blue);
+    color: #fff;
+  }
+  .tickers {
+    display: flex;
+    gap: 20px;
+    font-size: 11px;
+  }
+  .ticker-sym { color: var(--text-secondary); font-weight: 600; }
+  .ticker-price { color: var(--text-primary); margin-left: 4px; }
+  .ticker-change { margin-left: 4px; }
+  .ticker-change.neg { color: var(--red); }
+  .ticker-change.pos { color: var(--green); }
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    font-size: 11px;
+  }
+  .account-stats {
+    display: flex;
+    gap: 14px;
+  }
+  .stat-label { color: var(--text-muted); margin-right: 4px; }
+  .stat-value { color: var(--text-primary); font-weight: 600; }
+  .stat-value.green { color: var(--green); }
+  .live-dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--green);
+    display: inline-block;
+    margin-right: 4px;
+  }
+
+  /* === MAIN GRID === */
+  .main-grid {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 1fr 1.3fr 1.3fr 1.3fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 4px;
+    padding: 4px;
+    min-height: 0;
+  }
+
+  .panel {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    min-height: 0;
+  }
+  .panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 10px;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+    background: rgba(255,255,255,0.02);
+  }
+  .panel-title {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+  .panel-body {
+    padding: 8px 10px;
+    flex: 1;
+    overflow-y: auto;
+    min-height: 0;
+  }
+  .badge {
+    font-size: 9px;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 3px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .badge.neutral { background: #30363d; color: var(--text-secondary); }
+  .badge.negative { background: rgba(248,81,73,0.15); color: var(--red); }
+  .badge.strong-neg { background: rgba(248,81,73,0.25); color: var(--red); }
+
+  /* === IV SKEW PANEL === */
+  .skew-main {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 8px;
+  }
+  .skew-label { color: var(--text-secondary); font-size: 11px; }
+  .skew-value { font-size: 18px; font-weight: 700; }
+  .skew-sublabel { color: var(--text-muted); font-size: 10px; margin-top: -2px; }
+
+  .iv-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px;
+    margin: 6px 0;
+  }
+  .iv-cell {
+    background: var(--bg-card-inner);
+    padding: 4px 6px;
+    border-radius: 3px;
+  }
+  .iv-cell-label { color: var(--text-muted); font-size: 9px; }
+  .iv-cell-value { font-size: 13px; font-weight: 600; }
+  .iv-cell-value.green { color: var(--green); }
+  .iv-cell-value.yellow { color: var(--yellow); }
+
+  .gex-proximity {
+    margin-top: 6px;
+    padding-top: 6px;
+    border-top: 1px solid var(--border);
+  }
+  .prox-title { font-size: 9px; color: var(--text-muted); margin-bottom: 4px; }
+  .prox-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px;
+  }
+  .prox-cell {
+    background: var(--bg-card-inner);
+    padding: 4px 6px;
+    border-radius: 3px;
+  }
+  .prox-cell-label { font-size: 9px; color: var(--text-muted); }
+  .prox-cell-sub { font-size: 9px; color: var(--orange); }
+  .prox-cell-value { font-size: 12px; font-weight: 600; color: var(--blue); }
+  .prox-cell-dist { font-size: 10px; color: var(--text-secondary); }
+
+  .signal-section {
+    margin-top: 6px;
+    padding-top: 6px;
+    border-top: 1px solid var(--border);
+  }
+  .signal-title { font-size: 9px; color: var(--text-muted); margin-bottom: 3px; }
+  .conditions { font-size: 10px; }
+  .cond-label { font-weight: 700; }
+  .cond-label.long { color: var(--green); }
+  .cond-label.short { color: var(--red); }
+  .cond-items { color: var(--text-secondary); font-size: 10px; }
+  .cond-check { color: var(--green); }
+  .cond-x { color: var(--text-muted); }
+
+  /* === GEX TABLE === */
+  .gex-summary {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+  }
+  .gex-val { font-weight: 700; font-size: 13px; }
+
+  table.gex-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11px;
+  }
+  table.gex-table th {
+    color: var(--text-muted);
+    font-weight: 600;
+    text-align: right;
+    padding: 2px 6px;
+    font-size: 10px;
+    border-bottom: 1px solid var(--border);
+  }
+  table.gex-table th:first-child { text-align: left; }
+  table.gex-table td {
+    padding: 2px 6px;
+    text-align: right;
+  }
+  table.gex-table td:first-child { text-align: left; }
+  .level-name { font-weight: 600; }
+  .level-name.cw { color: var(--red); }
+  .level-name.zg { color: var(--yellow); }
+  .level-name.pw { color: var(--green); }
+  .section-label {
+    color: var(--text-muted);
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    padding: 4px 6px 2px;
+    letter-spacing: 0.5px;
+  }
+  .section-label.res { color: var(--red); }
+  .section-label.sup { color: var(--green); }
+
+  .tab-row {
+    display: flex;
+    gap: 0;
+    margin-top: 6px;
+    border-top: 1px solid var(--border);
+    padding-top: 4px;
+  }
+  .tab-btn {
+    flex: 1;
+    text-align: center;
+    padding: 3px;
+    font-size: 10px;
+    color: var(--text-muted);
+    cursor: pointer;
+    border-radius: 3px;
+  }
+  .tab-btn.active {
+    background: var(--blue);
+    color: #fff;
+  }
+
+  /* === ES CROSS-SIGNAL === */
+  .composite-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 4px 0;
+  }
+  .bar-track {
+    flex: 1;
+    height: 6px;
+    background: var(--bg-card-inner);
+    border-radius: 3px;
+    position: relative;
+  }
+  .bar-marker {
+    position: absolute;
+    top: -3px;
+    width: 12px;
+    height: 12px;
+    background: var(--text-secondary);
+    border-radius: 50%;
+    border: 2px solid var(--bg-card);
+  }
+  .bar-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 9px;
+    color: var(--text-muted);
+  }
+
+  .regime-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px;
+    margin: 6px 0;
+  }
+  .regime-cell {
+    background: var(--bg-card-inner);
+    padding: 4px 6px;
+    border-radius: 3px;
+  }
+  .regime-label { font-size: 9px; color: var(--text-muted); }
+  .regime-value { font-size: 13px; font-weight: 700; }
+  .regime-value.strong-neg { color: var(--red); }
+
+  .es-levels {
+    margin-top: 6px;
+    padding-top: 6px;
+    border-top: 1px solid var(--border);
+  }
+  .es-levels-title { font-size: 9px; color: var(--text-muted); margin-bottom: 3px; }
+  .es-levels-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 10px;
+    color: var(--text-secondary);
+    margin-bottom: 2px;
+  }
+
+  .lt-levels {
+    margin-top: 6px;
+    padding-top: 6px;
+    border-top: 1px solid var(--border);
+  }
+  .lt-title { font-size: 9px; color: var(--text-muted); margin-bottom: 3px; }
+  .lt-grid {
+    display: flex;
+    gap: 4px;
+  }
+  .lt-cell {
+    flex: 1;
+    background: var(--bg-card-inner);
+    padding: 2px 4px;
+    border-radius: 2px;
+    text-align: center;
+  }
+  .lt-cell-label { font-size: 8px; color: var(--text-muted); }
+  .lt-cell-value { font-size: 10px; font-weight: 600; color: var(--yellow); }
+
+  .readiness {
+    margin-top: 6px;
+    padding-top: 6px;
+    border-top: 1px solid var(--border);
+    font-size: 10px;
+  }
+  .readiness-item { color: var(--text-secondary); margin-bottom: 1px; }
+  .readiness-item .check { color: var(--green); }
+
+  /* === CHART PANELS === */
+  .chart-panel {
+    grid-column: span 2;
+  }
+  .chart-area {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    min-height: 0;
+  }
+  .chart-placeholder {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Simulated candlestick chart */
+  .candle-chart {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: flex-end;
+    padding: 20px 40px 24px 10px;
+    gap: 2px;
+    position: relative;
+  }
+  .candle {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+  }
+  .candle-body {
+    width: 60%;
+    min-height: 4px;
+    border-radius: 1px;
+  }
+  .candle-body.green { background: var(--green); }
+  .candle-body.red { background: var(--red); }
+  .candle-wick {
+    width: 1px;
+    background: inherit;
+  }
+  .candle-wick.green { background: var(--green); }
+  .candle-wick.red { background: var(--red); }
+
+  /* GEX level lines on chart */
+  .chart-level {
+    position: absolute;
+    left: 0;
+    right: 40px;
+    height: 1px;
+    border-top: 1px dashed;
+    opacity: 0.5;
+  }
+  .chart-level-label {
+    position: absolute;
+    right: 0;
+    font-size: 9px;
+    font-weight: 600;
+    padding: 1px 4px;
+    border-radius: 2px;
+    transform: translateY(-50%);
+  }
+  .chart-level.zg { border-color: var(--yellow); }
+  .chart-level.zg .chart-level-label { background: var(--yellow); color: #000; }
+  .chart-level.pw { border-color: var(--green); }
+  .chart-level.pw .chart-level-label { background: var(--green); color: #000; }
+  .chart-level.s1 { border-color: var(--blue); }
+  .chart-level.s1 .chart-level-label { background: var(--blue); color: #000; }
+
+  .y-axis {
+    position: absolute;
+    right: 0;
+    top: 20px;
+    bottom: 24px;
+    width: 40px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    font-size: 9px;
+    color: var(--text-muted);
+    text-align: right;
+    padding-right: 4px;
+  }
+  .chart-status {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: space-between;
+    padding: 4px 10px;
+    font-size: 10px;
+    color: var(--text-muted);
+    border-top: 1px solid var(--border);
+    background: var(--bg-card);
+  }
+
+  .chart-legend {
+    display: flex;
+    gap: 10px;
+    font-size: 9px;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+  }
+  .legend-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+  }
+
+  .loading-badge {
+    font-size: 9px;
+    background: var(--yellow);
+    color: #000;
+    padding: 1px 6px;
+    border-radius: 3px;
+    font-weight: 700;
+    margin-left: 6px;
+  }
+
+  /* Scrollbar styling */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+  /* Layout label overlay */
+  .layout-hint {
+    position: fixed;
+    top: 42px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(88,166,255,0.12);
+    border: 1px solid var(--blue);
+    color: var(--blue);
+    padding: 4px 14px;
+    border-radius: 4px;
+    font-size: 10px;
+    z-index: 100;
+    pointer-events: none;
+    opacity: 0.8;
+  }
+</style>
+</head>
+<body>
+
+<div class="layout-hint">MOCKUP — 4-col top + 2 chart bottom · resize browser to simulate 4K</div>
+
+<!-- === COMPACT HEADER === -->
+<div class="header">
+  <div class="header-left">
+    <span class="logo">Slingshot</span>
+    <span class="nav-link active">Dashboard</span>
+    <span class="nav-link">Test Trading</span>
+    <div class="tickers">
+      <span><span class="ticker-sym">NQ</span><span class="ticker-price">24,891.25</span><span class="ticker-change neg">-397.25 (-1.57%)</span></span>
+      <span><span class="ticker-sym">QQQ</span><span class="ticker-price">603.72</span><span class="ticker-change neg">-9.39 (-1.53%)</span></span>
+      <span style="border-left:1px solid #30363d;padding-left:10px"><span class="ticker-sym">ES</span><span class="ticker-price">6,881.75</span><span class="ticker-change neg">-78.75 (-1.13%)</span></span>
+      <span><span class="ticker-sym">SPY</span><span class="ticker-price">684.38</span><span class="ticker-change neg">-7.58 (-1.10%)</span></span>
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="account-stats">
+      <span><span class="stat-label">Bal</span><span class="stat-value">$2,215.03</span></span>
+      <span><span class="stat-label">Avail</span><span class="stat-value">$2,215.03</span></span>
+      <span><span class="stat-label">P&L</span><span class="stat-value green">$140.59 (+6.35%)</span></span>
+      <span><span class="stat-label">Pos</span><span class="stat-value">0</span></span>
+    </div>
+    <span style="color:var(--text-muted)">1597812</span>
+    <span><span class="live-dot"></span>Live</span>
+    <span style="color:var(--red);cursor:pointer;font-weight:700">Logout</span>
+  </div>
+</div>
+
+<!-- === MAIN 4-COL + 2-COL GRID === -->
+<div class="main-grid">
+
+  <!-- PANEL 1: IV Skew -->
+  <div class="panel">
+    <div class="panel-header">
+      <span class="panel-title">IV Skew</span>
+      <span class="badge neutral">NEUTRAL</span>
+    </div>
+    <div class="panel-body">
+      <div class="skew-main">
+        <div>
+          <div class="skew-label">ATM Skew (Put - Call)</div>
+          <div class="skew-sublabel">Calls expensive (bullish flow)</div>
+        </div>
+        <div class="skew-value" style="color:var(--red)">-0.010%</div>
+      </div>
+
+      <div class="iv-grid">
+        <div class="iv-cell">
+          <div class="iv-cell-label">Call IV</div>
+          <div class="iv-cell-value green">23.87%</div>
+        </div>
+        <div class="iv-cell">
+          <div class="iv-cell-label">Put IV</div>
+          <div class="iv-cell-value green">23.86%</div>
+        </div>
+        <div class="iv-cell">
+          <div class="iv-cell-label">Avg IV</div>
+          <div class="iv-cell-value green">23.86%</div>
+        </div>
+        <div class="iv-cell">
+          <div class="iv-cell-label">ATM Strike</div>
+          <div class="iv-cell-value" style="color:var(--text-primary)">604</div>
+        </div>
+      </div>
+
+      <div class="gex-proximity">
+        <div class="prox-title">GEX Level Proximity (NQ @ 24891.25) — 25pt threshold</div>
+        <div class="prox-grid">
+          <div class="prox-cell">
+            <div class="prox-cell-label">Nearest Support</div>
+            <div class="prox-cell-sub">S1</div>
+            <div class="prox-cell-value">24738.00</div>
+            <div class="prox-cell-dist">153.3 pts</div>
+          </div>
+          <div class="prox-cell">
+            <div class="prox-cell-label">Nearest Resistance</div>
+            <div class="prox-cell-sub">GammaFlip</div>
+            <div class="prox-cell-value">24903.00</div>
+            <div class="prox-cell-dist">11.8 pts ✓</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="signal-section">
+        <div class="signal-title">Signal Readiness · Next candle: <span style="color:var(--yellow)">39s</span></div>
+        <div class="conditions">
+          <div><span class="cond-label long">LONG:</span> <span class="cond-items"><span class="cond-x">○</span> Skew &lt; -1% · <span class="cond-check">✓</span> IV ≥ 18% · <span class="cond-x">○</span> Near Support</span></div>
+          <div><span class="cond-label short">SHORT:</span> <span class="cond-items"><span class="cond-x">○</span> Skew &gt; +1% · <span class="cond-check">✓</span> IV ≥ 18% · <span class="cond-check">✓</span> Near Resistance</span></div>
+        </div>
+        <div style="margin-top:4px;font-size:10px;color:var(--text-muted)">ATM OI: Call 517 · Put 2,261</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PANEL 2: GEX Levels (NQ) -->
+  <div class="panel">
+    <div class="panel-header">
+      <span class="panel-title">GEX Levels</span>
+      <span style="display:flex;gap:6px;align-items:center">
+        <span style="cursor:pointer;color:var(--text-muted)">↻</span>
+        <span style="background:var(--blue);color:#fff;padding:2px 8px;border-radius:3px;font-size:10px;cursor:pointer">Recalculate</span>
+      </span>
+    </div>
+    <div class="panel-body">
+      <div class="gex-summary">
+        <span>GEX: <span class="gex-val" style="color:var(--red)">-4.768</span></span>
+        <span class="badge negative">NEGATIVE</span>
+      </div>
+
+      <table class="gex-table">
+        <thead>
+          <tr><th>Level</th><th>CBOE</th><th>Tradier</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><span class="level-name cw">Call Wall</span></td><td>25,769</td><td>25,769</td></tr>
+          <tr><td><span class="level-name zg">Zero Gamma</span></td><td>24,862</td><td>24,903</td></tr>
+          <tr><td><span class="level-name pw">Put Wall</span></td><td>24,738</td><td>24,738</td></tr>
+        </tbody>
+      </table>
+
+      <div class="section-label res">Resistances</div>
+      <table class="gex-table">
+        <tbody>
+          <tr><td></td><td>26,594</td><td>26,594</td></tr>
+          <tr><td></td><td>26,387</td><td>26,387</td></tr>
+          <tr><td></td><td>25,975</td><td>25,975</td></tr>
+        </tbody>
+      </table>
+
+      <div class="section-label sup">Supports</div>
+      <table class="gex-table">
+        <tbody>
+          <tr><td></td><td>24,738</td><td>24,738</td></tr>
+          <tr><td></td><td>24,532</td><td>24,532</td></tr>
+          <tr><td></td><td>24,326</td><td>24,326</td></tr>
+        </tbody>
+      </table>
+
+      <div class="tab-row">
+        <span class="tab-btn active">Combined</span>
+        <span class="tab-btn">CBOE</span>
+        <span class="tab-btn">Tradier</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- PANEL 3: ES Cross-Signal -->
+  <div class="panel">
+    <div class="panel-header">
+      <span class="panel-title">ES Cross-Signal</span>
+      <span class="badge neutral">NEUTRAL</span>
+    </div>
+    <div class="panel-body">
+      <div style="margin-bottom:4px;color:var(--text-secondary);font-size:10px">Composite Score</div>
+      <div class="composite-bar">
+        <div class="bar-track">
+          <div class="bar-marker" style="left:48%"></div>
+        </div>
+      </div>
+      <div class="bar-labels">
+        <span>Short (-2)</span><span>0</span><span>Long (+2)</span>
+      </div>
+
+      <div style="margin:8px 0;font-size:10px;color:var(--text-muted)">Active Signal Events (0) · 15m window<br><span style="color:var(--text-secondary)">No active signals</span></div>
+
+      <div class="regime-row">
+        <div class="regime-cell">
+          <div class="regime-label">GEX Regime</div>
+          <div class="regime-value strong-neg">STRONG -</div>
+        </div>
+        <div class="regime-cell">
+          <div class="regime-label">ES Price</div>
+          <div class="regime-value">6880.56</div>
+        </div>
+      </div>
+
+      <div class="es-levels">
+        <div class="es-levels-title">ES GEX Levels (from SPY)</div>
+        <div class="es-levels-row">
+          <span>Support: <span style="color:var(--green)">6737 / 6833 / 5530</span></span>
+        </div>
+        <div class="es-levels-row">
+          <span>Resistance: <span style="color:var(--red)">6988 / 6999 / 7039</span></span>
+        </div>
+        <div class="es-levels-row">
+          <span>Put Wall: <span style="color:var(--green)">5530</span></span>
+          <span>Call Wall: <span style="color:var(--red)">7039</span></span>
+        </div>
+      </div>
+
+      <div class="lt-levels">
+        <div class="lt-title">LT Levels (15m)</div>
+        <div class="lt-grid">
+          <div class="lt-cell"><div class="lt-cell-label">L3</div><div class="lt-cell-value">6900.2</div></div>
+          <div class="lt-cell"><div class="lt-cell-label">L4</div><div class="lt-cell-value">6925.2</div></div>
+          <div class="lt-cell"><div class="lt-cell-label">L5</div><div class="lt-cell-value">6955.9</div></div>
+          <div class="lt-cell"><div class="lt-cell-label">L6</div><div class="lt-cell-value">6969.3</div></div>
+          <div class="lt-cell"><div class="lt-cell-label">L7</div><div class="lt-cell-value">6979.4</div></div>
+        </div>
+      </div>
+
+      <div class="readiness">
+        <div style="display:flex;justify-content:space-between;margin-bottom:3px">
+          <span style="color:var(--text-muted)">Signal Readiness</span>
+          <span style="color:var(--yellow)">Next candle: 39s</span>
+        </div>
+        <div class="readiness-item"><span class="check">✓</span> Strategy enabled</div>
+        <div class="readiness-item"><span class="check">✓</span> In trading session</div>
+        <div class="readiness-item"><span class="check">✓</span> GEX levels available</div>
+        <div class="readiness-item"><span class="check">✓</span> Not in position</div>
+        <div class="readiness-item" style="color:var(--green)">Cooldown: Ready</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PANEL 4: ES GEX Levels -->
+  <div class="panel">
+    <div class="panel-header">
+      <span class="panel-title">ES GEX Levels</span>
+      <span style="display:flex;gap:6px;align-items:center">
+        <span style="cursor:pointer;color:var(--text-muted)">↻</span>
+        <span style="background:var(--blue);color:#fff;padding:2px 8px;border-radius:3px;font-size:10px;cursor:pointer">Recalculate</span>
+      </span>
+    </div>
+    <div class="panel-body">
+      <div class="gex-summary">
+        <span>GEX: <span class="gex-val" style="color:var(--red)">-9.208</span></span>
+        <span class="badge strong-neg">STRONG_NEGATIVE</span>
+      </div>
+
+      <table class="gex-table">
+        <thead>
+          <tr><th>Level</th><th>CBOE</th><th>Tradier</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><span class="level-name cw">Call Wall</span></td><td>—</td><td>7,039</td></tr>
+          <tr><td><span class="level-name zg">Zero Gamma</span></td><td>—</td><td>6,878</td></tr>
+          <tr><td><span class="level-name pw">Put Wall</span></td><td>—</td><td>5,530</td></tr>
+        </tbody>
+      </table>
+
+      <div class="section-label res">Resistances</div>
+      <table class="gex-table">
+        <tbody>
+          <tr><td></td><td>—</td><td>7,199</td></tr>
+          <tr><td></td><td>—</td><td>7,139</td></tr>
+          <tr><td></td><td>—</td><td>7,039</td></tr>
+        </tbody>
+      </table>
+
+      <div class="section-label sup">Supports</div>
+      <table class="gex-table">
+        <tbody>
+          <tr><td></td><td>—</td><td>6,737</td></tr>
+          <tr><td></td><td>—</td><td>6,833</td></tr>
+          <tr><td></td><td>—</td><td>5,530</td></tr>
+        </tbody>
+      </table>
+
+      <div class="tab-row">
+        <span class="tab-btn active">Combined</span>
+        <span class="tab-btn">CBOE</span>
+        <span class="tab-btn">Tradier</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- PANEL 5: NQ Chart -->
+  <div class="panel chart-panel">
+    <div class="panel-header">
+      <span class="panel-title">NQ vs GEX Levels <span class="loading-badge">LOADING</span></span>
+      <div class="chart-legend">
+        <span class="legend-item"><span class="legend-dot" style="background:var(--red)"></span>CW</span>
+        <span class="legend-item"><span class="legend-dot" style="background:var(--yellow)"></span>ZG</span>
+        <span class="legend-item"><span class="legend-dot" style="background:var(--green)"></span>PW</span>
+        <span class="legend-item"><span class="legend-dot" style="background:var(--blue)"></span>S1</span>
+        <span class="legend-item"><span class="legend-dot" style="background:var(--purple)"></span>R1</span>
+      </div>
+    </div>
+    <div class="chart-area">
+      <div class="chart-placeholder">
+        <!-- Simulated candles via CSS -->
+        <div class="candle-chart" id="nq-chart"></div>
+        <div class="chart-level zg" style="bottom:65%"><span class="chart-level-label">ZG 24,903</span></div>
+        <div class="chart-level pw" style="bottom:25%"><span class="chart-level-label">PW 24,738</span></div>
+        <div class="chart-level s1" style="bottom:23%"><span class="chart-level-label">S1 24,738</span></div>
+        <div class="y-axis">
+          <span>24,980</span>
+          <span>24,940</span>
+          <span>24,900</span>
+          <span>24,860</span>
+          <span>24,820</span>
+          <span>24,800</span>
+        </div>
+      </div>
+      <div class="chart-status">
+        <span>Session: Outside RTH</span>
+        <span>Cooldown: Ready</span>
+        <span>Position: Flat</span>
+        <span>Pending: 0</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- PANEL 6: ES Chart -->
+  <div class="panel chart-panel">
+    <div class="panel-header">
+      <span class="panel-title">ES vs GEX Levels <span class="loading-badge">LOADING</span></span>
+      <div class="chart-legend">
+        <span class="legend-item"><span class="legend-dot" style="background:var(--red)"></span>CW</span>
+        <span class="legend-item"><span class="legend-dot" style="background:var(--yellow)"></span>ZG</span>
+        <span class="legend-item"><span class="legend-dot" style="background:var(--green)"></span>PW</span>
+        <span class="legend-item"><span class="legend-dot" style="background:var(--blue)"></span>S1</span>
+        <span class="legend-item"><span class="legend-dot" style="background:var(--purple)"></span>R1</span>
+      </div>
+    </div>
+    <div class="chart-area">
+      <div class="chart-placeholder">
+        <div class="candle-chart" id="es-chart"></div>
+        <div class="chart-level zg" style="bottom:55%"><span class="chart-level-label">ZG 6,878</span></div>
+        <div class="chart-level pw" style="bottom:10%"><span class="chart-level-label">PW 5,530</span></div>
+        <div class="y-axis">
+          <span>6,910</span>
+          <span>6,890</span>
+          <span>6,870</span>
+          <span>6,860</span>
+          <span>6,850</span>
+          <span>6,840</span>
+        </div>
+      </div>
+      <div class="chart-status">
+        <span>Session: Outside RTH</span>
+        <span>Position: Flat</span>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // Generate fake candles
+  function generateCandles(containerId, basePrice, count) {
+    const container = document.getElementById(containerId);
+    let price = basePrice;
+    const candles = [];
+
+    for (let i = 0; i < count; i++) {
+      const change = (Math.random() - 0.48) * 15;
+      const open = price;
+      const close = price + change;
+      const high = Math.max(open, close) + Math.random() * 8;
+      const low = Math.min(open, close) - Math.random() * 8;
+      price = close;
+      candles.push({ open, close, high, low });
+    }
+
+    const allPrices = candles.flatMap(c => [c.high, c.low]);
+    const minP = Math.min(...allPrices);
+    const maxP = Math.max(...allPrices);
+    const range = maxP - minP || 1;
+
+    candles.forEach(c => {
+      const isGreen = c.close >= c.open;
+      const bodyBot = ((Math.min(c.open, c.close) - minP) / range) * 80 + 5;
+      const bodyTop = ((Math.max(c.open, c.close) - minP) / range) * 80 + 5;
+      const wickBot = ((c.low - minP) / range) * 80 + 5;
+      const wickTop = ((c.high - minP) / range) * 80 + 5;
+
+      const div = document.createElement('div');
+      div.className = 'candle';
+      div.innerHTML = `
+        <div class="candle-wick ${isGreen ? 'green' : 'red'}" style="height:${wickTop - bodyTop}%;margin-bottom:0"></div>
+        <div class="candle-body ${isGreen ? 'green' : 'red'}" style="height:${Math.max(bodyTop - bodyBot, 0.5)}%"></div>
+        <div class="candle-wick ${isGreen ? 'green' : 'red'}" style="height:${bodyBot - wickBot}%;margin-top:0"></div>
+      `;
+      div.style.marginBottom = wickBot + '%';
+      container.appendChild(div);
+    });
+  }
+
+  generateCandles('nq-chart', 24860, 40);
+  generateCandles('es-chart', 6865, 40);
+</script>
+
+</body>
+</html>

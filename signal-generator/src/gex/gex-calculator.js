@@ -19,6 +19,9 @@ const CBOE_URL = 'https://cdn.cboe.com/api/global/delayed_quotes/options/{symbol
 class GexCalculator {
   constructor(options = {}) {
     this.symbol = options.symbol || 'QQQ';
+    this.futuresSymbol = options.futuresSymbol || 'NQ';
+    this.etfSymbol = options.etfSymbol || this.symbol; // ETF symbol for Redis quote keys
+    this.defaultMultiplier = options.defaultMultiplier || 41.5;
     this.cacheFile = options.cacheFile || path.join(__dirname, '../../data/gex_cache.json');
     this.cooldownMinutes = options.cooldownMinutes || 5;
     this.redisUrl = options.redisUrl || 'redis://localhost:6379';
@@ -28,12 +31,12 @@ class GexCalculator {
     this.updateCallback = null;
     this.redis = null;
 
-    // RTH ratio cache - stores the NQ/QQQ multiplier from last RTH session
-    // This prevents level drift during off-hours when QQQ is frozen but NQ moves
+    // RTH ratio cache - stores the futures/ETF multiplier from last RTH session
+    // This prevents level drift during off-hours when ETF is frozen but futures moves
     this.rthRatioCache = {
       multiplier: null,
-      nqSpot: null,
-      qqqSpot: null,
+      futuresSpot: null,
+      etfSpot: null,
       timestamp: null,
       session: null
     };
@@ -80,35 +83,35 @@ class GexCalculator {
     try {
       await this.ensureRedisConnection();
 
-      // Get latest quotes for QQQ and NQ from Redis
+      // Get latest quotes for ETF and futures from Redis
       // TradingView publishes quotes with baseSymbol as key
-      const qqqKey = 'latest_quote_QQQ';
-      const nqKey = 'latest_quote_NQ';
+      const etfKey = `latest_quote_${this.etfSymbol}`;
+      const futuresKey = `latest_quote_${this.futuresSymbol}`;
 
-      const [qqqData, nqData] = await Promise.all([
-        this.redis.get(qqqKey),
-        this.redis.get(nqKey)
+      const [etfData, futuresData] = await Promise.all([
+        this.redis.get(etfKey),
+        this.redis.get(futuresKey)
       ]);
 
       const quotes = {};
 
-      if (qqqData) {
+      if (etfData) {
         try {
-          const qqqQuote = JSON.parse(qqqData);
-          quotes.qqq = qqqQuote.close;
-          logger.info(`Got latest QQQ quote from Redis: $${quotes.qqq}`);
+          const etfQuote = JSON.parse(etfData);
+          quotes.etf = etfQuote.close;
+          logger.info(`Got latest ${this.etfSymbol} quote from Redis: $${quotes.etf}`);
         } catch (e) {
-          logger.warn('Failed to parse QQQ quote from Redis');
+          logger.warn(`Failed to parse ${this.etfSymbol} quote from Redis`);
         }
       }
 
-      if (nqData) {
+      if (futuresData) {
         try {
-          const nqQuote = JSON.parse(nqData);
-          quotes.nq = nqQuote.close;
-          logger.info(`Got latest NQ quote from Redis: ${quotes.nq}`);
+          const futuresQuote = JSON.parse(futuresData);
+          quotes.futures = futuresQuote.close;
+          logger.info(`Got latest ${this.futuresSymbol} quote from Redis: ${quotes.futures}`);
         } catch (e) {
-          logger.warn('Failed to parse NQ quote from Redis');
+          logger.warn(`Failed to parse ${this.futuresSymbol} quote from Redis`);
         }
       }
 
@@ -388,11 +391,11 @@ class GexCalculator {
     return scored.slice(0, n).map(s => Math.round(s.strike)).sort((a, b) => b - a);
   }
 
-  translateToNQ(qqqLevels, nqSpot = null, qqqSpot = null) {
+  translateToFutures(etfLevels, futuresSpot = null, etfSpot = null) {
     // Use provided spot prices or fall back to calculated/default values
-    const actualQqqSpot = qqqSpot || qqqLevels.spotPrice;
-    let actualNqSpot = nqSpot;
-    let multiplier = 41.5; // Default fallback
+    const actualEtfSpot = etfSpot || etfLevels.spotPrice;
+    let actualFuturesSpot = futuresSpot;
+    let multiplier = this.defaultMultiplier; // Default fallback
     let fromRTHCache = false;
     const currentSession = getCurrentSession();
 
@@ -401,23 +404,23 @@ class GexCalculator {
 
     if (isInRTH) {
       // During RTH: Calculate multiplier from live prices and cache it
-      if (actualNqSpot && actualNqSpot > 0) {
-        multiplier = actualNqSpot / actualQqqSpot;
+      if (actualFuturesSpot && actualFuturesSpot > 0) {
+        multiplier = actualFuturesSpot / actualEtfSpot;
 
         // Update RTH ratio cache
         this.rthRatioCache = {
           multiplier,
-          nqSpot: actualNqSpot,
-          qqqSpot: actualQqqSpot,
+          futuresSpot: actualFuturesSpot,
+          etfSpot: actualEtfSpot,
           timestamp: new Date().toISOString(),
           session: currentSession
         };
 
-        logger.info(`[RTH] Using live prices: QQQ=${actualQqqSpot.toFixed(2)}, NQ=${actualNqSpot.toFixed(0)}, Multiplier=${multiplier.toFixed(4)} (cached for off-hours)`);
+        logger.info(`[RTH] Using live prices: ${this.etfSymbol}=${actualEtfSpot.toFixed(2)}, ${this.futuresSymbol}=${actualFuturesSpot.toFixed(0)}, Multiplier=${multiplier.toFixed(4)} (cached for off-hours)`);
       } else {
-        // No live NQ price during RTH - use default
-        actualNqSpot = actualQqqSpot * multiplier;
-        logger.warn(`[RTH] No live NQ price available, using default multiplier ${multiplier}`);
+        // No live futures price during RTH - use default
+        actualFuturesSpot = actualEtfSpot * multiplier;
+        logger.warn(`[RTH] No live ${this.futuresSymbol} price available, using default multiplier ${multiplier}`);
       }
     } else {
       // Outside RTH: Use cached multiplier to prevent drift
@@ -426,8 +429,8 @@ class GexCalculator {
         multiplier = this.rthRatioCache.multiplier;
         fromRTHCache = true;
 
-        // Calculate NQ spot using cached multiplier (keeps levels stable)
-        actualNqSpot = actualQqqSpot * multiplier;
+        // Calculate futures spot using cached multiplier (keeps levels stable)
+        actualFuturesSpot = actualEtfSpot * multiplier;
 
         logger.info(`[OFF-HOURS] Using RTH cached multiplier=${multiplier.toFixed(4)} from ${this.rthRatioCache.timestamp} (session: ${currentSession})`);
       } else if (this.fallbackRatio.multiplier) {
@@ -435,32 +438,37 @@ class GexCalculator {
         multiplier = this.fallbackRatio.multiplier;
         fromRTHCache = true; // Treat as cached since it's from a trusted source
 
-        // Calculate NQ spot using fallback multiplier
-        actualNqSpot = actualQqqSpot * multiplier;
+        // Calculate futures spot using fallback multiplier
+        actualFuturesSpot = actualEtfSpot * multiplier;
 
         logger.info(`[OFF-HOURS] Using fallback multiplier=${multiplier.toFixed(4)} from ${this.fallbackRatio.source} (${this.fallbackRatio.timestamp})`);
-      } else if (actualNqSpot && actualNqSpot > 0) {
+      } else if (actualFuturesSpot && actualFuturesSpot > 0) {
         // Priority 3: Calculate live but warn about potential drift
-        multiplier = actualNqSpot / actualQqqSpot;
+        multiplier = actualFuturesSpot / actualEtfSpot;
         logger.warn(`[OFF-HOURS] No RTH cache or fallback available, using live multiplier=${multiplier.toFixed(4)} - levels may drift!`);
       } else {
         // Priority 4: Fallback to default
-        actualNqSpot = actualQqqSpot * multiplier;
+        actualFuturesSpot = actualEtfSpot * multiplier;
         logger.warn(`[OFF-HOURS] No RTH cache, fallback, or live prices - using default multiplier ${multiplier}`);
       }
     }
 
     return {
-      spot: actualNqSpot,
+      spot: actualFuturesSpot,
       multiplier,
       fromRTHCache,
       currentSession,
-      gammaFlip: Math.round(qqqLevels.gammaFlip * multiplier),
-      callWall: Math.round(qqqLevels.callWall * multiplier),
-      putWall: Math.round(qqqLevels.putWall * multiplier),
-      resistance: qqqLevels.resistance.map(r => Math.round(r * multiplier)),
-      support: qqqLevels.support.map(s => Math.round(s * multiplier))
+      gammaFlip: Math.round(etfLevels.gammaFlip * multiplier),
+      callWall: Math.round(etfLevels.callWall * multiplier),
+      putWall: Math.round(etfLevels.putWall * multiplier),
+      resistance: etfLevels.resistance.map(r => Math.round(r * multiplier)),
+      support: etfLevels.support.map(s => Math.round(s * multiplier))
     };
+  }
+
+  // Backward compatibility alias
+  translateToNQ(qqqLevels, nqSpot = null, qqqSpot = null) {
+    return this.translateToFutures(qqqLevels, nqSpot, qqqSpot);
   }
 
   async calculateLevels(force = false, providedSpots = {}) {
@@ -478,49 +486,57 @@ class GexCalculator {
     try {
       logger.info('Fetching fresh GEX levels from CBOE...');
       const optionsData = await this.fetchCBOEOptions();
-      const qqqLevels = this.calculateGEX(optionsData);
+      const etfLevels = this.calculateGEX(optionsData);
 
       // Get latest quotes from Redis (TradingView data)
       let liveSpots = providedSpots;
-      if (!liveSpots.nq || !liveSpots.qqq) {
-        logger.info('Fetching latest quotes from TradingView Redis data...');
-        const redisQuotes = await this.getLatestQuotesFromRedis();
-        liveSpots = {
-          nq: liveSpots.nq || redisQuotes.nq,
-          qqq: liveSpots.qqq || redisQuotes.qqq
-        };
+      if (!liveSpots.futures || !liveSpots.etf) {
+        // Support legacy nq/qqq keys for backward compatibility
+        if (liveSpots.nq || liveSpots.qqq) {
+          liveSpots = { futures: liveSpots.nq, etf: liveSpots.qqq };
+        } else {
+          logger.info('Fetching latest quotes from TradingView Redis data...');
+          const redisQuotes = await this.getLatestQuotesFromRedis();
+          liveSpots = {
+            futures: liveSpots.futures || redisQuotes.futures,
+            etf: liveSpots.etf || redisQuotes.etf
+          };
+        }
       }
 
       // Use live spot prices from TradingView if available
-      const nqLevels = this.translateToNQ(
-        qqqLevels,
-        liveSpots.nq,
-        liveSpots.qqq || qqqLevels.spotPrice
+      const futuresLevels = this.translateToFutures(
+        etfLevels,
+        liveSpots.futures,
+        liveSpots.etf || etfLevels.spotPrice
       );
 
       this.currentLevels = {
         timestamp: new Date().toISOString(),
-        qqqSpot: liveSpots.qqq || qqqLevels.spotPrice,
-        nqSpot: nqLevels.spot,
-        multiplier: nqLevels.multiplier,
-        totalGex: qqqLevels.totalGex,
-        regime: qqqLevels.regime,
-        gammaFlip: nqLevels.gammaFlip,
-        callWall: nqLevels.callWall,
-        putWall: nqLevels.putWall,
-        resistance: nqLevels.resistance,
-        support: nqLevels.support,
+        etfSpot: liveSpots.etf || etfLevels.spotPrice,
+        futures_spot: futuresLevels.spot,
+        // Backward compat field names
+        qqqSpot: liveSpots.etf || etfLevels.spotPrice,
+        nqSpot: futuresLevels.spot,
+        multiplier: futuresLevels.multiplier,
+        totalGex: etfLevels.totalGex,
+        regime: etfLevels.regime,
+        gammaFlip: futuresLevels.gammaFlip,
+        callWall: futuresLevels.callWall,
+        putWall: futuresLevels.putWall,
+        resistance: futuresLevels.resistance,
+        support: futuresLevels.support,
         fromCache: false,
-        usedLivePrices: !!(liveSpots.nq && liveSpots.qqq),
-        dataSource: liveSpots.nq ? 'tradingview' : 'cboe',
-        fromRTHCache: nqLevels.fromRTHCache,
-        currentSession: nqLevels.currentSession
+        usedLivePrices: !!(liveSpots.futures && liveSpots.etf),
+        dataSource: liveSpots.futures ? 'tradingview' : 'cboe',
+        fromRTHCache: futuresLevels.fromRTHCache,
+        currentSession: futuresLevels.currentSession
       };
 
       this.lastFetchTime = now;
       await this.saveCachedLevels();
 
-      logger.info(`GEX levels calculated: Put Wall=${nqLevels.putWall}, Call Wall=${nqLevels.callWall}, Regime=${qqqLevels.regime} (using ${this.currentLevels.dataSource} prices)`);
+      logger.info(`GEX levels calculated: Put Wall=${futuresLevels.putWall}, Call Wall=${futuresLevels.callWall}, Regime=${etfLevels.regime} (using ${this.currentLevels.dataSource} prices)`);
 
       // Trigger callback if set
       if (this.updateCallback) {

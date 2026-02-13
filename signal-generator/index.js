@@ -192,6 +192,110 @@ app.get('/exposure/health', async (req, res) => {
   }
 });
 
+// Strategy status endpoint - returns live strategy state
+app.get('/strategy/status', (req, res) => {
+  try {
+    const engine = service.strategyEngine;
+    if (!engine) {
+      return res.status(503).json({ error: 'Strategy engine not initialized' });
+    }
+
+    const gexLevels = service.gexCalculator?.getCurrentLevels() || null;
+    const now = new Date();
+
+    const status = {
+      strategy: {
+        name: engine.strategy.getName(),
+        type: engine.strategyName,
+        constant: engine.strategyConstant,
+        enabled: engine.enabled,
+        supports_breakeven: engine.supportsBreakeven,
+        session: {
+          in_session: engine.inSession,
+          current_hour: now.getHours(),
+          session_hours: `${engine.sessionStart}:00 - ${engine.sessionEnd}:00`
+        },
+        cooldown: {
+          in_cooldown: !engine.strategy.checkCooldown(now.getTime(), engine.strategy.params.signalCooldownMs),
+          formatted: engine.strategy.checkCooldown(now.getTime(), engine.strategy.params.signalCooldownMs) ? "Ready" : "In cooldown",
+          seconds_remaining: Math.max(0, Math.ceil((engine.strategy.lastSignalTime + engine.strategy.params.signalCooldownMs - now.getTime()) / 1000))
+        }
+      },
+      // Strategy-specific internal state (composite score, active signals, etc.)
+      internals: typeof engine.strategy.getInternalState === 'function'
+        ? engine.strategy.getInternalState()
+        : null,
+      gex_levels: gexLevels ? {
+        put_wall: gexLevels.putWall,
+        call_wall: gexLevels.callWall,
+        support: gexLevels.support || [],
+        resistance: gexLevels.resistance || [],
+        regime: gexLevels.regime,
+        total_gex: gexLevels.totalGex,
+        futures_spot: gexLevels.futures_spot || gexLevels.nqSpot
+      } : null,
+      candle_buffer: {
+        count: engine.candleBuffer.getStats().count,
+        initialized: engine.candleBuffer.getStats().initialized,
+        last_candle_time: engine.candleBuffer.getStats().lastCandleTime
+      },
+      position: {
+        in_position: engine.inPosition,
+        current: engine.currentPosition ? {
+          symbol: engine.currentPosition.symbol,
+          side: engine.currentPosition.side,
+          entry_price: engine.currentPosition.entryPrice,
+          entry_time: engine.currentPosition.entryTime
+        } : null
+      },
+      lt_levels: engine.currentLtLevels || null,
+      evaluation_readiness: {
+        ready: false,
+        conditions_met: [],
+        blockers: []
+      },
+      timestamp: now.toISOString()
+    };
+
+    // Add condition details
+    if (engine.enabled) status.evaluation_readiness.conditions_met.push("Strategy enabled");
+    else status.evaluation_readiness.blockers.push("Strategy disabled");
+
+    // Use strategy-level session check if available (respects allowedSessions like RTH-only)
+    const strategy = engine.strategy;
+    if (strategy && typeof strategy.isAllowedSession === 'function') {
+      const currentSession = strategy.getSession(now);
+      const allowed = strategy.isAllowedSession(now);
+      const allowedList = strategy.params.allowedSessions?.join(', ').toUpperCase() || 'ALL';
+      if (allowed) {
+        status.evaluation_readiness.conditions_met.push(`In ${currentSession.toUpperCase()} session`);
+      } else {
+        status.evaluation_readiness.blockers.push(`In ${currentSession.toUpperCase()} (allowed: ${allowedList})`);
+      }
+    } else if (engine.inSession) {
+      status.evaluation_readiness.conditions_met.push("In trading session");
+    } else {
+      status.evaluation_readiness.blockers.push("Outside trading session");
+    }
+
+    if (gexLevels) status.evaluation_readiness.conditions_met.push("GEX levels available");
+    else status.evaluation_readiness.blockers.push("GEX levels unavailable");
+    if (!engine.inPosition) status.evaluation_readiness.conditions_met.push("Not in position");
+    else status.evaluation_readiness.blockers.push("Currently in position");
+
+    // Overall readiness considers strategy-level session check
+    const inAllowedSession = strategy && typeof strategy.isAllowedSession === 'function'
+      ? strategy.isAllowedSession(now)
+      : engine.inSession;
+    status.evaluation_readiness.ready = engine.enabled && inAllowedSession && !!gexLevels && !engine.inPosition;
+
+    res.json(status);
+  } catch (error) {
+    logger.error('Strategy status error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Strategy endpoints
 app.post('/strategy/enable', (req, res) => {
   try {

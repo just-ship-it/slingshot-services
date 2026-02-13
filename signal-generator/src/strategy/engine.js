@@ -1,13 +1,14 @@
 // Strategy engine that coordinates strategy evaluation on candle closes
 import { createLogger, messageBus, CHANNELS } from '../../../shared/index.js';
 import { CandleBuffer } from '../utils/candle-buffer.js';
+import { CandleAggregator } from '../../../shared/utils/candle-aggregator.js';
 import { createStrategy, getStrategyConstant, requiresIVData, supportsBreakevenStop } from './strategy-factory.js';
 import config from '../utils/config.js';
 
 const logger = createLogger('strategy-engine');
 
 class StrategyEngine {
-  constructor(gexCalculator, redisPublisher) {
+  constructor(gexCalculator, redisPublisher, options = {}) {
     this.gexCalculator = gexCalculator;
     this.redisPublisher = redisPublisher;
 
@@ -26,12 +27,25 @@ class StrategyEngine {
     logger.info(`📊 Active strategy: ${this.strategyName} (${this.strategyConstant})`);
     logger.info(`   Requires IV data: ${this.requiresIV}, Supports breakeven: ${this.supportsBreakeven}`);
 
-    // Initialize candle buffer for NQ 1-minute data (scalping)
+    // Initialize candle buffer for 1-minute data
     this.candleBuffer = new CandleBuffer({
-      symbol: 'NQ',
+      symbol: options.candleBaseSymbol || config.CANDLE_BASE_SYMBOL || 'NQ',
       timeframe: '1',
       maxSize: 100
     });
+
+    // Evaluation timeframe: '1m' means evaluate every 1m candle (default),
+    // '15m' etc. means aggregate 1m candles and only evaluate on completed higher-TF candles
+    this.evalTimeframe = config.EVAL_TIMEFRAME || '1m';
+    this.aggregator = null;
+    if (this.evalTimeframe !== '1m') {
+      this.aggregator = new CandleAggregator();
+      this.aggregator.initIncremental(this.evalTimeframe, this.strategyConstant);
+      this.lastEvaluatedPeriod = null; // Track last evaluated period to prevent double-eval
+      logger.info(`📊 Evaluation timeframe: ${this.evalTimeframe} (aggregating 1m candles)`);
+    } else {
+      logger.info(`📊 Evaluation timeframe: 1m (every candle close)`);
+    }
 
     this.currentLtLevels = null;
     this.enabled = config.STRATEGY_ENABLED;
@@ -146,6 +160,18 @@ class StrategyEngine {
   }
 
   /**
+   * Find a position matching this instance's base symbol (NQ or ES)
+   * Filters out positions for other products so each signal-generator
+   * instance only tracks its own product.
+   * @param {Array} positions - Array of Tradovate position objects
+   * @returns {Object|undefined} Matching position or undefined
+   */
+  _findMatchingPosition(positions) {
+    const baseSymbol = config.CANDLE_BASE_SYMBOL || 'NQ';
+    return positions.find(p => p.netPos !== 0 && p.symbol && p.symbol.includes(baseSymbol));
+  }
+
+  /**
    * Sync position state from Tradovate service on startup
    * Prevents duplicate signals if service restarts while in a position
    */
@@ -172,8 +198,8 @@ class StrategyEngine {
 
         const positions = await response.json();
 
-        // Look for any open position
-        const openPosition = positions.find(p => p.netPos !== 0);
+        // Look for an open position matching this instance's product
+        const openPosition = this._findMatchingPosition(positions);
 
         if (openPosition) {
           this.inPosition = true;
@@ -223,7 +249,7 @@ class StrategyEngine {
       }
 
       const positions = await response.json();
-      const openPosition = positions.find(p => p.netPos !== 0);
+      const openPosition = this._findMatchingPosition(positions);
 
       if (this.inPosition && !openPosition) {
         // STALE: We think we're in a position but Tradovate says flat
@@ -794,8 +820,22 @@ class StrategyEngine {
   }
 
   setLtLevels(ltLevels) {
-    this.currentLtLevels = ltLevels;
-    logger.debug(`LT levels updated: ${JSON.stringify(ltLevels)}`);
+    // Map monitor fields (L2-L6) to strategy fields (level_1-level_5)
+    // Monitor L0/L1 are non-Fibonacci indicator outputs; L2-L6 are the Fib 34/55/144/377/610 levels
+    if (ltLevels && ltLevels.L2 !== undefined) {
+      this.currentLtLevels = {
+        ...ltLevels,
+        level_1: ltLevels.L2,
+        level_2: ltLevels.L3,
+        level_3: ltLevels.L4,
+        level_4: ltLevels.L5,
+        level_5: ltLevels.L6
+      };
+    } else {
+      // Already has level_1-level_5 (e.g. from backtest loader)
+      this.currentLtLevels = ltLevels;
+    }
+    logger.debug(`LT levels updated: ${JSON.stringify(this.currentLtLevels)}`);
   }
 
   setGexCalculator(gexCalculator) {
@@ -847,7 +887,7 @@ class StrategyEngine {
 
     // If in position, update time-based trailing but skip new signal evaluation
     if (this.inPosition) {
-      // Update time-based trailing on each candle close
+      // Update time-based trailing on each candle close (always on 1m)
       if (this.timeBasedTrailingConfig.enabled && this.timeBasedTrailingState) {
         this.updateTimeBasedTrailing(candle);
       }
@@ -856,15 +896,80 @@ class StrategyEngine {
         logger.info(`Skipping signal evaluation - in position: ${this.currentPosition?.side} ${this.currentPosition?.symbol} @ ${this.currentPosition?.entryPrice}`);
         this.lastInPositionLogTime = now;
       }
+      // Always check order timeouts on every 1m candle
+      await this.checkOrderTimeouts();
       return;
     }
 
-    // Only evaluate NQ candles
-    if (!candle.symbol.includes('NQ')) {
-      logger.debug(`Skipping non-NQ symbol: ${candle.symbol}`);
+    // Only evaluate candles matching configured base symbol
+    const baseSymbol = config.CANDLE_BASE_SYMBOL || 'NQ';
+    if (!candle.symbol.includes(baseSymbol)) {
+      logger.debug(`Skipping non-${baseSymbol} symbol: ${candle.symbol}`);
       return;
     }
 
+    // If using a higher evaluation timeframe, aggregate 1m candles
+    // and only run strategy evaluation when a new aggregated candle completes
+    if (this.aggregator) {
+      const key = `${this.strategyConstant}_${this.evalTimeframe}`;
+      const state = this.aggregator.incrementalState[key];
+      const prevCompletedCount = state ? state.aggregatedCandles.length : 0;
+
+      this.aggregator.addCandleIncremental(candle, this.evalTimeframe, this.strategyConstant);
+
+      const newCompletedCount = state ? state.aggregatedCandles.length : 0;
+
+      let completedCandle = null;
+
+      if (newCompletedCount > prevCompletedCount) {
+        // Aggregator finalized previous period (a candle from the next period arrived).
+        // Only evaluate if we didn't already evaluate this period early.
+        const finalized = state.aggregatedCandles[state.aggregatedCandles.length - 1];
+        if (finalized.timestamp !== this.lastEvaluatedPeriod) {
+          completedCandle = finalized;
+          this.lastEvaluatedPeriod = finalized.timestamp;
+        }
+      }
+
+      if (!completedCandle && state && state.currentPeriod) {
+        // Check if this 1m candle is the LAST in the current period
+        // (i.e., the next minute would start a new period)
+        const candleTime = typeof candle.timestamp === 'number'
+          ? candle.timestamp : new Date(candle.timestamp).getTime();
+        const nextMinute = candleTime + 60000;
+        const intervalMinutes = this.aggregator.getIntervalMinutes(this.evalTimeframe);
+        const currentPeriodStart = this.aggregator.getPeriodStart(candleTime, intervalMinutes);
+        const nextPeriodStart = this.aggregator.getPeriodStart(nextMinute, intervalMinutes);
+
+        if (nextPeriodStart !== currentPeriodStart && currentPeriodStart !== this.lastEvaluatedPeriod) {
+          // This is the last 1m candle in the period — evaluate now
+          completedCandle = { ...state.currentPeriod };
+          this.lastEvaluatedPeriod = currentPeriodStart;
+        }
+      }
+
+      if (!completedCandle) {
+        // Still accumulating — check order timeouts on every 1m candle
+        await this.checkOrderTimeouts();
+        return;
+      }
+
+      logger.info(`🕯️ ${this.evalTimeframe} candle closed: O=${completedCandle.open} H=${completedCandle.high} L=${completedCandle.low} C=${completedCandle.close} (${completedCandle.candleCount} 1m candles)`);
+
+      // Evaluate using the aggregated candle instead of the raw 1m candle
+      await this._evaluateStrategyOnCandle(completedCandle);
+      return;
+    }
+
+    // Default: evaluate on every 1m candle (evalTimeframe === '1m')
+    await this._evaluateStrategyOnCandle(candle);
+  }
+
+  /**
+   * Core strategy evaluation logic, called with either a 1m candle or an aggregated candle
+   * @param {Object} candle - The candle to evaluate (1m or aggregated)
+   */
+  async _evaluateStrategyOnCandle(candle) {
     try {
       // Get current GEX levels
       const gexLevels = this.gexCalculator.getCurrentLevels();
@@ -886,7 +991,8 @@ class StrategyEngine {
 
       // Prepare market data for strategy
       const marketData = {
-        gexLevels: gexLevels
+        gexLevels: gexLevels,
+        ltLevels: this.currentLtLevels
       };
 
       // Add IV data for strategies that require it
@@ -929,7 +1035,7 @@ class StrategyEngine {
         await this.publishSignal(signal);
       }
 
-      // Check for timed out limit orders after each candle close
+      // Check for timed out limit orders after each evaluation
       await this.checkOrderTimeouts();
 
     } catch (error) {
@@ -967,6 +1073,12 @@ class StrategyEngine {
     this.timeBasedTrailingState = null;
     this.reconciliationConfirmed = false;
     this.lastInPositionLogTime = 0;
+    // Reset aggregator state so partial periods don't carry over across sessions
+    if (this.aggregator) {
+      this.aggregator.resetIncremental(this.evalTimeframe, this.strategyConstant);
+      this.aggregator.initIncremental(this.evalTimeframe, this.strategyConstant);
+      this.lastEvaluatedPeriod = null;
+    }
     logger.info('Strategy engine reset for new session');
   }
 

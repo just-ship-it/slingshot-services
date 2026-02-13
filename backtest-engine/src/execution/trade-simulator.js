@@ -22,7 +22,7 @@ export class TradeSimulator {
     this.contractSpecs = config.contractSpecs || {};
 
     // Market close configuration
-    this.forceCloseAtMarketClose = config.forceCloseAtMarketClose || true;
+    this.forceCloseAtMarketClose = config.forceCloseAtMarketClose ?? true;
     this.marketCloseTimeUTC = config.marketCloseTimeUTC || 21; // 4 PM EST = 21:00 UTC
 
     // Debug mode for detailed trade logging
@@ -438,6 +438,11 @@ export class TradeSimulator {
           return this.exitTrade(trade, bar, 'market_close', bar.close);
         }
 
+        // Check forced time exit (e.g., overnight strategy exit at 9:30 AM)
+        if (trade.signal?.forceExitTimeUTC && bar.timestamp >= trade.signal.forceExitTimeUTC) {
+          return this.exitTrade(trade, bar, 'time_exit', bar.close);
+        }
+
         // Check max hold bars (force exit after N bars in trade)
         if (debug && trade.barsSinceEntry % 10 === 0) {
           console.log(`    🔢 [TRADE ${trade.id}] barsSinceEntry=${trade.barsSinceEntry} / maxHoldBars=${trade.maxHoldBars}`);
@@ -612,6 +617,14 @@ export class TradeSimulator {
           console.log(`    🌅 [TRADE ${trade.id}] Market close detected - forcing exit`);
         }
         return this.exitTrade(trade, candle, 'market_close', currentPrice);
+      }
+
+      // Check forced time exit (e.g., overnight strategy exit at 9:30 AM)
+      if (trade.signal?.forceExitTimeUTC && candle.timestamp >= trade.signal.forceExitTimeUTC) {
+        if (debug) {
+          console.log(`    ⏰ [TRADE ${trade.id}] Forced time exit at ${new Date(trade.signal.forceExitTimeUTC).toISOString()}`);
+        }
+        return this.exitTrade(trade, candle, 'time_exit', currentPrice);
       }
 
       // Increment bars since entry and check max hold bars

@@ -12,6 +12,10 @@ const logger = createLogger('tradier-exposure-service');
 class TradierExposureService {
   constructor(options = {}) {
     this.config = config.getTradierConfig();
+    // Allow strategy-driven symbol override
+    if (options.symbols) {
+      this.config.symbols = options.symbols;
+    }
     this.isRunning = false;
     this.isInitialized = false;
 

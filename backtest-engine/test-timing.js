@@ -5,7 +5,7 @@
  */
 
 import { CSVLoader } from './src/data/csv-loader.js';
-import { CandleAggregator } from './src/data/candle-aggregator.js';
+import { CandleAggregator } from '../shared/utils/candle-aggregator.js';
 import { GexRecoilStrategy } from '../shared/strategies/gex-recoil.js';
 import fs from 'fs';
 import path from 'path';

@@ -7,6 +7,7 @@ import GexCalculator from './gex/gex-calculator.js';
 import TradierExposureService from './tradier/tradier-exposure-service.js';
 import HybridGexCalculator from './gex/hybrid-gex-calculator.js';
 import StrategyEngine from './strategy/engine.js';
+import { getDataRequirements } from './strategy/strategy-factory.js';
 
 const logger = createLogger('signal-generator');
 
@@ -27,31 +28,74 @@ class SignalGeneratorService {
       logger.info('Starting Signal Generator Service...');
       console.log('🚀 CONSOLE: Starting Signal Generator Service...');
 
+      // --- Resolve data requirements from strategy ---
+      const dataReqs = getDataRequirements(config.ACTIVE_STRATEGY);
+
+      // Strategy requirements override config defaults; env vars override everything
+      const gexEtfSymbol = process.env.GEX_SYMBOL || dataReqs?.gex?.etfSymbol || config.GEX_SYMBOL;
+      const gexFuturesSymbol = process.env.GEX_FUTURES_SYMBOL || dataReqs?.gex?.futuresSymbol || config.GEX_FUTURES_SYMBOL;
+      const gexDefaultMultiplier = process.env.GEX_DEFAULT_MULTIPLIER
+        ? parseFloat(process.env.GEX_DEFAULT_MULTIPLIER)
+        : (dataReqs?.gex?.defaultMultiplier ?? config.GEX_DEFAULT_MULTIPLIER);
+      const ohlcvSymbols = process.env.OHLCV_SYMBOLS
+        ? config.OHLCV_SYMBOLS  // already parsed from env in config.js
+        : (dataReqs?.candles?.quoteSymbols || config.OHLCV_SYMBOLS);
+      this.candleBaseSymbol = process.env.CANDLE_BASE_SYMBOL
+        ? config.CANDLE_BASE_SYMBOL
+        : (dataReqs?.candles?.baseSymbol || config.CANDLE_BASE_SYMBOL);
+      const ltConfig = process.env.LT_SYMBOL
+        ? { symbol: config.LT_SYMBOL, timeframe: config.LT_TIMEFRAME }
+        : (dataReqs?.lt || (dataReqs === null && config.LT_SYMBOL ? { symbol: config.LT_SYMBOL, timeframe: config.LT_TIMEFRAME } : false));
+      const needsTradier = dataReqs?.tradier ?? (config.TRADIER_ENABLED && !!config.TRADIER_ACCESS_TOKEN);
+      const needsIVSkew = dataReqs?.ivSkew ?? false;
+      const tradierSymbols = dataReqs?.tradierSymbols || config.TRADIER_SYMBOLS;
+      const tradierOpts = needsTradier ? { symbols: tradierSymbols } : {};
+      this.gexCacheFile = process.env.GEX_CACHE_FILE || `./data/gex_cache_${gexFuturesSymbol.toLowerCase()}.json`;
+
+      // Log resolved data requirements
+      const activeComponents = [];
+      activeComponents.push(`GEX(${gexEtfSymbol}->${gexFuturesSymbol} x${gexDefaultMultiplier})`);
+      if (ltConfig) activeComponents.push(`LT(${ltConfig.symbol} ${ltConfig.timeframe}m)`);
+      if (needsTradier) activeComponents.push(`Tradier(${tradierSymbols.join(', ')})`);
+      if (needsIVSkew) activeComponents.push('IV Skew');
+      activeComponents.push(`TradingView(${ohlcvSymbols.join(', ')})`);
+
+      const skippedComponents = [];
+      if (!ltConfig) skippedComponents.push('LT Monitor');
+      if (!needsTradier) skippedComponents.push('Tradier');
+      if (!needsIVSkew) skippedComponents.push('IV Skew');
+
+      logger.info(`Strategy: ${config.ACTIVE_STRATEGY}`);
+      logger.info(`Data requirements: ${activeComponents.join(', ')}`);
+      logger.info(`Candle base symbol: ${this.candleBaseSymbol}`);
+      if (skippedComponents.length > 0) {
+        logger.info(`Skipping: ${skippedComponents.join(', ')}`);
+      }
 
       // Connect to message bus
       logger.info('Connecting to message bus...');
       if (!messageBus.isConnected) {
         await messageBus.connect();
       }
-      logger.info('✅ Connected to message bus successfully');
+      logger.info('Connected to message bus successfully');
 
-      // Initialize GEX services with hybrid approach
-      const hybridEnabled = config.HYBRID_GEX_ENABLED && config.TRADIER_ACCESS_TOKEN && config.TRADIER_ENABLED;
+      // Initialize GEX services — use resolved symbols instead of config defaults
+      const hybridEnabled = needsTradier && config.HYBRID_GEX_ENABLED && config.TRADIER_ACCESS_TOKEN && config.TRADIER_ENABLED;
 
       if (hybridEnabled) {
-        logger.info('🔄 Initializing Hybrid GEX Calculator (Tradier + CBOE)...');
+        logger.info('Initializing Hybrid GEX Calculator (Tradier + CBOE)...');
 
         // Initialize Tradier service for the hybrid calculator
-        this.tradierExposureService = new TradierExposureService();
+        this.tradierExposureService = new TradierExposureService(tradierOpts);
 
         try {
           if (config.TRADIER_AUTO_START) {
             await this.tradierExposureService.initialize();
             await this.tradierExposureService.start();
-            logger.info('✅ Tradier service initialized and started for hybrid mode');
+            logger.info('Tradier service initialized and started for hybrid mode');
           } else {
             await this.tradierExposureService.initialize();
-            logger.info('📍 Tradier service initialized but not started (manual start enabled)');
+            logger.info('Tradier service initialized but not started (manual start enabled)');
           }
 
           // Create hybrid calculator
@@ -64,8 +108,11 @@ class SignalGeneratorService {
             tradierFreshnessMinutes: config.HYBRID_TRADIER_FRESHNESS_MINUTES || 5,
             tradierService: this.tradierExposureService,
             cboe: {
-              symbol: config.GEX_SYMBOL,
-              cacheFile: config.GEX_CACHE_FILE,
+              symbol: gexEtfSymbol,
+              futuresSymbol: gexFuturesSymbol,
+              etfSymbol: gexEtfSymbol,
+              defaultMultiplier: gexDefaultMultiplier,
+              cacheFile: this.gexCacheFile,
               cooldownMinutes: config.GEX_COOLDOWN_MINUTES,
               redisUrl: config.getRedisUrl()
             }
@@ -76,8 +123,8 @@ class SignalGeneratorService {
           // Set backward compatibility
           this.gexCalculator = this.hybridGexCalculator;
 
-          logger.info('✅ Hybrid GEX Calculator initialized successfully');
-          logger.info(`📊 Configuration: Tradier every ${config.HYBRID_TRADIER_REFRESH_MINUTES || 3}min, CBOE every ${config.HYBRID_CBOE_REFRESH_MINUTES || 15}min`);
+          logger.info('Hybrid GEX Calculator initialized successfully');
+          logger.info(`Configuration: Tradier every ${config.HYBRID_TRADIER_REFRESH_MINUTES || 3}min, CBOE every ${config.HYBRID_CBOE_REFRESH_MINUTES || 15}min`);
 
         } catch (error) {
           logger.error('Failed to initialize hybrid calculator:', error.message);
@@ -85,77 +132,96 @@ class SignalGeneratorService {
 
           // Fallback to CBOE only
           this.gexCalculator = new GexCalculator({
-            symbol: config.GEX_SYMBOL,
-            cacheFile: config.GEX_CACHE_FILE,
+            symbol: gexEtfSymbol,
+            futuresSymbol: gexFuturesSymbol,
+            etfSymbol: gexEtfSymbol,
+            defaultMultiplier: gexDefaultMultiplier,
+            cacheFile: this.gexCacheFile,
             cooldownMinutes: config.GEX_COOLDOWN_MINUTES,
             redisUrl: config.getRedisUrl()
           });
           await this.gexCalculator.loadCachedLevels();
-          logger.info('✅ CBOE GEX Calculator initialized as fallback');
+          logger.info('CBOE GEX Calculator initialized as fallback');
         }
-      } else if (config.TRADIER_ACCESS_TOKEN && config.TRADIER_ENABLED && config.TRADIER_AUTO_START) {
+      } else if (needsTradier && config.TRADIER_ACCESS_TOKEN && config.TRADIER_ENABLED && config.TRADIER_AUTO_START) {
         logger.info('Initializing Tradier-only mode...');
-        this.tradierExposureService = new TradierExposureService();
+        this.tradierExposureService = new TradierExposureService(tradierOpts);
 
         try {
           await this.tradierExposureService.initialize();
           await this.tradierExposureService.start();
           this.gexCalculator = this.tradierExposureService;
-          logger.info('✅ Tradier Exposure Service initialized and started');
+          logger.info('Tradier Exposure Service initialized and started');
         } catch (error) {
           logger.error('Failed to initialize Tradier service:', error.message);
           logger.info('Falling back to CBOE GEX Calculator...');
 
           this.gexCalculator = new GexCalculator({
-            symbol: config.GEX_SYMBOL,
-            cacheFile: config.GEX_CACHE_FILE,
+            symbol: gexEtfSymbol,
+            futuresSymbol: gexFuturesSymbol,
+            etfSymbol: gexEtfSymbol,
+            defaultMultiplier: gexDefaultMultiplier,
+            cacheFile: this.gexCacheFile,
             cooldownMinutes: config.GEX_COOLDOWN_MINUTES,
             redisUrl: config.getRedisUrl()
           });
           await this.gexCalculator.loadCachedLevels();
-          logger.info('✅ CBOE GEX Calculator initialized as fallback');
+          logger.info('CBOE GEX Calculator initialized as fallback');
         }
-      } else if (config.TRADIER_ACCESS_TOKEN && config.TRADIER_ENABLED && !config.TRADIER_AUTO_START) {
+      } else if (needsTradier && config.TRADIER_ACCESS_TOKEN && config.TRADIER_ENABLED && !config.TRADIER_AUTO_START) {
         logger.info('Tradier configured but auto-start disabled, using CBOE...');
-        this.tradierExposureService = new TradierExposureService();
+        this.tradierExposureService = new TradierExposureService(tradierOpts);
         this.gexCalculator = new GexCalculator({
-          symbol: config.GEX_SYMBOL,
-          cacheFile: config.GEX_CACHE_FILE,
+          symbol: gexEtfSymbol,
+          cacheFile: this.gexCacheFile,
           cooldownMinutes: config.GEX_COOLDOWN_MINUTES,
           redisUrl: config.getRedisUrl()
         });
         await this.gexCalculator.loadCachedLevels();
-        logger.info('✅ CBOE GEX Calculator initialized, Tradier ready for manual start');
+        logger.info('CBOE GEX Calculator initialized, Tradier ready for manual start');
       } else {
-        const reason = !config.TRADIER_ACCESS_TOKEN ? 'No Tradier token configured' : 'Tradier disabled in configuration';
-        logger.info(`${reason}, using CBOE-only mode...`);
+        if (needsTradier && !config.TRADIER_ACCESS_TOKEN) {
+          logger.warn('Strategy requires Tradier but no token configured, using CBOE-only mode');
+        }
         this.gexCalculator = new GexCalculator({
-          symbol: config.GEX_SYMBOL,
-          cacheFile: config.GEX_CACHE_FILE,
+          symbol: gexEtfSymbol,
+          futuresSymbol: gexFuturesSymbol,
+          etfSymbol: gexEtfSymbol,
+          defaultMultiplier: gexDefaultMultiplier,
+          cacheFile: this.gexCacheFile,
           cooldownMinutes: config.GEX_COOLDOWN_MINUTES,
           redisUrl: config.getRedisUrl()
         });
         await this.gexCalculator.loadCachedLevels();
-        logger.info('✅ CBOE GEX Calculator initialized');
+        // Fetch fresh levels on startup if cache is empty
+        if (!this.gexCalculator.currentLevels) {
+          logger.info('No cached GEX levels — fetching from CBOE on startup...');
+          try {
+            await this.gexCalculator.calculateLevels(true);
+          } catch (err) {
+            logger.warn('Initial CBOE fetch failed, will retry on schedule:', err.message);
+          }
+        }
+        logger.info('CBOE GEX Calculator initialized');
       }
 
       // Initialize Strategy Engine
-      this.strategyEngine = new StrategyEngine(this.gexCalculator);
+      this.strategyEngine = new StrategyEngine(this.gexCalculator, null, { candleBaseSymbol: this.candleBaseSymbol });
 
-      // Wire up IV Skew calculator to strategy engine (if Tradier service has it)
-      if (this.tradierExposureService?.ivSkewCalculator) {
+      // Wire up IV Skew calculator to strategy engine (only if strategy needs it)
+      if (needsIVSkew && this.tradierExposureService?.ivSkewCalculator) {
         this.ivSkewCalculator = this.tradierExposureService.ivSkewCalculator;
         this.strategyEngine.setIVSkewCalculator(this.ivSkewCalculator);
-        logger.info('✅ IV Skew calculator wired to strategy engine');
-      } else {
-        logger.warn('⚠️ IV Skew calculator not available (Tradier service may not be running)');
+        logger.info('IV Skew calculator wired to strategy engine');
+      } else if (needsIVSkew) {
+        logger.warn('Strategy requires IV Skew but Tradier service not available');
       }
 
-      // Initialize TradingView Client
+      // Initialize TradingView Client with strategy-resolved symbols
       this.tradingViewClient = new TradingViewClient({
-        symbols: config.OHLCV_SYMBOLS,
-        ltSymbol: config.LT_SYMBOL,
-        ltTimeframe: config.LT_TIMEFRAME,
+        symbols: ohlcvSymbols,
+        ltSymbol: ltConfig ? ltConfig.symbol : null,
+        ltTimeframe: ltConfig ? ltConfig.timeframe : config.LT_TIMEFRAME,
         jwtToken: config.TRADINGVIEW_JWT_TOKEN,
         credentials: config.TRADINGVIEW_CREDENTIALS,
         redisUrl: config.getRedisUrl()
@@ -165,31 +231,31 @@ class SignalGeneratorService {
       this.tradingViewClient.on('quote', (quote) => this.handleQuoteUpdate(quote));
 
       // Start TradingView connection
-      logger.info('🔌 Connecting to TradingView WebSocket...');
+      logger.info('Connecting to TradingView WebSocket...');
       try {
         await this.tradingViewClient.connect();
-        logger.info('✅ TradingView WebSocket connected successfully');
+        logger.info('TradingView WebSocket connected successfully');
       } catch (error) {
-        logger.error('❌ Failed to connect to TradingView:', error.message);
+        logger.error('Failed to connect to TradingView:', error.message);
         throw error;
       }
 
       // Start streaming data for all symbols
-      logger.info('📡 Starting TradingView data streaming...');
+      logger.info('Starting TradingView data streaming...');
       try {
         await this.tradingViewClient.startStreaming();
-        logger.info('📊 TradingView streaming started for all symbols');
+        logger.info(`TradingView streaming started for ${ohlcvSymbols.length} symbols`);
       } catch (error) {
-        logger.error('❌ Failed to start TradingView streaming:', error.message);
+        logger.error('Failed to start TradingView streaming:', error.message);
         throw error;
       }
 
-      // Initialize and start LT Monitor for NQ
-      if (config.LT_SYMBOL && config.LT_SYMBOL.includes('NQ')) {
-        logger.info('🎯 Initializing LT monitor for NQ...');
+      // Initialize and start LT Monitor only if strategy requires it
+      if (ltConfig) {
+        logger.info(`Initializing LT monitor for ${ltConfig.symbol} (${ltConfig.timeframe}m)...`);
         this.ltMonitor = new LTMonitor({
-          symbol: config.LT_SYMBOL,
-          timeframe: config.LT_TIMEFRAME,
+          symbol: ltConfig.symbol,
+          timeframe: ltConfig.timeframe,
           jwtToken: config.TRADINGVIEW_JWT_TOKEN
         });
 
@@ -199,9 +265,9 @@ class SignalGeneratorService {
         try {
           await this.ltMonitor.connect();
           await this.ltMonitor.startMonitoring();
-          logger.info('✅ LT monitor started successfully');
+          logger.info('LT monitor started successfully');
         } catch (error) {
-          logger.error('❌ Failed to start LT monitor:', error.message);
+          logger.error('Failed to start LT monitor:', error.message);
           // Don't throw - LT is optional
         }
       }
@@ -210,7 +276,7 @@ class SignalGeneratorService {
       if (this.tradierExposureService && this.gexCalculator === this.tradierExposureService) {
         logger.info('Starting Tradier Exposure Service...');
         await this.tradierExposureService.start();
-        logger.info('✅ Tradier Exposure Service started');
+        logger.info('Tradier Exposure Service started');
       } else {
         // Set up GEX refresh schedule for CBOE fallback
         this.scheduleGexRefresh();
@@ -230,7 +296,7 @@ class SignalGeneratorService {
 
       // Publish service health
       await messageBus.publish('service.health', {
-        service: 'signal-generator',
+        service: config.SERVICE_NAME,
         status: 'running',
         timestamp: new Date().toISOString(),
         components: {
@@ -256,7 +322,7 @@ class SignalGeneratorService {
       }
 
       // Feed candle-based quotes to strategy engine (only quotes with candleTimestamp from OHLCV data)
-      if (quote.candleTimestamp && quote.baseSymbol === 'NQ') {
+      if (quote.candleTimestamp && quote.baseSymbol === this.candleBaseSymbol) {
         const isNewCandle = this.strategyEngine.processCandle({
           symbol: quote.symbol,
           timestamp: quote.timestamp,
@@ -278,6 +344,8 @@ class SignalGeneratorService {
       }
 
       // Always publish quote to message bus for other services (like monitoring-service/frontend)
+      // candleTimestamp is only present on du/timescale_update messages (proper 1-min OHLCV),
+      // absent on qsd messages (session-level data). Frontend uses this to distinguish.
       await messageBus.publish('price.update', {
         symbol: quote.symbol,
         baseSymbol: quote.baseSymbol,
@@ -285,10 +353,17 @@ class SignalGeneratorService {
         high: quote.high,
         low: quote.low,
         close: quote.close,
-        previousClose: quote.previousClose,
         volume: quote.volume,
         timestamp: quote.timestamp,
-        source: quote.source
+        source: quote.source,
+        candleTimestamp: quote.candleTimestamp,
+        // Session-level fields from qsd (undefined on du/timescale_update messages)
+        sessionOpen: quote.sessionOpen,
+        sessionHigh: quote.sessionHigh,
+        sessionLow: quote.sessionLow,
+        prevClose: quote.prevClose,
+        change: quote.change,
+        changePercent: quote.changePercent
       });
 
     } catch (error) {
@@ -413,7 +488,10 @@ class SignalGeneratorService {
       // Switch back to CBOE GEX Calculator
       const gexCalculator = new GexCalculator({
         symbol: config.GEX_SYMBOL,
-        cacheFile: config.GEX_CACHE_FILE,
+        futuresSymbol: config.GEX_FUTURES_SYMBOL,
+        etfSymbol: config.GEX_SYMBOL,
+        defaultMultiplier: config.GEX_DEFAULT_MULTIPLIER,
+        cacheFile: this.gexCacheFile,
         cooldownMinutes: config.GEX_COOLDOWN_MINUTES,
         redisUrl: config.getRedisUrl()
       });
@@ -474,15 +552,21 @@ class SignalGeneratorService {
     const hybridHealth = this.hybridGexCalculator?.getHealthStatus() || null;
 
     return {
-      service: 'signal-generator',
+      service: config.SERVICE_NAME,
+      strategy: config.ACTIVE_STRATEGY,
       status: this.isRunning ? 'running' : 'stopped',
       timestamp: new Date().toISOString(),
       components: {
         tradingview: this.tradingViewClient?.isConnected() ? 'connected' : 'disconnected',
-        lt_monitor: this.ltMonitor?.isConnected() ? 'connected' : 'disconnected',
+        lt_monitor: this.ltMonitor
+          ? (this.ltMonitor.isConnected() ? 'connected' : 'disconnected')
+          : 'not_required',
         gex_calculator: this.gexCalculator ? 'ready' : 'not_initialized',
         strategy_engine: this.strategyEngine?.enabled ? 'enabled' : 'disabled',
-        tradier_service: tradierStatus.active ? 'active' : (tradierStatus.available ? 'available' : 'unavailable')
+        tradier_service: this.tradierExposureService
+          ? (tradierStatus.active ? 'active' : 'available')
+          : 'not_required',
+        iv_skew: this.ivSkewCalculator ? 'ready' : 'not_required'
       },
       // Connection details for dashboard monitoring
       connectionDetails: {
@@ -492,18 +576,17 @@ class SignalGeneratorService {
           lastQuoteReceived: this.tradingViewClient?.lastQuoteReceived?.toISOString() || null,
           reconnectAttempts: this.tradingViewClient?.reconnectAttempts || 0
         },
-        ltMonitor: {
-          connected: this.ltMonitor?.isConnected() || false,
-          lastHeartbeat: this.ltMonitor?.lastHeartbeat?.toISOString() || null,
-          hasLevels: !!this.ltMonitor?.currentLevels,
-          reconnectAttempts: this.ltMonitor?.reconnectAttempts || 0
-        },
+        ltMonitor: this.ltMonitor ? {
+          connected: this.ltMonitor.isConnected() || false,
+          lastHeartbeat: this.ltMonitor.lastHeartbeat?.toISOString() || null,
+          hasLevels: !!this.ltMonitor.currentLevels,
+          reconnectAttempts: this.ltMonitor.reconnectAttempts || 0
+        } : null,
         hybridGex: hybridHealth
       },
       config: {
-        symbols: config.OHLCV_SYMBOLS,
-        lt_symbol: config.LT_SYMBOL,
-        gex_symbol: config.GEX_SYMBOL,
+        active_strategy: config.ACTIVE_STRATEGY,
+        candle_base_symbol: this.candleBaseSymbol,
         strategy_enabled: config.STRATEGY_ENABLED,
         tradier: tradierStatus.config
       },
