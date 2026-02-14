@@ -171,9 +171,20 @@ async function sendDiscordNotification(embed) {
 }
 
 /**
+ * Check if a strategy is whitelisted for Discord notifications
+ */
+function isDiscordWhitelistedStrategy(strategy) {
+  const whitelist = process.env.DISCORD_STRATEGY_WHITELIST;
+  if (!whitelist) return true; // no whitelist = notify everything (backward compatible)
+  const allowed = whitelist.split(',').map(s => s.trim().toUpperCase());
+  return allowed.includes((strategy || '').toUpperCase());
+}
+
+/**
  * Handle trade signal for Discord notification
  */
 async function handleTradeSignalDiscord(signal) {
+  if (!isDiscordWhitelistedStrategy(signal.strategy)) return;
   const actionEmoji = signal.action === 'cancel_limit' ? '🚫' : '📊';
   const sideColor = signal.side === 'buy' ? 0x22c55e : 0xef4444; // green / red
 
@@ -212,6 +223,7 @@ async function handleTradeSignalDiscord(signal) {
  */
 async function handleTradeRejectedDiscord(message) {
   const rejected = message.rejectedSignal || {};
+  if (!isDiscordWhitelistedStrategy(rejected.strategy)) return;
   const fields = [
     { name: 'Reason', value: message.reason || 'Unknown', inline: false },
     { name: 'Strategy', value: rejected.strategy || 'N/A', inline: true },
@@ -238,6 +250,7 @@ async function handleTradeRejectedDiscord(message) {
  * Handle order filled for Discord notification
  */
 async function handleOrderFilledDiscord(order) {
+  if (!isDiscordWhitelistedStrategy(order.strategy)) return;
   const sideColor = order.side === 'Buy' || order.action === 'Buy' ? 0x22c55e : 0xef4444;
   const side = order.side || order.action || 'N/A';
 
@@ -269,6 +282,7 @@ async function handleOrderFilledDiscord(order) {
  * Handle position opened for Discord notification
  */
 async function handlePositionOpenedDiscord(position) {
+  if (!isDiscordWhitelistedStrategy(position.strategy)) return;
   const sideColor = position.netPos > 0 ? 0x22c55e : 0xef4444;
   const side = position.netPos > 0 ? 'LONG' : 'SHORT';
 
@@ -297,6 +311,7 @@ async function handlePositionOpenedDiscord(position) {
  * Handle position closed for Discord notification
  */
 async function handlePositionClosedDiscord(position) {
+  if (!isDiscordWhitelistedStrategy(position.strategy)) return;
   // Determine P&L and color
   const pnl = position.realizedPnl || position.pnl || 0;
   const isProfit = pnl >= 0;
@@ -3313,7 +3328,7 @@ async function startup() {
       const discordEnabled = process.env.DISCORD_NOTIFICATIONS_ENABLED === 'true';
       const discordConfigured = !!process.env.DISCORD_WEBHOOK_URL;
       if (discordEnabled && discordConfigured) {
-        logger.info('📢 Discord notifications: ENABLED');
+        logger.info(`📢 Discord notifications: ENABLED (strategy whitelist: ${process.env.DISCORD_STRATEGY_WHITELIST || 'ALL'})`);
       } else if (discordConfigured && !discordEnabled) {
         logger.info('📢 Discord notifications: DISABLED (set DISCORD_NOTIFICATIONS_ENABLED=true to enable)');
       } else {

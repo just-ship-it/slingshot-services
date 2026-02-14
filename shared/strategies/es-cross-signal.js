@@ -88,6 +88,10 @@ export class ESCrossSignalStrategy extends BaseStrategy {
       filterRegimeSide: null,     // Array of "regime_side" combos to block, e.g. ['strong_positive_buy']
       filterLtSpacingMax: null,   // Block signals when LT avg spacing exceeds this (points)
 
+      // Market close cutoff - no new entries after this time (EST)
+      entryCutoffHour: 16,          // 4 PM EST
+      entryCutoffMinute: 30,        // 4:30 PM EST
+
       // Symbol configuration
       tradingSymbol: 'ES1!',
       defaultQuantity: 1,
@@ -123,6 +127,11 @@ export class ESCrossSignalStrategy extends BaseStrategy {
 
     // Check session filter
     if (this.params.useSessionFilter && !this.isAllowedSession(candle.timestamp)) {
+      return null;
+    }
+
+    // Check entry cutoff (no new entries after 4:30 PM EST)
+    if (this.isPastEntryCutoff(this.toMs(candle.timestamp))) {
       return null;
     }
 
@@ -437,6 +446,27 @@ export class ESCrossSignalStrategy extends BaseStrategy {
   isAllowedSession(timestamp) {
     if (!this.params.useSessionFilter) return true;
     return this.params.allowedSessions.includes(this.getSession(timestamp));
+  }
+
+  /**
+   * Check if current time is past entry cutoff (no new entries allowed)
+   * @param {number} timestamp - Timestamp in ms
+   * @returns {boolean} True if past cutoff
+   */
+  isPastEntryCutoff(timestamp) {
+    const date = new Date(timestamp);
+    const estString = date.toLocaleString('en-US', {
+      timeZone: 'America/New_York',
+      hour: 'numeric',
+      minute: 'numeric',
+      hour12: false
+    });
+    const [hourStr, minStr] = estString.split(':');
+    const hour = parseInt(hourStr);
+    const min = parseInt(minStr);
+
+    return hour > this.params.entryCutoffHour ||
+      (hour === this.params.entryCutoffHour && min >= this.params.entryCutoffMinute);
   }
 
   /**

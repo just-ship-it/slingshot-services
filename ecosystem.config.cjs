@@ -145,7 +145,7 @@ module.exports = {
     {
       name: 'dashboard',
       script: '/usr/lib/node_modules/serve/build/main.js',
-      args: '-s /mnt/c/projects/ereptor/slingshot/frontend/build -l 3002',
+      args: '-s /mnt/c/projects/ereptor/slingshot/frontend/build -l 3020',
       autorestart: true,
       watch: false,
       max_memory_restart: '200M'
