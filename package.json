@@ -9,7 +9,8 @@
     "tradovate-service",
     "market-data-service",
     "trade-orchestrator",
-    "signal-generator"
+    "signal-generator",
+    "macro-briefing"
   ],
   "scripts": {
     "start": "npm run start:${SERVICE_NAME:?SERVICE_NAME environment variable is required}",
@@ -20,6 +21,7 @@
     "start:signal-generator": "cd signal-generator && npm start",
     "start:siggen-nq-ivskew": "cd signal-generator && npm start",
     "start:siggen-es-cross": "cd signal-generator && npm start",
+    "start:macro-briefing": "cd macro-briefing && npm start",
     "install:all": "npm install && npm run install:workspaces",
     "install:workspaces": "npm install --workspaces"
   },
