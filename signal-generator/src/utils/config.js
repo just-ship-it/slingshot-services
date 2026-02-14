@@ -151,7 +151,9 @@ const config = {
 
   // Helper methods
   getRedisUrl() {
-    return `redis://${this.REDIS_HOST}:${this.REDIS_PORT}`;
+    const password = process.env.REDIS_PASSWORD;
+    const auth = password ? `:${password}@` : '';
+    return `redis://${auth}${this.REDIS_HOST}:${this.REDIS_PORT}`;
   },
 
   getStrategyParams() {
