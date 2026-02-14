@@ -22,6 +22,11 @@ const config = configManager.loadConfig(SERVICE_NAME, { defaultPort: 3014 });
 const DASHBOARD_SECRET = process.env.DASHBOARD_SECRET;
 const WEBHOOK_SECRET = process.env.WEBHOOK_SECRET;
 
+// Internal service URLs
+const SIGNAL_GENERATOR_URL = process.env.SIGNAL_GENERATOR_URL || 'http://localhost:3015';
+const SIGNAL_GENERATOR_ES_URL = process.env.SIGNAL_GENERATOR_ES_URL || 'http://localhost:3016';
+const MACRO_BRIEFING_URL = process.env.MACRO_BRIEFING_URL || 'http://localhost:3017';
+
 // Redis configuration keys
 const POSITION_SIZING_KEY = 'config:position-sizing';
 const CONTRACT_MAPPINGS_KEY = 'contracts:mappings';
@@ -1024,9 +1029,9 @@ app.get('/api/services', dashboardAuth, async (req, res) => {
     { name: 'monitoring-service', url: `http://localhost:${config.service.port}`, port: config.service.port },
     { name: 'trade-orchestrator', url: process.env.TRADE_ORCHESTRATOR_URL || 'http://localhost:3013', port: 3013 },
     { name: 'tradovate-service', url: process.env.TRADOVATE_SERVICE_URL || 'http://localhost:3011', port: 3011 },
-    { name: 'siggen-nq-ivskew', url: process.env.SIGNAL_GENERATOR_URL || 'http://localhost:3015', port: 3015 },
-    { name: 'siggen-es-cross', url: process.env.SIGNAL_GENERATOR_ES_URL || 'http://localhost:3016', port: 3016 },
-    { name: 'macro-briefing', url: process.env.MACRO_BRIEFING_URL || 'http://localhost:3017', port: 3017 }
+    { name: 'siggen-nq-ivskew', url: SIGNAL_GENERATOR_URL, port: 3015 },
+    { name: 'siggen-es-cross', url: SIGNAL_GENERATOR_ES_URL, port: 3016 },
+    { name: 'macro-briefing', url: MACRO_BRIEFING_URL, port: 3017 }
   ];
 
   // Perform health checks for all internal services
@@ -1087,7 +1092,7 @@ app.get('/api/services', dashboardAuth, async (req, res) => {
 // Signal generator (NQ) detailed connection status endpoint
 app.get('/api/signal-generator/status', dashboardAuth, async (req, res) => {
   try {
-    const signalGeneratorUrl = process.env.SIGNAL_GENERATOR_URL || 'http://localhost:3015';
+    const signalGeneratorUrl = SIGNAL_GENERATOR_URL;
 
     // Fetch all three endpoints in parallel
     const [healthResponse, gexHealthResponse, tradierStatusResponse] = await Promise.allSettled([
@@ -1250,7 +1255,7 @@ app.get('/api/signal-generator/status', dashboardAuth, async (req, res) => {
 // Signal generator (ES) detailed connection status endpoint
 app.get('/api/es-signal-generator/status', dashboardAuth, async (req, res) => {
   try {
-    const esSignalGeneratorUrl = process.env.SIGNAL_GENERATOR_ES_URL || 'http://localhost:3016';
+    const esSignalGeneratorUrl = SIGNAL_GENERATOR_ES_URL;
 
     const [healthResponse, gexHealthResponse, tradierStatusResponse] = await Promise.allSettled([
       axios.get(`${esSignalGeneratorUrl}/health`, { timeout: 5000 }),
@@ -1471,7 +1476,7 @@ app.post('/api/position-sizing/convert', dashboardAuth, (req, res) => {
 app.get('/api/gex/levels', dashboardAuth, async (req, res) => {
   try {
     logger.info('📊 Fetching GEX levels from siggen-nq-ivskew');
-    const response = await axios.get('http://127.0.0.1:3015/gex/levels', {
+    const response = await axios.get(`${SIGNAL_GENERATOR_URL}/gex/levels`, {
       timeout: 5000
     });
 
@@ -1513,7 +1518,7 @@ app.get('/api/gex/levels', dashboardAuth, async (req, res) => {
 app.post('/api/gex/refresh', dashboardAuth, async (req, res) => {
   try {
     logger.info('🔄 Triggering GEX levels refresh...');
-    const response = await axios.post('http://127.0.0.1:3015/gex/refresh', {
+    const response = await axios.post(`${SIGNAL_GENERATOR_URL}/gex/refresh`, {
       force: true
     }, {
       timeout: 30000 // Longer timeout for refresh operation
@@ -1557,7 +1562,7 @@ app.post('/api/gex/refresh', dashboardAuth, async (req, res) => {
 app.get('/api/es/gex/levels', dashboardAuth, async (req, res) => {
   try {
     logger.info('📊 Fetching ES GEX levels from siggen-es-cross');
-    const response = await axios.get('http://127.0.0.1:3016/gex/levels', {
+    const response = await axios.get(`${SIGNAL_GENERATOR_ES_URL}/gex/levels`, {
       timeout: 5000
     });
 
@@ -1598,7 +1603,7 @@ app.get('/api/es/gex/levels', dashboardAuth, async (req, res) => {
 app.post('/api/es/gex/refresh', dashboardAuth, async (req, res) => {
   try {
     logger.info('🔄 Triggering ES GEX levels refresh...');
-    const response = await axios.post('http://127.0.0.1:3016/gex/refresh', {
+    const response = await axios.post(`${SIGNAL_GENERATOR_ES_URL}/gex/refresh`, {
       force: true
     }, {
       timeout: 30000
@@ -1641,7 +1646,7 @@ app.post('/api/es/gex/refresh', dashboardAuth, async (req, res) => {
 app.get('/api/es/candles', dashboardAuth, async (req, res) => {
   try {
     const count = req.query.count || 60;
-    const response = await axios.get(`http://127.0.0.1:3016/candles?count=${count}`, {
+    const response = await axios.get(`${SIGNAL_GENERATOR_ES_URL}/candles?count=${count}`, {
       timeout: 5000
     });
     res.json(response.data);
@@ -1659,7 +1664,7 @@ app.get('/api/es/candles', dashboardAuth, async (req, res) => {
 app.get('/api/candles', dashboardAuth, async (req, res) => {
   try {
     const count = req.query.count || 60;
-    const response = await axios.get(`http://127.0.0.1:3015/candles?count=${count}`, {
+    const response = await axios.get(`${SIGNAL_GENERATOR_URL}/candles?count=${count}`, {
       timeout: 5000
     });
     res.json(response.data);
@@ -1677,7 +1682,7 @@ app.get('/api/candles', dashboardAuth, async (req, res) => {
 app.get('/api/iv/skew', dashboardAuth, async (req, res) => {
   try {
     logger.info('📊 Fetching IV skew from siggen-nq-ivskew');
-    const response = await axios.get('http://127.0.0.1:3015/iv/skew', {
+    const response = await axios.get(`${SIGNAL_GENERATOR_URL}/iv/skew`, {
       timeout: 5000
     });
 
@@ -1703,7 +1708,7 @@ app.get('/api/iv/skew', dashboardAuth, async (req, res) => {
 // IV Skew history endpoint - proxy to siggen-nq-ivskew service
 app.get('/api/iv/history', dashboardAuth, async (req, res) => {
   try {
-    const response = await axios.get('http://127.0.0.1:3015/iv/history', {
+    const response = await axios.get(`${SIGNAL_GENERATOR_URL}/iv/history`, {
       timeout: 5000
     });
     res.json(response.data);
@@ -1721,7 +1726,7 @@ app.get('/api/iv/history', dashboardAuth, async (req, res) => {
 app.get('/api/tradier/gex/levels', dashboardAuth, async (req, res) => {
   try {
     logger.info('📊 Fetching Tradier GEX levels from siggen-nq-ivskew');
-    const response = await axios.get('http://127.0.0.1:3015/exposure/levels', {
+    const response = await axios.get(`${SIGNAL_GENERATOR_URL}/exposure/levels`, {
       timeout: 5000
     });
 
@@ -1764,7 +1769,7 @@ app.get('/api/tradier/gex/levels', dashboardAuth, async (req, res) => {
 app.post('/api/tradier/gex/refresh', dashboardAuth, async (req, res) => {
   try {
     logger.info('🔄 Forcing Tradier exposure recalculation...');
-    const response = await axios.post('http://127.0.0.1:3015/exposure/refresh', {}, {
+    const response = await axios.post(`${SIGNAL_GENERATOR_URL}/exposure/refresh`, {}, {
       timeout: 30000  // Longer timeout for recalculation
     });
 
@@ -1805,7 +1810,7 @@ app.post('/api/tradier/gex/refresh', dashboardAuth, async (req, res) => {
 app.get('/api/es/tradier/gex/levels', dashboardAuth, async (req, res) => {
   try {
     logger.info('📊 Fetching ES Tradier GEX levels from siggen-es-cross');
-    const response = await axios.get('http://127.0.0.1:3016/exposure/levels', {
+    const response = await axios.get(`${SIGNAL_GENERATOR_ES_URL}/exposure/levels`, {
       timeout: 5000
     });
 
@@ -1848,7 +1853,7 @@ app.get('/api/es/tradier/gex/levels', dashboardAuth, async (req, res) => {
 app.post('/api/es/tradier/gex/refresh', dashboardAuth, async (req, res) => {
   try {
     logger.info('🔄 Forcing ES Tradier exposure recalculation...');
-    const response = await axios.post('http://127.0.0.1:3016/exposure/refresh', {}, {
+    const response = await axios.post(`${SIGNAL_GENERATOR_ES_URL}/exposure/refresh`, {}, {
       timeout: 30000
     });
 
@@ -1886,7 +1891,7 @@ app.post('/api/es/tradier/gex/refresh', dashboardAuth, async (req, res) => {
 // Macro Briefing proxy endpoints (macro-briefing service on port 3017)
 app.get('/api/briefing/status', dashboardAuth, async (req, res) => {
   try {
-    const response = await axios.get('http://127.0.0.1:3017/briefing/status', { timeout: 5000 });
+    const response = await axios.get(`${MACRO_BRIEFING_URL}/briefing/status`, { timeout: 5000 });
     res.json(response.data);
   } catch (error) {
     logger.error('Failed to fetch briefing status:', error.message);
@@ -1896,7 +1901,7 @@ app.get('/api/briefing/status', dashboardAuth, async (req, res) => {
 
 app.get('/api/briefing/latest', dashboardAuth, async (req, res) => {
   try {
-    const response = await axios.get('http://127.0.0.1:3017/briefing/latest', { timeout: 5000 });
+    const response = await axios.get(`${MACRO_BRIEFING_URL}/briefing/latest`, { timeout: 5000 });
     res.json(response.data);
   } catch (error) {
     if (error.response?.status === 404) {
@@ -1909,7 +1914,7 @@ app.get('/api/briefing/latest', dashboardAuth, async (req, res) => {
 
 app.get('/api/briefing/latest/markdown', dashboardAuth, async (req, res) => {
   try {
-    const response = await axios.get('http://127.0.0.1:3017/briefing/latest/markdown', { timeout: 5000 });
+    const response = await axios.get(`${MACRO_BRIEFING_URL}/briefing/latest/markdown`, { timeout: 5000 });
     res.type('text/markdown').send(response.data);
   } catch (error) {
     if (error.response?.status === 404) {
@@ -1922,7 +1927,7 @@ app.get('/api/briefing/latest/markdown', dashboardAuth, async (req, res) => {
 
 app.post('/api/briefing/generate', dashboardAuth, async (req, res) => {
   try {
-    const response = await axios.post('http://127.0.0.1:3017/briefing/generate', {}, { timeout: 180000 });
+    const response = await axios.post(`${MACRO_BRIEFING_URL}/briefing/generate`, {}, { timeout: 180000 });
     res.json(response.data);
   } catch (error) {
     if (error.response?.status === 429) {
@@ -2018,7 +2023,7 @@ app.get('/api/strategy/gex-scalp/status', dashboardAuth, async (req, res) => {
 // ES Cross-Signal strategy status - proxied from siggen-es-cross on port 3016
 app.get('/api/strategy/es-cross-signal/status', dashboardAuth, async (req, res) => {
   try {
-    const response = await axios.get('http://127.0.0.1:3016/strategy/status', { timeout: 5000 });
+    const response = await axios.get(`${SIGNAL_GENERATOR_ES_URL}/strategy/status`, { timeout: 5000 });
     res.json({ success: true, ...response.data });
   } catch (error) {
     if (error.code === 'ECONNREFUSED') {
@@ -2073,7 +2078,7 @@ app.get('/api/analysis/gex-squeeze', dashboardAuth, async (req, res) => {
     // Get current GEX levels
     let gexLevels = null;
     try {
-      const gexResponse = await axios.get('http://localhost:3015/gex/levels', { timeout: 3000 });
+      const gexResponse = await axios.get(`${SIGNAL_GENERATOR_URL}/gex/levels`, { timeout: 3000 });
       gexLevels = gexResponse.data;
     } catch (error) {
       logger.warn('Failed to fetch live GEX levels for analysis:', error.message);
