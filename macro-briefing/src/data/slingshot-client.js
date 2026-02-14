@@ -3,8 +3,8 @@ import { createLogger } from '../../../shared/index.js';
 
 const logger = createLogger('slingshot-client');
 
-const NQ_SIGGEN_URL = `http://localhost:${process.env.SIGGEN_NQ_PORT || 3015}`;
-const ES_SIGGEN_URL = `http://localhost:${process.env.SIGGEN_ES_PORT || 3016}`;
+const NQ_SIGGEN_URL = process.env.SIGNAL_GENERATOR_URL || 'http://localhost:3015';
+const ES_SIGGEN_URL = process.env.SIGNAL_GENERATOR_ES_URL || 'http://localhost:3016';
 
 /**
  * Fetch GEX levels from signal generator
