@@ -432,8 +432,9 @@ app.get('/candles', (req, res) => {
 });
 
 // Start HTTP server
-const PORT = config.HTTP_PORT || 3015;
-app.listen(PORT, '127.0.0.1', () => {
+const PORT = process.env.PORT || config.HTTP_PORT || 3015;
+const BIND_HOST = process.env.BIND_HOST || '127.0.0.1';
+app.listen(PORT, BIND_HOST, () => {
   logger.info(`Signal Generator HTTP server listening on port ${PORT}`);
 });
 
