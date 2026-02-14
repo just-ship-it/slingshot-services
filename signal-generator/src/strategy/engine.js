@@ -887,6 +887,31 @@ class StrategyEngine {
 
     // If in position, update time-based trailing but skip new signal evaluation
     if (this.inPosition) {
+      // Check for EOD force close (3:55 PM EST, matching backtest trade simulator)
+      if (this.strategy?.params?.forceCloseAtMarketClose !== false) {
+        const estTime = new Date().toLocaleString('en-US', {
+          timeZone: 'America/New_York',
+          hour: 'numeric',
+          minute: 'numeric',
+          hour12: false
+        });
+        const [h, m] = estTime.split(':').map(Number);
+        if (h > 15 || (h === 15 && m >= 55)) {
+          logger.info(`🌅 EOD force close triggered at ${h}:${String(m).padStart(2, '0')} EST - closing ${this.currentPosition?.side} ${this.currentPosition?.symbol}`);
+          const closeSignal = {
+            webhook_type: 'trade_signal',
+            action: 'position_closed',
+            symbol: this.currentPosition?.symbol || config.TRADING_SYMBOL,
+            side: this.currentPosition?.side,
+            strategy: this.strategyConstant,
+            reason: 'EOD force close (3:55 PM EST)',
+            timestamp: new Date().toISOString()
+          };
+          await this.publishSignal(closeSignal);
+          return;
+        }
+      }
+
       // Update time-based trailing on each candle close (always on 1m)
       if (this.timeBasedTrailingConfig.enabled && this.timeBasedTrailingState) {
         this.updateTimeBasedTrailing(candle);

@@ -440,12 +440,11 @@
       "useRegimeAmplifier": true,
       "amplifiedRegimes": ["negative", "strong_negative"],
       "regimeAmplifierBonus": 1,
-      "entryCutoffHour": 16,
-      "entryCutoffMinute": 30,
+      "entryCutoffHour": 15,
+      "entryCutoffMinute": 54,
       "tradingSymbol": "ES",
       "defaultQuantity": 1,
-      "forceCloseAtMarketClose": true,
-      "marketCloseTimeUTC": 21.75
+      "forceCloseAtMarketClose": true
     },
     "es-cross": {
       "longThreshold": 2,
@@ -466,12 +465,11 @@
       "useRegimeAmplifier": true,
       "amplifiedRegimes": ["negative", "strong_negative"],
       "regimeAmplifierBonus": 1,
-      "entryCutoffHour": 16,
-      "entryCutoffMinute": 30,
+      "entryCutoffHour": 15,
+      "entryCutoffMinute": 54,
       "tradingSymbol": "ES",
       "defaultQuantity": 1,
-      "forceCloseAtMarketClose": true,
-      "marketCloseTimeUTC": 21.75
+      "forceCloseAtMarketClose": true
     },
     "ecs": {
       "longThreshold": 2,
@@ -492,12 +490,11 @@
       "useRegimeAmplifier": true,
       "amplifiedRegimes": ["negative", "strong_negative"],
       "regimeAmplifierBonus": 1,
-      "entryCutoffHour": 16,
-      "entryCutoffMinute": 30,
+      "entryCutoffHour": 15,
+      "entryCutoffMinute": 54,
       "tradingSymbol": "ES",
       "defaultQuantity": 1,
-      "forceCloseAtMarketClose": true,
-      "marketCloseTimeUTC": 21.75
+      "forceCloseAtMarketClose": true
     },
     "overnight-charm-vanna": {
       "entryHourET": 16,

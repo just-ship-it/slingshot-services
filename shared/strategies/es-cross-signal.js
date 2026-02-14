@@ -89,8 +89,8 @@ export class ESCrossSignalStrategy extends BaseStrategy {
       filterLtSpacingMax: null,   // Block signals when LT avg spacing exceeds this (points)
 
       // Market close cutoff - no new entries after this time (EST)
-      entryCutoffHour: 16,          // 4 PM EST
-      entryCutoffMinute: 30,        // 4:30 PM EST
+      entryCutoffHour: 15,          // 3 PM EST
+      entryCutoffMinute: 54,        // 3:54 PM EST (1 min before force close at 3:55)
 
       // Symbol configuration
       tradingSymbol: 'ES1!',
@@ -130,7 +130,7 @@ export class ESCrossSignalStrategy extends BaseStrategy {
       return null;
     }
 
-    // Check entry cutoff (no new entries after 4:30 PM EST)
+    // Check entry cutoff (no new entries after 3:54 PM EST)
     if (this.isPastEntryCutoff(this.toMs(candle.timestamp))) {
       return null;
     }

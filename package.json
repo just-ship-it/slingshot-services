@@ -18,6 +18,8 @@
     "start:market-data": "cd market-data-service && npm start",
     "start:trade-orchestrator": "cd trade-orchestrator && npm start",
     "start:signal-generator": "cd signal-generator && npm start",
+    "start:siggen-nq-ivskew": "cd signal-generator && npm start",
+    "start:siggen-es-cross": "cd signal-generator && npm start",
     "install:all": "npm install && npm run install:workspaces",
     "install:workspaces": "npm install --workspaces"
   },
