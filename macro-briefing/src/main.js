@@ -14,6 +14,8 @@ import * as dashboardDelivery from './delivery/dashboard-delivery.js';
 const logger = createLogger('macro-briefing-main');
 
 const BRIEFING_REDIS_KEY = 'briefing:latest';
+const BRIEFING_ARCHIVE_PREFIX = 'briefing:archive:';
+const PRIOR_SUMMARY_KEY = 'briefing:prior-summary';
 
 let latestBriefing = null;
 
@@ -34,6 +36,22 @@ export async function loadLatestBriefing() {
     logger.warn('Failed to load briefing from Redis:', error.message);
   }
   return null;
+}
+
+async function loadPriorSummary() {
+  // Try Redis first, fall back to local file
+  try {
+    const data = await messageBus.publisher.get(PRIOR_SUMMARY_KEY);
+    if (data) {
+      const parsed = JSON.parse(data);
+      logger.info(`Loaded prior summary from Redis (${parsed.date})`);
+      return parsed.summary || null;
+    }
+  } catch (error) {
+    logger.warn('Failed to load prior summary from Redis:', error.message);
+  }
+  // Fall back to local file (for dev/backward compat)
+  return fileDelivery.loadPriorSummary();
 }
 
 export async function generateBriefing() {
@@ -61,7 +79,7 @@ export async function generateBriefing() {
   const regimes = detectAllRegimes(fred, market);
 
   // 3. Build prompt and call Claude for narrative
-  const priorSummary = await fileDelivery.loadPriorSummary();
+  const priorSummary = await loadPriorSummary();
   const prompt = buildPrompt({ date, analytics, regimes, market, slingshot, priorSummary });
 
   let narrative;
@@ -115,8 +133,23 @@ export async function generateBriefing() {
 
   // Persist to Redis so it survives restarts
   try {
-    await messageBus.publisher.set(BRIEFING_REDIS_KEY, JSON.stringify(report));
-    logger.info('Briefing persisted to Redis');
+    const reportJson = JSON.stringify(report);
+    await messageBus.publisher.set(BRIEFING_REDIS_KEY, reportJson);
+
+    // Archive with date key for backtesting
+    await messageBus.publisher.set(`${BRIEFING_ARCHIVE_PREFIX}${date}`, reportJson);
+
+    // Save prior summary for next day's narrative continuity
+    const summaryMatch = report.fullReport.match(/## Bottom Line[\s\S]*?(?=\n---|\n##|$)/i)
+      || report.fullReport.match(/\*\*Bottom Line\*\*[\s\S]*?(?=\n---|\n##|$)/i);
+    if (summaryMatch) {
+      await messageBus.publisher.set(PRIOR_SUMMARY_KEY, JSON.stringify({
+        date: report.date,
+        summary: summaryMatch[0].trim()
+      }));
+    }
+
+    logger.info(`Briefing persisted to Redis (latest + archive:${date})`);
   } catch (error) {
     logger.warn('Failed to persist briefing to Redis:', error.message);
   }
