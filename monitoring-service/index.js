@@ -426,7 +426,7 @@ async function handleTvAuthDiscord(message) {
 
   // Add actionable guidance for token refresh failures
   if (type === 'tv_token_refresh_failed') {
-    const dashboardUrl = process.env.DASHBOARD_URL || 'https://dashboard.ereptortrading.com';
+    const dashboardUrl = process.env.DASHBOARD_URL || 'https://slingshot-dashboard.pages.dev/';
     fields.push({
       name: 'Action Required',
       value: `Open the dashboard and paste a fresh JWT token:\n${dashboardUrl}\n\nSignal Generator > Set Token`,
