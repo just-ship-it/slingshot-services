@@ -8,6 +8,7 @@ import TradierExposureService from './tradier/tradier-exposure-service.js';
 import HybridGexCalculator from './gex/hybrid-gex-calculator.js';
 import StrategyEngine from './strategy/engine.js';
 import { getDataRequirements } from './strategy/strategy-factory.js';
+import { getBestAvailableToken, refreshToken, cacheTokenInRedis, getTokenTTL } from './utils/tradingview-auth.js';
 
 const logger = createLogger('signal-generator');
 
@@ -217,14 +218,50 @@ class SignalGeneratorService {
         logger.warn('Strategy requires IV Skew but Tradier service not available');
       }
 
+      // --- Startup Token Check ---
+      // Compare env var token vs Redis-cached token, use whichever expires later.
+      // If best token expires within 1 hour, refresh immediately.
+      const redisUrl = config.getRedisUrl();
+      let startupJwtToken = config.TRADINGVIEW_JWT_TOKEN;
+      const tokenRefreshEnabled = process.env.TV_TOKEN_REFRESH_ENABLED !== 'false';
+
+      if (tokenRefreshEnabled && config.TRADINGVIEW_CREDENTIALS) {
+        try {
+          const best = await getBestAvailableToken(config.TRADINGVIEW_JWT_TOKEN, redisUrl);
+          if (best) {
+            startupJwtToken = best.token;
+            logger.info(`Startup token source: ${best.source} (TTL: ${Math.floor(best.ttl / 60)}min)`);
+
+            // If best token expires within 1 hour, refresh immediately
+            if (best.ttl < 3600) {
+              logger.info('Best available token expiring soon - refreshing before connecting...');
+              try {
+                const freshToken = await refreshToken(config.TRADINGVIEW_CREDENTIALS);
+                startupJwtToken = freshToken;
+                await cacheTokenInRedis(redisUrl, freshToken);
+                const freshTTL = getTokenTTL(freshToken);
+                logger.info(`Fresh token obtained (TTL: ${Math.floor(freshTTL / 60)}min)`);
+              } catch (refreshErr) {
+                logger.warn('Startup token refresh failed, using existing token:', refreshErr.message);
+              }
+            }
+          } else {
+            logger.warn('No valid JWT token available - TradingView will use unauthenticated mode (delayed quotes)');
+          }
+        } catch (error) {
+          logger.warn('Startup token check failed:', error.message);
+        }
+      }
+
       // Initialize TradingView Client with strategy-resolved symbols
       this.tradingViewClient = new TradingViewClient({
         symbols: ohlcvSymbols,
         ltSymbol: ltConfig ? ltConfig.symbol : null,
         ltTimeframe: ltConfig ? ltConfig.timeframe : config.LT_TIMEFRAME,
-        jwtToken: config.TRADINGVIEW_JWT_TOKEN,
+        jwtToken: startupJwtToken,
         credentials: config.TRADINGVIEW_CREDENTIALS,
-        redisUrl: config.getRedisUrl()
+        tokenRefreshEnabled,
+        redisUrl
       });
 
       // Set up TradingView event listeners
@@ -256,7 +293,17 @@ class SignalGeneratorService {
         this.ltMonitor = new LTMonitor({
           symbol: ltConfig.symbol,
           timeframe: ltConfig.timeframe,
-          jwtToken: config.TRADINGVIEW_JWT_TOKEN
+          jwtToken: startupJwtToken,
+          redisUrl
+        });
+
+        // Wire up token refresh: when main client refreshes, update LT monitor too
+        this.tradingViewClient.on('token_refreshed', (newToken) => {
+          if (this.ltMonitor) {
+            this.ltMonitor.updateToken(newToken).catch(err => {
+              logger.error('LT monitor token update failed:', err.message);
+            });
+          }
         });
 
         // Set up LT event listener
@@ -514,6 +561,37 @@ class SignalGeneratorService {
     }
   }
 
+  async updateTradingViewToken(token) {
+    const redisUrl = config.getRedisUrl();
+
+    // Cache the new token in Redis
+    await cacheTokenInRedis(redisUrl, token);
+    logger.info('Manual token cached in Redis');
+
+    // Update the TradingView client's token and reconnect
+    if (this.tradingViewClient) {
+      this.tradingViewClient.jwtToken = token;
+      await this.tradingViewClient.reconnectWithNewToken();
+      logger.info('TradingView client reconnected with new token');
+    }
+
+    // Update LT monitor if active
+    if (this.ltMonitor) {
+      await this.ltMonitor.updateToken(token);
+      logger.info('LT monitor updated with new token');
+    }
+
+    const ttl = getTokenTTL(token);
+    logger.info(`Manual token set successfully (TTL: ${Math.floor(ttl / 60)}min)`);
+
+    return {
+      success: true,
+      message: 'Token updated and connections reconnected',
+      tokenTTL: ttl,
+      authState: this.tradingViewClient?.authState || 'unknown'
+    };
+  }
+
   getTradierStatus() {
     const health = this.tradierExposureService?.getHealthStatus() || null;
 
@@ -572,6 +650,8 @@ class SignalGeneratorService {
       connectionDetails: {
         tradingview: {
           connected: this.tradingViewClient?.isConnected() || false,
+          authState: this.tradingViewClient?.authState || 'unknown',
+          tokenTTL: this.tradingViewClient?.jwtToken ? getTokenTTL(this.tradingViewClient.jwtToken) : null,
           lastHeartbeat: this.tradingViewClient?.lastHeartbeat?.toISOString() || null,
           lastQuoteReceived: this.tradingViewClient?.lastQuoteReceived?.toISOString() || null,
           reconnectAttempts: this.tradingViewClient?.reconnectAttempts || 0

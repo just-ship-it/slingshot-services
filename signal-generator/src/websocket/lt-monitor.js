@@ -2,6 +2,7 @@
 import WebSocket from 'ws';
 import EventEmitter from 'events';
 import { createLogger } from '../../../shared/index.js';
+import { getCachedToken, getTokenTTL } from '../utils/tradingview-auth.js';
 
 const logger = createLogger('lt-monitor');
 
@@ -20,6 +21,7 @@ class LTMonitor extends EventEmitter {
     this.symbol = options.symbol || 'CME_MINI:NQ1!';
     this.timeframe = options.timeframe || '15'; // 15-minute timeframe
     this.jwtToken = options.jwtToken;
+    this.redisUrl = options.redisUrl || 'redis://localhost:6379';
 
     this.ws = null;
     this.connected = false;
@@ -344,6 +346,17 @@ class LTMonitor extends EventEmitter {
 
     setTimeout(async () => {
       try {
+        // Check Redis for a fresher token before reconnecting
+        const cachedToken = await getCachedToken(this.redisUrl);
+        if (cachedToken) {
+          const cachedTTL = getTokenTTL(cachedToken) || 0;
+          const currentTTL = getTokenTTL(this.jwtToken) || 0;
+          if (cachedTTL > currentTTL) {
+            logger.info(`LT monitor using fresher token from Redis (TTL: ${Math.floor(cachedTTL / 60)}min)`);
+            this.jwtToken = cachedToken;
+          }
+        }
+
         await this.connect();
         await this.startMonitoring();
         logger.info('LT monitor reconnected successfully');
@@ -352,6 +365,38 @@ class LTMonitor extends EventEmitter {
         this.scheduleReconnect();
       }
     }, delay);
+  }
+
+  /**
+   * Update JWT token and reconnect. Called when the main TradingView client
+   * refreshes its token.
+   */
+  async updateToken(newToken) {
+    logger.info('LT monitor received new JWT token - reconnecting...');
+    this.jwtToken = newToken;
+
+    // Reconnect with new token
+    const wasDisconnecting = this.isDisconnecting;
+    this.isDisconnecting = true;
+
+    if (this.ws) {
+      this.ws.close();
+      this.ws = null;
+    }
+    this.connected = false;
+    this.studyAdded = false;
+
+    this.isDisconnecting = wasDisconnecting;
+    this.reconnectAttempts = 0;
+
+    try {
+      await this.connect();
+      await this.startMonitoring();
+      logger.info('LT monitor reconnected with new token');
+    } catch (error) {
+      logger.error('LT monitor reconnection with new token failed:', error.message);
+      this.scheduleReconnect();
+    }
   }
 
   async disconnect() {

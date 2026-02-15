@@ -1,0 +1,260 @@
+// TradingView JWT Token Authentication & Auto-Refresh
+//
+// Handles HTTP login to TradingView, JWT extraction from page HTML,
+// and token caching in Redis for sharing across service instances.
+
+import { createLogger } from '../../../shared/index.js';
+import Redis from 'ioredis';
+
+const logger = createLogger('tradingview-auth');
+
+const REDIS_TOKEN_KEY = 'tradingview:jwt_token';
+const REDIS_TOKEN_TTL = 5 * 60 * 60; // 5 hours (tokens last ~4h, cache a bit longer)
+
+const TV_USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36';
+
+/**
+ * POST to TradingView /accounts/signin/ and return session cookies.
+ * @param {string} username
+ * @param {string} password
+ * @returns {Promise<Object>} cookies map
+ */
+async function login(username, password) {
+  logger.info('Attempting TradingView HTTP login...');
+
+  const response = await fetch('https://www.tradingview.com/accounts/signin/', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'User-Agent': TV_USER_AGENT,
+      'Origin': 'https://www.tradingview.com',
+      'Referer': 'https://www.tradingview.com/',
+    },
+    redirect: 'manual',
+    body: new URLSearchParams({ username, password, remember: 'on' }).toString()
+  });
+
+  // Extract cookies
+  const cookies = {};
+  const setCookies = response.headers.getSetCookie?.() || [];
+
+  if (setCookies.length === 0) {
+    // Fallback for older Node versions
+    const raw = response.headers.raw?.()?.['set-cookie'] || [];
+    for (const c of raw) {
+      const [pair] = c.split(';');
+      const [name, ...rest] = pair.split('=');
+      cookies[name.trim()] = rest.join('=').trim();
+    }
+  } else {
+    for (const c of setCookies) {
+      const [pair] = c.split(';');
+      const [name, ...rest] = pair.split('=');
+      cookies[name.trim()] = rest.join('=').trim();
+    }
+  }
+
+  // Check for errors
+  const body = await response.text();
+
+  if (body.includes('captcha') || body.includes('CAPTCHA') || body.includes('recaptcha')) {
+    throw new Error('CAPTCHA detected - TradingView is blocking automated login');
+  }
+
+  if (!cookies.sessionid) {
+    throw new Error(`Login failed - no sessionid cookie received (status: ${response.status})`);
+  }
+
+  logger.info('TradingView login successful');
+  return cookies;
+}
+
+/**
+ * GET tradingview.com with session cookies and parse the JWT from the HTML.
+ * TradingView embeds the auth_token in inline script tags.
+ * @param {Object} cookies - Session cookies from login()
+ * @returns {Promise<string|null>} JWT token or null
+ */
+async function extractJwtFromPage(cookies) {
+  const cookieStr = Object.entries(cookies)
+    .map(([k, v]) => `${k}=${v}`)
+    .join('; ');
+
+  const response = await fetch('https://www.tradingview.com/', {
+    headers: {
+      'User-Agent': TV_USER_AGENT,
+      'Cookie': cookieStr
+    }
+  });
+
+  const html = await response.text();
+
+  // JWT patterns in TradingView page HTML (ordered by specificity)
+  const patterns = [
+    /\"auth_token\"\s*:\s*\"(eyJ[^"]+)\"/,
+    /authToken\"\s*:\s*\"(eyJ[^"]+)\"/,
+    /set_auth_token.*?\"(eyJ[^"]+)\"/,
+    /\"(eyJ[A-Za-z0-9_-]{100,}\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+)\"/,
+  ];
+
+  for (const pattern of patterns) {
+    const match = html.match(pattern);
+    if (match) {
+      return match[1];
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Decode a JWT and return its expiry timestamp (seconds since epoch).
+ * @param {string} jwt
+ * @returns {number|null} exp timestamp or null if decode fails
+ */
+function getTokenExpiry(jwt) {
+  if (!jwt) return null;
+  try {
+    const payload = JSON.parse(Buffer.from(jwt.split('.')[1], 'base64').toString());
+    return payload.exp || null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Check how many seconds until a JWT expires. Returns negative if already expired.
+ * @param {string} jwt
+ * @returns {number|null} seconds until expiry, or null if can't determine
+ */
+function getTokenTTL(jwt) {
+  const exp = getTokenExpiry(jwt);
+  if (!exp) return null;
+  return exp - Math.floor(Date.now() / 1000);
+}
+
+/**
+ * Full refresh flow: decode credentials, login, extract JWT, return token.
+ * @param {string} credentialsB64 - Base64-encoded JSON with {username, password}
+ * @returns {Promise<string>} Fresh JWT token
+ */
+async function refreshToken(credentialsB64) {
+  if (!credentialsB64) {
+    throw new Error('No TRADINGVIEW_CREDENTIALS configured - cannot refresh token');
+  }
+
+  let creds;
+  try {
+    creds = JSON.parse(Buffer.from(credentialsB64, 'base64').toString('utf-8'));
+  } catch (e) {
+    throw new Error(`Failed to decode TRADINGVIEW_CREDENTIALS: ${e.message}`);
+  }
+
+  if (!creds.username || !creds.password) {
+    throw new Error('TRADINGVIEW_CREDENTIALS missing username or password');
+  }
+
+  // Step 1: Login
+  const cookies = await login(creds.username, creds.password);
+
+  // Step 2: Extract JWT from authenticated page
+  const jwt = await extractJwtFromPage(cookies);
+
+  if (!jwt) {
+    throw new Error('Login succeeded but could not extract JWT from page HTML');
+  }
+
+  const ttl = getTokenTTL(jwt);
+  const expiry = getTokenExpiry(jwt);
+  logger.info(`Fresh JWT obtained - expires in ${Math.floor(ttl / 60)} minutes (${new Date(expiry * 1000).toISOString()})`);
+
+  return jwt;
+}
+
+/**
+ * Cache a JWT token in Redis so multiple service instances share it.
+ * @param {string} redisUrl
+ * @param {string} jwt
+ */
+async function cacheTokenInRedis(redisUrl, jwt) {
+  let redis;
+  try {
+    redis = new Redis(redisUrl, { lazyConnect: true, maxRetriesPerRequest: 2 });
+    await redis.connect();
+    await redis.setex(REDIS_TOKEN_KEY, REDIS_TOKEN_TTL, jwt);
+    logger.info('JWT token cached in Redis');
+  } catch (error) {
+    logger.warn('Failed to cache JWT in Redis:', error.message);
+  } finally {
+    if (redis) {
+      redis.disconnect();
+    }
+  }
+}
+
+/**
+ * Read a cached JWT token from Redis.
+ * @param {string} redisUrl
+ * @returns {Promise<string|null>} cached token or null
+ */
+async function getCachedToken(redisUrl) {
+  let redis;
+  try {
+    redis = new Redis(redisUrl, { lazyConnect: true, maxRetriesPerRequest: 2 });
+    await redis.connect();
+    const token = await redis.get(REDIS_TOKEN_KEY);
+    return token || null;
+  } catch (error) {
+    logger.warn('Failed to read JWT from Redis:', error.message);
+    return null;
+  } finally {
+    if (redis) {
+      redis.disconnect();
+    }
+  }
+}
+
+/**
+ * Get the best available token: compare env var token vs Redis cached token,
+ * return whichever expires later.
+ * @param {string} envToken - Token from TRADINGVIEW_JWT_TOKEN env var
+ * @param {string} redisUrl
+ * @returns {Promise<{token: string, source: string, ttl: number}|null>}
+ */
+async function getBestAvailableToken(envToken, redisUrl) {
+  const cachedToken = await getCachedToken(redisUrl);
+
+  const envTTL = getTokenTTL(envToken) || -Infinity;
+  const cachedTTL = getTokenTTL(cachedToken) || -Infinity;
+
+  if (envTTL <= 0 && cachedTTL <= 0) {
+    // Both expired or unavailable
+    if (envToken) return { token: envToken, source: 'env (expired)', ttl: envTTL };
+    if (cachedToken) return { token: cachedToken, source: 'redis (expired)', ttl: cachedTTL };
+    return null;
+  }
+
+  if (cachedTTL > envTTL) {
+    logger.info(`Using Redis-cached token (TTL: ${Math.floor(cachedTTL / 60)}min) over env token (TTL: ${Math.floor(envTTL / 60)}min)`);
+    return { token: cachedToken, source: 'redis', ttl: cachedTTL };
+  }
+
+  if (envToken) {
+    logger.info(`Using env token (TTL: ${Math.floor(envTTL / 60)}min)`);
+    return { token: envToken, source: 'env', ttl: envTTL };
+  }
+
+  return null;
+}
+
+export {
+  login,
+  extractJwtFromPage,
+  refreshToken,
+  getTokenExpiry,
+  getTokenTTL,
+  cacheTokenInRedis,
+  getCachedToken,
+  getBestAvailableToken,
+  REDIS_TOKEN_KEY
+};

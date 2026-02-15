@@ -424,8 +424,8 @@
     "es-cross-signal": {
       "longThreshold": 2,
       "shortThreshold": -2,
-      "targetPoints": 8,
-      "stopPoints": 6,
+      "targetPoints": 10,
+      "stopPoints": 10,
       "maxHoldBars": 30,
       "useTrailingStop": false,
       "trailingTrigger": 4,
@@ -440,8 +440,8 @@
       "useRegimeAmplifier": true,
       "amplifiedRegimes": ["negative", "strong_negative"],
       "regimeAmplifierBonus": 1,
-      "entryCutoffHour": 15,
-      "entryCutoffMinute": 54,
+      "entryCutoffHour": 16,
+      "entryCutoffMinute": 30,
       "tradingSymbol": "ES",
       "defaultQuantity": 1,
       "forceCloseAtMarketClose": true
@@ -465,8 +465,8 @@
       "useRegimeAmplifier": true,
       "amplifiedRegimes": ["negative", "strong_negative"],
       "regimeAmplifierBonus": 1,
-      "entryCutoffHour": 15,
-      "entryCutoffMinute": 54,
+      "entryCutoffHour": 16,
+      "entryCutoffMinute": 30,
       "tradingSymbol": "ES",
       "defaultQuantity": 1,
       "forceCloseAtMarketClose": true
@@ -490,8 +490,8 @@
       "useRegimeAmplifier": true,
       "amplifiedRegimes": ["negative", "strong_negative"],
       "regimeAmplifierBonus": 1,
-      "entryCutoffHour": 15,
-      "entryCutoffMinute": 54,
+      "entryCutoffHour": 16,
+      "entryCutoffMinute": 30,
       "tradingSymbol": "ES",
       "defaultQuantity": 1,
       "forceCloseAtMarketClose": true

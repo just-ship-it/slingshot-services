@@ -431,6 +431,22 @@ app.get('/candles', (req, res) => {
   }
 });
 
+// Manual TradingView token update endpoint
+app.post('/tradingview/token', async (req, res) => {
+  try {
+    const { token } = req.body;
+    if (!token || typeof token !== 'string' || !token.startsWith('eyJ')) {
+      return res.status(400).json({ error: 'Invalid token - must be a JWT string starting with eyJ' });
+    }
+
+    const result = await service.updateTradingViewToken(token);
+    res.json(result);
+  } catch (error) {
+    logger.error('TradingView token update error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Start HTTP server
 const PORT = process.env.PORT || config.HTTP_PORT || 3015;
 const BIND_HOST = process.env.BIND_HOST || '127.0.0.1';

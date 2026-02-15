@@ -1,10 +1,17 @@
 // TradingView WebSocket Client
 import WebSocket from 'ws';
 import EventEmitter from 'events';
-import { createLogger } from '../../../shared/index.js';
+import { createLogger, messageBus } from '../../../shared/index.js';
 import Redis from 'ioredis';
+import { refreshToken, getTokenTTL, cacheTokenInRedis, getBestAvailableToken } from '../utils/tradingview-auth.js';
 
 const logger = createLogger('tradingview-client');
+
+// Token refresh constants
+const TOKEN_REFRESH_INTERVAL_MS = 3 * 60 * 60 * 1000; // 3 hours
+const TOKEN_REFRESH_RETRY_MS = 15 * 60 * 1000; // 15 minutes on failure
+const TOKEN_EXPIRY_THRESHOLD_S = 60 * 60; // Refresh if expiring within 1 hour
+const DELAYED_QUOTE_THRESHOLD_S = 10 * 60; // 10 minutes lag = delayed
 
 // TradingView WebSocket endpoints (match working Python implementation)
 const TV_WEBSOCKET_URL = 'wss://data.tradingview.com/socket.io/websocket?from=chart%2FVEPYsueI%2F&type=chart';
@@ -47,6 +54,14 @@ class TradingViewClient extends EventEmitter {
     // Redis for storing latest quotes
     this.redis = null;
     this.redisConnected = false;
+
+    // Auth state tracking: 'authenticated' | 'delayed' | 'unknown'
+    this.authState = 'unknown';
+    this.tokenRefreshEnabled = options.tokenRefreshEnabled !== false;
+    this.tokenRefreshInterval = null;
+    this.tokenRefreshRetryTimeout = null;
+    this.isRefreshingToken = false; // Prevent reconnect loop during token refresh
+    this.lastDelayedAlert = null; // Throttle delayed-quote alerts
   }
 
   async initializeRedis() {
@@ -172,6 +187,11 @@ class TradingViewClient extends EventEmitter {
 
     // TradingView handles ping/pong automatically - no need for custom interval
     this.emit('connected');
+
+    // Start proactive token refresh schedule
+    if (this.tokenRefreshEnabled && this.credentials) {
+      this.startTokenRefreshSchedule();
+    }
   }
 
   initializeSessions() {
@@ -241,7 +261,17 @@ class TradingViewClient extends EventEmitter {
     } else if (quoteAge > 120) {
       logger.error(`❌ TradingView HEALTH: No quotes for ${Math.floor(quoteAge)}s - data flow stopped!`);
     } else {
-      logger.info(`✅ TradingView HEALTH: Connection active - last quote ${Math.floor(quoteAge)}s ago`);
+      logger.info(`✅ TradingView HEALTH: Connection active - last quote ${Math.floor(quoteAge)}s ago, authState: ${this.authState}`);
+    }
+
+    // Report token TTL
+    const ttl = getTokenTTL(this.jwtToken);
+    if (ttl !== null) {
+      if (ttl < 0) {
+        logger.warn(`⚠️ TradingView HEALTH: JWT token EXPIRED ${Math.floor(-ttl / 60)} minutes ago`);
+      } else {
+        logger.info(`🔑 TradingView HEALTH: JWT token expires in ${Math.floor(ttl / 60)} minutes`);
+      }
     }
   }
 
@@ -301,8 +331,13 @@ class TradingViewClient extends EventEmitter {
         }
       } else if (data.m === 'critical_error' || data.m === 'protocol_error') {
         logger.error('TradingView protocol error:', data);
-        if (JSON.stringify(data).includes('auth') || JSON.stringify(data).includes('permission')) {
-          logger.error('🚨 AUTHENTICATION FAILURE - JWT token may be expired or invalid!');
+        const dataStr = JSON.stringify(data);
+        if (dataStr.includes('auth') || dataStr.includes('permission')) {
+          logger.error('🚨 AUTHENTICATION FAILURE - JWT token is expired or invalid!');
+          if (this.tokenRefreshEnabled) {
+            logger.info('🔄 Triggering immediate token refresh due to auth failure...');
+            this.refreshAndReconnect();
+          }
         }
       } else if (data.m && data.m.includes('error')) {
         logger.warn('TradingView error message:', data);
@@ -359,6 +394,9 @@ class TradingViewClient extends EventEmitter {
       if (!values.lp) {
         return;
       }
+
+      // Detect delayed quotes (fallback auth detection)
+      this.checkQuoteDelay(values);
 
       // Store latest quote in Redis for GEX calculator
       this.storeLatestQuote(baseSymbol, quote);
@@ -676,11 +714,16 @@ class TradingViewClient extends EventEmitter {
       this.connectionHealthInterval = null;
     }
 
+    // Note: token refresh schedule is NOT cleared on disconnect - it should continue
+    // so that a fresh token is ready when we reconnect.
+
     // Log the impact
     logger.error(`💥 IMPACT: No live quotes will be available until TradingView reconnects!`);
 
     // Attempt reconnection
-    if (!this.isDisconnecting) {
+    if (this.isRefreshingToken) {
+      logger.info(`🔄 Not auto-reconnecting - token refresh in progress will handle reconnection`);
+    } else if (!this.isDisconnecting) {
       this.scheduleReconnect();
     } else {
       logger.info(`✋ Not reconnecting - service is shutting down`);
@@ -709,9 +752,233 @@ class TradingViewClient extends EventEmitter {
     }, delay);
   }
 
+  // --- Token Refresh & Delayed Quote Detection ---
+
+  /**
+   * Check if quote data indicates delayed/unauthenticated mode.
+   * Called from handleQuoteData() on every qsd message with lp.
+   */
+  checkQuoteDelay(values) {
+    // Check update_mode field for "delayed" indicator
+    if (values.update_mode && typeof values.update_mode === 'string' && values.update_mode.includes('delayed')) {
+      this.transitionAuthState('delayed');
+      return;
+    }
+
+    // Check lp_time (last price time, epoch seconds) for staleness
+    if (values.lp_time) {
+      const nowS = Math.floor(Date.now() / 1000);
+      const lag = nowS - values.lp_time;
+
+      if (lag > DELAYED_QUOTE_THRESHOLD_S) {
+        // Only flag during likely market hours (weekdays, rough check)
+        const now = new Date();
+        const dayOfWeek = now.getUTCDay();
+        const utcHour = now.getUTCHours();
+
+        // Futures trade Sun 6pm - Fri 5pm ET (roughly UTC Sun 23:00 - Sat 00:00)
+        // Skip weekend detection (Sat full day, Sun before 23:00 UTC)
+        const isWeekend = dayOfWeek === 6 || (dayOfWeek === 0 && utcHour < 22);
+
+        if (!isWeekend) {
+          this.transitionAuthState('delayed');
+          return;
+        }
+      }
+    }
+
+    // If we get here with valid data, quotes are real-time
+    if (this.authState !== 'authenticated') {
+      this.transitionAuthState('authenticated');
+    }
+  }
+
+  /**
+   * Transition auth state and take action on degradation.
+   */
+  transitionAuthState(newState) {
+    if (this.authState === newState) return;
+
+    const oldState = this.authState;
+    this.authState = newState;
+    logger.info(`Auth state transition: ${oldState} -> ${newState}`);
+
+    if (newState === 'delayed') {
+      logger.error('DELAYED QUOTES DETECTED - JWT token may be expired or invalid');
+
+      // Publish service error for monitoring/Discord
+      this.publishAuthEvent('tv_auth_degraded', 'Delayed quotes detected - token may be expired');
+
+      // Trigger immediate refresh attempt
+      if (this.tokenRefreshEnabled && this.credentials) {
+        this.refreshAndReconnect().catch(err => {
+          logger.error('Auto-refresh on delayed detection failed:', err.message);
+        });
+      }
+    } else if (newState === 'authenticated' && oldState === 'delayed') {
+      logger.info('Quotes restored to real-time');
+      this.publishAuthEvent('tv_auth_restored', 'Real-time quotes restored');
+    }
+  }
+
+  /**
+   * Start the proactive token refresh schedule.
+   * Checks immediately on startup, then every 3 hours.
+   */
+  startTokenRefreshSchedule() {
+    // Clear any existing schedule
+    this.stopTokenRefreshSchedule();
+
+    // Check if current token needs immediate refresh
+    const ttl = getTokenTTL(this.jwtToken);
+    if (ttl !== null && ttl < TOKEN_EXPIRY_THRESHOLD_S) {
+      logger.info(`JWT token expiring in ${Math.floor(ttl / 60)} minutes - refreshing immediately`);
+      this.refreshAndReconnect().catch(err => {
+        logger.error('Initial token refresh failed:', err.message);
+      });
+    } else if (ttl !== null) {
+      logger.info(`JWT token valid for ${Math.floor(ttl / 60)} minutes - scheduling refresh every 3 hours`);
+    }
+
+    // Schedule periodic refresh
+    this.tokenRefreshInterval = setInterval(() => {
+      logger.info('Proactive token refresh triggered (3-hour schedule)');
+      this.refreshAndReconnect().catch(err => {
+        logger.error('Scheduled token refresh failed:', err.message);
+      });
+    }, TOKEN_REFRESH_INTERVAL_MS);
+  }
+
+  stopTokenRefreshSchedule() {
+    if (this.tokenRefreshInterval) {
+      clearInterval(this.tokenRefreshInterval);
+      this.tokenRefreshInterval = null;
+    }
+    if (this.tokenRefreshRetryTimeout) {
+      clearTimeout(this.tokenRefreshRetryTimeout);
+      this.tokenRefreshRetryTimeout = null;
+    }
+  }
+
+  /**
+   * Refresh the JWT token via HTTP login and reconnect WebSocket.
+   */
+  async refreshAndReconnect() {
+    if (this.isRefreshingToken) {
+      logger.info('Token refresh already in progress, skipping duplicate request');
+      return;
+    }
+
+    // Set flag immediately to prevent handleClose from scheduling a reconnect
+    // with the same bad token (handleClose checks this flag synchronously)
+    this.isRefreshingToken = true;
+    try {
+      logger.info('Starting JWT token refresh...');
+
+      const newToken = await refreshToken(this.credentials);
+
+      // Update token
+      this.jwtToken = newToken;
+
+      // Cache in Redis for other instances
+      await cacheTokenInRedis(this.redisUrl, newToken);
+
+      // Publish token refreshed event (for LT monitor and monitoring service)
+      this.publishAuthEvent('tv_token_refreshed', 'JWT token refreshed successfully');
+      this.emit('token_refreshed', newToken);
+
+      // Reconnect WebSocket with new token
+      logger.info('Token refreshed - reconnecting WebSocket with new token...');
+      await this.reconnectWithNewToken();
+
+      logger.info('Token refresh and reconnection complete');
+    } catch (error) {
+      logger.error(`Token refresh failed: ${error.message}`);
+      this.publishAuthEvent('tv_token_refresh_failed', `Token refresh failed: ${error.message}`);
+
+      // Schedule retry in 15 minutes (but don't reconnect with the same bad token)
+      logger.info(`Scheduling token refresh retry in ${TOKEN_REFRESH_RETRY_MS / 60000} minutes`);
+      if (this.tokenRefreshRetryTimeout) clearTimeout(this.tokenRefreshRetryTimeout);
+      this.tokenRefreshRetryTimeout = setTimeout(() => {
+        this.refreshAndReconnect().catch(err => {
+          logger.error(`Token refresh retry also failed: ${err.message}`);
+        });
+      }, TOKEN_REFRESH_RETRY_MS);
+
+      // Don't reconnect when refresh failed — we'd just loop with the same bad token.
+      // The retry timer above will try again in 15 minutes.
+      return;
+    } finally {
+      this.isRefreshingToken = false;
+    }
+
+    // Safety net: if the connection dropped during a SUCCESSFUL refresh (e.g. stale session
+    // error caused a second disconnect while isRefreshingToken was true), reconnect now
+    // with the fresh token.
+    if (!this.connected && !this.isDisconnecting) {
+      logger.warn('Connection lost during token refresh - scheduling reconnect with new token');
+      this.scheduleReconnect();
+    }
+  }
+
+  /**
+   * Close current WebSocket and reconnect (reuses existing reconnect flow).
+   */
+  async reconnectWithNewToken() {
+    // Temporarily set flag to prevent auto-reconnect in handleClose
+    const wasDisconnecting = this.isDisconnecting;
+    this.isDisconnecting = true;
+
+    // Close existing connection
+    if (this.ws) {
+      this.ws.close();
+      this.ws = null;
+    }
+    this.connected = false;
+
+    // Clear intervals that will be recreated on connect
+    if (this.connectionHealthInterval) {
+      clearInterval(this.connectionHealthInterval);
+      this.connectionHealthInterval = null;
+    }
+
+    // Reset state
+    this.chartSessions.clear();
+    this.sessionToSymbol.clear();
+    this.isDisconnecting = wasDisconnecting;
+    this.reconnectAttempts = 0;
+
+    // Reconnect
+    await this.connect();
+    await this.startStreaming();
+  }
+
+  /**
+   * Publish auth-related events to Redis for monitoring service / Discord.
+   */
+  publishAuthEvent(type, message) {
+    try {
+      messageBus.publish('service.error', {
+        service: 'signal-generator',
+        type,
+        message,
+        authState: this.authState,
+        tokenTTL: getTokenTTL(this.jwtToken),
+        timestamp: new Date().toISOString()
+      }).catch(err => {
+        logger.warn('Failed to publish auth event:', err.message);
+      });
+    } catch (err) {
+      logger.warn('Failed to publish auth event:', err.message);
+    }
+  }
+
   async disconnect() {
     logger.info('Disconnecting from TradingView...');
     this.isDisconnecting = true;
+
+    // Stop token refresh schedule
+    this.stopTokenRefreshSchedule();
 
     if (this.pingInterval) {
       clearInterval(this.pingInterval);

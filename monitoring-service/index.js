@@ -369,6 +369,79 @@ async function handlePositionClosedDiscord(position) {
   });
 }
 
+// Throttle map for TV auth Discord notifications (max once per 30 minutes per type)
+const tvAuthDiscordThrottle = new Map();
+const TV_AUTH_THROTTLE_MS = 30 * 60 * 1000; // 30 minutes
+
+/**
+ * Handle TradingView authentication events for Discord notification.
+ * Listens on service.error channel, filters for tv_auth_* types.
+ */
+async function handleTvAuthDiscord(message) {
+  const type = message.type;
+
+  // Only handle TV auth events
+  if (!type || !type.startsWith('tv_')) return;
+
+  // Throttle: max once per 30 minutes per event type
+  const lastSent = tvAuthDiscordThrottle.get(type) || 0;
+  if (Date.now() - lastSent < TV_AUTH_THROTTLE_MS) return;
+  tvAuthDiscordThrottle.set(type, Date.now());
+
+  let title, color;
+  switch (type) {
+    case 'tv_auth_degraded':
+      title = 'TradingView Delayed Quotes';
+      color = 0xf97316; // orange
+      break;
+    case 'tv_token_refresh_failed':
+      title = 'TradingView Token Refresh Failed';
+      color = 0xef4444; // red
+      break;
+    case 'tv_token_refreshed':
+      title = 'TradingView Token Refreshed';
+      color = 0x22c55e; // green
+      break;
+    case 'tv_auth_restored':
+      title = 'TradingView Quotes Restored';
+      color = 0x22c55e; // green
+      break;
+    default:
+      return; // Unknown tv_ event, skip
+  }
+
+  const fields = [
+    { name: 'Service', value: message.service || 'signal-generator', inline: true },
+    { name: 'Status', value: message.authState || 'unknown', inline: true }
+  ];
+
+  if (message.tokenTTL !== undefined && message.tokenTTL !== null) {
+    const ttlMin = Math.floor(message.tokenTTL / 60);
+    fields.push({ name: 'Token TTL', value: ttlMin >= 0 ? `${ttlMin}min` : `Expired ${-ttlMin}min ago`, inline: true });
+  }
+
+  if (message.message) {
+    fields.push({ name: 'Details', value: message.message, inline: false });
+  }
+
+  // Add actionable guidance for token refresh failures
+  if (type === 'tv_token_refresh_failed') {
+    const dashboardUrl = process.env.DASHBOARD_URL || 'https://dashboard.ereptortrading.com';
+    fields.push({
+      name: 'Action Required',
+      value: `Open the dashboard and paste a fresh JWT token:\n${dashboardUrl}\n\nSignal Generator > Set Token`,
+      inline: false
+    });
+  }
+
+  await sendDiscordNotification({
+    title: `${type === 'tv_auth_degraded' || type === 'tv_token_refresh_failed' ? '🔴' : '🟢'} ${title}`,
+    color,
+    fields,
+    timestamp: new Date().toISOString()
+  });
+}
+
 /**
  * Parse TradingView symbol to extract base contract type
  * Handles variations like: NQ, NQ!, NQ1, NQ1!, NQH4, NQZ23, etc.
@@ -1159,6 +1232,8 @@ app.get('/api/signal-generator/status', dashboardAuth, async (req, res) => {
           status.connections.tradingview.lastHeartbeat = tvDetails.lastHeartbeat;
           status.connections.tradingview.lastQuoteReceived = tvDetails.lastQuoteReceived;
           status.connections.tradingview.reconnectAttempts = tvDetails.reconnectAttempts || 0;
+          status.connections.tradingview.authState = tvDetails.authState || 'unknown';
+          status.connections.tradingview.tokenTTL = tvDetails.tokenTTL;
         }
 
         const ltDetails = health.connectionDetails.ltMonitor;
@@ -1555,6 +1630,46 @@ app.post('/api/gex/refresh', dashboardAuth, async (req, res) => {
       error: 'Failed to refresh GEX levels',
       message: error.message
     });
+  }
+});
+
+// TradingView manual token update - proxy to all signal generators
+app.post('/api/tradingview/token', dashboardAuth, async (req, res) => {
+  try {
+    logger.info('🔑 Proxying TradingView token update to all signal generators');
+    const results = await Promise.allSettled([
+      axios.post(`${SIGNAL_GENERATOR_URL}/tradingview/token`, req.body, { timeout: 15000 }),
+      axios.post(`${SIGNAL_GENERATOR_ES_URL}/tradingview/token`, req.body, { timeout: 15000 })
+    ]);
+
+    const nqResult = results[0];
+    const esResult = results[1];
+
+    const response = {
+      nq: nqResult.status === 'fulfilled' ? nqResult.value.data : { error: nqResult.reason?.message },
+      es: esResult.status === 'fulfilled' ? esResult.value.data : { error: esResult.reason?.message }
+    };
+
+    // Use NQ result for top-level fields (backward compat with frontend)
+    if (nqResult.status === 'fulfilled') {
+      response.success = nqResult.value.data.success;
+      response.tokenTTL = nqResult.value.data.tokenTTL;
+      response.authState = nqResult.value.data.authState;
+    }
+
+    const failures = [
+      nqResult.status === 'rejected' ? 'NQ' : null,
+      esResult.status === 'rejected' ? 'ES' : null
+    ].filter(Boolean);
+
+    if (failures.length > 0) {
+      logger.warn(`Token update failed for: ${failures.join(', ')}`);
+    }
+
+    res.json(response);
+  } catch (error) {
+    logger.error('Failed to update TradingView token:', error.message);
+    res.status(500).json({ error: 'Token update failed', message: error.message });
   }
 });
 
@@ -3292,7 +3407,9 @@ async function startup() {
       [CHANNELS.TRADE_REJECTED, handleTradeRejectedDiscord],
       [CHANNELS.ORDER_FILLED, handleOrderFilledDiscord],
       [CHANNELS.POSITION_OPENED, handlePositionOpenedDiscord],
-      [CHANNELS.POSITION_CLOSED, handlePositionClosedDiscord]
+      [CHANNELS.POSITION_CLOSED, handlePositionClosedDiscord],
+      // TradingView auth event Discord notifications
+      [CHANNELS.SERVICE_ERROR, handleTvAuthDiscord]
     ];
 
 
