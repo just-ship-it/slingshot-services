@@ -8,9 +8,11 @@ import { refreshToken, refreshJwtFromSession, getTokenTTL, cacheTokenInRedis, ge
 const logger = createLogger('tradingview-client');
 
 // Token refresh constants
-const TOKEN_REFRESH_INTERVAL_MS = 3 * 60 * 60 * 1000; // 3 hours
-const TOKEN_REFRESH_RETRY_MS = 15 * 60 * 1000; // 15 minutes on failure
-const TOKEN_EXPIRY_THRESHOLD_S = 60 * 60; // Refresh if expiring within 1 hour
+// NOTE: JWT exp claim is NOT a reliable indicator of token invalidity.
+// TradingView WebSocket tokens typically work for DAYS after exp.
+// Only refresh when there's actual evidence: WS disconnect or delayed quotes.
+const TOKEN_REFRESH_RETRY_MS = 4 * 60 * 60 * 1000; // 4 hours on failure (no rush if WS still works)
+const TOKEN_REFRESH_MAX_RETRIES = 3; // Stop retrying after 3 consecutive failures
 const DELAYED_QUOTE_THRESHOLD_S = 10 * 60; // 10 minutes lag = delayed
 
 // TradingView WebSocket endpoints (match working Python implementation)
@@ -58,9 +60,9 @@ class TradingViewClient extends EventEmitter {
     // Auth state tracking: 'authenticated' | 'delayed' | 'unknown'
     this.authState = 'unknown';
     this.tokenRefreshEnabled = options.tokenRefreshEnabled !== false;
-    this.tokenRefreshInterval = null;
     this.tokenRefreshRetryTimeout = null;
     this.isRefreshingToken = false; // Prevent reconnect loop during token refresh
+    this.tokenRefreshRetryCount = 0; // Track consecutive refresh failures
     this.lastDelayedAlert = null; // Throttle delayed-quote alerts
   }
 
@@ -178,6 +180,7 @@ class TradingViewClient extends EventEmitter {
   handleOpen() {
     logger.info('WebSocket connection opened');
     this.reconnectAttempts = 0;
+    this.tokenRefreshRetryCount = 0; // Reset on successful connection
 
     // Initialize sessions
     this.initializeSessions();
@@ -188,10 +191,8 @@ class TradingViewClient extends EventEmitter {
     // TradingView handles ping/pong automatically - no need for custom interval
     this.emit('connected');
 
-    // Start proactive token refresh schedule
-    if (this.tokenRefreshEnabled && this.credentials) {
-      this.startTokenRefreshSchedule();
-    }
+    // Token refresh is now reactive-only (triggered by delayed quotes or WS auth errors).
+    // No proactive schedule — JWT exp is not a reliable invalidation signal.
   }
 
   initializeSessions() {
@@ -822,38 +823,9 @@ class TradingViewClient extends EventEmitter {
   }
 
   /**
-   * Start the proactive token refresh schedule.
-   * Checks immediately on startup, then every 3 hours.
+   * Stop any pending refresh retry timers.
    */
-  startTokenRefreshSchedule() {
-    // Clear any existing schedule
-    this.stopTokenRefreshSchedule();
-
-    // Check if current token needs immediate refresh
-    const ttl = getTokenTTL(this.jwtToken);
-    if (ttl !== null && ttl < TOKEN_EXPIRY_THRESHOLD_S) {
-      logger.info(`JWT token expiring in ${Math.floor(ttl / 60)} minutes - refreshing immediately`);
-      this.refreshAndReconnect().catch(err => {
-        logger.error('Initial token refresh failed:', err.message);
-      });
-    } else if (ttl !== null) {
-      logger.info(`JWT token valid for ${Math.floor(ttl / 60)} minutes - scheduling refresh every 3 hours`);
-    }
-
-    // Schedule periodic refresh
-    this.tokenRefreshInterval = setInterval(() => {
-      logger.info('Proactive token refresh triggered (3-hour schedule)');
-      this.refreshAndReconnect().catch(err => {
-        logger.error('Scheduled token refresh failed:', err.message);
-      });
-    }, TOKEN_REFRESH_INTERVAL_MS);
-  }
-
   stopTokenRefreshSchedule() {
-    if (this.tokenRefreshInterval) {
-      clearInterval(this.tokenRefreshInterval);
-      this.tokenRefreshInterval = null;
-    }
     if (this.tokenRefreshRetryTimeout) {
       clearTimeout(this.tokenRefreshRetryTimeout);
       this.tokenRefreshRetryTimeout = null;
@@ -862,10 +834,17 @@ class TradingViewClient extends EventEmitter {
 
   /**
    * Refresh the JWT token via HTTP login and reconnect WebSocket.
+   * Only called reactively (delayed quotes detected or WS auth error).
    */
   async refreshAndReconnect() {
     if (this.isRefreshingToken) {
       logger.info('Token refresh already in progress, skipping duplicate request');
+      return;
+    }
+
+    // Check if we've exceeded max retries
+    if (this.tokenRefreshRetryCount >= TOKEN_REFRESH_MAX_RETRIES) {
+      logger.warn(`Token refresh abandoned after ${TOKEN_REFRESH_MAX_RETRIES} consecutive failures - waiting for manual intervention or WS reconnect to reset`);
       return;
     }
 
@@ -890,6 +869,9 @@ class TradingViewClient extends EventEmitter {
       // Cache in Redis for other instances
       await cacheTokenInRedis(this.redisUrl, newToken);
 
+      // Reset retry counter on success
+      this.tokenRefreshRetryCount = 0;
+
       // Publish token refreshed event (for LT monitor and monitoring service)
       this.publishAuthEvent('tv_token_refreshed', 'JWT token refreshed successfully');
       this.emit('token_refreshed', newToken);
@@ -900,20 +882,24 @@ class TradingViewClient extends EventEmitter {
 
       logger.info('Token refresh and reconnection complete');
     } catch (error) {
-      logger.error(`Token refresh failed: ${error.message}`);
-      this.publishAuthEvent('tv_token_refresh_failed', `Token refresh failed: ${error.message}`);
+      this.tokenRefreshRetryCount++;
+      logger.error(`Token refresh failed (attempt ${this.tokenRefreshRetryCount}/${TOKEN_REFRESH_MAX_RETRIES}): ${error.message}`);
+      this.publishAuthEvent('tv_token_refresh_failed', `Token refresh failed (attempt ${this.tokenRefreshRetryCount}/${TOKEN_REFRESH_MAX_RETRIES}): ${error.message}`);
 
-      // Schedule retry in 15 minutes (but don't reconnect with the same bad token)
-      logger.info(`Scheduling token refresh retry in ${TOKEN_REFRESH_RETRY_MS / 60000} minutes`);
-      if (this.tokenRefreshRetryTimeout) clearTimeout(this.tokenRefreshRetryTimeout);
-      this.tokenRefreshRetryTimeout = setTimeout(() => {
-        this.refreshAndReconnect().catch(err => {
-          logger.error(`Token refresh retry also failed: ${err.message}`);
-        });
-      }, TOKEN_REFRESH_RETRY_MS);
+      // Schedule retry in 4 hours if we haven't exhausted retries
+      if (this.tokenRefreshRetryCount < TOKEN_REFRESH_MAX_RETRIES) {
+        logger.info(`Scheduling token refresh retry in ${TOKEN_REFRESH_RETRY_MS / 3600000} hours`);
+        if (this.tokenRefreshRetryTimeout) clearTimeout(this.tokenRefreshRetryTimeout);
+        this.tokenRefreshRetryTimeout = setTimeout(() => {
+          this.refreshAndReconnect().catch(err => {
+            logger.error(`Token refresh retry failed: ${err.message}`);
+          });
+        }, TOKEN_REFRESH_RETRY_MS);
+      } else {
+        logger.warn(`Max token refresh retries (${TOKEN_REFRESH_MAX_RETRIES}) reached - manual token update required`);
+      }
 
       // Don't reconnect when refresh failed — we'd just loop with the same bad token.
-      // The retry timer above will try again in 15 minutes.
       return;
     } finally {
       this.isRefreshingToken = false;

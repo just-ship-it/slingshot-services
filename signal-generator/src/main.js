@@ -8,7 +8,7 @@ import TradierExposureService from './tradier/tradier-exposure-service.js';
 import HybridGexCalculator from './gex/hybrid-gex-calculator.js';
 import StrategyEngine from './strategy/engine.js';
 import { getDataRequirements } from './strategy/strategy-factory.js';
-import { getBestAvailableToken, refreshToken, refreshJwtFromSession, cacheTokenInRedis, getTokenTTL } from './utils/tradingview-auth.js';
+import { getBestAvailableToken, cacheTokenInRedis, getTokenTTL } from './utils/tradingview-auth.js';
 
 const logger = createLogger('signal-generator');
 
@@ -220,7 +220,9 @@ class SignalGeneratorService {
 
       // --- Startup Token Check ---
       // Compare env var token vs Redis-cached token, use whichever expires later.
-      // If best token expires within 1 hour, refresh immediately.
+      // NOTE: JWT exp is NOT a reliable invalidation signal for TradingView tokens.
+      // They typically work for days after exp. Only refresh reactively when
+      // the WebSocket drops or quotes are detected as delayed.
       const redisUrl = config.getRedisUrl();
       let startupJwtToken = config.TRADINGVIEW_JWT_TOKEN;
       const tokenRefreshEnabled = process.env.TV_TOKEN_REFRESH_ENABLED !== 'false';
@@ -230,27 +232,10 @@ class SignalGeneratorService {
           const best = await getBestAvailableToken(config.TRADINGVIEW_JWT_TOKEN, redisUrl);
           if (best) {
             startupJwtToken = best.token;
-            logger.info(`Startup token source: ${best.source} (TTL: ${Math.floor(best.ttl / 60)}min)`);
-
-            // If best token expires within 1 hour, refresh immediately
-            if (best.ttl < 3600) {
-              logger.info('Best available token expiring soon - refreshing before connecting...');
-              try {
-                // Try session-based refresh first (no login POST, no CAPTCHA risk)
-                let freshToken = await refreshJwtFromSession(redisUrl);
-                if (!freshToken) {
-                  freshToken = await refreshToken(config.TRADINGVIEW_CREDENTIALS, redisUrl);
-                }
-                startupJwtToken = freshToken;
-                await cacheTokenInRedis(redisUrl, freshToken);
-                const freshTTL = getTokenTTL(freshToken);
-                logger.info(`Fresh token obtained (TTL: ${Math.floor(freshTTL / 60)}min)`);
-              } catch (refreshErr) {
-                logger.warn('Startup token refresh failed, using existing token:', refreshErr.message);
-              }
-            }
+            const ttlMin = Math.floor(best.ttl / 60);
+            logger.info(`Startup token source: ${best.source} (JWT exp: ${ttlMin > 0 ? `${ttlMin}min` : `expired ${-ttlMin}min ago`} - token likely still valid)`);
           } else {
-            logger.warn('No valid JWT token available - TradingView will use unauthenticated mode (delayed quotes)');
+            logger.warn('No JWT token available - TradingView will use unauthenticated mode (delayed quotes)');
           }
         } catch (error) {
           logger.warn('Startup token check failed:', error.message);
@@ -575,6 +560,9 @@ class SignalGeneratorService {
     // Update the TradingView client's token and reconnect
     if (this.tradingViewClient) {
       this.tradingViewClient.jwtToken = token;
+      // Reset refresh retry state — fresh manual token means we're good
+      this.tradingViewClient.tokenRefreshRetryCount = 0;
+      this.tradingViewClient.stopTokenRefreshSchedule(); // Clear any pending retry timers
       await this.tradingViewClient.reconnectWithNewToken();
       logger.info('TradingView client reconnected with new token');
     }

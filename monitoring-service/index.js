@@ -369,9 +369,9 @@ async function handlePositionClosedDiscord(position) {
   });
 }
 
-// Throttle map for TV auth Discord notifications (max once per 30 minutes per type)
+// Throttle map for TV auth Discord notifications
 const tvAuthDiscordThrottle = new Map();
-const TV_AUTH_THROTTLE_MS = 30 * 60 * 1000; // 30 minutes
+const TV_AUTH_THROTTLE_MS = 4 * 60 * 60 * 1000; // 4 hours — token refresh failures are not urgent
 
 /**
  * Handle TradingView authentication events for Discord notification.
