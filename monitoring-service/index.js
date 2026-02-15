@@ -2312,8 +2312,11 @@ app.get('/api/trading/active-status', dashboardAuth, async (req, res) => {
     const workingOrders = Array.from(monitoringState.orders.values())
       .filter(order => order.status === 'working' || order.orderStatus === 'Working');
 
+    let tradingEnabled = true;
+    try { const v = await messageBus.publisher.get('trading:kill_switch'); if (v !== null) tradingEnabled = v === 'true'; } catch (e) { /* default true */ }
+
     res.json({
-      tradingEnabled: true,
+      tradingEnabled,
       positions: openPositions,
       pendingEntryOrders: workingOrders.filter(o => !o.orderRole || o.orderRole === 'entry'),
       stopOrders: workingOrders.filter(o => o.orderRole === 'stop_loss'),
@@ -2425,8 +2428,11 @@ app.get('/api/trading/enhanced-status', dashboardAuth, async (req, res) => {
       ordersBySymbol.get(order.symbol).push(order);
     });
 
+    let tradingEnabled = true;
+    try { const v = await messageBus.publisher.get('trading:kill_switch'); if (v !== null) tradingEnabled = v === 'true'; } catch (e) { /* default true */ }
+
     res.json({
-      tradingEnabled: true,
+      tradingEnabled,
       pendingOrders: Array.from(ordersBySymbol.entries()).map(([symbol, orders]) => {
         const entryOrder = orders.find(o => !o.orderRole || o.orderRole === 'entry');
         const currentPrice = monitoringState.prices.get(symbol)?.close;

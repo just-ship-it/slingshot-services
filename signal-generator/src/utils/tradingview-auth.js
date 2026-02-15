@@ -10,6 +10,8 @@ const logger = createLogger('tradingview-auth');
 
 const REDIS_TOKEN_KEY = 'tradingview:jwt_token';
 const REDIS_TOKEN_TTL = 5 * 60 * 60; // 5 hours (tokens last ~4h, cache a bit longer)
+const REDIS_SESSION_KEY = 'tradingview:session_cookies';
+const REDIS_SESSION_TTL = 7 * 24 * 60 * 60; // 7 days (sessionid lasts days to weeks)
 
 const TV_USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36';
 
@@ -135,10 +137,13 @@ function getTokenTTL(jwt) {
 
 /**
  * Full refresh flow: decode credentials, login, extract JWT, return token.
+ * After successful login, persists session cookies in Redis for future
+ * CAPTCHA-free JWT extractions.
  * @param {string} credentialsB64 - Base64-encoded JSON with {username, password}
+ * @param {string} [redisUrl] - Redis URL for persisting session cookies
  * @returns {Promise<string>} Fresh JWT token
  */
-async function refreshToken(credentialsB64) {
+async function refreshToken(credentialsB64, redisUrl) {
   if (!credentialsB64) {
     throw new Error('No TRADINGVIEW_CREDENTIALS configured - cannot refresh token');
   }
@@ -157,7 +162,12 @@ async function refreshToken(credentialsB64) {
   // Step 1: Login
   const cookies = await login(creds.username, creds.password);
 
-  // Step 2: Extract JWT from authenticated page
+  // Step 2: Persist session cookies for future CAPTCHA-free refreshes
+  if (redisUrl) {
+    await cacheSessionCookies(redisUrl, cookies);
+  }
+
+  // Step 3: Extract JWT from authenticated page
   const jwt = await extractJwtFromPage(cookies);
 
   if (!jwt) {
@@ -166,8 +176,82 @@ async function refreshToken(credentialsB64) {
 
   const ttl = getTokenTTL(jwt);
   const expiry = getTokenExpiry(jwt);
-  logger.info(`Fresh JWT obtained - expires in ${Math.floor(ttl / 60)} minutes (${new Date(expiry * 1000).toISOString()})`);
+  logger.info(`Fresh JWT obtained via login - expires in ${Math.floor(ttl / 60)} minutes (${new Date(expiry * 1000).toISOString()})`);
 
+  return jwt;
+}
+
+/**
+ * Save TradingView session cookies to Redis for future JWT extractions
+ * without needing to POST to /accounts/signin/ (avoids CAPTCHA).
+ * @param {string} redisUrl
+ * @param {Object} cookies - Cookie map from login()
+ */
+async function cacheSessionCookies(redisUrl, cookies) {
+  let redis;
+  try {
+    redis = new Redis(redisUrl, { lazyConnect: true, maxRetriesPerRequest: 2 });
+    await redis.connect();
+    await redis.setex(REDIS_SESSION_KEY, REDIS_SESSION_TTL, JSON.stringify(cookies));
+    logger.info('Session cookies cached in Redis (TTL: 7 days)');
+  } catch (error) {
+    logger.warn('Failed to cache session cookies in Redis:', error.message);
+  } finally {
+    if (redis) redis.disconnect();
+  }
+}
+
+/**
+ * Read cached TradingView session cookies from Redis.
+ * @param {string} redisUrl
+ * @returns {Promise<Object|null>} Cookie map or null
+ */
+async function getCachedSessionCookies(redisUrl) {
+  let redis;
+  try {
+    redis = new Redis(redisUrl, { lazyConnect: true, maxRetriesPerRequest: 2 });
+    await redis.connect();
+    const raw = await redis.get(REDIS_SESSION_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw);
+  } catch (error) {
+    logger.warn('Failed to read session cookies from Redis:', error.message);
+    return null;
+  } finally {
+    if (redis) redis.disconnect();
+  }
+}
+
+/**
+ * Attempt to extract a fresh JWT using cached session cookies (no login POST).
+ * This avoids CAPTCHA by reusing the long-lived sessionid cookie.
+ * @param {string} redisUrl
+ * @returns {Promise<string|null>} Fresh JWT token, or null if cookies are expired/missing
+ */
+async function refreshJwtFromSession(redisUrl) {
+  const cookies = await getCachedSessionCookies(redisUrl);
+  if (!cookies || !cookies.sessionid) {
+    logger.info('No cached session cookies available');
+    return null;
+  }
+
+  logger.info('Attempting JWT extraction from cached session cookies (no login)...');
+
+  const jwt = await extractJwtFromPage(cookies);
+  if (!jwt) {
+    logger.warn('Cached session cookies did not yield a JWT - sessionid may be expired');
+    return null;
+  }
+
+  const ttl = getTokenTTL(jwt);
+  const expiry = getTokenExpiry(jwt);
+
+  if (ttl !== null && ttl <= 0) {
+    logger.warn('JWT extracted from session cookies is already expired');
+    return null;
+  }
+
+  logger.info(`Refreshed JWT from cached session (no login) - expires in ${Math.floor(ttl / 60)} minutes (${new Date(expiry * 1000).toISOString()})`);
   return jwt;
 }
 
@@ -251,10 +335,13 @@ export {
   login,
   extractJwtFromPage,
   refreshToken,
+  refreshJwtFromSession,
   getTokenExpiry,
   getTokenTTL,
   cacheTokenInRedis,
   getCachedToken,
   getBestAvailableToken,
+  cacheSessionCookies,
+  getCachedSessionCookies,
   REDIS_TOKEN_KEY
 };

@@ -16,6 +16,7 @@ const SIGNAL_CONTEXT_KEY = 'signal:context';
 const ORDER_STRATEGY_MAPPING_KEY = 'orders:strategy-mapping';
 const SIGNAL_MAPPINGS_KEY = 'signal:mappings';
 const SIGNAL_LIFECYCLES_KEY = 'signal:lifecycles';
+const KILL_SWITCH_KEY = 'trading:kill_switch';
 
 // Signal context persistence functions
 async function saveSignalContext() {
@@ -201,6 +202,29 @@ async function loadStrategyState() {
     }
   } catch (error) {
     logger.error('❌ Failed to load multi-strategy state from Redis:', error);
+  }
+}
+
+// Kill switch Redis persistence
+async function loadKillSwitchState() {
+  try {
+    if (!messageBus.isConnected) {
+      logger.warn('Redis disconnected, skipping loadKillSwitchState operation');
+      return;
+    }
+
+    const value = await messageBus.publisher.get(KILL_SWITCH_KEY);
+    if (value !== null) {
+      tradingState.tradingEnabled = value === 'true';
+      logger.info(`🔄 Loaded kill switch state from Redis: tradingEnabled=${tradingState.tradingEnabled}`);
+    } else {
+      // Fresh Redis — default to enabled and persist
+      tradingState.tradingEnabled = true;
+      await messageBus.publisher.set(KILL_SWITCH_KEY, 'true');
+      logger.info('📂 No kill switch state in Redis, defaulting to enabled');
+    }
+  } catch (error) {
+    logger.error('❌ Failed to load kill switch state from Redis:', error);
   }
 }
 
@@ -874,14 +898,16 @@ app.get('/health', async (req, res) => {
 });
 
 // Trading control endpoints
-app.post('/trading/enable', (req, res) => {
+app.post('/trading/enable', async (req, res) => {
   tradingState.tradingEnabled = true;
+  try { await messageBus.publisher.set(KILL_SWITCH_KEY, 'true'); } catch (e) { logger.error('Failed to persist kill switch:', e); }
   logger.info('Trading enabled');
   res.json({ status: 'Trading enabled' });
 });
 
-app.post('/trading/disable', (req, res) => {
+app.post('/trading/disable', async (req, res) => {
   tradingState.tradingEnabled = false;
+  try { await messageBus.publisher.set(KILL_SWITCH_KEY, 'false'); } catch (e) { logger.error('Failed to persist kill switch:', e); }
   logger.warn('Trading disabled');
   res.json({ status: 'Trading disabled' });
 });
@@ -3846,6 +3872,9 @@ async function startup() {
     // Load persisted signal context
     await loadSignalContext();
     await loadOrderStrategyMapping();
+
+    // Load kill switch state from Redis
+    await loadKillSwitchState();
 
     // Load multi-strategy state
     await loadStrategyState();

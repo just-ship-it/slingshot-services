@@ -8,7 +8,7 @@ import TradierExposureService from './tradier/tradier-exposure-service.js';
 import HybridGexCalculator from './gex/hybrid-gex-calculator.js';
 import StrategyEngine from './strategy/engine.js';
 import { getDataRequirements } from './strategy/strategy-factory.js';
-import { getBestAvailableToken, refreshToken, cacheTokenInRedis, getTokenTTL } from './utils/tradingview-auth.js';
+import { getBestAvailableToken, refreshToken, refreshJwtFromSession, cacheTokenInRedis, getTokenTTL } from './utils/tradingview-auth.js';
 
 const logger = createLogger('signal-generator');
 
@@ -236,7 +236,11 @@ class SignalGeneratorService {
             if (best.ttl < 3600) {
               logger.info('Best available token expiring soon - refreshing before connecting...');
               try {
-                const freshToken = await refreshToken(config.TRADINGVIEW_CREDENTIALS);
+                // Try session-based refresh first (no login POST, no CAPTCHA risk)
+                let freshToken = await refreshJwtFromSession(redisUrl);
+                if (!freshToken) {
+                  freshToken = await refreshToken(config.TRADINGVIEW_CREDENTIALS, redisUrl);
+                }
                 startupJwtToken = freshToken;
                 await cacheTokenInRedis(redisUrl, freshToken);
                 const freshTTL = getTokenTTL(freshToken);

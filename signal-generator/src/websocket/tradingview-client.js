@@ -3,7 +3,7 @@ import WebSocket from 'ws';
 import EventEmitter from 'events';
 import { createLogger, messageBus } from '../../../shared/index.js';
 import Redis from 'ioredis';
-import { refreshToken, getTokenTTL, cacheTokenInRedis, getBestAvailableToken } from '../utils/tradingview-auth.js';
+import { refreshToken, refreshJwtFromSession, getTokenTTL, cacheTokenInRedis, getBestAvailableToken } from '../utils/tradingview-auth.js';
 
 const logger = createLogger('tradingview-client');
 
@@ -875,7 +875,14 @@ class TradingViewClient extends EventEmitter {
     try {
       logger.info('Starting JWT token refresh...');
 
-      const newToken = await refreshToken(this.credentials);
+      // Step 1: Try session-based refresh (no login POST, no CAPTCHA risk)
+      let newToken = await refreshJwtFromSession(this.redisUrl);
+
+      // Step 2: Fall back to full login if session refresh didn't work
+      if (!newToken) {
+        logger.info('Session-based refresh unavailable - falling back to full login');
+        newToken = await refreshToken(this.credentials, this.redisUrl);
+      }
 
       // Update token
       this.jwtToken = newToken;
