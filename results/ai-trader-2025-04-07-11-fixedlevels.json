@@ -1,0 +1,723 @@
+{
+  "config": {
+    "evaluationTimeframe": "5m",
+    "levelProximityThreshold": 30,
+    "maxEntriesPerDay": 4,
+    "maxEntriesPerSession": 2,
+    "maxLossesPerDay": 2,
+    "reassessmentIntervalMs": 1800000,
+    "rthOnly": true,
+    "dryRun": false,
+    "verbose": true,
+    "ticker": "NQ",
+    "dataDir": "/home/drew/projects/slingshot-services/backtest-engine/data",
+    "model": "claude-sonnet-4-20250514"
+  },
+  "days": [
+    {
+      "date": "2025-04-07",
+      "bias": {
+        "bias": "bearish",
+        "conviction": 4,
+        "key_levels_to_watch": [
+          {
+            "price": 17061.15,
+            "type": "Fib-34 LT resistance",
+            "action": "sell"
+          },
+          {
+            "price": 17002.73,
+            "type": "Fib-55 LT resistance",
+            "action": "sell"
+          },
+          {
+            "price": 16810,
+            "type": "Prior day close",
+            "action": "watch"
+          },
+          {
+            "price": 16507.88,
+            "type": "Fib-144 LT support",
+            "action": "watch"
+          },
+          {
+            "price": 16460,
+            "type": "Prior day low/overnight low",
+            "action": "watch"
+          },
+          {
+            "price": 16159.66,
+            "type": "Put wall support",
+            "action": "buy"
+          }
+        ],
+        "reasoning": "Despite BULLISH LT sentiment label, 4 out of 5 LT levels are ABOVE current price (16928), creating poor liquidity above and resistance. VIX at extreme 46.98 confirms panic selling environment. Negative GEX regime amplifies volatility in direction of moves.",
+        "avoid_conditions": [
+          "VIX above 50",
+          "sustained moves above 17195 Fib-377 level",
+          "low volume choppy action"
+        ],
+        "preferred_session_window": "9:30-11:00 ET"
+      },
+      "entries": [
+        {
+          "time": "09:50:00 ET",
+          "session": "morning",
+          "activeBias": "bearish",
+          "action": "enter",
+          "side": "sell",
+          "entry_price": 17120,
+          "stop_loss": 17140,
+          "take_profit": 17090,
+          "risk_points": 20,
+          "reasoning": "Strong bearish bias with conviction 4/5 confirmed by price rejection near Fib-377 resistance at 17154. High volume spike on current candle shows selling pressure emerging at this key level.",
+          "confidence": 4,
+          "nearestLevel": {
+            "price": 17132.83,
+            "type": "gex",
+            "label": "S2",
+            "distance": 12.830000000001746
+          }
+        },
+        {
+          "time": "14:00:00 ET",
+          "session": "afternoon",
+          "activeBias": "bullish",
+          "action": "enter",
+          "side": "buy",
+          "entry_price": 17758,
+          "stop_loss": 17738,
+          "take_profit": 17788,
+          "risk_points": 20,
+          "reasoning": "Buying at reclaimed S3 support (17758.44) with strong bullish conviction 4/5 bias. Price pulled back from 17812.50 high to this key level, offering good entry with 1.5:1 R:R.",
+          "confidence": 4,
+          "nearestLevel": {
+            "price": 17758.44,
+            "type": "gex",
+            "label": "S3",
+            "distance": 14.43999999999869
+          }
+        },
+        {
+          "time": "14:50:00 ET",
+          "session": "afternoon",
+          "activeBias": "neutral",
+          "action": "enter",
+          "side": "sell",
+          "entry_price": 17557.5,
+          "stop_loss": 17577.5,
+          "take_profit": 17527.5,
+          "risk_points": 20,
+          "reasoning": "Price is near the 610 fib convergence level at 17537.25 with deteriorating LT migration and S3 already broken. Good R:R setup aligning with weakening bias.",
+          "confidence": 3,
+          "nearestLevel": {
+            "price": 17573.37,
+            "type": "gex",
+            "label": "S2",
+            "distance": 15.869999999998981
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "outcome": "target",
+          "exitPrice": 17090,
+          "pnl": 30,
+          "bars": 1,
+          "exitTime": "09:51:00 ET"
+        },
+        {
+          "outcome": "stop",
+          "exitPrice": 17738,
+          "pnl": -20,
+          "bars": 1,
+          "exitTime": "14:01:00 ET"
+        },
+        {
+          "outcome": "stop",
+          "exitPrice": 17577.5,
+          "pnl": -20,
+          "bars": 1,
+          "exitTime": "14:51:00 ET"
+        }
+      ],
+      "skipped": false,
+      "biasHistory": [
+        {
+          "time": "09:30:00 ET",
+          "bias": "bearish",
+          "conviction": 4,
+          "source": "pre-market"
+        },
+        {
+          "time": "10:05:00 ET",
+          "bias": "bullish",
+          "conviction": 3,
+          "source": "reassessment"
+        },
+        {
+          "time": "10:35:00 ET",
+          "bias": "bearish",
+          "conviction": 3,
+          "source": "reassessment"
+        },
+        {
+          "time": "13:30:00 ET",
+          "bias": "bullish",
+          "conviction": 3,
+          "source": "reassessment"
+        },
+        {
+          "time": "14:00:00 ET",
+          "bias": "bullish",
+          "conviction": 4,
+          "source": "reassessment"
+        },
+        {
+          "time": "14:30:00 ET",
+          "bias": "neutral",
+          "conviction": 2,
+          "source": "reassessment"
+        }
+      ],
+      "biasReversals": 4,
+      "reassessmentCalls": 5
+    },
+    {
+      "date": "2025-04-08",
+      "bias": {
+        "bias": "bullish",
+        "conviction": 4,
+        "key_levels_to_watch": [
+          {
+            "price": 18306.02,
+            "type": "GEX Call Wall resistance",
+            "action": "watch"
+          },
+          {
+            "price": 18170,
+            "type": "Overnight high",
+            "action": "buy"
+          },
+          {
+            "price": 18009.57,
+            "type": "LT Fib-144 support",
+            "action": "buy"
+          },
+          {
+            "price": 17873.81,
+            "type": "LT Fib-34 support",
+            "action": "buy"
+          },
+          {
+            "price": 17762.69,
+            "type": "GEX S3 support",
+            "action": "buy"
+          },
+          {
+            "price": 17644.5,
+            "type": "Overnight low",
+            "action": "watch"
+          }
+        ],
+        "reasoning": "Strong BULLISH LT sentiment with all 5 liquidity levels below price provides excellent support structure. Despite extreme VIX conditions, overnight session showed strong recovery momentum (+485 points from lows) with negative GEX regime supporting directional moves.",
+        "avoid_conditions": [
+          "VIX spike above 60",
+          "breakdown below overnight low 17644"
+        ],
+        "preferred_session_window": "9:30-11:00 ET"
+      },
+      "entries": [
+        {
+          "time": "09:55:00 ET",
+          "session": "morning",
+          "activeBias": "bullish",
+          "action": "enter",
+          "side": "buy",
+          "entry_price": 18247.75,
+          "stop_loss": 18228,
+          "take_profit": 18277.5,
+          "risk_points": 19.75,
+          "reasoning": "Strong bullish momentum with price breaking above overnight high resistance at 18170, now testing call wall at 18265. Good volume confirmation and aligns with strong bullish bias.",
+          "confidence": 4,
+          "nearestLevel": {
+            "price": 18265.56,
+            "type": "gex",
+            "label": "Call Wall",
+            "distance": 17.81000000000131
+          }
+        },
+        {
+          "time": "13:05:00 ET",
+          "session": "afternoon",
+          "activeBias": "bearish",
+          "action": "enter",
+          "side": "sell",
+          "entry_price": 17582.75,
+          "stop_loss": 17602.75,
+          "take_profit": 17552.75,
+          "risk_points": 20,
+          "reasoning": "Price breaking below GEX S4 support (17564.76) with strong bearish momentum and high volume, aligning with moderate bearish bias. Clean 1.5:1 R:R targeting next support zone.",
+          "confidence": 4,
+          "nearestLevel": {
+            "price": 17564.76,
+            "type": "gex",
+            "label": "S4",
+            "distance": 17.9900000000016
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "outcome": "stop",
+          "exitPrice": 18228,
+          "pnl": -19.75,
+          "bars": 1,
+          "exitTime": "09:56:00 ET"
+        },
+        {
+          "outcome": "stop",
+          "exitPrice": 17602.75,
+          "pnl": -20,
+          "bars": 1,
+          "exitTime": "13:06:00 ET"
+        }
+      ],
+      "skipped": false,
+      "biasHistory": [
+        {
+          "time": "09:30:00 ET",
+          "bias": "bullish",
+          "conviction": 4,
+          "source": "pre-market"
+        },
+        {
+          "time": "10:05:00 ET",
+          "bias": "bullish",
+          "conviction": 4,
+          "source": "reassessment"
+        },
+        {
+          "time": "10:35:00 ET",
+          "bias": "bearish",
+          "conviction": 3,
+          "source": "reassessment"
+        }
+      ],
+      "biasReversals": 1,
+      "reassessmentCalls": 2
+    },
+    {
+      "date": "2025-04-09",
+      "bias": {
+        "bias": "bullish",
+        "conviction": 4,
+        "key_levels_to_watch": [
+          {
+            "price": 17333.15,
+            "type": "GEX Put Wall S1",
+            "action": "buy"
+          },
+          {
+            "price": 17070.28,
+            "type": "LT Fib-34 liquidity support",
+            "action": "buy"
+          },
+          {
+            "price": 16900.23,
+            "type": "LT Fib-377 structural support",
+            "action": "buy"
+          },
+          {
+            "price": 17500.22,
+            "type": "GEX Support S4",
+            "action": "watch"
+          },
+          {
+            "price": 18357.25,
+            "type": "Prior day high resistance",
+            "action": "watch"
+          },
+          {
+            "price": 19003.82,
+            "type": "GEX Resistance R2",
+            "action": "sell"
+          }
+        ],
+        "reasoning": "Strong BULLISH LT sentiment with all 5 liquidity levels below price creates excellent support structure. VIX at 33.62 suggests fear-driven selling may be exhausted, and negative GEX regime supports momentum moves higher from current oversold levels.",
+        "avoid_conditions": [
+          "VIX spike above 40",
+          "failure to hold 17000 area",
+          "weak volume on any bounce"
+        ],
+        "preferred_session_window": "10:00-12:00 ET"
+      },
+      "entries": [
+        {
+          "time": "09:35:00 ET",
+          "session": "morning",
+          "activeBias": "bullish",
+          "action": "enter",
+          "side": "buy",
+          "entry_price": 17435,
+          "stop_loss": 17415,
+          "take_profit": 17465,
+          "risk_points": 20,
+          "reasoning": "Strong bullish bias with conviction 4/5 supported by price breaking above opening range with high volume. Entry near GEX Put Wall provides good support structure.",
+          "confidence": 4,
+          "nearestLevel": {
+            "price": 17419,
+            "type": "4h",
+            "label": "4h High",
+            "distance": 16.25
+          }
+        },
+        {
+          "time": "10:15:00 ET",
+          "session": "morning",
+          "activeBias": "bullish",
+          "action": "enter",
+          "side": "buy",
+          "entry_price": 17435,
+          "stop_loss": 17415,
+          "take_profit": 17465,
+          "risk_points": 20,
+          "reasoning": "Price holding above Put Wall at 17330 with bullish bias intact. Entry near current price offers clean 20pt risk to S3 level at 17338 with 1.5:1 R:R targeting resistance.",
+          "confidence": 3,
+          "nearestLevel": {
+            "price": 17419,
+            "type": "4h",
+            "label": "4h High",
+            "distance": 15.75
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "outcome": "stop",
+          "exitPrice": 17415,
+          "pnl": -20,
+          "bars": 1,
+          "exitTime": "09:36:00 ET"
+        },
+        {
+          "outcome": "stop",
+          "exitPrice": 17415,
+          "pnl": -20,
+          "bars": 1,
+          "exitTime": "10:16:00 ET"
+        }
+      ],
+      "skipped": false,
+      "biasHistory": [
+        {
+          "time": "09:30:00 ET",
+          "bias": "bullish",
+          "conviction": 4,
+          "source": "pre-market"
+        },
+        {
+          "time": "10:05:00 ET",
+          "bias": "bullish",
+          "conviction": 3,
+          "source": "reassessment"
+        }
+      ],
+      "biasReversals": 0,
+      "reassessmentCalls": 1
+    },
+    {
+      "date": "2025-04-10",
+      "bias": {
+        "bias": "bearish",
+        "conviction": 4,
+        "key_levels_to_watch": [
+          {
+            "price": 18899.97,
+            "type": "LT Fib-34 resistance",
+            "action": "sell"
+          },
+          {
+            "price": 18847.9,
+            "type": "LT Fib-55 resistance",
+            "action": "sell"
+          },
+          {
+            "price": 18843.81,
+            "type": "GEX Call Wall resistance",
+            "action": "sell"
+          },
+          {
+            "price": 18465.82,
+            "type": "LT Fib-377 support",
+            "action": "watch"
+          },
+          {
+            "price": 17394.28,
+            "type": "GEX Put Wall support",
+            "action": "watch"
+          },
+          {
+            "price": 19015,
+            "type": "Prior day close",
+            "action": "sell"
+          }
+        ],
+        "reasoning": "LT sentiment is BEARISH with 3 levels above price creating resistance clusters around 18850-18900. Negative GEX regime amplifies volatility while VIX collapse suggests vol normalization. Overnight rejected higher and closed weak.",
+        "avoid_conditions": [
+          "break above 19000 with volume",
+          "VIX spike above 45"
+        ],
+        "preferred_session_window": "9:30-11:00 ET"
+      },
+      "entries": [
+        {
+          "time": "09:35:00 ET",
+          "session": "morning",
+          "activeBias": "bearish",
+          "action": "enter",
+          "side": "sell",
+          "entry_price": 18795.5,
+          "stop_loss": 18815.5,
+          "take_profit": 18765.5,
+          "risk_points": 20,
+          "reasoning": "Price at entry is below key resistance cluster (18843-18847) with bearish bias intact. Good 1.5:1 R:R setup with stop above recent highs.",
+          "confidence": 4,
+          "nearestLevel": {
+            "price": 18802.39,
+            "type": "gex",
+            "label": "R3",
+            "distance": 6.889999999999418
+          }
+        },
+        {
+          "time": "09:40:00 ET",
+          "session": "morning",
+          "activeBias": "bearish",
+          "action": "enter",
+          "side": "sell",
+          "entry_price": 18729.5,
+          "stop_loss": 18749.5,
+          "take_profit": 18699.5,
+          "risk_points": 20,
+          "reasoning": "Price rejected from resistance cluster around 18850 and showing weakness with large red candle. Strong bearish bias supported by multiple resistance levels above.",
+          "confidence": 4,
+          "nearestLevel": {
+            "price": 18703.5,
+            "type": "4h",
+            "label": "4h Low",
+            "distance": 26
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "outcome": "stop",
+          "exitPrice": 18815.5,
+          "pnl": -20,
+          "bars": 1,
+          "exitTime": "09:36:00 ET"
+        },
+        {
+          "outcome": "stop",
+          "exitPrice": 18749.5,
+          "pnl": -20,
+          "bars": 1,
+          "exitTime": "09:41:00 ET"
+        }
+      ],
+      "skipped": false,
+      "biasHistory": [
+        {
+          "time": "09:30:00 ET",
+          "bias": "bearish",
+          "conviction": 4,
+          "source": "pre-market"
+        }
+      ],
+      "biasReversals": 0,
+      "reassessmentCalls": 0
+    },
+    {
+      "date": "2025-04-11",
+      "bias": {
+        "bias": "bearish",
+        "conviction": 4,
+        "key_levels_to_watch": [
+          {
+            "price": 18486.34,
+            "type": "LT Fib-34 resistance",
+            "action": "sell"
+          },
+          {
+            "price": 18606.3,
+            "type": "LT Fib-55 resistance",
+            "action": "sell"
+          },
+          {
+            "price": 18586.56,
+            "type": "GEX Put Wall support",
+            "action": "watch"
+          },
+          {
+            "price": 18327.48,
+            "type": "LT Fib-144 support",
+            "action": "buy"
+          },
+          {
+            "price": 18029.36,
+            "type": "LT Fib-610 support",
+            "action": "buy"
+          },
+          {
+            "price": 16874.09,
+            "type": "GEX Gamma Flip",
+            "action": "watch"
+          }
+        ],
+        "reasoning": "Despite LT sentiment showing BULLISH, 3 of 5 LT levels are above price creating resistance zones. Negative GEX regime with price trading below gamma flip suggests downside acceleration potential. Overnight weakness and multiple resistance levels overhead favor bearish bias.",
+        "avoid_conditions": [
+          "VIX spike above 40",
+          "break above 18606 with momentum",
+          "extreme low volume chop"
+        ],
+        "preferred_session_window": "9:45-11:00 ET"
+      },
+      "entries": [
+        {
+          "time": "10:00:00 ET",
+          "session": "morning",
+          "activeBias": "bearish",
+          "action": "enter",
+          "side": "sell",
+          "entry_price": 18498.25,
+          "stop_loss": 18518.25,
+          "take_profit": 18468.25,
+          "risk_points": 20,
+          "reasoning": "Price is very close to LT Fib-34 resistance at 18484.48, showing rejection after rally from lows. Strong bearish conviction aligns with negative GEX regime and overhead resistance.",
+          "confidence": 4,
+          "nearestLevel": {
+            "price": 18480,
+            "type": "prior_day",
+            "label": "PD Close",
+            "distance": 18.25
+          }
+        },
+        {
+          "time": "10:25:00 ET",
+          "session": "morning",
+          "activeBias": "neutral",
+          "action": "enter",
+          "side": "buy",
+          "entry_price": 18304.5,
+          "stop_loss": 18285,
+          "take_profit": 18334,
+          "risk_points": 19.5,
+          "reasoning": "Price near fib-144 support (18373.92) with current close at 18304.50, offering good level proximity. Strong selloff from 18422.50 to 18276.00 low shows potential oversold bounce opportunity.",
+          "confidence": 3,
+          "nearestLevel": {
+            "price": 18314.25,
+            "type": "4h",
+            "label": "4h Low",
+            "distance": 9.75
+          }
+        },
+        {
+          "time": "13:30:00 ET",
+          "session": "afternoon",
+          "activeBias": "bullish",
+          "action": "enter",
+          "side": "buy",
+          "entry_price": 18641.5,
+          "stop_loss": 18621.5,
+          "take_profit": 18671.5,
+          "risk_points": 20,
+          "reasoning": "Price holding above Put Wall support at 18633.28 with bullish bias and improving liquidity trend. Entry near support with defined risk below key level.",
+          "confidence": 3,
+          "nearestLevel": {
+            "price": 18633.28,
+            "type": "gex",
+            "label": "Put Wall",
+            "distance": 8.220000000001164
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "outcome": "stop",
+          "exitPrice": 18518.25,
+          "pnl": -20,
+          "bars": 1,
+          "exitTime": "10:01:00 ET"
+        },
+        {
+          "outcome": "target",
+          "exitPrice": 18334,
+          "pnl": 29.5,
+          "bars": 1,
+          "exitTime": "10:26:00 ET"
+        },
+        {
+          "outcome": "stop",
+          "exitPrice": 18621.5,
+          "pnl": -20,
+          "bars": 1,
+          "exitTime": "13:31:00 ET"
+        }
+      ],
+      "skipped": false,
+      "biasHistory": [
+        {
+          "time": "09:30:00 ET",
+          "bias": "bearish",
+          "conviction": 4,
+          "source": "pre-market"
+        },
+        {
+          "time": "10:05:00 ET",
+          "bias": "neutral",
+          "conviction": 2,
+          "source": "reassessment"
+        },
+        {
+          "time": "13:30:00 ET",
+          "bias": "bullish",
+          "conviction": 3,
+          "source": "reassessment"
+        }
+      ],
+      "biasReversals": 2,
+      "reassessmentCalls": 2
+    }
+  ],
+  "summary": {
+    "totalDays": 5,
+    "activeDays": 5,
+    "skippedDays": 0,
+    "totalTrades": 12,
+    "wins": 2,
+    "losses": 10,
+    "timeouts": 0,
+    "winRate": 17,
+    "totalPnlPoints": -140.25,
+    "avgPnlPoints": -11.69,
+    "avgWinPoints": 29.75,
+    "avgLossPoints": -19.98,
+    "profitFactor": 1.49,
+    "biasAccuracy": "2/5 (40%)",
+    "totalReassessments": 10,
+    "totalBiasReversals": 7,
+    "avgReassessmentsPerDay": 2
+  },
+  "cost": {
+    "model": "claude-sonnet-4-20250514",
+    "totalCalls": 42,
+    "totalInputTokens": 50805,
+    "totalOutputTokens": 6312,
+    "estimatedCostUSD": 0.2471,
+    "breakdown": {
+      "inputCostUSD": 0.1524,
+      "outputCostUSD": 0.0947
+    }
+  }
+}

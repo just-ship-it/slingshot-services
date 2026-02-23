@@ -1,0 +1,224 @@
+{
+  "config": {
+    "evaluationTimeframe": "5m",
+    "levelProximityThreshold": 30,
+    "maxEntriesPerDay": 4,
+    "maxEntriesPerSession": 2,
+    "reassessmentIntervalMs": 1800000,
+    "rthOnly": true,
+    "dryRun": false,
+    "verbose": true,
+    "ticker": "NQ",
+    "dataDir": "/home/drew/projects/slingshot-services/backtest-engine/data",
+    "model": "claude-sonnet-4-20250514"
+  },
+  "days": [
+    {
+      "date": "2025-12-22",
+      "bias": {
+        "bias": "bullish",
+        "conviction": 4,
+        "key_levels_to_watch": [
+          {
+            "price": 25825.05,
+            "type": "LT Fib-144 resistance",
+            "action": "watch"
+          },
+          {
+            "price": 25930.99,
+            "type": "Call wall/R1",
+            "action": "sell"
+          },
+          {
+            "price": 25778.93,
+            "type": "LT Fib-34 support",
+            "action": "buy"
+          },
+          {
+            "price": 25754.59,
+            "type": "LT Fib-55 support",
+            "action": "buy"
+          },
+          {
+            "price": 25699.25,
+            "type": "Prior day high",
+            "action": "buy"
+          },
+          {
+            "price": 25570.22,
+            "type": "LT Fib-377 major support",
+            "action": "buy"
+          }
+        ],
+        "reasoning": "Despite BEARISH LT sentiment, 4 out of 5 LT levels sit below price providing strong support layering. Overnight gap above PDH with positive GEX regime and collapsing VIX creates bullish setup. Call wall at 25931 offers clear upside target.",
+        "avoid_conditions": [
+          "break below 25570 LT support",
+          "VIX spike above 16",
+          "failure to hold overnight low"
+        ],
+        "preferred_session_window": "10:00-12:00 ET"
+      },
+      "entries": [
+        {
+          "time": "09:50:00 ET",
+          "session": "morning",
+          "activeBias": "bullish",
+          "action": "enter",
+          "side": "buy",
+          "entry_price": 25750.75,
+          "stop_loss": 25730.75,
+          "take_profit": 25781,
+          "risk_points": 20,
+          "reasoning": "Price holding above LT Fib-55 support (25727) with bullish bias intact. Entry near support with 1.5:1 R:R targeting GEX R4 resistance.",
+          "confidence": 4,
+          "nearestLevel": {
+            "price": 25748,
+            "type": "lt",
+            "label": "fib-34",
+            "distance": 2.75
+          }
+        },
+        {
+          "time": "09:55:00 ET",
+          "session": "morning",
+          "activeBias": "bullish",
+          "action": "enter",
+          "side": "buy",
+          "entry_price": 25748,
+          "stop_loss": 25728,
+          "take_profit": 25778,
+          "risk_points": 20,
+          "reasoning": "Price exactly at LT Fib-34 level (25748) with bullish bias and positive GEX regime. Strong support layering below provides good risk management.",
+          "confidence": 4,
+          "nearestLevel": {
+            "price": 25748,
+            "type": "lt",
+            "label": "fib-34",
+            "distance": 0
+          }
+        },
+        {
+          "time": "14:00:00 ET",
+          "session": "afternoon",
+          "activeBias": "bearish",
+          "action": "enter",
+          "side": "sell",
+          "entry_price": 25685,
+          "stop_loss": 25705,
+          "take_profit": 25655,
+          "risk_points": 20,
+          "reasoning": "Price rejecting from 25680 support break level with bearish bias confirmation. Clean 1.5:1 R:R setup with volume supporting the move.",
+          "confidence": 4,
+          "nearestLevel": {
+            "price": 25710.37,
+            "type": "lt",
+            "label": "fib-34",
+            "distance": 25.11999999999898
+          }
+        },
+        {
+          "time": "14:05:00 ET",
+          "session": "afternoon",
+          "activeBias": "bearish",
+          "action": "enter",
+          "side": "sell",
+          "entry_price": 25684.75,
+          "stop_loss": 25704.75,
+          "take_profit": 25654.75,
+          "risk_points": 20,
+          "reasoning": "Price rejecting from key support break level at 25680, aligns with bearish bias and deteriorating LT migration. Good R:R with 30-point target.",
+          "confidence": 4,
+          "nearestLevel": {
+            "price": 25710.37,
+            "type": "lt",
+            "label": "fib-34",
+            "distance": 25.61999999999898
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "outcome": "stop",
+          "exitPrice": 25730.75,
+          "pnl": -20,
+          "bars": 1,
+          "exitTime": "09:51:00 ET"
+        },
+        {
+          "outcome": "stop",
+          "exitPrice": 25728,
+          "pnl": -20,
+          "bars": 5,
+          "exitTime": "10:00:00 ET"
+        },
+        {
+          "outcome": "stop",
+          "exitPrice": 25705,
+          "pnl": -20,
+          "bars": 30,
+          "exitTime": "14:30:00 ET"
+        },
+        {
+          "outcome": "stop",
+          "exitPrice": 25704.75,
+          "pnl": -20,
+          "bars": 25,
+          "exitTime": "14:30:00 ET"
+        }
+      ],
+      "skipped": false,
+      "biasHistory": [
+        {
+          "time": "09:30:00 ET",
+          "bias": "bullish",
+          "conviction": 4,
+          "source": "pre-market"
+        },
+        {
+          "time": "13:30:00 ET",
+          "bias": "neutral",
+          "conviction": 2,
+          "source": "reassessment"
+        },
+        {
+          "time": "14:00:00 ET",
+          "bias": "bearish",
+          "conviction": 3,
+          "source": "reassessment"
+        }
+      ],
+      "biasReversals": 2,
+      "reassessmentCalls": 2
+    }
+  ],
+  "summary": {
+    "totalDays": 1,
+    "activeDays": 1,
+    "skippedDays": 0,
+    "totalTrades": 4,
+    "wins": 0,
+    "losses": 4,
+    "timeouts": 0,
+    "winRate": 0,
+    "totalPnlPoints": -80,
+    "avgPnlPoints": -20,
+    "avgWinPoints": 0,
+    "avgLossPoints": -20,
+    "profitFactor": 0,
+    "biasAccuracy": "0/1 (0%)",
+    "totalReassessments": 2,
+    "totalBiasReversals": 2,
+    "avgReassessmentsPerDay": 2
+  },
+  "cost": {
+    "model": "claude-sonnet-4-20250514",
+    "totalCalls": 16,
+    "totalInputTokens": 19293,
+    "totalOutputTokens": 1721,
+    "estimatedCostUSD": 0.0837,
+    "breakdown": {
+      "inputCostUSD": 0.0579,
+      "outputCostUSD": 0.0258
+    }
+  }
+}

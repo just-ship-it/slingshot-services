@@ -1,0 +1,311 @@
+// This Pine Script(tm) v6 strategy is designed to run on a 1-SECOND chart.
+// It detects "momentum bursts" — directional moves with conviction
+// (high velocity + volume surge + directional efficiency) and trades continuation.
+//
+// Based on microstructure analysis of 5 years of ES/NQ 1s data (2021-2026).
+// Key finding: events triggering on multiple window sizes simultaneously
+// (15s + 30s + 60s) produce 2-3x profit factor vs single-window events.
+//
+// Apply to: ES1! or NQ1! on a 1-second chart.
+// Adjust velocity threshold per symbol (ES: 0.5, NQ: 2.0).
+
+//@version=6
+strategy("Momentum Microstructure v1",
+     overlay = true,
+     initial_capital = 50000,
+     default_qty_type = strategy.fixed,
+     default_qty_value = 1,
+     commission_type = strategy.commission.cash_per_contract,
+     commission_value = 2.50,
+     slippage = 1,
+     process_orders_on_close = true,
+     calc_on_every_tick = false,
+     max_bars_back = 500)
+
+// ============================================================================
+// Inputs
+// ============================================================================
+
+string g_entry = "Entry"
+float  i_velThresh   = input.float(0.5,   "Velocity Threshold (pts/s)",   step = 0.1,  group = g_entry, tooltip = "ES: 0.5, NQ: 2.0. Higher = fewer but stronger signals.")
+float  i_volRatio    = input.float(2.0,   "Volume Ratio Threshold",       step = 0.5,  group = g_entry, tooltip = "Window volume rate vs 300s baseline. 2.0 = 2x surge.")
+float  i_effThresh   = input.float(0.6,   "Efficiency Threshold",         step = 0.05, group = g_entry, tooltip = "Move efficiency 0-1. 1.0 = straight line. 0.6+ = directional.")
+float  i_closePosLong  = input.float(0.7, "Close Position (long)",        step = 0.05, group = g_entry, tooltip = "Close must be in upper N% of window range for longs.")
+float  i_closePosShort = input.float(0.3, "Close Position (short)",       step = 0.05, group = g_entry, tooltip = "Close must be in lower N% of window range for shorts.")
+float  i_tickDirLong   = input.float(0.65,"Tick Direction (long)",        step = 0.05, group = g_entry, tooltip = "Fraction of up-ticks required for long signal.")
+float  i_tickDirShort  = input.float(0.35,"Tick Direction (short)",       step = 0.05, group = g_entry, tooltip = "Fraction of up-ticks max for short signal.")
+int    i_cooldown    = input.int(30,       "Cooldown (bars)",              minval = 1,  group = g_entry, tooltip = "Minimum bars between signals. 30 = 30 seconds on 1s chart.")
+bool   i_reqMulti    = input.bool(false,   "Require Multi-Window (2+)",                group = g_entry, tooltip = "If true, only trade when 2+ windows trigger simultaneously. Fewer trades but ~3x profit factor.")
+
+string g_exit = "Exit"
+float  i_target      = input.float(12.0,  "Target Points",               step = 1.0,  group = g_exit, tooltip = "ES: 10-15, NQ: 40-60")
+float  i_stop        = input.float(10.0,  "Stop Points",                 step = 1.0,  group = g_exit, tooltip = "ES: 8-12, NQ: 30-50")
+float  i_trailAct    = input.float(0.0,   "Trail Activation Points",     step = 1.0,  group = g_exit, tooltip = "0 = disabled. Trailing stop activates after this much profit.")
+float  i_trailOff    = input.float(0.0,   "Trail Offset Points",         step = 0.5,  group = g_exit, tooltip = "0 = disabled. Distance trailing stop follows behind price.")
+int    i_maxHold     = input.int(300,      "Max Hold (bars)",             minval = 10, group = g_exit, tooltip = "300 bars = 5 minutes on 1s chart. Best continuation horizon from analysis.")
+
+string g_filter = "Filters"
+bool   i_sessionFilter = input.bool(true,  "Session Filter",                            group = g_filter, tooltip = "Exclude overnight (18:00-08:00 ET) and afterhours. Analysis showed these have negative edge.")
+string i_sessionHours  = input.string("0800-1600", "Session Hours (ET)", options = ["0800-1600", "0800-1700", "0930-1600", "0000-2359"], group = g_filter, tooltip = "Trading session in Eastern Time.")
+bool   i_longOnly    = input.bool(false,   "Long Only",                                group = g_filter, tooltip = "Analysis showed long bias in both ES and NQ.")
+bool   i_shortOnly   = input.bool(false,   "Short Only",                               group = g_filter)
+
+string g_display = "Display"
+bool   i_showTable   = input.bool(true,    "Show Metrics Table",                        group = g_display)
+bool   i_showSignals = input.bool(true,    "Show Signal Markers",                       group = g_display)
+
+// ============================================================================
+// Session Filter
+// ============================================================================
+
+bool inSession = true
+if i_sessionFilter
+    inSession := not na(time(timeframe.period, i_sessionHours + ":23456", "America/New_York"))
+
+// ============================================================================
+// Cumulative Metric Accumulators (O(1) per bar via running sums)
+// ============================================================================
+
+// These track running totals. To get a windowed sum over the last N bars:
+//   windowSum = cumulative - nz(cumulative[N], 0)
+// This avoids expensive loops entirely.
+
+var float cumPath     = 0.0   // cumulative |close-to-close| for efficiency
+var float cumVol      = 0.0   // cumulative volume
+var int   cumUpTicks  = 0     // cumulative up-tick count
+var int   cumDnTicks  = 0     // cumulative down-tick count
+
+float tickDelta    = close - nz(close[1], close)
+float absTickDelta = math.abs(tickDelta)
+
+cumPath += absTickDelta
+cumVol  += volume
+
+if tickDelta > 0
+    cumUpTicks += 1
+else if tickDelta < 0
+    cumDnTicks += 1
+
+// ============================================================================
+// Microstructure Metrics — 15s Window
+// ============================================================================
+
+float vel15     = (close - close[15]) / 15.0
+float pathLen15 = cumPath - nz(cumPath[15], 0)
+float eff15     = pathLen15 > 0 ? math.abs(close - close[15]) / pathLen15 : 0.0
+float wHi15     = ta.highest(high, 15)
+float wLo15     = ta.lowest(low, 15)
+float wRng15    = wHi15 - wLo15
+float cp15      = wRng15 > 0 ? (close - wLo15) / wRng15 : 0.5
+int   up15      = cumUpTicks - nz(cumUpTicks[15], 0)
+int   dn15      = cumDnTicks - nz(cumDnTicks[15], 0)
+float td15      = (up15 + dn15) > 0 ? up15 / float(up15 + dn15) : 0.5
+float winVol15  = cumVol - nz(cumVol[15], 0)
+float volRate15 = winVol15 / 15.0
+
+// ============================================================================
+// Microstructure Metrics — 30s Window
+// ============================================================================
+
+float vel30     = (close - close[30]) / 30.0
+float pathLen30 = cumPath - nz(cumPath[30], 0)
+float eff30     = pathLen30 > 0 ? math.abs(close - close[30]) / pathLen30 : 0.0
+float wHi30     = ta.highest(high, 30)
+float wLo30     = ta.lowest(low, 30)
+float wRng30    = wHi30 - wLo30
+float cp30      = wRng30 > 0 ? (close - wLo30) / wRng30 : 0.5
+int   up30      = cumUpTicks - nz(cumUpTicks[30], 0)
+int   dn30      = cumDnTicks - nz(cumDnTicks[30], 0)
+float td30      = (up30 + dn30) > 0 ? up30 / float(up30 + dn30) : 0.5
+float winVol30  = cumVol - nz(cumVol[30], 0)
+float volRate30 = winVol30 / 30.0
+
+// ============================================================================
+// Microstructure Metrics — 60s Window
+// ============================================================================
+
+float vel60     = (close - close[60]) / 60.0
+float pathLen60 = cumPath - nz(cumPath[60], 0)
+float eff60     = pathLen60 > 0 ? math.abs(close - close[60]) / pathLen60 : 0.0
+float wHi60     = ta.highest(high, 60)
+float wLo60     = ta.lowest(low, 60)
+float wRng60    = wHi60 - wLo60
+float cp60      = wRng60 > 0 ? (close - wLo60) / wRng60 : 0.5
+int   up60      = cumUpTicks - nz(cumUpTicks[60], 0)
+int   dn60      = cumDnTicks - nz(cumDnTicks[60], 0)
+float td60      = (up60 + dn60) > 0 ? up60 / float(up60 + dn60) : 0.5
+float winVol60  = cumVol - nz(cumVol[60], 0)
+float volRate60 = winVol60 / 60.0
+
+// ============================================================================
+// Baseline Volume Rate (300s rolling average)
+// ============================================================================
+
+float baseVol     = cumVol - nz(cumVol[300], 0)
+float baseVolRate = baseVol / 300.0
+
+float vr15 = baseVolRate > 0 ? volRate15 / baseVolRate : 0.0
+float vr30 = baseVolRate > 0 ? volRate30 / baseVolRate : 0.0
+float vr60 = baseVolRate > 0 ? volRate60 / baseVolRate : 0.0
+
+// ============================================================================
+// Burst Detection — per window
+// ============================================================================
+
+// 15s window
+float  absVel15  = math.abs(vel15)
+bool   bull15    = vel15 > 0
+bool   velOk15   = absVel15 >= i_velThresh
+bool   volOk15   = vr15 >= i_volRatio
+bool   effOk15   = eff15 >= i_effThresh
+bool   dirOk15   = bull15 ? (cp15 >= i_closePosLong and td15 >= i_tickDirLong) : (cp15 <= i_closePosShort and td15 <= i_tickDirShort)
+bool   burst15   = velOk15 and volOk15 and effOk15 and dirOk15
+
+// 30s window
+float  absVel30  = math.abs(vel30)
+bool   bull30    = vel30 > 0
+bool   velOk30   = absVel30 >= i_velThresh
+bool   volOk30   = vr30 >= i_volRatio
+bool   effOk30   = eff30 >= i_effThresh
+bool   dirOk30   = bull30 ? (cp30 >= i_closePosLong and td30 >= i_tickDirLong) : (cp30 <= i_closePosShort and td30 <= i_tickDirShort)
+bool   burst30   = velOk30 and volOk30 and effOk30 and dirOk30
+
+// 60s window
+float  absVel60  = math.abs(vel60)
+bool   bull60    = vel60 > 0
+bool   velOk60   = absVel60 >= i_velThresh
+bool   volOk60   = vr60 >= i_volRatio
+bool   effOk60   = eff60 >= i_effThresh
+bool   dirOk60   = bull60 ? (cp60 >= i_closePosLong and td60 >= i_tickDirLong) : (cp60 <= i_closePosShort and td60 <= i_tickDirShort)
+bool   burst60   = velOk60 and volOk60 and effOk60 and dirOk60
+
+// ============================================================================
+// Signal Logic
+// ============================================================================
+
+int  winCount  = (burst15 ? 1 : 0) + (burst30 ? 1 : 0) + (burst60 ? 1 : 0)
+bool anyBurst  = winCount > 0
+bool multiWin  = winCount >= 2
+bool signal    = i_reqMulti ? multiWin : anyBurst
+
+// Direction — prefer 30s window, fallback to 60s, then 15s
+bool isBullish = burst30 ? bull30 : (burst60 ? bull60 : bull15)
+
+// Cooldown tracking
+var int lastSignalBar = -9999
+bool cooldownOk = bar_index - lastSignalBar >= i_cooldown
+
+// Warmup: need at least 300 bars for baseline
+bool warmup = bar_index >= 310
+
+// Final entry conditions
+bool flat     = strategy.position_size == 0
+bool goLong   = signal and isBullish and cooldownOk and warmup and inSession and flat and not i_shortOnly
+bool goShort  = signal and not isBullish and cooldownOk and warmup and inSession and flat and not i_longOnly
+
+// ============================================================================
+// Order Execution
+// ============================================================================
+
+var int entryBar = 0
+
+if goLong
+    strategy.entry("Long", strategy.long)
+    lastSignalBar := bar_index
+    entryBar := bar_index
+
+if goShort
+    strategy.entry("Short", strategy.short)
+    lastSignalBar := bar_index
+    entryBar := bar_index
+
+// Exits — target, stop, optional trailing stop
+float targetTicks = math.round(i_target / syminfo.mintick)
+float stopTicks   = math.round(i_stop / syminfo.mintick)
+
+if i_trailAct > 0 and i_trailOff > 0
+    float trailActTicks = math.round(i_trailAct / syminfo.mintick)
+    float trailOffTicks = math.round(i_trailOff / syminfo.mintick)
+    strategy.exit("LX", "Long",  profit = targetTicks, loss = stopTicks, trail_points = trailActTicks, trail_offset = trailOffTicks)
+    strategy.exit("SX", "Short", profit = targetTicks, loss = stopTicks, trail_points = trailActTicks, trail_offset = trailOffTicks)
+else
+    strategy.exit("LX", "Long",  profit = targetTicks, loss = stopTicks)
+    strategy.exit("SX", "Short", profit = targetTicks, loss = stopTicks)
+
+// Time-based exit
+if strategy.position_size != 0 and (bar_index - entryBar) >= i_maxHold
+    strategy.close_all("Time Exit")
+
+// ============================================================================
+// Visuals
+// ============================================================================
+
+// Signal markers
+plotshape(i_showSignals and goLong,  style = shape.triangleup,   location = location.belowbar, color = color.new(color.green, 0), size = size.tiny, title = "Long Signal")
+plotshape(i_showSignals and goShort, style = shape.triangledown, location = location.abovebar, color = color.new(color.red, 0),   size = size.tiny, title = "Short Signal")
+
+// Multi-window highlight
+bgcolor(multiWin and anyBurst ? color.new(color.yellow, 88) : na, title = "Multi-Window Burst")
+
+// ============================================================================
+// Metrics Dashboard
+// ============================================================================
+
+if i_showTable
+    var table dash = table.new(position.top_right, 3, 9, bgcolor = color.new(color.black, 75), border_width = 1, border_color = color.new(color.gray, 50))
+
+    if barstate.islast
+        // Header
+        table.cell(dash, 0, 0, "Metric",   text_color = color.white, text_size = size.small, text_halign = text.align_left)
+        table.cell(dash, 1, 0, "30s",      text_color = color.white, text_size = size.small, text_halign = text.align_right)
+        table.cell(dash, 2, 0, "60s",      text_color = color.white, text_size = size.small, text_halign = text.align_right)
+
+        // Velocity
+        table.cell(dash, 0, 1, "Velocity", text_color = color.white, text_size = size.small, text_halign = text.align_left)
+        table.cell(dash, 1, 1, str.tostring(vel30, "#.###"),  text_color = velOk30 ? color.green : color.gray, text_size = size.small, text_halign = text.align_right)
+        table.cell(dash, 2, 1, str.tostring(vel60, "#.###"),  text_color = velOk60 ? color.green : color.gray, text_size = size.small, text_halign = text.align_right)
+
+        // Volume Ratio
+        table.cell(dash, 0, 2, "Vol Ratio", text_color = color.white, text_size = size.small, text_halign = text.align_left)
+        table.cell(dash, 1, 2, str.tostring(vr30, "#.##"),    text_color = volOk30 ? color.green : color.gray, text_size = size.small, text_halign = text.align_right)
+        table.cell(dash, 2, 2, str.tostring(vr60, "#.##"),    text_color = volOk60 ? color.green : color.gray, text_size = size.small, text_halign = text.align_right)
+
+        // Efficiency
+        table.cell(dash, 0, 3, "Efficiency", text_color = color.white, text_size = size.small, text_halign = text.align_left)
+        table.cell(dash, 1, 3, str.tostring(eff30, "#.###"),  text_color = effOk30 ? color.green : color.gray, text_size = size.small, text_halign = text.align_right)
+        table.cell(dash, 2, 3, str.tostring(eff60, "#.###"),  text_color = effOk60 ? color.green : color.gray, text_size = size.small, text_halign = text.align_right)
+
+        // Close Position
+        table.cell(dash, 0, 4, "Close Pos", text_color = color.white, text_size = size.small, text_halign = text.align_left)
+        table.cell(dash, 1, 4, str.tostring(cp30, "#.###"),   text_color = color.white, text_size = size.small, text_halign = text.align_right)
+        table.cell(dash, 2, 4, str.tostring(cp60, "#.###"),   text_color = color.white, text_size = size.small, text_halign = text.align_right)
+
+        // Tick Direction
+        table.cell(dash, 0, 5, "Tick Dir",  text_color = color.white, text_size = size.small, text_halign = text.align_left)
+        table.cell(dash, 1, 5, str.tostring(td30, "#.###"),   text_color = color.white, text_size = size.small, text_halign = text.align_right)
+        table.cell(dash, 2, 5, str.tostring(td60, "#.###"),   text_color = color.white, text_size = size.small, text_halign = text.align_right)
+
+        // Burst status
+        table.cell(dash, 0, 6, "Burst",     text_color = color.white, text_size = size.small, text_halign = text.align_left)
+        table.cell(dash, 1, 6, burst30 ? "YES" : "no",        text_color = burst30 ? color.green : color.gray, text_size = size.small, text_halign = text.align_right)
+        table.cell(dash, 2, 6, burst60 ? "YES" : "no",        text_color = burst60 ? color.green : color.gray, text_size = size.small, text_halign = text.align_right)
+
+        // Window count
+        table.cell(dash, 0, 7, "Windows",   text_color = color.white, text_size = size.small, text_halign = text.align_left)
+        table.cell(dash, 1, 7, str.tostring(winCount), text_color = winCount >= 2 ? color.yellow : color.white, text_size = size.small, text_halign = text.align_right)
+        table.cell(dash, 2, 7, multiWin ? "MULTI" : "",       text_color = color.yellow, text_size = size.small, text_halign = text.align_right)
+
+        // Signal
+        string sigText = anyBurst ? (isBullish ? "LONG" : "SHORT") : "---"
+        color  sigClr  = anyBurst ? (isBullish ? color.green : color.red) : color.gray
+        table.cell(dash, 0, 8, "Signal",    text_color = color.white, text_size = size.small, text_halign = text.align_left)
+        table.cell(dash, 1, 8, sigText,     text_color = sigClr, text_size = size.small, text_halign = text.align_right)
+        table.cell(dash, 2, 8, flat ? "FLAT" : (strategy.position_size > 0 ? "IN LONG" : "IN SHORT"), text_color = color.white, text_size = size.small, text_halign = text.align_right)
+
+// ============================================================================
+// Alerts
+// ============================================================================
+
+alertcondition(goLong,  "Momentum Burst Long",  "Momentum burst LONG detected — {{ticker}} @ {{close}}")
+alertcondition(goShort, "Momentum Burst Short", "Momentum burst SHORT detected — {{ticker}} @ {{close}}")
+alertcondition(multiWin and anyBurst, "Multi-Window Burst", "MULTI-WINDOW momentum burst — {{ticker}} @ {{close}} ({{winCount}} windows)")

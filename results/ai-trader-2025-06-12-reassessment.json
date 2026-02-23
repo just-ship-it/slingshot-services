@@ -1,0 +1,224 @@
+{
+  "config": {
+    "evaluationTimeframe": "5m",
+    "levelProximityThreshold": 30,
+    "maxEntriesPerDay": 4,
+    "maxEntriesPerSession": 2,
+    "reassessmentIntervalMs": 1800000,
+    "rthOnly": true,
+    "dryRun": false,
+    "verbose": true,
+    "ticker": "NQ",
+    "dataDir": "/home/drew/projects/slingshot-services/backtest-engine/data",
+    "model": "claude-sonnet-4-20250514"
+  },
+  "days": [
+    {
+      "date": "2025-06-12",
+      "bias": {
+        "bias": "bearish",
+        "conviction": 3,
+        "key_levels_to_watch": [
+          {
+            "price": 21867.26,
+            "type": "GEX Put Wall S1",
+            "action": "watch"
+          },
+          {
+            "price": 21809,
+            "type": "Prior Day Close",
+            "action": "sell"
+          },
+          {
+            "price": 21785.05,
+            "type": "GEX Support S2",
+            "action": "buy"
+          },
+          {
+            "price": 21754,
+            "type": "Prior Day Low",
+            "action": "buy"
+          },
+          {
+            "price": 21743.95,
+            "type": "GEX Support S4",
+            "action": "buy"
+          },
+          {
+            "price": 21735.61,
+            "type": "Fib-34 LT Level",
+            "action": "buy"
+          }
+        ],
+        "reasoning": "Overnight session closed weak below prior day close, breaking the Put Wall at 21867. Rising VIX (+7.5% 5-day) suggests defensive positioning. Current price sitting near support cluster around 21785-21743 area creates reasonable risk/reward for shorts on bounces.",
+        "avoid_conditions": [
+          "break above 21867 Put Wall",
+          "VIX reversal below 17.5",
+          "strong gap fill toward prior day high"
+        ],
+        "preferred_session_window": "9:30-11:00 ET"
+      },
+      "entries": [
+        {
+          "time": "09:40:00 ET",
+          "session": "morning",
+          "activeBias": "bearish",
+          "action": "enter",
+          "side": "sell",
+          "entry_price": 21880,
+          "stop_loss": 21895,
+          "take_profit": 21857.5,
+          "risk_points": 15,
+          "reasoning": "Shorting at current level with price above broken Put Wall at 21867, targeting pullback to Fib-610 support at 21857. Good risk/reward aligns with moderate bearish bias.",
+          "confidence": 3,
+          "nearestLevel": {
+            "price": 21867.26,
+            "type": "gex",
+            "label": "Put Wall",
+            "distance": 12.7400000000016
+          }
+        },
+        {
+          "time": "09:45:00 ET",
+          "session": "morning",
+          "activeBias": "bearish",
+          "action": "enter",
+          "side": "sell",
+          "entry_price": 21886.5,
+          "stop_loss": 21905,
+          "take_profit": 21858.75,
+          "risk_points": 18.5,
+          "reasoning": "Price has rallied back above the broken Put Wall at 21867, creating a good short entry with strong support cluster below around 21785-21743 for targets.",
+          "confidence": 4,
+          "nearestLevel": {
+            "price": 21887.59,
+            "type": "lt",
+            "label": "fib-377",
+            "distance": 1.0900000000001455
+          }
+        },
+        {
+          "time": "14:00:00 ET",
+          "session": "afternoon",
+          "activeBias": "bearish",
+          "action": "enter",
+          "side": "sell",
+          "entry_price": 21938,
+          "stop_loss": 21958,
+          "take_profit": 21908,
+          "risk_points": 20,
+          "reasoning": "Strong bearish bias with price near S4 break level and all LT levels converging below. Deteriorating liquidity trend supports downside momentum with good 1.5:1 R:R.",
+          "confidence": 4,
+          "nearestLevel": {
+            "price": 21926.62,
+            "type": "gex",
+            "label": "S4",
+            "distance": 11.630000000001019
+          }
+        },
+        {
+          "time": "14:05:00 ET",
+          "session": "afternoon",
+          "activeBias": "bearish",
+          "action": "enter",
+          "side": "sell",
+          "entry_price": 21945.75,
+          "stop_loss": 21965.75,
+          "take_profit": 21915.75,
+          "risk_points": 20,
+          "reasoning": "Strong bearish bias confirmed by price action weakness and proximity to S4 level at 21926.62. Good risk-reward with 30-point target toward LT fib levels.",
+          "confidence": 4,
+          "nearestLevel": {
+            "price": 21926.62,
+            "type": "gex",
+            "label": "S4",
+            "distance": 19.13000000000102
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "outcome": "target",
+          "exitPrice": 21857.5,
+          "pnl": 22.5,
+          "bars": 15,
+          "exitTime": "09:55:00 ET"
+        },
+        {
+          "outcome": "target",
+          "exitPrice": 21858.75,
+          "pnl": 27.75,
+          "bars": 10,
+          "exitTime": "09:55:00 ET"
+        },
+        {
+          "outcome": "target",
+          "exitPrice": 21908,
+          "pnl": 30,
+          "bars": 27,
+          "exitTime": "14:27:00 ET"
+        },
+        {
+          "outcome": "target",
+          "exitPrice": 21915.75,
+          "pnl": 30,
+          "bars": 22,
+          "exitTime": "14:27:00 ET"
+        }
+      ],
+      "skipped": false,
+      "biasHistory": [
+        {
+          "time": "09:30:00 ET",
+          "bias": "bearish",
+          "conviction": 3,
+          "source": "pre-market"
+        },
+        {
+          "time": "13:30:00 ET",
+          "bias": "neutral",
+          "conviction": 2,
+          "source": "reassessment"
+        },
+        {
+          "time": "14:00:00 ET",
+          "bias": "bearish",
+          "conviction": 4,
+          "source": "reassessment"
+        }
+      ],
+      "biasReversals": 2,
+      "reassessmentCalls": 2
+    }
+  ],
+  "summary": {
+    "totalDays": 1,
+    "activeDays": 1,
+    "skippedDays": 0,
+    "totalTrades": 4,
+    "wins": 4,
+    "losses": 0,
+    "timeouts": 0,
+    "winRate": 100,
+    "totalPnlPoints": 110.25,
+    "avgPnlPoints": 27.56,
+    "avgWinPoints": 27.56,
+    "avgLossPoints": 0,
+    "profitFactor": null,
+    "biasAccuracy": "0/1 (0%)",
+    "totalReassessments": 2,
+    "totalBiasReversals": 2,
+    "avgReassessmentsPerDay": 2
+  },
+  "cost": {
+    "model": "claude-sonnet-4-20250514",
+    "totalCalls": 9,
+    "totalInputTokens": 10266,
+    "totalOutputTokens": 1403,
+    "estimatedCostUSD": 0.0518,
+    "breakdown": {
+      "inputCostUSD": 0.0308,
+      "outputCostUSD": 0.021
+    }
+  }
+}

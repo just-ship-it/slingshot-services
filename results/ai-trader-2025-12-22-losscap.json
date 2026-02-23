@@ -1,0 +1,161 @@
+{
+  "config": {
+    "evaluationTimeframe": "5m",
+    "levelProximityThreshold": 30,
+    "maxEntriesPerDay": 4,
+    "maxEntriesPerSession": 2,
+    "maxLossesPerDay": 2,
+    "reassessmentIntervalMs": 1800000,
+    "rthOnly": true,
+    "dryRun": false,
+    "verbose": true,
+    "ticker": "NQ",
+    "dataDir": "/home/drew/projects/slingshot-services/backtest-engine/data",
+    "model": "claude-sonnet-4-20250514"
+  },
+  "days": [
+    {
+      "date": "2025-12-22",
+      "bias": {
+        "bias": "bullish",
+        "conviction": 3,
+        "key_levels_to_watch": [
+          {
+            "price": 25825.05,
+            "type": "Fib-144 LT resistance",
+            "action": "watch"
+          },
+          {
+            "price": 25930.99,
+            "type": "Call Wall resistance",
+            "action": "sell"
+          },
+          {
+            "price": 25778.93,
+            "type": "Fib-34 LT support",
+            "action": "buy"
+          },
+          {
+            "price": 25754.59,
+            "type": "Fib-55 LT support",
+            "action": "buy"
+          },
+          {
+            "price": 25699.25,
+            "type": "Prior day high",
+            "action": "watch"
+          },
+          {
+            "price": 25570.22,
+            "type": "Fib-377 LT support",
+            "action": "buy"
+          }
+        ],
+        "reasoning": "Despite BEARISH LT sentiment, 4 of 5 LT levels sit below current price providing layered support structure. Positive GEX regime with VIX collapsing (-14.6%) and overnight gap higher suggests continued bullish momentum. Call wall at 25931 provides clear upside target.",
+        "avoid_conditions": [
+          "break below 25754 with volume",
+          "VIX spike above 16",
+          "failure to hold overnight lows"
+        ],
+        "preferred_session_window": "9:30-11:00 ET"
+      },
+      "entries": [
+        {
+          "time": "09:50:00 ET",
+          "session": "morning",
+          "activeBias": "bullish",
+          "action": "enter",
+          "side": "buy",
+          "entry_price": 25750,
+          "stop_loss": 25730,
+          "take_profit": 25780,
+          "risk_points": 20,
+          "reasoning": "Price holding above Fib-55 support at 25726.91 with bullish momentum resuming after initial selling. Target nearby Fib-34 resistance at 25748 and beyond.",
+          "confidence": 3,
+          "nearestLevel": {
+            "price": 25748,
+            "type": "lt",
+            "label": "fib-34",
+            "distance": 2.75
+          }
+        },
+        {
+          "time": "09:55:00 ET",
+          "session": "morning",
+          "activeBias": "bullish",
+          "action": "enter",
+          "side": "buy",
+          "entry_price": 25748,
+          "stop_loss": 25728,
+          "take_profit": 25778,
+          "risk_points": 20,
+          "reasoning": "Perfect bounce setup at Fib-34 LT level (25748) with bullish bias intact. Clean 1.5:1 R:R targeting next resistance at 25778.",
+          "confidence": 4,
+          "nearestLevel": {
+            "price": 25748,
+            "type": "lt",
+            "label": "fib-34",
+            "distance": 0
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "outcome": "stop",
+          "exitPrice": 25730,
+          "pnl": -20,
+          "bars": 1,
+          "exitTime": "09:51:00 ET"
+        },
+        {
+          "outcome": "stop",
+          "exitPrice": 25728,
+          "pnl": -20,
+          "bars": 5,
+          "exitTime": "10:00:00 ET"
+        }
+      ],
+      "skipped": false,
+      "biasHistory": [
+        {
+          "time": "09:30:00 ET",
+          "bias": "bullish",
+          "conviction": 3,
+          "source": "pre-market"
+        }
+      ],
+      "biasReversals": 0,
+      "reassessmentCalls": 0
+    }
+  ],
+  "summary": {
+    "totalDays": 1,
+    "activeDays": 1,
+    "skippedDays": 0,
+    "totalTrades": 2,
+    "wins": 0,
+    "losses": 2,
+    "timeouts": 0,
+    "winRate": 0,
+    "totalPnlPoints": -40,
+    "avgPnlPoints": -20,
+    "avgWinPoints": 0,
+    "avgLossPoints": -20,
+    "profitFactor": 0,
+    "biasAccuracy": "0/1 (0%)",
+    "totalReassessments": 0,
+    "totalBiasReversals": 0,
+    "avgReassessmentsPerDay": 0
+  },
+  "cost": {
+    "model": "claude-sonnet-4-20250514",
+    "totalCalls": 5,
+    "totalInputTokens": 6479,
+    "totalOutputTokens": 713,
+    "estimatedCostUSD": 0.0301,
+    "breakdown": {
+      "inputCostUSD": 0.0194,
+      "outputCostUSD": 0.0107
+    }
+  }
+}
