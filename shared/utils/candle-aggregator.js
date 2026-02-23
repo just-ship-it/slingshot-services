@@ -1,14 +1,16 @@
 /**
  * Candle Aggregator
  *
- * Aggregates 1-minute candles into higher timeframes
- * Supports: 3m, 5m, 15m, 30m, 1h, 4h, 1d
+ * Aggregates candles into different timeframes
+ * Supports: 15s, 30s, 1m, 3m, 5m, 15m, 30m, 1h, 4h, 1d
  */
 
 export class CandleAggregator {
   constructor() {
     // Timeframe mappings to minutes
     this.timeframes = {
+      '15s': 0.25,
+      '30s': 0.5,
       '1m': 1,
       '3m': 3,
       '5m': 5,
@@ -207,14 +209,19 @@ export class CandleAggregator {
   getPeriodStart(timestamp, intervalMinutes) {
     const date = new Date(timestamp);
     const minutes = date.getMinutes();
+    const seconds = date.getSeconds();
     const hours = date.getHours();
 
-    // Calculate the period start based on interval
-    let periodStartMinutes;
-
-    if (intervalMinutes < 60) {
+    if (intervalMinutes < 1) {
+      // Sub-minute intervals (15s = 0.25, 30s = 0.5)
+      const intervalSeconds = Math.round(intervalMinutes * 60);
+      const totalSecondsInMinute = seconds;
+      const periodStartSeconds = Math.floor(totalSecondsInMinute / intervalSeconds) * intervalSeconds;
+      date.setSeconds(periodStartSeconds, 0);
+      return date.getTime();
+    } else if (intervalMinutes < 60) {
       // For sub-hourly intervals, align to interval boundaries within the hour
-      periodStartMinutes = Math.floor(minutes / intervalMinutes) * intervalMinutes;
+      const periodStartMinutes = Math.floor(minutes / intervalMinutes) * intervalMinutes;
       date.setMinutes(periodStartMinutes, 0, 0);
     } else if (intervalMinutes === 60) {
       // For 1-hour intervals, align to hour start

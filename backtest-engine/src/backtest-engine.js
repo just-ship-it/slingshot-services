@@ -40,6 +40,24 @@ import { LevelBounceStrategy } from '../../shared/strategies/level-bounce.js';
 import { OvernightGexTouchStrategy } from '../../shared/strategies/overnight-gex-touch.js';
 import { OvernightCharmVannaStrategy } from '../../shared/strategies/overnight-charm-vanna.js';
 import { ESCrossSignalStrategy } from '../../shared/strategies/es-cross-signal.js';
+import { ESMicroScalperStrategy } from '../../shared/strategies/es-micro-scalper.js';
+import { EsStopHuntStrategy } from '../../shared/strategies/es-stop-hunt.js';
+import { OHLCVAbsorptionStrategy } from '../../shared/strategies/ohlcv-absorption.js';
+import { OHLCVLiquiditySweepStrategy } from '../../shared/strategies/ohlcv-liquidity-sweep.js';
+import { OHLCVVPINStrategy } from '../../shared/strategies/ohlcv-vpin.js';
+import { OHLCVMTFRejectionStrategy } from '../../shared/strategies/ohlcv-mtf-rejection.js';
+import { MomentumMicrostructureStrategy } from '../../shared/strategies/momentum-microstructure.js';
+import { MidnightOpenRetracementStrategy } from '../../shared/strategies/midnight-open-retracement.js';
+import { InitialBalanceBreakoutStrategy } from '../../shared/strategies/initial-balance-breakout.js';
+import { GapFillStrategy } from '../../shared/strategies/gap-fill.js';
+import { DailyLevelSweepStrategy } from '../../shared/strategies/daily-level-sweep.js';
+import { VWAPBounceStrategy } from '../../shared/strategies/vwap-bounce.js';
+import { SessionTransitionStrategy } from '../../shared/strategies/session-transition.js';
+import { ValueArea80Strategy } from '../../shared/strategies/value-area-80.js';
+import { SwingReversalStrategy } from '../../shared/strategies/swing-reversal.js';
+import { ICTSilverBulletStrategy } from '../../shared/strategies/ict-silver-bullet.js';
+import { PriceActionExhaustionStrategy } from '../../shared/strategies/price-action-exhaustion.js';
+import { ICTMTFSweepStrategy } from '../../shared/strategies/ict-mtf-sweep/index.js';
 import { SqueezeMomentumIndicator } from '../../shared/indicators/squeeze-momentum.js';
 import { GexLoader } from './data-loaders/gex-loader.js';
 import { IVLoader } from './data-loaders/iv-loader.js';
@@ -57,7 +75,7 @@ export class BacktestEngine {
     this.defaultConfig = JSON.parse(fs.readFileSync(defaultConfigPath, 'utf8'));
 
     // Initialize components
-    this.csvLoader = new CSVLoader(config.dataDir, this.defaultConfig);
+    this.csvLoader = new CSVLoader(config.dataDir, this.defaultConfig, { noContinuous: config.noContinuous });
     this.aggregator = new CandleAggregator();
     this.tradeSimulator = new TradeSimulator({
       commission: config.commission,
@@ -301,7 +319,8 @@ export class BacktestEngine {
       const tickerLower = this.config.ticker.toLowerCase();
       const tickerUpper = this.config.ticker.toUpperCase();
 
-      // Check multiple path patterns; prefer continuous 1s when using continuous 1m
+      // When using continuous 1m data, ONLY use continuous 1s data — never fall back
+      // to raw 1s, as mixing price spaces produces invalid results
       const secondFilePaths = isContinuousOHLCV
         ? [
             path.join(this.config.dataDir, 'ohlcv', tickerLower, `${tickerUpper}_ohlcv_1s_continuous.csv`),
@@ -784,6 +803,13 @@ export class BacktestEngine {
           }
         }
 
+        // Pre-fetch 1-second candles for strategies that need intra-bar microstructure
+        const dataReqs = this.strategy.constructor.getDataRequirements?.();
+        if (this.secondDataProvider && dataReqs?.secondData) {
+          const secondCandles = await this.secondDataProvider.getSecondsForMinute(candle.timestamp);
+          marketData.secondCandles = secondCandles;
+        }
+
         signal = this.strategy.evaluateSignal(candle, prevCandle, marketData, options);
 
         if (signal) {
@@ -826,6 +852,29 @@ export class BacktestEngine {
                 { afterBars: 30, ifMFE: 30, trailDistance: 20 },
                 { afterBars: 45, ifMFE: 40, trailDistance: 10 },
               ]
+            };
+          }
+
+          // Add composite trailing config to signal if enabled via CLI
+          // (only if signal doesn't already set it — strategies like ICT MTF Sweep set it directly)
+          if (this.config.strategyParams?.useCompositeTrailing && !signal.compositeTrailing) {
+            signal.compositeTrailing = true;
+            signal.compositeConfig = {
+              entryZone: signal.metadata?.entryZone || null,
+              structuralEnabled: true,
+              structuralThreshold: this.config.strategyParams.compositeStructuralThreshold ?? 5,
+              swingLookback: this.config.strategyParams.compositeSwingLookback ?? 5,
+              swingBuffer: this.config.strategyParams.compositeSwingBuffer ?? 5,
+              minSwingSize: this.config.strategyParams.compositeMinSwingSize ?? 3,
+              aggressiveThreshold: this.config.strategyParams.compositeAggressiveThreshold ?? 30,
+              aggressiveTiers: [
+                { mfe: 30, trailDistance: 20 },
+                { mfe: 50, trailDistance: 15 },
+                { mfe: 80, trailDistance: 10 },
+              ],
+              targetProximity: true,
+              proximityPct: this.config.strategyParams.compositeProximityPct ?? 0.20,
+              proximityTrailDistance: this.config.strategyParams.compositeProximityTrailDistance ?? 5,
             };
           }
 
@@ -1220,6 +1269,75 @@ export class BacktestEngine {
       case 'es-cross':
       case 'ecs':
         return new ESCrossSignalStrategy(params);
+      case 'es-micro-scalper':
+      case 'es-micro':
+      case 'esms':
+        return new ESMicroScalperStrategy(params);
+      case 'es-stop-hunt':
+      case 'es-hunt':
+      case 'esh':
+        return new EsStopHuntStrategy(params);
+      case 'ohlcv-absorption':
+      case 'absorption-detect':
+      case 'abs':
+        return new OHLCVAbsorptionStrategy(params);
+      case 'ohlcv-liquidity-sweep':
+      case 'liquidity-sweep':
+      case 'lsweep':
+        return new OHLCVLiquiditySweepStrategy(params);
+      case 'ohlcv-vpin':
+      case 'vpin':
+        return new OHLCVVPINStrategy(params);
+      case 'ohlcv-mtf-rejection':
+      case 'mtf-rejection':
+      case 'mtfr':
+        return new OHLCVMTFRejectionStrategy(params);
+      case 'momentum-microstructure':
+      case 'momentum-micro':
+      case 'mm':
+        console.warn('Warning: momentum-microstructure evaluates on 1s ticks. Use the standalone runner for accurate results:');
+        console.warn('  node scripts/run-momentum-microstructure-backtest.js');
+        return new MomentumMicrostructureStrategy(params);
+      case 'midnight-open-retracement':
+      case 'midnight-open':
+      case 'mor':
+        return new MidnightOpenRetracementStrategy(params);
+      case 'initial-balance-breakout':
+      case 'ib-breakout':
+      case 'ibb':
+        return new InitialBalanceBreakoutStrategy(params);
+      case 'gap-fill':
+      case 'gap':
+        return new GapFillStrategy(params);
+      case 'daily-level-sweep':
+      case 'daily-sweep':
+      case 'dls':
+        return new DailyLevelSweepStrategy(params);
+      case 'vwap-bounce':
+      case 'vwap':
+        return new VWAPBounceStrategy(params);
+      case 'session-transition':
+      case 'session':
+      case 'st':
+        return new SessionTransitionStrategy(params);
+      case 'value-area-80':
+      case 'va80':
+        return new ValueArea80Strategy(params);
+      case 'swing-reversal':
+      case 'sr':
+        return new SwingReversalStrategy(params);
+      case 'ict-silver-bullet':
+      case 'silver-bullet':
+      case 'isb':
+        return new ICTSilverBulletStrategy(params);
+      case 'price-action-exhaustion':
+      case 'pa-exhaust':
+      case 'pae':
+        return new PriceActionExhaustionStrategy(params);
+      case 'ict-mtf-sweep':
+      case 'mtf-sweep':
+      case 'jv':
+        return new ICTMTFSweepStrategy(params);
       default:
         throw new Error(`Unknown strategy: ${strategyName}`);
     }

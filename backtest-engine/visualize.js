@@ -25,7 +25,7 @@ function parseArgs() {
     output: null,
     candles: null,
     ticker: 'NQ',
-    timeframe: '3m',
+    timeframe: '5m',
     limitTrades: null,      // Limit number of trades to visualize
     tradeIndex: null,       // Show specific trade by index (0-based)
     bufferHours: 4          // Hours of candle data before/after trades
@@ -150,38 +150,38 @@ function aggregateCandles(candles, timeframeMinutes) {
 // Generate HTML chart
 function generateChart(candles, trades, options) {
   const markers = [];
-  const lines = [];
 
-  // Process trades into markers and lines
+  // Snap timestamps to candle boundaries so markers align with aggregated bars
+  const intervalSeconds = (parseInt(options.timeframe) || 3) * 60;
+  const parseTime = (t) => {
+    if (!t) return null;
+    let s;
+    if (typeof t === 'number') {
+      s = t > 1e12 ? Math.floor(t / 1000) : t;
+    } else {
+      s = Math.floor(new Date(t).getTime() / 1000);
+    }
+    return Math.floor(s / intervalSeconds) * intervalSeconds;
+  };
+
+  // Process trades into entry/exit markers only (no static lines)
   for (const trade of trades) {
-    // Handle timestamps (could be ms, seconds, or ISO string)
-    const parseTime = (t) => {
-      if (!t) return null;
-      if (typeof t === 'number') {
-        return t > 1e12 ? Math.floor(t / 1000) : t;
-      }
-      return Math.floor(new Date(t).getTime() / 1000);
-    };
-
     const entryTime = parseTime(trade.entryTime || trade.signalTime);
     const exitTime = parseTime(trade.exitTime);
     const isLong = trade.side === 'buy' || trade.side === 'long';
     const isWin = (trade.netPnL || 0) > 0;
 
-    // Get exit price - could be in different fields
     const exitPrice = trade.exitPrice || trade.actualExit ||
                       (trade.exitCandle && trade.exitCandle.close);
 
-    // Entry marker
     markers.push({
       time: entryTime,
       position: isLong ? 'belowBar' : 'aboveBar',
       color: isLong ? '#26a69a' : '#ef5350',
       shape: isLong ? 'arrowUp' : 'arrowDown',
-      text: `${trade.metadata?.pattern || trade.signal?.levelType || 'Entry'} @ ${trade.entryPrice}`
+      text: `${trade.metadata?.entryModel || 'Entry'} @ ${trade.entryPrice}`
     });
 
-    // Exit marker
     if (exitTime && exitPrice) {
       markers.push({
         time: exitTime,
@@ -189,32 +189,6 @@ function generateChart(candles, trades, options) {
         color: isWin ? '#4caf50' : '#f44336',
         shape: 'circle',
         text: `${trade.exitReason || 'Exit'} @ ${exitPrice} (${isWin ? '+' : ''}$${trade.netPnL || 0})`
-      });
-    }
-
-    // Stop loss line
-    if (trade.stopLoss) {
-      lines.push({
-        startTime: entryTime,
-        endTime: exitTime || entryTime + 3600,
-        price: trade.stopLoss,
-        color: '#ef5350',
-        lineWidth: 1,
-        lineStyle: 2, // Dashed
-        title: 'Stop'
-      });
-    }
-
-    // Take profit line
-    if (trade.takeProfit) {
-      lines.push({
-        startTime: entryTime,
-        endTime: exitTime || entryTime + 3600,
-        price: trade.takeProfit,
-        color: '#26a69a',
-        lineWidth: 1,
-        lineStyle: 2,
-        title: 'Target'
       });
     }
   }
@@ -232,112 +206,218 @@ function generateChart(candles, trades, options) {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       background: #1a1a2e;
       color: #eee;
+      overflow: hidden;
     }
-    .container { padding: 20px; }
-    h1 { margin-bottom: 10px; font-size: 1.5rem; }
+    .container {
+      display: flex;
+      height: 100vh;
+    }
+    .left-panel {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      padding: 12px;
+      gap: 8px;
+    }
+    h1 { font-size: 1.3rem; flex-shrink: 0; }
     .stats {
       display: flex;
-      gap: 20px;
-      margin-bottom: 15px;
+      gap: 12px;
       flex-wrap: wrap;
+      flex-shrink: 0;
     }
     .stat {
       background: #16213e;
-      padding: 10px 15px;
-      border-radius: 8px;
+      padding: 6px 12px;
+      border-radius: 6px;
     }
-    .stat-label { font-size: 0.75rem; color: #888; }
-    .stat-value { font-size: 1.2rem; font-weight: bold; }
+    .stat-label { font-size: 0.7rem; color: #888; }
+    .stat-value { font-size: 1rem; font-weight: bold; }
     .stat-value.positive { color: #4caf50; }
     .stat-value.negative { color: #f44336; }
     #chart {
-      width: 100%;
-      height: calc(100vh - 150px);
+      flex: 1;
+      min-height: 0;
       border-radius: 8px;
-      overflow: hidden;
     }
-    .trade-list {
-      margin-top: 20px;
+    #trade-info {
+      flex-shrink: 0;
       background: #16213e;
-      border-radius: 8px;
-      overflow: hidden;
+      border-radius: 6px;
+      padding: 10px 14px;
+      font-size: 0.8rem;
+      line-height: 1.5;
+      min-height: 80px;
+      font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+      color: #ccc;
     }
-    .trade-list h2 {
-      padding: 15px;
-      background: #0f3460;
-      font-size: 1rem;
-    }
-    .trade {
-      padding: 12px 15px;
-      border-bottom: 1px solid #0f3460;
-      display: grid;
-      grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
-      gap: 10px;
+    #trade-info .info-header {
+      font-weight: bold;
       font-size: 0.85rem;
+      color: #eee;
+      margin-bottom: 4px;
     }
-    .trade:hover { background: #1a1a3e; }
-    .trade-header {
+    #trade-info .sweep { color: #ff9800; }
+    #trade-info .shift { color: #9c27b0; }
+    #trade-info .zone { color: #2196f3; }
+    #trade-info .entry-line { color: #eee; }
+    #trade-info .model-tag {
+      display: inline-block;
+      padding: 1px 6px;
+      border-radius: 3px;
+      font-size: 0.7rem;
+      font-weight: bold;
+      margin-left: 6px;
+    }
+    #trade-info .model-MW_PATTERN { background: #ff9800; color: #000; }
+    #trade-info .model-STRUCTURE_RETRACE { background: #9c27b0; color: #fff; }
+    #trade-info .model-STRUCTURE_DIRECT { background: #2196f3; color: #fff; }
+    #trade-info .model-MOMENTUM_CONTINUATION { background: #00bcd4; color: #000; }
+    #trade-info .meta-row { color: #888; font-size: 0.75rem; margin-top: 2px; }
+    #trade-info .fib-zone { color: #ffd54f; }
+    #trade-info .causal { color: #e91e63; }
+    .trade-list {
+      width: 350px;
+      flex-shrink: 0;
+      overflow-y: auto;
+      height: 100vh;
+      background: #16213e;
+      border-left: 1px solid #0f3460;
+    }
+    .trade-list-header {
+      padding: 10px 12px;
+      background: #0f3460;
+      font-size: 0.9rem;
+      font-weight: bold;
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+    .trade-row-header {
+      display: grid;
+      grid-template-columns: 18px 40px 72px 70px;
+      gap: 6px;
+      padding: 6px 10px;
+      font-size: 0.7rem;
+      color: #888;
       font-weight: bold;
       background: #0f3460;
+      position: sticky;
+      top: 36px;
+      z-index: 1;
     }
-    .trade .pattern { color: #64b5f6; }
+    .trade {
+      display: grid;
+      grid-template-columns: 18px 40px 72px 70px;
+      gap: 6px;
+      padding: 7px 10px;
+      font-size: 0.78rem;
+      border-bottom: 1px solid #0f346044;
+      cursor: pointer;
+      align-items: center;
+    }
+    .trade .entry-model-tag {
+      font-size: 0.6rem;
+      padding: 1px 4px;
+      border-radius: 2px;
+      color: #fff;
+      grid-column: 1 / -1;
+    }
+    .model-c-MW { background: #ff980088; }
+    .model-c-SR { background: #9c27b088; }
+    .model-c-SD { background: #2196f388; }
+    .model-c-MC { background: #00bcd488; }
+    .trade:hover { background: #1a2a4e; }
+    .trade.selected { background: #1a3a5e; }
     .trade .pnl.positive { color: #4caf50; }
     .trade .pnl.negative { color: #f44336; }
+    .trade .trade-reason { font-size: 0.68rem; color: #888; grid-column: 1 / -1; }
+    .toolbar {
+      display: flex;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+    .tool-btn {
+      background: #16213e;
+      color: #ccc;
+      border: 1px solid #0f3460;
+      padding: 4px 12px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .tool-btn:hover { background: #1a2a4e; }
+    .tool-btn.active { border-color: #4fc3f7; color: #4fc3f7; }
+    #chart.fib-mode, #chart.fib-mode * { cursor: crosshair !important; }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>Trade Visualization - ${options.ticker} ${options.timeframe}</h1>
-    <div class="stats">
-      <div class="stat">
-        <div class="stat-label">Total Trades</div>
-        <div class="stat-value">${trades.length}</div>
-      </div>
-      <div class="stat">
-        <div class="stat-label">Win Rate</div>
-        <div class="stat-value">${trades.length > 0 ? ((trades.filter(t => t.netPnL > 0).length / trades.length) * 100).toFixed(1) : 0}%</div>
-      </div>
-      <div class="stat">
-        <div class="stat-label">Total P&L</div>
-        <div class="stat-value ${trades.reduce((s, t) => s + (t.netPnL || 0), 0) >= 0 ? 'positive' : 'negative'}">
-          $${trades.reduce((s, t) => s + (t.netPnL || 0), 0).toFixed(2)}
+    <div class="left-panel">
+      <h1>Trade Visualization - ${options.ticker} ${options.timeframe}</h1>
+      <div class="stats">
+        <div class="stat">
+          <div class="stat-label">Trades</div>
+          <div class="stat-value">${trades.length}</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Win Rate</div>
+          <div class="stat-value">${trades.length > 0 ? ((trades.filter(t => t.netPnL > 0).length / trades.length) * 100).toFixed(1) : 0}%</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Total P&L</div>
+          <div class="stat-value ${trades.reduce((s, t) => s + (t.netPnL || 0), 0) >= 0 ? 'positive' : 'negative'}">
+            $${trades.reduce((s, t) => s + (t.netPnL || 0), 0).toFixed(2)}
+          </div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Avg Win</div>
+          <div class="stat-value positive">
+            $${(trades.filter(t => t.netPnL > 0).reduce((s, t) => s + t.netPnL, 0) / Math.max(1, trades.filter(t => t.netPnL > 0).length)).toFixed(2)}
+          </div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Avg Loss</div>
+          <div class="stat-value negative">
+            $${(trades.filter(t => t.netPnL < 0).reduce((s, t) => s + t.netPnL, 0) / Math.max(1, trades.filter(t => t.netPnL < 0).length)).toFixed(2)}
+          </div>
         </div>
       </div>
-      <div class="stat">
-        <div class="stat-label">Avg Win</div>
-        <div class="stat-value positive">
-          $${(trades.filter(t => t.netPnL > 0).reduce((s, t) => s + t.netPnL, 0) / Math.max(1, trades.filter(t => t.netPnL > 0).length)).toFixed(2)}
-        </div>
+      <div class="toolbar">
+        <button class="tool-btn active" data-tool="select">Select</button>
+        <button class="tool-btn" data-tool="fib">Fib</button>
+        <button class="tool-btn" id="clear-fibs">Clear Fibs</button>
       </div>
-      <div class="stat">
-        <div class="stat-label">Avg Loss</div>
-        <div class="stat-value negative">
-          $${(trades.filter(t => t.netPnL < 0).reduce((s, t) => s + t.netPnL, 0) / Math.max(1, trades.filter(t => t.netPnL < 0).length)).toFixed(2)}
-        </div>
-      </div>
+      <div id="trade-info">Select a trade to view ICT setup details</div>
+      <div id="chart"></div>
     </div>
-    <div id="chart"></div>
 
     <div class="trade-list">
-      <h2>Trade Details</h2>
-      <div class="trade trade-header">
-        <div>Pattern</div>
+      <div class="trade-list-header">Trades (${trades.length})</div>
+      <div class="trade-row-header">
+        <div>#</div>
+        <div>Side</div>
         <div>Entry</div>
-        <div>Exit</div>
-        <div>Exit Reason</div>
         <div>P&L</div>
       </div>
-      ${trades.map(t => {
-        const exitPx = t.exitPrice || t.actualExit || (t.exitCandle && t.exitCandle.close);
+      ${trades.map((t, i) => {
+        const side = t.side || 'N/A';
+        const sideColor = (side === 'buy' || side === 'long') ? '#26a69a' : '#ef5350';
+        const sideLabel = (side === 'buy' || side === 'long') ? 'BUY' : 'SELL';
+        const em = t.metadata?.entryModel || '';
+        const emShort = em === 'MW_PATTERN' ? 'MW' : em === 'STRUCTURE_RETRACE' ? 'SR' : em === 'STRUCTURE_DIRECT' ? 'SD' : em === 'MOMENTUM_CONTINUATION' ? 'MC' : em;
+        const emClass = em === 'MW_PATTERN' ? 'MW' : em === 'STRUCTURE_RETRACE' ? 'SR' : em === 'STRUCTURE_DIRECT' ? 'SD' : em === 'MOMENTUM_CONTINUATION' ? 'MC' : '';
         return `
-        <div class="trade">
-          <div class="pattern">${t.metadata?.pattern || t.signal?.levelType || 'N/A'}</div>
+        <div class="trade" data-idx="${i}">
+          <div style="color: #666; font-size: 0.7rem;">${i + 1}</div>
+          <div style="color: ${sideColor}; font-weight: bold;">${sideLabel}</div>
           <div>${t.entryPrice?.toFixed(2) || 'N/A'}</div>
-          <div>${exitPx ? exitPx.toFixed(2) : 'N/A'}</div>
-          <div>${t.exitReason || 'N/A'}</div>
           <div class="pnl ${(t.netPnL || 0) >= 0 ? 'positive' : 'negative'}">
             ${(t.netPnL || 0) >= 0 ? '+' : ''}$${(t.netPnL || 0).toFixed(2)}
           </div>
+          <div class="trade-reason">${t.exitReason || ''} <span class="entry-model-tag model-c-${emClass}">${emShort}</span></div>
         </div>`;
       }).join('')}
     </div>
@@ -346,6 +426,7 @@ function generateChart(candles, trades, options) {
   <script>
     const chartContainer = document.getElementById('chart');
     const chart = LightweightCharts.createChart(chartContainer, {
+      autoSize: true,
       layout: {
         background: { type: 'solid', color: '#1a1a2e' },
         textColor: '#d1d4dc',
@@ -356,6 +437,8 @@ function generateChart(candles, trades, options) {
       },
       crosshair: {
         mode: LightweightCharts.CrosshairMode.Normal,
+        vertLine: { labelVisible: true, labelBackgroundColor: '#0f3460' },
+        horzLine: { labelVisible: true, labelBackgroundColor: '#0f3460' },
       },
       rightPriceScale: {
         borderColor: '#2B2B43',
@@ -383,71 +466,668 @@ function generateChart(candles, trades, options) {
     const markers = ${JSON.stringify(markers)};
     candlestickSeries.setMarkers(markers);
 
-    // Add horizontal lines for stops/targets
-    const lines = ${JSON.stringify(lines)};
-    lines.forEach(line => {
-      const priceLine = candlestickSeries.createPriceLine({
-        price: line.price,
-        color: line.color,
-        lineWidth: line.lineWidth,
-        lineStyle: line.lineStyle,
-        axisLabelVisible: true,
-        title: line.title,
-      });
-    });
-
     // Store trades for click handlers
     const tradesData = ${JSON.stringify(trades)};
 
-    // Helper to zoom to a trade
-    function zoomToTrade(trade) {
-      if (!trade) return;
-      // Handle both ISO strings and Unix timestamps
-      let entryTime = trade.entryTime || trade.signalTime;
-      if (typeof entryTime === 'string') {
-        entryTime = Math.floor(new Date(entryTime).getTime() / 1000);
-      } else if (entryTime > 1e12) {
-        // Unix milliseconds
-        entryTime = Math.floor(entryTime / 1000);
-      }
-      const range = 3600 * 2; // 2 hours each side
-      chart.timeScale().setVisibleRange({
-        from: entryTime - range,
-        to: entryTime + range
-      });
+    // ICT annotation state
+    let activeAnnotations = [];
+
+    // Parse timestamp helper (ms or seconds or ISO string -> seconds)
+    const tfInterval = ${intervalSeconds};
+    function parseTs(t) {
+      if (!t) return null;
+      if (typeof t === 'string') return Math.floor(new Date(t).getTime() / 1000);
+      return t > 1e12 ? Math.floor(t / 1000) : t;
+    }
+    function snapTs(s) {
+      if (!s) return s;
+      return Math.floor(s / tfInterval) * tfInterval;
     }
 
-    // Auto-zoom to first trade on load
+    // Format timestamp for display
+    function fmtTime(ms) {
+      if (!ms) return '';
+      const d = new Date(ms > 1e12 ? ms : ms * 1000);
+      return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' }) + ' ' +
+             d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'UTC' });
+    }
+
+    // Draw annotations for the SELECTED trade only (stop, target, entry, ICT levels)
+    function drawAnnotations(trade) {
+      // Remove previous annotations
+      activeAnnotations.forEach(line => {
+        try { candlestickSeries.removePriceLine(line); } catch(e) {}
+      });
+      activeAnnotations = [];
+      activePrimitives.forEach(p => {
+        try { candlestickSeries.detachPrimitive(p); } catch(e) {}
+      });
+      activePrimitives = [];
+
+      const meta = trade.metadata || trade.signal?.metadata || {};
+      const exitPx = trade.exitPrice || trade.actualExit || (trade.exitCandle && trade.exitCandle.close);
+      const entryTs = snapTs(parseTs(trade.entryTime || trade.signalTime));
+      const exitTs = snapTs(parseTs(trade.exitTime));
+      const tradeSpan = exitTs ? exitTs - entryTs : 3600;
+
+      // --- Trade execution levels (stop, target, entry, exit) ---
+
+      // Entry price
+      if (trade.entryPrice) {
+        activeAnnotations.push(candlestickSeries.createPriceLine({
+          price: trade.entryPrice,
+          color: '#ffffff',
+          lineWidth: 2,
+          lineStyle: 0,
+          axisLabelVisible: true,
+          title: 'Entry ' + trade.entryPrice,
+        }));
+      }
+
+      // Stop loss
+      if (trade.stopLoss) {
+        activeAnnotations.push(candlestickSeries.createPriceLine({
+          price: trade.stopLoss,
+          color: '#ef5350',
+          lineWidth: 2,
+          lineStyle: 2,
+          axisLabelVisible: true,
+          title: 'Stop ' + trade.stopLoss,
+        }));
+      }
+
+      // Take profit
+      if (trade.takeProfit) {
+        activeAnnotations.push(candlestickSeries.createPriceLine({
+          price: trade.takeProfit,
+          color: '#26a69a',
+          lineWidth: 2,
+          lineStyle: 2,
+          axisLabelVisible: true,
+          title: 'Target ' + trade.takeProfit,
+        }));
+      }
+
+      // Exit price (if different from stop/target)
+      if (exitPx && exitPx !== trade.stopLoss && exitPx !== trade.takeProfit) {
+        const isWin = (trade.netPnL || 0) > 0;
+        activeAnnotations.push(candlestickSeries.createPriceLine({
+          price: exitPx,
+          color: isWin ? '#4caf50' : '#f44336',
+          lineWidth: 1,
+          lineStyle: 3,
+          axisLabelVisible: true,
+          title: (trade.exitReason || 'Exit') + ' ' + exitPx,
+        }));
+      }
+
+      // --- ICT structure levels ---
+
+      // Sweep level
+      if (meta.sweepLevel) {
+        activeAnnotations.push(candlestickSeries.createPriceLine({
+          price: meta.sweepLevel,
+          color: '#ff9800',
+          lineWidth: 2,
+          lineStyle: 0,
+          axisLabelVisible: true,
+          title: 'Sweep: ' + (meta.sweepType || '') + ' @ ' + meta.sweepLevel,
+        }));
+      }
+
+      // Structure shift
+      if (meta.structureShift?.level) {
+        activeAnnotations.push(candlestickSeries.createPriceLine({
+          price: meta.structureShift.level,
+          color: '#9c27b0',
+          lineWidth: 2,
+          lineStyle: 0,
+          axisLabelVisible: true,
+          title: (meta.structureShift.type || 'Shift') + ' @ ' + meta.structureShift.level,
+        }));
+      }
+
+      // Causal swing
+      if (meta.causalSwing) {
+        activeAnnotations.push(candlestickSeries.createPriceLine({
+          price: meta.causalSwing,
+          color: '#e91e63',
+          lineWidth: 1,
+          lineStyle: 2,
+          axisLabelVisible: true,
+          title: 'Causal Swing ' + meta.causalSwing,
+        }));
+      }
+
+      // Target pool
+      if (meta.targetPool?.price) {
+        activeAnnotations.push(candlestickSeries.createPriceLine({
+          price: meta.targetPool.price,
+          color: '#4caf50',
+          lineWidth: 1,
+          lineStyle: 3,
+          axisLabelVisible: true,
+          title: (meta.targetPool.type || 'Target Pool') + ' ' + meta.targetPool.price,
+        }));
+      }
+
+      // --- Entry zone (FVG / OB) rectangle ---
+      if (meta.entryZone?.top && meta.entryZone?.bottom) {
+        const zoneStart = snapTs(parseTs(meta.entryZone.timestamp) || entryTs);
+        const zoneEnd = exitTs || (zoneStart + tradeSpan);
+        const zoneType = (meta.entryZone.type || 'zone').toUpperCase();
+        const zoneTF = meta.entryZone.entryTF ? ' [' + meta.entryZone.entryTF + ']' : '';
+        const zoneFormed = meta.entryZone.timestamp ? ' formed ' + fmtTime(meta.entryZone.timestamp) : '';
+        const label = zoneType + ' ' + meta.entryZone.bottom + ' - ' + meta.entryZone.top + zoneTF + zoneFormed;
+        const zoneColor = zoneType.includes('OB') ? 'rgba(156, 39, 176,' : 'rgba(33, 150, 243,';
+        const prim = new RectanglePrimitive(
+          chart, candlestickSeries,
+          { time: zoneStart, price: meta.entryZone.top },
+          { time: zoneEnd, price: meta.entryZone.bottom },
+          { fillColor: zoneColor + ' 0.15)', borderColor: zoneColor + ' 0.6)', label: label }
+        );
+        candlestickSeries.attachPrimitive(prim);
+        activePrimitives.push(prim);
+      }
+
+      // --- Fib retracement zone (50-79%) ---
+      if (meta.fibData?.fib50 && meta.fibData?.fib79) {
+        const fibTop = Math.max(meta.fibData.fib50, meta.fibData.fib79);
+        const fibBottom = Math.min(meta.fibData.fib50, meta.fibData.fib79);
+        const fibStart = snapTs(parseTs(meta.structureShift?.timestamp) || entryTs);
+        const fibEnd = exitTs || (fibStart + tradeSpan);
+        const fibLabel = 'FIB 50-79% (' + fibBottom.toFixed(0) + '-' + fibTop.toFixed(0) + ')' + (meta.fibData.inFibZone ? ' IN ZONE' : '');
+        const prim = new RectanglePrimitive(
+          chart, candlestickSeries,
+          { time: fibStart, price: fibTop },
+          { time: fibEnd, price: fibBottom },
+          { fillColor: meta.fibData.inFibZone ? 'rgba(255, 213, 79, 0.12)' : 'rgba(255, 213, 79, 0.05)', borderColor: 'rgba(255, 213, 79, 0.4)', label: fibLabel }
+        );
+        candlestickSeries.attachPrimitive(prim);
+        activePrimitives.push(prim);
+      }
+
+      // --- Reference levels (lighter, less prominent) ---
+
+      // PDH / PDL
+      if (meta.pdh) {
+        activeAnnotations.push(candlestickSeries.createPriceLine({
+          price: meta.pdh, color: '#ffffff44', lineWidth: 1, lineStyle: 3,
+          axisLabelVisible: false, title: 'PDH ' + meta.pdh,
+        }));
+      }
+      if (meta.pdl) {
+        activeAnnotations.push(candlestickSeries.createPriceLine({
+          price: meta.pdl, color: '#ffffff44', lineWidth: 1, lineStyle: 3,
+          axisLabelVisible: false, title: 'PDL ' + meta.pdl,
+        }));
+      }
+
+      // Daily open
+      if (meta.dailyOpen) {
+        activeAnnotations.push(candlestickSeries.createPriceLine({
+          price: meta.dailyOpen, color: '#ffeb3b55', lineWidth: 1, lineStyle: 1,
+          axisLabelVisible: false, title: 'D.Open ' + meta.dailyOpen,
+        }));
+      }
+
+      // Weekly open
+      if (meta.weeklyOpen) {
+        activeAnnotations.push(candlestickSeries.createPriceLine({
+          price: meta.weeklyOpen, color: '#03a9f455', lineWidth: 1, lineStyle: 1,
+          axisLabelVisible: false, title: 'W.Open ' + meta.weeklyOpen,
+        }));
+      }
+
+      // Monthly open
+      if (meta.monthlyOpen) {
+        activeAnnotations.push(candlestickSeries.createPriceLine({
+          price: meta.monthlyOpen, color: '#e040fb55', lineWidth: 1, lineStyle: 1,
+          axisLabelVisible: false, title: 'M.Open ' + meta.monthlyOpen,
+        }));
+      }
+    }
+
+    // Rectangle primitive for entry zone (OB/FVG) overlay
+    // Uses lightweight-charts ISeriesPrimitive API — renders inside the chart's
+    // own paint loop so coordinates stay correct on pan/zoom/resize.
+    class RectangleRenderer {
+      constructor(view) { this._view = view; }
+      draw(target) {
+        target.useBitmapCoordinateSpace(scope => {
+          const v = this._view;
+          if (v._x1 === null || v._x2 === null || v._y1 === null || v._y2 === null) return;
+          const ctx = scope.context;
+          const hr = scope.horizontalPixelRatio;
+          const vr = scope.verticalPixelRatio;
+          const x1 = Math.round(v._x1 * hr);
+          const x2 = Math.round(v._x2 * hr);
+          const y1 = Math.round(v._y1 * vr);
+          const y2 = Math.round(v._y2 * vr);
+          const left = Math.min(x1, x2);
+          const top = Math.min(y1, y2);
+          const w = Math.abs(x2 - x1);
+          const h = Math.abs(y2 - y1);
+
+          // Fill
+          ctx.fillStyle = v._opts.fillColor;
+          ctx.fillRect(left, top, w, h);
+          // Border
+          ctx.strokeStyle = v._opts.borderColor;
+          ctx.lineWidth = hr;
+          ctx.setLineDash([4 * hr, 3 * hr]);
+          ctx.strokeRect(left + 0.5, top + 0.5, w, h);
+          ctx.setLineDash([]);
+          // Label
+          ctx.fillStyle = v._opts.borderColor;
+          ctx.font = Math.round(11 * vr) + 'px -apple-system, sans-serif';
+          ctx.fillText(v._opts.label, left + 4 * hr, top + 14 * vr);
+        });
+      }
+    }
+
+    class RectanglePaneView {
+      constructor(source) { this._source = source; this._x1 = null; this._x2 = null; this._y1 = null; this._y2 = null; this._opts = source._opts; }
+      update() {
+        const s = this._source;
+        this._x1 = s._chart.timeScale().timeToCoordinate(s._p1.time);
+        this._x2 = s._chart.timeScale().timeToCoordinate(s._p2.time);
+        this._y1 = s._series.priceToCoordinate(s._p1.price);
+        this._y2 = s._series.priceToCoordinate(s._p2.price);
+      }
+      renderer() { return new RectangleRenderer(this); }
+    }
+
+    class RectanglePrimitive {
+      constructor(theChart, theSeries, p1, p2, opts) {
+        this._chart = theChart;
+        this._series = theSeries;
+        this._p1 = p1; // { time, price }
+        this._p2 = p2; // { time, price }
+        this._opts = opts; // { fillColor, borderColor, label }
+        this._paneViews = [new RectanglePaneView(this)];
+      }
+      updateAllViews() { this._paneViews.forEach(v => v.update()); }
+      paneViews() { return this._paneViews; }
+      priceAxisViews() { return []; }
+      timeAxisViews() { return []; }
+    }
+
+    let activePrimitives = [];
+
+    // ---- Fibonacci Retracement Primitive ----
+    const FIB_LEVELS = [
+      { ratio: 0,     label: '0%',    color: '#888888' },
+      { ratio: 0.5,   label: '50%',   color: '#ff9800' },
+      { ratio: 0.705, label: '70.5%', color: '#ffd54f' },
+      { ratio: 0.79,  label: '79%',   color: '#ffd54f' },
+      { ratio: 1,     label: '100%',  color: '#888888' },
+    ];
+
+    class FibRenderer {
+      constructor(view) { this._view = view; }
+      draw(target) {
+        target.useBitmapCoordinateSpace(scope => {
+          const v = this._view;
+          if (v._x1 === null || v._x2 === null) return;
+          const ctx = scope.context;
+          const hr = scope.horizontalPixelRatio;
+          const vr = scope.verticalPixelRatio;
+          const left = Math.round(Math.min(v._x1, v._x2) * hr);
+          const right = Math.round(Math.max(v._x1, v._x2) * hr);
+          const ext = scope.bitmapSize.width; // extend lines to right edge of chart
+          const labelX = right + Math.round(6 * hr); // labels near end of drawn range
+          const width = ext - left;
+
+          // Draw OTE zone fill (between 70.5% and 79%)
+          const y705 = v._levelYs[2];
+          const y79 = v._levelYs[3];
+          if (y705 !== null && y79 !== null) {
+            const top = Math.round(Math.min(y705, y79) * vr);
+            const bottom = Math.round(Math.max(y705, y79) * vr);
+            ctx.fillStyle = 'rgba(255, 213, 79, 0.10)';
+            ctx.fillRect(left, top, width, bottom - top);
+          }
+
+          // Draw level lines and labels
+          for (let i = 0; i < v._levelYs.length; i++) {
+            const y = v._levelYs[i];
+            if (y === null) continue;
+            const py = Math.round(y * vr);
+            const level = FIB_LEVELS[i];
+            ctx.strokeStyle = level.color;
+            ctx.lineWidth = (i === 0 || i === 4) ? hr : 1.5 * hr;
+            ctx.setLineDash([5 * hr, 3 * hr]);
+            ctx.beginPath();
+            ctx.moveTo(left, py + 0.5);
+            ctx.lineTo(ext, py + 0.5);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            // Label
+            const price = v._levelPrices[i];
+            ctx.fillStyle = level.color;
+            ctx.font = Math.round(11 * vr) + 'px -apple-system, sans-serif';
+            ctx.fillText(level.label + ' (' + price.toFixed(1) + ')', labelX, py - 4 * vr);
+          }
+
+          // Draw anchor dots
+          for (const py of [v._levelYs[4], v._levelYs[0]]) { // 100% = A, 0% = B
+            if (py === null) continue;
+            ctx.fillStyle = '#ffffff';
+            ctx.beginPath();
+            ctx.arc(v._anchorX !== null ? Math.round(v._anchorX * hr) : left, Math.round(py * vr), 3 * hr, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        });
+      }
+    }
+
+    class FibPaneView {
+      constructor(source) {
+        this._source = source;
+        this._x1 = null; this._x2 = null;
+        this._anchorX = null;
+        this._levelYs = FIB_LEVELS.map(() => null);
+        this._levelPrices = FIB_LEVELS.map(() => 0);
+      }
+      update() {
+        const s = this._source;
+        this._x1 = s._chart.timeScale().timeToCoordinate(s._p1.time);
+        this._x2 = s._chart.timeScale().timeToCoordinate(s._p2.time);
+        this._anchorX = this._x1; // dot at point A
+        const range = s._p1.price - s._p2.price;
+        for (let i = 0; i < FIB_LEVELS.length; i++) {
+          const price = s._p2.price + range * FIB_LEVELS[i].ratio;
+          this._levelPrices[i] = price;
+          this._levelYs[i] = s._series.priceToCoordinate(price);
+        }
+      }
+      renderer() { return new FibRenderer(this); }
+    }
+
+    class FibRetracementPrimitive {
+      constructor(theChart, theSeries, p1, p2) {
+        this._chart = theChart;
+        this._series = theSeries;
+        this._p1 = p1; // { time, price } - point A (swing start)
+        this._p2 = p2; // { time, price } - point B (swing end)
+        this._paneViews = [new FibPaneView(this)];
+      }
+      updateAllViews() { this._paneViews.forEach(v => v.update()); }
+      paneViews() { return this._paneViews; }
+      priceAxisViews() { return []; }
+      timeAxisViews() { return []; }
+      // Allow updating point B for live preview
+      setPointB(p2) { this._p2 = p2; }
+    }
+
+    // Update info panel with ICT setup timeline
+    function updateInfoPanel(trade) {
+      const panel = document.getElementById('trade-info');
+      const meta = trade.metadata || trade.signal?.metadata || {};
+      const isLong = trade.side === 'buy' || trade.side === 'long';
+      const sideLabel = isLong ? 'BUY' : 'SELL';
+      const exitPx = trade.exitPrice || trade.actualExit || (trade.exitCandle && trade.exitCandle.close);
+      const pattern = meta.signalType || meta.pattern || 'N/A';
+      const rr = meta.riskReward ? meta.riskReward.toFixed(1) : 'N/A';
+      const structTF = meta.structureTF || '?';
+      const entryTF = meta.entryTF || '?';
+      const entryModel = meta.entryModel || 'MW_PATTERN';
+
+      let html = '<div class="info-header">' + sideLabel + ' ' + pattern +
+        ' | ' + structTF + ' &rarr; ' + entryTF +
+        ' | R:R ' + rr +
+        '<span class="model-tag model-' + entryModel + '">' + entryModel + '</span></div>';
+
+      let step = 1;
+
+      if (meta.sweepLevel) {
+        html += '<div class="sweep">' + step + '. Sweep: ' + (meta.sweepType || '?') +
+          ' @ ' + meta.sweepLevel + ' (' + fmtTime(meta.sweepTimestamp) + ')</div>';
+        step++;
+      }
+
+      if (meta.structureShift?.level) {
+        const shiftType = meta.structureShift.type || 'shift';
+        html += '<div class="shift">' + step + '. Shift: ' + shiftType +
+          ' @ ' + meta.structureShift.level + ' (' + fmtTime(meta.structureShift.timestamp) + ')';
+        if (meta.structureShift.impulseRange) {
+          html += ' [impulse: ' + meta.structureShift.impulseRange.range?.toFixed(1) + 'pts]';
+        }
+        html += '</div>';
+        step++;
+      }
+
+      if (meta.causalSwing) {
+        html += '<div class="causal">' + step + '. Causal Swing: ' + meta.causalSwing + ' (stop anchor)</div>';
+        step++;
+      }
+
+      if (meta.entryZone?.top) {
+        const ezTF = meta.entryZone.entryTF ? ' (' + meta.entryZone.entryTF + ')' : '';
+        html += '<div class="zone">' + step + '. Zone: ' + (meta.entryZone.type || 'zone').toUpperCase() + ezTF +
+          ' ' + meta.entryZone.bottom?.toFixed?.(2) + ' - ' + meta.entryZone.top?.toFixed?.(2) +
+          ' | formed ' + fmtTime(meta.entryZone.timestamp) + '</div>';
+        step++;
+      }
+
+      if (meta.fibData) {
+        const inZone = meta.fibData.inFibZone ? 'IN ZONE' : 'outside';
+        html += '<div class="fib-zone">' + step + '. Fib 50-79%: ' +
+          (meta.fibData.fib79?.toFixed(1) || '?') + ' - ' + (meta.fibData.fib50?.toFixed(1) || '?') +
+          ' (' + inZone + ')</div>';
+        step++;
+      }
+
+      html += '<div class="entry-line">' + step + '. Entry: ' + (trade.entryPrice || '?') +
+        ' &rarr; Target: ' + (meta.targetPool ? (meta.targetPool.type + ' @ ' + meta.targetPool.price) : (trade.takeProfit || '?')) +
+        ' | Stop: ' + (trade.stopLoss || '?') + '</div>';
+
+      if (exitPx) {
+        const pnlColor = (trade.netPnL || 0) >= 0 ? '#4caf50' : '#f44336';
+        const pnlSign = (trade.netPnL || 0) >= 0 ? '+' : '';
+        html += '<div style="color: ' + pnlColor + '; margin-top: 2px;">Exit: ' +
+          (trade.exitReason || '?') + ' @ ' + exitPx + ' (' + pnlSign + '$' +
+          (trade.netPnL || 0).toFixed(2) + ')</div>';
+      }
+
+      // Additional metadata row
+      const metaParts = [];
+      if (meta.dailyOpenBias) metaParts.push('Bias: ' + meta.dailyOpenBias);
+      if (meta.htfBias) {
+        const htf1h = meta.htfBias['1h'] || 'null';
+        const htf4h = meta.htfBias['4h'] || 'null';
+        metaParts.push('HTF: 1h=' + htf1h + ' 4h=' + htf4h);
+      }
+      if (meta.dailyBarPattern && meta.dailyBarPattern !== 'normal') {
+        metaParts.push('Bar: ' + meta.dailyBarPattern);
+      }
+      if (meta.rangeContext?.adr) {
+        metaParts.push('ADR: ' + meta.rangeContext.adr.toFixed(0) + ' (' + ((meta.rangeContext.pctOfADR || 0) * 100).toFixed(0) + '%)');
+      }
+      if (meta.confirmationType) metaParts.push('Confirm: ' + meta.confirmationType);
+      if (metaParts.length > 0) {
+        html += '<div class="meta-row">' + metaParts.join(' | ') + '</div>';
+      }
+
+      panel.innerHTML = html;
+    }
+
+    // Zoom to show full setup: earliest event to exit, with buffer
+    function zoomToTrade(trade) {
+      if (!trade) return;
+      const meta = trade.metadata || trade.signal?.metadata || {};
+
+      // Collect all event timestamps to find earliest
+      const timestamps = [];
+      const entryTs = parseTs(trade.entryTime || trade.signalTime);
+      if (entryTs) timestamps.push(entryTs);
+      if (meta.sweepTimestamp) timestamps.push(parseTs(meta.sweepTimestamp));
+      if (meta.structureShift?.timestamp) timestamps.push(parseTs(meta.structureShift.timestamp));
+      if (meta.entryZone?.timestamp) timestamps.push(parseTs(meta.entryZone.timestamp));
+
+      const exitTs = parseTs(trade.exitTime);
+      if (exitTs) timestamps.push(exitTs);
+
+      if (timestamps.length === 0) return;
+
+      const earliest = Math.min(...timestamps);
+      const latest = Math.max(...timestamps);
+      const buffer = 1800; // 30 min buffer each side
+
+      chart.timeScale().setVisibleRange({
+        from: earliest - buffer,
+        to: latest + buffer
+      });
+
+      // Force price scale to auto-fit the visible candles
+      chart.priceScale('right').applyOptions({ autoScale: true });
+    }
+
+    // Select a trade: zoom, annotate, update panel, highlight row
+    function selectTrade(idx) {
+      if (idx < 0 || idx >= tradesData.length) return;
+      currentTradeIdx = idx;
+      const trade = tradesData[idx];
+
+      zoomToTrade(trade);
+      drawAnnotations(trade);
+      updateInfoPanel(trade);
+
+      // Highlight selected row
+      document.querySelectorAll('.trade').forEach(el => el.classList.remove('selected'));
+      const row = document.querySelector('.trade[data-idx="' + idx + '"]');
+      if (row) {
+        row.classList.add('selected');
+        row.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+      }
+    }
+
+    // Auto-select first trade on load
+    let currentTradeIdx = 0;
     if (tradesData.length > 0) {
-      zoomToTrade(tradesData[0]);
+      selectTrade(0);
     } else {
       chart.timeScale().fitContent();
     }
 
-    // Handle resize
-    window.addEventListener('resize', () => {
-      chart.applyOptions({ width: chartContainer.clientWidth });
-    });
+    // autoSize: true handles resize automatically
 
-    // Click to zoom to trade
-    document.querySelectorAll('.trade:not(.trade-header)').forEach((el, idx) => {
-      el.style.cursor = 'pointer';
+    // Click to select trade
+    document.querySelectorAll('.trade[data-idx]').forEach(el => {
       el.addEventListener('click', () => {
-        zoomToTrade(tradesData[idx]);
+        selectTrade(parseInt(el.dataset.idx));
       });
     });
 
-    // Keyboard navigation
-    let currentTradeIdx = 0;
+    // ---- Fib Drawing Tool State ----
+    let currentTool = 'select';
+    let fibStartPoint = null;
+    let activeFibs = [];
+    let previewFib = null;
+
+    function setTool(tool) {
+      currentTool = tool;
+      document.querySelectorAll('.tool-btn[data-tool]').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.tool === tool);
+      });
+      document.getElementById('chart').classList.toggle('fib-mode', tool === 'fib');
+      // Cancel any in-progress fib
+      if (tool !== 'fib') {
+        cancelFibInProgress();
+      }
+    }
+
+    function cancelFibInProgress() {
+      fibStartPoint = null;
+      if (previewFib) {
+        try { candlestickSeries.detachPrimitive(previewFib); } catch(e) {}
+        previewFib = null;
+      }
+    }
+
+    function clearAllFibs() {
+      activeFibs.forEach(f => {
+        try { candlestickSeries.detachPrimitive(f); } catch(e) {}
+      });
+      activeFibs = [];
+      cancelFibInProgress();
+    }
+
+    // Toolbar button clicks
+    document.querySelectorAll('.tool-btn[data-tool]').forEach(btn => {
+      btn.addEventListener('click', () => setTool(btn.dataset.tool));
+    });
+    document.getElementById('clear-fibs').addEventListener('click', clearAllFibs);
+
+    // Keyboard navigation + fib shortcuts (registered first to avoid being blocked by chart API errors)
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'ArrowRight' || e.key === 'n') {
-        currentTradeIdx = Math.min(currentTradeIdx + 1, tradesData.length - 1);
-        zoomToTrade(tradesData[currentTradeIdx]);
-      } else if (e.key === 'ArrowLeft' || e.key === 'p') {
-        currentTradeIdx = Math.max(currentTradeIdx - 1, 0);
-        zoomToTrade(tradesData[currentTradeIdx]);
+      if (e.key === 'f') {
+        e.preventDefault();
+        setTool(currentTool === 'fib' ? 'select' : 'fib');
+        return;
+      }
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        if (fibStartPoint) {
+          cancelFibInProgress();
+        } else if (currentTool === 'fib') {
+          setTool('select');
+        }
+        return;
+      }
+      // Trade navigation only in select mode
+      if (currentTool !== 'select') return;
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === 'n') {
+        e.preventDefault();
+        selectTrade(Math.min(currentTradeIdx + 1, tradesData.length - 1));
+      } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp' || e.key === 'p') {
+        e.preventDefault();
+        selectTrade(Math.max(currentTradeIdx - 1, 0));
       }
     });
+
+    // Chart click handler for fib tool
+    try {
+      chart.subscribeClick(param => {
+        if (currentTool !== 'fib') return;
+        if (!param.point) return;
+        const price = candlestickSeries.coordinateToPrice(param.point.y);
+        if (price === null || price === undefined) return;
+        const time = param.time || chart.timeScale().coordinateToTime(param.point.x);
+        if (!time) return;
+
+        if (!fibStartPoint) {
+          // First click — set anchor
+          fibStartPoint = { time, price };
+          previewFib = new FibRetracementPrimitive(chart, candlestickSeries, fibStartPoint, { time, price });
+          candlestickSeries.attachPrimitive(previewFib);
+        } else {
+          // Second click — lock fib in place
+          if (previewFib) {
+            previewFib.setPointB({ time, price });
+            activeFibs.push(previewFib);
+            previewFib = null;
+          }
+          fibStartPoint = null;
+        }
+      });
+    } catch(e) { console.warn('chart.subscribeClick not available:', e); }
+
+    // Live preview on crosshair move
+    try {
+      chart.subscribeCrosshairMove(param => {
+        if (currentTool !== 'fib' || !fibStartPoint || !previewFib) return;
+        if (!param.point) return;
+        const price = candlestickSeries.coordinateToPrice(param.point.y);
+        const time = chart.timeScale().coordinateToTime(param.point.x);
+        if (price === null || price === undefined || !time) return;
+        previewFib.setPointB({ time, price });
+        previewFib.updateAllViews();
+        chart.timeScale().applyOptions({});
+      });
+    } catch(e) { console.warn('chart.subscribeCrosshairMove not available:', e); }
   </script>
 </body>
 </html>`;
@@ -513,10 +1193,12 @@ async function main() {
   const startDate = new Date(Math.min(...tradeTimes) - bufferMs);
   const endDate = new Date(Math.max(...tradeTimes) + bufferMs);
 
-  // Load candle data
+  // Load candle data — prefer continuous (back-adjusted) file if available
   const ticker = options.ticker.toUpperCase();
+  const continuousPath = path.join(__dirname, 'data', 'ohlcv', ticker.toLowerCase(), `${ticker}_ohlcv_1m_continuous.csv`);
+  const rawPath = path.join(__dirname, 'data', 'ohlcv', ticker.toLowerCase(), `${ticker}_ohlcv_1m.csv`);
   const candlePath = options.candles ||
-    path.join(__dirname, 'data', 'ohlcv', ticker.toLowerCase(), `${ticker}_ohlcv_1m.csv`);
+    (fs.existsSync(continuousPath) ? continuousPath : rawPath);
 
   if (!fs.existsSync(candlePath)) {
     console.error(`Candle data not found: ${candlePath}`);

@@ -10,6 +10,12 @@ import StrategyEngine from './strategy/engine.js';
 import { getDataRequirements } from './strategy/strategy-factory.js';
 import { getBestAvailableToken, cacheTokenInRedis, getTokenTTL } from './utils/tradingview-auth.js';
 
+// AI Trader imports (only used when ACTIVE_STRATEGY === 'ai-trader')
+import { CandleBuffer } from './utils/candle-buffer.js';
+import { LiveFeatureAggregator } from './ai/live-feature-aggregator.js';
+import { AIStrategyEngine } from './ai/ai-strategy-engine.js';
+import { LiveTradeManager } from './ai/live-trade-manager.js';
+
 const logger = createLogger('signal-generator');
 
 class SignalGeneratorService {
@@ -22,6 +28,14 @@ class SignalGeneratorService {
     this.ivSkewCalculator = null;  // Direct reference for API endpoint
     this.strategyEngine = null;
     this.isRunning = false;
+
+    // AI Trader components (null unless ACTIVE_STRATEGY === 'ai-trader')
+    this.aiEngine = null;
+    this.candle1mBuffer = null;
+    this.candle1hBuffer = null;
+    this.liveFeatureAggregator = null;
+    this.liveTradeManager = null;
+    this.isAiTrader = (config.ACTIVE_STRATEGY || '').toLowerCase() === 'ai-trader';
   }
 
   async start() {
@@ -206,16 +220,65 @@ class SignalGeneratorService {
         logger.info('CBOE GEX Calculator initialized');
       }
 
-      // Initialize Strategy Engine
-      this.strategyEngine = new StrategyEngine(this.gexCalculator, null, { candleBaseSymbol: this.candleBaseSymbol });
+      // Initialize Strategy Engine (standard or AI trader)
+      if (this.isAiTrader) {
+        logger.info('Initializing AI Trader engine...');
 
-      // Wire up IV Skew calculator to strategy engine (only if strategy needs it)
-      if (needsIVSkew && this.tradierExposureService?.ivSkewCalculator) {
-        this.ivSkewCalculator = this.tradierExposureService.ivSkewCalculator;
-        this.strategyEngine.setIVSkewCalculator(this.ivSkewCalculator);
-        logger.info('IV Skew calculator wired to strategy engine');
-      } else if (needsIVSkew) {
-        logger.warn('Strategy requires IV Skew but Tradier service not available');
+        // Create dedicated candle buffers for AI trader (much larger than standard)
+        const historyBars1m = parseInt(process.env.CANDLE_HISTORY_BARS || '500', 10);
+        this.candle1mBuffer = new CandleBuffer({
+          symbol: this.candleBaseSymbol,
+          timeframe: '1',
+          maxSize: Math.max(historyBars1m + 500, 8000), // Extra headroom for live candles
+        });
+        this.candle1hBuffer = new CandleBuffer({
+          symbol: this.candleBaseSymbol,
+          timeframe: '60',
+          maxSize: 500,
+        });
+
+        // LiveFeatureAggregator — same interface as backtest, backed by live buffers
+        this.liveFeatureAggregator = new LiveFeatureAggregator({
+          candle1mBuffer: this.candle1mBuffer,
+          candle1hBuffer: this.candle1hBuffer,
+          gexCalculator: this.gexCalculator,
+          ltMonitor: null, // LT data is pushed via events
+          ivCalculator: null, // Not wired for v1
+          ticker: this.candleBaseSymbol,
+        });
+
+        // LiveTradeManager — MFE ratchet + structural trail for live stops
+        this.liveTradeManager = new LiveTradeManager({
+          featureAggregator: this.liveFeatureAggregator,
+          strategyConstant: 'AI_TRADER',
+        });
+
+        // AI Strategy Engine — replaces standard StrategyEngine entirely
+        this.aiEngine = new AIStrategyEngine({
+          featureAggregator: this.liveFeatureAggregator,
+          gexCalculator: this.gexCalculator,
+          tradingSymbol: config.TRADING_SYMBOL,
+          ticker: this.candleBaseSymbol,
+          tradeManager: this.liveTradeManager,
+        });
+
+        // AI trader does NOT use the standard StrategyEngine — candle detection
+        // is handled by the dedicated candle1mBuffer directly.
+        // We still set strategyEngine to null so callers know to skip it.
+        this.strategyEngine = null;
+
+        logger.info('AI Trader engine initialized');
+      } else {
+        this.strategyEngine = new StrategyEngine(this.gexCalculator, null, { candleBaseSymbol: this.candleBaseSymbol });
+
+        // Wire up IV Skew calculator to strategy engine (only if strategy needs it)
+        if (needsIVSkew && this.tradierExposureService?.ivSkewCalculator) {
+          this.ivSkewCalculator = this.tradierExposureService.ivSkewCalculator;
+          this.strategyEngine.setIVSkewCalculator(this.ivSkewCalculator);
+          logger.info('IV Skew calculator wired to strategy engine');
+        } else if (needsIVSkew) {
+          logger.warn('Strategy requires IV Skew but Tradier service not available');
+        }
       }
 
       // --- Startup Token Check ---
@@ -256,6 +319,23 @@ class SignalGeneratorService {
       // Set up TradingView event listeners
       this.tradingViewClient.on('quote', (quote) => this.handleQuoteUpdate(quote));
 
+      // AI Trader: register history_loaded listener BEFORE streaming starts
+      // (startStreaming triggers subscribeToSymbol which emits history_loaded synchronously)
+      if (this.isAiTrader) {
+        this.tradingViewClient.on('history_loaded', ({ symbol, baseSymbol, timeframe, candles }) => {
+          logger.info(`History loaded: ${candles.length} ${timeframe}m candles for ${baseSymbol}`);
+          if (timeframe === '1' && this.candle1mBuffer) {
+            const loaded = this.candle1mBuffer.seedCandles(candles);
+            logger.info(`Seeded ${loaded} 1m candles into buffer`);
+            this.aiEngine?.markHistoryReady('1');
+          } else if (timeframe === '60' && this.candle1hBuffer) {
+            const loaded = this.candle1hBuffer.seedCandles(candles);
+            logger.info(`Seeded ${loaded} 1h candles into buffer`);
+            this.aiEngine?.markHistoryReady('60');
+          }
+        });
+      }
+
       // Start TradingView connection
       logger.info('Connecting to TradingView WebSocket...');
       try {
@@ -274,6 +354,18 @@ class SignalGeneratorService {
       } catch (error) {
         logger.error('Failed to start TradingView streaming:', error.message);
         throw error;
+      }
+
+      // AI Trader: create 1h chart session after streaming is active
+      if (this.isAiTrader) {
+        const ohlcvSymbol = ohlcvSymbols[0]; // e.g. 'CME_MINI:NQ1!'
+        logger.info(`Creating 1h history session for ${ohlcvSymbol}...`);
+        try {
+          await this.tradingViewClient.createHistorySession(ohlcvSymbol, '60', 300);
+          logger.info('1h history session created');
+        } catch (error) {
+          logger.error('Failed to create 1h history session:', error.message);
+        }
       }
 
       // Initialize and start LT Monitor only if strategy requires it
@@ -318,14 +410,27 @@ class SignalGeneratorService {
         this.scheduleGexRefresh();
       }
 
-      // Sync position state from Tradovate before starting strategy evaluation
-      // This prevents duplicate signals if the service restarts while in a position
-      await this.strategyEngine.syncPositionState();
+      // Sync position state and start appropriate engine
+      if (this.isAiTrader && this.aiEngine) {
+        await this.aiEngine.syncPositionState();
 
-      // Start strategy engine
-      this.strategyEngine.run().catch(error => {
-        logger.error('Strategy engine error:', error);
-      });
+        // Mark GEX as ready if levels already available
+        if (this.gexCalculator?.getCurrentLevels()) {
+          this.aiEngine.markGexReady();
+        }
+
+        // Start AI engine background loop (reconciliation + status)
+        this.aiEngine.run().catch(error => {
+          logger.error('AI Strategy engine error:', error);
+        });
+        logger.info('AI Trader engine started');
+      } else {
+        // Standard strategy: sync and start
+        await this.strategyEngine.syncPositionState();
+        this.strategyEngine.run().catch(error => {
+          logger.error('Strategy engine error:', error);
+        });
+      }
 
       this.isRunning = true;
       logger.info('Signal Generator Service started successfully');
@@ -359,7 +464,7 @@ class SignalGeneratorService {
 
       // Feed candle-based quotes to strategy engine (only quotes with candleTimestamp from OHLCV data)
       if (quote.candleTimestamp && quote.baseSymbol === this.candleBaseSymbol) {
-        const isNewCandle = this.strategyEngine.processCandle({
+        const candleData = {
           symbol: quote.symbol,
           timestamp: quote.timestamp,
           open: quote.open,
@@ -367,14 +472,27 @@ class SignalGeneratorService {
           low: quote.low,
           close: quote.close,
           volume: quote.volume
-        });
+        };
 
-        // When a new candle closes, evaluate strategy on the closed candle
-        if (isNewCandle) {
-          const closedCandle = this.strategyEngine.candleBuffer.getLastClosedCandle();
-          if (closedCandle) {
-            logger.info(`🕯️ 1-minute candle closed: ${closedCandle.close} @ ${closedCandle.timestamp}`);
-            await this.strategyEngine.evaluateCandle(closedCandle);
+        if (this.isAiTrader && this.aiEngine) {
+          // AI Trader: use dedicated candle1mBuffer for candle detection
+          const isNewCandle = this.candle1mBuffer.addCandle(candleData);
+          if (isNewCandle) {
+            const closedCandle = this.candle1mBuffer.getLastClosedCandle();
+            if (closedCandle) {
+              logger.info(`🕯️ 1-minute candle closed: ${closedCandle.close} @ ${closedCandle.timestamp}`);
+              await this.aiEngine.processCandle(closedCandle);
+            }
+          }
+        } else if (this.strategyEngine) {
+          // Standard strategy: use StrategyEngine's candle buffer
+          const isNewCandle = this.strategyEngine.processCandle(candleData);
+          if (isNewCandle) {
+            const closedCandle = this.strategyEngine.candleBuffer.getLastClosedCandle();
+            if (closedCandle) {
+              logger.info(`🕯️ 1-minute candle closed: ${closedCandle.close} @ ${closedCandle.timestamp}`);
+              await this.strategyEngine.evaluateCandle(closedCandle);
+            }
           }
         }
       }
@@ -411,8 +529,15 @@ class SignalGeneratorService {
     try {
       logger.info(`LT levels updated: ${JSON.stringify(ltLevels)}`);
 
-      // Update strategy engine
-      this.strategyEngine.setLtLevels(ltLevels);
+      // Update strategy engine (null in AI trader mode)
+      if (this.strategyEngine) {
+        this.strategyEngine.setLtLevels(ltLevels);
+      }
+
+      // Push LT snapshot to AI trader's feature aggregator (for migration analysis)
+      if (this.isAiTrader && this.liveFeatureAggregator) {
+        this.liveFeatureAggregator.pushLtSnapshot(ltLevels);
+      }
 
       // Publish LT levels to message bus
       await messageBus.publish('lt.levels', ltLevels);
@@ -498,7 +623,9 @@ class SignalGeneratorService {
       this.gexCalculator = this.tradierExposureService;
 
       // Update strategy engine reference
-      this.strategyEngine.setGexCalculator(this.gexCalculator);
+      if (this.strategyEngine) {
+        this.strategyEngine.setGexCalculator(this.gexCalculator);
+      }
 
       logger.info('✅ Tradier service enabled and active');
       return { success: true, message: 'Tradier service enabled successfully' };
@@ -536,7 +663,9 @@ class SignalGeneratorService {
       this.gexCalculator = gexCalculator;
 
       // Update strategy engine reference
-      this.strategyEngine.setGexCalculator(this.gexCalculator);
+      if (this.strategyEngine) {
+        this.strategyEngine.setGexCalculator(this.gexCalculator);
+      }
 
       // Restart GEX refresh schedule
       this.scheduleGexRefresh();

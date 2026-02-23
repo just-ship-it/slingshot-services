@@ -85,6 +85,39 @@ export class PerformanceCalculator {
     const grossProfit = winningTrades.reduce((sum, t) => sum + t.netPnL, 0);
     const grossLoss = Math.abs(losingTrades.reduce((sum, t) => sum + t.netPnL, 0));
 
+    // MFE/MAE summary stats (only if trades have MFE/MAE data)
+    const tradesWithMFE = trades.filter(t => t.mfePoints != null);
+    let mfeStats = {};
+    if (tradesWithMFE.length > 0) {
+      const avgMFE = tradesWithMFE.reduce((sum, t) => sum + t.mfePoints, 0) / tradesWithMFE.length;
+      const avgMAE = tradesWithMFE.reduce((sum, t) => sum + t.maePoints, 0) / tradesWithMFE.length;
+      const avgProfitGiveBack = tradesWithMFE.filter(t => t.profitGiveBack != null).reduce((sum, t) => sum + t.profitGiveBack, 0) / tradesWithMFE.length;
+
+      const winnersWithMFE = tradesWithMFE.filter(t => t.netPnL > 0);
+      const losersWithMFE = tradesWithMFE.filter(t => t.netPnL <= 0);
+
+      const avgWinnerMFE = winnersWithMFE.length > 0
+        ? winnersWithMFE.reduce((sum, t) => sum + t.mfePoints, 0) / winnersWithMFE.length : 0;
+      const avgLoserMFE = losersWithMFE.length > 0
+        ? losersWithMFE.reduce((sum, t) => sum + t.mfePoints, 0) / losersWithMFE.length : 0;
+
+      // MFE efficiency: what % of peak favorable excursion was captured as P&L
+      const mfeEfficiencyValues = tradesWithMFE
+        .filter(t => t.mfePoints > 0)
+        .map(t => t.pointsPnL / t.mfePoints);
+      const mfeEfficiency = mfeEfficiencyValues.length > 0
+        ? mfeEfficiencyValues.reduce((sum, v) => sum + v, 0) / mfeEfficiencyValues.length : 0;
+
+      mfeStats = {
+        avgMFE: roundTo(avgMFE),
+        avgMAE: roundTo(avgMAE),
+        avgProfitGiveBack: roundTo(avgProfitGiveBack),
+        avgWinnerMFE: roundTo(avgWinnerMFE),
+        avgLoserMFE: roundTo(avgLoserMFE),
+        mfeEfficiency: roundTo(mfeEfficiency * 100),
+      };
+    }
+
     return {
       totalTrades: trades.length,
       winningTrades: winningTrades.length,
@@ -102,7 +135,8 @@ export class PerformanceCalculator {
       profitFactor: grossLoss > 0 ? roundTo(grossProfit / grossLoss) : grossProfit > 0 ? Infinity : 0,
       payoffRatio: avgLoss > 0 ? roundTo(avgWin / avgLoss) : avgWin > 0 ? Infinity : 0,
       avgTrade: trades.length > 0 ? roundTo(totalPnL / trades.length) : 0,
-      expectancy: trades.length > 0 ? roundTo((winningTrades.length / trades.length) * avgWin - (losingTrades.length / trades.length) * avgLoss) : 0
+      expectancy: trades.length > 0 ? roundTo((winningTrades.length / trades.length) * avgWin - (losingTrades.length / trades.length) * avgLoss) : 0,
+      ...mfeStats
     };
   }
 

@@ -123,6 +123,48 @@ module.exports = {
       }
     },
     {
+      name: 'siggen-nq-aitrader',
+      script: './signal-generator/index.js',
+      cwd: '/home/drew/projects/slingshot-services',
+      instances: 1,
+      exec_mode: 'fork',
+      autorestart: true,
+      watch: false,
+      max_memory_restart: '1G',
+      env: {
+        NODE_ENV: 'development',
+        HTTP_PORT: 3018,
+        LOG_LEVEL: 'info',
+        ACTIVE_STRATEGY: 'ai-trader',
+        TRADING_SYMBOL: 'NQH6',
+        CANDLE_BASE_SYMBOL: 'NQ',
+        GEX_SYMBOL: 'QQQ',
+        GEX_FUTURES_SYMBOL: 'NQ',
+        CANDLE_HISTORY_BARS: 500,
+        AI_TRADER_MODEL: 'claude-sonnet-4-20250514',
+        AI_TRADER_DRY_RUN: 'false',
+        AI_TRADER_QUANTITY: 1,
+        STRATEGY_ENABLED: 'true',
+        SERVICE_NAME: 'siggen-nq-aitrader'
+      },
+      env_production: {
+        NODE_ENV: 'production',
+        HTTP_PORT: 3018,
+        LOG_LEVEL: 'info',
+        ACTIVE_STRATEGY: 'ai-trader',
+        TRADING_SYMBOL: 'NQH6',
+        CANDLE_BASE_SYMBOL: 'NQ',
+        GEX_SYMBOL: 'QQQ',
+        GEX_FUTURES_SYMBOL: 'NQ',
+        CANDLE_HISTORY_BARS: 500,
+        AI_TRADER_MODEL: 'claude-sonnet-4-20250514',
+        AI_TRADER_DRY_RUN: 'false',
+        AI_TRADER_QUANTITY: 1,
+        STRATEGY_ENABLED: 'true',
+        SERVICE_NAME: 'siggen-nq-aitrader'
+      }
+    },
+    {
       name: 'macro-briefing',
       script: './macro-briefing/index.js',
       cwd: '/home/drew/projects/slingshot-services',

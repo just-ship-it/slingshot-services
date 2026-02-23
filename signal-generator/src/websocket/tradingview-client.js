@@ -45,6 +45,12 @@ class TradingViewClient extends EventEmitter {
     // Candle tracking for 15-minute detection
     this.lastCandleTimes = new Map();
 
+    // Timeframe tracking per chart session (sessionId -> timeframe string)
+    this.sessionTimeframe = new Map();
+
+    // Configurable candle history bars (default 10 for standard, 500 for AI trader)
+    this.candleHistoryBars = parseInt(options.candleHistoryBars || process.env.CANDLE_HISTORY_BARS || '10');
+
     // Message counter for TradingView protocol
     this.messageCounter = 1;
 
@@ -412,6 +418,7 @@ class TradingViewClient extends EventEmitter {
       const sessionId = data.p[0];
       const ohlcData = data.p[1]?.sds_1?.s || [];
       const symbol = this.sessionToSymbol.get(sessionId);
+      const seriesTimeframe = this.sessionTimeframe.get(sessionId) || '1';
 
       if (!symbol) {
         logger.debug(`Unknown session ${sessionId} - skipping timescale update`);
@@ -419,7 +426,37 @@ class TradingViewClient extends EventEmitter {
       }
 
       if (ohlcData && ohlcData.length > 0) {
-        // Get the latest candle (like Python implementation)
+        const baseSymbol = this.extractBaseSymbol(symbol);
+
+        // Emit ALL historical candles as a history_loaded event
+        if (ohlcData.length > 1) {
+          const allCandles = ohlcData
+            .filter(bar => bar.v && bar.v.length >= 5 && bar.v[0] && bar.v[4])
+            .map(bar => ({
+              symbol,
+              baseSymbol,
+              timestamp: new Date(bar.v[0] * 1000).toISOString(),
+              candleTimestamp: bar.v[0],
+              open: bar.v[1],
+              high: bar.v[2],
+              low: bar.v[3],
+              close: bar.v[4],
+              volume: bar.v[5] || 0,
+              source: 'tradingview'
+            }));
+
+          if (allCandles.length > 0) {
+            logger.info(`📚 History loaded: ${allCandles.length} ${seriesTimeframe}m candles for ${baseSymbol}`);
+            this.emit('history_loaded', {
+              symbol,
+              baseSymbol,
+              timeframe: seriesTimeframe,
+              candles: allCandles
+            });
+          }
+        }
+
+        // Get the latest candle and emit as quote (preserves backward compatibility)
         const latestCandle = ohlcData[ohlcData.length - 1];
         const values = latestCandle.v;
 
@@ -427,9 +464,6 @@ class TradingViewClient extends EventEmitter {
           const [candleTimestamp, open, high, low, close, volume] = values;
 
           if (candleTimestamp && close) {
-            // Always emit quote update for real-time price
-            const baseSymbol = this.extractBaseSymbol(symbol);
-            // Convert TradingView epoch seconds to milliseconds for proper Date handling
             const candleTimeMs = candleTimestamp * 1000;
             const quote = {
               symbol: symbol,
@@ -439,15 +473,12 @@ class TradingViewClient extends EventEmitter {
               high: high,
               low: low,
               volume: volume || 0,
-              // Use TradingView's candle timestamp (aligned to minute boundaries)
               timestamp: new Date(candleTimeMs).toISOString(),
-              candleTimestamp: candleTimestamp, // Epoch seconds for precise comparison
+              candleTimestamp: candleTimestamp,
               source: 'tradingview'
             };
 
-            // Store latest quote in Redis for GEX calculator (non-blocking)
             this.storeLatestQuote(baseSymbol, quote);
-
             this.emit('quote', quote);
           }
         }
@@ -661,7 +692,7 @@ class TradingViewClient extends EventEmitter {
         's1',
         'sds_sym_1',
         '1',  // 1-minute timeframe like Python
-        10,   // Number of candles like Python default
+        this.candleHistoryBars,  // Configurable: 10 default, 500 for AI trader
         ''
       ]);
 
@@ -680,12 +711,63 @@ class TradingViewClient extends EventEmitter {
       // Store chart session mapping before hibernation
       this.chartSessions.set(exchangeSymbol, chartSession);
       this.sessionToSymbol.set(chartSession, exchangeSymbol);
+      this.sessionTimeframe.set(chartSession, '1'); // Default 1m timeframe
 
-      logger.info(`Successfully subscribed to ${exchangeSymbol} with chart session ${chartSession}`);
+      logger.info(`Successfully subscribed to ${exchangeSymbol} with chart session ${chartSession} (${this.candleHistoryBars} bars)`);
 
 
     } catch (error) {
       logger.error(`Failed to subscribe to ${symbolFull}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Create an additional chart session at a different timeframe for history capture.
+   * Used by AI trader to get hourly candles alongside the standard 1m session.
+   * @param {string} symbolFull - Symbol in exchange:symbol format (e.g., 'CME_MINI:NQ1!')
+   * @param {string} timeframe - TradingView timeframe string (e.g., '60' for 1h, '15' for 15m)
+   * @param {number} barCount - Number of historical bars to request
+   */
+  async createHistorySession(symbolFull, timeframe, barCount) {
+    try {
+      const [exchange, symbol] = symbolFull.includes(':')
+        ? symbolFull.split(':')
+        : ['CME_MINI', symbolFull];
+
+      const exchangeSymbol = `${exchange}:${symbol}`;
+      const chartSession = this.generateSession('cs');
+
+      logger.info(`Creating history session for ${exchangeSymbol} @ ${timeframe}m (${barCount} bars)`);
+
+      const resolveSymbol = JSON.stringify({
+        "adjustment": "splits",
+        "symbol": exchangeSymbol
+      });
+
+      this.sendMessage('chart_create_session', [chartSession, '']);
+      this.sendMessage('resolve_symbol', [chartSession, 'sds_sym_1', `=${resolveSymbol}`]);
+      this.sendMessage('create_series', [
+        chartSession,
+        'sds_1',
+        's1',
+        'sds_sym_1',
+        timeframe,
+        barCount,
+        ''
+      ]);
+
+      // Track session mappings
+      this.chartSessions.set(`${exchangeSymbol}_${timeframe}`, chartSession);
+      this.sessionToSymbol.set(chartSession, exchangeSymbol);
+      this.sessionTimeframe.set(chartSession, timeframe);
+
+      logger.info(`History session created: ${chartSession} for ${exchangeSymbol} @ ${timeframe}m`);
+
+      // Small delay to let TradingView process
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    } catch (error) {
+      logger.error(`Failed to create history session for ${symbolFull}@${timeframe}:`, error);
       throw error;
     }
   }
@@ -938,6 +1020,7 @@ class TradingViewClient extends EventEmitter {
     // Reset state
     this.chartSessions.clear();
     this.sessionToSymbol.clear();
+    this.sessionTimeframe.clear();
     this.isDisconnecting = wasDisconnecting;
     this.reconnectAttempts = 0;
 

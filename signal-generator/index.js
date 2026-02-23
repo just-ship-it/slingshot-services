@@ -431,6 +431,22 @@ app.get('/candles', (req, res) => {
   }
 });
 
+// AI Trader test cycle — runs bias + entry evaluation bypassing time gates
+app.post('/ai/test-cycle', async (req, res) => {
+  try {
+    const engine = service.aiEngine;
+    if (!engine) {
+      return res.status(404).json({ error: 'AI Strategy Engine not available (this instance is not running ai-trader strategy)' });
+    }
+
+    const results = await engine.testCycle();
+    res.json(results);
+  } catch (error) {
+    logger.error('AI test cycle error:', error);
+    res.status(500).json({ error: error.message, stack: error.stack?.split('\n').slice(0, 5) });
+  }
+});
+
 // Manual TradingView token update endpoint
 app.post('/tradingview/token', async (req, res) => {
   try {

@@ -326,7 +326,9 @@ async function handleOrderRequest(message) {
       action: message.action, // 'Buy' or 'Sell'
       orderQty: message.quantity,
       orderType: message.orderType || 'Market',
-      isAutomated: true
+      isAutomated: true,
+      stop_points: message.stop_points,
+      target_points: message.target_points
     };
 
     logger.info(`🔍 OrderData created: action=${message.action}, orderType=${orderData.orderType}`);
@@ -342,10 +344,11 @@ async function handleOrderRequest(message) {
     }
 
     // Check if this should be a bracket order (with stop loss and/or take profit)
-    // For limit orders, stopPrice is the stop loss, not the order's stop price
-    const hasBracketData = (orderData.orderType === 'Limit' && (message.stopPrice || message.takeProfit));
+    // For limit and market orders, stopPrice is the stop loss, not the order's stop price
+    // Also check stop_points/target_points for market orders where absolute prices may be unavailable
+    const hasBracketData = ((orderData.orderType === 'Limit' || orderData.orderType === 'Market') && (message.stopPrice || message.takeProfit || message.stop_points || message.target_points));
 
-    logger.info(`🔍 Bracket check: orderType=${orderData.orderType}, stopPrice=${message.stopPrice}, takeProfit=${message.takeProfit}, hasBracketData=${hasBracketData}`);
+    logger.info(`🔍 Bracket check: orderType=${orderData.orderType}, stopPrice=${message.stopPrice}, takeProfit=${message.takeProfit}, stop_points=${message.stop_points}, target_points=${message.target_points}, hasBracketData=${hasBracketData}`);
 
     let result;
     if (hasBracketData) {
@@ -356,11 +359,12 @@ async function handleOrderRequest(message) {
         logger.info(`Creating order strategy with trailing stop functionality`);
 
         // Build orderData for orderStrategy method
-        if (message.stopPrice) {
+        // Use absolute prices when available, or point-based distances for market orders
+        if (message.stopPrice || message.stop_points) {
           orderData.bracket1 = {
             action: message.action === 'Buy' ? 'Sell' : 'Buy',
             orderType: 'Stop',
-            stopPrice: message.stopPrice,
+            stopPrice: message.stopPrice || null,
             autoTrail: {
               trigger: message.trailing_trigger,
               stopLoss: message.trailing_offset,
@@ -370,11 +374,11 @@ async function handleOrderRequest(message) {
           logger.info(`📈 Trailing stop - trigger: ${message.trailing_trigger}, offset: ${message.trailing_offset}`);
         }
 
-        if (message.takeProfit) {
+        if (message.takeProfit || message.target_points) {
           orderData.bracket2 = {
             action: message.action === 'Buy' ? 'Sell' : 'Buy',
             orderType: 'Limit',
-            price: message.takeProfit
+            price: message.takeProfit || null
           };
         }
 
@@ -1404,12 +1408,16 @@ async function handleWebhookTrade(webhookMessage) {
         await handleUpdateLimitOrder(tradeSignal, accountId, webhookMessage.id);
         break;
 
+      case 'place_market':
+        await handlePlaceMarketOrder(tradeSignal, accountId, webhookMessage.id);
+        break;
+
       case 'modify_stop':
         await handleModifyStop(tradeSignal, accountId, webhookMessage.id);
         break;
 
       default:
-        throw new Error(`Unknown action: ${tradeSignal.action}. Expected: place_limit, cancel_limit, position_closed, update_limit, or modify_stop`);
+        throw new Error(`Unknown action: ${tradeSignal.action}. Expected: place_limit, place_market, cancel_limit, position_closed, update_limit, or modify_stop`);
     }
 
     // Publish webhook processed event
@@ -1487,6 +1495,43 @@ async function handlePlaceLimitOrder(tradeSignal, accountId, webhookId) {
   };
 
   logger.info(`Processing place_limit: ${action} ${orderRequest.quantity} ${tradeSignal.symbol} at ${tradeSignal.price}`);
+  if (orderRequest.stopPrice) logger.info(`📊 Stop loss: ${orderRequest.stopPrice}`);
+  if (orderRequest.takeProfit) logger.info(`📊 Take profit: ${orderRequest.takeProfit}`);
+  if (orderRequest.trailing_trigger && orderRequest.trailing_offset) {
+    logger.info(`📈 Trailing stop - trigger: ${orderRequest.trailing_trigger}, offset: ${orderRequest.trailing_offset}`);
+  }
+
+  // Forward to order handler
+  await handleOrderRequest(orderRequest);
+}
+
+// Handle place_market action - market order with optional OCO brackets
+async function handlePlaceMarketOrder(tradeSignal, accountId, webhookId) {
+  // Map side to Tradovate action
+  let action;
+  if (tradeSignal.side === 'buy') action = 'Buy';
+  else if (tradeSignal.side === 'sell') action = 'Sell';
+  else throw new Error(`Invalid side: ${tradeSignal.side}. Expected 'buy' or 'sell'.`);
+
+  // Create order request - no price for market orders
+  const orderRequest = {
+    accountId: accountId,
+    action: action,
+    symbol: tradeSignal.symbol,
+    quantity: tradeSignal.quantity || 1,
+    orderType: 'Market',
+    stopPrice: tradeSignal.stop_loss,
+    takeProfit: tradeSignal.take_profit,
+    trailing_trigger: tradeSignal.trailing_trigger,
+    trailing_offset: tradeSignal.trailing_offset,
+    stop_points: tradeSignal.stop_points,
+    target_points: tradeSignal.target_points,
+    source: 'webhook',
+    strategy: tradeSignal.strategy || 'unknown',
+    webhookId: webhookId
+  };
+
+  logger.info(`Processing place_market: ${action} ${orderRequest.quantity} ${tradeSignal.symbol}`);
   if (orderRequest.stopPrice) logger.info(`📊 Stop loss: ${orderRequest.stopPrice}`);
   if (orderRequest.takeProfit) logger.info(`📊 Take profit: ${orderRequest.takeProfit}`);
   if (orderRequest.trailing_trigger && orderRequest.trailing_offset) {

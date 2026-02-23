@@ -1467,6 +1467,14 @@ async function handleWebhookReceived(message) {
       mappedStopPrice = signal.stop_loss; // Frontend sends stop_loss → tradovate needs stopPrice
       mappedTakeProfit = signal.take_profit; // Frontend sends take_profit → tradovate needs takeProfit
       logger.info(`🎯 Mapped to bracket order - action: ${mappedAction}, type: ${mappedOrderType}, price: ${mappedPrice}, stop: ${mappedStopPrice}, target: ${mappedTakeProfit}`);
+    } else if (signal.action === 'place_market') {
+      // Market order with optional bracket (stop/target/trailing)
+      mappedAction = (signal.side === 'buy' || signal.side === 'long') ? 'Buy' : 'Sell';
+      mappedOrderType = 'Market';
+      mappedPrice = null; // No price for market orders
+      mappedStopPrice = signal.stop_loss;
+      mappedTakeProfit = signal.take_profit;
+      logger.info(`🎯 Mapped to market order - action: ${mappedAction}, stop: ${mappedStopPrice}, target: ${mappedTakeProfit}`);
     } else {
       // Handle other action types (buy, sell, etc.)
       mappedAction = signal.action;
@@ -1581,6 +1589,9 @@ async function handleWebhookReceived(message) {
       // Add trailing stop parameters if present
       trailing_trigger: signal.trailing_trigger,
       trailing_offset: signal.trailing_offset,
+      // Add point-based distances for market orders (no entry price to compute from)
+      stop_points: signal.stop_points,
+      target_points: signal.target_points,
       // Add position sizing metadata
       positionSizing: {
         originalSymbol: positionSizing.originalSymbol,
@@ -1684,7 +1695,7 @@ function parseTradeSignal(body) {
     }
 
     // Format 2: Test interface format with bracket order support
-    if (body.symbol && (body.side || body.action === 'place_limit' || body.action === 'update_limit' || body.action === 'cancel_limit' || body.action === 'position_closed' || body.action === 'modify_stop')) {
+    if (body.symbol && (body.side || body.action === 'place_limit' || body.action === 'place_market' || body.action === 'update_limit' || body.action === 'cancel_limit' || body.action === 'position_closed' || body.action === 'modify_stop')) {
       return {
         symbol: body.symbol,
         action: body.action, // Preserve original action (e.g., 'place_limit', 'update_limit', 'modify_stop')
@@ -1703,6 +1714,8 @@ function parseTradeSignal(body) {
         accountId: body.accountId || body.account,
         trailing_trigger: body.trailing_trigger,
         trailing_offset: body.trailing_offset,
+        stop_points: body.stop_points,
+        target_points: body.target_points,
         strategy: body.strategy, // Preserve strategy field
         reason: body.reason, // For cancel_limit and modify_stop actions
         breakeven_trigger: body.breakeven_trigger,

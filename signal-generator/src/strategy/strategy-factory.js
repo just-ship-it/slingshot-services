@@ -9,6 +9,7 @@ import { createLogger } from '../../../shared/index.js';
 import { GexScalpStrategy } from '../../../shared/strategies/gex-scalp.js';
 import { IVSkewGexStrategy } from '../../../shared/strategies/iv-skew-gex.js';
 import { ESCrossSignalStrategy } from '../../../shared/strategies/es-cross-signal.js';
+import { EsStopHuntStrategy } from '../../../shared/strategies/es-stop-hunt.js';
 
 const logger = createLogger('strategy-factory');
 
@@ -18,7 +19,9 @@ const logger = createLogger('strategy-factory');
 export const STRATEGY_TYPES = {
   GEX_SCALP: 'gex-scalp',
   IV_SKEW_GEX: 'iv-skew-gex',
-  ES_CROSS_SIGNAL: 'es-cross-signal'
+  ES_CROSS_SIGNAL: 'es-cross-signal',
+  ES_STOP_HUNT: 'es-stop-hunt',
+  AI_TRADER: 'ai-trader'
 };
 
 /**
@@ -41,6 +44,17 @@ export function createStrategy(strategyName, config) {
     case 'es_cross_signal':
     case 'escrosssignal':
       return createESCrossSignalStrategy(config);
+
+    case STRATEGY_TYPES.ES_STOP_HUNT:
+    case 'es_stop_hunt':
+    case 'esstophunt':
+      return createEsStopHuntStrategy(config);
+
+    case STRATEGY_TYPES.AI_TRADER:
+    case 'ai_trader':
+    case 'aitrader':
+      // AI Trader uses its own engine — return null placeholder
+      return null;
 
     case STRATEGY_TYPES.GEX_SCALP:
     case 'gex_scalp':
@@ -92,6 +106,23 @@ function createESCrossSignalStrategy(config) {
 }
 
 /**
+ * Create ES Stop Hunt strategy with proper parameters
+ */
+function createEsStopHuntStrategy(config) {
+  const params = {};
+
+  // Add common params
+  params.tradingSymbol = config.TRADING_SYMBOL;
+  params.defaultQuantity = config.DEFAULT_QUANTITY;
+  params.debug = true;
+
+  logger.info(`ES-Stop-Hunt params: symbol=${params.tradingSymbol}, ` +
+    `quantity=${params.defaultQuantity}`);
+
+  return new EsStopHuntStrategy(params);
+}
+
+/**
  * Create IV Skew GEX strategy with proper parameters
  */
 function createIVSkewGexStrategy(config) {
@@ -130,6 +161,16 @@ export function getStrategyConstant(strategyName) {
     case 'escrosssignal':
       return 'ES_CROSS_SIGNAL';
 
+    case STRATEGY_TYPES.ES_STOP_HUNT:
+    case 'es_stop_hunt':
+    case 'esstophunt':
+      return 'ES_STOP_HUNT';
+
+    case STRATEGY_TYPES.AI_TRADER:
+    case 'ai_trader':
+    case 'aitrader':
+      return 'AI_TRADER';
+
     case STRATEGY_TYPES.GEX_SCALP:
     case 'gex_scalp':
     case 'gexscalp':
@@ -152,6 +193,11 @@ export function getDataRequirements(strategyName) {
     case 'escrosssignal':
       return ESCrossSignalStrategy.getDataRequirements();
 
+    case STRATEGY_TYPES.ES_STOP_HUNT:
+    case 'es_stop_hunt':
+    case 'esstophunt':
+      return EsStopHuntStrategy.getDataRequirements();
+
     case STRATEGY_TYPES.IV_SKEW_GEX:
     case 'iv_skew_gex':
     case 'ivskewgex':
@@ -161,6 +207,17 @@ export function getDataRequirements(strategyName) {
     case 'gex_scalp':
     case 'gexscalp':
       return GexScalpStrategy.getDataRequirements();
+
+    case STRATEGY_TYPES.AI_TRADER:
+    case 'ai_trader':
+    case 'aitrader':
+      return {
+        candles: { quoteSymbols: ['CME_MINI:NQ1!'], baseSymbol: 'NQ' },
+        gex: { etfSymbol: 'QQQ', futuresSymbol: 'NQ', defaultMultiplier: 41.5 },
+        lt: { symbol: 'CME_MINI:NQ1!', timeframe: '15' },
+        tradier: false,
+        ivSkew: false,
+      };
 
     default:
       return null;

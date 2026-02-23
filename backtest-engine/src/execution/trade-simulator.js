@@ -119,7 +119,9 @@ export class TradeSimulator {
       // Track the contract the signal was generated on (for rollover handling)
       signalContract: signal.signalContract || null,
       // Entry time will be set when order fills (separate from signalTime)
-      entryTime: null
+      entryTime: null,
+      // Stop check mode: 'close' checks candle close (JV eBook), default/null checks wick
+      stopCheckMode: signal.stopCheckMode || null
     };
 
     // Add to active trades for monitoring
@@ -185,27 +187,6 @@ export class TradeSimulator {
       // Log trade status before processing
       if (debug) {
         console.log(`  📊 [TRADE ${tradeId}] Entry: ${trade.entryCandle?.symbol || 'N/A'} @ ${trade.actualEntry || trade.entryPrice} | Status: ${trade.status} | Current candle: ${candle.symbol}`);
-      }
-
-      // MODIFIED: Check for contract mismatch but allow calendar spread conversion
-      let shouldSkip = false;
-      if (trade.entryCandle && trade.entryCandle.symbol && candle.symbol !== trade.entryCandle.symbol) {
-        // Check if we can handle this with calendar spread conversion
-        const convertedPrice = this.getConvertedPrice(candle, trade.entryCandle.symbol);
-        if (convertedPrice === null || convertedPrice === candle.close) {
-          if (debug) {
-            console.log(`  ⚠️  [TRADE ${tradeId}] Contract mismatch: ${trade.entryCandle.symbol} → ${candle.symbol}, no calendar spread available - SKIPPING`);
-          }
-          shouldSkip = true;
-        } else {
-          if (debug) {
-            console.log(`  ✅ [TRADE ${tradeId}] Contract mismatch: ${trade.entryCandle.symbol} → ${candle.symbol}, using calendar spread conversion: ${candle.close} → ${convertedPrice}`);
-          }
-        }
-      }
-
-      if (shouldSkip) {
-        continue; // Skip this candle - cannot handle contract mismatch
       }
 
       const update = this.updateTrade(trade, candle);
@@ -415,12 +396,24 @@ export class TradeSimulator {
           trade.entryTime = bar.timestamp;
           trade.entryCandle = bar;
 
+          // Initialize MFE/MAE tracking
+          trade._mfePrice = fillResult.fillPrice;
+          trade._maePrice = fillResult.fillPrice;
+
+          // Recalculate stop from actual fill price if stopDistance is specified
+          if (trade.signal?.stopDistance) {
+            const isBuy = trade.side === 'buy' || trade.side === 'long';
+            trade.stopLoss = roundTo(isBuy
+              ? trade.actualEntry - trade.signal.stopDistance
+              : trade.actualEntry + trade.signal.stopDistance);
+          }
+
           if (debug) {
             console.log(`    ✅ [TRADE ${trade.id}] Order filled at ${fillResult.fillPrice} (1s: ${new Date(bar.timestamp).toISOString()})`);
           }
 
-          // Initialize trailing stop if enabled (regular trailing, breakeven, or time-based mode)
-          if ((trade.trailingTrigger && trade.trailingOffset) || trade.breakevenStop || trade.signal?.timeBasedTrailing || this.timeBasedTrailingConfig?.enabled) {
+          // Initialize trailing stop if enabled (regular trailing, breakeven, time-based, or composite mode)
+          if ((trade.trailingTrigger && trade.trailingOffset) || trade.breakevenStop || trade.signal?.timeBasedTrailing || this.timeBasedTrailingConfig?.enabled || trade.signal?.compositeTrailing) {
             trade.trailingStop = this.initializeTrailingStop(trade, fillResult.fillPrice);
           }
 
@@ -482,6 +475,17 @@ export class TradeSimulator {
           return this.exitTrade(trade, bar, 'take_profit', trade.takeProfit);
         }
 
+        // Update MFE/MAE tracking (independent of trailing stops)
+        if (trade._mfePrice != null) {
+          if (this.isBuyPosition(trade)) {
+            if (bar.high > trade._mfePrice) trade._mfePrice = bar.high;
+            if (bar.low < trade._maePrice) trade._maePrice = bar.low;
+          } else {
+            if (bar.low < trade._mfePrice) trade._mfePrice = bar.low;
+            if (bar.high > trade._maePrice) trade._maePrice = bar.high;
+          }
+        }
+
         // 3. Now update trailing stop for next iteration
         // This ensures we check stops BEFORE updating the trailing, preventing
         // the issue where trailing updates and stop checks happen "atomically"
@@ -489,10 +493,6 @@ export class TradeSimulator {
           this.updateTrailingStop(trade, bar);
         }
       }
-    }
-
-    if (debug) {
-      console.log(`    🏁 [TRADE ${trade.id}] For loop complete. status=${trade.status}`);
     }
 
     // If we're still pending after all second bars, check timeout
@@ -512,13 +512,18 @@ export class TradeSimulator {
     }
 
     // Increment bars since entry for active trades (for maxHoldBars tracking)
-    if (debug) {
-      console.log(`    📊 [TRADE ${trade.id}] Before increment: barsSinceEntry=${trade.barsSinceEntry}, status=${trade.status}, hasMinuteCandle=${!!minuteCandle}`);
-    }
     if (trade.status === 'active' && minuteCandle) {
       trade.barsSinceEntry++;
-      if (debug) {
-        console.log(`    📈 [TRADE ${trade.id}] After increment: barsSinceEntry=${trade.barsSinceEntry}`);
+
+      // Safety: force-exit if maxHoldBars exceeded (the in-loop check may not run
+      // if all 1s bars were skipped due to conversion failures)
+      if (trade.maxHoldBars > 0 && trade.barsSinceEntry >= trade.maxHoldBars) {
+        return this.exitTrade(trade, minuteCandle, 'max_hold_time', minuteCandle.close);
+      }
+
+      // Safety: force-exit at market close (same rationale)
+      if (this.forceCloseAtMarketClose && this.isMarketClose(minuteCandle.timestamp)) {
+        return this.exitTrade(trade, minuteCandle, 'market_close', minuteCandle.close);
       }
     }
 
@@ -582,12 +587,24 @@ export class TradeSimulator {
         trade.entryTime = candle.timestamp;
         trade.entryCandle = candle;
 
+        // Initialize MFE/MAE tracking
+        trade._mfePrice = fillResult.fillPrice;
+        trade._maePrice = fillResult.fillPrice;
+
+        // Recalculate stop from actual fill price if stopDistance is specified
+        if (trade.signal?.stopDistance) {
+          const isBuy = trade.side === 'buy' || trade.side === 'long';
+          trade.stopLoss = roundTo(isBuy
+            ? trade.actualEntry - trade.signal.stopDistance
+            : trade.actualEntry + trade.signal.stopDistance);
+        }
+
         if (debug) {
           console.log(`    ✅ [TRADE ${trade.id}] Order filled at ${fillResult.fillPrice}`);
         }
 
-        // Initialize trailing stop if enabled (regular trailing, breakeven, or time-based mode)
-        if ((trade.trailingTrigger && trade.trailingOffset) || trade.breakevenStop || trade.signal?.timeBasedTrailing || this.timeBasedTrailingConfig?.enabled) {
+        // Initialize trailing stop if enabled (regular trailing, breakeven, time-based, or composite mode)
+        if ((trade.trailingTrigger && trade.trailingOffset) || trade.breakevenStop || trade.signal?.timeBasedTrailing || this.timeBasedTrailingConfig?.enabled || trade.signal?.compositeTrailing) {
           trade.trailingStop = this.initializeTrailingStop(trade, fillResult.fillPrice);
           if (debug) {
             const mode = trade.trailingStop.mode || 'fixed';
@@ -656,6 +673,17 @@ export class TradeSimulator {
           console.warn(`   Entry symbol: ${trade.entryCandle?.symbol} | Current symbol: ${candle.symbol}`);
           console.warn(`   Available spreads: ${this.calendarSpreadsByTime.size} time periods, ${Array.from(this.calendarSpreadsByTime.values())[0]?.size || 0} spreads per period`);
           return null;
+        }
+      }
+
+      // Update MFE/MAE tracking (independent of trailing stops)
+      if (trade._mfePrice != null) {
+        if (this.isBuyPosition(trade)) {
+          if (candle.high > trade._mfePrice) trade._mfePrice = candle.high;
+          if (candle.low < trade._maePrice) trade._maePrice = candle.low;
+        } else {
+          if (candle.low < trade._mfePrice) trade._mfePrice = candle.low;
+          if (candle.high > trade._maePrice) trade._maePrice = candle.high;
         }
       }
 
@@ -779,6 +807,11 @@ export class TradeSimulator {
    * @param {Object} candle - Current candle (use high/low for better tracking)
    */
   updateTrailingStop(trade, candle) {
+    // Check if composite trailing is enabled for this trade
+    if (trade.trailingStop?.mode === 'composite') {
+      return this.updateCompositeTrailingStop(trade, candle);
+    }
+
     // Check if time-based trailing is enabled for this trade
     if (trade.trailingStop?.mode === 'timeBased') {
       return this.updateTimeBasedTrailingStop(trade, candle);
@@ -787,6 +820,11 @@ export class TradeSimulator {
     // Check if hybrid trailing is enabled for this trade
     if (trade.trailingStop?.mode === 'hybrid') {
       return this.updateHybridTrailingStop(trade, candle);
+    }
+
+    // Check if zone-traverse breakeven mode is enabled (structure-aware breakeven)
+    if (trade.trailingStop?.mode === 'zoneTraverse') {
+      return this.updateZoneTraverseStop(trade, candle);
     }
 
     // Check if breakeven mode is enabled (move stop to entry, don't trail further)
@@ -881,6 +919,39 @@ export class TradeSimulator {
         trailing.triggered = true;
         // Move stop to entry - offset (for shorts, + is against us)
         trailing.currentStop = entryPrice - protectionOffset;
+      }
+    }
+  }
+
+  /**
+   * Update zone-traverse breakeven stop - moves stop to entry when price reaches
+   * the far side of the entry zone (FVG/OB), confirming the rejection thesis.
+   *
+   * Trigger logic:
+   * - Long: candle.high >= entryZone.top (price reached far side above entry)
+   * - Short: candle.low <= entryZone.bottom (price reached far side below entry)
+   *
+   * @param {Object} trade - Trade object with zone traverse stop
+   * @param {Object} candle - Current candle
+   */
+  updateZoneTraverseStop(trade, candle) {
+    const trailing = trade.trailingStop;
+    const entryPrice = trade.actualEntry || trade.entryPrice;
+    const zone = trailing.entryZone;
+
+    if (!zone || zone.top == null || zone.bottom == null) {
+      return; // No zone data — do nothing
+    }
+
+    if (this.isBuyPosition(trade)) {
+      if (!trailing.triggered && candle.high >= zone.top) {
+        trailing.triggered = true;
+        trailing.currentStop = entryPrice;
+      }
+    } else {
+      if (!trailing.triggered && candle.low <= zone.bottom) {
+        trailing.triggered = true;
+        trailing.currentStop = entryPrice;
       }
     }
   }
@@ -1202,6 +1273,200 @@ export class TradeSimulator {
   }
 
   /**
+   * Update composite multi-phase trailing stop
+   *
+   * Chains 4 layered phases of profit protection (highest priority wins):
+   *   Phase 1 (Zone Confirmation): Move stop to breakeven when price clears entry zone
+   *   Phase 2 (Structural): Trail to swing lows/highs + buffer after MFE threshold
+   *   Phase 3 (Aggressive Lock-In): Progressive tightening at MFE tiers
+   *   Phase 4 (Target Proximity): Tight trail when close to take profit
+   *
+   * @param {Object} trade - Trade object with composite trailing stop
+   * @param {Object} candle - Current candle
+   */
+  updateCompositeTrailingStop(trade, candle) {
+    const trailing = trade.trailingStop;
+    const config = trailing.compositeConfig;
+    const entryPrice = trade.actualEntry || trade.entryPrice;
+    const debug = this.debugMode;
+    const isBuy = this.isBuyPosition(trade);
+
+    // Store candle for swing detection (reuses tradeCandles Map)
+    if (!this.tradeCandles.has(trade.id)) {
+      this.tradeCandles.set(trade.id, []);
+    }
+    const candles = this.tradeCandles.get(trade.id);
+    candles.push({
+      timestamp: candle.timestamp,
+      high: candle.high,
+      low: candle.low,
+      close: candle.close
+    });
+
+    const maxCandles = (config.swingLookback * 2) + 20;
+    if (candles.length > maxCandles) {
+      candles.shift();
+    }
+
+    // Update water marks
+    if (isBuy) {
+      if (candle.high > trailing.highWaterMark) trailing.highWaterMark = candle.high;
+      if (candle.low < trailing.lowWaterMark) trailing.lowWaterMark = candle.low;
+    } else {
+      if (candle.low < trailing.lowWaterMark) trailing.lowWaterMark = candle.low;
+      if (candle.high > trailing.highWaterMark) trailing.highWaterMark = candle.high;
+    }
+
+    const currentMFE = isBuy
+      ? trailing.highWaterMark - entryPrice
+      : entryPrice - trailing.lowWaterMark;
+
+    // Activation threshold: composite phases only engage after minimum MFE.
+    // Before activation, optionally use zone-traverse breakeven behavior:
+    // move stop to entry when price clears the entry zone, then hold.
+    // Gated by zoneBreakevenEnabled — when false, trade keeps its original structural stop.
+    const activationThreshold = config.activationThreshold || 0;
+    if (activationThreshold > 0 && currentMFE < activationThreshold) {
+      // Pre-activation: zone-traverse breakeven (only if enabled)
+      const zone = config.entryZone;
+      if (config.zoneBreakevenEnabled && zone && zone.top != null && zone.bottom != null && !trailing.zoneBreakevenTriggered) {
+        const zoneTriggered = isBuy
+          ? candle.high >= zone.top
+          : candle.low <= zone.bottom;
+
+        if (zoneTriggered) {
+          trailing.zoneBreakevenTriggered = true;
+          trailing.triggered = true; // Mark as trailing stop (affects slippage on exit)
+          const beStop = entryPrice;
+          if (isBuy ? beStop > trailing.currentStop : beStop < trailing.currentStop) {
+            trailing.currentStop = beStop;
+            if (debug) {
+              console.log(`    🏠 [COMPOSITE] Pre-activation zone BE: stop → ${beStop.toFixed(2)} | MFE: ${currentMFE.toFixed(1)}pts (need ${activationThreshold})`);
+            }
+          }
+        }
+      }
+      return;
+    }
+
+    // Evaluate phases from highest priority to lowest
+    // Start with fixed trail as the base, then tighter phases override
+    let candidateStop = trailing.currentStop;
+    let activePhase = trailing.activePhase;
+
+    // ── Base: Fixed trail distance after activation ──
+    if (config.postActivationTrailDistance) {
+      const fixedStop = isBuy
+        ? trailing.highWaterMark - config.postActivationTrailDistance
+        : trailing.lowWaterMark + config.postActivationTrailDistance;
+
+      if (isBuy ? fixedStop > candidateStop : fixedStop < candidateStop) {
+        candidateStop = fixedStop;
+        activePhase = 'fixedTrail';
+      }
+    }
+
+    // ── Phase 4: Target Proximity (tighter, overrides fixed trail) ──
+    if (config.targetProximity && trade.takeProfit != null) {
+      const totalDistance = Math.abs(trade.takeProfit - entryPrice);
+      const currentDistance = isBuy
+        ? Math.abs(trade.takeProfit - trailing.highWaterMark)
+        : Math.abs(trailing.lowWaterMark - trade.takeProfit);
+
+      if (totalDistance > 0 && currentDistance <= totalDistance * config.proximityPct) {
+        const proxStop = isBuy
+          ? trailing.highWaterMark - config.proximityTrailDistance
+          : trailing.lowWaterMark + config.proximityTrailDistance;
+
+        if (isBuy ? proxStop > candidateStop : proxStop < candidateStop) {
+          candidateStop = proxStop;
+          activePhase = 'targetProximity';
+        }
+      }
+    }
+
+    // ── Phase 3: Aggressive Lock-In ──
+    if (config.aggressiveThreshold && currentMFE >= config.aggressiveThreshold) {
+      // Find the most aggressive tier that applies
+      let bestTier = null;
+      for (const tier of config.aggressiveTiers) {
+        if (currentMFE >= tier.mfe) {
+          bestTier = tier;
+        }
+      }
+      if (bestTier) {
+        const aggStop = isBuy
+          ? trailing.highWaterMark - bestTier.trailDistance
+          : trailing.lowWaterMark + bestTier.trailDistance;
+
+        if (isBuy ? aggStop > candidateStop : aggStop < candidateStop) {
+          candidateStop = aggStop;
+          if (activePhase !== 'targetProximity') activePhase = 'aggressive';
+        }
+      }
+    }
+
+    // ── Phase 2: Structural ──
+    if (config.structuralEnabled && currentMFE >= config.structuralThreshold) {
+      const swing = isBuy
+        ? this.findSwingLow(candles, config.swingLookback, config.minSwingSize, trade.side)
+        : this.findSwingHigh(candles, config.swingLookback, config.minSwingSize, trade.side);
+
+      if (swing !== null) {
+        const structStop = isBuy
+          ? swing - config.swingBuffer
+          : swing + config.swingBuffer;
+
+        if (isBuy ? structStop > candidateStop : structStop < candidateStop) {
+          candidateStop = structStop;
+          if (activePhase !== 'targetProximity' && activePhase !== 'aggressive') {
+            activePhase = 'structural';
+          }
+        }
+      }
+    }
+
+    // ── Phase 1: Zone Confirmation (breakeven) ──
+    if (config.zoneBreakevenEnabled && !trailing.zoneBreakevenTriggered && config.entryZone) {
+      const zone = config.entryZone;
+      const triggered = isBuy
+        ? (zone.top != null && candle.high >= zone.top)
+        : (zone.bottom != null && candle.low <= zone.bottom);
+
+      if (triggered) {
+        trailing.zoneBreakevenTriggered = true;
+        const beStop = entryPrice;
+        if (isBuy ? beStop > candidateStop : beStop < candidateStop) {
+          candidateStop = beStop;
+          if (activePhase === 'initial') activePhase = 'zoneConfirmation';
+        }
+        if (debug) {
+          console.log(`    🏠 [COMPOSITE] Phase 1 (Zone BE) triggered: stop → ${beStop.toFixed(2)}`);
+        }
+      }
+    }
+
+    // Apply the candidate stop (only move in favorable direction)
+    const stopImproved = isBuy
+      ? candidateStop > trailing.currentStop
+      : candidateStop < trailing.currentStop;
+
+    if (stopImproved) {
+      const oldStop = trailing.currentStop;
+      trailing.currentStop = candidateStop;
+      trailing.triggered = true;
+
+      if (debug && activePhase !== trailing.activePhase) {
+        console.log(`    🔀 [COMPOSITE] Phase transition: ${trailing.activePhase} → ${activePhase} | Stop: ${oldStop.toFixed(2)} → ${candidateStop.toFixed(2)} | MFE: ${currentMFE.toFixed(1)}pts`);
+      } else if (debug && candidateStop !== oldStop) {
+        console.log(`    📈 [COMPOSITE] ${activePhase} stop updated: ${oldStop.toFixed(2)} → ${candidateStop.toFixed(2)} | MFE: ${currentMFE.toFixed(1)}pts`);
+      }
+    }
+
+    trailing.activePhase = activePhase;
+  }
+
+  /**
    * Find the most recent valid swing low in the candle history
    * A swing low is a bar with lower lows than N bars on each side
    *
@@ -1321,6 +1586,40 @@ export class TradeSimulator {
       currentStop: trade.stopLoss
     };
 
+    // Check if composite mode is enabled (highest priority - multi-phase ICT trailing)
+    const useComposite = trade.signal?.compositeTrailing === true;
+
+    if (useComposite) {
+      const signalConfig = trade.signal?.compositeConfig || {};
+      const compositeConfig = {
+        activationThreshold: signalConfig.activationThreshold ?? 20,
+        postActivationTrailDistance: signalConfig.postActivationTrailDistance ?? 40,
+        entryZone: trade.signal?.metadata?.entryZone || signalConfig.entryZone || null,
+        zoneBreakevenEnabled: signalConfig.zoneBreakevenEnabled ?? false,
+        structuralEnabled: signalConfig.structuralEnabled ?? false,
+        structuralThreshold: signalConfig.structuralThreshold ?? 20,
+        swingLookback: signalConfig.swingLookback ?? 5,
+        swingBuffer: signalConfig.swingBuffer ?? 8,
+        minSwingSize: signalConfig.minSwingSize ?? 3,
+        aggressiveThreshold: signalConfig.aggressiveThreshold ?? 50,
+        aggressiveTiers: signalConfig.aggressiveTiers || [
+          { mfe: 50, trailDistance: 25 },
+          { mfe: 80, trailDistance: 15 },
+        ],
+        targetProximity: signalConfig.targetProximity ?? true,
+        proximityPct: signalConfig.proximityPct ?? 0.20,
+        proximityTrailDistance: signalConfig.proximityTrailDistance ?? 5,
+      };
+
+      return {
+        ...baseTrailing,
+        mode: 'composite',
+        activePhase: 'initial',
+        zoneBreakevenTriggered: false,
+        compositeConfig: compositeConfig,
+      };
+    }
+
     // Check if time-based mode is enabled (highest priority - most sophisticated)
     // This mode uses progressive rules based on bars held + profit level
     const useTimeBased = trade.signal?.timeBasedTrailing ||
@@ -1339,6 +1638,23 @@ export class TradeSimulator {
         activeRuleIndex: -1,  // No rule active yet
         currentTrailDistance: null,  // Will be set when a trailing rule activates
         lastAction: null  // Track what action was last applied
+      };
+    }
+
+    // Check if zone-traverse breakeven mode is enabled (structure-aware breakeven)
+    // Triggers when price reaches the far side of the entry zone (FVG/OB)
+    const useZoneTraverse = trade.signal?.zoneTraverseStop &&
+                            trade.signal?.metadata?.entryZone?.top != null &&
+                            trade.signal?.metadata?.entryZone?.bottom != null;
+
+    if (useZoneTraverse) {
+      return {
+        ...baseTrailing,
+        mode: 'zoneTraverse',
+        entryZone: {
+          top: trade.signal.metadata.entryZone.top,
+          bottom: trade.signal.metadata.entryZone.bottom,
+        },
       };
     }
 
@@ -1452,12 +1768,16 @@ export class TradeSimulator {
    * @returns {boolean} True if stop was hit
    */
   checkStopHit(trade, candle, stopPrice) {
+    // JV eBook close-based stops: "You only get stopped out if the candle closes
+    // above or below your key level. Wicks are noise. Closes show real break."
+    const useClose = trade.stopCheckMode === 'close';
+
     if (this.isBuyPosition(trade)) {
       // Long position: stop hit if price went below stop
-      return candle.low <= stopPrice;
+      return useClose ? candle.close <= stopPrice : candle.low <= stopPrice;
     } else {
       // Short position: stop hit if price went above stop
-      return candle.high >= stopPrice;
+      return useClose ? candle.close >= stopPrice : candle.high >= stopPrice;
     }
   }
 
@@ -1553,6 +1873,20 @@ export class TradeSimulator {
     completedTrade.pointsPnL = roundTo(pointsPnL);
     completedTrade.percentPnL = roundTo((pointsPnL / entryPrice) * 100);
 
+    // Add MFE/MAE statistics
+    if (trade._mfePrice != null && trade._maePrice != null) {
+      completedTrade.mfePrice = trade._mfePrice;
+      completedTrade.maePrice = trade._maePrice;
+      if (isBuy) {
+        completedTrade.mfePoints = roundTo(trade._mfePrice - entryPrice);
+        completedTrade.maePoints = roundTo(entryPrice - trade._maePrice);
+      } else {
+        completedTrade.mfePoints = roundTo(entryPrice - trade._mfePrice);
+        completedTrade.maePoints = roundTo(trade._maePrice - entryPrice);
+      }
+      completedTrade.profitGiveBack = roundTo(completedTrade.mfePoints - pointsPnL);
+    }
+
     return completedTrade;
   }
 
@@ -1625,6 +1959,11 @@ export class TradeSimulator {
    * @returns {string} Base symbol
    */
   extractBaseSymbol(symbol) {
+    // Handle back-adjusted continuous contracts (NQ_continuous, ES_continuous)
+    if (symbol.includes('_continuous')) {
+      return symbol.replace('_continuous', '').toUpperCase();
+    }
+
     // Handle continuous contracts (NQ1!, ES1!)
     if (symbol.includes('!')) {
       return symbol.replace(/[0-9!]+$/, '').toUpperCase();

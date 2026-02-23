@@ -65,8 +65,9 @@ export class CandleBuffer {
             return true; // This is a new closed candle
           }
         } else {
-          // Out of order candle - shouldn't happen with live data
-          logger.warn(`Received out-of-order candle for ${this.symbol}: ${candle.timestamp}`);
+          // Out-of-order candle — common after seedCandles() during low-volume
+          // periods (e.g. Sunday) when TradingView resends the current forming bar
+          logger.debug(`Skipping out-of-order candle for ${this.symbol}: ${candle.timestamp}`);
           return false;
         }
       } else {
@@ -223,6 +224,51 @@ export class CandleBuffer {
         durationHours: (new Date(lastCandle.timestamp) - new Date(firstCandle.timestamp)) / (1000 * 60 * 60)
       }
     };
+  }
+
+  /**
+   * Bulk-load historical candles into the buffer.
+   * Used to seed the buffer with TradingView history on startup.
+   * Candles are sorted by timestamp and deduplicated.
+   * @param {Array} candles - Array of candle data objects
+   * @returns {number} Number of candles loaded
+   */
+  seedCandles(candles) {
+    if (!candles || candles.length === 0) return 0;
+
+    const validCandles = [];
+    for (const candleData of candles) {
+      const candle = new Candle(candleData);
+      if (this.isValidCandle(candle)) {
+        validCandles.push(candle);
+      }
+    }
+
+    if (validCandles.length === 0) return 0;
+
+    // Sort by timestamp
+    validCandles.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+
+    // Deduplicate by timestamp (keep latest)
+    const uniqueMap = new Map();
+    for (const candle of validCandles) {
+      const ts = new Date(candle.timestamp).getTime();
+      uniqueMap.set(ts, candle);
+    }
+    const deduped = Array.from(uniqueMap.values());
+    deduped.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+
+    // Replace buffer contents, respecting maxSize
+    this.candles = deduped.slice(-this.maxSize);
+
+    if (this.candles.length > 0) {
+      const lastCandle = this.candles[this.candles.length - 1];
+      this.lastCandleTime = new Date(lastCandle.timestamp).getTime();
+      this.initialized = true;
+    }
+
+    logger.info(`Seeded ${this.candles.length} ${this.timeframe}m candles for ${this.symbol} (from ${deduped.length} unique)`);
+    return this.candles.length;
   }
 
   /**

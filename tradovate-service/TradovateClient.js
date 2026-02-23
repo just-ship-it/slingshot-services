@@ -544,14 +544,22 @@ class TradovateClient extends EventEmitter {
       };
 
       // Add stop loss and take profit as relative values
-      if (orderData.bracket1 && orderData.bracket1.stopPrice) {
-        // Calculate relative stop loss distance from entry
-        // For Buy: negative value = stop below entry, positive = stop above
-        // For Sell: positive value = stop above entry, negative = stop below
-        const stopLossDistance = orderData.action === 'Buy'
-          ? orderData.bracket1.stopPrice - orderData.price  // Buy: stop below entry (stop - entry = negative)
-          : orderData.bracket1.stopPrice - orderData.price; // Sell: stop above entry (stop - entry = positive)
-        bracket.stopLoss = stopLossDistance;  // Preserve the sign for Tradovate API
+      if (orderData.bracket1 && (orderData.bracket1.stopPrice || orderData.stop_points)) {
+        let stopLossDistance;
+        if (orderData.price) {
+          // Limit orders: compute relative distance from entry price
+          stopLossDistance = orderData.action === 'Buy'
+            ? orderData.bracket1.stopPrice - orderData.price  // Buy: stop below entry (negative)
+            : orderData.bracket1.stopPrice - orderData.price; // Sell: stop above entry (positive)
+        } else if (orderData.stop_points) {
+          // Market orders: use point-based distance directly (no entry price available)
+          stopLossDistance = orderData.action === 'Buy'
+            ? -Math.abs(orderData.stop_points)   // Buy: stop below entry (negative)
+            : Math.abs(orderData.stop_points);    // Sell: stop above entry (positive)
+        }
+        if (stopLossDistance != null) {
+          bracket.stopLoss = stopLossDistance;  // Preserve the sign for Tradovate API
+        }
 
         // Add autoTrail if specified
         if (orderData.bracket1.autoTrail) {
@@ -563,13 +571,22 @@ class TradovateClient extends EventEmitter {
         }
       }
 
-      if (orderData.bracket2 && orderData.bracket2.price) {
-        // Calculate relative profit target
-        // For Tradovate API: positive value = profit in the direction of the trade
-        const profitDistance = orderData.action === 'Buy'
-          ? orderData.bracket2.price - orderData.price   // Buy: profit above entry (target - entry = positive)
-          : orderData.bracket2.price - orderData.price;  // Sell: profit below entry (target - entry = negative)
-        bracket.profitTarget = profitDistance; // Preserve sign: positive for buy, negative for sell
+      if (orderData.bracket2 && (orderData.bracket2.price || orderData.target_points)) {
+        let profitDistance;
+        if (orderData.price) {
+          // Limit orders: compute relative distance from entry price
+          profitDistance = orderData.action === 'Buy'
+            ? orderData.bracket2.price - orderData.price   // Buy: profit above entry (positive)
+            : orderData.bracket2.price - orderData.price;  // Sell: profit below entry (negative)
+        } else if (orderData.target_points) {
+          // Market orders: use point-based distance directly (no entry price available)
+          profitDistance = orderData.action === 'Buy'
+            ? Math.abs(orderData.target_points)    // Buy: profit above entry (positive)
+            : -Math.abs(orderData.target_points);  // Sell: profit below entry (negative)
+        }
+        if (profitDistance != null) {
+          bracket.profitTarget = profitDistance; // Preserve sign: positive for buy, negative for sell
+        }
       }
 
       strategyParams.brackets.push(bracket);

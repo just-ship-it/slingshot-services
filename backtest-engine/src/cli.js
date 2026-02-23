@@ -68,7 +68,7 @@ export class CLI {
         type: 'string',
         description: 'Strategy to backtest',
         default: 'gex-recoil',
-        choices: ['gex-recoil', 'gex-recoil-enhanced', 'gex-ldpm-confluence', 'gex-ldpm-confluence-pullback', 'contrarian-bounce', 'gex-scalp', 'gex-scalp-confirmed', 'ict-smc', 'ict-ob', 'ldpm-level-sweep', 'order-flow-momentum', 'ofm', 'contrarian-orderflow', 'cof', 'gex-absorption', 'absorption', 'iv-skew-gex', 'iv-skew', 'cbbo-lt-volatility', 'cbbo-lt', 'gex-mean-reversion', 'gex-mr', 'lt-failed-breakdown', 'lt-fb', 'lt-level-crossing', 'lt-cross', 'lt-level-migration', 'lt-mig', 'regime-scalp', 'rs', 'gex-level-sweep', 'gex-sweep', 'sweep', 'micro-structure-scalper', 'micro-scalper', 'mss', 'trend-scalp', 'ts', 'level-bounce', 'lb', 'overnight-gex-touch', 'overnight-gex', 'ogt', 'overnight-charm-vanna', 'ocv', 'es-cross-signal', 'es-cross', 'ecs']
+        choices: ['gex-recoil', 'gex-recoil-enhanced', 'gex-ldpm-confluence', 'gex-ldpm-confluence-pullback', 'contrarian-bounce', 'gex-scalp', 'gex-scalp-confirmed', 'ict-smc', 'ict-ob', 'ldpm-level-sweep', 'order-flow-momentum', 'ofm', 'contrarian-orderflow', 'cof', 'gex-absorption', 'absorption', 'iv-skew-gex', 'iv-skew', 'cbbo-lt-volatility', 'cbbo-lt', 'gex-mean-reversion', 'gex-mr', 'lt-failed-breakdown', 'lt-fb', 'lt-level-crossing', 'lt-cross', 'lt-level-migration', 'lt-mig', 'regime-scalp', 'rs', 'gex-level-sweep', 'gex-sweep', 'sweep', 'micro-structure-scalper', 'micro-scalper', 'mss', 'trend-scalp', 'ts', 'level-bounce', 'lb', 'overnight-gex-touch', 'overnight-gex', 'ogt', 'overnight-charm-vanna', 'ocv', 'es-cross-signal', 'es-cross', 'ecs', 'es-micro-scalper', 'es-micro', 'esms', 'es-stop-hunt', 'es-hunt', 'esh', 'ohlcv-absorption', 'absorption-detect', 'abs', 'ohlcv-liquidity-sweep', 'liquidity-sweep', 'lsweep', 'ohlcv-vpin', 'vpin', 'ohlcv-mtf-rejection', 'mtf-rejection', 'mtfr', 'momentum-microstructure', 'momentum-micro', 'mm', 'midnight-open-retracement', 'midnight-open', 'mor', 'initial-balance-breakout', 'ib-breakout', 'ibb', 'gap-fill', 'gap', 'daily-level-sweep', 'daily-sweep', 'dls', 'vwap-bounce', 'vwap', 'session-transition', 'session', 'st', 'value-area-80', 'va80', 'swing-reversal', 'sr', 'ict-silver-bullet', 'silver-bullet', 'isb', 'price-action-exhaustion', 'pa-exhaust', 'pae', 'ict-mtf-sweep', 'mtf-sweep', 'jv']
       })
 
       .option('timeframe', {
@@ -134,9 +134,15 @@ export class CLI {
         default: false
       })
 
-      .option('no-second-resolution', {
+      .option('minute-resolution', {
         type: 'boolean',
         description: 'Disable 1-second data for trade execution (use 1-minute instead)',
+        default: false
+      })
+
+      .option('raw-contracts', {
+        type: 'boolean',
+        description: 'Use raw contract data instead of back-adjusted continuous (required when GEX levels are in absolute price space)',
         default: false
       })
 
@@ -326,6 +332,44 @@ export class CLI {
         type: 'string',
         description: 'Rule 3: "bars,mfe,action" e.g. "45,40,trail:10" (bars>=45, mfe>=40, trail 10pts behind)',
         default: ''
+      })
+
+      // Composite Multi-Phase Trailing Stop (ICT methodology)
+      .group(['composite-trailing', 'composite-activation-threshold', 'composite-zone-be', 'composite-structural-threshold', 'composite-aggressive-threshold', 'composite-proximity-pct'], 'Composite Trailing Stop:')
+
+      .option('composite-trailing', {
+        type: 'boolean',
+        description: 'Enable composite multi-phase trailing stop'
+      })
+
+      .option('composite-activation-threshold', {
+        type: 'number',
+        description: 'MFE points before composite trailing engages (trade runs original stop until then)',
+        default: 20
+      })
+
+      .option('composite-zone-be', {
+        type: 'boolean',
+        description: 'Enable zone breakeven (Phase 1) — moves stop to BE when price clears entry zone',
+        default: false
+      })
+
+      .option('composite-structural-threshold', {
+        type: 'number',
+        description: 'MFE points to activate structural swing-based trailing (Phase 2)',
+        default: 20
+      })
+
+      .option('composite-aggressive-threshold', {
+        type: 'number',
+        description: 'MFE points to activate aggressive progressive tightening (Phase 3)',
+        default: 30
+      })
+
+      .option('composite-proximity-pct', {
+        type: 'number',
+        description: 'Within this % of target distance, activate tight trailing (Phase 4, 0-1)',
+        default: 0.20
       })
 
       .option('longs-only', {
@@ -927,6 +971,153 @@ export class CLI {
         description: 'Comma-separated days to skip (e.g., Friday,Monday)'
       })
 
+      // ES Micro-Scalper Strategy Parameters
+      .group(['esms-active-patterns', 'esms-composite-mode', 'esms-min-concurrent', 'esms-rsi3-oversold', 'esms-rsi3-overbought', 'esms-consecutive-min', 'esms-ema20-deviation', 'esms-gex-proximity', 'esms-lt-proximity', 'esms-volume-spike'], 'ES Micro-Scalper Strategy:')
+
+      .option('esms-active-patterns', {
+        type: 'string',
+        description: 'Comma-separated active patterns (rsi3_extreme,rsi6_extreme,consecutive_candles,bb_touch,ema20_deviation,large_candle_fade,gex_proximity,lt_proximity,volume_spike_rejection)'
+      })
+
+      .option('esms-composite-mode', {
+        type: 'boolean',
+        description: 'Require multiple concurrent patterns for signal'
+      })
+
+      .option('esms-min-concurrent', {
+        type: 'number',
+        description: 'Minimum concurrent patterns in composite mode (default: 2)'
+      })
+
+      .option('esms-rsi3-oversold', {
+        type: 'number',
+        description: 'RSI(3) oversold threshold (default: 10)'
+      })
+
+      .option('esms-rsi3-overbought', {
+        type: 'number',
+        description: 'RSI(3) overbought threshold (default: 90)'
+      })
+
+      .option('esms-consecutive-min', {
+        type: 'number',
+        description: 'Min consecutive candles to trigger fade (default: 3)'
+      })
+
+      .option('esms-ema20-deviation', {
+        type: 'number',
+        description: 'EMA(20) deviation threshold in points (default: 3)'
+      })
+
+      .option('esms-gex-proximity', {
+        type: 'number',
+        description: 'GEX S1/R1 proximity threshold in points (default: 2)'
+      })
+
+      .option('esms-lt-proximity', {
+        type: 'number',
+        description: 'LT level proximity threshold in points (default: 2)'
+      })
+
+      .option('esms-volume-spike', {
+        type: 'number',
+        description: 'Volume spike multiplier (default: 2.0)'
+      })
+
+      // ICT MTF Sweep Strategy Parameters
+      .group(['priority-mode', 'require-killzone', 'require-tf-alignment', 'active-timeframes', 'sweep-min-wick', 'fvg-entry-mode', 'ob-entry', 'max-concurrent-setups', 'equal-level-tolerance', 'min-rr'], 'ICT MTF Sweep Strategy:')
+
+      .option('priority-mode', {
+        type: 'string',
+        description: 'Setup priority mode when multiple setups are ready',
+        choices: ['highest_tf', 'best_rr', 'most_recent', 'killzone_first'],
+        default: 'highest_tf'
+      })
+
+      .option('require-killzone', {
+        type: 'boolean',
+        description: 'Only allow entries during killzones (all TFs)',
+        default: false
+      })
+
+      .option('require-tf-alignment', {
+        type: 'boolean',
+        description: 'Require HTF trend agreement for entries',
+        default: false
+      })
+
+      .option('active-timeframes', {
+        type: 'string',
+        description: 'Comma-separated TFs to analyze (default: 5m,15m,1h,4h)',
+        default: '5m,15m,1h,4h'
+      })
+
+      .option('sweep-min-wick', {
+        type: 'number',
+        description: 'Min wick beyond level for sweep detection (points)',
+        default: 2
+      })
+
+      .option('fvg-entry-mode', {
+        type: 'string',
+        description: 'FVG entry mode: ce (consequent encroachment/midpoint) or edge',
+        choices: ['ce', 'edge'],
+        default: 'ce'
+      })
+
+      .option('ob-entry', {
+        type: 'boolean',
+        description: 'Enable Order Block entries',
+        default: true
+      })
+
+      .option('max-concurrent-setups', {
+        type: 'number',
+        description: 'Max parallel setups tracked',
+        default: 10
+      })
+
+      .option('equal-level-tolerance', {
+        type: 'number',
+        description: 'Points tolerance for equal high/low detection',
+        default: 3
+      })
+
+      .option('min-rr', {
+        type: 'number',
+        description: 'Minimum risk:reward ratio for entry',
+        default: 1.5
+      })
+
+      // Swing Reversal Strategy Parameters
+      .group(['stop-distance', 'limit-buffer', 'max-hold-bars', 'allow-overnight-holds', 'limit-timeout'], 'Swing Reversal Strategy:')
+
+      .option('stop-distance', {
+        type: 'number',
+        description: 'Fixed stop distance in points from fill price (default: 30)'
+      })
+
+      .option('max-hold-bars', {
+        type: 'number',
+        description: 'Force exit after N bars in trade (default: 240)'
+      })
+
+      .option('allow-overnight-holds', {
+        type: 'boolean',
+        description: 'Disable force-close at market close (allow positions to hold overnight)',
+        default: false
+      })
+
+      .option('limit-buffer', {
+        type: 'number',
+        description: 'Points beyond close for limit entry — buy below, sell above (default: 0)'
+      })
+
+      .option('limit-timeout', {
+        type: 'number',
+        description: 'Cancel unfilled limit orders after N candles (default: 3)'
+      })
+
       .help('h')
       .alias('h', 'help')
       .version('1.0.0')
@@ -972,6 +1163,13 @@ export class CLI {
       tradingSymbol: args.ticker.toUpperCase()
     };
 
+    // If strategy config specifies a timeframe and user didn't explicitly override, use it
+    const rawArgs = process.argv.slice(2);
+    const userSetTimeframe = rawArgs.some(a => a.startsWith('--timeframe') || a.startsWith('--tf'));
+    if (strategyParams.timeframe && !userSetTimeframe) {
+      args.timeframe = strategyParams.timeframe;
+    }
+
     // Only add parameters that are actually defined
     if (args.targetPoints !== undefined) {
       strategyParams.targetPoints = args.targetPoints;
@@ -1008,6 +1206,15 @@ export class CLI {
     if (args.swingLookback !== undefined) strategyParams.swingLookback = args.swingLookback;
     if (args.swingBuffer !== undefined) strategyParams.swingBuffer = args.swingBuffer;
     if (args.minSwingSize !== undefined) strategyParams.minSwingSize = args.minSwingSize;
+
+    // Swing Reversal Strategy parameters
+    if (args.stopDistance !== undefined) strategyParams.stopDistance = args.stopDistance;
+    if (args.limitBuffer !== undefined) strategyParams.limitBuffer = args.limitBuffer;
+    if (args.maxHoldBars !== undefined) strategyParams.maxHoldBars = args.maxHoldBars;
+    if (args.limitTimeout !== undefined) strategyParams.limitOrderTimeout = args.limitTimeout;
+
+    // Allow overnight holds (disable force-close at market close)
+    if (args.allowOvernightHolds) strategyParams.forceCloseAtMarketClose = false;
 
     // Time-based trailing stop parameters (progressive profit protection)
     if (args.timeBasedTrailing !== undefined) strategyParams.timeBasedTrailing = args.timeBasedTrailing;
@@ -1119,6 +1326,7 @@ export class CLI {
     if (args.targetMethod !== undefined) strategyParams.targetMethod = args.targetMethod;
     if (args.defaultRr !== undefined) strategyParams.defaultRR = args.defaultRr;
     if (args.verbose) strategyParams.verbose = args.verbose;
+    if (args.debug) strategyParams.debug = true;
 
     // LTF Confirmation Parameters
     if (args.ltfConfirmation !== undefined || args.ltfTimeout !== undefined || args.ltfWickRatio !== undefined) {
@@ -1244,6 +1452,40 @@ export class CLI {
       strategyParams.blockedDays = args.blockedDays.split(',').map(s => s.trim());
     }
 
+    // Composite trailing stop parameters (multi-phase ICT trailing)
+    if (args.compositeTrailing !== undefined) strategyParams.useCompositeTrailing = args.compositeTrailing;
+    if (args.compositeActivationThreshold !== undefined) strategyParams.compositeActivationThreshold = args.compositeActivationThreshold;
+    if (args.compositeZoneBe !== undefined) strategyParams.compositeZoneBreakevenEnabled = args.compositeZoneBe;
+    if (args.compositeStructuralThreshold !== undefined) strategyParams.compositeStructuralThreshold = args.compositeStructuralThreshold;
+    if (args.compositeAggressiveThreshold !== undefined) strategyParams.compositeAggressiveThreshold = args.compositeAggressiveThreshold;
+    if (args.compositeProximityPct !== undefined) strategyParams.compositeProximityPct = args.compositeProximityPct;
+
+    // ICT MTF Sweep Strategy Parameters
+    if (args.priorityMode !== undefined) strategyParams.priorityMode = args.priorityMode;
+    if (args.requireKillzone !== undefined) strategyParams.requireKillzone = args.requireKillzone;
+    if (args.requireTfAlignment !== undefined) strategyParams.requireTFAlignment = args.requireTfAlignment;
+    if (args.activeTimeframes !== undefined) strategyParams.activeTimeframes = args.activeTimeframes;
+    if (args.sweepMinWick !== undefined) strategyParams.sweepMinWick = args.sweepMinWick;
+    if (args.fvgEntryMode !== undefined) strategyParams.fvgEntryMode = args.fvgEntryMode;
+    if (args.obEntry !== undefined) strategyParams.useOBEntry = args.obEntry;
+    if (args.maxConcurrentSetups !== undefined) strategyParams.maxConcurrentSetups = args.maxConcurrentSetups;
+    if (args.equalLevelTolerance !== undefined) strategyParams.equalLevelTolerance = args.equalLevelTolerance;
+    if (args.minRr !== undefined) strategyParams.minRR = args.minRr;
+
+    // ES Micro-Scalper Strategy Parameters
+    if (args.esmsActivePatterns) {
+      strategyParams.activePatterns = args.esmsActivePatterns.split(',').map(s => s.trim());
+    }
+    if (args.esmsCompositeMode !== undefined) strategyParams.compositeMode = args.esmsCompositeMode;
+    if (args.esmsMinConcurrent !== undefined) strategyParams.minConcurrentPatterns = args.esmsMinConcurrent;
+    if (args.esmsRsi3Oversold !== undefined) strategyParams.rsi3OversoldThreshold = args.esmsRsi3Oversold;
+    if (args.esmsRsi3Overbought !== undefined) strategyParams.rsi3OverboughtThreshold = args.esmsRsi3Overbought;
+    if (args.esmsConsecutiveMin !== undefined) strategyParams.consecutiveCandleMin = args.esmsConsecutiveMin;
+    if (args.esmsEma20Deviation !== undefined) strategyParams.ema20DeviationPoints = args.esmsEma20Deviation;
+    if (args.esmsGexProximity !== undefined) strategyParams.gexProximityPoints = args.esmsGexProximity;
+    if (args.esmsLtProximity !== undefined) strategyParams.ltProximityPoints = args.esmsLtProximity;
+    if (args.esmsVolumeSpike !== undefined) strategyParams.volumeSpikeMultiplier = args.esmsVolumeSpike;
+
     // Create backtest configuration
     const backtestConfig = {
       ticker: args.ticker.toUpperCase(),
@@ -1258,7 +1500,8 @@ export class CLI {
       verbose: args.verbose,
       quiet: args.quiet,
       showTrades: args.showTrades,
-      useSecondResolution: !args.noSecondResolution,
+      useSecondResolution: !args.minuteResolution,
+      noContinuous: args.rawContracts,
       useCBBO: args.useCbbo || args.strategy === 'cbbo-lt-volatility' || args.strategy === 'cbbo-lt',
       cbboDataDir: args.cbboDataDir || null, // null means use default: dataDir/cbbo-1m/qqq
       outputFiles: {
