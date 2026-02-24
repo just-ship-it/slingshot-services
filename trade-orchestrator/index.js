@@ -3093,6 +3093,16 @@ async function handleBracketOrderFill(fillMessage, orderRole) {
   if (!remainingPosition) {
     logger.info(`🔒 Position closed via ${orderRole}, cancelling other bracket orders`);
     await cancelOtherBracketOrders(symbol, fillMessage.orderId);
+
+    // Broadcast position closure again after order cleanup so frontend reload sees clean state
+    await messageBus.publish(CHANNELS.POSITION_UPDATE, {
+      symbol: symbol,
+      netPos: 0,
+      currentPrice: fillMessage.fillPrice,
+      side: 'flat',
+      timestamp: new Date().toISOString(),
+      source: 'position_closed_cleanup'
+    });
   }
 }
 
@@ -3113,6 +3123,16 @@ async function cancelOtherBracketOrders(symbol, filledOrderId) {
     tradingState.workingOrders.delete(orderId);
     tradingState.orderRelationships.delete(orderId);
     logger.info(`🚫 Auto-cancelled bracket order: ${orderId}`);
+  }
+
+  // Sweep any remaining orders for this symbol (e.g. parent strategy orders
+  // that were never added to orderRelationships)
+  for (const [orderId, order] of tradingState.workingOrders.entries()) {
+    if (order.symbol === symbol && orderId !== filledOrderId) {
+      tradingState.workingOrders.delete(orderId);
+      tradingState.orderRelationships.delete(orderId);
+      logger.info(`🧹 Cleaned up remaining order ${orderId} for closed position ${symbol}`);
+    }
   }
 }
 
