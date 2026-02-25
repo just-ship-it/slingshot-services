@@ -406,6 +406,15 @@ class HybridGexCalculator {
         tradierAge: Math.round(tradierAge / 1000),
         cboeAge: Math.round(cboeAge / 1000)
       });
+
+      // Notify listener (e.g., data-service publishes to Redis)
+      if (this.updateCallback) {
+        try {
+          this.updateCallback(hybridData);
+        } catch (err) {
+          logger.warn('Update callback failed:', err.message);
+        }
+      }
     }
 
     return hybridData;

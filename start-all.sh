@@ -69,7 +69,7 @@ npm install
 cd ..
 
 # Install dependencies for each service
-services=("tradovate-service" "trade-orchestrator" "monitoring-service" "signal-generator")
+services=("tradovate-service" "trade-orchestrator" "monitoring-service" "data-service" "signal-generator" "macro-briefing")
 
 for service in "${services[@]}"; do
     install_deps "$SERVICES_DIR/$service" "$service"
@@ -111,12 +111,15 @@ echo "Service URLs:"
 echo "  Monitoring (PUBLIC): http://localhost:3014/health"
 echo "  Webhook Endpoint:    http://localhost:3014/webhook"
 echo "  Dashboard API:       http://localhost:3014/api/dashboard"
+echo "  Dashboard UI:        http://localhost:3020"
 echo ""
 echo "Internal Services (localhost only):"
 echo "  Tradovate Service:  http://localhost:3011/health"
 echo "  Trade Orchestrator: http://localhost:3013/health"
-echo "  Signal Gen (NQ):    http://localhost:3015/health"
-echo "  Signal Gen (ES):    http://localhost:3016/health"
+echo "  Signal Generator:   http://localhost:3015/health"
+echo "  Macro Briefing:     http://localhost:3017/health"
+echo "  AI Trader:          http://localhost:3018/health"
+echo "  Data Service:       http://localhost:3019/health"
 echo ""
 echo "WebSocket:           ws://localhost:3014"
 echo ""

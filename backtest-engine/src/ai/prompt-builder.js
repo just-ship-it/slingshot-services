@@ -122,7 +122,16 @@ Respond ONLY with the JSON object. No markdown, no explanation outside JSON.`;
   _biasUserPrompt(state) {
     const sections = [];
 
-    sections.push(`# Pre-Market Analysis for ${this.ticker} — ${state.tradingDay}`);
+    const isLateStart = state.sessionContext != null || state.recentCandles != null;
+    const header = isLateStart
+      ? `# Intraday Bias Evaluation for ${this.ticker} — ${state.tradingDay}`
+      : `# Pre-Market Analysis for ${this.ticker} — ${state.tradingDay}`;
+    sections.push(header);
+
+    // Current spot price (critical for late-start bias)
+    if (state.currentSpotPrice != null) {
+      sections.push(`\n## Current Spot Price: ${state.currentSpotPrice.toFixed(2)}`);
+    }
 
     // Prior daily candles
     if (state.priorDailyCandles && state.priorDailyCandles.length > 0) {
@@ -195,15 +204,16 @@ Respond ONLY with the JSON object. No markdown, no explanation outside JSON.`;
 
     // LT Levels — with LDPM context
     if (state.lt) {
-      // Use overnight close or prior day close as reference price
-      const refPrice = state.overnightRange?.close || state.priorDayHLC?.close || null;
+      // Use current spot price (best), overnight close, or prior day close as reference price
+      const refPrice = state.currentSpotPrice || state.overnightRange?.close || state.priorDayHLC?.close || null;
       const levelsAbove = refPrice ? state.lt.levels.filter(lv => lv > refPrice).length : '?';
       const levelsBelow = refPrice ? state.lt.levels.filter(lv => lv <= refPrice).length : '?';
 
       sections.push(`\n## Liquidity Trigger Levels (LDPM)`);
       sections.push(`- Sentiment: **${state.lt.sentiment}** (derived from level configuration — use as one input, not the sole directional signal)`);
       if (refPrice) {
-        sections.push(`- Reference price (overnight close): ${refPrice.toFixed(2)}`);
+        const refLabel = state.currentSpotPrice ? 'current spot' : state.overnightRange?.close ? 'overnight close' : 'prior day close';
+        sections.push(`- Reference price (${refLabel}): ${refPrice.toFixed(2)}`);
         sections.push(`- Levels above price: ${levelsAbove} | Levels below price: ${levelsBelow}`);
       }
       const fibLabels = ['LT-34 (short-term)', 'LT-55 (short-term)', 'LT-144 (medium-term)', 'LT-377 (long-term)', 'LT-610 (long-term)'];
@@ -213,6 +223,29 @@ Respond ONLY with the JSON object. No markdown, no explanation outside JSON.`;
       });
     } else {
       sections.push(`\n## Liquidity Trigger Levels: Not available for this date`);
+    }
+
+    // Late-start: current RTH session context
+    if (state.sessionContext) {
+      const sc = state.sessionContext;
+      sections.push(`\n## Current RTH Session (live)`);
+      sections.push(`- RTH Open: ${sc.rthOpen.toFixed(2)} → Current: ${state.currentSpotPrice.toFixed(2)} (${sc.distFromOpen > 0 ? '+' : ''}${sc.distFromOpen.toFixed(2)} pts from open)`);
+      sections.push(`- RTH High: ${sc.rthHigh.toFixed(2)} | RTH Low: ${sc.rthLow.toFixed(2)} | Range: ${sc.rthRange.toFixed(2)} pts`);
+      sections.push(`- Position in range: ${Math.round(sc.positionInRange * 100)}% (${sc.positionInRange > 0.8 ? 'near high' : sc.positionInRange < 0.2 ? 'near low' : 'mid-range'})`);
+      if (sc.avgDailyRange) {
+        const rangeLabel = sc.rangeRatio >= 2.0 ? 'VERY ELEVATED' : sc.rangeRatio >= 1.5 ? 'ELEVATED' : sc.rangeRatio >= 1.0 ? 'above average' : 'normal';
+        sections.push(`- Avg daily range (5-day): ${sc.avgDailyRange.toFixed(1)} pts | Today: ${sc.rangeRatio.toFixed(1)}x average (${rangeLabel})`);
+      }
+    }
+
+    // Late-start: recent 1m candles
+    if (state.recentCandles && state.recentCandles.length > 0) {
+      sections.push(`\n## Recent 1-Minute Candles (last ${state.recentCandles.length})`);
+      sections.push('| Time | Open | High | Low | Close | Vol |');
+      sections.push('|------|------|------|-----|-------|-----|');
+      for (const rc of state.recentCandles) {
+        sections.push(`| ${rc.time} | ${rc.open.toFixed(2)} | ${rc.high.toFixed(2)} | ${rc.low.toFixed(2)} | ${rc.close.toFixed(2)} | ${rc.volume} |`);
+      }
     }
 
     return sections.join('\n');

@@ -977,7 +977,8 @@ app.get('/api/trading/enhanced-status', (req, res) => {
     if (!orderPrice || !currentPrice) return null;
     const distance = orderPrice - currentPrice;
     const percentage = (distance / currentPrice) * 100;
-    const pointsAway = Math.abs(distance);
+    // Round to nearest tick (0.25 for NQ/ES futures) to avoid floating-point noise
+    const pointsAway = Math.round(Math.abs(distance) * 4) / 4;
     const direction = distance > 0 ? 'above' : 'below';
 
     return {

@@ -30,6 +30,7 @@ class TradingViewClient extends EventEmitter {
     this.credentials = options.credentials;
     this.jwtToken = options.jwtToken;
     this.symbols = options.symbols || [];
+    this.quoteOnlySymbols = options.quoteOnlySymbols || [];
     this.redisUrl = options.redisUrl || 'redis://localhost:6379';
 
     this.ws = null;
@@ -655,7 +656,34 @@ class TradingViewClient extends EventEmitter {
       await new Promise(resolve => setTimeout(resolve, 1000)); // 1 second delay between subscriptions
     }
 
+    // Subscribe to quote-only symbols (no chart session, just price data via qsd)
+    if (this.quoteOnlySymbols && this.quoteOnlySymbols.length > 0) {
+      logger.info('Adding quote-only symbols:', this.quoteOnlySymbols);
+      for (const symbolFull of this.quoteOnlySymbols) {
+        this.addQuoteOnlySymbol(symbolFull);
+        await new Promise(resolve => setTimeout(resolve, 500));
+      }
+    }
+
     logger.info('Quote session active - qsd messages will provide session-level data');
+  }
+
+  /**
+   * Add a symbol to the quote session only (no chart session / OHLCV data).
+   * Used for symbols where only the last price is needed (e.g., QQQ, SPY for GEX translation).
+   */
+  addQuoteOnlySymbol(symbolFull) {
+    const [exchange, symbol] = symbolFull.includes(':')
+      ? symbolFull.split(':')
+      : ['CME_MINI', symbolFull];
+
+    const exchangeSymbol = `${exchange}:${symbol}`;
+    const resolveSymbol = JSON.stringify({ "adjustment": "splits", "symbol": exchangeSymbol });
+
+    this.sendMessage('quote_add_symbols', [this.quoteSession, `=${resolveSymbol}`]);
+    this.sendMessage('quote_fast_symbols', [this.quoteSession, exchangeSymbol]);
+
+    logger.info(`Added quote-only symbol: ${exchangeSymbol} (no chart session)`);
   }
 
   async subscribeToSymbol(symbolFull) {

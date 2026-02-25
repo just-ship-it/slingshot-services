@@ -61,8 +61,8 @@ module.exports = {
       }
     },
     {
-      name: 'siggen-nq-ivskew',
-      script: './signal-generator/index.js',
+      name: 'data-service',
+      script: './data-service/index.js',
       cwd: '/home/drew/projects/slingshot-services',
       instances: 1,
       exec_mode: 'fork',
@@ -71,19 +71,21 @@ module.exports = {
       max_memory_restart: '1G',
       env: {
         NODE_ENV: 'development',
-        HTTP_PORT: 3015,
-        LOG_LEVEL: 'info',
-        SERVICE_NAME: 'siggen-nq-ivskew'
+        PORT: 3019,
+        BIND_HOST: '127.0.0.1',
+        SERVICE_NAME: 'data-service',
+        HYBRID_GEX_ENABLED: 'true'
       },
       env_production: {
         NODE_ENV: 'production',
-        HTTP_PORT: 3015,
-        LOG_LEVEL: 'info',
-        SERVICE_NAME: 'siggen-nq-ivskew'
+        PORT: 3019,
+        BIND_HOST: '127.0.0.1',
+        SERVICE_NAME: 'data-service',
+        HYBRID_GEX_ENABLED: 'true'
       }
     },
     {
-      name: 'siggen-es-cross',
+      name: 'signal-generator',
       script: './signal-generator/index.js',
       cwd: '/home/drew/projects/slingshot-services',
       instances: 1,
@@ -93,33 +95,17 @@ module.exports = {
       max_memory_restart: '1G',
       env: {
         NODE_ENV: 'development',
-        HTTP_PORT: 3016,
+        HTTP_PORT: 3015,
         LOG_LEVEL: 'info',
-        ACTIVE_STRATEGY: 'es-cross-signal',
-        TRADING_SYMBOL: 'ESH6',
-        CANDLE_BASE_SYMBOL: 'ES',
-        LT_SYMBOL: 'CME_MINI:ES1!',
-        GEX_SYMBOL: 'SPY',
-        GEX_FUTURES_SYMBOL: 'ES',
-        GEX_DEFAULT_MULTIPLIER: '10.5',
         STRATEGY_ENABLED: 'true',
-        SERVICE_NAME: 'siggen-es-cross',
-        EVAL_TIMEFRAME: '15m'
+        SERVICE_NAME: 'signal-generator'
       },
       env_production: {
         NODE_ENV: 'production',
-        HTTP_PORT: 3016,
+        HTTP_PORT: 3015,
         LOG_LEVEL: 'info',
-        ACTIVE_STRATEGY: 'es-cross-signal',
-        TRADING_SYMBOL: 'ESH6',
-        CANDLE_BASE_SYMBOL: 'ES',
-        LT_SYMBOL: 'CME_MINI:ES1!',
-        GEX_SYMBOL: 'SPY',
-        GEX_FUTURES_SYMBOL: 'ES',
-        GEX_DEFAULT_MULTIPLIER: '10.5',
         STRATEGY_ENABLED: 'true',
-        SERVICE_NAME: 'siggen-es-cross',
-        EVAL_TIMEFRAME: '15m'
+        SERVICE_NAME: 'signal-generator'
       }
     },
     {
@@ -136,7 +122,6 @@ module.exports = {
         HTTP_PORT: 3018,
         LOG_LEVEL: 'info',
         ACTIVE_STRATEGY: 'ai-trader',
-        TRADING_SYMBOL: 'NQH6',
         CANDLE_BASE_SYMBOL: 'NQ',
         GEX_SYMBOL: 'QQQ',
         GEX_FUTURES_SYMBOL: 'NQ',
@@ -152,7 +137,6 @@ module.exports = {
         HTTP_PORT: 3018,
         LOG_LEVEL: 'info',
         ACTIVE_STRATEGY: 'ai-trader',
-        TRADING_SYMBOL: 'NQH6',
         CANDLE_BASE_SYMBOL: 'NQ',
         GEX_SYMBOL: 'QQQ',
         GEX_FUTURES_SYMBOL: 'NQ',

@@ -1,0 +1,32 @@
+{
+  "products": {
+    "NQ": {
+      "tradingSymbol": "NQH6",
+      "strategies": [
+        {
+          "name": "iv-skew-gex",
+          "enabled": true,
+          "priority": 1,
+          "evalTimeframe": "1m"
+        },
+        {
+          "name": "gex-scalp",
+          "enabled": false,
+          "priority": 2,
+          "evalTimeframe": "1m"
+        }
+      ]
+    },
+    "ES": {
+      "tradingSymbol": "ESH6",
+      "strategies": [
+        {
+          "name": "es-cross-signal",
+          "enabled": true,
+          "priority": 1,
+          "evalTimeframe": "15m"
+        }
+      ]
+    }
+  }
+}

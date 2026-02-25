@@ -299,6 +299,12 @@ export class LiveFeatureAggregator {
     // Prior day HLC
     const priorDayHLC = this._getPriorDayHLC(tradingDay);
 
+    // Current spot price from most recent 1m candle
+    const latestCandles = this.candle1mBuffer.getCandles(1);
+    const currentSpotPrice = latestCandles.length > 0
+      ? (latestCandles[0].close ?? latestCandles[0].c ?? null)
+      : null;
+
     return {
       tradingDay,
       timestamp: rthOpen,
@@ -309,6 +315,7 @@ export class LiveFeatureAggregator {
       vix: null, // Skip VIX for v1
       lt: ltState,
       priorDayHLC,
+      currentSpotPrice,
     };
   }
 

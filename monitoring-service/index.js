@@ -25,7 +25,9 @@ const WEBHOOK_SECRET = process.env.WEBHOOK_SECRET;
 // Internal service URLs
 const SIGNAL_GENERATOR_URL = process.env.SIGNAL_GENERATOR_URL || 'http://localhost:3015';
 const SIGNAL_GENERATOR_ES_URL = process.env.SIGNAL_GENERATOR_ES_URL || 'http://localhost:3016';
+const DATA_SERVICE_URL = process.env.DATA_SERVICE_URL || 'http://localhost:3019';
 const MACRO_BRIEFING_URL = process.env.MACRO_BRIEFING_URL || 'http://localhost:3017';
+const SIGNAL_GENERATOR_AI_URL = process.env.SIGNAL_GENERATOR_AI_URL || 'http://localhost:3018';
 
 // Redis configuration keys
 const POSITION_SIZING_KEY = 'config:position-sizing';
@@ -1102,8 +1104,8 @@ app.get('/api/services', dashboardAuth, async (req, res) => {
     { name: 'monitoring-service', url: `http://localhost:${config.service.port}`, port: config.service.port },
     { name: 'trade-orchestrator', url: process.env.TRADE_ORCHESTRATOR_URL || 'http://localhost:3013', port: 3013 },
     { name: 'tradovate-service', url: process.env.TRADOVATE_SERVICE_URL || 'http://localhost:3011', port: 3011 },
-    { name: 'siggen-nq-ivskew', url: SIGNAL_GENERATOR_URL, port: 3015 },
-    { name: 'siggen-es-cross', url: SIGNAL_GENERATOR_ES_URL, port: 3016 },
+    { name: 'data-service', url: DATA_SERVICE_URL, port: 3019 },
+    { name: 'signal-generator', url: SIGNAL_GENERATOR_URL, port: 3015 },
     { name: 'macro-briefing', url: MACRO_BRIEFING_URL, port: 3017 }
   ];
 
@@ -1162,16 +1164,14 @@ app.get('/api/services', dashboardAuth, async (req, res) => {
   res.json(Array.from(servicesMap.values()));
 });
 
-// Signal generator (NQ) detailed connection status endpoint
+// Signal generator / data-service detailed connection status endpoint
 app.get('/api/signal-generator/status', dashboardAuth, async (req, res) => {
   try {
-    const signalGeneratorUrl = SIGNAL_GENERATOR_URL;
-
-    // Fetch all three endpoints in parallel
+    // Fetch health from data-service (owns TradingView, GEX, Tradier connections)
     const [healthResponse, gexHealthResponse, tradierStatusResponse] = await Promise.allSettled([
-      axios.get(`${signalGeneratorUrl}/health`, { timeout: 5000 }),
-      axios.get(`${signalGeneratorUrl}/gex/health`, { timeout: 5000 }),
-      axios.get(`${signalGeneratorUrl}/tradier/status`, { timeout: 5000 })
+      axios.get(`${DATA_SERVICE_URL}/health`, { timeout: 5000 }),
+      axios.get(`${DATA_SERVICE_URL}/gex/health`, { timeout: 5000 }),
+      axios.get(`${DATA_SERVICE_URL}/tradier/status`, { timeout: 5000 })
     ]);
 
     const status = {
@@ -1221,9 +1221,17 @@ app.get('/api/signal-generator/status', dashboardAuth, async (req, res) => {
 
       // Basic component status
       status.connections.tradingview.connected = health.components?.tradingview === 'connected';
-      const ltStatus = health.components?.lt_monitor;
-      status.connections.ltMonitor.connected = ltStatus === 'connected';
-      status.connections.ltMonitor.notRequired = ltStatus === 'not_required';
+
+      // LT status: data-service returns components.lt as object { NQ: 'connected', ES: '...' }
+      const ltComponents = health.components?.lt;
+      if (ltComponents && typeof ltComponents === 'object') {
+        // Connected if any product is connected
+        status.connections.ltMonitor.connected = Object.values(ltComponents).some(s => s === 'connected');
+        status.connections.ltMonitor.notRequired = Object.values(ltComponents).every(s => s === 'not_required');
+      } else if (typeof ltComponents === 'string') {
+        status.connections.ltMonitor.connected = ltComponents === 'connected';
+        status.connections.ltMonitor.notRequired = ltComponents === 'not_required';
+      }
 
       // Connection details if available
       if (health.connectionDetails) {
@@ -1236,10 +1244,16 @@ app.get('/api/signal-generator/status', dashboardAuth, async (req, res) => {
           status.connections.tradingview.tokenTTL = tvDetails.tokenTTL;
         }
 
-        const ltDetails = health.connectionDetails.ltMonitor;
-        if (ltDetails) {
-          status.connections.ltMonitor.lastHeartbeat = ltDetails.lastHeartbeat;
-          status.connections.ltMonitor.hasLevels = ltDetails.hasLevels;
+        // LT details: data-service returns connectionDetails.ltMonitors as { NQ: {...}, ES: {...} }
+        const ltMonitors = health.connectionDetails.ltMonitors;
+        if (ltMonitors && typeof ltMonitors === 'object') {
+          // Aggregate: pick first connected monitor's details, or first available
+          const monitorEntries = Object.values(ltMonitors);
+          const connectedMonitor = monitorEntries.find(m => m.connected) || monitorEntries[0];
+          if (connectedMonitor) {
+            status.connections.ltMonitor.lastHeartbeat = connectedMonitor.lastHeartbeat;
+            status.connections.ltMonitor.hasLevels = monitorEntries.some(m => m.hasLevels);
+          }
         }
       }
 
@@ -1259,33 +1273,44 @@ app.get('/api/signal-generator/status', dashboardAuth, async (req, res) => {
     }
 
     // Parse GEX health response
+    // Data-service /gex/health returns: { gex: { NQ, ES }, hybridGex: { NQ: { session, hybrid, tradier, cboe }, ES: {...} }, tradier }
     if (gexHealthResponse.status === 'fulfilled') {
       const gexHealth = gexHealthResponse.value.data;
 
-      status.connections.hybridGex.enabled = gexHealth.hybrid || false;
+      // Pick NQ product details (primary), fall back to first available
+      const hybridDetails = gexHealth.hybridGex?.NQ || gexHealth.hybridGex?.ES || Object.values(gexHealth.hybridGex || {})[0];
 
-      if (gexHealth.details) {
+      if (hybridDetails) {
+        status.connections.hybridGex.enabled = hybridDetails.hybrid?.enabled || false;
+
         // CBOE status
-        if (gexHealth.details.cboe) {
-          status.connections.cboe.enabled = gexHealth.details.cboe.enabled !== false;
-          status.connections.cboe.hasData = gexHealth.details.cboe.hasData || false;
-          status.connections.cboe.lastFetch = gexHealth.details.cboe.lastUpdate || null;
-          status.connections.cboe.ageMinutes = gexHealth.details.cboe.ageMinutes || null;
+        if (hybridDetails.cboe) {
+          status.connections.cboe.enabled = hybridDetails.cboe.enabled !== false;
+          status.connections.cboe.hasData = hybridDetails.cboe.hasData || false;
+          status.connections.cboe.lastFetch = hybridDetails.cboe.lastUpdate || null;
+          status.connections.cboe.ageMinutes = hybridDetails.cboe.ageMinutes || null;
         }
 
         // Hybrid GEX status
-        if (gexHealth.details.hybrid) {
-          status.connections.hybridGex.primarySource = gexHealth.details.hybrid.primarySource || null;
+        if (hybridDetails.hybrid) {
+          status.connections.hybridGex.primarySource = hybridDetails.hybrid.primarySource || null;
         }
 
         // Session/RTH cache status
-        if (gexHealth.details.session) {
-          status.connections.hybridGex.usingRTHCache = gexHealth.details.session.usingRTHCache || false;
+        if (hybridDetails.session) {
+          status.connections.hybridGex.usingRTHCache = hybridDetails.session.usingRTHCache || false;
         }
 
         // Tradier freshness
-        if (gexHealth.details.tradier) {
-          status.connections.hybridGex.tradierFresh = (gexHealth.details.tradier.ageMinutes || 999) < 5;
+        if (hybridDetails.tradier) {
+          status.connections.hybridGex.tradierFresh = (hybridDetails.tradier.ageMinutes || 999) < 5;
+        }
+      } else {
+        // No hybrid data — check if plain GEX calculators have data
+        const gexStatus = gexHealth.gex;
+        if (gexStatus) {
+          const hasAnyData = Object.values(gexStatus).some(s => s === 'ready');
+          status.connections.cboe.hasData = hasAnyData;
         }
       }
     }
@@ -1317,7 +1342,7 @@ app.get('/api/signal-generator/status', dashboardAuth, async (req, res) => {
 
     res.json(status);
   } catch (error) {
-    logger.error('Failed to fetch siggen-nq-ivskew status:', error.message);
+    logger.error('Failed to fetch data-service status:', error.message);
     res.status(500).json({
       timestamp: new Date().toISOString(),
       overall: 'unavailable',
@@ -1327,15 +1352,14 @@ app.get('/api/signal-generator/status', dashboardAuth, async (req, res) => {
   }
 });
 
-// Signal generator (ES) detailed connection status endpoint
+// Signal generator (ES) detailed connection status endpoint - now served by data-service
 app.get('/api/es-signal-generator/status', dashboardAuth, async (req, res) => {
   try {
-    const esSignalGeneratorUrl = SIGNAL_GENERATOR_ES_URL;
-
+    // Data service handles all connections now (TradingView, GEX, Tradier, LT)
     const [healthResponse, gexHealthResponse, tradierStatusResponse] = await Promise.allSettled([
-      axios.get(`${esSignalGeneratorUrl}/health`, { timeout: 5000 }),
-      axios.get(`${esSignalGeneratorUrl}/gex/health`, { timeout: 5000 }),
-      axios.get(`${esSignalGeneratorUrl}/tradier/status`, { timeout: 5000 })
+      axios.get(`${DATA_SERVICE_URL}/health`, { timeout: 5000 }),
+      axios.get(`${DATA_SERVICE_URL}/gex/health`, { timeout: 5000 }),
+      axios.get(`${DATA_SERVICE_URL}/tradier/status`, { timeout: 5000 })
     ]);
 
     const status = {
@@ -1383,9 +1407,16 @@ app.get('/api/es-signal-generator/status', dashboardAuth, async (req, res) => {
     if (healthResponse.status === 'fulfilled') {
       const health = healthResponse.value.data;
       status.connections.tradingview.connected = health.components?.tradingview === 'connected';
-      const ltStatus = health.components?.lt_monitor;
-      status.connections.ltMonitor.connected = ltStatus === 'connected';
-      status.connections.ltMonitor.notRequired = ltStatus === 'not_required';
+
+      // LT status: data-service returns components.lt as object { NQ: 'connected', ES: '...' }
+      const ltComponents = health.components?.lt;
+      if (ltComponents && typeof ltComponents === 'object') {
+        status.connections.ltMonitor.connected = Object.values(ltComponents).some(s => s === 'connected');
+        status.connections.ltMonitor.notRequired = Object.values(ltComponents).every(s => s === 'not_required');
+      } else if (typeof ltComponents === 'string') {
+        status.connections.ltMonitor.connected = ltComponents === 'connected';
+        status.connections.ltMonitor.notRequired = ltComponents === 'not_required';
+      }
 
       if (health.connectionDetails) {
         const tvDetails = health.connectionDetails.tradingview;
@@ -1394,10 +1425,15 @@ app.get('/api/es-signal-generator/status', dashboardAuth, async (req, res) => {
           status.connections.tradingview.lastQuoteReceived = tvDetails.lastQuoteReceived;
           status.connections.tradingview.reconnectAttempts = tvDetails.reconnectAttempts || 0;
         }
-        const ltDetails = health.connectionDetails.ltMonitor;
-        if (ltDetails) {
-          status.connections.ltMonitor.lastHeartbeat = ltDetails.lastHeartbeat;
-          status.connections.ltMonitor.hasLevels = ltDetails.hasLevels;
+        // LT details: data-service returns connectionDetails.ltMonitors as { NQ: {...}, ES: {...} }
+        const ltMonitors = health.connectionDetails.ltMonitors;
+        if (ltMonitors && typeof ltMonitors === 'object') {
+          const monitorEntries = Object.values(ltMonitors);
+          const connectedMonitor = monitorEntries.find(m => m.connected) || monitorEntries[0];
+          if (connectedMonitor) {
+            status.connections.ltMonitor.lastHeartbeat = connectedMonitor.lastHeartbeat;
+            status.connections.ltMonitor.hasLevels = monitorEntries.some(m => m.hasLevels);
+          }
         }
       }
 
@@ -1413,24 +1449,36 @@ app.get('/api/es-signal-generator/status', dashboardAuth, async (req, res) => {
       }
     }
 
+    // Parse GEX health response
+    // Data-service /gex/health returns: { gex: { NQ, ES }, hybridGex: { NQ: { session, hybrid, tradier, cboe }, ES: {...} }, tradier }
     if (gexHealthResponse.status === 'fulfilled') {
       const gexHealth = gexHealthResponse.value.data;
-      status.connections.hybridGex.enabled = gexHealth.hybrid || false;
-      if (gexHealth.details) {
-        if (gexHealth.details.cboe) {
-          status.connections.cboe.enabled = gexHealth.details.cboe.enabled !== false;
-          status.connections.cboe.hasData = gexHealth.details.cboe.hasData || false;
-          status.connections.cboe.lastFetch = gexHealth.details.cboe.lastUpdate || null;
-          status.connections.cboe.ageMinutes = gexHealth.details.cboe.ageMinutes || null;
+
+      const hybridDetails = gexHealth.hybridGex?.ES || gexHealth.hybridGex?.NQ || Object.values(gexHealth.hybridGex || {})[0];
+
+      if (hybridDetails) {
+        status.connections.hybridGex.enabled = hybridDetails.hybrid?.enabled || false;
+
+        if (hybridDetails.cboe) {
+          status.connections.cboe.enabled = hybridDetails.cboe.enabled !== false;
+          status.connections.cboe.hasData = hybridDetails.cboe.hasData || false;
+          status.connections.cboe.lastFetch = hybridDetails.cboe.lastUpdate || null;
+          status.connections.cboe.ageMinutes = hybridDetails.cboe.ageMinutes || null;
         }
-        if (gexHealth.details.hybrid) {
-          status.connections.hybridGex.primarySource = gexHealth.details.hybrid.primarySource || null;
+        if (hybridDetails.hybrid) {
+          status.connections.hybridGex.primarySource = hybridDetails.hybrid.primarySource || null;
         }
-        if (gexHealth.details.session) {
-          status.connections.hybridGex.usingRTHCache = gexHealth.details.session.usingRTHCache || false;
+        if (hybridDetails.session) {
+          status.connections.hybridGex.usingRTHCache = hybridDetails.session.usingRTHCache || false;
         }
-        if (gexHealth.details.tradier) {
-          status.connections.hybridGex.tradierFresh = (gexHealth.details.tradier.ageMinutes || 999) < 5;
+        if (hybridDetails.tradier) {
+          status.connections.hybridGex.tradierFresh = (hybridDetails.tradier.ageMinutes || 999) < 5;
+        }
+      } else {
+        const gexStatus = gexHealth.gex;
+        if (gexStatus) {
+          const hasAnyData = Object.values(gexStatus).some(s => s === 'ready');
+          status.connections.cboe.hasData = hasAnyData;
         }
       }
     }
@@ -1547,11 +1595,11 @@ app.post('/api/position-sizing/convert', dashboardAuth, (req, res) => {
   res.json(result);
 });
 
-// GEX levels endpoint - proxy to siggen-nq-ivskew service
+// GEX levels endpoint - proxy to data-service
 app.get('/api/gex/levels', dashboardAuth, async (req, res) => {
   try {
-    logger.info('📊 Fetching GEX levels from siggen-nq-ivskew');
-    const response = await axios.get(`${SIGNAL_GENERATOR_URL}/gex/levels`, {
+    logger.info('📊 Fetching GEX levels from data-service');
+    const response = await axios.get(`${DATA_SERVICE_URL}/gex/levels/nq`, {
       timeout: 5000
     });
 
@@ -1593,7 +1641,7 @@ app.get('/api/gex/levels', dashboardAuth, async (req, res) => {
 app.post('/api/gex/refresh', dashboardAuth, async (req, res) => {
   try {
     logger.info('🔄 Triggering GEX levels refresh...');
-    const response = await axios.post(`${SIGNAL_GENERATOR_URL}/gex/refresh`, {
+    const response = await axios.post(`${DATA_SERVICE_URL}/gex/refresh?product=nq`, {
       force: true
     }, {
       timeout: 30000 // Longer timeout for refresh operation
@@ -1633,51 +1681,23 @@ app.post('/api/gex/refresh', dashboardAuth, async (req, res) => {
   }
 });
 
-// TradingView manual token update - proxy to all signal generators
+// TradingView manual token update - proxy to data-service (single TradingView connection)
 app.post('/api/tradingview/token', dashboardAuth, async (req, res) => {
   try {
-    logger.info('🔑 Proxying TradingView token update to all signal generators');
-    const results = await Promise.allSettled([
-      axios.post(`${SIGNAL_GENERATOR_URL}/tradingview/token`, req.body, { timeout: 15000 }),
-      axios.post(`${SIGNAL_GENERATOR_ES_URL}/tradingview/token`, req.body, { timeout: 15000 })
-    ]);
-
-    const nqResult = results[0];
-    const esResult = results[1];
-
-    const response = {
-      nq: nqResult.status === 'fulfilled' ? nqResult.value.data : { error: nqResult.reason?.message },
-      es: esResult.status === 'fulfilled' ? esResult.value.data : { error: esResult.reason?.message }
-    };
-
-    // Use NQ result for top-level fields (backward compat with frontend)
-    if (nqResult.status === 'fulfilled') {
-      response.success = nqResult.value.data.success;
-      response.tokenTTL = nqResult.value.data.tokenTTL;
-      response.authState = nqResult.value.data.authState;
-    }
-
-    const failures = [
-      nqResult.status === 'rejected' ? 'NQ' : null,
-      esResult.status === 'rejected' ? 'ES' : null
-    ].filter(Boolean);
-
-    if (failures.length > 0) {
-      logger.warn(`Token update failed for: ${failures.join(', ')}`);
-    }
-
-    res.json(response);
+    logger.info('🔑 Proxying TradingView token update to data-service');
+    const response = await axios.post(`${DATA_SERVICE_URL}/tradingview/token`, req.body, { timeout: 15000 });
+    res.json(response.data);
   } catch (error) {
     logger.error('Failed to update TradingView token:', error.message);
     res.status(500).json({ error: 'Token update failed', message: error.message });
   }
 });
 
-// ES GEX levels endpoint - proxy to siggen-es-cross service (port 3016)
+// ES GEX levels endpoint - proxy to data-service
 app.get('/api/es/gex/levels', dashboardAuth, async (req, res) => {
   try {
-    logger.info('📊 Fetching ES GEX levels from siggen-es-cross');
-    const response = await axios.get(`${SIGNAL_GENERATOR_ES_URL}/gex/levels`, {
+    logger.info('📊 Fetching ES GEX levels from data-service');
+    const response = await axios.get(`${DATA_SERVICE_URL}/gex/levels/es`, {
       timeout: 5000
     });
 
@@ -1718,7 +1738,7 @@ app.get('/api/es/gex/levels', dashboardAuth, async (req, res) => {
 app.post('/api/es/gex/refresh', dashboardAuth, async (req, res) => {
   try {
     logger.info('🔄 Triggering ES GEX levels refresh...');
-    const response = await axios.post(`${SIGNAL_GENERATOR_ES_URL}/gex/refresh`, {
+    const response = await axios.post(`${DATA_SERVICE_URL}/gex/refresh?product=es`, {
       force: true
     }, {
       timeout: 30000
@@ -1757,11 +1777,11 @@ app.post('/api/es/gex/refresh', dashboardAuth, async (req, res) => {
   }
 });
 
-// ES candle history endpoint - proxy to siggen-es-cross service (port 3016)
+// ES candle history endpoint - proxy to data-service
 app.get('/api/es/candles', dashboardAuth, async (req, res) => {
   try {
     const count = req.query.count || 60;
-    const response = await axios.get(`${SIGNAL_GENERATOR_ES_URL}/candles?count=${count}`, {
+    const response = await axios.get(`${DATA_SERVICE_URL}/candles?symbol=ES&count=${count}`, {
       timeout: 5000
     });
     res.json(response.data);
@@ -1775,11 +1795,11 @@ app.get('/api/es/candles', dashboardAuth, async (req, res) => {
   }
 });
 
-// Candle history endpoint - proxy to siggen-nq-ivskew service
+// Candle history endpoint - proxy to data-service
 app.get('/api/candles', dashboardAuth, async (req, res) => {
   try {
     const count = req.query.count || 60;
-    const response = await axios.get(`${SIGNAL_GENERATOR_URL}/candles?count=${count}`, {
+    const response = await axios.get(`${DATA_SERVICE_URL}/candles?symbol=NQ&count=${count}`, {
       timeout: 5000
     });
     res.json(response.data);
@@ -1793,11 +1813,11 @@ app.get('/api/candles', dashboardAuth, async (req, res) => {
   }
 });
 
-// IV Skew endpoint - proxy to siggen-nq-ivskew service
+// IV Skew endpoint - proxy to data-service
 app.get('/api/iv/skew', dashboardAuth, async (req, res) => {
   try {
-    logger.info('📊 Fetching IV skew from siggen-nq-ivskew');
-    const response = await axios.get(`${SIGNAL_GENERATOR_URL}/iv/skew`, {
+    logger.info('📊 Fetching IV skew from data-service');
+    const response = await axios.get(`${DATA_SERVICE_URL}/iv/skew`, {
       timeout: 5000
     });
 
@@ -1820,10 +1840,10 @@ app.get('/api/iv/skew', dashboardAuth, async (req, res) => {
   }
 });
 
-// IV Skew history endpoint - proxy to siggen-nq-ivskew service
+// IV Skew history endpoint - proxy to data-service
 app.get('/api/iv/history', dashboardAuth, async (req, res) => {
   try {
-    const response = await axios.get(`${SIGNAL_GENERATOR_URL}/iv/history`, {
+    const response = await axios.get(`${DATA_SERVICE_URL}/iv/history`, {
       timeout: 5000
     });
     res.json(response.data);
@@ -1840,8 +1860,8 @@ app.get('/api/iv/history', dashboardAuth, async (req, res) => {
 // Tradier GEX levels endpoint - get enhanced options data from Tradier
 app.get('/api/tradier/gex/levels', dashboardAuth, async (req, res) => {
   try {
-    logger.info('📊 Fetching Tradier GEX levels from siggen-nq-ivskew');
-    const response = await axios.get(`${SIGNAL_GENERATOR_URL}/exposure/levels`, {
+    logger.info('📊 Fetching Tradier GEX levels from data-service');
+    const response = await axios.get(`${DATA_SERVICE_URL}/exposure/levels`, {
       timeout: 5000
     });
 
@@ -1884,7 +1904,7 @@ app.get('/api/tradier/gex/levels', dashboardAuth, async (req, res) => {
 app.post('/api/tradier/gex/refresh', dashboardAuth, async (req, res) => {
   try {
     logger.info('🔄 Forcing Tradier exposure recalculation...');
-    const response = await axios.post(`${SIGNAL_GENERATOR_URL}/exposure/refresh`, {}, {
+    const response = await axios.post(`${DATA_SERVICE_URL}/exposure/refresh`, {}, {
       timeout: 30000  // Longer timeout for recalculation
     });
 
@@ -1921,11 +1941,11 @@ app.post('/api/tradier/gex/refresh', dashboardAuth, async (req, res) => {
   }
 });
 
-// ES Tradier GEX levels endpoint - get enhanced options data from Tradier via siggen-es-cross
+// ES Tradier GEX levels endpoint - get enhanced options data from data-service
 app.get('/api/es/tradier/gex/levels', dashboardAuth, async (req, res) => {
   try {
-    logger.info('📊 Fetching ES Tradier GEX levels from siggen-es-cross');
-    const response = await axios.get(`${SIGNAL_GENERATOR_ES_URL}/exposure/levels`, {
+    logger.info('📊 Fetching ES Tradier GEX levels from data-service');
+    const response = await axios.get(`${DATA_SERVICE_URL}/exposure/levels`, {
       timeout: 5000
     });
 
@@ -1968,7 +1988,7 @@ app.get('/api/es/tradier/gex/levels', dashboardAuth, async (req, res) => {
 app.post('/api/es/tradier/gex/refresh', dashboardAuth, async (req, res) => {
   try {
     logger.info('🔄 Forcing ES Tradier exposure recalculation...');
-    const response = await axios.post(`${SIGNAL_GENERATOR_ES_URL}/exposure/refresh`, {}, {
+    const response = await axios.post(`${DATA_SERVICE_URL}/exposure/refresh`, {}, {
       timeout: 30000
     });
 
@@ -2135,21 +2155,59 @@ app.get('/api/strategy/gex-scalp/status', dashboardAuth, async (req, res) => {
   }
 });
 
-// ES Cross-Signal strategy status - proxied from siggen-es-cross on port 3016
+// ES Cross-Signal strategy status - proxied from signal-generator (multi-strategy engine)
 app.get('/api/strategy/es-cross-signal/status', dashboardAuth, async (req, res) => {
   try {
-    const response = await axios.get(`${SIGNAL_GENERATOR_ES_URL}/strategy/status`, { timeout: 5000 });
+    const response = await axios.get(`${SIGNAL_GENERATOR_URL}/strategy/status/es-cross-signal`, { timeout: 5000 });
     res.json({ success: true, ...response.data });
   } catch (error) {
     if (error.code === 'ECONNREFUSED') {
       res.json({
         success: false,
-        error: 'siggen-es-cross not running',
-        message: 'Start siggen-es-cross: pm2 start ecosystem.config.cjs --only siggen-es-cross'
+        error: 'signal-generator not running',
+        message: 'Start signal-generator: pm2 start ecosystem.config.cjs --only signal-generator'
       });
     } else {
       logger.error('Failed to fetch ES cross-signal status:', error.message);
       res.status(500).json({ error: 'Failed to fetch ES cross-signal status', details: error.message });
+    }
+  }
+});
+
+// IV Skew GEX strategy status - proxied from signal-generator (multi-strategy engine)
+app.get('/api/strategy/iv-skew-gex/status', dashboardAuth, async (req, res) => {
+  try {
+    const response = await axios.get(`${SIGNAL_GENERATOR_URL}/strategy/status/iv-skew-gex`, { timeout: 5000 });
+    res.json({ success: true, ...response.data });
+  } catch (error) {
+    if (error.code === 'ECONNREFUSED') {
+      res.json({
+        success: false,
+        error: 'signal-generator not running',
+        message: 'Start signal-generator: pm2 start ecosystem.config.cjs --only signal-generator'
+      });
+    } else {
+      logger.error('Failed to fetch IV skew GEX status:', error.message);
+      res.status(500).json({ error: 'Failed to fetch IV skew GEX status', details: error.message });
+    }
+  }
+});
+
+// AI Trader strategy status - proxied from siggen-nq-aitrader
+app.get('/api/strategy/ai-trader/status', dashboardAuth, async (req, res) => {
+  try {
+    const response = await axios.get(`${SIGNAL_GENERATOR_AI_URL}/ai/status`, { timeout: 5000 });
+    res.json({ success: true, ...response.data });
+  } catch (error) {
+    if (error.code === 'ECONNREFUSED') {
+      res.json({
+        success: false,
+        error: 'siggen-nq-aitrader not running',
+        message: 'Start AI trader: pm2 start ecosystem.config.cjs --only siggen-nq-aitrader'
+      });
+    } else {
+      logger.error('Failed to fetch AI trader status:', error.message);
+      res.status(500).json({ error: 'Failed to fetch AI trader status', details: error.message });
     }
   }
 });
@@ -2193,7 +2251,7 @@ app.get('/api/analysis/gex-squeeze', dashboardAuth, async (req, res) => {
     // Get current GEX levels
     let gexLevels = null;
     try {
-      const gexResponse = await axios.get(`${SIGNAL_GENERATOR_URL}/gex/levels`, { timeout: 3000 });
+      const gexResponse = await axios.get(`${DATA_SERVICE_URL}/gex/levels/nq`, { timeout: 3000 });
       gexLevels = gexResponse.data;
     } catch (error) {
       logger.warn('Failed to fetch live GEX levels for analysis:', error.message);
@@ -2543,7 +2601,10 @@ app.post('/api/services/:serviceName/restart', dashboardAuth, async (req, res) =
     'tradovate-service': process.env.SEVALLA_APP_ID_TRADOVATE,
     'market-data-service': process.env.SEVALLA_APP_ID_MARKET_DATA,
     'trade-orchestrator': process.env.SEVALLA_APP_ID_ORCHESTRATOR,
-    'monitoring-service': process.env.SEVALLA_APP_ID_MONITORING
+    'monitoring-service': process.env.SEVALLA_APP_ID_MONITORING,
+    'data-service': process.env.SEVALLA_APP_ID_DATA_SERVICE,
+    'signal-generator': process.env.SEVALLA_APP_ID_SIGNAL_GENERATOR,
+    'siggen-nq-aitrader': process.env.SEVALLA_APP_ID_AI_TRADER
   };
 
   const appId = sevallaAppIds[serviceName];
@@ -3155,6 +3216,32 @@ async function handleOrderUpdate(message) {
   logActivity('order', `Order ${message.action} ${message.symbol} - ${message.status || 'placed'}`, order);
 }
 
+async function handleOrderCancelled(message) {
+  logger.info('📋 Received order cancellation:', message.orderId || message.symbol);
+
+  // Build order data from monitoring state (has full details) or from the message
+  const existing = message.orderId ? monitoringState.orders.get(message.orderId) : null;
+  const order = {
+    orderId: message.orderId,
+    symbol: existing?.symbol || message.symbol,
+    action: existing?.action || message.action || message.side,
+    quantity: existing?.quantity || message.quantity,
+    price: existing?.price || message.price,
+    status: 'Cancelled',
+    orderStatus: 'Cancelled',
+  };
+
+  // Remove from monitoring state
+  if (message.orderId) {
+    monitoringState.orders.delete(message.orderId);
+  }
+
+  broadcast('order_cancelled', order);
+  broadcast('order_update', order);
+
+  logActivity('order', `Order cancelled: ${order.action || '?'} ${order.symbol || '?'}`, order);
+}
+
 async function handlePositionRealtimeUpdate(message) {
   logger.debug('📊 Received real-time position update:', message);
 
@@ -3393,6 +3480,7 @@ async function startup() {
       [CHANNELS.ORDER_PLACED, handleOrderUpdate],
       [CHANNELS.ORDER_FILLED, handleOrderUpdate],
       [CHANNELS.ORDER_REJECTED, handleOrderUpdate],
+      [CHANNELS.ORDER_CANCELLED, handleOrderCancelled],
       [CHANNELS.ORDER_REALTIME_UPDATE, handleOrderRealtimeUpdate],
       [CHANNELS.TRADOVATE_SYNC_COMPLETED, handleTradovateSyncCompleted],
       [CHANNELS.TRADOVATE_FULL_SYNC_STARTED, handleFullSyncStarted],

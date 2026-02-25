@@ -105,6 +105,7 @@ export class AIStrategyEngine {
     this.entriesMade = [];
     this.outcomesReceived = [];
     this.biasHistory = [];
+    this.lastEntryEvaluation = null;
     this.eodCloseSent = false;
   }
 
@@ -388,11 +389,13 @@ export class AIStrategyEngine {
     }
 
     // ── Late-start Bias (if service restarted mid-day) ───────
-    // If we're in a trading window but missed the 9:25 AM bias window,
-    // form bias now so we don't sit idle all day.
-    if (!this.biasFormed && totalMinutes >= 570 && isInTradingWindow(candleTs)) {
-      logger.info('Missed pre-market bias window — forming late-start bias...');
-      await this._formBias(tradingDay);
+    // Form bias during active entry windows (morning/afternoon) or midday
+    // break — but only if we have NO bias at all (fresh restart). This
+    // avoids an unnecessary LLM call if we already have a bias and just
+    // happen to be in the midday break; reassessment resumes at 1 PM.
+    if (!this.biasFormed && totalMinutes >= 570 && totalMinutes < 960) {
+      logger.info('Missed pre-market bias window — forming late-start intraday bias...');
+      await this._formBias(tradingDay, { lateStart: true });
     }
 
     // ── Skip evaluation outside trading windows ─────────────
@@ -488,13 +491,34 @@ export class AIStrategyEngine {
 
   // ── Phase 1: Bias Formation ───────────────────────────────
 
-  async _formBias(tradingDay) {
-    logger.info(`Phase 1: Pre-market bias formation for ${tradingDay}...`);
+  async _formBias(tradingDay, { lateStart = false } = {}) {
+    const biasType = lateStart ? 'intraday' : 'pre-market';
+    logger.info(`Phase 1: ${lateStart ? 'Late-start intraday' : 'Pre-market'} bias formation for ${tradingDay}...`);
 
     const preMarketState = this.featureAggregator.getPreMarketState(tradingDay);
     if (!preMarketState.priorDailyCandles || preMarketState.priorDailyCandles.length < 2) {
       logger.warn('Insufficient prior daily data — skipping bias formation');
       return;
+    }
+
+    // For late-start, enrich with current RTH session context
+    if (lateStart) {
+      const currentTimestamp = Date.now();
+      const currentPrice = preMarketState.currentSpotPrice;
+      if (currentPrice) {
+        const sessionContext = this.featureAggregator._getSessionContext(tradingDay, currentTimestamp, currentPrice);
+        if (sessionContext) {
+          preMarketState.sessionContext = sessionContext;
+        }
+      }
+      // Get recent 1m candles for context
+      const recentCandles = this.featureAggregator.candle1mBuffer.getCandles(15);
+      if (recentCandles.length > 0) {
+        preMarketState.recentCandles = recentCandles.map(c => ({
+          time: formatET(new Date(c.timestamp).getTime()),
+          open: c.open, high: c.high, low: c.low, close: c.close, volume: c.volume,
+        }));
+      }
     }
 
     const biasPrompt = this.promptBuilder.buildBiasPrompt(preMarketState);
@@ -513,12 +537,12 @@ export class AIStrategyEngine {
 
     this.activeBias = bias;
     this.biasFormed = true;
-    this.lastReassessmentTime = getRTHOpenTime(tradingDay);
+    this.lastReassessmentTime = lateStart ? Date.now() : getRTHOpenTime(tradingDay);
     this.biasHistory.push({
       time: formatET(Date.now()),
       bias: bias.bias,
       conviction: bias.conviction,
-      source: 'pre-market',
+      source: biasType,
     });
 
     this.llmCallsToday++;
@@ -627,6 +651,13 @@ export class AIStrategyEngine {
     this.llmCallsToday++;
 
     if (decision.action !== 'enter') {
+      this.lastEntryEvaluation = {
+        time: formatET(timestamp),
+        action: 'pass',
+        reasoning: decision.reasoning,
+        nearestLevel: proximity.nearest,
+        activeBias: this.activeBias?.bias,
+      };
       logger.info(`PASS at ${formatET(timestamp)}: ${decision.reasoning}`);
       return;
     }
@@ -671,6 +702,20 @@ export class AIStrategyEngine {
       ...decision,
       nearestLevel: proximity.nearest,
     });
+
+    this.lastEntryEvaluation = {
+      time: formatET(timestamp),
+      action: 'enter',
+      side: decision.side,
+      entry_price: decision.entry_price,
+      stop_loss: decision.stop_loss,
+      take_profit: decision.take_profit,
+      reasoning: decision.reasoning,
+      confidence: decision.confidence,
+      nearestLevel: proximity.nearest,
+      activeBias: this.activeBias.bias,
+      riskRewardRatio: rrRatio.toFixed(2),
+    };
 
     // ── Publish Trade Signal ────────────────────────────────
     const signal = {
@@ -773,12 +818,15 @@ export class AIStrategyEngine {
           bias: this.activeBias ? {
             direction: this.activeBias.bias,
             conviction: this.activeBias.conviction,
+            reasoning: this.activeBias.reasoning,
+            key_levels_to_watch: this.activeBias.key_levels_to_watch || [],
           } : null,
           biasFormed: this.biasFormed,
           entries: this.totalEntriesToday,
           losses: this.totalLossesToday,
           llmCalls: this.llmCallsToday,
           biasHistory: this.biasHistory,
+          lastEntryEvaluation: this.lastEntryEvaluation,
         },
         position: {
           in_position: this.inPosition,
@@ -789,6 +837,22 @@ export class AIStrategyEngine {
             entry_time: this.currentPosition.entryTime,
           } : null,
         },
+        trading_window: (() => {
+          const ts = now.getTime();
+          const window = getTradingWindowName(ts);
+          const inWindow = isInTradingWindow(ts);
+          const blockers = [];
+          if (window === 'midday_break') blockers.push('Midday break (11:00-1:00 ET)');
+          if (window === 'outside') blockers.push('Outside trading hours');
+          if (this.inPosition) blockers.push('In position');
+          if (this.totalEntriesToday >= this.maxEntriesPerDay) blockers.push(`Daily entry limit (${this.maxEntriesPerDay})`);
+          if (this.totalLossesToday >= this.maxLossesPerDay) blockers.push(`Daily loss limit (${this.maxLossesPerDay})`);
+          if (this.lastStopTimestamp > 0 && ts - this.lastStopTimestamp < this.stopCooldownMs) {
+            const remaining = Math.ceil((this.stopCooldownMs - (ts - this.lastStopTimestamp)) / 60000);
+            blockers.push(`Post-stop cooldown (${remaining}m remaining)`);
+          }
+          return { window, in_trading_window: inWindow, blockers };
+        })(),
         cost: this.llm.getCostSummary(),
         gex_levels: gexLevels ? {
           put_wall: gexLevels.putWall,
