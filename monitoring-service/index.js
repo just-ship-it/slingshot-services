@@ -24,7 +24,6 @@ const WEBHOOK_SECRET = process.env.WEBHOOK_SECRET;
 
 // Internal service URLs
 const SIGNAL_GENERATOR_URL = process.env.SIGNAL_GENERATOR_URL || 'http://localhost:3015';
-const SIGNAL_GENERATOR_ES_URL = process.env.SIGNAL_GENERATOR_ES_URL || 'http://localhost:3016';
 const DATA_SERVICE_URL = process.env.DATA_SERVICE_URL || 'http://localhost:3019';
 const MACRO_BRIEFING_URL = process.env.MACRO_BRIEFING_URL || 'http://localhost:3017';
 const SIGNAL_GENERATOR_AI_URL = process.env.SIGNAL_GENERATOR_AI_URL || 'http://localhost:3018';
@@ -2563,7 +2562,6 @@ app.get('/api/services/:serviceName/health', dashboardAuth, async (req, res) => 
   const { serviceName } = req.params;
   const serviceUrls = {
     'trade-orchestrator': process.env.TRADE_ORCHESTRATOR_URL || 'http://localhost:3013',
-    'market-data': process.env.MARKET_DATA_SERVICE_URL || 'http://localhost:3012',
     'tradovate': process.env.TRADOVATE_SERVICE_URL || 'http://localhost:3011'
   };
 
@@ -2599,12 +2597,11 @@ app.post('/api/services/:serviceName/restart', dashboardAuth, async (req, res) =
   const sevallaApiKey = process.env.SEVALLA_API_KEY;
   const sevallaAppIds = {
     'tradovate-service': process.env.SEVALLA_APP_ID_TRADOVATE,
-    'market-data-service': process.env.SEVALLA_APP_ID_MARKET_DATA,
     'trade-orchestrator': process.env.SEVALLA_APP_ID_ORCHESTRATOR,
     'monitoring-service': process.env.SEVALLA_APP_ID_MONITORING,
     'data-service': process.env.SEVALLA_APP_ID_DATA_SERVICE,
     'signal-generator': process.env.SEVALLA_APP_ID_SIGNAL_GENERATOR,
-    'siggen-nq-aitrader': process.env.SEVALLA_APP_ID_AI_TRADER
+    'ai-trader': process.env.SEVALLA_APP_ID_AI_TRADER
   };
 
   const appId = sevallaAppIds[serviceName];
@@ -2749,7 +2746,6 @@ app.all('/api/proxy/:serviceName/*', dashboardAuth, async (req, res) => {
 
   const serviceUrls = {
     'trade-orchestrator': process.env.TRADE_ORCHESTRATOR_URL || 'http://localhost:3013',
-    'market-data': process.env.MARKET_DATA_SERVICE_URL || 'http://localhost:3012',
     'tradovate': process.env.TRADOVATE_SERVICE_URL || 'http://localhost:3011'
   };
 

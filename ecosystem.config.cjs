@@ -109,7 +109,7 @@ module.exports = {
       }
     },
     {
-      name: 'siggen-nq-aitrader',
+      name: 'ai-trader',
       script: './signal-generator/index.js',
       cwd: '/home/drew/projects/slingshot-services',
       instances: 1,
@@ -130,7 +130,7 @@ module.exports = {
         AI_TRADER_DRY_RUN: 'false',
         AI_TRADER_QUANTITY: 1,
         STRATEGY_ENABLED: 'true',
-        SERVICE_NAME: 'siggen-nq-aitrader'
+        SERVICE_NAME: 'ai-trader'
       },
       env_production: {
         NODE_ENV: 'production',
@@ -145,7 +145,7 @@ module.exports = {
         AI_TRADER_DRY_RUN: 'false',
         AI_TRADER_QUANTITY: 1,
         STRATEGY_ENABLED: 'true',
-        SERVICE_NAME: 'siggen-nq-aitrader'
+        SERVICE_NAME: 'ai-trader'
       }
     },
     {
