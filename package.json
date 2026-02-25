@@ -7,20 +7,19 @@
     "shared",
     "monitoring-service",
     "tradovate-service",
-    "market-data-service",
     "trade-orchestrator",
     "signal-generator",
+    "data-service",
     "macro-briefing"
   ],
   "scripts": {
     "start": "npm run start:${SERVICE_NAME:?SERVICE_NAME environment variable is required}",
     "start:monitoring": "cd monitoring-service && npm start",
     "start:tradovate": "cd tradovate-service && npm start",
-    "start:market-data": "cd market-data-service && npm start",
     "start:trade-orchestrator": "cd trade-orchestrator && npm start",
     "start:signal-generator": "cd signal-generator && npm start",
-    "start:siggen-nq-ivskew": "cd signal-generator && npm start",
-    "start:siggen-es-cross": "cd signal-generator && npm start",
+    "start:data-service": "cd data-service && npm start",
+    "start:ai-trader": "cd signal-generator && npm start",
     "start:macro-briefing": "cd macro-briefing && npm start",
     "install:all": "npm install && npm run install:workspaces",
     "install:workspaces": "npm install --workspaces"
