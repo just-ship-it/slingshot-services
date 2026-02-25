@@ -19,6 +19,24 @@ const logger = createLogger('signal-generator');
 
 const DATA_SERVICE_URL = process.env.DATA_SERVICE_URL || 'http://localhost:3019';
 
+// Retry helper for seeding from data-service (may not be ready yet on startup)
+async function fetchWithRetry(url, { retries = 5, delayMs = 3000, label = '' } = {}) {
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      const response = await fetch(url);
+      if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      return await response.json();
+    } catch (error) {
+      if (attempt < retries) {
+        logger.info(`${label || url} not ready (attempt ${attempt}/${retries}): ${error.message} — retrying in ${delayMs / 1000}s`);
+        await new Promise(r => setTimeout(r, delayMs));
+      } else {
+        throw error;
+      }
+    }
+  }
+}
+
 class SignalGeneratorService {
   constructor() {
     // Multi-strategy engine (new architecture)
@@ -266,17 +284,15 @@ class SignalGeneratorService {
   /**
    * Seed candle history from data-service on startup.
    * Fetches 1m and 1h candles from the data-service HTTP API.
+   * Retries if data-service isn't ready yet (common when services start together).
    */
   async _seedCandleHistory(product, requestedBars) {
     // Seed 1m candles
     try {
       const url = `${DATA_SERVICE_URL}/candles?symbol=${product}&count=${requestedBars}`;
-      logger.info(`Seeding 1m candle history from data-service: ${url}`);
+      logger.info(`Seeding 1m candle history from data-service...`);
 
-      const response = await fetch(url);
-      if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-
-      const data = await response.json();
+      const data = await fetchWithRetry(url, { label: '1m candle seed' });
       const candles = data.candles || [];
 
       if (candles.length > 0) {
@@ -291,15 +307,29 @@ class SignalGeneratorService {
     this.aiEngine?.markHistoryReady('1');
 
     // Seed 1h candles (for prior daily context / HTF swing analysis)
+    // Needs enough candles to produce >= 2 daily bars for bias formation.
+    // Data-service loads 1h history from TradingView which can take 10-15s
+    // after startup, so we retry with increasing delay if we get too few.
+    const MIN_1H_CANDLES = 48; // ~2 trading days
     try {
       const url = `${DATA_SERVICE_URL}/candles/hourly?symbol=${product}&count=300`;
-      logger.info(`Seeding 1h candle history from data-service: ${url}`);
+      logger.info(`Seeding 1h candle history from data-service...`);
 
-      const response = await fetch(url);
-      if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      let candles = [];
+      for (let attempt = 1; attempt <= 8; attempt++) {
+        try {
+          const data = await fetchWithRetry(url, { retries: 1, label: '1h candle seed' });
+          candles = data.candles || [];
+        } catch { candles = []; }
 
-      const data = await response.json();
-      const candles = data.candles || [];
+        if (candles.length >= MIN_1H_CANDLES) break;
+
+        if (attempt < 8) {
+          const waitSec = Math.min(5 * attempt, 20);
+          logger.info(`1h history: got ${candles.length} candles (need ${MIN_1H_CANDLES}) — data-service may still be loading, retry in ${waitSec}s (${attempt}/8)`);
+          await new Promise(r => setTimeout(r, waitSec * 1000));
+        }
+      }
 
       if (candles.length > 0) {
         this.candle1hBuffer.seedCandles(candles);
@@ -315,6 +345,10 @@ class SignalGeneratorService {
             logger.info(`Aggregated ${hourlyCandles.length} 1h candles from 1m history`);
           }
         }
+      }
+
+      if (this.candle1hBuffer.getCandles().length < MIN_1H_CANDLES) {
+        logger.warn(`1h buffer has only ${this.candle1hBuffer.getCandles().length} candles — bias formation may be delayed until more data arrives`);
       }
     } catch (error) {
       logger.error('Failed to seed 1h candle history:', error.message);
@@ -396,14 +430,7 @@ class SignalGeneratorService {
   async _seedLtLevels(product) {
     try {
       const url = `${DATA_SERVICE_URL}/lt/levels?product=${product}`;
-      logger.info(`Seeding LT levels from data-service: ${url}`);
-
-      const response = await fetch(url);
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-
-      const ltLevels = await response.json();
+      const ltLevels = await fetchWithRetry(url, { label: 'LT levels seed' });
       if (ltLevels && ltLevels.L2) {
         this.liveFeatureAggregator.pushLtSnapshot(ltLevels);
         logger.info(`Seeded LT levels from data-service: L2=${ltLevels.L2?.toFixed(1)}, L3=${ltLevels.L3?.toFixed(1)}, L4=${ltLevels.L4?.toFixed(1)}`);
@@ -421,22 +448,14 @@ class SignalGeneratorService {
   async _seedLsSentiment(product) {
     try {
       const url = `${DATA_SERVICE_URL}/ls/sentiment?product=${product}`;
-      const response = await fetch(url);
-      if (!response.ok) {
-        if (response.status === 404) {
-          logger.info('No LS sentiment available from data-service yet');
-          return;
-        }
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-
-      const data = await response.json();
+      const data = await fetchWithRetry(url, { label: 'LS sentiment seed' });
       if (data?.sentiment) {
         this.liveFeatureAggregator.setLsSentiment(data.sentiment);
         logger.info(`Seeded LS sentiment from data-service: ${data.sentiment}`);
       }
     } catch (error) {
-      logger.error('Failed to seed LS sentiment from data-service:', error.message);
+      // 404 is expected if data-service hasn't received LS data yet
+      logger.info('LS sentiment not available from data-service yet — will pick up via Redis');
     }
   }
 
