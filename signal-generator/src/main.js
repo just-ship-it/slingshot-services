@@ -241,8 +241,20 @@ class SignalGeneratorService {
       }
     });
 
-    // Seed current LT levels from data-service HTTP API
+    // Subscribe to LS sentiment updates from data-service
+    messageBus.subscribe(CHANNELS.LS_STATUS, (message) => {
+      const product = (message.product || 'NQ').toUpperCase();
+      if (product === targetProduct) {
+        if (this.liveFeatureAggregator) {
+          this.liveFeatureAggregator.setLsSentiment(message.sentiment);
+        }
+        logger.debug(`LS sentiment received: ${message.sentiment} (product=${product})`);
+      }
+    });
+
+    // Seed current LT levels and LS sentiment from data-service HTTP API
     await this._seedLtLevels(targetProduct);
+    await this._seedLsSentiment(targetProduct);
 
     await this.aiEngine.syncPositionState();
     if (this.gexCalculator?.getCurrentLevels()) {
@@ -400,6 +412,31 @@ class SignalGeneratorService {
       }
     } catch (error) {
       logger.error('Failed to seed LT levels from data-service:', error.message);
+    }
+  }
+
+  /**
+   * Seed LS sentiment from data-service HTTP API on startup.
+   */
+  async _seedLsSentiment(product) {
+    try {
+      const url = `${DATA_SERVICE_URL}/ls/sentiment?product=${product}`;
+      const response = await fetch(url);
+      if (!response.ok) {
+        if (response.status === 404) {
+          logger.info('No LS sentiment available from data-service yet');
+          return;
+        }
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      if (data?.sentiment) {
+        this.liveFeatureAggregator.setLsSentiment(data.sentiment);
+        logger.info(`Seeded LS sentiment from data-service: ${data.sentiment}`);
+      }
+    } catch (error) {
+      logger.error('Failed to seed LS sentiment from data-service:', error.message);
     }
   }
 

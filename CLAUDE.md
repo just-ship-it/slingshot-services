@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is a microservices trading system called "Slingshot" that separates trading functionality into 5 independent services communicating via Redis pub/sub. The system handles webhook ingestion, Tradovate API interactions, real-time market data, trade orchestration, signal generation, and monitoring.
+This is a microservices trading system called "Slingshot" with independent services communicating via Redis pub/sub. The system handles webhook ingestion, Tradovate API interactions, real-time market data sourcing, trade orchestration, strategy evaluation, AI-powered trading, and monitoring.
 
 ## Quick Start
 
@@ -39,11 +39,17 @@ Each service supports the same npm scripts:
 ## Architecture
 
 ### Service Structure
-- **Port 3011**: Tradovate Service - All Tradovate API interactions
-- **Port 3012**: Market Data Service - Real-time price streaming and P&L (receives quotes via webhooks)
-- **Port 3013**: Trade Orchestrator - Business logic and trade coordination
-- **Port 3014**: Monitoring Service - Webhook ingestion, data aggregation, and dashboard APIs
-- **Port 3015**: Signal Generator Service - NodeJS service for TradingView data streaming, strategy evaluation, and trade signal generation
+- **Port 3011**: Tradovate Service - All Tradovate API interactions (orders, positions, WebSocket)
+- **Port 3013**: Trade Orchestrator - Business logic, signal routing, and trade coordination
+- **Port 3014**: Monitoring Service - Webhook ingestion, data aggregation, dashboard APIs (only public-facing service, binds 0.0.0.0)
+- **Port 3015**: Signal Generator Service - Multi-strategy evaluation engine, consumes market data from data-service via Redis
+- **Port 3017**: Macro Briefing Service - Daily macro trading briefing generation using Claude AI
+- **Port 3018**: AI Trader Service - AI-powered trading strategy using Claude AI (same codebase as signal-generator with `ACTIVE_STRATEGY=ai-trader`)
+- **Port 3019**: Data Service - Centralized market data sourcing: TradingView streaming, GEX calculations (CBOE + hybrid Tradier), LT monitoring, candle management, IV skew
+- **Port 3020**: Dashboard UI - React frontend served via `serve`
+
+**Deprecated:**
+- ~~**Port 3012**: Market Data Service~~ - Replaced by Data Service (3019). Directory still exists but is not in PM2 config.
 
 ### Key Dependencies
 - All services use Node.js with ES modules (`"type": "module"` in package.json)
@@ -62,7 +68,8 @@ The system uses predefined Redis channels for communication (defined in `shared/
 - Account events: `account.update`, `balance.update`, `margin.update`
 - System events: `service.health`, `service.error`, `service.started`, `service.stopped`
 - Sync events: `tradovate_sync_completed`
-- Signal Generator events: `lt.levels`, `gex.levels`, `candle.close`, `gex.refresh`
+- Data Service events: `lt.levels`, `gex.levels`, `candle.close`, `gex.refresh`, `vex.levels`, `cex.levels`
+- Strategy events: `strategy.status`
 
 ### Configuration
 - Environment variables are managed through `shared/.env`
@@ -73,10 +80,12 @@ The system uses predefined Redis channels for communication (defined in `shared/
 ### Service Dependencies
 Services must start in this order (handled by `start-all.sh`):
 1. Tradovate Service (depends on message bus)
-2. Market Data Service (depends on message bus, receives quotes via webhooks from NinjaTrader)
-3. Trade Orchestrator (depends on message bus)
-4. Monitoring Service (depends on message bus, handles all webhook ingestion)
-5. Signal Generator Service (NodeJS service, depends on Redis, streams TradingView data and generates trade signals)
+2. Trade Orchestrator (depends on message bus)
+3. Monitoring Service (depends on message bus, handles all webhook ingestion)
+4. Data Service (depends on message bus; sources TradingView data, GEX, LT levels)
+5. Signal Generator Service (depends on data-service publishing market data via Redis)
+6. AI Trader Service (depends on data-service; runs as separate PM2 instance of signal-generator codebase)
+7. Macro Briefing Service (independent; cron-scheduled)
 
 ## Webhook Data Formats
 
@@ -209,15 +218,33 @@ Order fill logic is implemented in `/backtest-engine/src/execution/trade-simulat
 - **WebSocket**: `ws://localhost:3014` - Real-time updates
 
 ### Internal Service Endpoints (localhost only)
-- **Tradovate Service**: `http://localhost:3011/health` - Tradovate API gateway
-- **Market Data Service**: `http://localhost:3012/health` - Price streaming service
-- **Trade Orchestrator**: `http://localhost:3013/health` - Trade logic service
-- **Signal Generator Service**: `http://localhost:3015/health` - NodeJS service health check
-  - `/gex/levels` - Get current GEX levels
-  - `/gex/refresh` - Force GEX recalculation
-  - `/lt/levels` - Get current LT levels
-  - `/strategy/enable` - Enable strategy evaluation
-  - `/strategy/disable` - Disable strategy evaluation
+- **Tradovate Service** (3011): `http://localhost:3011/health` - Tradovate API gateway
+- **Trade Orchestrator** (3013): `http://localhost:3013/health` - Trade logic service
+- **Signal Generator** (3015): `http://localhost:3015/health` - Strategy evaluation
+  - `/strategies` - List all strategies with status
+  - `/strategy/status` - Get all strategy statuses
+  - `/strategy/status/:name` - Get specific strategy status
+  - `/strategy/enable` - Enable one or all strategies
+  - `/strategy/disable` - Disable one or all strategies
+- **Data Service** (3019): `http://localhost:3019/health` - Centralized market data
+  - `/gex/levels?product=NQ|ES` - Get current GEX levels
+  - `/gex/levels/nq`, `/gex/levels/es` - Convenience aliases
+  - `/gex/refresh?product=NQ|ES` - Force GEX recalculation
+  - `/gex/health` - GEX-specific health (hybrid status, Tradier status)
+  - `/lt/levels?product=NQ|ES` - Get Liquidity Trigger levels
+  - `/candles?symbol=NQ&count=60` - Get 1-minute candle history
+  - `/candles/hourly?symbol=NQ&count=300` - Get 1-hour candle history
+  - `/iv/skew` - Current IV skew data
+  - `/iv/history` - IV skew history
+  - `/exposure/levels` - Tradier exposure levels
+  - `/vex/levels` - Vega exposure levels
+  - `/cex/levels` - Charm exposure levels
+  - `/tradier/status` - Tradier service status
+  - `/tradingview/token` - Update JWT token (POST)
+- **AI Trader** (3018): `http://localhost:3018/health` - AI strategy service
+  - `/ai/status` - AI engine status and daily metrics
+  - `/ai/test-cycle` - Trigger test evaluation cycle (POST)
+- **Macro Briefing** (3017): `http://localhost:3017/health` - Macro briefing service
 
 Note: Internal services bind to 127.0.0.1 and are not publicly accessible. Only the monitoring service (3014) binds to 0.0.0.0 for external access.
 
@@ -281,52 +308,70 @@ POST /api/trading/enable|disable - Trading kill switch
 - `market_data` - Price/quote updates
 - `pnl_update` - P&L changes
 
-## Signal Generator Service (NodeJS)
+## Data Service (Centralized Market Data)
 
-The Signal Generator Service is a NodeJS-based Express application that handles:
+The Data Service is the centralized market data sourcing and aggregation layer. It consolidates functionality previously spread across signal-generator and market-data-service into a single authoritative source for all real-time market data and derivatives calculations.
 
 ### Core Functionality
-- **TradingView Data Streaming**: Real-time OHLCV data from multiple symbols via WebSocket
-- **Liquidity Trigger (LT) Monitoring**: Tracks support/resistance levels
-- **GEX Level Calculation**: Gamma exposure calculations for market positioning
-- **Strategy Engine**: Evaluates market conditions and generates trade signals
-- **Strategy Status Publishing**: Real-time strategy monitoring via Redis pub/sub
-- **1-minute Candle Close Detection**: Triggers GEX Scalp strategy evaluation on candle completions
-- **Dual WebSocket Architecture**: Separate connections for quotes and LT indicators for stability
+- **TradingView Data Streaming**: Real-time OHLCV data (NQ, ES) and quote-only updates (MNQ, MES, QQQ, SPY, BTC) via WebSocket
+- **Liquidity Trigger (LT) Monitoring**: Dedicated WebSocket connections per product (NQ, ES) for support/resistance levels
+- **GEX Level Calculation**: CBOE-based gamma exposure calculations for NQ (from QQQ) and ES (from SPY)
+- **Hybrid GEX Mode**: Blends Tradier real-time exposure data with CBOE GEX when `HYBRID_GEX_ENABLED=true`
+- **Candle Management**: Per-symbol 1-minute (600 bars) and 1-hour (500 bars) candle buffers with close detection
+- **IV Skew Calculation**: Call/put IV skew from Tradier data
+- **Tradier Exposure Service**: Optional real-time options Greeks (VEX, CEX)
 
 ### Key Components
-- **TradingView Client**: `/signal-generator/src/websocket/tradingview-client.js`
+- **TradingView Client**: `/signal-generator/src/websocket/tradingview-client.js` (imported from signal-generator)
   - Streams real-time quotes from TradingView via WebSocket
   - Auto-reconnection with proper session management
   - Publishes real-time price updates to `price.update` channel
-- **LT Monitor**: `/signal-generator/src/websocket/lt-monitor.js`
-  - Dedicated WebSocket for Liquidity Trigger level monitoring
+- **LT Monitor**: `/signal-generator/src/websocket/lt-monitor.js` (imported from signal-generator)
+  - Dedicated WebSocket per product for Liquidity Trigger level monitoring
   - Fetches indicator metadata from TradingView's pine-facade API
   - Publishes LT levels to `lt.levels` channel
-- **GEX Calculator**: `/signal-generator/src/gex/gex-calculator.js`
+- **GEX Calculator**: `/signal-generator/src/gex/gex-calculator.js` (imported from signal-generator)
   - Fetches CBOE options data and calculates gamma exposure levels
-  - Translates QQQ levels to NQ using live price ratios
+  - Translates ETF levels (QQQ→NQ, SPY→ES) using live price ratios
   - Caches levels and provides HTTP endpoints
-- **Strategy Engine**: `/signal-generator/src/strategy/engine.js`
-  - Evaluates GEX Scalp strategy conditions on 1-minute candle closes
-  - Tracks pending limit orders and sends `cancel_limit` after timeout (3 candles)
-  - Tracks position state via Redis events (POSITION_OPENED, POSITION_CLOSED)
-  - Publishes strategy status to `strategy.status` channel
-  - Resets cooldown when position closes for immediate next signal
+- **Hybrid GEX Calculator**: `/signal-generator/src/gex/hybrid-gex-calculator.js`
+  - Blends Tradier + CBOE data; prefers Tradier when fresh (< 5 min)
+- **Candle Manager**: `/data-service/src/candle-manager.js`
+  - Per-symbol candle buffers, close detection, history serving
+  - Publishes `candle.close` events to Redis
+- **HTTP Server**: `/data-service/index.js`
+  - REST API for GEX levels, LT levels, candle history, IV skew, Tradier exposure
+
+**Note**: Several key components (TradingView client, LT monitor, GEX calculators) still live under `/signal-generator/src/` but are imported by data-service. They have not yet been refactored to `/shared/`.
+
+### Development Commands
+- **Start**: `pm2 start ecosystem.config.cjs --only data-service`
+- **Logs**: `pm2 logs data-service`
+- **Restart**: `pm2 restart data-service`
+- **Direct run**: `cd data-service && node index.js`
+
+## Signal Generator Service (Strategy Evaluation)
+
+The Signal Generator Service is now a pure strategy evaluation engine. It **consumes** market data from the Data Service via Redis pub/sub and applies configured strategies to generate trade signals. It no longer sources data directly from TradingView.
+
+### Core Functionality
+- **Multi-Strategy Engine**: Evaluates multiple strategies (GEX Scalp, GEX Recoil, IV Skew, etc.) against incoming market data
+- **Per-Product Strategy Runners**: Independent strategy evaluation for NQ and ES
+- **Position State Management**: Tracks positions per product, syncs with Tradovate at startup
+- **Pending Order Management**: Tracks unfilled orders with timeout logic
+- **Strategy Status Publishing**: Real-time strategy monitoring via Redis `strategy.status` channel
+- **Background Reconciliation**: Checks position state against Tradovate every 5 minutes
+
+### Key Components
+- **Multi-Strategy Engine**: `/signal-generator/src/strategy/multi-strategy-engine.js`
+  - Subscribes to `candle.close`, `gex.levels`, `lt.levels`, `price.update` from data-service
+  - Runs per-product strategy runners
+  - Publishes trade signals to `trade.signal` channel
 - **HTTP Server**: `/signal-generator/index.js`
-  - Provides REST API endpoints for GEX levels and strategy control
-  - Health check and monitoring endpoints
+  - Strategy enable/disable endpoints, health check
 
 ### Environment Configuration
-The service requires these environment variables:
-- `TRADINGVIEW_CREDENTIALS`: TradingView authentication
-- `TRADINGVIEW_JWT_TOKEN`: Optional hardcoded JWT token
-- `REDIS_URL`: Redis connection string
-- `OHLCV_SYMBOLS`: Comma-separated list of symbols to monitor
-- `LT_SYMBOL`: Symbol for liquidity trigger monitoring
-- `GEX_SYMBOL`: Symbol for GEX calculations
-
-**Strategy Configuration:**
+- `ACTIVE_STRATEGY`: Strategy mode (`multi-strategy` or `ai-trader`)
 - `STRATEGY_ENABLED`: Enable/disable strategy evaluation (true/false)
 - `TRADING_SYMBOL`: Symbol to trade (e.g., `NQH6`)
 - `DEFAULT_QUANTITY`: Default order quantity
@@ -339,6 +384,40 @@ The service requires these environment variables:
 - **Restart**: `pm2 restart signal-generator`
 - **Direct run**: `cd signal-generator && node index.js`
 - **Development mode**: `cd signal-generator && npm run dev` (with hot reload)
+
+## AI Trader Service
+
+The AI Trader is a separate PM2 instance of the signal-generator codebase, activated with `ACTIVE_STRATEGY=ai-trader`. It uses Claude AI models to evaluate market conditions and generate trade signals.
+
+### Core Functionality
+- **AI-Powered Strategy Evaluation**: Uses Claude API (Sonnet) for market analysis and trade decisions
+- **Feature Aggregation**: Collects 1m and 1h candle history, GEX levels, LT levels for AI context
+- **Historical Seeding**: Seeds 500 bars (1m) + 300 bars (1h) from data-service HTTP API at startup
+- **Cost Tracking**: Monitors LLM API usage costs
+
+### Key Components
+- **AI Strategy Engine**: `/signal-generator/src/ai/`
+- **Live Feature Aggregator**: `/signal-generator/src/ai/live-feature-aggregator.js`
+  - Subscribes to `candle.close` and `gex.levels` from data-service
+  - Aggregates 1m candles into 1h bars for daily context
+
+### Development Commands
+- **Start**: `pm2 start ecosystem.config.cjs --only ai-trader`
+- **Logs**: `pm2 logs ai-trader`
+- **Restart**: `pm2 restart ai-trader`
+
+## Macro Briefing Service
+
+Generates daily macro trading briefings using Claude AI. Located in `/macro-briefing/`.
+
+### Core Functionality
+- Cron-scheduled briefing generation (default: 6:30 AM ET weekdays)
+- Anthropic SDK integration for AI-generated market analysis
+- Email notifications via nodemailer
+
+### Development Commands
+- **Start**: `pm2 start ecosystem.config.cjs --only macro-briefing`
+- **Logs**: `pm2 logs macro-briefing`
 
 ## Backtest Engine
 
@@ -681,10 +760,12 @@ redis-cli pubsub numsub "trade.signal"
 ```bash
 # Check all service health endpoints
 curl http://localhost:3011/health  # Tradovate
-curl http://localhost:3012/health  # Market Data
 curl http://localhost:3013/health  # Trade Orchestrator
 curl http://localhost:3014/health  # Monitoring
 curl http://localhost:3015/health  # Signal Generator
+curl http://localhost:3017/health  # Macro Briefing
+curl http://localhost:3018/health  # AI Trader
+curl http://localhost:3019/health  # Data Service
 ```
 
 ### Test Webhook
@@ -717,28 +798,30 @@ curl -X POST http://localhost:3014/webhook \
 ### WebSocket Reconnection Issues
 **Symptom**: TradingView data stops streaming
 **Solutions**:
-1. Check `pm2 logs signal-generator` for auth errors
+1. Check `pm2 logs data-service` for auth errors
 2. Verify `TRADINGVIEW_CREDENTIALS` in `.env`
-3. Restart signal generator: `pm2 restart signal-generator`
+3. Restart data service: `pm2 restart data-service`
 
 ### Service Startup Order Failures
 **Symptom**: Services report missing dependencies
 **Solution**: Use `./start-all.sh` which handles startup order, or start manually in order:
 1. Tradovate Service
-2. Market Data Service
-3. Trade Orchestrator
-4. Monitoring Service
+2. Trade Orchestrator
+3. Monitoring Service
+4. Data Service
 5. Signal Generator
+6. AI Trader
 
 ### No Trade Signals Generated
 **Symptoms**: Strategy running but no signals
 **Check**:
-1. GEX levels loaded: `curl http://localhost:3015/gex/levels`
+1. GEX levels loaded: `curl http://localhost:3019/gex/levels?product=NQ`
 2. Price streaming: `redis-cli subscribe "price.update"`
 3. Strategy enabled: Check `STRATEGY_ENABLED=true` in `.env`
 4. Session filter: Check `USE_SESSION_FILTER` and `ALLOWED_SESSIONS` settings
 5. Check strategy status: `curl http://localhost:3014/api/strategy/gex-scalp/status`
-6. GEX Scalp cooldown is 60 seconds between signals
+6. Data service healthy: `curl http://localhost:3019/health`
+7. GEX Scalp cooldown is 60 seconds between signals
 
 ### Backtest Data Issues
 **Symptom**: Backtest fails with missing data

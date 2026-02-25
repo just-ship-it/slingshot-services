@@ -225,6 +225,11 @@ Respond ONLY with the JSON object. No markdown, no explanation outside JSON.`;
       sections.push(`\n## Liquidity Trigger Levels: Not available for this date`);
     }
 
+    // LS (Liquidity Status) sentiment
+    if (state.ls) {
+      sections.push(`\n## Liquidity Status: **${state.ls.sentiment}**`);
+    }
+
     // Late-start: current RTH session context
     if (state.sessionContext) {
       const sc = state.sessionContext;
@@ -441,6 +446,11 @@ Respond ONLY with the JSON object. No markdown, no explanation outside JSON.`;
         const dir = l.distance > 0 ? 'above' : 'below';
         sections.push(`- LT-${l.fibLookback}: ${l.price.toFixed(2)} (${Math.abs(l.distance).toFixed(1)} pts ${dir})`);
       }
+    }
+
+    // LS sentiment
+    if (realTimeState.ls) {
+      sections.push(`\n## Liquidity Status: **${realTimeState.ls.sentiment}**`);
     }
 
     // Structural Levels Map

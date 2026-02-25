@@ -66,6 +66,7 @@ export const CHANNELS = {
 
   // Signal Generator events
   LT_LEVELS: 'lt.levels',
+  LS_STATUS: 'ls.status',
   GEX_LEVELS: 'gex.levels',
   VEX_LEVELS: 'vex.levels',
   CEX_LEVELS: 'cex.levels',

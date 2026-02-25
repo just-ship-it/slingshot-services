@@ -330,6 +330,9 @@ class DataService {
         // Set up LT event listener
         monitor.on('lt_levels', (ltLevels) => this.handleLtUpdate(ltConfig.key, ltLevels));
 
+        // Set up LS sentiment listener
+        monitor.on('ls_status', (lsStatus) => this.handleLsUpdate(ltConfig.key, lsStatus));
+
         await monitor.connect();
         await monitor.startMonitoring();
         this.ltMonitors.set(ltConfig.key, monitor);
@@ -397,6 +400,18 @@ class DataService {
 
     } catch (error) {
       logger.error(`Error handling LT update for ${product}:`, error);
+    }
+  }
+
+  /**
+   * Handle LS sentiment update from a monitor
+   */
+  async handleLsUpdate(product, lsStatus) {
+    try {
+      logger.info(`LS sentiment for ${product}: ${lsStatus.sentiment}`);
+      await messageBus.publish(CHANNELS.LS_STATUS, { ...lsStatus, product });
+    } catch (error) {
+      logger.error(`Error handling LS update for ${product}:`, error);
     }
   }
 
@@ -545,6 +560,14 @@ class DataService {
   getLtLevels(product = 'NQ') {
     const monitor = this.ltMonitors.get(product.toUpperCase());
     return monitor?.getCurrentLevels() || null;
+  }
+
+  /**
+   * Get LS sentiment for a product
+   */
+  getLsSentiment(product = 'NQ') {
+    const monitor = this.ltMonitors.get(product.toUpperCase());
+    return monitor?.getCurrentLsSentiment() || null;
   }
 
   /**

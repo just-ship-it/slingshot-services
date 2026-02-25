@@ -14,6 +14,11 @@ const TV_ORIGIN = 'https://www.tradingview.com';
 const LIQUIDITY_TRIGGER_INDICATOR = 'PUB;7e87924bf26940f3b0e4e245ec9e30b2';
 const LIQUIDITY_TRIGGER_VERSION = '1';
 
+// Liquidity Status indicator by DeepDiveStocks
+// Set to empty string to disable LS subscription
+const LIQUIDITY_STATUS_INDICATOR = 'PUB;88c2b5522d5d4c568501da83445ea154';
+const LIQUIDITY_STATUS_VERSION = '1';
+
 class LTMonitor extends EventEmitter {
   constructor(options = {}) {
     super();
@@ -35,6 +40,9 @@ class LTMonitor extends EventEmitter {
     this.currentLevels = null;
     this.lastTimestamp = null;
     this.lastHeartbeat = null;
+    this.lsStudyAdded = false;
+    this.lastLsValues = null;
+    this.currentLsSentiment = null;
   }
 
   generateSession(prefix = 'qs') {
@@ -255,6 +263,32 @@ class LTMonitor extends EventEmitter {
               } else {
                 logger.error('❌ Failed to fetch LT indicator metadata, cannot create study');
               }
+
+              // Create LS study if configured
+              if (LIQUIDITY_STATUS_INDICATOR && !this.lsStudyAdded) {
+                this.lsStudyAdded = true;
+                try {
+                  const lsMetainfo = await this.fetchIndicatorMetadata(LIQUIDITY_STATUS_INDICATOR, LIQUIDITY_STATUS_VERSION);
+                  if (lsMetainfo) {
+                    const lsPayload = this.prepareIndicatorMetadata(LIQUIDITY_STATUS_INDICATOR, lsMetainfo);
+                    // Use Simplified mode (default) for clean BULLISH/BEARISH binary output
+                    const lsStudyParams = [
+                      this.chartSession,
+                      'st10',   // LS study ID (distinct from LT's st9)
+                      'st2',    // Output ID
+                      'sds_1',  // Same data source
+                      'Script@tv-scripting-101!',
+                      lsPayload
+                    ];
+                    this.sendMessage('create_study', lsStudyParams);
+                    logger.info('📐 LS study creation sent using fetched metadata');
+                  } else {
+                    logger.error('❌ Failed to fetch LS indicator metadata, cannot create study');
+                  }
+                } catch (lsError) {
+                  logger.error('❌ Error creating LS study with metadata:', lsError);
+                }
+              }
             } catch (error) {
               logger.error('❌ Error creating LT study with metadata:', error);
             }
@@ -278,6 +312,32 @@ class LTMonitor extends EventEmitter {
     if (!payload || payload.length < 2) return;
 
     const update = payload[1];
+
+    // Look for LS indicator data in st10
+    if (update.st10 && update.st10.st) {
+      const lsStudyData = update.st10.st;
+      if (lsStudyData.length > 0) {
+        const latest = lsStudyData[lsStudyData.length - 1];
+        const values = latest.v;
+        if (values) {
+          const key = JSON.stringify(values.slice(5)); // skip OHLCV, compare indicator values only
+          if (key !== this.lastLsValues) {
+            this.lastLsValues = key;
+            // Simplified mode: raw 5 = BULLISH, raw 8 = BEARISH (matches backtest CSV)
+            const raw = values[5];
+            const sentiment = raw <= 6 ? 'BULLISH' : raw >= 7 ? 'BEARISH' : null;
+            const ts = new Date(values[0] * 1000).toISOString();
+            if (sentiment) {
+              logger.info(`📊 LS sentiment: ${sentiment} (raw=${raw}) candle=${ts}`);
+              this.currentLsSentiment = sentiment;
+              this.emit('ls_status', { sentiment, raw, timestamp: values[0], candleTime: ts });
+            } else {
+              logger.warn(`📊 LS unknown raw value: ${raw} candle=${ts}`);
+            }
+          }
+        }
+      }
+    }
 
     // Look for LT indicator data in st9
     if (update.st9 && update.st9.st) {
@@ -385,6 +445,8 @@ class LTMonitor extends EventEmitter {
     }
     this.connected = false;
     this.studyAdded = false;
+    this.lsStudyAdded = false;
+    this.lastLsValues = null;
 
     this.isDisconnecting = wasDisconnecting;
     this.reconnectAttempts = 0;
@@ -414,6 +476,10 @@ class LTMonitor extends EventEmitter {
 
   getCurrentLevels() {
     return this.currentLevels;
+  }
+
+  getCurrentLsSentiment() {
+    return this.currentLsSentiment;
   }
 
   isConnected() {

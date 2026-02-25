@@ -215,6 +215,17 @@ app.get('/lt/levels', (req, res) => {
   }
 });
 
+app.get('/ls/sentiment', (req, res) => {
+  try {
+    const product = req.query.product || 'NQ';
+    const sentiment = service.getLsSentiment(product);
+    if (!sentiment) return res.status(404).json({ error: `No LS sentiment for ${product}` });
+    res.json({ sentiment, product });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // === Tradier Control Endpoints ===
 
 app.get('/tradier/status', (req, res) => {

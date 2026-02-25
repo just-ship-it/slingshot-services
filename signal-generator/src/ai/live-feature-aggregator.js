@@ -42,6 +42,10 @@ export class LiveFeatureAggregator {
     this.ltSnapshotBuffer = [];
     this.maxLtSnapshots = 20; // ~5 hours at 15-min intervals
 
+    // LS (Liquidity Status) sentiment from TradingView indicator
+    // Binary: 'BULLISH' or 'BEARISH' — matches backtest CSV sentiment field
+    this.currentLsSentiment = null;
+
     // Swing analyzers (same config as backtest)
     this._swingStructureAnalyzer = new MarketStructureAnalyzer({
       swingLookback: 3,
@@ -90,6 +94,17 @@ export class LiveFeatureAggregator {
     this.ltSnapshotBuffer.push(snapshot);
     if (this.ltSnapshotBuffer.length > this.maxLtSnapshots) {
       this.ltSnapshotBuffer.shift();
+    }
+  }
+
+  /**
+   * Set the current LS (Liquidity Status) sentiment.
+   * Called when ls.status events arrive from data-service.
+   * @param {string} sentiment - 'BULLISH' or 'BEARISH'
+   */
+  setLsSentiment(sentiment) {
+    if (sentiment && (sentiment === 'BULLISH' || sentiment === 'BEARISH')) {
+      this.currentLsSentiment = sentiment;
     }
   }
 
@@ -314,6 +329,7 @@ export class LiveFeatureAggregator {
       iv: ivState,
       vix: null, // Skip VIX for v1
       lt: ltState,
+      ls: this.currentLsSentiment ? { sentiment: this.currentLsSentiment } : null,
       priorDayHLC,
       currentSpotPrice,
     };
@@ -771,6 +787,7 @@ export class LiveFeatureAggregator {
       gex: gexState,
       iv: ivNow ? { iv: ivNow.iv, skew: ivNow.skew, callIV: ivNow.callIV, putIV: ivNow.putIV } : null,
       lt: ltState,
+      ls: this.currentLsSentiment ? { sentiment: this.currentLsSentiment } : null,
       priceAction,
       structuralLevels,
       swingRange: swingStructure ? { high: swingStructure.swingHigh, low: swingStructure.swingLow, range: swingStructure.swingRange } : null,
