@@ -1105,6 +1105,7 @@ app.get('/api/services', dashboardAuth, async (req, res) => {
     { name: 'tradovate-service', url: process.env.TRADOVATE_SERVICE_URL || 'http://localhost:3011', port: 3011 },
     { name: 'data-service', url: DATA_SERVICE_URL, port: 3019 },
     { name: 'signal-generator', url: SIGNAL_GENERATOR_URL, port: 3015 },
+    { name: 'ai-trader', url: SIGNAL_GENERATOR_AI_URL, port: 3018 },
     { name: 'macro-briefing', url: MACRO_BRIEFING_URL, port: 3017 }
   ];
 
@@ -2562,7 +2563,11 @@ app.get('/api/services/:serviceName/health', dashboardAuth, async (req, res) => 
   const { serviceName } = req.params;
   const serviceUrls = {
     'trade-orchestrator': process.env.TRADE_ORCHESTRATOR_URL || 'http://localhost:3013',
-    'tradovate': process.env.TRADOVATE_SERVICE_URL || 'http://localhost:3011'
+    'tradovate': process.env.TRADOVATE_SERVICE_URL || 'http://localhost:3011',
+    'data-service': DATA_SERVICE_URL,
+    'signal-generator': SIGNAL_GENERATOR_URL,
+    'ai-trader': SIGNAL_GENERATOR_AI_URL,
+    'macro-briefing': MACRO_BRIEFING_URL
   };
 
   const serviceUrl = serviceUrls[serviceName];
@@ -2601,7 +2606,8 @@ app.post('/api/services/:serviceName/restart', dashboardAuth, async (req, res) =
     'monitoring-service': process.env.SEVALLA_APP_ID_MONITORING,
     'data-service': process.env.SEVALLA_APP_ID_DATA_SERVICE,
     'signal-generator': process.env.SEVALLA_APP_ID_SIGNAL_GENERATOR,
-    'ai-trader': process.env.SEVALLA_APP_ID_AI_TRADER
+    'ai-trader': process.env.SEVALLA_APP_ID_AI_TRADER,
+    'macro-briefing': process.env.SEVALLA_APP_ID_MACRO_BRIEFING
   };
 
   const appId = sevallaAppIds[serviceName];
@@ -2746,7 +2752,11 @@ app.all('/api/proxy/:serviceName/*', dashboardAuth, async (req, res) => {
 
   const serviceUrls = {
     'trade-orchestrator': process.env.TRADE_ORCHESTRATOR_URL || 'http://localhost:3013',
-    'tradovate': process.env.TRADOVATE_SERVICE_URL || 'http://localhost:3011'
+    'tradovate': process.env.TRADOVATE_SERVICE_URL || 'http://localhost:3011',
+    'data-service': DATA_SERVICE_URL,
+    'signal-generator': SIGNAL_GENERATOR_URL,
+    'ai-trader': SIGNAL_GENERATOR_AI_URL,
+    'macro-briefing': MACRO_BRIEFING_URL
   };
 
   const serviceUrl = serviceUrls[serviceName];

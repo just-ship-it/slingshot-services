@@ -191,7 +191,7 @@ class StrategyEngine {
         logger.info(`🔄 Syncing position state from Tradovate (attempt ${attempt}/${maxRetries})...`);
 
         // Fetch positions from Tradovate service
-        const response = await fetch(`http://localhost:3011/positions/${accountId}`);
+        const response = await fetch(`${config.TRADOVATE_SERVICE_URL}/positions/${accountId}`);
         if (!response.ok) {
           throw new Error(`Failed to fetch positions: ${response.status}`);
         }
@@ -242,7 +242,7 @@ class StrategyEngine {
     }
 
     try {
-      const response = await fetch(`http://localhost:3011/positions/${accountId}`);
+      const response = await fetch(`${config.TRADOVATE_SERVICE_URL}/positions/${accountId}`);
       if (!response.ok) {
         logger.debug(`[RECONCILE] Failed to fetch positions: ${response.status}`);
         return;

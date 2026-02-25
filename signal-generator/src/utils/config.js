@@ -120,6 +120,9 @@ const config = {
   LOG_LEVEL: process.env.LOG_LEVEL || 'INFO',
   SERVICE_NAME: process.env.SERVICE_NAME || 'siggen-nq-ivskew',
 
+  // Tradovate Service URL (for position sync)
+  TRADOVATE_SERVICE_URL: process.env.TRADOVATE_SERVICE_URL || 'http://localhost:3011',
+
   // Tradovate Account ID (for position sync on startup)
   TRADOVATE_ACCOUNT_ID: process.env.TRADOVATE_DEFAULT_ACCOUNT_ID || '',
 

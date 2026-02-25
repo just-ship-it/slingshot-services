@@ -244,7 +244,7 @@ export class AIStrategyEngine {
     if (!accountId) return;
 
     try {
-      const response = await fetch(`http://localhost:3011/positions/${accountId}`);
+      const response = await fetch(`${config.TRADOVATE_SERVICE_URL}/positions/${accountId}`);
       if (!response.ok) return;
 
       const positions = await response.json();
@@ -293,7 +293,7 @@ export class AIStrategyEngine {
     for (let attempt = 1; attempt <= 3; attempt++) {
       try {
         logger.info(`Syncing position state from Tradovate (attempt ${attempt}/3)...`);
-        const response = await fetch(`http://localhost:3011/positions/${accountId}`);
+        const response = await fetch(`${config.TRADOVATE_SERVICE_URL}/positions/${accountId}`);
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
         const positions = await response.json();
