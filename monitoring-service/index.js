@@ -2212,6 +2212,27 @@ app.get('/api/strategy/ai-trader/status', dashboardAuth, async (req, res) => {
   }
 });
 
+// AI Trader bias reassessment - proxied from siggen-nq-aitrader
+app.post('/api/strategy/ai-trader/reassess-bias', dashboardAuth, async (req, res) => {
+  try {
+    const response = await axios.post(`${SIGNAL_GENERATOR_AI_URL}/ai/reassess-bias`, {}, {
+      timeout: 30000 // LLM call may take time
+    });
+    res.json(response.data);
+  } catch (error) {
+    if (error.code === 'ECONNREFUSED') {
+      res.json({
+        success: false,
+        error: 'siggen-nq-aitrader not running',
+        message: 'Start AI trader: pm2 start ecosystem.config.cjs --only siggen-nq-aitrader'
+      });
+    } else {
+      logger.error('Failed to trigger bias reassessment:', error.message);
+      res.status(500).json({ error: 'Failed to trigger bias reassessment', details: error.message });
+    }
+  }
+});
+
 // Squeeze Momentum endpoints
 app.get('/api/squeeze/status', dashboardAuth, (req, res) => {
   try {

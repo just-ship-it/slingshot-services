@@ -229,6 +229,22 @@ app.post('/ai/test-cycle', async (req, res) => {
   }
 });
 
+app.post('/ai/reassess-bias', async (req, res) => {
+  try {
+    if (!service.aiEngine) {
+      return res.status(404).json({ error: 'AI Strategy Engine not available' });
+    }
+    const result = await service.aiEngine.reassessBias();
+    if (result.error) {
+      return res.status(400).json(result);
+    }
+    res.json(result);
+  } catch (error) {
+    logger.error('AI reassess bias error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Start HTTP server
 const PORT = process.env.PORT || config.HTTP_PORT || 3015;
 const BIND_HOST = process.env.BIND_HOST || '127.0.0.1';

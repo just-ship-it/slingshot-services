@@ -883,6 +883,44 @@ export class AIStrategyEngine {
     logger.info(`  LLM cost: $${this.llm.getCostSummary().estimatedCostUSD}`);
   }
 
+  // ── Public Bias Reassessment (dashboard trigger) ─────────
+
+  /**
+   * Trigger a bias reassessment on demand (called from HTTP endpoint).
+   * @returns {Object} { previous, current, changed } or { error }
+   */
+  async reassessBias() {
+    const tradingDay = this._getCurrentTradingDay();
+
+    // No bias yet — form one (late-start style)
+    if (!this.activeBias) {
+      await this._formBias(tradingDay, { lateStart: true });
+
+      if (!this.activeBias) {
+        return { error: 'Bias formation failed — insufficient data' };
+      }
+
+      return {
+        previous: null,
+        current: { bias: this.activeBias.bias, conviction: this.activeBias.conviction },
+        changed: true,
+        formed: true,
+      };
+    }
+
+    // Already have a bias — reassess
+    const previousBias = this.activeBias.bias;
+    const previousConviction = this.activeBias.conviction;
+
+    await this._reassessBias(tradingDay, Date.now());
+
+    return {
+      previous: { bias: previousBias, conviction: previousConviction },
+      current: { bias: this.activeBias.bias, conviction: this.activeBias.conviction },
+      changed: this.activeBias.bias !== previousBias,
+    };
+  }
+
   // ── Control Methods ───────────────────────────────────────
 
   enable() {

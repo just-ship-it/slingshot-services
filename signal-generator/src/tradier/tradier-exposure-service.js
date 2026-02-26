@@ -395,6 +395,7 @@ class TradierExposureService {
       if (exposures.futures.ES) {
         await messageBus.publish(CHANNELS.GEX_LEVELS, {
           timestamp: exposures.timestamp,
+          product: 'ES',
           symbol: 'ES',
           futuresPrice: exposures.futures.ES.futuresPrice,
           totalGex: exposures.futures.ES.totals.gex,
