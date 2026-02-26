@@ -56,10 +56,10 @@ export class ESCrossSignalStrategy extends BaseStrategy {
       stopPoints: 8.0,            // Initial stop loss (symmetrical with target)
       maxHoldBars: 30,            // Max candles to hold (30 minutes on 1m)
 
-      // Trailing stop
-      useTrailingStop: false,
-      trailingTrigger: 4.0,       // Activate trailing when 4 pts in profit
-      trailingOffset: 2.0,        // Trail 2 pts behind high water mark
+      // Trailing stop (broker-managed via Tradovate OSO bracket)
+      useTrailingStop: true,
+      trailingTrigger: 3.0,       // Activate trailing when 3 pts in profit
+      trailingOffset: 3.0,        // Trail 3 pts behind high water mark (breakeven at activation)
 
       // Limit order timeout (cancel unfilled orders after N bars)
       limitOrderTimeout: 15,      // 15 bars = 15 minutes on 1m chart

@@ -11,7 +11,7 @@ import { CandleAggregator } from '../../../shared/utils/candle-aggregator.js';
 import { MarketStructureAnalyzer } from '../../../shared/indicators/market-structure.js';
 import {
   isRTH, getSessionInfo, getRTHOpenTime, getRTHCloseTime,
-  getOvernightStartTime, formatET, formatETDateTime, toET,
+  getOvernightStartTime, formatET, formatETDateTime, toET, etToUTC,
   getMorningSessionEnd, getAfternoonSessionStart,
 } from '../../../backtest-engine/src/ai/session-utils.js';
 
@@ -22,14 +22,16 @@ export class LiveFeatureAggregator {
    * @param {Object} opts
    * @param {Object} opts.candle1mBuffer   - CandleBuffer for 1m candles
    * @param {Object} opts.candle1hBuffer   - CandleBuffer for 1h candles
+   * @param {Object} [opts.candle1dBuffer] - CandleBuffer for 1D candles (primary source for PD High/Low)
    * @param {Object} opts.gexCalculator    - Live GEX calculator instance
    * @param {Object} [opts.ltMonitor]      - LT monitor instance (null for v1)
    * @param {Object} [opts.ivCalculator]   - IV calculator instance (null if unavailable)
    * @param {string} [opts.ticker='NQ']    - Ticker symbol
    */
-  constructor({ candle1mBuffer, candle1hBuffer, gexCalculator, ltMonitor, ivCalculator, ticker = 'NQ' }) {
+  constructor({ candle1mBuffer, candle1hBuffer, candle1dBuffer, gexCalculator, ltMonitor, ivCalculator, ticker = 'NQ' }) {
     this.candle1mBuffer = candle1mBuffer;
     this.candle1hBuffer = candle1hBuffer;
+    this.candle1dBuffer = candle1dBuffer || null;
     this.gexCalculator = gexCalculator;
     this.ltMonitor = ltMonitor;
     this.ivCalculator = ivCalculator;
@@ -195,9 +197,43 @@ export class LiveFeatureAggregator {
   // ── Prior Daily Candles ────────────────────────────────────
 
   /**
-   * Aggregate hourly candles into daily candles for prior day context.
+   * Get prior daily candles for context.
+   * Primary: use TradingView 1D candles (correct 6 PM ET session boundaries).
+   * Fallback: aggregate from 1h candle buffer.
    */
   _getPriorDailyCandles(tradingDayStr, count = 5) {
+    // Primary: use daily candles from TradingView (correct 6 PM ET session boundaries)
+    if (this.candle1dBuffer) {
+      const dailyCandles = this.candle1dBuffer.getCandles();
+      if (dailyCandles.length > 0) {
+        const prior = dailyCandles
+          .map(c => ({
+            ...c,
+            timestamp: typeof c.timestamp === 'number' ? c.timestamp : new Date(c.timestamp).getTime()
+          }))
+          .filter(c => {
+            // TradingView daily candle timestamps are the session open (6 PM ET).
+            // Extract the trading day date in ET to compare against tradingDayStr.
+            const et = toET(c.timestamp);
+            // Session open at 6 PM ET belongs to the *next* trading day
+            // (e.g., 6 PM ET on Mon = Tuesday's trading day)
+            // Add 6 hours to push into the trading day's calendar date
+            const tradingDayDate = new Date(c.timestamp + 6 * 60 * 60 * 1000);
+            const dayStr = tradingDayDate.toISOString().slice(0, 10);
+            return dayStr !== tradingDayStr;
+          })
+          .sort((a, b) => b.timestamp - a.timestamp)
+          .slice(0, count)
+          .reverse();
+
+        if (prior.length > 0) {
+          logger.debug(`_getPriorDailyCandles: using ${prior.length} 1D candles from TradingView`);
+          return prior;
+        }
+      }
+    }
+
+    // Fallback: aggregate from 1h candles
     const candles1h = this.candle1hBuffer.getCandles();
     if (candles1h.length === 0) return [];
 
@@ -207,16 +243,54 @@ export class LiveFeatureAggregator {
       timestamp: typeof c.timestamp === 'number' ? c.timestamp : new Date(c.timestamp).getTime()
     }));
 
-    // Aggregate to daily
-    const dailyCandles = this.aggregator.aggregate(normalized, '1d');
+    // Build daily candles using 6 PM ET session boundaries (futures trading day)
+    // Each trading day runs from 6 PM ET (prior calendar day) to 4 PM ET (trading day)
+    const dailyCandles = [];
+    let day = tradingDayStr;
 
-    // Exclude current day
-    const priorDays = dailyCandles.filter(c => {
-      const d = new Date(c.timestamp).toISOString().slice(0, 10);
-      return d !== tradingDayStr;
-    });
+    for (let i = 0; i < count; i++) {
+      day = this._getPriorTradingDay(day);
+      const sessionStart = getOvernightStartTime(day);  // 6 PM ET prior calendar day
+      const sessionEnd = getRTHCloseTime(day);           // 4 PM ET on trading day
 
-    return priorDays.slice(-count);
+      const sessionCandles = normalized
+        .filter(c => c.timestamp >= sessionStart && c.timestamp <= sessionEnd)
+        .sort((a, b) => a.timestamp - b.timestamp);
+
+      if (sessionCandles.length > 0) {
+        const high = Math.max(...sessionCandles.map(c => c.high));
+        const low = Math.min(...sessionCandles.map(c => c.low));
+        const close = sessionCandles[sessionCandles.length - 1].close;
+        dailyCandles.unshift({
+          timestamp: sessionStart,
+          open: sessionCandles[0].open,
+          high,
+          low,
+          close,
+          volume: sessionCandles.reduce((s, c) => s + (c.volume || 0), 0),
+          candleCount: sessionCandles.length,
+          tradingDay: day,
+        });
+      }
+    }
+
+    if (dailyCandles.length > 0) {
+      logger.debug(`_getPriorDailyCandles: using ${dailyCandles.length} daily candles aggregated from 1h`);
+    }
+
+    return dailyCandles;
+  }
+
+  /**
+   * Get the prior trading day (skips weekends).
+   */
+  _getPriorTradingDay(dateStr) {
+    const d = new Date(dateStr + 'T12:00:00Z');
+    d.setUTCDate(d.getUTCDate() - 1);
+    const dayOfWeek = d.getUTCDay();
+    if (dayOfWeek === 0) d.setUTCDate(d.getUTCDate() - 2); // Sunday → Friday
+    else if (dayOfWeek === 6) d.setUTCDate(d.getUTCDate() - 1); // Saturday → Friday
+    return d.toISOString().slice(0, 10);
   }
 
   /**
@@ -562,12 +636,31 @@ export class LiveFeatureAggregator {
    * Get 4h high/low (most recently completed 4h candle).
    */
   _get4hHighLow(timestamp) {
-    const FOUR_HOURS_MS = 4 * 60 * 60 * 1000;
-    const currentBoundary = Math.floor(timestamp / FOUR_HOURS_MS) * FOUR_HOURS_MS;
-    const priorBoundaryStart = currentBoundary - FOUR_HOURS_MS;
-    const priorBoundaryEnd = currentBoundary - 1;
+    const et = toET(timestamp);
 
-    const candles = this._getCandlesInRange(priorBoundaryStart, priorBoundaryEnd);
+    // 4h blocks anchored at 6 PM ET: 18, 22, 2, 6, 10, 14
+    // Shift so 18:00 ET = hour 0, making blocks at offsets 0, 4, 8, 12, 16, 20
+    const shiftedHour = ((et.hour - 18) + 24) % 24;
+    const currentBlockStartHourET = (Math.floor(shiftedHour / 4) * 4 + 18) % 24;
+
+    // If block start hour > current hour, the block started on the prior calendar day
+    let blockYear = et.year, blockMonth = et.month, blockDay = et.day;
+    if (currentBlockStartHourET > et.hour) {
+      const d = new Date(Date.UTC(et.year, et.month - 1, et.day - 1, 12));
+      const prev = toET(d.getTime());
+      blockYear = prev.year;
+      blockMonth = prev.month;
+      blockDay = prev.day;
+    }
+
+    const currentBlockStartMs = etToUTC(blockYear, blockMonth, blockDay, currentBlockStartHourET, 0);
+
+    // Prior completed 4h block
+    const FOUR_HOURS_MS = 4 * 60 * 60 * 1000;
+    const priorBlockStartMs = currentBlockStartMs - FOUR_HOURS_MS;
+    const priorBlockEndMs = currentBlockStartMs - 1;
+
+    const candles = this._getCandlesInRange(priorBlockStartMs, priorBlockEndMs);
     if (candles.length === 0) return null;
 
     return {
@@ -867,6 +960,7 @@ export class LiveFeatureAggregator {
       gex: gexComparison,
       iv: ivComparison,
       ltMigration,
+      lsSentiment: this.currentLsSentiment,
       levelInteractions: null, // Simplified for live — could add later
     };
   }
@@ -907,10 +1001,36 @@ export class LiveFeatureAggregator {
       const distEnd = Math.abs(endRelative);
       const direction = distEnd < distStart ? 'toward_price' : distEnd > distStart ? 'away_from_price' : 'stable';
 
+      // Direction-aware scoring: account for whether level is above/below price
+      const levelAbovePrice = endLevels[i] > priceEnd;
+      const relativeToPrice = levelAbovePrice ? 'above' : 'below';
+
       let levelScore = 0;
-      if (direction === 'away_from_price') levelScore = 1;
-      else if (direction === 'toward_price') levelScore = -1;
-      if (crossedPrice) levelScore *= 2;
+      let crossingDirection = null;
+      if (crossedPrice) {
+        // Price rose through level (was below, now above) = bullish
+        // Price fell through level (was above, now below) = bearish
+        if (startRelative < 0 && endRelative > 0) {
+          levelScore = 2;  // bullish crossing
+          crossingDirection = 'bullish';
+        } else {
+          levelScore = -2; // bearish crossing
+          crossingDirection = 'bearish';
+        }
+      } else {
+        // Non-crossing: score depends on level position relative to price
+        if (!levelAbovePrice) {
+          // Level below price (support)
+          // Moving toward price = support strengthening = bullish
+          // Moving away = support eroding = bearish
+          levelScore = direction === 'toward_price' ? 1 : direction === 'away_from_price' ? -1 : 0;
+        } else {
+          // Level above price (resistance)
+          // Moving away from price = resistance retreating = bullish
+          // Moving toward price = resistance approaching = bearish
+          levelScore = direction === 'away_from_price' ? 1 : direction === 'toward_price' ? -1 : 0;
+        }
+      }
 
       weightedScore += levelScore;
       totalWeight += 1;
@@ -922,6 +1042,9 @@ export class LiveFeatureAggregator {
         delta: Math.round(delta * 100) / 100,
         direction,
         crossedPrice,
+        crossingDirection,
+        relativeToPrice,
+        levelScore,
       });
     }
 
@@ -933,10 +1056,13 @@ export class LiveFeatureAggregator {
 
     const shortTermLevels = levels.filter(l => l.fib <= 55);
     const longTermLevels = levels.filter(l => l.fib >= 377);
-    const shortTermMoving = shortTermLevels.filter(l => l.direction === 'away_from_price').length >
-                            shortTermLevels.filter(l => l.direction === 'toward_price').length;
-    const longTermMoving = longTermLevels.filter(l => l.direction === 'away_from_price').length >
-                           longTermLevels.filter(l => l.direction === 'toward_price').length;
+    const shortTermImproving = shortTermLevels.filter(l => l.levelScore > 0).length >
+                               shortTermLevels.filter(l => l.levelScore < 0).length;
+    const longTermImproving = longTermLevels.filter(l => l.levelScore > 0).length >
+                              longTermLevels.filter(l => l.levelScore < 0).length;
+
+    const levelsAbovePrice = levels.filter(l => l.relativeToPrice === 'above').length;
+    const levelsBelowPrice = levels.filter(l => l.relativeToPrice === 'below').length;
 
     return {
       priceStart, priceEnd, priceDirection,
@@ -944,8 +1070,10 @@ export class LiveFeatureAggregator {
       levels,
       overallSignal,
       normalizedScore: Math.round(normalizedScore * 100) / 100,
-      shortTermTrend: shortTermMoving ? 'improving' : shortTermLevels.length > 0 ? 'deteriorating' : 'unknown',
-      longTermTrend: longTermMoving ? 'improving' : longTermLevels.length > 0 ? 'deteriorating' : 'unknown',
+      shortTermTrend: shortTermImproving ? 'improving' : shortTermLevels.length > 0 ? 'deteriorating' : 'unknown',
+      longTermTrend: longTermImproving ? 'improving' : longTermLevels.length > 0 ? 'deteriorating' : 'unknown',
+      levelsAbovePrice,
+      levelsBelowPrice,
     };
   }
 
@@ -955,7 +1083,8 @@ export class LiveFeatureAggregator {
   setDataReady(ready = true) {
     this.dataReady = ready;
     if (ready) {
-      logger.info(`LiveFeatureAggregator data ready: ${this.candle1mBuffer.getCandles().length} 1m candles, ${this.candle1hBuffer.getCandles().length} 1h candles, ${this.ltSnapshotBuffer.length} LT snapshots`);
+      const dailyCount = this.candle1dBuffer ? this.candle1dBuffer.getCandles().length : 0;
+      logger.info(`LiveFeatureAggregator data ready: ${this.candle1mBuffer.getCandles().length} 1m candles, ${this.candle1hBuffer.getCandles().length} 1h candles, ${dailyCount} 1D candles, ${this.ltSnapshotBuffer.length} LT snapshots`);
     }
   }
 }

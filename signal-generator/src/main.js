@@ -47,6 +47,7 @@ class SignalGeneratorService {
     this.aiEngine = null;
     this.candle1mBuffer = null;
     this.candle1hBuffer = null;
+    this.candle1dBuffer = null;
     this.liveFeatureAggregator = null;
     this.liveTradeManager = null;
 
@@ -193,10 +194,16 @@ class SignalGeneratorService {
       timeframe: '60',
       maxSize: 500,
     });
+    this.candle1dBuffer = new CandleBuffer({
+      symbol: candleBaseSymbol,
+      timeframe: '1D',
+      maxSize: 30,
+    });
 
     this.liveFeatureAggregator = new LiveFeatureAggregator({
       candle1mBuffer: this.candle1mBuffer,
       candle1hBuffer: this.candle1hBuffer,
+      candle1dBuffer: this.candle1dBuffer,
       gexCalculator: this.gexCalculator,
       ltMonitor: null,
       ivCalculator: null,
@@ -354,6 +361,37 @@ class SignalGeneratorService {
       logger.error('Failed to seed 1h candle history:', error.message);
     }
     this.aiEngine?.markHistoryReady('60');
+
+    // Seed 1D candles (for reliable PD High/Low — TradingView daily candles use correct 6 PM ET session boundaries)
+    try {
+      const url = `${DATA_SERVICE_URL}/candles/daily?symbol=${product}&count=10`;
+      logger.info(`Seeding 1D candle history from data-service...`);
+
+      let candles = [];
+      for (let attempt = 1; attempt <= 6; attempt++) {
+        try {
+          const data = await fetchWithRetry(url, { retries: 1, label: '1D candle seed' });
+          candles = data.candles || [];
+        } catch { candles = []; }
+
+        if (candles.length > 0) break;
+
+        if (attempt < 6) {
+          const waitSec = Math.min(5 * attempt, 15);
+          logger.info(`1D history: got 0 candles — data-service may still be loading, retry in ${waitSec}s (${attempt}/6)`);
+          await new Promise(r => setTimeout(r, waitSec * 1000));
+        }
+      }
+
+      if (candles.length > 0) {
+        this.candle1dBuffer.seedCandles(candles);
+        logger.info(`Seeded ${candles.length} 1D candles from data-service`);
+      } else {
+        logger.warn('No 1D candle history available from data-service — PD High/Low will fall back to 1h aggregation');
+      }
+    } catch (error) {
+      logger.error('Failed to seed 1D candle history:', error.message);
+    }
   }
 
   /**

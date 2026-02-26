@@ -121,6 +121,23 @@ app.get('/candles/hourly', (req, res) => {
   }
 });
 
+app.get('/candles/daily', (req, res) => {
+  try {
+    const symbol = req.query.symbol || 'NQ';
+    const count = parseInt(req.query.count) || 10;
+    const candles = service.getDailyCandles(symbol, count);
+    res.json({
+      symbol: symbol.toUpperCase(),
+      timeframe: '1D',
+      count: candles.length,
+      candles
+    });
+  } catch (error) {
+    logger.error('Daily candles error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // === IV Skew Endpoints ===
 
 app.get('/iv/skew', (req, res) => {

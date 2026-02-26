@@ -514,7 +514,11 @@ Respond ONLY with the JSON object. No markdown, no explanation outside JSON.`;
   _reassessmentSystemPrompt() {
     return `You are reassessing your directional bias for ${this.ticker} based on the last 30 minutes of price action and objective liquidity data. Be willing to change your mind when the evidence warrants it.
 
-Key principle: If LT migration shows improving liquidity (levels moving away from rising price), this is an objective bullish signal regardless of your current bias. If LT migration shows deteriorating liquidity (levels converging toward price), this warns of reversal risk. Give LT migration data significant weight.
+LT migration measures whether liquidity levels are strengthening or weakening relative to price direction:
+- IMPROVING means support levels are strengthening below price, resistance is retreating, or price is breaking upward through levels (bullish crossings)
+- DETERIORATING means price is falling through levels (bearish crossings), support is eroding below, or resistance is pressing closer
+- Pay attention to how many levels are above vs below price — if most levels are above after a selloff, that confirms price has broken down through the liquidity structure
+- Weight LT migration alongside price action and LS sentiment — it is one input, not an override
 
 Your response must be valid JSON matching this schema:
 {
@@ -529,7 +533,7 @@ Your response must be valid JSON matching this schema:
 }
 
 Rules:
-- If price action and LT migration both contradict your current bias, flip it
+- If price action, LT migration, and LS sentiment all contradict your current bias, flip it
 - If only one signal contradicts, reduce conviction but maintain direction
 - If bias has been wrong (recent stops hit), be more willing to reassess
 - New conviction of 1-2 means you're basically neutral — let setups speak for themselves
@@ -557,22 +561,30 @@ Respond ONLY with the JSON object. No markdown, no explanation outside JSON.`;
       sections.push(`- Volume: ${o.totalVolume} total, ${o.avgVolumePerCandle} avg/candle`);
     }
 
-    // LT Migration — the key objective signal
+    // LT Migration
     if (windowSummary.ltMigration) {
       const m = windowSummary.ltMigration;
-      sections.push(`\n## LT Level Migration (OBJECTIVE SIGNAL)`);
+      sections.push(`\n## LT Level Migration`);
       sections.push(`- Price: ${m.priceStart.toFixed(2)} → ${m.priceEnd.toFixed(2)} (${m.priceDirection}, ${m.priceDelta > 0 ? '+' : ''}${m.priceDelta.toFixed(2)} pts)`);
       sections.push(`- Overall liquidity signal: **${m.overallSignal.toUpperCase()}** (score: ${m.normalizedScore})`);
       sections.push(`- Short-term lookbacks (LT-34/55): ${m.shortTermTrend}`);
       sections.push(`- Long-term lookbacks (LT-377/610): ${m.longTermTrend}`);
+      sections.push(`- Levels above price: ${m.levelsAbovePrice ?? '?'}, Levels below price: ${m.levelsBelowPrice ?? '?'}`);
       sections.push('');
-      sections.push('| LT Lookback | Start | End | Delta | Direction | Crossed Price? |');
-      sections.push('|-------------|-------|-----|-------|-----------|----------------|');
+      sections.push('| LT Lookback | Start | End | Delta | Position | Direction | Crossing |');
+      sections.push('|-------------|-------|-----|-------|----------|-----------|----------|');
       for (const l of m.levels) {
-        sections.push(`| ${l.fib} | ${l.startPrice.toFixed(2)} | ${l.endPrice.toFixed(2)} | ${l.delta > 0 ? '+' : ''}${l.delta.toFixed(2)} | ${l.direction} | ${l.crossedPrice ? 'YES' : 'no'} |`);
+        const pos = l.relativeToPrice || '?';
+        const crossing = l.crossingDirection ? (l.crossingDirection === 'bullish' ? 'Bullish ↑' : 'Bearish ↓') : '—';
+        sections.push(`| ${l.fib} | ${l.startPrice.toFixed(2)} | ${l.endPrice.toFixed(2)} | ${l.delta > 0 ? '+' : ''}${l.delta.toFixed(2)} | ${pos} | ${l.direction} | ${crossing} |`);
       }
     } else {
       sections.push(`\n## LT Level Migration: Not available`);
+    }
+
+    // LS Sentiment
+    if (windowSummary.lsSentiment) {
+      sections.push(`\n## Liquidity Status: **${windowSummary.lsSentiment.toUpperCase()}**`);
     }
 
     // GEX regime comparison

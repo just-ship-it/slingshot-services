@@ -10,6 +10,8 @@ export class CandleManager {
     this.buffers = new Map();
     // Per-symbol 1h candle buffers for hourly history
     this.hourlyBuffers = new Map();
+    // Per-symbol 1D candle buffers for daily history
+    this.dailyBuffers = new Map();
     // Map TradingView symbols to base symbols for routing
     this.symbolMap = {
       'NQ': ['NQ1!', 'MNQ1!', 'NQ', 'MNQ'],
@@ -125,9 +127,24 @@ export class CandleManager {
   }
 
   /**
+   * Get or create a 1D candle buffer for a base symbol
+   */
+  getDailyBuffer(baseSymbol) {
+    if (!this.dailyBuffers.has(baseSymbol)) {
+      this.dailyBuffers.set(baseSymbol, new CandleBuffer({
+        symbol: baseSymbol,
+        timeframe: '1D',
+        maxSize: 30,
+      }));
+      logger.info(`Created daily candle buffer for ${baseSymbol}`);
+    }
+    return this.dailyBuffers.get(baseSymbol);
+  }
+
+  /**
    * Seed candle buffer from TradingView history_loaded event
    * @param {string} baseSymbol - 'NQ' or 'ES'
-   * @param {string} timeframe - '1' or '60'
+   * @param {string} timeframe - '1', '60', or '1D'
    * @param {Array} candles - Array of candle data
    */
   seedHistory(baseSymbol, timeframe, candles) {
@@ -141,6 +158,10 @@ export class CandleManager {
       const buffer = this.getHourlyBuffer(baseSymbol);
       const count = buffer.seedCandles(candles);
       logger.info(`Seeded ${count} 1h candles for ${baseSymbol} from TradingView history`);
+    } else if (timeframe === '1D') {
+      const buffer = this.getDailyBuffer(baseSymbol);
+      const count = buffer.seedCandles(candles);
+      logger.info(`Seeded ${count} 1D candles for ${baseSymbol} from TradingView history`);
     }
   }
 
@@ -152,6 +173,19 @@ export class CandleManager {
    */
   getHourlyCandles(symbol, count = 300) {
     const buffer = this.hourlyBuffers.get(symbol);
+    if (!buffer) return [];
+    const candles = buffer.getCandles(count) || [];
+    return candles.map(c => c.toDict ? c.toDict() : c);
+  }
+
+  /**
+   * Get daily candle history for a symbol
+   * @param {string} symbol - 'NQ' or 'ES'
+   * @param {number} count - Number of candles to return
+   * @returns {Array} Array of candle objects
+   */
+  getDailyCandles(symbol, count = 10) {
+    const buffer = this.dailyBuffers.get(symbol);
     if (!buffer) return [];
     const candles = buffer.getCandles(count) || [];
     return candles.map(c => c.toDict ? c.toDict() : c);

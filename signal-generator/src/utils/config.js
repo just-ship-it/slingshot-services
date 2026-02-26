@@ -94,7 +94,7 @@ const config = {
   // ES Cross-Signal Strategy Parameters
   ES_CROSS_TARGET_POINTS: parseFloat(process.env.ES_CROSS_TARGET_POINTS || '10'),
   ES_CROSS_STOP_POINTS: parseFloat(process.env.ES_CROSS_STOP_POINTS || '10'),
-  ES_CROSS_BREAKEVEN_STOP: process.env.ES_CROSS_BREAKEVEN_STOP?.toLowerCase() !== 'false', // Default true
+  ES_CROSS_BREAKEVEN_STOP: process.env.ES_CROSS_BREAKEVEN_STOP?.toLowerCase() === 'true', // Default false (using broker trailing stop instead)
   ES_CROSS_BREAKEVEN_TRIGGER: parseFloat(process.env.ES_CROSS_BREAKEVEN_TRIGGER || '3'),
   ES_CROSS_BREAKEVEN_OFFSET: parseFloat(process.env.ES_CROSS_BREAKEVEN_OFFSET || '0'),
   ES_CROSS_FILTER_REGIME_SIDE: process.env.ES_CROSS_FILTER_REGIME_SIDE || 'strong_positive_buy',

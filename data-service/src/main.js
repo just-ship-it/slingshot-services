@@ -97,7 +97,8 @@ class DataService {
         const canonical = this.candleManager.resolveBaseSymbol(baseSymbol);
         if (canonical) {
           this.candleManager.seedHistory(canonical, timeframe, candles);
-          logger.info(`History loaded: ${candles.length} ${timeframe}m candles for ${canonical} (from ${baseSymbol})`);
+          const tfLabel = timeframe === '1D' ? '1D' : `${timeframe}m`;
+          logger.info(`History loaded: ${candles.length} ${tfLabel} candles for ${canonical} (from ${baseSymbol})`);
         }
       });
 
@@ -117,6 +118,16 @@ class DataService {
           logger.info(`Created 1h history session for ${sym}`);
         } catch (error) {
           logger.error(`Failed to create 1h history session for ${sym}:`, error.message);
+        }
+      }
+
+      // Create 1D history sessions for each OHLCV symbol (for reliable PD High/Low)
+      for (const sym of config.OHLCV_SYMBOLS) {
+        try {
+          await this.tradingViewClient.createHistorySession(sym, '1D', 10);
+          logger.info(`Created 1D history session for ${sym}`);
+        } catch (error) {
+          logger.error(`Failed to create 1D history session for ${sym}:`, error.message);
         }
       }
 
@@ -481,6 +492,13 @@ class DataService {
    */
   getHourlyCandles(symbol, count) {
     return this.candleManager.getHourlyCandles(symbol.toUpperCase(), count);
+  }
+
+  /**
+   * Get daily candle history
+   */
+  getDailyCandles(symbol, count) {
+    return this.candleManager.getDailyCandles(symbol.toUpperCase(), count);
   }
 
   /**

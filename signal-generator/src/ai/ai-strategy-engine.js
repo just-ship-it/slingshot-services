@@ -915,8 +915,7 @@ export class AIStrategyEngine {
 
     const results = { timestamp: new Date().toISOString(), steps: [] };
 
-    // Use tomorrow (Monday) as a fake trading day so daily-candle aggregation works
-    const fakeTradingDay = '2026-02-24'; // Monday
+    const fakeTradingDay = this._getCurrentTradingDay();
 
     // ── Step 1: Bias Formation ──────────────────────────
     logger.info('[TEST] Running bias formation...');
