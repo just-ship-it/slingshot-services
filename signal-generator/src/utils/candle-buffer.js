@@ -262,8 +262,17 @@ export class CandleBuffer {
     this.candles = deduped.slice(-this.maxSize);
 
     if (this.candles.length > 0) {
-      const lastCandle = this.candles[this.candles.length - 1];
-      this.lastCandleTime = new Date(lastCandle.timestamp).getTime();
+      // Use second-to-last candle's timestamp as lastCandleTime.
+      // The last seeded candle is the currently forming bar (not yet closed).
+      // If we set lastCandleTime to the forming bar's timestamp, the first
+      // real candle close after seed gets swallowed because addCandle checks
+      // `lastCandleTime > this.lastCandleTime` which would be equal, not greater.
+      if (this.candles.length >= 2) {
+        const secondToLast = this.candles[this.candles.length - 2];
+        this.lastCandleTime = new Date(secondToLast.timestamp).getTime();
+      } else {
+        this.lastCandleTime = new Date(this.candles[0].timestamp).getTime();
+      }
       this.initialized = true;
     }
 
