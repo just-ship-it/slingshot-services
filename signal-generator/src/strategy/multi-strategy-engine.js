@@ -261,6 +261,8 @@ class MultiStrategyEngine {
       if (state) {
         state.gexLevels = message;
         logger.debug(`GEX levels updated for ${product}`);
+        // Re-check data readiness for strategies waiting on GEX
+        this.recheckDataReadiness(state);
       }
     });
 
@@ -283,6 +285,8 @@ class MultiStrategyEngine {
           state.ltLevels = message;
         }
         logger.debug(`LT levels updated for ${product}`);
+        // Re-check data readiness for strategies waiting on LT
+        this.recheckDataReadiness(state);
       }
     });
 
@@ -293,6 +297,7 @@ class MultiStrategyEngine {
       if (state) {
         state.ivData = message;
         logger.debug('IV skew data updated');
+        this.recheckDataReadiness(state);
       }
     });
 
@@ -399,6 +404,22 @@ class MultiStrategyEngine {
 
     runner.dataReady = blockers.length === 0;
     return runner.dataReady;
+  }
+
+  /**
+   * Re-check data readiness for all strategies on a product.
+   * Called when new market data (GEX, LT, IV) arrives so strategies
+   * don't have to wait for the next candle evaluation to become ready.
+   */
+  recheckDataReadiness(state) {
+    for (const [name, runner] of state.strategies) {
+      if (runner.dataReady) continue; // already ready
+      const wasReady = runner.dataReady;
+      this.checkStrategyDataReady(runner, state);
+      if (!wasReady && runner.dataReady) {
+        logger.info(`Strategy ${name} (${state.product}) is now data-ready`);
+      }
+    }
   }
 
   // === Candle Processing ===

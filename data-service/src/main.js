@@ -131,7 +131,9 @@ class DataService {
       });
 
       // Initialize LT Monitors for both products
-      await this.initializeLtMonitors(startupJwtToken, redisUrl);
+      // Use the client's current token (may have been refreshed during connect) rather than the startup token
+      const ltToken = this.tradingViewClient.jwtToken || startupJwtToken;
+      await this.initializeLtMonitors(ltToken, redisUrl);
 
       // Set up GEX refresh schedules
       this.scheduleGexRefresh();

@@ -311,21 +311,17 @@ async function getBestAvailableToken(envToken, redisUrl) {
   const envTTL = getTokenTTL(envToken) || -Infinity;
   const cachedTTL = getTokenTTL(cachedToken) || -Infinity;
 
-  if (envTTL <= 0 && cachedTTL <= 0) {
-    // Both expired or unavailable
-    if (envToken) return { token: envToken, source: 'env (expired)', ttl: envTTL };
-    if (cachedToken) return { token: cachedToken, source: 'redis (expired)', ttl: cachedTTL };
-    return null;
-  }
-
-  if (cachedTTL > envTTL) {
-    logger.info(`Using Redis-cached token (TTL: ${Math.floor(cachedTTL / 60)}min) over env token (TTL: ${Math.floor(envTTL / 60)}min)`);
-    return { token: cachedToken, source: 'redis', ttl: cachedTTL };
+  // Always prefer Redis token (set via UI "Set Token") over env token
+  if (cachedToken) {
+    const status = cachedTTL > 0 ? `TTL: ${Math.floor(cachedTTL / 60)}min` : `expired ${Math.floor(-cachedTTL / 60)}min ago`;
+    logger.info(`Using Redis-cached token (${status})`);
+    return { token: cachedToken, source: cachedTTL > 0 ? 'redis' : 'redis (expired)', ttl: cachedTTL };
   }
 
   if (envToken) {
-    logger.info(`Using env token (TTL: ${Math.floor(envTTL / 60)}min)`);
-    return { token: envToken, source: 'env', ttl: envTTL };
+    const status = envTTL > 0 ? `TTL: ${Math.floor(envTTL / 60)}min` : `expired ${Math.floor(-envTTL / 60)}min ago`;
+    logger.info(`Using env token (${status}) — no Redis token available`);
+    return { token: envToken, source: envTTL > 0 ? 'env' : 'env (expired)', ttl: envTTL };
   }
 
   return null;
