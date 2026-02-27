@@ -457,30 +457,33 @@ class TradingViewClient extends EventEmitter {
           }
         }
 
-        // Get the latest candle and emit as quote (preserves backward compatibility)
-        const latestCandle = ohlcData[ohlcData.length - 1];
-        const values = latestCandle.v;
+        // Only emit latest candle as quote for 1m sessions (backward compat)
+        // 60m/1D candles should only flow through history_loaded events
+        if (seriesTimeframe === '1') {
+          const latestCandle = ohlcData[ohlcData.length - 1];
+          const values = latestCandle.v;
 
-        if (values && values.length >= 5) {
-          const [candleTimestamp, open, high, low, close, volume] = values;
+          if (values && values.length >= 5) {
+            const [candleTimestamp, open, high, low, close, volume] = values;
 
-          if (candleTimestamp && close) {
-            const candleTimeMs = candleTimestamp * 1000;
-            const quote = {
-              symbol: symbol,
-              baseSymbol: baseSymbol,
-              close: close,
-              open: open,
-              high: high,
-              low: low,
-              volume: volume || 0,
-              timestamp: new Date(candleTimeMs).toISOString(),
-              candleTimestamp: candleTimestamp,
-              source: 'tradingview'
-            };
+            if (candleTimestamp && close) {
+              const candleTimeMs = candleTimestamp * 1000;
+              const quote = {
+                symbol: symbol,
+                baseSymbol: baseSymbol,
+                close: close,
+                open: open,
+                high: high,
+                low: low,
+                volume: volume || 0,
+                timestamp: new Date(candleTimeMs).toISOString(),
+                candleTimestamp: candleTimestamp,
+                source: 'tradingview'
+              };
 
-            this.storeLatestQuote(baseSymbol, quote);
-            this.emit('quote', quote);
+              this.storeLatestQuote(baseSymbol, quote);
+              this.emit('quote', quote);
+            }
           }
         }
       }
@@ -511,6 +514,14 @@ class TradingViewClient extends EventEmitter {
 
     if (!symbol) {
       logger.debug(`Unknown session ${sessionId} in du message - skipping data update`);
+      return;
+    }
+
+    // Only emit quotes from 1-minute sessions — 60m/1D sessions produce
+    // candles that span the full hour/day and corrupt the 1m candle buffer
+    const timeframe = this.sessionTimeframe.get(sessionId) || '1';
+    if (timeframe !== '1') {
+      logger.debug(`Skipping du quote emission for ${timeframe} session ${sessionId}`);
       return;
     }
 
