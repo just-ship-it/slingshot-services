@@ -856,6 +856,7 @@ class TradingViewClient extends EventEmitter {
         // Critical: Start streaming after reconnection
         await this.startStreaming();
         logger.info(`📊 TradingView streaming restarted after reconnection`);
+        this.emit('reconnected');
       } catch (error) {
         logger.error(`❌ TradingView reconnection failed: ${error.message}`);
         this.scheduleReconnect();
@@ -1055,6 +1056,7 @@ class TradingViewClient extends EventEmitter {
     // Reconnect
     await this.connect();
     await this.startStreaming();
+    this.emit('reconnected');
   }
 
   /**

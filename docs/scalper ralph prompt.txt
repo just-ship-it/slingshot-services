@@ -1,0 +1,13 @@
+"Your goal is do develop an MNQ trading strategy that makes $100 per day (equivalent of 50 points of MNQ).  You may only use OHLCV NQ Continuous data for backtesting.  I do not care how you accomplish this but you must meet these guidlines.
+
+1. Can only trade 1 MNQ at a time.
+2. You may use any order types you like (market, limit, stop loss, target, trailing stop with offset, etc).  
+3. Any trade that makes 5 points should not lose money.
+4. If you lose $50 or more (equivalent to 25 points), stop trading until the next session opens (6 PM EST).
+6. You can only have 1 losing day per week.  If you have a second loss you must wait for the followoing week open (Sunday Evening 6 PM EST)
+7. Futures close Friday at 5 PM and reopen Sunday at 6 PM.  You can not carry contracts during this period.
+8. You can not carry contracts past market close on any day.
+9. Use any and all aggressive scalping and/or trading techniques you can find.  I would suggest research and testing.
+10. No forward look-ahead bias allowed.  Your strategy can change week to week or even day to day but it must be back-testable.
+11.  I would suggest breaking up the day into "observe" times and "trade" times.  Learn the algorithmic trading patterns that are happening on any given day, then trade them until they fail.
+12. Output: <promise>COMPLETE</promise> when every day has either made $100 or lost $50." --max-iterations 50 --completion-promise "COMPLETE"

@@ -75,6 +75,9 @@ export const CHANNELS = {
   GEX_REFRESH: 'gex.refresh',
   EXPOSURE_REFRESH: 'exposure.refresh',
 
+  // Data readiness events
+  DATA_READY: 'data.ready',
+
   // Squeeze Momentum events
   SQUEEZE_STATUS: 'squeeze.status',
   SQUEEZE_UPDATE: 'squeeze.update',

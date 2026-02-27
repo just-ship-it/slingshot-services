@@ -4,15 +4,21 @@
       "tradingSymbol": "NQH6",
       "strategies": [
         {
+          "name": "mnq-adaptive-scalper",
+          "enabled": false,
+          "priority": 1,
+          "evalTimeframe": "1m"
+        },
+        {
           "name": "iv-skew-gex",
           "enabled": true,
-          "priority": 1,
+          "priority": 2,
           "evalTimeframe": "1m"
         },
         {
           "name": "gex-scalp",
           "enabled": false,
-          "priority": 2,
+          "priority": 3,
           "evalTimeframe": "1m"
         }
       ]

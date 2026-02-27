@@ -235,6 +235,26 @@ const config = {
     };
   },
 
+  getMnqAdaptiveScalperParams() {
+    return {
+      stopPoints: 10,
+      targetPoints: 50,
+      trailingTrigger: 3,
+      trailingOffset: 1,
+      dailyLossLimit: -25,
+      dailyTarget: 50,
+      weeklyMaxLossDays: 1,
+      proximity: 3,
+      maxDistance: 80,
+      minDistance: 1,
+      signalCooldownMs: 60000,
+      orderTimeoutCandles: 3,
+      orbCandles: 15,
+      ibCandles: 30,
+      lastEntryTime: 15.917
+    };
+  },
+
   getTradierConfig() {
     return {
       accessToken: this.TRADIER_ACCESS_TOKEN,

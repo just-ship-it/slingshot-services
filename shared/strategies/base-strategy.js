@@ -37,6 +37,23 @@ export class BaseStrategy {
   }
 
   /**
+   * Whether the strategy has been seeded with historical data.
+   * Override in subclasses that require seeding (e.g., PDH/PDL from daily candles).
+   * @returns {boolean} True if seeded or no seeding required
+   */
+  isSeeded() {
+    return true;
+  }
+
+  /**
+   * Called when a position is closed. Override in subclass for P&L tracking.
+   * @param {Object} closeData - { entryPrice, exitPrice, pnl, side, timestamp }
+   */
+  onPositionClosed(closeData) {
+    // Override in subclass
+  }
+
+  /**
    * Reset strategy state (useful for backtesting)
    */
   reset() {

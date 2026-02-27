@@ -5,7 +5,7 @@
 import { createLogger, messageBus, CHANNELS } from '../../../shared/index.js';
 import { CandleBuffer } from '../utils/candle-buffer.js';
 import { CandleAggregator } from '../../../shared/utils/candle-aggregator.js';
-import { createStrategy, getStrategyConstant, requiresIVData, supportsBreakevenStop } from './strategy-factory.js';
+import { createStrategy, getStrategyConstant, getDataRequirements, requiresIVData, supportsBreakevenStop } from './strategy-factory.js';
 import config from '../utils/config.js';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
@@ -30,6 +30,9 @@ class StrategyRunner {
     this.requiresIV = requiresIVData(name);
     this.supportsBreakeven = supportsBreakevenStop(name);
     this.tradingSymbol = productConfig.tradingSymbol;
+
+    // Data readiness flag — strategies gate on this before evaluating
+    this.dataReady = false;
 
     // Pending order tracking
     this.pendingOrders = new Map();
@@ -312,7 +315,90 @@ class MultiStrategyEngine {
       this.handleOrderCancelled(message);
     });
 
-    logger.info('Subscribed to data channels: candle.close, gex.levels, lt.levels, iv.skew, position.*, order.*');
+    // Subscribe to data.ready events from data-service
+    messageBus.subscribe(CHANNELS.DATA_READY, async (message) => {
+      logger.info(`Data ready: ${message.product} ${message.timeframe} (${message.candleCount} candles)`);
+
+      // Re-seed strategies that need this data
+      await this.seedStrategies();
+
+      // Re-check readiness for all strategies
+      for (const [product, state] of this.products) {
+        for (const [name, runner] of state.strategies) {
+          const wasReady = runner.dataReady;
+          this.checkStrategyDataReady(runner, state);
+          if (!wasReady && runner.dataReady) {
+            logger.info(`Strategy ${name} (${product}) is now data-ready`);
+          }
+        }
+      }
+    });
+
+    logger.info('Subscribed to data channels: candle.close, gex.levels, lt.levels, iv.skew, data.ready, position.*, order.*');
+
+    // Initial seed attempt after brief delay (data-service may already have data)
+    setTimeout(() => this.seedStrategies(), 5000);
+  }
+
+  /**
+   * Seed strategies with historical candle data from data-service.
+   * Strategies that implement seedHistoricalData() will be called.
+   */
+  async seedStrategies() {
+    const dataServiceUrl = process.env.DATA_SERVICE_URL || 'http://localhost:3019';
+
+    for (const [product, state] of this.products) {
+      for (const [name, runner] of state.strategies) {
+        if (typeof runner.strategy?.seedHistoricalData === 'function') {
+          try {
+            logger.info(`Seeding historical data for ${name} (${product})...`);
+            await runner.strategy.seedHistoricalData(dataServiceUrl);
+            logger.info(`Historical data seeded for ${name} (${product})`);
+          } catch (err) {
+            logger.warn(`Failed to seed ${name} (${product}): ${err.message} — strategy will build state from live candles`);
+          }
+        }
+      }
+    }
+  }
+
+  /**
+   * Check if a strategy's data requirements are met.
+   * Updates runner.dataReady and returns the result.
+   */
+  checkStrategyDataReady(runner, state) {
+    const reqs = getDataRequirements(runner.name);
+
+    // No declared requirements = always ready (backward compatible)
+    if (!reqs) {
+      runner.dataReady = true;
+      return true;
+    }
+
+    const blockers = [];
+
+    // Check candle seeding (strategies that implement isSeeded)
+    if (reqs.candles !== false && typeof runner.strategy?.isSeeded === 'function' && !runner.strategy.isSeeded()) {
+      blockers.push('candle history');
+    }
+
+    // Check GEX levels (unless strategy explicitly opts out)
+    if (reqs.gex !== false && !state.gexLevels) {
+      blockers.push('GEX levels');
+    }
+
+    // Check LT levels (unless strategy explicitly opts out)
+    if (reqs.lt !== false && !state.ltLevels) {
+      blockers.push('LT levels');
+    }
+
+    // Check IV data (only if strategy requires it)
+    if (reqs.ivSkew === true && !state.ivData) {
+      blockers.push('IV data');
+    }
+
+    runner.dataReady = blockers.length === 0;
+    return runner.dataReady;
   }
 
   // === Candle Processing ===
@@ -474,9 +560,16 @@ class MultiStrategyEngine {
    * Core evaluation: run a single strategy on a candle
    */
   async evaluateStrategyOnCandle(state, runner, candle) {
-    // Get GEX levels from cached data
+    // Gate on data readiness — skip until all requirements met
+    if (!runner.dataReady && !this.checkStrategyDataReady(runner, state)) {
+      logger.debug(`${runner.name} (${state.product}): data not ready, skipping evaluation`);
+      return;
+    }
+
+    // Get GEX levels from cached data (for strategies that need them)
     const gexLevels = state.gexLevels;
-    if (!gexLevels) {
+    const reqs = getDataRequirements(runner.name);
+    if (reqs?.gex !== false && !gexLevels) {
       logger.debug(`No GEX levels for ${state.product}, skipping ${runner.name}`);
       return;
     }
@@ -576,6 +669,32 @@ class MultiStrategyEngine {
         const exitInfo = message.exitPrice ? ` @ ${message.exitPrice}` : '';
         const pnlInfo = message.pnl ? ` (P&L: ${message.pnl > 0 ? '+' : ''}${message.pnl})` : '';
         logger.info(`Position closed for ${product}${exitInfo}${pnlInfo}`);
+
+        // Notify strategy of position close (for P&L tracking, loss limits, etc.)
+        if (state.currentPosition) {
+          const entryPrice = state.currentPosition.entryPrice;
+          const exitPrice = message.exitPrice || message.price;
+          const side = state.currentPosition.side;
+
+          if (entryPrice && exitPrice) {
+            const pnl = side === 'long' || side === 'buy'
+              ? exitPrice - entryPrice
+              : entryPrice - exitPrice;
+
+            for (const [, runner] of state.strategies) {
+              if (runner.strategyConstant === strategy && typeof runner.strategy.onPositionClosed === 'function') {
+                runner.strategy.onPositionClosed({
+                  entryPrice,
+                  exitPrice,
+                  pnl,
+                  side,
+                  timestamp: message.timestamp || new Date().toISOString(),
+                  metadata: message.metadata || {}
+                });
+              }
+            }
+          }
+        }
 
         state.inPosition = false;
         state.currentPosition = null;
@@ -973,6 +1092,7 @@ class MultiStrategyEngine {
             name: runner.name,
             constant: runner.strategyConstant,
             enabled: runner.enabled,
+            dataReady: runner.dataReady,
             priority: runner.priority,
             evalTimeframe: runner.evalTimeframe,
             tradingSymbol: state.tradingSymbol,
@@ -1019,7 +1139,8 @@ class MultiStrategyEngine {
 
   enableStrategy(strategyName) {
     for (const [, state] of this.products) {
-      const runner = state.strategies.get(strategyName);
+      const runner = state.strategies.get(strategyName)
+        || [...state.strategies.values()].find(r => r.strategyConstant === strategyName);
       if (runner) {
         runner.enable();
         logger.info(`Enabled strategy: ${strategyName}`);
@@ -1031,7 +1152,8 @@ class MultiStrategyEngine {
 
   disableStrategy(strategyName) {
     for (const [, state] of this.products) {
-      const runner = state.strategies.get(strategyName);
+      const runner = state.strategies.get(strategyName)
+        || [...state.strategies.values()].find(r => r.strategyConstant === strategyName);
       if (runner) {
         runner.disable();
         logger.info(`Disabled strategy: ${strategyName}`);
@@ -1076,11 +1198,12 @@ class MultiStrategyEngine {
           inAvoidHour = strategy.params.avoidHours.includes(estHour);
         }
 
-        const isReady = runner.enabled && inAllowedSession && !!gexLevels
+        const isReady = runner.enabled && runner.dataReady && inAllowedSession && !!gexLevels
           && !(state.inPosition && state.positionStrategy !== runner.strategyConstant)
           && !pastCutoff && !inAvoidHour;
         const blockers = [
           !runner.enabled ? 'Strategy disabled' : null,
+          !runner.dataReady ? 'Data not ready (waiting for history)' : null,
           !inAllowedSession ? 'Outside allowed session' : null,
           !gexLevels ? 'No GEX levels' : null,
           state.inPosition ? `Position held by ${state.positionStrategy}` : null,
@@ -1089,6 +1212,7 @@ class MultiStrategyEngine {
         ].filter(Boolean);
         const conditionsMet = [
           runner.enabled ? 'Strategy enabled' : null,
+          runner.dataReady ? 'Data ready' : null,
           inAllowedSession ? 'In allowed session' : null,
           gexLevels ? 'GEX levels loaded' : null,
           !state.inPosition ? 'No active position' : null,
@@ -1101,6 +1225,7 @@ class MultiStrategyEngine {
           name,
           constant: runner.strategyConstant,
           enabled: runner.enabled,
+          data_ready: runner.dataReady,
           priority: runner.priority,
           eval_timeframe: runner.evalTimeframe,
           trading_symbol: state.tradingSymbol,

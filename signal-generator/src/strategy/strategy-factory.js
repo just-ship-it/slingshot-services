@@ -10,6 +10,7 @@ import { GexScalpStrategy } from '../../../shared/strategies/gex-scalp.js';
 import { IVSkewGexStrategy } from '../../../shared/strategies/iv-skew-gex.js';
 import { ESCrossSignalStrategy } from '../../../shared/strategies/es-cross-signal.js';
 import { EsStopHuntStrategy } from '../../../shared/strategies/es-stop-hunt.js';
+import { MnqAdaptiveScalperStrategy } from '../../../shared/strategies/mnq-adaptive-scalper.js';
 
 const logger = createLogger('strategy-factory');
 
@@ -21,6 +22,7 @@ export const STRATEGY_TYPES = {
   IV_SKEW_GEX: 'iv-skew-gex',
   ES_CROSS_SIGNAL: 'es-cross-signal',
   ES_STOP_HUNT: 'es-stop-hunt',
+  MNQ_ADAPTIVE_SCALPER: 'mnq-adaptive-scalper',
   AI_TRADER: 'ai-trader'
 };
 
@@ -49,6 +51,11 @@ export function createStrategy(strategyName, config) {
     case 'es_stop_hunt':
     case 'esstophunt':
       return createEsStopHuntStrategy(config);
+
+    case STRATEGY_TYPES.MNQ_ADAPTIVE_SCALPER:
+    case 'mnq_adaptive_scalper':
+    case 'mnqadaptivescalper':
+      return createMnqAdaptiveScalperStrategy(config);
 
     case STRATEGY_TYPES.AI_TRADER:
     case 'ai_trader':
@@ -166,6 +173,11 @@ export function getStrategyConstant(strategyName) {
     case 'esstophunt':
       return 'ES_STOP_HUNT';
 
+    case STRATEGY_TYPES.MNQ_ADAPTIVE_SCALPER:
+    case 'mnq_adaptive_scalper':
+    case 'mnqadaptivescalper':
+      return 'MNQ_ADAPTIVE_SCALPER';
+
     case STRATEGY_TYPES.AI_TRADER:
     case 'ai_trader':
     case 'aitrader':
@@ -208,6 +220,11 @@ export function getDataRequirements(strategyName) {
     case 'gexscalp':
       return GexScalpStrategy.getDataRequirements();
 
+    case STRATEGY_TYPES.MNQ_ADAPTIVE_SCALPER:
+    case 'mnq_adaptive_scalper':
+    case 'mnqadaptivescalper':
+      return MnqAdaptiveScalperStrategy.getDataRequirements();
+
     case STRATEGY_TYPES.AI_TRADER:
     case 'ai_trader':
     case 'aitrader':
@@ -248,6 +265,23 @@ export function supportsBreakevenStop(strategyName) {
     default:
       return false;
   }
+}
+
+/**
+ * Create MNQ Adaptive Scalper strategy with proper parameters
+ */
+function createMnqAdaptiveScalperStrategy(config) {
+  const params = config.getMnqAdaptiveScalperParams();
+
+  params.tradingSymbol = config.TRADING_SYMBOL;
+  params.defaultQuantity = config.DEFAULT_QUANTITY;
+  params.debug = true;
+
+  logger.info(`MNQ-Adaptive-Scalper params: stop=${params.stopPoints}, target=${params.targetPoints}, ` +
+    `trail=${params.trailingTrigger}/${params.trailingOffset}, proximity=${params.proximity}, ` +
+    `dailyLossLimit=${params.dailyLossLimit}, dailyTarget=${params.dailyTarget}`);
+
+  return new MnqAdaptiveScalperStrategy(params);
 }
 
 export default {

@@ -12,6 +12,8 @@ export class CandleManager {
     this.hourlyBuffers = new Map();
     // Per-symbol 1D candle buffers for daily history
     this.dailyBuffers = new Map();
+    // Track which timeframes have been seeded per product (for data readiness)
+    this.seededTimeframes = new Map(); // 'NQ' -> Set('1', '60', '1D')
     // Map TradingView symbols to base symbols for routing
     this.symbolMap = {
       'NQ': ['NQ1!', 'MNQ1!', 'NQ', 'MNQ'],
@@ -189,6 +191,37 @@ export class CandleManager {
     if (!buffer) return [];
     const candles = buffer.getCandles(count) || [];
     return candles.map(c => c.toDict ? c.toDict() : c);
+  }
+
+  /**
+   * Mark a timeframe as seeded for a product (for data readiness tracking)
+   * @param {string} baseSymbol - 'NQ' or 'ES'
+   * @param {string} timeframe - '1', '60', or '1D'
+   */
+  markSeeded(baseSymbol, timeframe) {
+    if (!this.seededTimeframes.has(baseSymbol)) {
+      this.seededTimeframes.set(baseSymbol, new Set());
+    }
+    this.seededTimeframes.get(baseSymbol).add(timeframe);
+  }
+
+  /**
+   * Get readiness state: which products have which timeframes seeded
+   * @returns {Object} e.g. { NQ: ['1', '60', '1D'], ES: ['1', '60'] }
+   */
+  getReadiness() {
+    const result = {};
+    for (const [symbol, tfs] of this.seededTimeframes) {
+      result[symbol] = [...tfs];
+    }
+    return result;
+  }
+
+  /**
+   * Reset readiness tracking (called on TradingView reconnection)
+   */
+  resetReadiness() {
+    this.seededTimeframes.clear();
   }
 
   /**

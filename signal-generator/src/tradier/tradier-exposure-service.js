@@ -391,19 +391,11 @@ class TradierExposureService {
       // Publish comprehensive exposure data
       await messageBus.publish(CHANNELS.EXPOSURE_LEVELS, exposures);
 
-      // Publish individual exposure types for backward compatibility
-      if (exposures.futures.ES) {
-        await messageBus.publish(CHANNELS.GEX_LEVELS, {
-          timestamp: exposures.timestamp,
-          product: 'ES',
-          symbol: 'ES',
-          futuresPrice: exposures.futures.ES.futuresPrice,
-          totalGex: exposures.futures.ES.totals.gex,
-          regime: exposures.futures.ES.regime.gex,
-          levels: exposures.futures.ES.levels,
-          source: 'tradier'
-        });
-      }
+      // Note: ES GEX levels are NOT published here because the hybrid GEX calculator
+      // in data-service already merges Tradier + CBOE data and publishes to gex.levels
+      // in the flat format that signal-generator/dashboard expects (futures_spot, callWall,
+      // putWall, support[], resistance[]). Publishing here with a nested format would
+      // overwrite the hybrid data and break the dashboard display.
 
       if (exposures.futures.NQ) {
         await messageBus.publish(CHANNELS.VEX_LEVELS, {

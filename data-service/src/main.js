@@ -92,13 +92,22 @@ class DataService {
       // Set up quote handler
       this.tradingViewClient.on('quote', (quote) => this.handleQuoteUpdate(quote));
 
-      // Seed candle buffers from TradingView history
+      // Seed candle buffers from TradingView history and publish data readiness
       this.tradingViewClient.on('history_loaded', ({ symbol, baseSymbol, timeframe, candles }) => {
         const canonical = this.candleManager.resolveBaseSymbol(baseSymbol);
         if (canonical) {
           this.candleManager.seedHistory(canonical, timeframe, candles);
+          this.candleManager.markSeeded(canonical, timeframe);
           const tfLabel = timeframe === '1D' ? '1D' : `${timeframe}m`;
           logger.info(`History loaded: ${candles.length} ${tfLabel} candles for ${canonical} (from ${baseSymbol})`);
+
+          // Broadcast data readiness to consumers (signal-generator, ai-trader)
+          messageBus.publish(CHANNELS.DATA_READY, {
+            product: canonical,
+            timeframe,
+            candleCount: candles.length,
+            readiness: this.candleManager.getReadiness()
+          }).catch(err => logger.warn(`Failed to publish data.ready: ${err.message}`));
         }
       });
 
@@ -111,25 +120,15 @@ class DataService {
       await this.tradingViewClient.startStreaming();
       logger.info(`TradingView streaming started: ${config.OHLCV_SYMBOLS.length} chart sessions + ${config.QUOTE_ONLY_SYMBOLS.length} quote-only symbols`);
 
-      // Create 1h history sessions for each OHLCV symbol (for AI trader daily context)
-      for (const sym of config.OHLCV_SYMBOLS) {
-        try {
-          await this.tradingViewClient.createHistorySession(sym, '60', 300);
-          logger.info(`Created 1h history session for ${sym}`);
-        } catch (error) {
-          logger.error(`Failed to create 1h history session for ${sym}:`, error.message);
-        }
-      }
+      // Create 1h + 1D history sessions
+      await this.createHistorySessions();
 
-      // Create 1D history sessions for each OHLCV symbol (for reliable PD High/Low)
-      for (const sym of config.OHLCV_SYMBOLS) {
-        try {
-          await this.tradingViewClient.createHistorySession(sym, '1D', 10);
-          logger.info(`Created 1D history session for ${sym}`);
-        } catch (error) {
-          logger.error(`Failed to create 1D history session for ${sym}:`, error.message);
-        }
-      }
+      // Recreate history sessions on TradingView reconnection (JWT refresh, disconnect)
+      this.tradingViewClient.on('reconnected', async () => {
+        logger.info('TradingView reconnected — recreating history sessions...');
+        this.candleManager.resetReadiness();
+        await this.createHistorySessions();
+      });
 
       // Initialize LT Monitors for both products
       await this.initializeLtMonitors(startupJwtToken, redisUrl);
@@ -350,6 +349,27 @@ class DataService {
         logger.info(`LT monitor for ${ltConfig.key} started`);
       } catch (error) {
         logger.error(`Failed to start LT monitor for ${ltConfig.key}:`, error.message);
+      }
+    }
+  }
+
+  /**
+   * Create 1h and 1D history sessions for each OHLCV symbol.
+   * Called on startup and after TradingView reconnection.
+   */
+  async createHistorySessions() {
+    for (const sym of config.OHLCV_SYMBOLS) {
+      try {
+        await this.tradingViewClient.createHistorySession(sym, '60', 300);
+        logger.info(`Created 1h history session for ${sym}`);
+      } catch (error) {
+        logger.error(`Failed to create 1h history session for ${sym}:`, error.message);
+      }
+      try {
+        await this.tradingViewClient.createHistorySession(sym, '1D', 10);
+        logger.info(`Created 1D history session for ${sym}`);
+      } catch (error) {
+        logger.error(`Failed to create 1D history session for ${sym}:`, error.message);
       }
     }
   }

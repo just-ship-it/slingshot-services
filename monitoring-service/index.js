@@ -2233,6 +2233,51 @@ app.post('/api/strategy/ai-trader/reassess-bias', dashboardAuth, async (req, res
   }
 });
 
+// List all strategies from signal-generator (multi-strategy engine)
+app.get('/api/strategies', dashboardAuth, async (req, res) => {
+  try {
+    const response = await axios.get(`${SIGNAL_GENERATOR_URL}/strategies`, { timeout: 5000 });
+    res.json(response.data);
+  } catch (error) {
+    if (error.code === 'ECONNREFUSED') {
+      res.json({ strategies: [], error: 'signal-generator not running' });
+    } else {
+      logger.error('Failed to fetch strategies list:', error.message);
+      res.status(500).json({ error: 'Failed to fetch strategies', details: error.message });
+    }
+  }
+});
+
+// Enable strategy
+app.post('/api/strategy/enable', dashboardAuth, async (req, res) => {
+  try {
+    const response = await axios.post(`${SIGNAL_GENERATOR_URL}/strategy/enable`, req.body, { timeout: 5000 });
+    res.json(response.data);
+  } catch (error) {
+    if (error.code === 'ECONNREFUSED') {
+      res.status(503).json({ error: 'signal-generator not running' });
+    } else {
+      logger.error('Failed to enable strategy:', error.message);
+      res.status(500).json({ error: 'Failed to enable strategy', details: error.message });
+    }
+  }
+});
+
+// Disable strategy
+app.post('/api/strategy/disable', dashboardAuth, async (req, res) => {
+  try {
+    const response = await axios.post(`${SIGNAL_GENERATOR_URL}/strategy/disable`, req.body, { timeout: 5000 });
+    res.json(response.data);
+  } catch (error) {
+    if (error.code === 'ECONNREFUSED') {
+      res.status(503).json({ error: 'signal-generator not running' });
+    } else {
+      logger.error('Failed to disable strategy:', error.message);
+      res.status(500).json({ error: 'Failed to disable strategy', details: error.message });
+    }
+  }
+});
+
 // Squeeze Momentum endpoints
 app.get('/api/squeeze/status', dashboardAuth, (req, res) => {
   try {

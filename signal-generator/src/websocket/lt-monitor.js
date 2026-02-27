@@ -124,6 +124,10 @@ class LTMonitor extends EventEmitter {
   handleOpen() {
     logger.info('LT monitor WebSocket opened');
     this.reconnectAttempts = 0;
+    // Reset study flags so indicators are re-added on the new session
+    this.studyAdded = false;
+    this.lsStudyAdded = false;
+    this.lastLsValues = null;
     this.initializeSessions();
     this.emit('connected');
   }
@@ -444,9 +448,7 @@ class LTMonitor extends EventEmitter {
       this.ws = null;
     }
     this.connected = false;
-    this.studyAdded = false;
-    this.lsStudyAdded = false;
-    this.lastLsValues = null;
+    // studyAdded/lsStudyAdded are now reset in handleOpen()
 
     this.isDisconnecting = wasDisconnecting;
     this.reconnectAttempts = 0;
