@@ -348,6 +348,10 @@ export class MnqAdaptiveScalperStrategy extends BaseStrategy {
     const price = candle.close;
     const levels = this._computeLevels(price, e);
 
+    // Cache for getInternalState() dashboard exposure
+    this._lastLevels = levels;
+    this._lastPrice = price;
+
     if (levels.length === 0) return null;
 
     // Filter by proximity and broken status, then sort by priority
@@ -962,6 +966,86 @@ export class MnqAdaptiveScalperStrategy extends BaseStrategy {
     this.currentDay = null;
     this.prevRthCandles = [];
     this.candles = [];
+  }
+
+  getInternalState() {
+    const levels = (this._lastLevels || []).map(lvl => ({
+      price: lvl.price,
+      type: lvl.type,
+      category: lvl.category,
+      side: lvl.side,
+      priority: lvl.priority,
+      broken: !!this.levelBroken[lvl.category]
+    }));
+
+    // Compute VWAP for display even when not in levels list
+    let vwap = null;
+    if (this.rthCandles.length > 15) {
+      vwap = computeVWAP(this.rthCandles);
+      if (vwap !== null) vwap = Math.round(vwap * 4) / 4;
+    }
+
+    let haltReason = null;
+    if (this.tradingHalted) haltReason = 'daily_loss_limit';
+    if (this.dayTargetHit) haltReason = 'daily_target_hit';
+    if (this.weekHalted) haltReason = 'weekly_halt';
+
+    return {
+      levels,
+      lastPrice: this._lastPrice || null,
+      priorDay: {
+        high: this.pdh,
+        low: this.pdl,
+        close: this.pdc,
+        midpoint: this.pdm
+      },
+      overnight: {
+        high: this.onH,
+        low: this.onL
+      },
+      orb: {
+        high: this.orbHigh,
+        low: this.orbLow,
+        complete: this.orbComplete,
+        candlesProcessed: Math.min(this.rthCandles.length, this.params.orbCandles)
+      },
+      ib: {
+        high: this.ibHigh,
+        low: this.ibLow,
+        complete: this.ibComplete,
+        candlesProcessed: Math.min(this.rthCandles.length, this.params.ibCandles)
+      },
+      rthOpen: this.rthOpen,
+      vwap,
+      tradingMetrics: {
+        dayPnL: roundTo(this.dayPnL),
+        dayTradeCount: this.dayTradeCount,
+        dailyLossLimit: this.params.dailyLossLimit,
+        dailyTarget: this.params.dailyTarget,
+        tradingHalted: this.tradingHalted,
+        dayTargetHit: this.dayTargetHit,
+        haltReason
+      },
+      weeklyMetrics: {
+        losingDays: this.weekLossDays,
+        maxLosingDays: this.params.weeklyMaxLossDays,
+        weeklyHalted: this.weekHalted
+      },
+      levelBroken: { ...this.levelBroken },
+      session: {
+        currentDay: this.currentDay,
+        rthCandleCount: this.rthCandles.length,
+        overnightCandleCount: this.overnightCandles.length,
+        seeded: this._historicalDataSeeded
+      },
+      params: {
+        proximity: this.params.proximity,
+        stopPoints: this.params.stopPoints,
+        targetPoints: this.params.targetPoints,
+        trailingTrigger: this.params.trailingTrigger,
+        trailingOffset: this.params.trailingOffset
+      }
+    };
   }
 
   getName() {
