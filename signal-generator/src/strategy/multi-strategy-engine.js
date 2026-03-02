@@ -364,6 +364,8 @@ class MultiStrategyEngine {
           }
         }
       }
+      // Recheck data readiness after seeding
+      this.recheckDataReadiness(state);
     }
   }
 
@@ -627,6 +629,9 @@ class MultiStrategyEngine {
         signal.breakeven_offset = runner.strategy.params.breakevenOffset;
       }
 
+      // Store signal metadata for use when position closes
+      state.pendingSignalMetadata = signal.metadata || {};
+
       logger.info(`Signal from ${runner.name} for ${state.product}: ${signal.action} ${signal.side} @ ${signal.price}`);
       await this.publishSignal(signal);
     }
@@ -661,8 +666,10 @@ class MultiStrategyEngine {
             entryTime: message.timestamp || new Date().toISOString(),
             strategy: strategy,
             orderStrategyId: message.orderStrategyId || message.order_strategy_id,
-            stopOrderId: message.stopOrderId || message.stop_order_id
+            stopOrderId: message.stopOrderId || message.stop_order_id,
+            metadata: state.pendingSignalMetadata || {}
           };
+          state.pendingSignalMetadata = null;
 
           logger.info(`Position opened for ${product} (${strategy}): ${state.currentPosition.side} @ ${state.currentPosition.entryPrice}`);
 
@@ -694,7 +701,7 @@ class MultiStrategyEngine {
         // Notify strategy of position close (for P&L tracking, loss limits, etc.)
         if (state.currentPosition) {
           const entryPrice = state.currentPosition.entryPrice;
-          const exitPrice = message.exitPrice || message.price;
+          const exitPrice = message.exitPrice || message.price || message.currentPrice;
           const side = state.currentPosition.side;
 
           if (entryPrice && exitPrice) {
@@ -710,7 +717,7 @@ class MultiStrategyEngine {
                   pnl,
                   side,
                   timestamp: message.timestamp || new Date().toISOString(),
-                  metadata: message.metadata || {}
+                  metadata: { ...(state.currentPosition.metadata || {}), ...(message.metadata || {}) }
                 });
               }
             }
@@ -1165,6 +1172,7 @@ class MultiStrategyEngine {
       if (runner) {
         runner.enable();
         logger.info(`Enabled strategy: ${strategyName}`);
+        this.persistStrategyEnabledState();
         return true;
       }
     }
@@ -1178,10 +1186,62 @@ class MultiStrategyEngine {
       if (runner) {
         runner.disable();
         logger.info(`Disabled strategy: ${strategyName}`);
+        this.persistStrategyEnabledState();
         return true;
       }
     }
     return false;
+  }
+
+  /**
+   * Persist strategy enabled/disabled state to Redis.
+   * On restart, this state is loaded and applied over the defaults from strategy-config.json.
+   */
+  async persistStrategyEnabledState() {
+    try {
+      const state = {};
+      for (const [product, productState] of this.products) {
+        for (const [name, runner] of productState.strategies) {
+          state[`${product}:${name}`] = runner.enabled;
+        }
+      }
+      await messageBus.publisher.set('strategy:enabled-state', JSON.stringify(state));
+      logger.info('Strategy enabled state persisted to Redis');
+    } catch (err) {
+      logger.warn(`Failed to persist strategy enabled state: ${err.message}`);
+    }
+  }
+
+  /**
+   * Load persisted strategy enabled/disabled state from Redis and apply it.
+   * Called after initializeProducts() to override defaults with user's last known state.
+   */
+  async loadStrategyEnabledState() {
+    try {
+      const data = await messageBus.publisher.get('strategy:enabled-state');
+      if (!data) {
+        logger.info('No persisted strategy enabled state found in Redis, using defaults');
+        return;
+      }
+      const state = JSON.parse(data);
+      let applied = 0;
+      for (const [product, productState] of this.products) {
+        for (const [name, runner] of productState.strategies) {
+          const key = `${product}:${name}`;
+          if (key in state) {
+            const wasEnabled = runner.enabled;
+            runner.enabled = state[key];
+            if (wasEnabled !== runner.enabled) {
+              logger.info(`  ${product}:${name} ${runner.enabled ? 'enabled' : 'disabled'} (restored from Redis)`);
+            }
+            applied++;
+          }
+        }
+      }
+      logger.info(`Restored strategy enabled state from Redis (${applied} strategies)`);
+    } catch (err) {
+      logger.warn(`Failed to load strategy enabled state: ${err.message}`);
+    }
   }
 
   /**
@@ -1205,6 +1265,8 @@ class MultiStrategyEngine {
         }
 
         const gexLevels = state.gexLevels;
+        const reqs = getDataRequirements(name);
+        const needsGex = !reqs || reqs.gex !== false;
 
         const inCooldown = !runner.strategy.checkCooldown(now.getTime(), runner.strategy.params.signalCooldownMs);
 
@@ -1219,14 +1281,15 @@ class MultiStrategyEngine {
           inAvoidHour = strategy.params.avoidHours.includes(estHour);
         }
 
-        const isReady = runner.enabled && runner.dataReady && inAllowedSession && !!gexLevels
+        const gexOk = !needsGex || !!gexLevels;
+        const isReady = runner.enabled && runner.dataReady && inAllowedSession && gexOk
           && !(state.inPosition && state.positionStrategy !== runner.strategyConstant)
           && !pastCutoff && !inAvoidHour;
         const blockers = [
           !runner.enabled ? 'Strategy disabled' : null,
           !runner.dataReady ? 'Data not ready (waiting for history)' : null,
           !inAllowedSession ? 'Outside allowed session' : null,
-          !gexLevels ? 'No GEX levels' : null,
+          needsGex && !gexLevels ? 'No GEX levels' : null,
           state.inPosition ? `Position held by ${state.positionStrategy}` : null,
           pastCutoff ? `Past entry cutoff (${strategy.params.entryCutoffHour}:${String(strategy.params.entryCutoffMinute).padStart(2, '0')} ET)` : null,
           inAvoidHour ? `Restricted hour (avoid hour ${strategy.params.avoidHours.join(', ')})` : null,
@@ -1235,7 +1298,7 @@ class MultiStrategyEngine {
           runner.enabled ? 'Strategy enabled' : null,
           runner.dataReady ? 'Data ready' : null,
           inAllowedSession ? 'In allowed session' : null,
-          gexLevels ? 'GEX levels loaded' : null,
+          needsGex ? (gexLevels ? 'GEX levels loaded' : null) : null,
           !state.inPosition ? 'No active position' : null,
           !pastCutoff ? 'Before entry cutoff' : null,
           !inAvoidHour || !strategy?.params?.avoidHours?.length ? null : 'Outside restricted hours',

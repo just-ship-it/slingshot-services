@@ -99,6 +99,9 @@ class SignalGeneratorService {
 
     this.multiStrategyEngine = new MultiStrategyEngine();
 
+    // Restore persisted strategy enabled/disabled state from Redis
+    await this.multiStrategyEngine.loadStrategyEnabledState();
+
     // Subscribe to data channels from data-service
     await this.multiStrategyEngine.subscribeToDataChannels();
 
