@@ -269,6 +269,12 @@ export class AIStrategyEngine {
         };
         this.reconciliationConfirmed = false;
         logger.warn(`[RECONCILE] Missed position open: ${this.currentPosition.side} ${this.currentPosition.symbol} @ ${this.currentPosition.entryPrice}`);
+
+        // Activate trade manager so MFE ratcheting begins
+        if (this.tradeManager) {
+          this.tradeManager.activate(this.currentPosition);
+          logger.info(`[RECONCILE] Trade manager activated for missed position`);
+        }
       } else if (!this.reconciliationConfirmed) {
         const stateDesc = this.inPosition
           ? `in position (${this.currentPosition?.side} ${this.currentPosition?.symbol})`
@@ -311,6 +317,12 @@ export class AIStrategyEngine {
             quantity: Math.abs(openPosition.netPos),
           };
           logger.info(`Found existing position: ${this.currentPosition.side} ${this.currentPosition.symbol} @ ${this.currentPosition.entryPrice}`);
+
+          // Activate trade manager so MFE ratcheting begins
+          if (this.tradeManager) {
+            this.tradeManager.activate(this.currentPosition);
+            logger.info(`Trade manager activated for existing position`);
+          }
         } else {
           logger.info('No open positions — starting fresh');
         }

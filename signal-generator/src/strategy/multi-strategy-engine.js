@@ -615,6 +615,10 @@ class MultiStrategyEngine {
     const signal = runner.strategy.evaluateSignal(candle, runner.prevCandle, marketData);
     runner.prevCandle = candle;
 
+    if (signal && !inSession) {
+      logger.warn(`⏰ [${runner.name}] Signal BLOCKED by session filter: ${signal.side} @ ${signal.price} (server hour outside ${this.sessionStart}-${this.sessionEnd} EST window)`);
+    }
+
     if (signal && inSession) {
       // Add webhook format fields
       signal.webhook_type = 'trade_signal';
@@ -1092,7 +1096,11 @@ class MultiStrategyEngine {
 
   isInTradingSession() {
     const now = new Date();
-    const hour = now.getHours();
+    const hour = parseInt(now.toLocaleString('en-US', {
+      timeZone: 'America/New_York',
+      hour: 'numeric',
+      hour12: false
+    }));
     if (this.sessionStart > this.sessionEnd) {
       return hour >= this.sessionStart || hour < this.sessionEnd;
     }

@@ -3563,13 +3563,34 @@ async function handleTradovateSyncCompleted(message) {
     }
 
     // Also clean orphaned pending orders — if a pending order no longer exists
-    // as a working order, it was either filled or cancelled and we missed the cleanup
+    // as a working order, it was either filled or cancelled and we missed the cleanup.
+    // Send a cancel to the broker as a safety net in case the order is still live.
     if (tradingState.strategyState.pendingOrders.size > 0) {
       for (const [orderId, orderInfo] of tradingState.strategyState.pendingOrders) {
         if (!tradingState.workingOrders.has(orderId)) {
-          logger.warn(`🔄 Strategy state reconciliation: removing orphaned pending order ${orderId} (${orderInfo.strategy} ${orderInfo.direction} ${orderInfo.symbol}) — no longer a working order`);
+          logger.warn(`🔄 Strategy state reconciliation: removing orphaned pending order ${orderId} (${orderInfo.strategy} ${orderInfo.direction} ${orderInfo.symbol}) — no longer a working order, sending cancel to broker`);
           tradingState.strategyState.pendingOrders.delete(orderId);
           strategyStateChanged = true;
+
+          // Send cancel to broker as safety net — the order may still be live on Tradovate
+          // even though it's no longer in our working orders map
+          try {
+            await messageBus.publish(CHANNELS.WEBHOOK_TRADE, {
+              id: `orphan_cancel_${orderId}_${Date.now()}`,
+              body: {
+                action: 'cancel_limit',
+                symbol: orderInfo.symbol,
+                side: orderInfo.direction === 'long' ? 'buy' : 'sell',
+                strategy: orderInfo.strategy,
+                reason: `Orphaned pending order cleanup — order ${orderId} no longer tracked as working`,
+                accountId: getDefaultAccountId(),
+                timestamp: new Date().toISOString()
+              }
+            });
+            logger.info(`🧹 Sent cancel_limit to broker for orphaned order ${orderId}`);
+          } catch (cancelErr) {
+            logger.error(`❌ Failed to send cancel for orphaned order ${orderId}:`, cancelErr.message);
+          }
         }
       }
     }
