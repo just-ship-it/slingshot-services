@@ -318,6 +318,13 @@ export class MnqAdaptiveScalperStrategy extends BaseStrategy {
       this.overnightCandles.push(candle);
     }
 
+    // === Always compute levels for dashboard visibility ===
+    const price = candle.close;
+    if (this.candles.length >= 30) {
+      this._lastLevels = this._computeLevels(price, e);
+    }
+    this._lastPrice = price;
+
     // === Gates ===
     if (this.tradingHalted) {
       if (debug && this.dayTradeCount === 0) {
@@ -344,13 +351,8 @@ export class MnqAdaptiveScalperStrategy extends BaseStrategy {
     // Cooldown check
     if (!this.checkCooldown(candle.timestamp, this.params.signalCooldownMs)) return null;
 
-    // === Compute levels and find best ===
-    const price = candle.close;
-    const levels = this._computeLevels(price, e);
-
-    // Cache for getInternalState() dashboard exposure
-    this._lastLevels = levels;
-    this._lastPrice = price;
+    // === Find best level for signal ===
+    const levels = this._lastLevels || [];
 
     if (levels.length === 0) return null;
 
