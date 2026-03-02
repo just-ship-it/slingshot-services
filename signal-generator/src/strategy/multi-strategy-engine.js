@@ -505,7 +505,7 @@ class MultiStrategyEngine {
    */
   async evaluateStrategies(state, candle) {
     if (!this.enabled) return;
-    if (!this.isInTradingSession()) return;
+    const inSession = this.isInTradingSession();
 
     // Get strategies sorted by priority
     const runners = Array.from(state.strategies.values())
@@ -525,7 +525,7 @@ class MultiStrategyEngine {
           logger.info(`${runner.evalTimeframe} candle closed for ${runner.name}: O=${evalCandle.open} H=${evalCandle.high} L=${evalCandle.low} C=${evalCandle.close}`);
         }
 
-        await this.evaluateStrategyOnCandle(state, runner, evalCandle);
+        await this.evaluateStrategyOnCandle(state, runner, evalCandle, inSession);
 
         // If we just entered a position, stop evaluating other strategies
         if (state.inPosition) break;
@@ -582,7 +582,7 @@ class MultiStrategyEngine {
   /**
    * Core evaluation: run a single strategy on a candle
    */
-  async evaluateStrategyOnCandle(state, runner, candle) {
+  async evaluateStrategyOnCandle(state, runner, candle, inSession = true) {
     // Gate on data readiness — skip until all requirements met
     if (!runner.dataReady && !this.checkStrategyDataReady(runner, state)) {
       logger.debug(`${runner.name} (${state.product}): data not ready, skipping evaluation`);
@@ -615,7 +615,7 @@ class MultiStrategyEngine {
     const signal = runner.strategy.evaluateSignal(candle, runner.prevCandle, marketData);
     runner.prevCandle = candle;
 
-    if (signal) {
+    if (signal && inSession) {
       // Add webhook format fields
       signal.webhook_type = 'trade_signal';
 
