@@ -787,12 +787,30 @@ class MultiStrategyEngine {
 
   handleOrderCancelled(message) {
     const orderId = message.orderId || message.strategyId;
-    if (!orderId) return;
-    for (const [, state] of this.products) {
-      for (const [, runner] of state.strategies) {
-        if (runner.pendingOrders.has(orderId)) {
-          runner.pendingOrders.delete(orderId);
-          return;
+
+    // Try matching by orderId first
+    if (orderId) {
+      for (const [, state] of this.products) {
+        for (const [, runner] of state.strategies) {
+          if (runner.pendingOrders.has(orderId)) {
+            runner.pendingOrders.delete(orderId);
+            logger.info(`Cleared pending order ${orderId} for ${runner.name} (matched by orderId)`);
+            return;
+          }
+        }
+      }
+    }
+
+    // Fallback: match by strategy name (cancel_limit events may lack orderId)
+    if (message.strategy) {
+      for (const [, state] of this.products) {
+        for (const [, runner] of state.strategies) {
+          if (runner.strategyConstant === message.strategy && runner.pendingOrders.size > 0) {
+            const count = runner.pendingOrders.size;
+            runner.pendingOrders.clear();
+            logger.info(`Cleared ${count} pending orders for ${runner.name} (matched by strategy: ${message.strategy})`);
+            return;
+          }
         }
       }
     }
@@ -800,6 +818,14 @@ class MultiStrategyEngine {
 
   async checkOrderTimeouts(runner) {
     if (runner.pendingOrders.size === 0) return;
+
+    // If strategy is disabled, clear stale pending orders silently
+    if (!runner.enabled) {
+      const count = runner.pendingOrders.size;
+      runner.pendingOrders.clear();
+      logger.info(`Cleared ${count} stale pending orders for disabled strategy ${runner.name}`);
+      return;
+    }
 
     const ordersToCancel = [];
     for (const [orderId, order] of runner.pendingOrders) {
@@ -1092,6 +1118,62 @@ class MultiStrategyEngine {
     }
   }
 
+  /**
+   * Reconcile pending orders against broker state.
+   * Uses strategy-name matching (not order IDs) to avoid OrderStrategy vs child order ID mismatch.
+   */
+  async reconcilePendingOrders() {
+    // Skip if no runner has pending orders
+    let totalPending = 0;
+    for (const [, state] of this.products) {
+      for (const [, runner] of state.strategies) {
+        totalPending += runner.pendingOrders.size;
+      }
+    }
+    if (totalPending === 0) return;
+
+    const accountId = config.TRADOVATE_ACCOUNT_ID;
+    if (!accountId) return;
+
+    try {
+      // Fetch working orders and strategy mappings from tradovate-service
+      const [ordersRes, mappingsRes] = await Promise.all([
+        fetch(`${config.TRADOVATE_SERVICE_URL}/orders/${accountId}`),
+        fetch(`${config.TRADOVATE_SERVICE_URL}/api/order-strategy-mappings`)
+      ]);
+
+      if (!ordersRes.ok || !mappingsRes.ok) return;
+
+      const orders = await ordersRes.json();
+      const mappingsData = await mappingsRes.json();
+
+      // Build set of strategy names that still have working orders at the broker
+      const strategiesWithWorkingOrders = new Set();
+      const workingStatuses = ['Working', 'Accepted', 'PendingNew'];
+      for (const order of orders) {
+        if (workingStatuses.includes(order.status)) {
+          const mapping = mappingsData.mappings?.find(m => String(m.orderId) === String(order.id));
+          if (mapping?.strategy) {
+            strategiesWithWorkingOrders.add(mapping.strategy);
+          }
+        }
+      }
+
+      // Clear pending orders for runners whose strategy has no working orders at broker
+      for (const [, state] of this.products) {
+        for (const [, runner] of state.strategies) {
+          if (runner.pendingOrders.size > 0 && !strategiesWithWorkingOrders.has(runner.strategyConstant)) {
+            const count = runner.pendingOrders.size;
+            runner.pendingOrders.clear();
+            logger.warn(`[RECONCILE] Cleared ${count} stale pending orders for ${runner.name} — no working orders at broker`);
+          }
+        }
+      }
+    } catch (error) {
+      logger.debug(`[RECONCILE] Pending order reconciliation skipped: ${error.message}`);
+    }
+  }
+
   // === Session & Lifecycle ===
 
   isInTradingSession() {
@@ -1173,28 +1255,30 @@ class MultiStrategyEngine {
   enable() { this.enabled = true; }
   disable() { this.enabled = false; }
 
-  enableStrategy(strategyName) {
+  async enableStrategy(strategyName) {
     for (const [, state] of this.products) {
       const runner = state.strategies.get(strategyName)
         || [...state.strategies.values()].find(r => r.strategyConstant === strategyName);
       if (runner) {
         runner.enable();
         logger.info(`Enabled strategy: ${strategyName}`);
-        this.persistStrategyEnabledState();
+        await this.persistStrategyEnabledState();
         return true;
       }
     }
     return false;
   }
 
-  disableStrategy(strategyName) {
+  async disableStrategy(strategyName) {
     for (const [, state] of this.products) {
       const runner = state.strategies.get(strategyName)
         || [...state.strategies.values()].find(r => r.strategyConstant === strategyName);
       if (runner) {
         runner.disable();
-        logger.info(`Disabled strategy: ${strategyName}`);
-        this.persistStrategyEnabledState();
+        const pendingCount = runner.pendingOrders.size;
+        runner.pendingOrders.clear();
+        logger.info(`Disabled strategy: ${strategyName}${pendingCount > 0 ? ` (cleared ${pendingCount} pending orders)` : ''}`);
+        await this.persistStrategyEnabledState();
         return true;
       }
     }
@@ -1225,30 +1309,41 @@ class MultiStrategyEngine {
    * Called after initializeProducts() to override defaults with user's last known state.
    */
   async loadStrategyEnabledState() {
-    try {
-      const data = await messageBus.publisher.get('strategy:enabled-state');
-      if (!data) {
-        logger.info('No persisted strategy enabled state found in Redis, using defaults');
-        return;
-      }
-      const state = JSON.parse(data);
-      let applied = 0;
-      for (const [product, productState] of this.products) {
-        for (const [name, runner] of productState.strategies) {
-          const key = `${product}:${name}`;
-          if (key in state) {
-            const wasEnabled = runner.enabled;
-            runner.enabled = state[key];
-            if (wasEnabled !== runner.enabled) {
-              logger.info(`  ${product}:${name} ${runner.enabled ? 'enabled' : 'disabled'} (restored from Redis)`);
+    const maxRetries = 3;
+    const retryDelayMs = 1000;
+
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        const data = await messageBus.publisher.get('strategy:enabled-state');
+        if (!data) {
+          logger.info('No persisted strategy enabled state found in Redis, using defaults');
+          return;
+        }
+        const state = JSON.parse(data);
+        let applied = 0;
+        for (const [product, productState] of this.products) {
+          for (const [name, runner] of productState.strategies) {
+            const key = `${product}:${name}`;
+            if (key in state) {
+              const wasEnabled = runner.enabled;
+              runner.enabled = state[key];
+              if (wasEnabled !== runner.enabled) {
+                logger.info(`  ${product}:${name} ${runner.enabled ? 'enabled' : 'disabled'} (restored from Redis)`);
+              }
+              applied++;
             }
-            applied++;
           }
         }
+        logger.info(`Restored strategy enabled state from Redis (${applied} strategies)`);
+        return;
+      } catch (err) {
+        if (attempt < maxRetries) {
+          logger.warn(`Failed to load strategy enabled state (attempt ${attempt}/${maxRetries}): ${err.message} — retrying in ${retryDelayMs}ms`);
+          await new Promise(resolve => setTimeout(resolve, retryDelayMs));
+        } else {
+          logger.error(`Failed to load strategy enabled state after ${maxRetries} attempts: ${err.message} — using config defaults (strategies may be in wrong enabled state)`);
+        }
       }
-      logger.info(`Restored strategy enabled state from Redis (${applied} strategies)`);
-    } catch (err) {
-      logger.warn(`Failed to load strategy enabled state: ${err.message}`);
     }
   }
 
@@ -1388,10 +1483,11 @@ class MultiStrategyEngine {
           }
         }
 
-        // Position reconciliation
+        // Position + pending order reconciliation
         const now = Date.now();
         if (now - lastReconciliationTime >= reconciliationIntervalMs) {
           await this.reconcilePositionState();
+          await this.reconcilePendingOrders();
           lastReconciliationTime = now;
         }
 

@@ -28,7 +28,7 @@
       "strategies": [
         {
           "name": "es-cross-signal",
-          "enabled": true,
+          "enabled": false,
           "priority": 1,
           "evalTimeframe": "15m"
         }

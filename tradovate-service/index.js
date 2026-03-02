@@ -1752,6 +1752,7 @@ async function handleCancelLimitOrders(tradeSignal, accountId, webhookId) {
       accountId: accountId,
       symbol: tradeSignal.symbol,
       side: tradeSignal.side,
+      strategy: tradeSignal.strategy,
       reason: tradeSignal.reason,
       ordersCount: matchingOrders.length,
       timestamp: new Date().toISOString()
