@@ -26,6 +26,11 @@ const orderStrategyLinks = new Map();
 // Map: orderId -> signalId (to preserve signal context when orders fill via WebSocket)
 const orderSignalMap = new Map();
 
+// Pre-register signal ID by symbol BEFORE placing orders, so immediate fills
+// (where the WebSocket executionUpdate fires before handleOrderRequest completes)
+// can still resolve signal context. Map: symbol -> { signalId, strategy, timestamp }
+const pendingOrderSignals = new Map();
+
 // Track OrderStrategy parent-child relationships
 // Map: parentStrategyId -> { signalId, childOrderIds: Set<orderId> }
 const strategyChildMap = new Map();
@@ -350,6 +355,18 @@ async function handleOrderRequest(message) {
 
     logger.info(`🔍 Bracket check: orderType=${orderData.orderType}, stopPrice=${message.stopPrice}, takeProfit=${message.takeProfit}, stop_points=${message.stop_points}, target_points=${message.target_points}, hasBracketData=${hasBracketData}`);
 
+    // Pre-register signal ID by symbol BEFORE placing the order.
+    // This ensures immediate fills (where executionUpdate fires before this function completes)
+    // can still resolve signal context.
+    if (message.signalId) {
+      pendingOrderSignals.set(contractSymbol, {
+        signalId: message.signalId,
+        strategy: message.strategy,
+        timestamp: Date.now()
+      });
+      logger.info(`🔗 Pre-registered signal ${message.signalId} for symbol ${contractSymbol}`);
+    }
+
     let result;
     if (hasBracketData) {
       // Check if trailing parameters are present - use orderStrategy if so
@@ -430,6 +447,23 @@ async function handleOrderRequest(message) {
 
         // Place the bracket order
         result = await tradovateClient.placeBracketOrder(orderData);
+      }
+
+      // Pre-register OSO bracket order IDs in orderStrategyLinks IMMEDIATELY
+      // so that if Rejected/Cancelled executionUpdates fire before we publish events,
+      // we can still determine the correct orderRole (stop_loss vs take_profit).
+      if (!hasTrailingStop && result.orderId) {
+        const osoLinks = {
+          strategyId: null,
+          timestamp: new Date().toISOString(),
+          entryOrderId: result.orderId,
+          stopOrderId: result.oso1Id || result.bracket1OrderId || null,
+          targetOrderId: result.oso2Id || result.bracket2OrderId || null,
+          isTrailing: false,
+          symbol: contractSymbol
+        };
+        orderStrategyLinks.set(result.orderId, osoLinks);
+        logger.info(`🔗 Pre-registered OSO bracket IDs: entry=${result.orderId}, stop=${osoLinks.stopOrderId}, target=${osoLinks.targetOrderId}`);
       }
 
       // Publish events for all orders
@@ -573,9 +607,10 @@ async function handleOrderRequest(message) {
       // Only publish bracket order events for standard bracket orders (not order strategies)
       if (!hasTrailingStop) {
         // Stop loss order (if exists)
-        if (result.bracket1OrderId) {
+        const stopOrderId = result.oso1Id || result.bracket1OrderId;
+        if (stopOrderId) {
           await messageBus.publish(CHANNELS.ORDER_PLACED, {
-            orderId: result.bracket1OrderId,
+            orderId: stopOrderId,
             accountId: message.accountId,
             symbol: contractSymbol,
             action: orderData.bracket1.action,
@@ -592,20 +627,21 @@ async function handleOrderRequest(message) {
 
           // Store signal mapping for bracket stop loss order
           if (message.signalId) {
-            orderSignalMap.set(result.bracket1OrderId, message.signalId);
-            logger.info(`🔗 Stored signal mapping: bracket stop order ${result.bracket1OrderId} → signal ${message.signalId}`);
+            orderSignalMap.set(stopOrderId, message.signalId);
+            logger.info(`🔗 Stored signal mapping: bracket stop order ${stopOrderId} → signal ${message.signalId}`);
           }
 
           // Store strategy mapping for bracket stop loss order (independent of signalId)
           if (message.strategy) {
-            await addOrderStrategyMapping(result.bracket1OrderId, message.strategy);
+            await addOrderStrategyMapping(stopOrderId, message.strategy);
           }
         }
 
         // Take profit order (if exists)
-        if (result.bracket2OrderId) {
+        const targetOrderId = result.oso2Id || result.bracket2OrderId;
+        if (targetOrderId) {
           await messageBus.publish(CHANNELS.ORDER_PLACED, {
-            orderId: result.bracket2OrderId,
+            orderId: targetOrderId,
             accountId: message.accountId,
             symbol: contractSymbol,
             action: orderData.bracket2.action,
@@ -622,13 +658,13 @@ async function handleOrderRequest(message) {
 
           // Store signal mapping for bracket take profit order
           if (message.signalId) {
-            orderSignalMap.set(result.bracket2OrderId, message.signalId);
-            logger.info(`🔗 Stored signal mapping: bracket target order ${result.bracket2OrderId} → signal ${message.signalId}`);
+            orderSignalMap.set(targetOrderId, message.signalId);
+            logger.info(`🔗 Stored signal mapping: bracket target order ${targetOrderId} → signal ${message.signalId}`);
           }
 
           // Store strategy mapping for bracket take profit order (independent of signalId)
           if (message.strategy) {
-            await addOrderStrategyMapping(result.bracket2OrderId, message.strategy);
+            await addOrderStrategyMapping(targetOrderId, message.strategy);
           }
         }
       }
@@ -654,6 +690,7 @@ async function handleOrderRequest(message) {
         status: 'working',
         timestamp: new Date().toISOString(),
         signalId: message.signalId,
+        orderRole: message.orderRole,
         originalRequest: message,
         response: result
       });
@@ -671,8 +708,18 @@ async function handleOrderRequest(message) {
     }
 
     logger.info('Order placed successfully:', result.orderId);
+
+    // Clean up pending signal pre-registration (proper mappings now stored)
+    if (message.signalId) {
+      pendingOrderSignals.delete(contractSymbol);
+    }
   } catch (error) {
     logger.error('Failed to process order request:', error);
+
+    // Clean up pending signal pre-registration on failure
+    if (message.signalId && contractSymbol) {
+      pendingOrderSignals.delete(contractSymbol);
+    }
 
     // Publish rejection event
     await messageBus.publish(CHANNELS.ORDER_REJECTED, {
@@ -2259,10 +2306,10 @@ async function startup() {
       // Service continues running - reconnection logic will handle recovery
     });
 
-    // Set up Tradovate event forwarding BEFORE connecting
-    tradovateClient.on('orderPlaced', async (data) => {
-      await messageBus.publish(CHANNELS.ORDER_PLACED, data);
-    });
+    // NOTE: orderPlaced events are NOT forwarded here — each order placement path
+    // (bracket, regular, OSO) already publishes ORDER_PLACED with enriched fields
+    // (symbol, orderRole, signalId). Forwarding the raw Tradovate response would
+    // create duplicates missing those fields.
 
     tradovateClient.on('orderFilled', async (data) => {
       await messageBus.publish(CHANNELS.ORDER_FILLED, data);
@@ -2465,6 +2512,27 @@ async function startup() {
           timestamp: new Date().toISOString(),
           source: 'websocket_order_update'
         });
+      } else if (order.ordStatus === 'Rejected' || order.ordStatus === 'Cancelled') {
+        const rejectReason = order.rejectReason || order.text || order.ordStatus;
+        logger.warn(`❌ Order ${order.ordStatus}: ${order.id} (role: ${orderRole}) - ${rejectReason}`);
+
+        const channel = order.ordStatus === 'Rejected' ? CHANNELS.ORDER_REJECTED : CHANNELS.ORDER_CANCELLED;
+        await messageBus.publish(channel, {
+          orderId: order.id,
+          accountId: order.accountId,
+          symbol: order.contractName || order.symbol,
+          action: order.action,
+          quantity: order.qty || order.orderQty,
+          orderType: order.orderType,
+          price: order.price || order.limitPrice,
+          stopPrice: order.stopPrice,
+          status: order.ordStatus.toLowerCase(),
+          parentOrderId: parentOrderId,
+          orderRole: orderRole,
+          error: rejectReason,
+          timestamp: new Date().toISOString(),
+          source: 'websocket_order_update'
+        });
       }
     });
 
@@ -2555,6 +2623,19 @@ async function startup() {
             parentStrategyId = strategyId;
             logger.info(`🎯 Mapped child order ${execution.orderId} to parent strategy ${strategyId} → signal ${signalId}`);
             break; // Use the first (most recent) strategy - could be enhanced with better matching
+          }
+        }
+
+        // If still no mapping, check pre-registered pending signal by symbol
+        // (handles immediate fills where executionUpdate fires before handleOrderRequest completes)
+        if (!signalId && symbol) {
+          const pending = pendingOrderSignals.get(symbol);
+          if (pending && Date.now() - pending.timestamp < 10000) {
+            signalId = pending.signalId;
+            // Also store in orderSignalMap so subsequent lookups work
+            orderSignalMap.set(execution.orderId, signalId);
+            logger.info(`🔗 Resolved signal via pending symbol map: ${symbol} → signal ${signalId}`);
+            // Don't delete yet - bracket orders may also need this mapping
           }
         }
 
@@ -2750,6 +2831,53 @@ async function startup() {
         }
       } else if (execution.execType === 'New') {
         logger.info(`📝 Execution report: New order acknowledged for order ${execution.orderId}`);
+      } else if (execution.execType === 'Rejected') {
+        const rejectReason = execution.rejectReason || execution.text || 'Rejected';
+        logger.warn(`❌ Order rejected via execution report: ${execution.orderId} - ${rejectReason}`);
+
+        // Delay rejection processing to handle race condition:
+        // WebSocket execution reports can arrive before the REST API response
+        // that populates orderStrategyLinks with bracket order IDs.
+        setTimeout(async () => {
+          try {
+            // Determine order role from orderStrategyLinks
+            let orderRole = 'entry';
+            for (const [strategyId, strategyLinks] of orderStrategyLinks.entries()) {
+              if (strategyLinks.stopOrderId === execution.orderId) {
+                orderRole = 'stop_loss';
+                break;
+              } else if (strategyLinks.targetOrderId === execution.orderId) {
+                orderRole = 'take_profit';
+                break;
+              }
+            }
+
+            // Resolve symbol for the rejection message
+            let rejectedSymbol = null;
+            if (execution.contractId) {
+              try {
+                const contractDetails = await tradovateClient.getContractDetails(execution.contractId);
+                rejectedSymbol = contractDetails?.name;
+              } catch (error) {
+                logger.warn(`⚠️ Failed to resolve contractId for rejected order: ${error.message}`);
+              }
+            }
+
+            await messageBus.publish(CHANNELS.ORDER_REJECTED, {
+              orderId: execution.orderId,
+              accountId: execution.accountId,
+              symbol: rejectedSymbol,
+              orderRole: orderRole,
+              error: rejectReason,
+              timestamp: execution.timestamp || new Date().toISOString(),
+              source: 'websocket_execution_report'
+            });
+
+            logger.info(`📊 Published order rejection for order ${execution.orderId} (role: ${orderRole})`);
+          } catch (error) {
+            logger.error(`❌ Failed to process order rejection for ${execution.orderId}:`, error);
+          }
+        }, 500);
       } else if (execution.execType === 'Canceled' || execution.execType === 'Cancelled') {
         logger.info(`❌ Order cancelled: ${execution.orderId}`);
 

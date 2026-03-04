@@ -58,6 +58,11 @@ import { SwingReversalStrategy } from '../../shared/strategies/swing-reversal.js
 import { ICTSilverBulletStrategy } from '../../shared/strategies/ict-silver-bullet.js';
 import { PriceActionExhaustionStrategy } from '../../shared/strategies/price-action-exhaustion.js';
 import { ICTMTFSweepStrategy } from '../../shared/strategies/ict-mtf-sweep/index.js';
+import { DCSt1Strategy } from '../../shared/strategies/dc-st1.js';
+import { DCSt2Strategy, DCSt3Strategy, DCSt4Strategy, DCSt5Strategy, DCSt6Strategy, DCSt7Strategy, DCSt8Strategy } from '../../shared/strategies/dc-strategies.js';
+import { DCMSTGAMStrategy } from '../../shared/strategies/dc-mstgam.js';
+import { MnqAdaptiveScalperStrategy } from '../../shared/strategies/mnq-adaptive-scalper.js';
+import { SweepReversalStrategy } from '../../shared/strategies/sweep-reversal.js';
 import { SqueezeMomentumIndicator } from '../../shared/indicators/squeeze-momentum.js';
 import { GexLoader } from './data-loaders/gex-loader.js';
 import { IVLoader } from './data-loaders/iv-loader.js';
@@ -696,6 +701,20 @@ export class BacktestEngine {
                 equity: currentEquity,
                 trade: update
               });
+
+              // Notify strategy of trade completion (for daily P&L tracking, loss limits, etc.)
+              if (typeof this.strategy.onPositionClosed === 'function') {
+                const entryPrice = update.actualEntry || update.entryPrice;
+                const exitPrice = update.actualExit;
+                const pnlPoints = update.side === 'buy' || update.side === 'long'
+                  ? exitPrice - entryPrice
+                  : entryPrice - exitPrice;
+                this.strategy.onPositionClosed({
+                  pnl: pnlPoints,
+                  timestamp: update.exitTime,
+                  metadata: update.metadata || {},
+                });
+              }
 
               // Show trade completion in verbose mode
               if (!this.config.quiet && this.config.verbose) {
@@ -1338,6 +1357,40 @@ export class BacktestEngine {
       case 'mtf-sweep':
       case 'jv':
         return new ICTMTFSweepStrategy(params);
+      case 'dc-st1':
+      case 'dc1':
+        return new DCSt1Strategy(params);
+      case 'dc-st2':
+      case 'dc2':
+        return new DCSt2Strategy(params);
+      case 'dc-st3':
+      case 'dc3':
+        return new DCSt3Strategy(params);
+      case 'dc-st4':
+      case 'dc4':
+        return new DCSt4Strategy(params);
+      case 'dc-st5':
+      case 'dc5':
+        return new DCSt5Strategy(params);
+      case 'dc-st6':
+      case 'dc6':
+        return new DCSt6Strategy(params);
+      case 'dc-st7':
+      case 'dc7':
+        return new DCSt7Strategy(params);
+      case 'dc-st8':
+      case 'dc8':
+        return new DCSt8Strategy(params);
+      case 'dc-mstgam':
+      case 'mstgam':
+        return new DCMSTGAMStrategy(params);
+      case 'mnq-adaptive-scalper':
+      case 'mnq-scalper':
+      case 'mnq':
+        return new MnqAdaptiveScalperStrategy(params);
+      case 'sweep-reversal':
+      case 'sweep-rev':
+        return new SweepReversalStrategy(params);
       default:
         throw new Error(`Unknown strategy: ${strategyName}`);
     }
@@ -1417,7 +1470,11 @@ export class BacktestEngine {
       'FVG_Top', 'FVG_Bottom', 'FVG_Time', 'FibLevel', 'FibPrice',
       // Original columns
       'GEXLevel', 'GEXLevelType', 'LTLevelsBelow',
-      'LTSentiment', 'LTOrdering', 'LTSpacing', 'LTLdmpType', 'LTAvgSpacing', 'FilterReason'
+      'LTSentiment', 'LTOrdering', 'LTSpacing', 'LTLdmpType', 'LTAvgSpacing', 'FilterReason',
+      // Trade execution details
+      'StopLoss', 'TakeProfit', 'MFEPoints', 'MAEPoints', 'ProfitGiveBack',
+      // Strategy-specific metadata (JSON)
+      'StrategyMetadata'
     ];
 
     const csvRows = [headers.join(',')];
@@ -1483,7 +1540,15 @@ export class BacktestEngine {
         m.lt_spacing || '',
         m.lt_ldmp_type || '',
         m.lt_avg_spacing || '',
-        m.filter_reason || ''
+        m.filter_reason || '',
+        // Trade execution details
+        trade.stopLoss ?? '',
+        trade.takeProfit ?? '',
+        trade.mfePoints ?? '',
+        trade.maePoints ?? '',
+        trade.profitGiveBack ?? '',
+        // Strategy-specific metadata as JSON (quote to avoid CSV delimiter issues)
+        m && Object.keys(m).length > 0 ? `"${JSON.stringify(m).replace(/"/g, '""')}"` : ''
       ];
       csvRows.push(row.join(','));
     });

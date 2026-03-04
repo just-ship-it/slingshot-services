@@ -68,7 +68,7 @@ export class CLI {
         type: 'string',
         description: 'Strategy to backtest',
         default: 'gex-recoil',
-        choices: ['gex-recoil', 'gex-recoil-enhanced', 'gex-ldpm-confluence', 'gex-ldpm-confluence-pullback', 'contrarian-bounce', 'gex-scalp', 'gex-scalp-confirmed', 'ict-smc', 'ict-ob', 'ldpm-level-sweep', 'order-flow-momentum', 'ofm', 'contrarian-orderflow', 'cof', 'gex-absorption', 'absorption', 'iv-skew-gex', 'iv-skew', 'cbbo-lt-volatility', 'cbbo-lt', 'gex-mean-reversion', 'gex-mr', 'lt-failed-breakdown', 'lt-fb', 'lt-level-crossing', 'lt-cross', 'lt-level-migration', 'lt-mig', 'regime-scalp', 'rs', 'gex-level-sweep', 'gex-sweep', 'sweep', 'micro-structure-scalper', 'micro-scalper', 'mss', 'trend-scalp', 'ts', 'level-bounce', 'lb', 'overnight-gex-touch', 'overnight-gex', 'ogt', 'overnight-charm-vanna', 'ocv', 'es-cross-signal', 'es-cross', 'ecs', 'es-micro-scalper', 'es-micro', 'esms', 'es-stop-hunt', 'es-hunt', 'esh', 'ohlcv-absorption', 'absorption-detect', 'abs', 'ohlcv-liquidity-sweep', 'liquidity-sweep', 'lsweep', 'ohlcv-vpin', 'vpin', 'ohlcv-mtf-rejection', 'mtf-rejection', 'mtfr', 'momentum-microstructure', 'momentum-micro', 'mm', 'midnight-open-retracement', 'midnight-open', 'mor', 'initial-balance-breakout', 'ib-breakout', 'ibb', 'gap-fill', 'gap', 'daily-level-sweep', 'daily-sweep', 'dls', 'vwap-bounce', 'vwap', 'session-transition', 'session', 'st', 'value-area-80', 'va80', 'swing-reversal', 'sr', 'ict-silver-bullet', 'silver-bullet', 'isb', 'price-action-exhaustion', 'pa-exhaust', 'pae', 'ict-mtf-sweep', 'mtf-sweep', 'jv']
+        choices: ['gex-recoil', 'gex-recoil-enhanced', 'gex-ldpm-confluence', 'gex-ldpm-confluence-pullback', 'contrarian-bounce', 'gex-scalp', 'gex-scalp-confirmed', 'ict-smc', 'ict-ob', 'ldpm-level-sweep', 'order-flow-momentum', 'ofm', 'contrarian-orderflow', 'cof', 'gex-absorption', 'absorption', 'iv-skew-gex', 'iv-skew', 'cbbo-lt-volatility', 'cbbo-lt', 'gex-mean-reversion', 'gex-mr', 'lt-failed-breakdown', 'lt-fb', 'lt-level-crossing', 'lt-cross', 'lt-level-migration', 'lt-mig', 'regime-scalp', 'rs', 'gex-level-sweep', 'gex-sweep', 'sweep', 'micro-structure-scalper', 'micro-scalper', 'mss', 'trend-scalp', 'ts', 'level-bounce', 'lb', 'overnight-gex-touch', 'overnight-gex', 'ogt', 'overnight-charm-vanna', 'ocv', 'es-cross-signal', 'es-cross', 'ecs', 'es-micro-scalper', 'es-micro', 'esms', 'es-stop-hunt', 'es-hunt', 'esh', 'ohlcv-absorption', 'absorption-detect', 'abs', 'ohlcv-liquidity-sweep', 'liquidity-sweep', 'lsweep', 'ohlcv-vpin', 'vpin', 'ohlcv-mtf-rejection', 'mtf-rejection', 'mtfr', 'momentum-microstructure', 'momentum-micro', 'mm', 'midnight-open-retracement', 'midnight-open', 'mor', 'initial-balance-breakout', 'ib-breakout', 'ibb', 'gap-fill', 'gap', 'daily-level-sweep', 'daily-sweep', 'dls', 'vwap-bounce', 'vwap', 'session-transition', 'session', 'st', 'value-area-80', 'va80', 'swing-reversal', 'sr', 'ict-silver-bullet', 'silver-bullet', 'isb', 'price-action-exhaustion', 'pa-exhaust', 'pae', 'ict-mtf-sweep', 'mtf-sweep', 'jv', 'dc-st1', 'dc1', 'dc-st2', 'dc2', 'dc-st3', 'dc3', 'dc-st4', 'dc4', 'dc-st5', 'dc5', 'dc-st6', 'dc6', 'dc-st7', 'dc7', 'dc-st8', 'dc8', 'dc-mstgam', 'mstgam', 'mnq-adaptive-scalper', 'mnq-scalper', 'mnq', 'sweep-reversal', 'sweep-rev']
       })
 
       .option('timeframe', {
@@ -1118,6 +1118,95 @@ export class CLI {
         description: 'Cancel unfilled limit orders after N candles (default: 3)'
       })
 
+      // DC (Directional Changes) Strategy Parameters
+      .group(['dc-theta', 'dc-use-points', 'dc-entry-mult', 'dc-extremum-stop', 'dc-extremum-buffer'], 'DC Strategy Parameters:')
+
+      .option('dc-theta', {
+        type: 'number',
+        description: 'DC threshold (0.001 = 0.1% in pct mode, or absolute points if --dc-use-points)',
+        default: 0.001
+      })
+
+      .option('dc-use-points', {
+        type: 'boolean',
+        description: 'Use absolute points instead of percentage for theta',
+        default: false
+      })
+
+      .option('dc-entry-mult', {
+        type: 'number',
+        description: 'Entry at N*theta overshoot (paper default: 2.0)',
+        default: 2.0
+      })
+
+      .option('dc-extremum-stop', {
+        type: 'boolean',
+        description: 'Place stop at extremum + buffer instead of fixed points',
+        default: false
+      })
+
+      .option('dc-extremum-buffer', {
+        type: 'number',
+        description: 'Points beyond extremum for stop placement (with --dc-extremum-stop)',
+        default: 5
+      })
+
+      .option('dc-duration-mult', {
+        type: 'number',
+        description: 'OS duration multiplier threshold for St2/St5 (default: 2.0)',
+        default: 2.0
+      })
+
+      .option('dc-rd-threshold', {
+        type: 'number',
+        description: 'Duration ratio (T_OS/T_DC) threshold for St5 (default: 2.0)',
+        default: 2.0
+      })
+
+      .option('dc-consecutive-count', {
+        type: 'number',
+        description: 'Consecutive OS count for St7/St8 pattern detection (default: 3)',
+        default: 3
+      })
+
+      .option('mstgam-weights', {
+        type: 'string',
+        description: 'Path to MSTGAM trained weights JSON file (required for dc-mstgam strategy)'
+      })
+
+      // MNQ Adaptive Scalper Parameters
+      .group(['soft-stop-points', 'daily-loss-limit', 'daily-target', 'proximity', 'signal-cooldown-ms', 'last-entry-time'], 'MNQ Adaptive Scalper Parameters:')
+
+      .option('soft-stop-points', {
+        type: 'number',
+        description: 'Soft stop distance in points (0 = disabled, MNQ Adaptive Scalper)'
+      })
+
+      .option('daily-loss-limit', {
+        type: 'number',
+        description: 'Daily loss limit in points — halt trading for the day (MNQ Adaptive Scalper)'
+      })
+
+      .option('daily-target', {
+        type: 'number',
+        description: 'Daily profit target in points — halt trading for the day (MNQ Adaptive Scalper)'
+      })
+
+      .option('proximity', {
+        type: 'number',
+        description: 'Points from level to trigger signal (MNQ Adaptive Scalper)'
+      })
+
+      .option('signal-cooldown-ms', {
+        type: 'number',
+        description: 'Milliseconds between signals (MNQ Adaptive Scalper)'
+      })
+
+      .option('last-entry-time', {
+        type: 'number',
+        description: 'Last entry time as EST decimal, e.g. 15.917 = 3:55 PM (MNQ Adaptive Scalper)'
+      })
+
       .help('h')
       .alias('h', 'help')
       .version('1.0.0')
@@ -1485,6 +1574,28 @@ export class CLI {
     if (args.esmsGexProximity !== undefined) strategyParams.gexProximityPoints = args.esmsGexProximity;
     if (args.esmsLtProximity !== undefined) strategyParams.ltProximityPoints = args.esmsLtProximity;
     if (args.esmsVolumeSpike !== undefined) strategyParams.volumeSpikeMultiplier = args.esmsVolumeSpike;
+
+    // DC (Directional Changes) Strategy Parameters
+    if (args.dcTheta !== undefined) strategyParams.theta = args.dcTheta;
+    if (args.dcUsePoints !== undefined) strategyParams.usePoints = args.dcUsePoints;
+    if (args.dcEntryMult !== undefined) strategyParams.entryMultiplier = args.dcEntryMult;
+    if (args.dcExtremumStop !== undefined) strategyParams.useExtremumStop = args.dcExtremumStop;
+    if (args.dcExtremumBuffer !== undefined) strategyParams.extremumStopBuffer = args.dcExtremumBuffer;
+    if (args.dcDurationMult !== undefined) strategyParams.durationMultiplier = args.dcDurationMult;
+    if (args.dcRdThreshold !== undefined) strategyParams.rdThreshold = args.dcRdThreshold;
+    if (args.dcConsecutiveCount !== undefined) strategyParams.consecutiveCount = args.dcConsecutiveCount;
+    if (args.mstgamWeights !== undefined) strategyParams.weightsFile = args.mstgamWeights;
+
+    // MNQ Adaptive Scalper Parameters
+    if (args.softStopPoints !== undefined) strategyParams.softStopPoints = args.softStopPoints;
+    if (args.dailyLossLimit !== undefined) strategyParams.dailyLossLimit = args.dailyLossLimit;
+    if (args.dailyTarget !== undefined) strategyParams.dailyTarget = args.dailyTarget;
+    if (args.proximity !== undefined) strategyParams.proximity = args.proximity;
+    if (args.signalCooldownMs !== undefined) strategyParams.signalCooldownMs = args.signalCooldownMs;
+    if (args.lastEntryTime !== undefined) strategyParams.lastEntryTime = args.lastEntryTime;
+
+    // Suppress strategy debug logging when --quiet
+    if (args.quiet) strategyParams.debug = false;
 
     // Create backtest configuration
     const backtestConfig = {

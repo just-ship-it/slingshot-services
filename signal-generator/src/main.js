@@ -280,6 +280,11 @@ class SignalGeneratorService {
       }
     });
 
+    // Subscribe to order lifecycle events for pending order tracking
+    messageBus.subscribe(CHANNELS.ORDER_PLACED, (msg) => this.aiEngine._handleOrderPlaced(msg));
+    messageBus.subscribe(CHANNELS.ORDER_FILLED, (msg) => this.aiEngine._handleOrderFilled(msg));
+    messageBus.subscribe(CHANNELS.ORDER_CANCELLED, (msg) => this.aiEngine._handleOrderCancelled(msg));
+
     // Seed current LT levels and LS sentiment from data-service HTTP API
     await this._seedLtLevels(targetProduct);
     await this._seedLsSentiment(targetProduct);

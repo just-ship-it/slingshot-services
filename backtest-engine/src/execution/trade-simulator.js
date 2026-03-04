@@ -116,6 +116,8 @@ export class TradeSimulator {
       // Max hold bars - force exit after N bars in trade
       maxHoldBars: signal.maxHoldBars || signal.max_hold_bars || 0,
       barsSinceEntry: 0,
+      // Soft stop - checked at bar close instead of every tick (gives trades room to breathe)
+      softStopPoints: signal.softStopPoints || signal.soft_stop_points || 0,
       // Track the contract the signal was generated on (for rollover handling)
       signalContract: signal.signalContract || null,
       // Entry time will be set when order fills (separate from signalTime)
@@ -514,6 +516,18 @@ export class TradeSimulator {
     // Increment bars since entry for active trades (for maxHoldBars tracking)
     if (trade.status === 'active' && minuteCandle) {
       trade.barsSinceEntry++;
+
+      // Soft stop: check PnL at bar close (not every tick) to let trades breathe through intra-bar noise
+      if (trade.softStopPoints > 0) {
+        const entryPrice = trade.actualEntry || trade.entryPrice;
+        const isBuy = this.isBuyPosition(trade);
+        const barClosePnL = isBuy
+          ? minuteCandle.close - entryPrice
+          : entryPrice - minuteCandle.close;
+        if (barClosePnL <= -trade.softStopPoints) {
+          return this.exitTrade(trade, minuteCandle, 'soft_stop', minuteCandle.close);
+        }
+      }
 
       // Safety: force-exit if maxHoldBars exceeded (the in-loop check may not run
       // if all 1s bars were skipped due to conversion failures)

@@ -189,7 +189,8 @@ function isDiscordWhitelistedStrategy(strategy) {
 /**
  * Handle trade signal for Discord notification
  */
-async function handleTradeSignalDiscord(signal) {
+async function handleTradeSignalDiscord(message) {
+  const signal = message.signal || message;
   if (!isDiscordWhitelistedStrategy(signal.strategy)) return;
   const actionEmoji = signal.action === 'cancel_limit' ? '🚫' : '📊';
   const sideColor = signal.side === 'buy' ? 0x22c55e : 0xef4444; // green / red
@@ -3588,7 +3589,7 @@ async function startup() {
       [CHANNELS.EXPOSURE_LEVELS, handleExposureLevels],
       [CHANNELS.IV_SKEW, handleIVSkew],
       // Discord notification subscriptions
-      [CHANNELS.TRADE_SIGNAL, handleTradeSignalDiscord],
+      [CHANNELS.TRADE_VALIDATED, handleTradeSignalDiscord],
       [CHANNELS.TRADE_REJECTED, handleTradeRejectedDiscord],
       [CHANNELS.ORDER_FILLED, handleOrderFilledDiscord],
       [CHANNELS.POSITION_OPENED, handlePositionOpenedDiscord],

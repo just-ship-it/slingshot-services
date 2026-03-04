@@ -1947,6 +1947,11 @@ function calculateUnrealizedPnL(position, currentPrice) {
 
 // Handle new order placement
 async function handleOrderPlaced(message) {
+  if (!message.symbol) {
+    logger.warn(`⚠️ Ignoring ORDER_PLACED with no symbol (orderId: ${message.orderId}, source: ${message.source || 'unknown'})`);
+    return;
+  }
+
   logger.info(`📋 Order placed: ${message.orderId} - ${message.action} ${message.symbol} ${message.orderType}`);
 
   // Create working order record
@@ -2013,17 +2018,26 @@ async function handleOrderPlaced(message) {
     // Determine direction from action
     const direction = message.action === 'Buy' ? 'long' : 'short';
 
-    // Add to pending orders for multi-strategy tracking
-    tradingState.strategyState.pendingOrders.set(message.orderId, {
-      strategy: strategy,
-      direction: direction,
-      symbol: message.symbol,
-      price: message.price,
-      quantity: message.quantity,
-      createdAt: new Date().toISOString()
-    });
+    // Check if this order already filled (race condition: fill arrived before placed).
+    // If strategyState.positions already has this underlying set, the fill handler's
+    // fallback already handled it — don't add an orphaned pending order.
+    const orderUnderlying = getUnderlyingSymbol(message.symbol);
+    const existingStrategyPos = tradingState.strategyState.positions.get(orderUnderlying);
+    if (existingStrategyPos) {
+      logger.info(`📌 [${strategy}] Skipping pending order tracking for ${message.orderId} — ${orderUnderlying} already has position ${existingStrategyPos.position}(${existingStrategyPos.source}) (likely immediate fill)`);
+    } else {
+      // Add to pending orders for multi-strategy tracking
+      tradingState.strategyState.pendingOrders.set(message.orderId, {
+        strategy: strategy,
+        direction: direction,
+        symbol: message.symbol,
+        price: message.price,
+        quantity: message.quantity,
+        createdAt: new Date().toISOString()
+      });
 
-    logger.info(`📌 [${strategy}] Added pending ${direction} order ${message.orderId} to multi-strategy tracking (total pending: ${tradingState.strategyState.pendingOrders.size})`);
+      logger.info(`📌 [${strategy}] Added pending ${direction} order ${message.orderId} to multi-strategy tracking (total pending: ${tradingState.strategyState.pendingOrders.size})`);
+    }
 
     // Save strategy state to Redis
     await saveStrategyState();
@@ -2123,7 +2137,55 @@ async function handleOrderFilled(message) {
       const posSummary = Array.from(tradingState.strategyState.positions.entries()).map(([u, p]) => `${u}:${p.position}(${p.source})`).join(', ');
       logger.info(`📊 Multi-strategy state updated: [${posSummary}], pending=${tradingState.strategyState.pendingOrders.size}`);
     } else {
-      logger.warn(`⚠️ Filled order ${message.orderId} not found in pending orders tracking`);
+      // Immediate fill race condition: fill arrived before handleOrderPlaced added to pendingOrders.
+      // Resolve strategy from signal context and set strategyState.positions anyway.
+      logger.warn(`⚠️ Filled order ${message.orderId} not found in pending orders tracking — attempting signal context fallback`);
+
+      let fallbackStrategy = 'UNKNOWN';
+      let fallbackDirection = message.action === 'Buy' ? 'long' : 'short';
+      const fallbackUnderlying = getUnderlyingSymbol(message.symbol);
+
+      // Try signalId from the fill message
+      if (message.signalId && tradingState.signalContext.has(message.signalId)) {
+        fallbackStrategy = tradingState.signalContext.get(message.signalId).strategy || 'UNKNOWN';
+      }
+
+      // Try SignalRegistry
+      if (fallbackStrategy === 'UNKNOWN') {
+        const sigId = signalRegistry.findSignalForOrder(String(message.orderId));
+        if (sigId && tradingState.signalContext.has(sigId)) {
+          fallbackStrategy = tradingState.signalContext.get(sigId).strategy || 'UNKNOWN';
+        }
+      }
+
+      // Emergency: search recent signal contexts by symbol/time
+      if (fallbackStrategy === 'UNKNOWN') {
+        const fillTime = new Date(message.timestamp || new Date()).getTime();
+        for (const [, ctx] of tradingState.signalContext.entries()) {
+          const ctxTime = new Date(ctx.timestamp).getTime();
+          if (Math.abs(fillTime - ctxTime) < 30000 &&
+              ctx.symbol === message.symbol &&
+              ctx.strategy &&
+              ctx.strategy !== 'UNKNOWN') {
+            fallbackStrategy = ctx.strategy;
+            fallbackDirection = ctx.side === 'sell' ? 'short' : 'long';
+            break;
+          }
+        }
+      }
+
+      if (fallbackStrategy !== 'UNKNOWN') {
+        tradingState.strategyState.positions.set(fallbackUnderlying, {
+          position: fallbackDirection,
+          source: fallbackStrategy
+        });
+        await saveStrategyState();
+
+        const posSummary = Array.from(tradingState.strategyState.positions.entries()).map(([u, p]) => `${u}:${p.position}(${p.source})`).join(', ');
+        logger.info(`📊 Multi-strategy state recovered via fallback: [${posSummary}] (strategy=${fallbackStrategy})`);
+      } else {
+        logger.error(`❌ Could not resolve strategy for filled order ${message.orderId} — strategyState.positions NOT updated. Duplicate orders may not be blocked.`);
+      }
     }
   } else if (orderRole === 'stop_loss' || orderRole === 'take_profit') {
     // This is a bracket order fill - update position and remove other bracket orders
@@ -2143,6 +2205,35 @@ async function handleOrderFilled(message) {
 // Handle order rejections or cancellations
 async function handleOrderRejected(message) {
   logger.warn(`❌ Order rejected/cancelled: ${message.orderId} - ${message.error || 'Cancelled'}`);
+
+  // Check if this is a bracket order rejection that needs repair
+  const orderRole = message.orderRole;
+  const relationship = tradingState.orderRelationships.get(message.orderId);
+  const bracketRole = orderRole || relationship?.orderRole;
+
+  if (bracketRole === 'stop_loss' || bracketRole === 'take_profit') {
+    const positionSymbol = message.symbol || relationship?.positionSymbol;
+    logger.warn(`⚠️ Bracket ${bracketRole} rejected for ${positionSymbol} - attempting repair`);
+
+    if (positionSymbol) {
+      const position = tradingState.tradingPositions.get(positionSymbol);
+      if (position && position.netPos !== 0) {
+        // Find signal context for this position
+        const signalId = relationship?.signalId || position.signalContext?.signalId;
+        const signalContext = signalId ? tradingState.signalContext.get(signalId) : position.signalContext;
+
+        if (signalContext) {
+          const fillPrice = position.entryPrice || position.netPrice;
+          logger.warn(`🔧 Repairing rejected ${bracketRole} for ${positionSymbol} (fill: ${fillPrice})`);
+
+          repairBracketOrder(position, signalContext, fillPrice, bracketRole)
+            .catch(err => logger.error(`❌ Bracket repair failed for ${positionSymbol}:`, err));
+        } else {
+          logger.error(`❌ Cannot repair rejected bracket: no signal context for ${positionSymbol}`);
+        }
+      }
+    }
+  }
 
   // Remove from working orders
   tradingState.workingOrders.delete(message.orderId);
@@ -2333,18 +2424,26 @@ async function handlePositionClosed(message) {
   // Remove the trading position
   tradingState.tradingPositions.delete(message.symbol);
 
-  // Remove any working orders associated with this position
-  const ordersToRemove = [];
+  // Cancel bracket orders linked to this position via orderRelationships.
+  // Only targets orders explicitly tracked (stop_loss / take_profit), not unrelated
+  // strategy entry orders that may be working on the same symbol.
+  const ordersToCancel = [];
   for (const [orderId, relationship] of tradingState.orderRelationships.entries()) {
-    if (relationship.positionSymbol === message.symbol) {
-      ordersToRemove.push(orderId);
+    if (relationship.positionSymbol === message.symbol &&
+        (relationship.orderRole === 'stop_loss' || relationship.orderRole === 'take_profit')) {
+      ordersToCancel.push(orderId);
     }
   }
 
-  for (const orderId of ordersToRemove) {
+  for (const orderId of ordersToCancel) {
+    await messageBus.publish(CHANNELS.ORDER_CANCEL_REQUEST, {
+      orderId: orderId,
+      reason: `Position ${message.symbol} closed — cancelling linked bracket order`,
+      timestamp: new Date().toISOString()
+    });
     tradingState.workingOrders.delete(orderId);
     tradingState.orderRelationships.delete(orderId);
-    logger.info(`🗑️ Removed associated order: ${orderId}`);
+    logger.info(`🗑️ Cancelled bracket order ${orderId} for closed position ${message.symbol}`);
   }
 
   // Multi-strategy: Reset state for this underlying when position is closed
@@ -2908,6 +3007,73 @@ async function linkBracketOrdersToPosition(position, signalContext, entryOrderId
   await linkAssociatedOrders(position);
 }
 
+// Repair a specific rejected bracket order with corrected price based on actual fill
+async function repairBracketOrder(position, signalContext, fillPrice, rejectedRole) {
+  const symbol = position.symbol;
+
+  if (!signalContext) {
+    logger.error(`❌ Cannot repair ${rejectedRole} for ${symbol}: no signal context available`);
+    return;
+  }
+
+  const signalPrice = signalContext.price;
+  const signalStop = signalContext.stopPrice;
+  const signalTarget = signalContext.takeProfit;
+  const side = signalContext.side;
+
+  if (!signalPrice) {
+    logger.error(`❌ Cannot repair ${rejectedRole} for ${symbol}: missing signal entry price`);
+    return;
+  }
+
+  const isBuy = side === 'buy' || side === 'long';
+  const accountId = position.accountId || getDefaultAccountId();
+
+  if (rejectedRole === 'stop_loss' && signalStop) {
+    const stopDistance = Math.abs(signalStop - signalPrice);
+    const newStopPrice = isBuy ? fillPrice - stopDistance : fillPrice + stopDistance;
+    const stopAction = isBuy ? 'Sell' : 'Buy';
+
+    logger.warn(`🔧 Placing repair STOP order: ${stopAction} Stop @ ${newStopPrice} (${stopDistance}pts from fill ${fillPrice})`);
+
+    await messageBus.publish(CHANNELS.ORDER_REQUEST, {
+      accountId: accountId,
+      symbol: symbol,
+      action: stopAction,
+      quantity: Math.abs(position.netPos),
+      orderType: 'Stop',
+      stopPrice: newStopPrice,
+      signalId: signalContext.signalId,
+      strategy: signalContext.strategy || 'BRACKET_REPAIR',
+      orderRole: 'stop_loss',
+      timestamp: new Date().toISOString(),
+      source: 'bracket_repair'
+    });
+  } else if (rejectedRole === 'take_profit' && signalTarget) {
+    const targetDistance = Math.abs(signalTarget - signalPrice);
+    const newTargetPrice = isBuy ? fillPrice + targetDistance : fillPrice - targetDistance;
+    const targetAction = isBuy ? 'Sell' : 'Buy';
+
+    logger.warn(`🔧 Placing repair TARGET order: ${targetAction} Limit @ ${newTargetPrice} (${targetDistance}pts from fill ${fillPrice})`);
+
+    await messageBus.publish(CHANNELS.ORDER_REQUEST, {
+      accountId: accountId,
+      symbol: symbol,
+      action: targetAction,
+      quantity: Math.abs(position.netPos),
+      orderType: 'Limit',
+      price: newTargetPrice,
+      signalId: signalContext.signalId,
+      strategy: signalContext.strategy || 'BRACKET_REPAIR',
+      orderRole: 'take_profit',
+      timestamp: new Date().toISOString(),
+      source: 'bracket_repair'
+    });
+  } else {
+    logger.error(`❌ Cannot repair ${rejectedRole} for ${symbol}: missing signal ${rejectedRole === 'stop_loss' ? 'stopPrice' : 'takeProfit'}`);
+  }
+}
+
 // Link bracket orders to a synced position (without signal context)
 async function linkBracketOrdersForSyncedPosition(position) {
   logger.info(`🔗 Searching for bracket orders to link to synced position ${position.symbol}`);
@@ -3121,18 +3287,28 @@ async function cancelOtherBracketOrders(symbol, filledOrderId) {
   }
 
   for (const orderId of ordersToCancel) {
+    await messageBus.publish(CHANNELS.ORDER_CANCEL_REQUEST, {
+      orderId: orderId,
+      reason: `Bracket order auto-cancelled — position ${symbol} closed by order ${filledOrderId}`,
+      timestamp: new Date().toISOString()
+    });
     tradingState.workingOrders.delete(orderId);
     tradingState.orderRelationships.delete(orderId);
-    logger.info(`🚫 Auto-cancelled bracket order: ${orderId}`);
+    logger.info(`🚫 Auto-cancelled bracket order: ${orderId} (cancel request sent to Tradovate)`);
   }
 
   // Sweep any remaining orders for this symbol (e.g. parent strategy orders
   // that were never added to orderRelationships)
   for (const [orderId, order] of tradingState.workingOrders.entries()) {
     if (order.symbol === symbol && orderId !== filledOrderId) {
+      await messageBus.publish(CHANNELS.ORDER_CANCEL_REQUEST, {
+        orderId: orderId,
+        reason: `Remaining order cleaned up — position ${symbol} closed by order ${filledOrderId}`,
+        timestamp: new Date().toISOString()
+      });
       tradingState.workingOrders.delete(orderId);
       tradingState.orderRelationships.delete(orderId);
-      logger.info(`🧹 Cleaned up remaining order ${orderId} for closed position ${symbol}`);
+      logger.info(`🧹 Cleaned up remaining order ${orderId} for closed position ${symbol} (cancel request sent to Tradovate)`);
     }
   }
 }

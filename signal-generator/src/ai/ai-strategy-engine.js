@@ -66,6 +66,9 @@ export class AIStrategyEngine {
     this.inPosition = false;
     this.currentPosition = null;
 
+    // ── Pending Order State ───────────────────────────────
+    this.pendingOrder = null;
+
     // ── 5m Candle Aggregation ───────────────────────────────
     this.aggregator = new CandleAggregator();
     this.aggregator.initIncremental('5m', this.strategyConstant);
@@ -107,6 +110,7 @@ export class AIStrategyEngine {
     this.biasHistory = [];
     this.lastEntryEvaluation = null;
     this.eodCloseSent = false;
+    this.pendingOrder = null;
   }
 
   /**
@@ -235,6 +239,47 @@ export class AIStrategyEngine {
     }
 
     logger.info('Ready for next entry');
+  }
+
+  // ── Order Event Handling ─────────────────────────────────
+
+  _handleOrderPlaced(message) {
+    if (message.strategy !== this.strategyConstant) return;
+
+    if (this.pendingOrder) {
+      // Enrich existing pending order with broker orderId
+      this.pendingOrder.orderId = message.orderId || message.order_id || message.strategyId;
+      logger.info(`Pending order confirmed by broker: id=${this.pendingOrder.orderId}, ${this.pendingOrder.side} @ ${this.pendingOrder.price}`);
+    } else if (!this.inPosition && message.price) {
+      // Recover pending order state (e.g. after restart mid-order)
+      const side = (message.action || '').toLowerCase() === 'buy' ? 'buy' : 'sell';
+      this.pendingOrder = {
+        orderId: message.orderId || message.order_id || message.strategyId,
+        price: message.price,
+        side,
+        stop_loss: message.stopPrice || message.stop_loss,
+        take_profit: message.takeProfit || message.take_profit,
+        publishedAt: Date.now(),
+      };
+      if (!this.pendingOrder.take_profit) {
+        logger.warn(`Recovered pending order has no take_profit — price-based cancel will use MFE ratchet only`);
+      }
+      logger.info(`Tracking pending order from broker event: ${side} @ ${message.price} (id: ${this.pendingOrder.orderId})`);
+    }
+  }
+
+  _handleOrderFilled(message) {
+    if (!this.pendingOrder) return;
+    if (message.strategy !== this.strategyConstant) return;
+    logger.info(`Pending order filled — clearing tracking`);
+    this.pendingOrder = null;
+  }
+
+  _handleOrderCancelled(message) {
+    if (!this.pendingOrder) return;
+    if (message.strategy !== this.strategyConstant) return;
+    logger.info(`Pending order cancelled — clearing tracking`);
+    this.pendingOrder = null;
   }
 
   // ── Position Reconciliation ───────────────────────────────
@@ -372,6 +417,38 @@ export class AIStrategyEngine {
 
     if (!isTradingDay(tradingDay)) return;
 
+    // ── Pending Order Cancellation (price-based) ──────────
+    if (this.pendingOrder && !this.inPosition) {
+      const po = this.pendingOrder;
+      const isBuy = po.side === 'buy' || po.side === 'long';
+      const mfeThreshold = isBuy ? po.price + 20 : po.price - 20;
+      const cancelLevel = po.take_profit
+        ? (isBuy ? Math.min(po.take_profit, mfeThreshold) : Math.max(po.take_profit, mfeThreshold))
+        : mfeThreshold;
+
+      const shouldCancel = isBuy
+        ? candle.high >= cancelLevel
+        : candle.low <= cancelLevel;
+
+      if (shouldCancel) {
+        const reason = (po.take_profit && (isBuy ? candle.high >= po.take_profit : candle.low <= po.take_profit))
+          ? 'Price reached take profit without fill'
+          : 'Price reached MFE ratchet (20pt) without fill';
+        logger.info(`Cancelling stale pending order: ${reason} (${isBuy ? 'high' : 'low'}=${isBuy ? candle.high : candle.low}, cancel_level=${cancelLevel})`);
+
+        await this._publishSignal({
+          webhook_type: 'trade_signal',
+          action: 'cancel_limit',
+          symbol: this.tradingSymbol,
+          side: po.side,
+          strategy: this.strategyConstant,
+          reason,
+          timestamp: new Date().toISOString(),
+        });
+        this.pendingOrder = null;
+      }
+    }
+
     // ── Position Management (on every 1m candle while in position) ──
     if (this.inPosition && this.tradeManager) {
       await this.tradeManager.processCandle(candle);
@@ -418,6 +495,9 @@ export class AIStrategyEngine {
 
     // ── Skip if in position (management only) ───────────────
     if (this.inPosition) return;
+
+    // ── Skip if pending order awaiting fill ────────────────
+    if (this.pendingOrder) return;
 
     // ── Daily/session limits ────────────────────────────────
     if (this.totalEntriesToday >= this.maxEntriesPerDay) return;
@@ -754,6 +834,18 @@ export class AIStrategyEngine {
     };
 
     await this._publishSignal(signal);
+
+    // Track pending order (cleared on fill, cancel, or price-based cancel)
+    if (!this.dryRun) {
+      this.pendingOrder = {
+        price: decision.entry_price,
+        side: decision.side,
+        stop_loss: decision.stop_loss,
+        take_profit: decision.take_profit,
+        publishedAt: Date.now(),
+      };
+      logger.info(`Tracking pending order: ${decision.side} @ ${decision.entry_price}`);
+    }
   }
 
   // ── Signal Publishing ─────────────────────────────────────
@@ -847,6 +939,13 @@ export class AIStrategyEngine {
             side: this.currentPosition.side,
             entry_price: this.currentPosition.entryPrice,
             entry_time: this.currentPosition.entryTime,
+          } : null,
+          pending_order: this.pendingOrder ? {
+            side: this.pendingOrder.side,
+            price: this.pendingOrder.price,
+            take_profit: this.pendingOrder.take_profit,
+            stop_loss: this.pendingOrder.stop_loss,
+            age_seconds: Math.round((Date.now() - this.pendingOrder.publishedAt) / 1000),
           } : null,
         },
         trading_window: (() => {

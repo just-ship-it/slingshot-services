@@ -184,7 +184,8 @@ export class MnqAdaptiveScalperStrategy extends BaseStrategy {
 
     this.defaultParams = {
       // Exit parameters
-      stopPoints: 10,        // 10pt stop (sprint/ultra-sprint mode)
+      stopPoints: 40,        // 40pt hard stop (checked every tick)
+      softStopPoints: 0,     // Disabled — relying on hard stop + trailing only
       targetPoints: 50,      // 50pt profit target
       trailingTrigger: 3,    // Activate trailing at +3pts
       trailingOffset: 1,     // 1pt trail behind HWM
@@ -849,6 +850,14 @@ export class MnqAdaptiveScalperStrategy extends BaseStrategy {
       ? entryPrice + this.params.targetPoints
       : entryPrice - this.params.targetPoints;
 
+    // Graduated trail offset — tighter as we approach daily target
+    const remaining = this.params.dailyTarget - this.dayPnL;
+    let trailingOffset;
+    if (remaining <= 5)       trailingOffset = 0.5;
+    else if (remaining <= 10) trailingOffset = 1;
+    else if (remaining <= 25) trailingOffset = Math.min(2, this.params.trailingOffset);
+    else                      trailingOffset = this.params.trailingOffset;
+
     return {
       strategy: 'MNQ_ADAPTIVE_SCALPER',
       action: 'place_limit',
@@ -858,7 +867,10 @@ export class MnqAdaptiveScalperStrategy extends BaseStrategy {
       stop_loss: roundTo(stopLoss),
       take_profit: roundTo(takeProfit),
       trailing_trigger: this.params.trailingTrigger,
-      trailing_offset: this.params.trailingOffset,
+      trailing_offset: trailingOffset,
+      softStopPoints: this.params.softStopPoints,
+      timeoutCandles: this.params.orderTimeoutCandles || 3,
+      maxHoldBars: 360,
       quantity: this.params.defaultQuantity,
       timestamp: new Date(candle.timestamp).toISOString(),
       metadata: {
