@@ -691,6 +691,40 @@ function getUnderlyingSymbol(symbol) {
 }
 
 /**
+ * Check if a strategy is enabled by reading the strategy:enabled-state key from Redis.
+ * Returns true if enabled, false if disabled, null if unknown (key missing or strategy not found).
+ * Strategy constants (e.g., 'ES_CROSS_SIGNAL') are mapped to Redis key format (e.g., 'ES:es-cross-signal').
+ */
+async function isStrategyEnabled(strategyConstant, symbol) {
+  try {
+    const data = await messageBus.publisher.get('strategy:enabled-state');
+    if (!data) return null; // No state persisted, allow signal through
+
+    const state = JSON.parse(data);
+    // Convert strategy constant to Redis key name: ES_CROSS_SIGNAL → es-cross-signal
+    const strategyName = strategyConstant.toLowerCase().replace(/_/g, '-');
+    const product = symbol ? getUnderlyingSymbol(symbol) : null;
+
+    // Try product-specific key first (e.g., "ES:es-cross-signal")
+    if (product && `${product}:${strategyName}` in state) {
+      return state[`${product}:${strategyName}`];
+    }
+
+    // Try all products for this strategy name
+    for (const [key, enabled] of Object.entries(state)) {
+      if (key.endsWith(`:${strategyName}`)) {
+        return enabled;
+      }
+    }
+
+    return null; // Strategy not found in state, allow through
+  } catch (err) {
+    logger.warn(`[STRATEGY-GATE] Failed to check strategy enabled state: ${err.message}`);
+    return null; // On error, allow signal through (fail-open)
+  }
+}
+
+/**
  * Check if tradingPositions Map has any entry matching the given underlying
  * tradingPositions is keyed by contract symbol (e.g., 'MNQH6')
  */
@@ -1302,6 +1336,24 @@ async function handleWebhookReceived(message) {
         timestamp: new Date().toISOString()
       });
       return;
+    }
+
+    // Check if the signal's strategy is enabled in Redis (defense against ghost/zombie processes)
+    // Allow cleanup actions (cancel, close, modify) through regardless
+    const isCleanupAction = ['cancel_limit', 'position_closed', 'modify_stop'].includes(signal.action);
+    if (!isCleanupAction && signal.strategy) {
+      const strategyEnabled = await isStrategyEnabled(signal.strategy, signal.symbol);
+      if (strategyEnabled === false) {
+        logger.warn(`[STRATEGY-GATE] Signal BLOCKED: strategy ${signal.strategy} is disabled in Redis (possible ghost process)`);
+        await messageBus.publish(CHANNELS.TRADE_REJECTED, {
+          reason: `Strategy ${signal.strategy} is disabled`,
+          filter: 'strategy_enabled_gate',
+          signal: { strategy: signal.strategy, symbol: signal.symbol, side: signal.side, action: signal.action },
+          originalSignal: message,
+          timestamp: new Date().toISOString()
+        });
+        return;
+      }
     }
 
     // Apply business rules
