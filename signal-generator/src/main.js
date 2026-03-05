@@ -230,6 +230,8 @@ class SignalGeneratorService {
     await this._seedCandleHistory(targetProduct, historyBars1m);
 
     // Subscribe to candle.close from data-service for real-time 1m candle updates
+    // These are already-closed candles, so we push directly into the buffer
+    // (no close detection needed — that was already done by data-service).
     messageBus.subscribe(CHANNELS.CANDLE_CLOSE, (message) => {
       const product = (message.product || 'NQ').toUpperCase();
       if (product === targetProduct) {
@@ -243,17 +245,14 @@ class SignalGeneratorService {
           volume: message.volume
         };
 
-        const isNewCandle = this.candle1mBuffer.addCandle(candleData);
-        if (isNewCandle) {
-          const closedCandle = this.candle1mBuffer.getLastClosedCandle();
-          if (closedCandle) {
-            // Also aggregate into 1h buffer
-            this._aggregateInto1h(closedCandle);
-            this.aiEngine.processCandle(closedCandle).catch(err =>
-              logger.error('Error processing candle:', err)
-            );
-          }
-        }
+        // Add to buffer for history (used by LiveFeatureAggregator)
+        this.candle1mBuffer.addCandle(candleData);
+
+        // Process immediately — candle is already closed
+        this._aggregateInto1h(candleData);
+        this.aiEngine.processCandle(candleData).catch(err =>
+          logger.error('Error processing candle:', err)
+        );
       }
     });
 
