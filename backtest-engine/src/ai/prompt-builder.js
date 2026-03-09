@@ -266,15 +266,11 @@ Respond ONLY with the JSON object. No markdown, no explanation outside JSON.`;
 - For longs: stop below the nearest support level (GEX support, PD Low, fib level, swing low, overnight low)
 - For shorts: stop above the nearest resistance level (GEX resistance, PD High, fib level, swing high, overnight high)
 - Add 5-8 points of buffer beyond the level (stops at exact levels get hunted)
-- Maximum safety cap: 40 points risk (hard limit)
+- **Minimum 20 points risk** — anything tighter is noise on NQ. If you can't find structure that gives at least 20pts of risk, widen to the next structural level
+- **Maximum safety cap: 50 points risk** (hard limit)
+- For shorts: your stop MUST be above the high of the last 15-20 minutes of candle data (the recent swing high). An 11pt stop when the session high was 60pts above you 20 minutes ago is not structural — it's arbitrary
+- For longs: your stop MUST be below the low of the last 15-20 minutes of candle data (the recent swing low)
 - Identify which level your stop is placed behind in stop_level_reference
-
-## Stop Placement Must Reflect Candle Structure
-- Your stop must be placed at a price that the market should NOT reach if your thesis is correct
-- Look at the recent candle lows (for longs) or highs (for shorts) — your stop should be BELOW a recent swing low or ABOVE a recent swing high
-- A stop that is tighter than the recent candle range is likely to be noise-stopped. If the last 15 minutes covered 150 pts, a 20pt stop is meaningless
-- If the recent candle structure doesn't support a reasonable stop within the 40pt safety cap, PASS on the trade
-- Rule of thumb: your stop should be at least below the low of the most recent significant pullback (for longs) or above the high of the most recent bounce (for shorts)
 
 ## Target Placement (Structure-Based)
 - Target the next structural level in your trade direction

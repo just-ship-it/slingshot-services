@@ -277,8 +277,12 @@ export class AITrader {
         const rewardPts = Math.abs(decision.take_profit - decision.entry_price);
         const rrRatio = riskPts > 0 ? rewardPts / riskPts : 0;
 
-        if (riskPts > 40) {
-          console.log(`  REJECTED at ${formatET(candle.timestamp)}: risk ${riskPts.toFixed(1)} pts exceeds 40pt safety cap`);
+        if (riskPts < 20) {
+          console.log(`  REJECTED at ${formatET(candle.timestamp)}: risk ${riskPts.toFixed(1)} pts below 20pt minimum`);
+          continue;
+        }
+        if (riskPts > 50) {
+          console.log(`  REJECTED at ${formatET(candle.timestamp)}: risk ${riskPts.toFixed(1)} pts exceeds 50pt safety cap`);
           continue;
         }
         if (isNaN(decision.stop_loss) || isNaN(decision.take_profit)) {

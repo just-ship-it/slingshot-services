@@ -759,8 +759,12 @@ export class AIStrategyEngine {
     const rewardPts = Math.abs(decision.take_profit - decision.entry_price);
     const rrRatio = riskPts > 0 ? rewardPts / riskPts : 0;
 
-    if (riskPts > 40) {
-      logger.warn(`REJECTED: risk ${riskPts.toFixed(1)} pts exceeds 40pt safety cap`);
+    if (riskPts < 20) {
+      logger.warn(`REJECTED: risk ${riskPts.toFixed(1)} pts below 20pt minimum — stop is too tight for NQ`);
+      return;
+    }
+    if (riskPts > 50) {
+      logger.warn(`REJECTED: risk ${riskPts.toFixed(1)} pts exceeds 50pt safety cap`);
       return;
     }
     if (isNaN(decision.stop_loss) || isNaN(decision.take_profit)) {
