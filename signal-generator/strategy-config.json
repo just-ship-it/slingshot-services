@@ -10,7 +10,7 @@
           "evalTimeframe": "1m"
         },
         {
-          "name": "mnq-adaptive-scalper",
+          "name": "impulse-fvg",
           "enabled": false,
           "priority": 2,
           "evalTimeframe": "1m"

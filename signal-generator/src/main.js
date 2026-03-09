@@ -216,6 +216,7 @@ class SignalGeneratorService {
     this.liveTradeManager = new LiveTradeManager({
       featureAggregator: this.liveFeatureAggregator,
       strategyConstant: 'AI_TRADER',
+      ticker: candleBaseSymbol,
     });
 
     this.aiEngine = new AIStrategyEngine({

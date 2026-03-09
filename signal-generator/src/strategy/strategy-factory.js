@@ -11,6 +11,7 @@ import { IVSkewGexStrategy } from '../../../shared/strategies/iv-skew-gex.js';
 import { ESCrossSignalStrategy } from '../../../shared/strategies/es-cross-signal.js';
 import { EsStopHuntStrategy } from '../../../shared/strategies/es-stop-hunt.js';
 import { MnqAdaptiveScalperStrategy } from '../../../shared/strategies/mnq-adaptive-scalper.js';
+import { ImpulseFVGStrategy } from '../../../shared/strategies/impulse-fvg.js';
 
 const logger = createLogger('strategy-factory');
 
@@ -23,6 +24,7 @@ export const STRATEGY_TYPES = {
   ES_CROSS_SIGNAL: 'es-cross-signal',
   ES_STOP_HUNT: 'es-stop-hunt',
   MNQ_ADAPTIVE_SCALPER: 'mnq-adaptive-scalper',
+  IMPULSE_FVG: 'impulse-fvg',
   AI_TRADER: 'ai-trader'
 };
 
@@ -56,6 +58,11 @@ export function createStrategy(strategyName, config) {
     case 'mnq_adaptive_scalper':
     case 'mnqadaptivescalper':
       return createMnqAdaptiveScalperStrategy(config);
+
+    case STRATEGY_TYPES.IMPULSE_FVG:
+    case 'impulse_fvg':
+    case 'impulsefvg':
+      return createImpulseFVGStrategy(config);
 
     case STRATEGY_TYPES.AI_TRADER:
     case 'ai_trader':
@@ -178,6 +185,11 @@ export function getStrategyConstant(strategyName) {
     case 'mnqadaptivescalper':
       return 'MNQ_ADAPTIVE_SCALPER';
 
+    case STRATEGY_TYPES.IMPULSE_FVG:
+    case 'impulse_fvg':
+    case 'impulsefvg':
+      return 'IMPULSE_FVG';
+
     case STRATEGY_TYPES.AI_TRADER:
     case 'ai_trader':
     case 'aitrader':
@@ -224,6 +236,11 @@ export function getDataRequirements(strategyName) {
     case 'mnq_adaptive_scalper':
     case 'mnqadaptivescalper':
       return MnqAdaptiveScalperStrategy.getDataRequirements();
+
+    case STRATEGY_TYPES.IMPULSE_FVG:
+    case 'impulse_fvg':
+    case 'impulsefvg':
+      return ImpulseFVGStrategy.getDataRequirements();
 
     case STRATEGY_TYPES.AI_TRADER:
     case 'ai_trader':
@@ -282,6 +299,23 @@ function createMnqAdaptiveScalperStrategy(config) {
     `dailyLossLimit=${params.dailyLossLimit}, dailyTarget=${params.dailyTarget}`);
 
   return new MnqAdaptiveScalperStrategy(params);
+}
+
+/**
+ * Create Impulse FVG strategy with sweep-optimized parameters
+ */
+function createImpulseFVGStrategy(config) {
+  const params = config.getImpulseFVGParams();
+
+  params.tradingSymbol = config.TRADING_SYMBOL;
+  params.defaultQuantity = config.DEFAULT_QUANTITY;
+  params.debug = true;
+
+  logger.info(`Impulse-FVG params: mode=${params.mode}, trail=${params.trailingTrigger}/${params.trailingOffset}, ` +
+    `target=${params.noFvgTargetPoints}, stopBuf=${params.noFvgStopBuffer}, ` +
+    `cooldown=${params.signalCooldownMs}ms, minBody=${params.minBodyPoints}`);
+
+  return new ImpulseFVGStrategy(params);
 }
 
 export default {

@@ -69,5 +69,8 @@ data/
 *.exe
 *.msi
 
+# Backtest sweep output
+backtest-engine/research/output/sweeps/
+
 # Skunkworks projects
 skunkworks/

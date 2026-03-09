@@ -255,6 +255,26 @@ const config = {
     };
   },
 
+  getImpulseFVGParams() {
+    return {
+      mode: 'no-fvg-fade',
+      minBodyPoints: 25,
+      noFvgStopBuffer: 2,
+      noFvgTargetPoints: 30,
+      noFvgMaxRisk: 40,
+      useTrailingStop: true,
+      trailingTrigger: 6,
+      trailingOffset: 3,
+      signalCooldownMs: 20 * 60 * 1000,
+      maxHoldBars: 60,
+      useLimitEntry: false,
+      limitRetracePct: 50,
+      limitTimeoutBars: 3,
+      useSessionFilter: false,
+      allowedSessions: ['overnight', 'premarket', 'rth', 'afterhours'],
+    };
+  },
+
   getTradierConfig() {
     return {
       accessToken: this.TRADIER_ACCESS_TOKEN,

@@ -63,6 +63,9 @@ import { DCSt2Strategy, DCSt3Strategy, DCSt4Strategy, DCSt5Strategy, DCSt6Strate
 import { DCMSTGAMStrategy } from '../../shared/strategies/dc-mstgam.js';
 import { MnqAdaptiveScalperStrategy } from '../../shared/strategies/mnq-adaptive-scalper.js';
 import { SweepReversalStrategy } from '../../shared/strategies/sweep-reversal.js';
+import { NqLeadsEsStrategy } from '../../shared/strategies/nq-leads-es.js';
+import { GexSupportBounceStrategy } from '../../shared/strategies/gex-support-bounce.js';
+import { ImpulseFVGStrategy } from '../../shared/strategies/impulse-fvg.js';
 import { SqueezeMomentumIndicator } from '../../shared/indicators/squeeze-momentum.js';
 import { GexLoader } from './data-loaders/gex-loader.js';
 import { IVLoader } from './data-loaders/iv-loader.js';
@@ -729,7 +732,7 @@ export class BacktestEngine {
       }
 
       // Get market data for this timestamp
-      const marketData = this.getMarketDataForTimestamp(candle.timestamp, data.marketDataLookup, data);
+      const marketData = this.getMarketDataForTimestamp(candle.timestamp, data.marketDataLookup, data, candle.close);
 
       // Calculate squeeze momentum if strategy needs it
       if (this.squeezeIndicator && i >= 25) { // Need enough candles for calculation
@@ -1121,14 +1124,47 @@ export class BacktestEngine {
    * @param {number} timestamp - Target timestamp
    * @param {Object} lookup - Market data lookup
    * @param {Object} data - Full data object (for gexLoader access)
+   * @param {number} actualPrice - Actual candle close price for GEX level correction
    * @returns {Object} Market data object
    */
-  getMarketDataForTimestamp(timestamp, lookup, data = null) {
+  getMarketDataForTimestamp(timestamp, lookup, data = null, actualPrice = null) {
     let gexLevels = null;
 
     // Get 15-minute GEX levels from JSON loader (primary source)
     if (data && data.gexLoader && data.gexLoader.sortedTimestamps.length > 0) {
       gexLevels = data.gexLoader.getGexLevels(new Date(timestamp));
+    }
+
+    // Correct GEX levels for price space mismatch.
+    // The GEX JSON files store futures_spot from raw OHLCV without primary contract filtering,
+    // which can differ from the backtest engine's filtered OHLCV by up to ~1.6%.
+    // Re-translate all levels using: corrected = original * (actualPrice / stored_futures_spot)
+    if (gexLevels && actualPrice && gexLevels.futures_spot && gexLevels.futures_spot > 0) {
+      const correction = actualPrice / gexLevels.futures_spot;
+      // Only correct if there's a meaningful difference (> 0.01%)
+      if (Math.abs(correction - 1.0) > 0.0001) {
+        const correctLevel = (level) => level != null ? Math.round(level * correction * 100) / 100 : level;
+        gexLevels = {
+          ...gexLevels,
+          gamma_flip: correctLevel(gexLevels.gamma_flip),
+          call_wall: correctLevel(gexLevels.call_wall),
+          put_wall: correctLevel(gexLevels.put_wall),
+          support: (gexLevels.support || []).map(correctLevel),
+          resistance: (gexLevels.resistance || []).map(correctLevel),
+          // Update compatibility aliases
+          nq_gamma_flip: correctLevel(gexLevels.nq_gamma_flip),
+          nq_put_wall_1: correctLevel(gexLevels.nq_put_wall_1),
+          nq_put_wall_2: correctLevel(gexLevels.nq_put_wall_2),
+          nq_put_wall_3: correctLevel(gexLevels.nq_put_wall_3),
+          nq_call_wall_1: correctLevel(gexLevels.nq_call_wall_1),
+          nq_call_wall_2: correctLevel(gexLevels.nq_call_wall_2),
+          nq_call_wall_3: correctLevel(gexLevels.nq_call_wall_3),
+          spot_price: actualPrice,
+          futures_spot: actualPrice,
+          _priceSpaceCorrected: true,
+          _correctionFactor: correction,
+        };
+      }
     }
 
     // Fall back to date-indexed lookup if no 15-min data
@@ -1391,6 +1427,18 @@ export class BacktestEngine {
       case 'sweep-reversal':
       case 'sweep-rev':
         return new SweepReversalStrategy(params);
+      case 'nq-leads-es':
+      case 'nq-lead':
+      case 'nle':
+        return new NqLeadsEsStrategy(params);
+      case 'gex-support-bounce':
+      case 'gex-bounce':
+      case 'gsb':
+        return new GexSupportBounceStrategy(params);
+      case 'impulse-fvg':
+      case 'impulse':
+      case 'ifvg':
+        return new ImpulseFVGStrategy(params);
       default:
         throw new Error(`Unknown strategy: ${strategyName}`);
     }

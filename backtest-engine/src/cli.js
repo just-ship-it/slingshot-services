@@ -68,7 +68,7 @@ export class CLI {
         type: 'string',
         description: 'Strategy to backtest',
         default: 'gex-recoil',
-        choices: ['gex-recoil', 'gex-recoil-enhanced', 'gex-ldpm-confluence', 'gex-ldpm-confluence-pullback', 'contrarian-bounce', 'gex-scalp', 'gex-scalp-confirmed', 'ict-smc', 'ict-ob', 'ldpm-level-sweep', 'order-flow-momentum', 'ofm', 'contrarian-orderflow', 'cof', 'gex-absorption', 'absorption', 'iv-skew-gex', 'iv-skew', 'cbbo-lt-volatility', 'cbbo-lt', 'gex-mean-reversion', 'gex-mr', 'lt-failed-breakdown', 'lt-fb', 'lt-level-crossing', 'lt-cross', 'lt-level-migration', 'lt-mig', 'regime-scalp', 'rs', 'gex-level-sweep', 'gex-sweep', 'sweep', 'micro-structure-scalper', 'micro-scalper', 'mss', 'trend-scalp', 'ts', 'level-bounce', 'lb', 'overnight-gex-touch', 'overnight-gex', 'ogt', 'overnight-charm-vanna', 'ocv', 'es-cross-signal', 'es-cross', 'ecs', 'es-micro-scalper', 'es-micro', 'esms', 'es-stop-hunt', 'es-hunt', 'esh', 'ohlcv-absorption', 'absorption-detect', 'abs', 'ohlcv-liquidity-sweep', 'liquidity-sweep', 'lsweep', 'ohlcv-vpin', 'vpin', 'ohlcv-mtf-rejection', 'mtf-rejection', 'mtfr', 'momentum-microstructure', 'momentum-micro', 'mm', 'midnight-open-retracement', 'midnight-open', 'mor', 'initial-balance-breakout', 'ib-breakout', 'ibb', 'gap-fill', 'gap', 'daily-level-sweep', 'daily-sweep', 'dls', 'vwap-bounce', 'vwap', 'session-transition', 'session', 'st', 'value-area-80', 'va80', 'swing-reversal', 'sr', 'ict-silver-bullet', 'silver-bullet', 'isb', 'price-action-exhaustion', 'pa-exhaust', 'pae', 'ict-mtf-sweep', 'mtf-sweep', 'jv', 'dc-st1', 'dc1', 'dc-st2', 'dc2', 'dc-st3', 'dc3', 'dc-st4', 'dc4', 'dc-st5', 'dc5', 'dc-st6', 'dc6', 'dc-st7', 'dc7', 'dc-st8', 'dc8', 'dc-mstgam', 'mstgam', 'mnq-adaptive-scalper', 'mnq-scalper', 'mnq', 'sweep-reversal', 'sweep-rev']
+        choices: ['gex-recoil', 'gex-recoil-enhanced', 'gex-ldpm-confluence', 'gex-ldpm-confluence-pullback', 'contrarian-bounce', 'gex-scalp', 'gex-scalp-confirmed', 'ict-smc', 'ict-ob', 'ldpm-level-sweep', 'order-flow-momentum', 'ofm', 'contrarian-orderflow', 'cof', 'gex-absorption', 'absorption', 'iv-skew-gex', 'iv-skew', 'cbbo-lt-volatility', 'cbbo-lt', 'gex-mean-reversion', 'gex-mr', 'lt-failed-breakdown', 'lt-fb', 'lt-level-crossing', 'lt-cross', 'lt-level-migration', 'lt-mig', 'regime-scalp', 'rs', 'gex-level-sweep', 'gex-sweep', 'sweep', 'micro-structure-scalper', 'micro-scalper', 'mss', 'trend-scalp', 'ts', 'level-bounce', 'lb', 'overnight-gex-touch', 'overnight-gex', 'ogt', 'overnight-charm-vanna', 'ocv', 'es-cross-signal', 'es-cross', 'ecs', 'es-micro-scalper', 'es-micro', 'esms', 'es-stop-hunt', 'es-hunt', 'esh', 'ohlcv-absorption', 'absorption-detect', 'abs', 'ohlcv-liquidity-sweep', 'liquidity-sweep', 'lsweep', 'ohlcv-vpin', 'vpin', 'ohlcv-mtf-rejection', 'mtf-rejection', 'mtfr', 'momentum-microstructure', 'momentum-micro', 'mm', 'midnight-open-retracement', 'midnight-open', 'mor', 'initial-balance-breakout', 'ib-breakout', 'ibb', 'gap-fill', 'gap', 'daily-level-sweep', 'daily-sweep', 'dls', 'vwap-bounce', 'vwap', 'session-transition', 'session', 'st', 'value-area-80', 'va80', 'swing-reversal', 'sr', 'ict-silver-bullet', 'silver-bullet', 'isb', 'price-action-exhaustion', 'pa-exhaust', 'pae', 'ict-mtf-sweep', 'mtf-sweep', 'jv', 'dc-st1', 'dc1', 'dc-st2', 'dc2', 'dc-st3', 'dc3', 'dc-st4', 'dc4', 'dc-st5', 'dc5', 'dc-st6', 'dc6', 'dc-st7', 'dc7', 'dc-st8', 'dc8', 'dc-mstgam', 'mstgam', 'mnq-adaptive-scalper', 'mnq-scalper', 'mnq', 'sweep-reversal', 'sweep-rev', 'nq-leads-es', 'nq-lead', 'nle', 'gex-support-bounce', 'gex-bounce', 'gsb', 'impulse-fvg', 'impulse', 'ifvg']
       })
 
       .option('timeframe', {
@@ -1207,6 +1207,124 @@ export class CLI {
         description: 'Last entry time as EST decimal, e.g. 15.917 = 3:55 PM (MNQ Adaptive Scalper)'
       })
 
+      // NQ-Leads-ES Strategy Parameters
+      .group(['nq-threshold', 'hold-bars', 'gex-regime', 'stop-points'], 'NQ-Leads-ES Strategy:')
+
+      .option('nq-threshold', {
+        type: 'number',
+        description: 'NQ 1m return threshold to trigger (0.15 = 0.15%, nq-leads-es)'
+      })
+
+      .option('hold-bars', {
+        type: 'number',
+        description: 'Number of 1m bars to hold position (nq-leads-es)'
+      })
+
+      .option('gex-regime', {
+        type: 'string',
+        description: 'GEX regime filter: positive, negative, neutral, mixed, any, positive_or_neutral (nq-leads-es)',
+        choices: ['positive', 'negative', 'neutral', 'mixed', 'any', 'positive_or_neutral']
+      })
+
+      .option('stop-points', {
+        type: 'number',
+        description: 'Stop loss in points (0 = time exit only, nq-leads-es / gex-support-bounce)'
+      })
+
+      // GEX Support Bounce Strategy Parameters
+      .group(['proximity-pct', 'level-types', 'direction', 'require-es-free'], 'GEX Support Bounce Strategy:')
+
+      .option('proximity-pct', {
+        type: 'number',
+        description: 'Max distance from GEX level as % of price (0.10 = 0.10%, gex-support-bounce)'
+      })
+
+      .option('level-types', {
+        type: 'string',
+        description: 'GEX level types: support_only, resistance_only, all (gex-support-bounce)',
+        choices: ['support_only', 'resistance_only', 'all']
+      })
+
+      .option('direction', {
+        type: 'string',
+        description: 'Trade direction: long, short, both (gex-support-bounce)',
+        choices: ['long', 'short', 'both']
+      })
+
+      .option('require-es-free', {
+        type: 'boolean',
+        description: 'Require ES to be far from GEX levels (cross-product filter, gex-support-bounce)'
+      })
+
+      // Impulse FVG Strategy Parameters
+      .group(['min-body-points', 'impulse-mode', 'fvg-pullback-buffer', 'fvg-stop-buffer', 'fvg-target-points', 'fvg-max-wait-bars', 'no-fvg-stop-buffer', 'no-fvg-target-points', 'no-fvg-max-risk', 'signal-cooldown-ms', 'use-limit-entry', 'limit-retrace-pct', 'limit-timeout-bars'], 'Impulse FVG Strategy:')
+
+      .option('min-body-points', {
+        type: 'number',
+        description: 'Minimum impulse candle body size in points (impulse-fvg)'
+      })
+
+      .option('impulse-mode', {
+        type: 'string',
+        description: 'Strategy mode: both, fvg-pullback, no-fvg-fade (impulse-fvg)',
+        choices: ['both', 'fvg-pullback', 'no-fvg-fade']
+      })
+
+      .option('fvg-pullback-buffer', {
+        type: 'number',
+        description: 'Points inside FVG zone for limit entry (impulse-fvg)'
+      })
+
+      .option('fvg-stop-buffer', {
+        type: 'number',
+        description: 'Points beyond FVG opposite edge for stop (impulse-fvg)'
+      })
+
+      .option('fvg-target-points', {
+        type: 'number',
+        description: 'Take profit target for FVG pullback trades (impulse-fvg)'
+      })
+
+      .option('fvg-max-wait-bars', {
+        type: 'number',
+        description: 'Max bars to wait for pullback into FVG (impulse-fvg)'
+      })
+
+      .option('no-fvg-stop-buffer', {
+        type: 'number',
+        description: 'Points beyond impulse extreme for fade stop (impulse-fvg)'
+      })
+
+      .option('no-fvg-target-points', {
+        type: 'number',
+        description: 'Take profit target for no-FVG fade trades (impulse-fvg)'
+      })
+
+      .option('no-fvg-max-risk', {
+        type: 'number',
+        description: 'Max risk in points for fade trades (impulse-fvg)'
+      })
+
+      .option('signal-cooldown-ms', {
+        type: 'number',
+        description: 'Cooldown between signals in milliseconds (impulse-fvg)'
+      })
+
+      .option('use-limit-entry', {
+        type: 'boolean',
+        description: 'Use limit order entry instead of market order for no-FVG fade (impulse-fvg)'
+      })
+
+      .option('limit-retrace-pct', {
+        type: 'number',
+        description: 'Limit order retrace % into impulse body: 0=extreme, 50=midpoint, 100=origin (impulse-fvg)'
+      })
+
+      .option('limit-timeout-bars', {
+        type: 'number',
+        description: 'Cancel unfilled limit order after N bars (impulse-fvg)'
+      })
+
       .help('h')
       .alias('h', 'help')
       .version('1.0.0')
@@ -1593,6 +1711,39 @@ export class CLI {
     if (args.proximity !== undefined) strategyParams.proximity = args.proximity;
     if (args.signalCooldownMs !== undefined) strategyParams.signalCooldownMs = args.signalCooldownMs;
     if (args.lastEntryTime !== undefined) strategyParams.lastEntryTime = args.lastEntryTime;
+
+    // NQ-Leads-ES Strategy Parameters
+    if (args.nqThreshold !== undefined) strategyParams.nqThreshold = args.nqThreshold / 100; // CLI takes %, strategy uses decimal
+    if (args.holdBars !== undefined) {
+      strategyParams.holdBars = args.holdBars;
+      strategyParams.maxHoldBars = args.holdBars;
+    }
+    if (args.gexRegime !== undefined) strategyParams.gexRegime = args.gexRegime;
+    if (args.stopPoints !== undefined) strategyParams.stopPoints = args.stopPoints;
+
+    // GEX Support Bounce Strategy Parameters
+    if (args.proximityPct !== undefined) strategyParams.proximityPct = args.proximityPct;
+    if (args.levelTypes !== undefined) strategyParams.levelTypes = args.levelTypes;
+    if (args.direction !== undefined) strategyParams.direction = args.direction;
+    if (args.requireEsFree !== undefined) strategyParams.requireEsFree = args.requireEsFree;
+
+    // Impulse FVG Strategy Parameters
+    if (args.minBodyPoints !== undefined) strategyParams.minBodyPoints = args.minBodyPoints;
+    if (args.impulseMode !== undefined) strategyParams.mode = args.impulseMode;
+    if (args.fvgPullbackBuffer !== undefined) strategyParams.fvgPullbackBuffer = args.fvgPullbackBuffer;
+    if (args.fvgStopBuffer !== undefined) strategyParams.fvgStopBuffer = args.fvgStopBuffer;
+    if (args.fvgTargetPoints !== undefined) strategyParams.fvgTargetPoints = args.fvgTargetPoints;
+    if (args.fvgMaxWaitBars !== undefined) strategyParams.fvgMaxWaitBars = args.fvgMaxWaitBars;
+    if (args.noFvgStopBuffer !== undefined) strategyParams.noFvgStopBuffer = args.noFvgStopBuffer;
+    if (args.noFvgTargetPoints !== undefined) strategyParams.noFvgTargetPoints = args.noFvgTargetPoints;
+    if (args.noFvgMaxRisk !== undefined) strategyParams.noFvgMaxRisk = args.noFvgMaxRisk;
+    if (args.signalCooldownMs !== undefined) strategyParams.signalCooldownMs = args.signalCooldownMs;
+    if (args.useLimitEntry !== undefined) strategyParams.useLimitEntry = args.useLimitEntry;
+    if (args.limitRetracePct !== undefined) strategyParams.limitRetracePct = args.limitRetracePct;
+    if (args.limitTimeoutBars !== undefined) strategyParams.limitTimeoutBars = args.limitTimeoutBars;
+
+    // Both strategies need dataDir for companion data loading
+    strategyParams.dataDir = args.dataDir;
 
     // Suppress strategy debug logging when --quiet
     if (args.quiet) strategyParams.debug = false;

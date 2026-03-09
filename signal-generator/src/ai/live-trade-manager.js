@@ -2,7 +2,10 @@
  * Live Trade Manager — MFE ratchet, structural trail, and condition tightening.
  *
  * Extracted from the backtest's simulateManagedTrade() logic into a live class
- * that publishes modify_stop signals via Redis on each 1m candle.
+ * that publishes modify_stop signals via Redis.
+ *
+ * Intra-bar: subscribes to price.update for real-time MFE ratchet checks.
+ * Bar close: processCandle() handles structural trail and condition tightening.
  *
  * MFE Ratchet Tiers (same as backtest):
  *   MFE 20-39  → breakeven
@@ -35,9 +38,13 @@ export class LiveTradeManager {
   constructor(opts = {}) {
     this.featureAggregator = opts.featureAggregator;
     this.strategyConstant = opts.strategyConstant || 'AI_TRADER';
+    this.ticker = opts.ticker || process.env.CANDLE_BASE_SYMBOL || 'NQ';
 
     // Active trade state (null when flat)
     this.trade = null;
+
+    // Price update subscription handler (bound for clean unsubscribe)
+    this._priceUpdateHandler = null;
   }
 
   /**
@@ -64,13 +71,23 @@ export class LiveTradeManager {
       stopAdjustments: [],
     };
 
-    logger.info(`Trade manager activated: ${isLong ? 'LONG' : 'SHORT'} ${position.symbol} @ ${position.entryPrice}`);
+    // Subscribe to real-time price updates for intra-bar MFE ratcheting
+    this._priceUpdateHandler = (message) => this._handlePriceUpdate(message);
+    messageBus.subscribe(CHANNELS.PRICE_UPDATE, this._priceUpdateHandler);
+
+    logger.info(`Trade manager activated: ${isLong ? 'LONG' : 'SHORT'} ${position.symbol} @ ${position.entryPrice} (intra-bar monitoring enabled)`);
   }
 
   /**
    * Deactivate tracking when position closes.
    */
   deactivate() {
+    // Unsubscribe from real-time price updates
+    if (this._priceUpdateHandler) {
+      messageBus.unsubscribe(CHANNELS.PRICE_UPDATE, this._priceUpdateHandler);
+      this._priceUpdateHandler = null;
+    }
+
     if (this.trade) {
       const { barsHeld, mfe, mae, stopAdjustments } = this.trade;
       logger.info(`Trade manager deactivated: ${barsHeld} bars, MFE +${mfe.toFixed(1)}, MAE ${mae.toFixed(1)}, ${stopAdjustments.length} stop adjustments`);
@@ -118,6 +135,38 @@ export class LiveTradeManager {
     // ── Periodic log ────────────────────────────────────────
     if (t.barsHeld % 5 === 0) {
       logger.info(`[TRADE] Bar ${t.barsHeld}: MFE +${t.mfe.toFixed(1)}, MAE -${t.mae.toFixed(1)}, stop=${t.currentStop?.toFixed(2) || 'initial'}`);
+    }
+  }
+
+  // ── Intra-bar Price Update ────────────────────────────────
+
+  async _handlePriceUpdate(message) {
+    if (!this.trade) return;
+    if (message.baseSymbol !== this.ticker) return;
+
+    const t = this.trade;
+    const high = message.high;
+    const low = message.low;
+
+    if (high == null || low == null) return;
+
+    // Update MFE / MAE from running bar high/low
+    let mfeChanged = false;
+    if (t.isLong) {
+      const excursion = high - t.entryPrice;
+      if (excursion > t.mfe) { t.mfe = excursion; mfeChanged = true; }
+      const adverse = t.entryPrice - low;
+      if (adverse > t.mae) t.mae = adverse;
+    } else {
+      const excursion = t.entryPrice - low;
+      if (excursion > t.mfe) { t.mfe = excursion; mfeChanged = true; }
+      const adverse = high - t.entryPrice;
+      if (adverse > t.mae) t.mae = adverse;
+    }
+
+    // Only check ratchet if MFE actually increased
+    if (mfeChanged) {
+      await this._checkMFERatchet({ high, low, close: message.close, timestamp: message.timestamp });
     }
   }
 

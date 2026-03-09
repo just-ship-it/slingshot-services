@@ -2194,10 +2194,10 @@ app.get('/api/strategy/iv-skew-gex/status', dashboardAuth, async (req, res) => {
   }
 });
 
-// MNQ Adaptive Scalper strategy status - proxied from signal-generator (multi-strategy engine)
-app.get('/api/strategy/mnq-adaptive-scalper/status', dashboardAuth, async (req, res) => {
+// Impulse FVG strategy status - proxied from signal-generator (multi-strategy engine)
+app.get('/api/strategy/impulse-fvg/status', dashboardAuth, async (req, res) => {
   try {
-    const response = await axios.get(`${SIGNAL_GENERATOR_URL}/strategy/status/mnq-adaptive-scalper`, { timeout: 5000 });
+    const response = await axios.get(`${SIGNAL_GENERATOR_URL}/strategy/status/impulse-fvg`, { timeout: 5000 });
     res.json({ success: true, ...response.data });
   } catch (error) {
     if (error.code === 'ECONNREFUSED') {
@@ -2207,8 +2207,8 @@ app.get('/api/strategy/mnq-adaptive-scalper/status', dashboardAuth, async (req, 
         message: 'Start signal-generator: pm2 start ecosystem.config.cjs --only signal-generator'
       });
     } else {
-      logger.error('Failed to fetch MNQ scalper status:', error.message);
-      res.status(500).json({ error: 'Failed to fetch MNQ scalper status', details: error.message });
+      logger.error('Failed to fetch impulse-fvg status:', error.message);
+      res.status(500).json({ error: 'Failed to fetch impulse-fvg status', details: error.message });
     }
   }
 });

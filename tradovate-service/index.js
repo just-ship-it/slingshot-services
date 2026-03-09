@@ -162,7 +162,17 @@ app.get('/accounts', async (req, res) => {
 app.get('/positions/:accountId', async (req, res) => {
   try {
     const positions = await tradovateClient.getPositions(req.params.accountId);
-    res.json(positions);
+    // Enrich positions with contract symbol names for downstream filtering
+    const enriched = await Promise.all(positions.map(async (pos) => {
+      if (pos.contractId && !pos.symbol) {
+        try {
+          const contract = await tradovateClient.getContractDetails(pos.contractId);
+          if (contract?.name) pos.symbol = contract.name;
+        } catch (e) { /* skip enrichment on error */ }
+      }
+      return pos;
+    }));
+    res.json(enriched);
   } catch (error) {
     logger.error('Failed to get positions:', error);
     res.status(500).json({ error: error.message });
@@ -2414,6 +2424,12 @@ async function startup() {
         try {
           const enrichedOrder = await tradovateClient.handleOrderUpdate(order, data.eventType);
 
+          // Look up strategy name from orderStrategyMap (same as execution report handler)
+          let fillStrategyName = parentOrderId ? orderStrategyMap.get(String(parentOrderId)) : null;
+          if (!fillStrategyName && enrichedOrder.id) {
+            fillStrategyName = orderStrategyMap.get(String(enrichedOrder.id));
+          }
+
           await messageBus.publish(CHANNELS.ORDER_FILLED, {
             orderId: enrichedOrder.id,
             accountId: enrichedOrder.accountId,
@@ -2424,6 +2440,7 @@ async function startup() {
             status: 'filled',
             parentOrderId: parentOrderId,
             orderRole: orderRole,
+            strategy: fillStrategyName,
             timestamp: new Date().toISOString(),
             source: 'websocket_order_update'
           });
