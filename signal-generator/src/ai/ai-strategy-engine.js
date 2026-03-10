@@ -213,6 +213,12 @@ export class AIStrategyEngine {
     // Initialize trade manager if available (Sprint 5)
     if (this.tradeManager) {
       this.tradeManager.activate(this.currentPosition);
+      // Populate initial stop/target from pending order signal
+      if (this.pendingOrder) {
+        this.tradeManager.trade.initialStop = this.pendingOrder.stop_loss;
+        this.tradeManager.trade.initialTarget = this.pendingOrder.take_profit;
+        this.tradeManager.trade.currentStop = this.pendingOrder.stop_loss;
+      }
     }
   }
 
@@ -299,6 +305,28 @@ export class AIStrategyEngine {
     this.pendingOrder = null;
   }
 
+  // ── Orchestrator State Lookup ─────────────────────────────
+
+  /**
+   * Read the trade orchestrator's authoritative strategy-to-position mapping
+   * from Redis. Returns the strategy source (e.g. 'AI_TRADER', 'GEX_SCALP')
+   * for the given underlying, or null if no position tracked / unknown / manual.
+   */
+  async _getOrchestratorPositionOwner(underlying) {
+    try {
+      const data = await messageBus.publisher.get('multi-strategy:state');
+      if (!data) return null;
+      const parsed = JSON.parse(data);
+      if (parsed.version !== '2.0' || !parsed.positions) return null;
+      const posInfo = parsed.positions[underlying];
+      if (!posInfo || !posInfo.source || posInfo.source === 'UNKNOWN') return null;
+      return posInfo.source;
+    } catch (e) {
+      logger.debug(`[RECONCILE] Could not read orchestrator state: ${e.message}`);
+      return null;
+    }
+  }
+
   // ── Position Reconciliation ───────────────────────────────
 
   async _reconcilePositionState() {
@@ -320,22 +348,28 @@ export class AIStrategyEngine {
         if (this.tradeManager) this.tradeManager.deactivate();
         this.reconciliationConfirmed = false;
       } else if (!this.inPosition && openPosition) {
-        this.inPosition = true;
-        this.currentPosition = {
-          symbol: openPosition.symbol || `Contract ${openPosition.contractId}`,
-          side: openPosition.netPos > 0 ? 'long' : 'short',
-          entryPrice: openPosition.netPrice || 0,
-          entryTime: openPosition.timestamp || new Date().toISOString(),
-          strategy: this.strategyConstant,
-          quantity: Math.abs(openPosition.netPos),
-        };
-        this.reconciliationConfirmed = false;
-        logger.warn(`[RECONCILE] Missed position open: ${this.currentPosition.side} ${this.currentPosition.symbol} @ ${this.currentPosition.entryPrice}`);
+        // Check orchestrator's Redis state for position ownership
+        const owner = await this._getOrchestratorPositionOwner(baseSymbol);
+        if (owner === this.strategyConstant) {
+          this.inPosition = true;
+          this.currentPosition = {
+            symbol: openPosition.symbol || `Contract ${openPosition.contractId}`,
+            side: openPosition.netPos > 0 ? 'long' : 'short',
+            entryPrice: openPosition.netPrice || 0,
+            entryTime: openPosition.timestamp || new Date().toISOString(),
+            strategy: this.strategyConstant,
+            quantity: Math.abs(openPosition.netPos),
+          };
+          this.reconciliationConfirmed = false;
+          logger.warn(`[RECONCILE] Missed position open: ${this.currentPosition.side} ${this.currentPosition.symbol} @ ${this.currentPosition.entryPrice}`);
 
-        // Activate trade manager so MFE ratcheting begins
-        if (this.tradeManager) {
-          this.tradeManager.activate(this.currentPosition);
-          logger.info(`[RECONCILE] Trade manager activated for missed position`);
+          // Activate trade manager so MFE ratcheting begins
+          if (this.tradeManager) {
+            this.tradeManager.activate(this.currentPosition);
+            logger.info(`[RECONCILE] Trade manager activated for missed position`);
+          }
+        } else {
+          logger.info(`[RECONCILE] Open position (${openPosition.symbol} @ ${openPosition.netPrice}) owned by ${owner || 'unknown/manual'} — ignoring`);
         }
       } else if (!this.reconciliationConfirmed) {
         const stateDesc = this.inPosition
@@ -369,21 +403,27 @@ export class AIStrategyEngine {
         const openPosition = positions.find(p => p.netPos !== 0 && p.symbol && p.symbol.includes(baseSymbol));
 
         if (openPosition) {
-          this.inPosition = true;
-          this.currentPosition = {
-            symbol: openPosition.symbol || `Contract ${openPosition.contractId}`,
-            side: openPosition.netPos > 0 ? 'long' : 'short',
-            entryPrice: openPosition.netPrice || 0,
-            entryTime: openPosition.timestamp || new Date().toISOString(),
-            strategy: this.strategyConstant,
-            quantity: Math.abs(openPosition.netPos),
-          };
-          logger.info(`Found existing position: ${this.currentPosition.side} ${this.currentPosition.symbol} @ ${this.currentPosition.entryPrice}`);
+          // Check orchestrator's Redis state for position ownership
+          const owner = await this._getOrchestratorPositionOwner(baseSymbol);
+          if (owner === this.strategyConstant) {
+            this.inPosition = true;
+            this.currentPosition = {
+              symbol: openPosition.symbol || `Contract ${openPosition.contractId}`,
+              side: openPosition.netPos > 0 ? 'long' : 'short',
+              entryPrice: openPosition.netPrice || 0,
+              entryTime: openPosition.timestamp || new Date().toISOString(),
+              strategy: this.strategyConstant,
+              quantity: Math.abs(openPosition.netPos),
+            };
+            logger.info(`Found existing position: ${this.currentPosition.side} ${this.currentPosition.symbol} @ ${this.currentPosition.entryPrice}`);
 
-          // Activate trade manager so MFE ratcheting begins
-          if (this.tradeManager) {
-            this.tradeManager.activate(this.currentPosition);
-            logger.info(`Trade manager activated for existing position`);
+            // Activate trade manager so MFE ratcheting begins
+            if (this.tradeManager) {
+              this.tradeManager.activate(this.currentPosition);
+              logger.info(`Trade manager activated for existing position`);
+            }
+          } else {
+            logger.info(`Found existing position (${openPosition.symbol} @ ${openPosition.netPrice}) owned by ${owner || 'unknown/manual'} — NOT claiming`);
           }
         } else {
           logger.info('No open positions — starting fresh');

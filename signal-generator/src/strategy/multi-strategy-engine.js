@@ -1036,19 +1036,26 @@ class MultiStrategyEngine {
         for (const [product, state] of this.products) {
           const openPos = positions.find(p => p.netPos !== 0 && p.symbol && p.symbol.includes(product));
           if (openPos) {
-            state.inPosition = true;
-            // Try to match to a strategy runner
-            const matchedStrategy = this.findStrategyForPosition(state);
-            state.positionStrategy = matchedStrategy;
-            state.currentPosition = {
-              symbol: openPos.symbol || `Contract ${openPos.contractId}`,
-              side: openPos.netPos > 0 ? 'long' : 'short',
-              entryPrice: openPos.netPrice || 0,
-              entryTime: openPos.timestamp || new Date().toISOString(),
-              strategy: matchedStrategy,
-              quantity: Math.abs(openPos.netPos)
-            };
-            logger.info(`Found ${product} position: ${state.currentPosition.side} @ ${state.currentPosition.entryPrice} (${matchedStrategy || 'unknown'})`);
+            // Check orchestrator's Redis state for position ownership
+            const owner = await this._getOrchestratorPositionOwner(product);
+            const matchedRunner = owner
+              ? Array.from(state.strategies.values()).find(r => r.strategyConstant === owner)
+              : null;
+            if (matchedRunner) {
+              state.inPosition = true;
+              state.positionStrategy = owner;
+              state.currentPosition = {
+                symbol: openPos.symbol || `Contract ${openPos.contractId}`,
+                side: openPos.netPos > 0 ? 'long' : 'short',
+                entryPrice: openPos.netPrice || 0,
+                entryTime: openPos.timestamp || new Date().toISOString(),
+                strategy: owner,
+                quantity: Math.abs(openPos.netPos)
+              };
+              logger.info(`Found ${product} position: ${state.currentPosition.side} @ ${state.currentPosition.entryPrice} (owned by ${owner})`);
+            } else {
+              logger.info(`Found ${product} position (${openPos.symbol} @ ${openPos.netPrice}) owned by ${owner || 'unknown/manual'} — NOT claiming`);
+            }
           } else {
             logger.info(`No open ${product} position`);
           }
@@ -1060,6 +1067,26 @@ class MultiStrategyEngine {
       }
     }
     logger.warn('Position sync failed after 3 attempts');
+  }
+
+  /**
+   * Read the trade orchestrator's authoritative strategy-to-position mapping
+   * from Redis. Returns the strategy source (e.g. 'GEX_SCALP', 'AI_TRADER')
+   * for the given underlying, or null if no position tracked / unknown / manual.
+   */
+  async _getOrchestratorPositionOwner(underlying) {
+    try {
+      const data = await messageBus.publisher.get('multi-strategy:state');
+      if (!data) return null;
+      const parsed = JSON.parse(data);
+      if (parsed.version !== '2.0' || !parsed.positions) return null;
+      const posInfo = parsed.positions[underlying];
+      if (!posInfo || !posInfo.source || posInfo.source === 'UNKNOWN') return null;
+      return posInfo.source;
+    } catch (e) {
+      logger.debug(`[RECONCILE] Could not read orchestrator state: ${e.message}`);
+      return null;
+    }
   }
 
   findStrategyForPosition(state) {
@@ -1094,19 +1121,27 @@ class MultiStrategyEngine {
           }
           state.reconciliationConfirmed = false;
         } else if (!state.inPosition && openPos) {
-          const matchedStrategy = this.findStrategyForPosition(state);
-          state.inPosition = true;
-          state.positionStrategy = matchedStrategy;
-          state.currentPosition = {
-            symbol: openPos.symbol,
-            side: openPos.netPos > 0 ? 'long' : 'short',
-            entryPrice: openPos.netPrice || 0,
-            entryTime: openPos.timestamp || new Date().toISOString(),
-            strategy: matchedStrategy,
-            quantity: Math.abs(openPos.netPos)
-          };
-          state.reconciliationConfirmed = false;
-          logger.warn(`[RECONCILE] Missed ${product} position open: ${state.currentPosition.side} @ ${state.currentPosition.entryPrice}`);
+          // Check orchestrator's Redis state for position ownership
+          const owner = await this._getOrchestratorPositionOwner(product);
+          const matchedRunner = owner
+            ? Array.from(state.strategies.values()).find(r => r.strategyConstant === owner)
+            : null;
+          if (matchedRunner) {
+            state.inPosition = true;
+            state.positionStrategy = owner;
+            state.currentPosition = {
+              symbol: openPos.symbol,
+              side: openPos.netPos > 0 ? 'long' : 'short',
+              entryPrice: openPos.netPrice || 0,
+              entryTime: openPos.timestamp || new Date().toISOString(),
+              strategy: owner,
+              quantity: Math.abs(openPos.netPos)
+            };
+            state.reconciliationConfirmed = false;
+            logger.warn(`[RECONCILE] Missed ${product} position open: ${state.currentPosition.side} @ ${state.currentPosition.entryPrice} (owned by ${owner})`);
+          } else {
+            logger.info(`[RECONCILE] ${product} position (${openPos.symbol}) owned by ${owner || 'unknown/manual'} — not managed by this engine`);
+          }
         } else if (!state.reconciliationConfirmed) {
           const desc = state.inPosition ? `in position (${state.currentPosition?.side})` : 'flat';
           logger.info(`[RECONCILE] ${product}: ${desc}`);

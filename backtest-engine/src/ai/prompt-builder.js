@@ -735,8 +735,8 @@ Respond ONLY with JSON. No markdown.`;
     const sideLabel = ctx.isLong ? 'LONG' : 'SHORT';
     const pnlSign = ctx.unrealizedPnl >= 0 ? '+' : '';
 
-    sections.push(`# Position: ${sideLabel} ${this.ticker} @ ${ctx.entryPrice.toFixed(2)}`);
-    sections.push(`Bars held: ${ctx.barsHeld} | MFE: +${ctx.mfe.toFixed(1)}pts | P&L: ${pnlSign}${ctx.unrealizedPnl.toFixed(1)}pts | Stop: ${ctx.currentStop.toFixed(2)} | Target: ${ctx.target.toFixed(2)}`);
+    sections.push(`# Position: ${sideLabel} ${this.ticker} @ ${ctx.entryPrice?.toFixed(2) ?? 'N/A'}`);
+    sections.push(`Bars held: ${ctx.barsHeld ?? '?'} | MFE: +${ctx.mfe?.toFixed(1) ?? '?'}pts | P&L: ${pnlSign}${ctx.unrealizedPnl?.toFixed(1) ?? '?'}pts | Stop: ${ctx.currentStop?.toFixed(2) ?? 'N/A'} | Target: ${ctx.target?.toFixed(2) ?? 'N/A'}`);
 
     if (ctx.trigger) {
       sections.push(`\nManagement check triggered by: ${ctx.trigger}`);
