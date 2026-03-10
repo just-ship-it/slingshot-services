@@ -1643,8 +1643,11 @@ async function handleWebhookReceived(message) {
       trailing_trigger: signal.trailing_trigger,
       trailing_offset: signal.trailing_offset,
       // Add point-based distances for market orders (no entry price to compute from)
-      stop_points: signal.stop_points,
-      target_points: signal.target_points,
+      // If signal provides absolute prices but no point distances, compute them from the signal's reference price
+      stop_points: signal.stop_points || (mappedOrderType === 'Market' && signal.price && mappedStopPrice
+        ? Math.abs(signal.price - mappedStopPrice) : undefined),
+      target_points: signal.target_points || (mappedOrderType === 'Market' && signal.price && mappedTakeProfit
+        ? Math.abs(mappedTakeProfit - signal.price) : undefined),
       // Add position sizing metadata
       positionSizing: {
         originalSymbol: positionSizing.originalSymbol,

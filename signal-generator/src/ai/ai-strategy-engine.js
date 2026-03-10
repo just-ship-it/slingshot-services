@@ -108,6 +108,8 @@ export class AIStrategyEngine {
     this.lastStopTimestamp = 0;
     this.lastManagedExitTimestamp = 0;
     this.pendingBiasFlip = null;
+    this.dailyGexFresh = false;
+    this.waitingForFreshGex = false;
     this.llmCallsToday = 0;
     this.entriesMade = [];
     this.outcomesReceived = [];
@@ -154,6 +156,12 @@ export class AIStrategyEngine {
     this.gexReady = true;
     logger.info('GEX levels loaded');
     this._checkDataReady();
+  }
+
+  markDailyGexFresh() {
+    if (this.dailyGexFresh) return;
+    this.dailyGexFresh = true;
+    logger.info('Fresh GEX levels received for today — bias formation unblocked');
   }
 
   _checkDataReady() {
@@ -481,19 +489,26 @@ export class AIStrategyEngine {
       return;
     }
 
-    // ── Pre-market Bias Formation (9:25 AM ET) ──────────────
-    if (!this.biasFormed && totalMinutes >= 565 && totalMinutes < 570) {
-      await this._formBias(tradingDay);
-    }
-
-    // ── Late-start Bias (if service restarted mid-day) ───────
-    // Form bias during active entry windows (morning/afternoon) or midday
-    // break — but only if we have NO bias at all (fresh restart). This
-    // avoids an unnecessary LLM call if we already have a bias and just
-    // happen to be in the midday break; reassessment resumes at 1 PM.
+    // ── Bias Formation (gated on fresh GEX after 9:30 AM) ──────
+    // Wait for fresh GEX from Tradier/CBOE before forming bias.
+    // Fallback at 9:45 AM if GEX hasn't arrived. Late-start after 10:00 AM.
     if (!this.biasFormed && totalMinutes >= 570 && totalMinutes < 960) {
-      logger.info('Missed pre-market bias window — forming late-start intraday bias...');
-      await this._formBias(tradingDay, { lateStart: true });
+      const hasFreshGex = this.dailyGexFresh;
+      const pastFallback = totalMinutes >= 585; // 9:45 AM ET
+
+      if (hasFreshGex) {
+        const biasType = totalMinutes >= 600 ? { lateStart: true } : {};
+        if (totalMinutes >= 600) {
+          logger.info('Fresh GEX received — forming late-start intraday bias...');
+        }
+        await this._formBias(tradingDay, biasType);
+      } else if (pastFallback) {
+        logger.warn('Fresh GEX not received by 9:45 AM fallback — forming bias with stale GEX');
+        await this._formBias(tradingDay);
+      } else if (!this.waitingForFreshGex) {
+        this.waitingForFreshGex = true;
+        logger.info('Waiting for fresh GEX levels before forming bias (fallback at 9:45 AM ET)...');
+      }
     }
 
     // ── Skip evaluation outside trading windows ─────────────
@@ -951,6 +966,7 @@ export class AIStrategyEngine {
           history_1m: this.history1mReady,
           history_1h: this.history1hReady,
           gex: this.gexReady,
+          gex_daily_fresh: this.dailyGexFresh,
           all_ready: this.isDataReady(),
         },
         trading_day: {
@@ -962,6 +978,7 @@ export class AIStrategyEngine {
             key_levels_to_watch: this.activeBias.key_levels_to_watch || [],
           } : null,
           biasFormed: this.biasFormed,
+          waitingForFreshGex: !this.biasFormed && !this.dailyGexFresh,
           entries: this.totalEntriesToday,
           losses: this.totalLossesToday,
           llmCalls: this.llmCallsToday,

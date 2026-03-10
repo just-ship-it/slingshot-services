@@ -14,6 +14,7 @@ import { AIStrategyEngine } from './ai/ai-strategy-engine.js';
 import { LiveTradeManager } from './ai/live-trade-manager.js';
 import { LLMClient } from '../../backtest-engine/src/ai/llm-client.js';
 import { PromptBuilder } from '../../backtest-engine/src/ai/prompt-builder.js';
+import { toET } from '../../backtest-engine/src/ai/session-utils.js';
 import GexCalculator from './gex/gex-calculator.js';
 import { getDataRequirements } from './strategy/strategy-factory.js';
 
@@ -183,6 +184,13 @@ class SignalGeneratorService {
 
         if (this.aiEngine && !this.aiEngine.gexReady) {
           this.aiEngine.markGexReady();
+        }
+
+        // Check if this GEX update qualifies as "fresh" for today's bias formation
+        if (this.aiEngine && !this.aiEngine.dailyGexFresh) {
+          if (this._isGexFreshForToday(message)) {
+            this.aiEngine.markDailyGexFresh();
+          }
         }
       }
     });
@@ -518,6 +526,28 @@ class SignalGeneratorService {
       // 404 is expected if data-service hasn't received LS data yet
       logger.info('LS sentiment not available from data-service yet — will pick up via Redis');
     }
+  }
+
+  /**
+   * Determine if a GEX levels message qualifies as "fresh" for today's session.
+   * Fresh means: after 9:30 AM ET AND either a recent hybrid update or a non-cached CBOE fetch.
+   */
+  _isGexFreshForToday(message) {
+    // Must be after 9:30 AM ET for GEX to reflect today's options market
+    const et = toET(Date.now());
+    const totalMinutes = et.hour * 60 + et.minute;
+    if (totalMinutes < 570) return false;
+
+    // Hybrid mode: check hybridTimestamp age
+    if (message.hybridTimestamp) {
+      const age = Date.now() - new Date(message.hybridTimestamp).getTime();
+      return age < 30 * 60 * 1000; // < 30 minutes old
+    }
+
+    // CBOE-only mode: fromCache === false means actual fresh CBOE calculation
+    if (message.fromCache === false) return true;
+
+    return false;
   }
 
   getHealth() {

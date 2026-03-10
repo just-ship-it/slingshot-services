@@ -727,8 +727,8 @@ async function handleOrderRequest(message) {
     logger.error('Failed to process order request:', error);
 
     // Clean up pending signal pre-registration on failure
-    if (message.signalId && contractSymbol) {
-      pendingOrderSignals.delete(contractSymbol);
+    if (message.signalId && message.symbol) {
+      pendingOrderSignals.delete(message.symbol);
     }
 
     // Publish rejection event
