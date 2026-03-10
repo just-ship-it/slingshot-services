@@ -27,6 +27,8 @@ export class AITrader {
       ticker: config.ticker || 'NQ',
       dataDir: config.dataDir,
       model: config.model || 'claude-sonnet-4-20250514',
+      managementModel: config.managementModel || 'claude-haiku-4-5-20251001',
+      managementEnabled: config.managementEnabled !== false,
       apiKey: config.apiKey,
     };
 
@@ -37,6 +39,12 @@ export class AITrader {
     this.promptBuilder = new PromptBuilder({ ticker: this.config.ticker });
     this.llm = new LLMClient({
       model: this.config.model,
+      apiKey: this.config.apiKey,
+    });
+    // Separate LLM client for in-position management (uses cheaper model)
+    this.managementLLM = new LLMClient({
+      model: this.config.managementModel,
+      maxTokens: 256,
       apiKey: this.config.apiKey,
     });
   }
@@ -341,14 +349,19 @@ export class AITrader {
         console.log(`    Reason: ${decision.reasoning}`);
         console.log(`    Active bias: ${activeBias.bias} (conviction: ${activeBias.conviction}/5)`);
 
-        // Simulate outcome with active trade management
-        const outcome = this.aggregator.simulateManagedTrade(
+        // Simulate outcome with active trade management (+ LLM management if enabled)
+        const outcome = await this.aggregator.simulateManagedTrade(
           candle.timestamp,
           decision.entry_price,
           decision.stop_loss,
           decision.take_profit,
           decision.side,
-          tradingDay
+          tradingDay,
+          120,
+          {
+            llmClient: this.config.managementEnabled && !this.config.dryRun ? this.managementLLM : null,
+            promptBuilder: this.promptBuilder,
+          }
         );
         console.log(`    Outcome: ${outcome.outcome.toUpperCase()} — P&L: ${outcome.pnl > 0 ? '+' : ''}${outcome.pnl.toFixed(2)} pts (${outcome.bars} bars, exit ${outcome.exitTime || 'N/A'})`);
 
@@ -454,6 +467,7 @@ export class AITrader {
     // Aggregate summary
     results.summary = this._summarize(results.days);
     results.cost = this.llm.getCostSummary();
+    results.managementCost = this.managementLLM.getCostSummary();
 
     return results;
   }
@@ -527,6 +541,9 @@ export class AITrader {
       o.stopAdjustments && o.stopAdjustments.some(a => a.reason === 'breakeven')
     ).length;
     const managedExits = allOutcomes.filter(o => o.outcome === 'managed_exit').length;
+    const llmExits = allOutcomes.filter(o => o.outcome === 'llm_exit').length;
+    const llmManagedExits = allOutcomes.filter(o => o.outcome === 'llm_managed_exit').length;
+    const totalLLMManagementCalls = allOutcomes.reduce((s, o) => s + (o.llmManagementCalls || 0), 0);
 
     return {
       totalDays: days.length,
@@ -537,6 +554,8 @@ export class AITrader {
       losses: losses.length,
       timeouts: timeouts.length,
       managedExits,
+      llmExits,
+      llmManagedExits,
       winRate: allOutcomes.length > 0 ? Math.round((wins.length / allOutcomes.length) * 100) : 0,
       totalPnlPoints: Math.round(totalPnl * 100) / 100,
       avgPnlPoints: Math.round(avgPnl * 100) / 100,

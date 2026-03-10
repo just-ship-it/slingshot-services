@@ -12,6 +12,8 @@ import { CandleBuffer } from './utils/candle-buffer.js';
 import { LiveFeatureAggregator } from './ai/live-feature-aggregator.js';
 import { AIStrategyEngine } from './ai/ai-strategy-engine.js';
 import { LiveTradeManager } from './ai/live-trade-manager.js';
+import { LLMClient } from '../../backtest-engine/src/ai/llm-client.js';
+import { PromptBuilder } from '../../backtest-engine/src/ai/prompt-builder.js';
 import GexCalculator from './gex/gex-calculator.js';
 import { getDataRequirements } from './strategy/strategy-factory.js';
 
@@ -213,11 +215,24 @@ class SignalGeneratorService {
       ticker: candleBaseSymbol,
     });
 
+    // Management LLM client (Haiku — fast and cheap for in-position decisions)
+    const managementModel = process.env.AI_TRADER_MANAGEMENT_MODEL || 'claude-haiku-4-5-20251001';
+    const managementLLM = new LLMClient({
+      model: managementModel,
+      maxTokens: 256,
+      apiKey: process.env.ANTHROPIC_API_KEY,
+    });
+    const managementPromptBuilder = new PromptBuilder({ ticker: candleBaseSymbol });
+
     this.liveTradeManager = new LiveTradeManager({
       featureAggregator: this.liveFeatureAggregator,
+      llmClient: managementLLM,
+      promptBuilder: managementPromptBuilder,
       strategyConstant: 'AI_TRADER',
       ticker: candleBaseSymbol,
     });
+
+    logger.info(`Trade manager initialized with LLM management (model: ${managementModel})`);
 
     this.aiEngine = new AIStrategyEngine({
       featureAggregator: this.liveFeatureAggregator,

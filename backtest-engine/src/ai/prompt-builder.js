@@ -651,6 +651,85 @@ Respond ONLY with the JSON object. No markdown, no explanation outside JSON.`;
     return sections.join('\n');
   }
 
+  // ── Management prompts (in-position) ─────────────────────
+
+  /**
+   * Build the management prompt for an open position.
+   * Returns { system, user } prompt strings.
+   */
+  buildManagementPrompt(ctx) {
+    const system = this._managementSystemPrompt();
+    const user = this._managementUserPrompt(ctx);
+    return { system, user };
+  }
+
+  _managementSystemPrompt() {
+    return `You are managing an open ${this.ticker} futures position. Decide whether to HOLD, TIGHTEN the stop, or EXIT based on recent price action.
+
+## Rules
+- You can ONLY tighten stops or exit. You CANNOT widen stops.
+- Your new_stop MUST be tighter than the current stop (higher for longs, lower for shorts).
+- "tighten": move the stop to a specific price behind a structural level.
+- "exit": take profit NOW at market. Use for exhaustion, blow-off tops, or structural resistance blocking further progress.
+- "hold": trade is developing normally — consolidating, trending, or has room to run.
+- When in doubt, HOLD. Over-managing kills profits.
+
+## Pattern Recognition
+- Consolidating near highs after a run = HOLD (building for next leg)
+- Sharp spike + reversal candle on volume = EXIT (blow-off)
+- Slow grind with fading volume = TIGHTEN (momentum dying)
+- 3+ failed attempts at a level = EXIT (can't break through)
+- Strong trend with pullbacks to structure = HOLD
+- Unrealized P&L less than 50% of MFE = TIGHTEN aggressively (giving back too much)
+
+Your response must be valid JSON matching ONE of:
+{ "action": "hold", "reasoning": "<1 sentence>" }
+{ "action": "tighten", "new_stop": <number>, "reasoning": "<1 sentence>" }
+{ "action": "exit", "reasoning": "<1 sentence>" }
+
+Respond ONLY with JSON. No markdown.`;
+  }
+
+  _managementUserPrompt(ctx) {
+    const sections = [];
+    const sideLabel = ctx.isLong ? 'LONG' : 'SHORT';
+    const pnlSign = ctx.unrealizedPnl >= 0 ? '+' : '';
+
+    sections.push(`# Position: ${sideLabel} ${this.ticker} @ ${ctx.entryPrice.toFixed(2)}`);
+    sections.push(`Bars held: ${ctx.barsHeld} | MFE: +${ctx.mfe.toFixed(1)}pts | P&L: ${pnlSign}${ctx.unrealizedPnl.toFixed(1)}pts | Stop: ${ctx.currentStop.toFixed(2)} | Target: ${ctx.target.toFixed(2)}`);
+
+    if (ctx.trigger) {
+      sections.push(`\nManagement check triggered by: ${ctx.trigger}`);
+    }
+
+    // Recent candles (compact)
+    if (ctx.recentCandles && ctx.recentCandles.length > 0) {
+      sections.push(`\n## Recent 1m Candles (last ${ctx.recentCandles.length})`);
+      sections.push('| Time | O | H | L | C | V |');
+      sections.push('|------|---|---|---|---|---|');
+      for (const c of ctx.recentCandles) {
+        sections.push(`| ${c.time} | ${c.open.toFixed(2)} | ${c.high.toFixed(2)} | ${c.low.toFixed(2)} | ${c.close.toFixed(2)} | ${c.volume} |`);
+      }
+    }
+
+    // Structural context (compact)
+    if (ctx.nearestResistance || ctx.nearestSupport) {
+      sections.push(`\n## Nearby Structure`);
+      if (ctx.nearestResistance) {
+        sections.push(`- Resistance: ${ctx.nearestResistance.price.toFixed(2)} (${ctx.nearestResistance.label}, ${ctx.nearestResistance.distance.toFixed(1)}pts above)`);
+      }
+      if (ctx.nearestSupport) {
+        sections.push(`- Support: ${ctx.nearestSupport.price.toFixed(2)} (${ctx.nearestSupport.label}, ${ctx.nearestSupport.distance.toFixed(1)}pts below)`);
+      }
+    }
+
+    if (ctx.gexRegime) {
+      sections.push(`- GEX regime: ${ctx.gexRegime}`);
+    }
+
+    return sections.join('\n');
+  }
+
   // ── Helpers ──────────────────────────────────────────────
 
   _fmt(val) {

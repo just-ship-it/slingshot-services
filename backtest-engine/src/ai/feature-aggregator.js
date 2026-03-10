@@ -1076,7 +1076,7 @@ export class FeatureAggregator {
    * Active trade management simulation — bar-by-bar with dynamic stop adjustments.
    * Returns enhanced outcome with MFE/MAE and stop adjustment log.
    */
-  simulateManagedTrade(entryTimestamp, entryPrice, initialStop, initialTarget, side, tradingDay, maxBars = 120) {
+  async simulateManagedTrade(entryTimestamp, entryPrice, initialStop, initialTarget, side, tradingDay, maxBars = 120, { llmClient = null, promptBuilder = null } = {}) {
     // Find starting index
     let startIdx = -1;
     for (let i = 0; i < this.candles1m.length; i++) {
@@ -1095,6 +1095,12 @@ export class FeatureAggregator {
     let lastRatchetMFE = 0; // track MFE tier that last triggered a ratchet
     const stopAdjustments = [];
 
+    // LLM management gating state
+    let lastLLMCheckMFETier = 0;
+    let lastLLMCheckBar = 0;
+    let givebackCheckFired = false;
+    let llmManagementCalls = 0;
+
     // Helper: is the new stop tighter (more protective) than the current one?
     const isTighter = (newStop) => isLong ? newStop > currentStop : newStop < currentStop;
     // Helper: build exit result
@@ -1108,6 +1114,7 @@ export class FeatureAggregator {
       maxAdverseExcursion: Math.round(maxAdverseExcursion * 100) / 100,
       stopAdjustments,
       finalStop: currentStop,
+      llmManagementCalls,
     });
 
     for (let i = startIdx; i < Math.min(startIdx + maxBars, this.candles1m.length); i++) {
@@ -1124,8 +1131,10 @@ export class FeatureAggregator {
       if (stopHit) {
         const isManaged = currentStop !== initialStop &&
           (isLong ? currentStop >= entryPrice : currentStop <= entryPrice);
+        const lastAdj = stopAdjustments[stopAdjustments.length - 1];
+        const isLLMManaged = isManaged && lastAdj && lastAdj.reason.startsWith('llm_');
         return exitResult(
-          isManaged ? 'managed_exit' : 'stop',
+          isLLMManaged ? 'llm_managed_exit' : isManaged ? 'managed_exit' : 'stop',
           currentStop, barsHeld, formatET(candle.timestamp)
         );
       }
@@ -1242,6 +1251,109 @@ export class FeatureAggregator {
           }
         }
       }
+
+      // ── 6. LLM MANAGEMENT (event-gated) ──
+      // Supplements mechanical ratchet with contextual LLM decisions.
+      // Only fires on significant events to control cost (3-8 calls per trade).
+      if (llmClient && promptBuilder && maxFavorableExcursion >= 10) {
+        const currentUnrealized = isLong ? candle.close - entryPrice : entryPrice - candle.close;
+        let trigger = null;
+
+        // Gate 1: MFE tier transition (20, 40, 60, 100)
+        const mfeTier = maxFavorableExcursion >= 100 ? 100 : maxFavorableExcursion >= 60 ? 60 : maxFavorableExcursion >= 40 ? 40 : maxFavorableExcursion >= 20 ? 20 : 0;
+        if (mfeTier > 0 && mfeTier > lastLLMCheckMFETier) {
+          trigger = `MFE crossed ${mfeTier}pt tier (+${maxFavorableExcursion.toFixed(0)}pts peak)`;
+          lastLLMCheckMFETier = mfeTier;
+        }
+
+        // Gate 2: Significant giveback (unrealized < 50% of MFE, MFE >= 20)
+        if (!trigger && maxFavorableExcursion >= 20 && currentUnrealized > 0 && currentUnrealized < maxFavorableExcursion * 0.5 && !givebackCheckFired) {
+          trigger = `Giveback: unrealized ${currentUnrealized.toFixed(0)}pts vs MFE ${maxFavorableExcursion.toFixed(0)}pts (${Math.round(currentUnrealized / maxFavorableExcursion * 100)}% retained)`;
+          givebackCheckFired = true;
+        }
+
+        // Gate 3: Time-based fallback every 15 bars (if no other trigger)
+        if (!trigger && barsHeld >= 15 && barsHeld - lastLLMCheckBar >= 15) {
+          trigger = `Periodic check (bar ${barsHeld})`;
+        }
+
+        if (trigger) {
+          lastLLMCheckBar = barsHeld;
+          llmManagementCalls++;
+
+          // Build compact context
+          const contextStartIdx = Math.max(startIdx, i - 9);
+          const recentCandles = [];
+          for (let j = contextStartIdx; j <= i; j++) {
+            const rc = this.candles1m[j];
+            recentCandles.push({
+              time: formatET(rc.timestamp),
+              open: rc.open, high: rc.high, low: rc.low, close: rc.close,
+              volume: rc.volume,
+            });
+          }
+
+          // Get nearby structural levels
+          const structLevels = this.getStructuralLevels(candle.timestamp, candle.close, tradingDay);
+          let nearestResistance = null, nearestSupport = null;
+          if (structLevels) {
+            const above = structLevels.filter(l => l.aboveBelow === 'above').sort((a, b) => a.price - b.price);
+            const below = structLevels.filter(l => l.aboveBelow === 'below').sort((a, b) => b.price - a.price);
+            if (above.length > 0) nearestResistance = { price: above[0].price, label: above[0].label, distance: Math.abs(above[0].price - candle.close) };
+            if (below.length > 0) nearestSupport = { price: below[0].price, label: below[0].label, distance: Math.abs(candle.close - below[0].price) };
+          }
+
+          // Get GEX regime
+          const gex = this.gexLoader ? this.gexLoader.getGexLevels(new Date(candle.timestamp)) : null;
+          const gexRegime = gex?.regime || null;
+
+          const mgmtCtx = {
+            entryPrice, isLong, currentStop,
+            target: initialTarget,
+            mfe: maxFavorableExcursion,
+            unrealizedPnl: currentUnrealized,
+            barsHeld,
+            trigger,
+            recentCandles,
+            nearestResistance,
+            nearestSupport,
+            gexRegime,
+          };
+
+          const mgmtPrompt = promptBuilder.buildManagementPrompt(mgmtCtx);
+
+          try {
+            const decision = await llmClient.query(mgmtPrompt.system, mgmtPrompt.user);
+
+            if (decision.action === 'exit') {
+              stopAdjustments.push({
+                bar: barsHeld, from: currentStop, to: candle.close,
+                reason: `llm_exit: ${decision.reasoning || 'LLM exit'}`,
+              });
+              return exitResult('llm_exit', candle.close, barsHeld, formatET(candle.timestamp));
+            }
+
+            if (decision.action === 'tighten' && decision.new_stop != null) {
+              const proposed = decision.new_stop;
+              // Guardrails: must be tighter AND between entry and current price
+              const beyondPrice = isLong ? proposed > candle.close : proposed < candle.close;
+              if (isTighter(proposed) && !beyondPrice && !isNaN(proposed)) {
+                const prevStop = currentStop;
+                currentStop = Math.round(proposed * 100) / 100;
+                stopAdjustments.push({
+                  bar: barsHeld,
+                  from: Math.round(prevStop * 100) / 100,
+                  to: currentStop,
+                  reason: `llm_tighten: ${decision.reasoning || 'LLM tighten'}`,
+                });
+              }
+            }
+            // 'hold' = no action
+          } catch (e) {
+            // LLM error — continue with mechanical management
+          }
+        }
+      }
     }
 
     // Max bars reached — exit at market
@@ -1258,6 +1370,7 @@ export class FeatureAggregator {
       maxAdverseExcursion: Math.round(maxAdverseExcursion * 100) / 100,
       stopAdjustments,
       finalStop: currentStop,
+      llmManagementCalls,
     };
   }
 

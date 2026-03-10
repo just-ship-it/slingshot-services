@@ -163,6 +163,11 @@ export class LLMClient {
         avoid_conditions: [],
         preferred_session_window: '13:00-15:00 ET',
       };
+    } else if (type === 'management') {
+      return {
+        action: 'hold',
+        reasoning: 'Dry run — management mock.',
+      };
     } else {
       return {
         action: 'pass',

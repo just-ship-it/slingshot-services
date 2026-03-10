@@ -180,8 +180,12 @@ async function main() {
     console.log(`  Profit Factor: ${s.profitFactor}`);
     if (s.avgRiskPoints) console.log(`  Avg Risk: ${s.avgRiskPoints} pts | Avg R:R: ${s.avgRewardRiskRatio}:1`);
     if (s.avgMFE || s.avgMAE) console.log(`  Avg MFE: +${s.avgMFE} pts | Avg MAE: ${s.avgMAE} pts`);
-    if (s.trailedToBreakeven > 0 || s.managedExits > 0) {
-      console.log(`  Trailed to breakeven: ${s.trailedToBreakeven} | Managed exits: ${s.managedExits}`);
+    if (s.trailedToBreakeven > 0 || s.managedExits > 0 || s.llmExits > 0 || s.llmManagedExits > 0) {
+      const parts = [`Managed exits: ${s.managedExits}`];
+      if (s.llmExits > 0) parts.push(`LLM exits: ${s.llmExits}`);
+      if (s.llmManagedExits > 0) parts.push(`LLM managed: ${s.llmManagedExits}`);
+      if (s.trailedToBreakeven > 0) parts.push(`Trailed to BE: ${s.trailedToBreakeven}`);
+      console.log(`  ${parts.join(' | ')}`);
     }
     console.log(`  Bias Accuracy: ${s.biasAccuracy}`);
     if (s.totalReassessments > 0) {
@@ -192,6 +196,10 @@ async function main() {
   // Cost summary
   const cost = results.cost;
   console.log(`\n  API Cost: $${cost.estimatedCostUSD} (${cost.totalCalls} calls, ${cost.totalInputTokens} in / ${cost.totalOutputTokens} out tokens)`);
+  if (results.managementCost && results.managementCost.totalCalls > 0) {
+    const mc = results.managementCost;
+    console.log(`  Management Cost: $${mc.estimatedCostUSD} (${mc.totalCalls} calls, ${mc.model})`);
+  }
   console.log('═'.repeat(60));
 
   // Save output — always save, auto-generate filename if not specified

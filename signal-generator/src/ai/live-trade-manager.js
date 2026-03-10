@@ -1,20 +1,25 @@
 /**
- * Live Trade Manager — MFE ratchet, structural trail, and condition tightening.
+ * Live Trade Manager — MFE ratchet, structural trail, condition tightening, and LLM management.
  *
  * Extracted from the backtest's simulateManagedTrade() logic into a live class
- * that publishes modify_stop signals via Redis.
+ * that publishes modify_stop and position_closed signals via Redis.
  *
  * Intra-bar: subscribes to price.update for real-time MFE ratchet checks.
- * Bar close: processCandle() handles structural trail and condition tightening.
+ * Bar close: processCandle() handles structural trail, condition tightening, and LLM management.
  *
- * MFE Ratchet Tiers (same as backtest):
- *   MFE 20-39  → breakeven
- *   MFE 40-59  → lock 33%
- *   MFE 60-99  → lock 40%
- *   MFE 100+   → lock 50%
+ * MFE Ratchet Tiers (matching backtest):
+ *   MFE 20-39  → lock 25%
+ *   MFE 40-59  → lock 40%
+ *   MFE 60-99  → lock 50%
+ *   MFE 100+   → lock 60%
  *
  * Structural Trail: every 5 bars (MFE >= 20), trail behind nearest structural level.
  * Condition Tightening: every 15 bars (MFE > 0), lock 60% if LT deteriorating.
+ *
+ * LLM Management (event-gated, supplements mechanical management):
+ *   Triggers: MFE tier transitions (20/40/60/100), significant giveback (<50% MFE retained),
+ *             time-based fallback (every 15 bars). Actions: hold (no-op), tighten (modify_stop),
+ *             exit (position_closed). Guardrails: can only tighten or exit, never widen.
  */
 
 import { createLogger, messageBus, CHANNELS } from '../../../shared/index.js';
@@ -23,25 +28,32 @@ const logger = createLogger('live-trade-manager');
 
 // MFE ratchet tiers — matching backtest exactly
 const MFE_RATCHET_TIERS = [
-  { minMFE: 100, lockPct: 0.50, label: 'lock 50%' },
-  { minMFE: 60,  lockPct: 0.40, label: 'lock 40%' },
-  { minMFE: 40,  lockPct: 0.33, label: 'lock 33%' },
-  { minMFE: 20,  lockPct: 0.00, label: 'breakeven' }, // lockPct 0 = entry price
+  { minMFE: 100, lockPct: 0.60, label: 'lock 60%' },
+  { minMFE: 60,  lockPct: 0.50, label: 'lock 50%' },
+  { minMFE: 40,  lockPct: 0.40, label: 'lock 40%' },
+  { minMFE: 20,  lockPct: 0.25, label: 'lock 25%' },
 ];
 
 export class LiveTradeManager {
   /**
    * @param {Object} opts
    * @param {Object} opts.featureAggregator - LiveFeatureAggregator instance
+   * @param {Object} [opts.llmClient]       - LLMClient instance for management (Haiku)
+   * @param {Object} [opts.promptBuilder]   - PromptBuilder instance
    * @param {string} [opts.strategyConstant='AI_TRADER']
    */
   constructor(opts = {}) {
     this.featureAggregator = opts.featureAggregator;
+    this.llmClient = opts.llmClient || null;
+    this.promptBuilder = opts.promptBuilder || null;
     this.strategyConstant = opts.strategyConstant || 'AI_TRADER';
     this.ticker = opts.ticker || process.env.CANDLE_BASE_SYMBOL || 'NQ';
 
     // Active trade state (null when flat)
     this.trade = null;
+
+    // LLM management cost tracking
+    this.llmManagementCalls = 0;
 
     // Price update subscription handler (bound for clean unsubscribe)
     this._priceUpdateHandler = null;
@@ -69,6 +81,10 @@ export class LiveTradeManager {
       barsHeld: 0,
       entryTimestamp: Date.now(),
       stopAdjustments: [],
+      // LLM management state
+      lastLLMCheckMFETier: 0,
+      lastLLMCheckBar: 0,
+      givebackCheckFired: false,
     };
 
     // Subscribe to real-time price updates for intra-bar MFE ratcheting
@@ -132,6 +148,11 @@ export class LiveTradeManager {
       await this._checkConditionTightening(candle);
     }
 
+    // ── LLM Management (event-gated) ─────────────────────────
+    if (this.llmClient && this.promptBuilder && t.mfe >= 10) {
+      await this._checkLLMManagement(candle);
+    }
+
     // ── Periodic log ────────────────────────────────────────
     if (t.barsHeld % 5 === 0) {
       logger.info(`[TRADE] Bar ${t.barsHeld}: MFE +${t.mfe.toFixed(1)}, MAE -${t.mae.toFixed(1)}, stop=${t.currentStop?.toFixed(2) || 'initial'}`);
@@ -179,16 +200,10 @@ export class LiveTradeManager {
     for (const tier of MFE_RATCHET_TIERS) {
       if (t.mfe >= tier.minMFE) {
         let newStop;
-        if (tier.lockPct === 0) {
-          // Breakeven = entry price
-          newStop = t.entryPrice;
+        if (t.isLong) {
+          newStop = t.entryPrice + (t.mfe * tier.lockPct);
         } else {
-          // Lock lockPct of MFE
-          if (t.isLong) {
-            newStop = t.entryPrice + (t.mfe * tier.lockPct);
-          } else {
-            newStop = t.entryPrice - (t.mfe * tier.lockPct);
-          }
+          newStop = t.entryPrice - (t.mfe * tier.lockPct);
         }
 
         newStop = Math.round(newStop * 100) / 100;
@@ -353,10 +368,162 @@ export class LiveTradeManager {
     }
   }
 
+  // ── LLM Management (event-gated) ─────────────────────────
+
+  async _checkLLMManagement(candle) {
+    const t = this.trade;
+    const currentUnrealized = t.isLong
+      ? candle.close - t.entryPrice
+      : t.entryPrice - candle.close;
+
+    let trigger = null;
+
+    // Gate 1: MFE tier transition (20, 40, 60, 100)
+    const mfeTier = t.mfe >= 100 ? 100 : t.mfe >= 60 ? 60 : t.mfe >= 40 ? 40 : t.mfe >= 20 ? 20 : 0;
+    if (mfeTier > 0 && mfeTier > t.lastLLMCheckMFETier) {
+      trigger = `MFE crossed ${mfeTier}pt tier (+${t.mfe.toFixed(0)}pts peak)`;
+      t.lastLLMCheckMFETier = mfeTier;
+    }
+
+    // Gate 2: Significant giveback (unrealized < 50% of MFE, MFE >= 20)
+    if (!trigger && t.mfe >= 20 && currentUnrealized > 0 && currentUnrealized < t.mfe * 0.5 && !t.givebackCheckFired) {
+      trigger = `Giveback: unrealized ${currentUnrealized.toFixed(0)}pts vs MFE ${t.mfe.toFixed(0)}pts (${Math.round(currentUnrealized / t.mfe * 100)}% retained)`;
+      t.givebackCheckFired = true;
+    }
+
+    // Gate 3: Time-based fallback every 15 bars (if no other trigger)
+    if (!trigger && t.barsHeld >= 15 && t.barsHeld - t.lastLLMCheckBar >= 15) {
+      trigger = `Periodic check (bar ${t.barsHeld})`;
+    }
+
+    if (!trigger) return;
+
+    t.lastLLMCheckBar = t.barsHeld;
+    this.llmManagementCalls++;
+
+    // Build compact context for the management prompt
+    const recentCandles = [];
+    const candle1mBuffer = this.featureAggregator?.candle1mBuffer;
+    if (candle1mBuffer) {
+      const recent = candle1mBuffer.getCandles(10);
+      for (const rc of recent) {
+        recentCandles.push({
+          time: new Date(rc.timestamp).toISOString(),
+          open: rc.open, high: rc.high, low: rc.low, close: rc.close,
+          volume: rc.volume,
+        });
+      }
+    }
+
+    // Get nearby structural levels
+    const timestamp = typeof candle.timestamp === 'number'
+      ? candle.timestamp
+      : new Date(candle.timestamp).getTime();
+
+    let nearestResistance = null, nearestSupport = null;
+    if (this.featureAggregator) {
+      const tradingDay = this.featureAggregator._getCurrentTradingDay?.() || null;
+      const structLevels = this.featureAggregator.getStructuralLevels(timestamp, candle.close, tradingDay);
+      if (structLevels) {
+        const above = structLevels.filter(l => l.aboveBelow === 'above').sort((a, b) => a.price - b.price);
+        const below = structLevels.filter(l => l.aboveBelow === 'below').sort((a, b) => b.price - a.price);
+        if (above.length > 0) nearestResistance = { price: above[0].price, label: above[0].label, distance: Math.abs(above[0].price - candle.close) };
+        if (below.length > 0) nearestSupport = { price: below[0].price, label: below[0].label, distance: Math.abs(candle.close - below[0].price) };
+      }
+    }
+
+    // Get GEX regime
+    const gexRegime = this.featureAggregator?.gexCalculator?.getCurrentLevels()?.regime || null;
+
+    const mgmtCtx = {
+      entryPrice: t.entryPrice,
+      isLong: t.isLong,
+      currentStop: t.currentStop || t.initialStop,
+      target: t.initialTarget,
+      mfe: t.mfe,
+      unrealizedPnl: currentUnrealized,
+      barsHeld: t.barsHeld,
+      trigger,
+      recentCandles,
+      nearestResistance,
+      nearestSupport,
+      gexRegime,
+    };
+
+    const mgmtPrompt = this.promptBuilder.buildManagementPrompt(mgmtCtx);
+
+    try {
+      logger.info(`[LLM MGMT] Trigger: ${trigger}`);
+      const decision = await this.llmClient.query(mgmtPrompt.system, mgmtPrompt.user);
+
+      if (decision.action === 'exit') {
+        logger.info(`[LLM MGMT] EXIT: ${decision.reasoning}`);
+        t.stopAdjustments.push({
+          bar: t.barsHeld, from: t.currentStop, to: candle.close,
+          reason: `llm_exit: ${decision.reasoning || 'LLM exit'}`,
+          mfe: t.mfe,
+          timestamp: new Date().toISOString(),
+        });
+        await this._exitPosition(candle, `llm_exit: ${decision.reasoning || 'LLM exit'}`);
+        return;
+      }
+
+      if (decision.action === 'tighten' && decision.new_stop != null) {
+        const proposed = decision.new_stop;
+        // Guardrails: must be tighter AND between entry and current price
+        const beyondPrice = t.isLong ? proposed > candle.close : proposed < candle.close;
+        if (this._isStopTighter(proposed) && !beyondPrice && !isNaN(proposed)) {
+          const reason = `llm_tighten: ${decision.reasoning || 'LLM tighten'}`;
+          logger.info(`[LLM MGMT] TIGHTEN: ${t.currentStop?.toFixed(2) || 'initial'} -> ${proposed.toFixed(2)} (${decision.reasoning})`);
+          await this._modifyStop(Math.round(proposed * 100) / 100, reason, candle);
+        } else {
+          logger.info(`[LLM MGMT] TIGHTEN rejected (${beyondPrice ? 'beyond price' : 'not tighter'}) proposed=${proposed}`);
+        }
+      } else if (decision.action === 'hold') {
+        logger.debug(`[LLM MGMT] HOLD: ${decision.reasoning}`);
+      }
+    } catch (e) {
+      logger.warn(`[LLM MGMT] Error: ${e.message} — continuing with mechanical management`);
+    }
+  }
+
+  // ── Exit Position ───────────────────────────────────────────
+
+  async _exitPosition(candle, reason) {
+    const t = this.trade;
+    if (!t) return;
+
+    logger.info(`[EXIT] Publishing position_closed: ${reason}`);
+
+    const signal = {
+      webhook_type: 'trade_signal',
+      action: 'position_closed',
+      strategy: this.strategyConstant,
+      symbol: t.symbol,
+      side: t.side,
+      reason,
+      metadata: {
+        entryPrice: t.entryPrice,
+        barsHeld: t.barsHeld,
+        mfe: t.mfe,
+        mae: t.mae,
+        stopAdjustments: t.stopAdjustments.length,
+        llmManagementCalls: this.llmManagementCalls,
+      },
+      timestamp: new Date().toISOString(),
+    };
+
+    try {
+      await messageBus.publish(CHANNELS.TRADE_SIGNAL, signal);
+    } catch (error) {
+      logger.error('Failed to publish position_closed:', error);
+    }
+  }
+
   // ── Status ────────────────────────────────────────────────
 
   getStatus() {
-    if (!this.trade) return { active: false };
+    if (!this.trade) return { active: false, llmManagementCalls: this.llmManagementCalls };
 
     const t = this.trade;
     return {
@@ -368,6 +535,8 @@ export class LiveTradeManager {
       mae: t.mae,
       currentStop: t.currentStop,
       stopAdjustments: t.stopAdjustments.length,
+      llmManagementCalls: this.llmManagementCalls,
+      llmEnabled: !!(this.llmClient && this.promptBuilder),
       lastAdjustment: t.stopAdjustments.length > 0
         ? t.stopAdjustments[t.stopAdjustments.length - 1]
         : null,
