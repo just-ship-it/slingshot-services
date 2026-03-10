@@ -152,6 +152,7 @@ app.get('/ai/status', (req, res) => {
         constant: engine.strategyConstant,
         enabled: engine.enabled,
         dryRun: engine.dryRun,
+        observationMode: engine.observationMode,
         model: engine.llm.model,
       },
       data_readiness: {
@@ -198,6 +199,13 @@ app.get('/ai/status', (req, res) => {
           const remaining = Math.ceil((engine.stopCooldownMs - (now - engine.lastStopTimestamp)) / 60000);
           blockers.push(`Post-stop cooldown (${remaining}m remaining)`);
         }
+        if (engine.lastManagedExitTimestamp > 0 && now - engine.lastManagedExitTimestamp < engine.managedExitCooldownMs) {
+          const remaining = Math.ceil((engine.managedExitCooldownMs - (now - engine.lastManagedExitTimestamp)) / 60000);
+          blockers.push(`Post-managed-exit cooldown (${remaining}m remaining)`);
+        }
+        if (engine.observationMode) {
+          blockers.push('Observation mode (signals blocked)');
+        }
         return { window, in_trading_window: inWindow, blockers };
       })(),
       cost: engine.llm.getCostSummary(),
@@ -241,6 +249,30 @@ app.post('/ai/reassess-bias', async (req, res) => {
     res.json(result);
   } catch (error) {
     logger.error('AI reassess bias error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.post('/ai/observation-mode', (req, res) => {
+  try {
+    if (!service.aiEngine) {
+      return res.status(404).json({ error: 'AI Strategy Engine not available' });
+    }
+    const { enabled } = req.body;
+    if (typeof enabled !== 'boolean') {
+      return res.status(400).json({ error: 'Missing required field: enabled (boolean)' });
+    }
+    service.aiEngine.observationMode = enabled;
+    logger.info(`AI Trader observation mode ${enabled ? 'ENABLED' : 'DISABLED'}`);
+    res.json({
+      success: true,
+      observationMode: enabled,
+      message: enabled
+        ? 'AI Trader in observation-only mode — will NOT publish trade signals'
+        : 'AI Trader in normal mode — will publish trade signals',
+    });
+  } catch (error) {
+    logger.error('AI observation mode error:', error);
     res.status(500).json({ error: error.message });
   }
 });

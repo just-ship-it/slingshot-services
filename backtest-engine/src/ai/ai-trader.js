@@ -20,7 +20,7 @@ export class AITrader {
       maxEntriesPerDay: config.maxEntriesPerDay || 4,
       maxEntriesPerSession: config.maxEntriesPerSession || 2,
       maxLossesPerDay: config.maxLossesPerDay || 2,
-      reassessmentIntervalMs: config.reassessmentIntervalMs || 30 * 60 * 1000, // 30 min
+      reassessmentIntervalMs: config.reassessmentIntervalMs || 60 * 60 * 1000, // 60 min
       rthOnly: config.rthOnly !== false,
       dryRun: config.dryRun || false,
       verbose: config.verbose || false,
@@ -121,7 +121,7 @@ export class AITrader {
     }
 
     // ── Phase 2: Entry Detection with Rolling Reassessment ──
-    console.log('\n  Phase 2: Scanning for entries (with 30-min bias reassessment)...');
+    console.log('\n  Phase 2: Scanning for entries (with 60-min bias reassessment)...');
 
     const rthOpen = getRTHOpenTime(tradingDay);
     const rthClose = getRTHCloseTime(tradingDay);
@@ -150,8 +150,12 @@ export class AITrader {
     let biasReversals = 0;
     let skippedNotNear = 0;
     let lastStopTimestamp = 0;
+    let lastManagedExitTimestamp = 0;
     const STOP_COOLDOWN_MS = 30 * 60 * 1000;
+    const MANAGED_EXIT_COOLDOWN_MS = 15 * 60 * 1000;
     let cooldownLoggedForStop = 0; // track which stop we've already logged cooldown for
+    let cooldownLoggedForManaged = 0;
+    let pendingBiasFlip = null; // for bias stickiness: track proposed direction change
     const biasHistory = [{ time: formatET(rthOpen), bias: bias.bias, conviction: bias.conviction, source: 'pre-market' }];
 
     dayResult.biasHistory = biasHistory;
@@ -202,11 +206,45 @@ export class AITrader {
         continue;
       }
 
-      // Rolling reassessment every 30 minutes during active trading windows
+      // Post-managed-exit cooldown: skip entry eval for 15 min after a managed exit (breakeven/trail)
+      if (lastManagedExitTimestamp > 0 && candle.timestamp - lastManagedExitTimestamp < MANAGED_EXIT_COOLDOWN_MS) {
+        if (this.config.verbose && cooldownLoggedForManaged !== lastManagedExitTimestamp) {
+          const remainingMin = Math.ceil((MANAGED_EXIT_COOLDOWN_MS - (candle.timestamp - lastManagedExitTimestamp)) / 60000);
+          console.log(`  Managed exit cooldown active (${remainingMin} min remaining)`);
+          cooldownLoggedForManaged = lastManagedExitTimestamp;
+        }
+        continue;
+      }
+
+      // Rolling reassessment during active trading windows
       if (candle.timestamp - lastReassessmentTime >= this.config.reassessmentIntervalMs) {
         const previousBias = activeBias.bias;
-        activeBias = await this._reassessBias(tradingDay, candle.timestamp, lastReassessmentTime, activeBias, dayResult.entries, dayResult.outcomes);
+        const rawNewBias = await this._reassessBias(tradingDay, candle.timestamp, lastReassessmentTime, activeBias, dayResult.entries, dayResult.outcomes);
         reassessmentCalls++;
+
+        // Bias stickiness: require 2 consecutive reassessments proposing the same
+        // new direction before actually flipping. Prevents whiplash from single-window noise.
+        if (rawNewBias.bias !== previousBias) {
+          if (pendingBiasFlip && pendingBiasFlip.direction === rawNewBias.bias) {
+            // Second consecutive reassessment agrees — commit the flip
+            activeBias = rawNewBias;
+            biasReversals++;
+            pendingBiasFlip = null;
+            console.log(`  Bias flip confirmed (2nd consecutive ${rawNewBias.bias} reassessment): ${previousBias} → ${rawNewBias.bias}`);
+          } else {
+            // First reassessment proposing a change — hold current bias, record pending
+            pendingBiasFlip = { direction: rawNewBias.bias, time: candle.timestamp };
+            // Apply conviction change but keep direction
+            activeBias = { ...activeBias, conviction: Math.min(activeBias.conviction, rawNewBias.conviction), reasoning: rawNewBias.reasoning };
+            if (this.config.verbose) {
+              console.log(`  Bias flip pending: ${previousBias} → ${rawNewBias.bias} (need 2nd consecutive confirmation, conviction reduced to ${activeBias.conviction})`);
+            }
+          }
+        } else {
+          // Same direction — clear any pending flip, update conviction/reasoning
+          pendingBiasFlip = null;
+          activeBias = rawNewBias;
+        }
 
         biasHistory.push({
           time: formatET(candle.timestamp),
@@ -214,10 +252,6 @@ export class AITrader {
           conviction: activeBias.conviction,
           source: 'reassessment',
         });
-
-        if (activeBias.bias !== previousBias) {
-          biasReversals++;
-        }
 
         lastReassessmentTime = candle.timestamp;
       }
@@ -337,6 +371,8 @@ export class AITrader {
         if (outcome.pnl < 0) {
           totalLosses++;
           lastStopTimestamp = candle.timestamp;
+        } else if (outcome.outcome === 'managed_exit' || (outcome.outcome === 'timeout' && outcome.pnl >= 0)) {
+          lastManagedExitTimestamp = candle.timestamp;
         }
       } else {
         if (this.config.verbose) {
@@ -387,12 +423,12 @@ export class AITrader {
     const changed = newBias.bias !== currentBias.bias;
     const convChanged = newBias.conviction !== currentBias.conviction;
     if (changed || convChanged) {
-      console.log(`  30-min reassessment at ${formatET(currentTimestamp)}: ${currentBias.bias}(${currentBias.conviction}) → ${newBias.bias}(${newBias.conviction})`);
+      console.log(`  Reassessment at ${formatET(currentTimestamp)}: ${currentBias.bias}(${currentBias.conviction}) → ${newBias.bias}(${newBias.conviction})`);
       if (this.config.verbose) {
         console.log(`    Reason: ${newBias.reasoning}`);
       }
     } else if (this.config.verbose) {
-      console.log(`  30-min reassessment at ${formatET(currentTimestamp)}: bias unchanged — ${newBias.bias}(${newBias.conviction})`);
+      console.log(`  Reassessment at ${formatET(currentTimestamp)}: bias unchanged — ${newBias.bias}(${newBias.conviction})`);
     }
 
     return newBias;

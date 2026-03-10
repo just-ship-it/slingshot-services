@@ -2253,6 +2253,27 @@ app.post('/api/strategy/ai-trader/reassess-bias', dashboardAuth, async (req, res
   }
 });
 
+// AI Trader observation mode toggle - proxied from siggen-nq-aitrader
+app.post('/api/strategy/ai-trader/observation-mode', dashboardAuth, async (req, res) => {
+  try {
+    const response = await axios.post(`${SIGNAL_GENERATOR_AI_URL}/ai/observation-mode`, req.body, {
+      timeout: 5000
+    });
+    res.json(response.data);
+  } catch (error) {
+    if (error.code === 'ECONNREFUSED') {
+      res.json({
+        success: false,
+        error: 'siggen-nq-aitrader not running',
+        message: 'Start AI trader: pm2 start ecosystem.config.cjs --only siggen-nq-aitrader'
+      });
+    } else {
+      logger.error('Failed to toggle AI trader observation mode:', error.message);
+      res.status(500).json({ error: 'Failed to toggle observation mode', details: error.message });
+    }
+  }
+});
+
 // List all strategies from signal-generator (multi-strategy engine)
 app.get('/api/strategies', dashboardAuth, async (req, res) => {
   try {

@@ -1140,16 +1140,16 @@ export class FeatureAggregator {
       // Locks in a scaling percentage of peak profit. This is the PRIMARY
       // protection against giving back large gains.
       //   MFE  < 20:   no trail (let the trade breathe)
-      //   MFE 20-39:   lock in breakeven
-      //   MFE 40-59:   lock in 33% of MFE
-      //   MFE 60-99:   lock in 40% of MFE
-      //   MFE 100+:    lock in 50% of MFE
+      //   MFE 20-39:   lock in 25% of MFE
+      //   MFE 40-59:   lock in 40% of MFE
+      //   MFE 60-99:   lock in 50% of MFE
+      //   MFE 100+:    lock in 60% of MFE
       if (maxFavorableExcursion >= 20 && maxFavorableExcursion > lastRatchetMFE) {
-        let lockInPct = 0;
-        if (maxFavorableExcursion >= 100) lockInPct = 0.50;
-        else if (maxFavorableExcursion >= 60) lockInPct = 0.40;
-        else if (maxFavorableExcursion >= 40) lockInPct = 0.33;
-        // 20-39: lockInPct stays 0 → breakeven
+        let lockInPct = 0.25;
+        if (maxFavorableExcursion >= 100) lockInPct = 0.60;
+        else if (maxFavorableExcursion >= 60) lockInPct = 0.50;
+        else if (maxFavorableExcursion >= 40) lockInPct = 0.40;
+        // 20-39: lockInPct stays 0.25
 
         const lockedProfit = maxFavorableExcursion * lockInPct;
         const ratchetStop = isLong
@@ -1160,9 +1160,7 @@ export class FeatureAggregator {
           const prevStop = currentStop;
           currentStop = Math.round(ratchetStop * 100) / 100;
           lastRatchetMFE = maxFavorableExcursion;
-          const reason = lockInPct === 0
-            ? 'mfe_ratchet (breakeven)'
-            : `mfe_ratchet (lock ${Math.round(lockInPct * 100)}% of ${maxFavorableExcursion.toFixed(0)}pt MFE = +${lockedProfit.toFixed(1)}pts)`;
+          const reason = `mfe_ratchet (lock ${Math.round(lockInPct * 100)}% of ${maxFavorableExcursion.toFixed(0)}pt MFE = +${lockedProfit.toFixed(1)}pts)`;
           stopAdjustments.push({
             bar: barsHeld,
             from: Math.round(prevStop * 100) / 100,

@@ -55,8 +55,9 @@ export class AIStrategyEngine {
     this.maxEntriesPerDay = parseInt(process.env.AI_TRADER_MAX_ENTRIES || '4', 10);
     this.maxEntriesPerSession = parseInt(process.env.AI_TRADER_MAX_SESSION_ENTRIES || '2', 10);
     this.maxLossesPerDay = parseInt(process.env.AI_TRADER_MAX_LOSSES || '2', 10);
-    this.reassessmentIntervalMs = 30 * 60 * 1000; // 30 minutes
+    this.reassessmentIntervalMs = 60 * 60 * 1000; // 60 minutes
     this.stopCooldownMs = 30 * 60 * 1000; // 30 minutes after a stop loss
+    this.managedExitCooldownMs = 15 * 60 * 1000; // 15 minutes after managed exit
     this.strategyConstant = 'AI_TRADER';
 
     // ── Day State (resets each trading day) ─────────────────
@@ -80,6 +81,7 @@ export class AIStrategyEngine {
     this.history1hReady = false;
     this.gexReady = false;
     this.enabled = true;
+    this.observationMode = false; // When true, runs full cycle but blocks signal publishing
 
     // ── Reconciliation ──────────────────────────────────────
     this.reconciliationConfirmed = false;
@@ -104,6 +106,8 @@ export class AIStrategyEngine {
     this.currentWindow = null;
     this.lastReassessmentTime = 0;
     this.lastStopTimestamp = 0;
+    this.lastManagedExitTimestamp = 0;
+    this.pendingBiasFlip = null;
     this.llmCallsToday = 0;
     this.entriesMade = [];
     this.outcomesReceived = [];
@@ -223,10 +227,15 @@ export class AIStrategyEngine {
         side: this.currentPosition.side,
         entryPrice: this.currentPosition.entryPrice,
       });
-      if ((pnl || computedPnl) < 0) {
+      const finalPnl = pnl || computedPnl;
+      if (finalPnl < 0) {
         this.totalLossesToday++;
         this.lastStopTimestamp = Date.now();
         logger.info(`Stop loss hit — ${this.stopCooldownMs / 60000} min cooldown active (losses today: ${this.totalLossesToday})`);
+      } else {
+        // Managed exit or breakeven — apply shorter cooldown
+        this.lastManagedExitTimestamp = Date.now();
+        logger.info(`Managed exit — ${this.managedExitCooldownMs / 60000} min cooldown active`);
       }
     }
 
@@ -508,6 +517,11 @@ export class AIStrategyEngine {
       return;
     }
 
+    // ── Post-managed-exit cooldown ────────────────────────────
+    if (this.lastManagedExitTimestamp > 0 && now - this.lastManagedExitTimestamp < this.managedExitCooldownMs) {
+      return;
+    }
+
     // ── Session transition tracking ─────────────────────────
     const windowName = getTradingWindowName(candleTs);
     if (windowName !== this.currentWindow) {
@@ -559,7 +573,7 @@ export class AIStrategyEngine {
     this.recent5mCandles.push(completed5mCandle);
     if (this.recent5mCandles.length > 20) this.recent5mCandles.shift();
 
-    // ── 30-min Reassessment ─────────────────────────────────
+    // ── 60-min Reassessment ─────────────────────────────────
     if (this.lastReassessmentTime > 0 && candleTs - this.lastReassessmentTime >= this.reassessmentIntervalMs) {
       await this._reassessBias(tradingDay, candleTs);
     }
@@ -685,17 +699,33 @@ export class AIStrategyEngine {
     this.lastReassessmentTime = currentTimestamp;
 
     const changed = newBias.bias !== previousBias;
+
+    // Bias stickiness: require 2 consecutive reassessments proposing the same
+    // new direction before actually flipping. Prevents whiplash from single-window noise.
     if (changed) {
-      logger.info(`30-min reassessment: ${previousBias}(${this.activeBias?.conviction}) -> ${newBias.bias}(${newBias.conviction})`);
+      if (this.pendingBiasFlip && this.pendingBiasFlip.direction === newBias.bias) {
+        // Second consecutive reassessment agrees — commit the flip
+        this.activeBias = newBias;
+        this.pendingBiasFlip = null;
+        logger.info(`Bias flip confirmed (2nd consecutive ${newBias.bias}): ${previousBias}(${this.activeBias?.conviction}) -> ${newBias.bias}(${newBias.conviction})`);
+      } else {
+        // First reassessment proposing a change — hold current bias, record pending
+        this.pendingBiasFlip = { direction: newBias.bias, time: currentTimestamp };
+        // Reduce conviction but keep direction
+        this.activeBias = { ...this.activeBias, conviction: Math.min(this.activeBias.conviction, newBias.conviction), reasoning: newBias.reasoning };
+        logger.info(`Bias flip pending: ${previousBias} -> ${newBias.bias} (need 2nd consecutive confirmation, conviction reduced to ${this.activeBias.conviction})`);
+      }
     } else {
-      logger.debug(`30-min reassessment: bias unchanged — ${newBias.bias}(${newBias.conviction})`);
+      // Same direction — clear any pending flip, update conviction/reasoning
+      this.pendingBiasFlip = null;
+      this.activeBias = newBias;
+      logger.debug(`Reassessment: bias unchanged — ${newBias.bias}(${newBias.conviction})`);
     }
 
-    this.activeBias = newBias;
     this.biasHistory.push({
       time: formatET(currentTimestamp),
-      bias: newBias.bias,
-      conviction: newBias.conviction,
+      bias: this.activeBias.bias,
+      conviction: this.activeBias.conviction,
       source: 'reassessment',
     });
   }
@@ -855,9 +885,10 @@ export class AIStrategyEngine {
   // ── Signal Publishing ─────────────────────────────────────
 
   async _publishSignal(signal) {
-    if (this.dryRun) {
-      logger.info(`[DRY RUN] Would publish: ${signal.action} ${signal.side || ''} ${signal.symbol} @ ${signal.price || ''}`);
-      logger.info(`[DRY RUN] Signal: ${JSON.stringify(signal, null, 2)}`);
+    if (this.dryRun || this.observationMode) {
+      const prefix = this.observationMode ? '[OBSERVATION]' : '[DRY RUN]';
+      logger.info(`${prefix} Would publish: ${signal.action} ${signal.side || ''} ${signal.symbol} @ ${signal.price || ''}`);
+      logger.info(`${prefix} Signal: ${JSON.stringify(signal, null, 2)}`);
       return;
     }
 
@@ -913,6 +944,7 @@ export class AIStrategyEngine {
           constant: this.strategyConstant,
           enabled: this.enabled,
           dryRun: this.dryRun,
+          observationMode: this.observationMode,
           model: this.llm.model,
         },
         data_readiness: {
@@ -965,6 +997,10 @@ export class AIStrategyEngine {
           if (this.lastStopTimestamp > 0 && ts - this.lastStopTimestamp < this.stopCooldownMs) {
             const remaining = Math.ceil((this.stopCooldownMs - (ts - this.lastStopTimestamp)) / 60000);
             blockers.push(`Post-stop cooldown (${remaining}m remaining)`);
+          }
+          if (this.lastManagedExitTimestamp > 0 && ts - this.lastManagedExitTimestamp < this.managedExitCooldownMs) {
+            const remaining = Math.ceil((this.managedExitCooldownMs - (ts - this.lastManagedExitTimestamp)) / 60000);
+            blockers.push(`Post-managed-exit cooldown (${remaining}m remaining)`);
           }
           return { window, in_trading_window: inWindow, blockers };
         })(),

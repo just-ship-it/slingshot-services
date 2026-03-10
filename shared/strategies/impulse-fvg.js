@@ -69,7 +69,7 @@ export class ImpulseFVGStrategy extends BaseStrategy {
 
       // Trailing stop (sweep-optimized: tight trail is critical)
       useTrailingStop: true,
-      trailingTrigger: 6,          // Activate trailing when 6 pts in profit
+      trailingTrigger: 8,          // Activate trailing when 8 pts in profit
       trailingOffset: 3,           // Trail 3 pts behind high water mark
 
       // Max hold

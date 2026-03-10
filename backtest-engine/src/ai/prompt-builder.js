@@ -301,9 +301,19 @@ LT levels (labeled LT-34, LT-55, LT-144, LT-377, LT-610) are NOT support/resista
 
 ## Entry Quality — Extended Price Filters
 - Check the Session Context data: if price is already extended (>70% of average daily range from open), be VERY selective
-- If price has moved >100 pts in the last 15 minutes, do NOT chase — wait for a pullback or PASS
 - If today's range already exceeds 1.5x the average daily range, only take trades with 3:1+ R:R and 4+ confidence
 - The best entries come AFTER a pullback to a structural level, not during a momentum thrust
+
+## Anti-Chase Rule — CRITICAL
+- If price has moved >20 points in your intended trade direction in the last 15 minutes, you are LATE — the move already happened. Wait for a pullback to structure, or PASS
+- Example: if you want to short and price dropped 25pts in the last 15 min, that selloff IS the opportunity you missed. Do NOT pile on at the bottom of the move — wait for price to bounce back to a resistance level, THEN short
+- Example: if you want to go long and price rallied 30pts in the last 15 min, do NOT chase the rip — wait for a pullback to a support level, THEN buy
+- Momentum is NOT a reason to enter — it is a reason to WAIT. The "Last 15 min" data in Session Context tells you the recent move. If that move is >20pts in your direction, you MUST either pass or wait for a pullback
+
+## Range Position Check — Entry Direction Filter
+- For SHORTS: price must be in the UPPER 40% of the last 30-minute range (check "Position in range" in Session Context). Entering a short at the bottom of the recent range means you are selling into support — this is a losing trade
+- For LONGS: price must be in the LOWER 40% of the last 30-minute range. Entering a long at the top of the recent range means you are buying into resistance
+- If price is in the middle 20% (40-60% of range), only enter with high confidence (4+) and strong structural confluence
 
 ## Short Entry Quality — Additional Requirements
 - Counter-trend shorts (selling into a recovery/uptrend) MUST have confluence with a fib retracement level on the 1h swing structure
@@ -311,8 +321,13 @@ LT levels (labeled LT-34, LT-55, LT-144, LT-377, LT-610) are NOT support/resista
 - The best short entries come at or above the 70.5% retracement of the prior swing, or at a clear HTF fib level with additional GEX/LT confluence
 - If no HTF swing data is available, require at least 2 independent resistance confluences (e.g., GEX resistance + prior day high) before shorting
 
-## Index Character — Structural Bullish Bias
-${this.ticker} is a structurally bullish equity index. Historically, buying dips into support produces better results than shorting rips into resistance. When in doubt between a long and short setup of similar quality, prefer the long. When price is in an uptrend and pulling back to support, this is a HIGH-PROBABILITY long setup.
+## Index Character — Structural Bullish Bias (IMPORTANT)
+${this.ticker} is a structurally bullish equity index. Historically, buying dips into support produces better results than shorting rips into resistance. This is not a suggestion — it is a statistical fact backed by decades of data. Your DEFAULT lean should always be toward buying dips unless the evidence is overwhelmingly bearish.
+
+**Direction selection rules:**
+- In **positive/neutral GEX regime**: You MUST consider long setups FIRST. If price is pulling back to GEX support in positive gamma, this is the highest-probability setup available. Do NOT default to shorts — actively look for buying opportunities at support
+- In **negative GEX regime**: Trade WITH momentum regardless of direction, but recognize that mean-reversion longs (buying dips) still have better expected value than mean-reversion shorts (selling rips) over time
+- If you have taken 2+ shorts in a row without taking a long, ask yourself: "Am I ignoring valid long setups?" — force yourself to evaluate each setup as if it were a long first
 
 ## General Rules
 - Prefer entries AT levels, not past them
@@ -321,7 +336,7 @@ ${this.ticker} is a structurally bullish equity index. Historically, buying dips
   - Conviction 3 bias: moderate flexibility — bias direction preferred but not required
   - Conviction 1-2 bias: bias is weak — let price action and level reactions guide you
   - If setup is clearly counter-bias but has strong level support and good R:R, you may take it
-- Actively look for BOTH long and short setups — do not default to one direction
+- Actively look for BOTH long and short setups — do not default to one direction. If you find yourself only seeing shorts, you are anchored on bearish bias — step back and look at the chart from a long perspective
 - Consider current price action and volume
 - If in doubt, pass — there will be more opportunities
 
@@ -508,7 +523,7 @@ Respond ONLY with the JSON object. No markdown, no explanation outside JSON.`;
   // ── Reassessment prompts ─────────────────────────────────
 
   _reassessmentSystemPrompt() {
-    return `You are reassessing your directional bias for ${this.ticker} based on the last 30 minutes of price action and objective liquidity data. Be willing to change your mind when the evidence warrants it.
+    return `You are reassessing your directional bias for ${this.ticker} based on the last 60 minutes of price action and objective liquidity data. Be willing to change your mind when the evidence warrants it, but do not overreact to normal volatility — a 30-point move on NQ is routine noise, not a trend change.
 
 LT migration measures whether liquidity levels are strengthening or weakening relative to price direction:
 - IMPROVING means support levels are strengthening below price, resistance is retreating, or price is breaking upward through levels (bullish crossings)
@@ -541,7 +556,7 @@ Respond ONLY with the JSON object. No markdown, no explanation outside JSON.`;
   _reassessmentUserPrompt(windowSummary, currentBias, recentTrades) {
     const sections = [];
 
-    sections.push(`# 30-Minute Bias Reassessment — ${windowSummary.fromTime} to ${windowSummary.toTime}`);
+    sections.push(`# Bias Reassessment — ${windowSummary.fromTime} to ${windowSummary.toTime}`);
 
     // Current bias recap
     sections.push(`\n## Current Bias`);
@@ -551,7 +566,7 @@ Respond ONLY with the JSON object. No markdown, no explanation outside JSON.`;
     // Window price action
     if (windowSummary.ohlcv) {
       const o = windowSummary.ohlcv;
-      sections.push(`\n## 30-Min Price Action`);
+      sections.push(`\n## Recent Price Action`);
       sections.push(`- Open: ${o.open.toFixed(2)} → Close: ${o.close.toFixed(2)} (${o.direction}, ${o.changePts > 0 ? '+' : ''}${o.changePts.toFixed(2)} pts)`);
       sections.push(`- High: ${o.high.toFixed(2)}, Low: ${o.low.toFixed(2)}, Range: ${o.range.toFixed(2)} pts`);
       sections.push(`- Volume: ${o.totalVolume} total, ${o.avgVolumePerCandle} avg/candle`);
