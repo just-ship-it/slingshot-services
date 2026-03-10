@@ -269,7 +269,9 @@ Respond ONLY with the JSON object. No markdown, no explanation outside JSON.`;
 - **Minimum 20 points risk** — anything tighter is noise on NQ. If you can't find structure that gives at least 20pts of risk, widen to the next structural level
 - **Maximum safety cap: 50 points risk** (hard limit)
 - For shorts: your stop MUST be above the high of the last 15-20 minutes of candle data (the recent swing high). An 11pt stop when the session high was 60pts above you 20 minutes ago is not structural — it's arbitrary
+- **For shorts within 50pts of session high:** stop MUST be above the session high (or sweep high if HOD was swept) + 8pt buffer. If this makes risk too large, PASS — do NOT use a tighter stop that sits below the HOD.
 - For longs: your stop MUST be below the low of the last 15-20 minutes of candle data (the recent swing low)
+- **For longs within 50pts of session low:** stop MUST be below the session low (or sweep low) - 8pt buffer.
 - Identify which level your stop is placed behind in stop_level_reference
 
 ## Target Placement (Structure-Based)
@@ -314,6 +316,16 @@ LT levels (labeled LT-34, LT-55, LT-144, LT-377, LT-610) are NOT support/resista
 - For SHORTS: price must be in the UPPER 40% of the last 30-minute range (check "Position in range" in Session Context). Entering a short at the bottom of the recent range means you are selling into support — this is a losing trade
 - For LONGS: price must be in the LOWER 40% of the last 30-minute range. Entering a long at the top of the recent range means you are buying into resistance
 - If price is in the middle 20% (40-60% of range), only enter with high confidence (4+) and strong structural confluence
+
+## Liquidity Sweep Awareness — CRITICAL
+Session highs and lows are liquidity pools — stops cluster just beyond them. Market makers sweep these stops before reversing. Rules:
+
+- **NEVER short below an UNSWEPT session high.** Buy stops above the HOD will fuel a push higher that takes out your stop. If the HOD has not been swept, do NOT fade it — either wait for the sweep or trade in the breakout direction.
+- **NEVER long above an UNSWEPT session low.** Same logic in reverse — sell stops below LOD get hunted.
+- **SWEPT means:** a candle wicked beyond the prior extreme (at least 3pts past) AND closed back on the original side. A long upper wick past the HOD with a close back below = HOD swept. Check the Sweep Context section in the data.
+- **After a confirmed sweep:** the extreme has been tested and rejected — NOW you can fade it. Enter on the retrace with your stop 8-12pts BEYOND the NEW extreme created by the sweep wick.
+- **If Sweep Context shows "NOT SWEPT" for the level you want to fade:** PASS. No exceptions.
+- Same logic applies to Overnight High/Low and Prior Day High/Low sweeps.
 
 ## Short Entry Quality — Additional Requirements
 - Counter-trend shorts (selling into a recovery/uptrend) MUST have confluence with a fib retracement level on the 1h swing structure
@@ -462,6 +474,34 @@ Respond ONLY with the JSON object. No markdown, no explanation outside JSON.`;
     // LS sentiment
     if (realTimeState.ls) {
       sections.push(`\n## Liquidity Status: **${realTimeState.ls.sentiment}**`);
+    }
+
+    // Sweep context
+    if (realTimeState.sweepContext) {
+      const sw = realTimeState.sweepContext;
+      sections.push(`\n## Sweep Context (Liquidity Sweep Status)`);
+
+      if (sw.hod) {
+        const status = sw.hod.swept
+          ? `SWEPT (wick to ${sw.hod.sweepHigh.toFixed(2)}, ${sw.hod.sweepWickPts.toFixed(1)}pts past, closed at ${sw.hod.sweepClose.toFixed(2)})`
+          : 'NOT SWEPT';
+        sections.push(`- Session HOD (${sw.hod.price.toFixed(2)}): ${status}`);
+        if (sw.hod.rejectionCandle) sections.push(`  HOD candle rejection wick: ${sw.hod.upperWickPts.toFixed(1)}pts`);
+      }
+      if (sw.lod) {
+        const status = sw.lod.swept
+          ? `SWEPT (wick to ${sw.lod.sweepLow.toFixed(2)}, ${sw.lod.sweepWickPts.toFixed(1)}pts past, closed at ${sw.lod.sweepClose.toFixed(2)})`
+          : 'NOT SWEPT';
+        sections.push(`- Session LOD (${sw.lod.price.toFixed(2)}): ${status}`);
+        if (sw.lod.rejectionCandle) sections.push(`  LOD candle rejection wick: ${sw.lod.lowerWickPts.toFixed(1)}pts`);
+      }
+      const refLevels = [
+        ['ON High', sw.onHigh], ['ON Low', sw.onLow],
+        ['PD High', sw.pdHigh], ['PD Low', sw.pdLow],
+      ];
+      for (const [label, ref] of refLevels) {
+        if (ref) sections.push(`- ${label} (${ref.price.toFixed(2)}): ${ref.swept ? 'SWEPT' : 'NOT SWEPT'}`);
+      }
     }
 
     // Structural Levels Map

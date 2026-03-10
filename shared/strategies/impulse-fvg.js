@@ -392,6 +392,12 @@ export class ImpulseFVGStrategy extends BaseStrategy {
       maxHoldBars: this.params.maxHoldBars,
       timeoutCandles: useLimitEntry ? this.params.limitTimeoutBars : 0,
 
+      // Flag that stop_loss is at a structural level (impulse extreme) and must be
+      // corrected to an absolute price after market order fill, not left as a relative
+      // distance from fill price. The tradovate-service will modify the bracket stop
+      // post-fill to honor this exact level.
+      structural_stop: true,
+
       metadata: {
         setup: 'no_fvg_fade',
         entry_mode: useLimitEntry ? 'limit' : 'market',

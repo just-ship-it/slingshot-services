@@ -824,6 +824,40 @@ export class AIStrategyEngine {
       logger.warn(`WARNING: R:R ${rrRatio.toFixed(2)} below 2.0 target (accepted)`);
     }
 
+    // ── Sweep-aware stop validation ──────────────────────────
+    const sessionCtx = realTimeState.sessionContext;
+    const sweepCtx = realTimeState.sweepContext;
+
+    if (sessionCtx && decision.side === 'sell') {
+      const distFromHOD = Math.abs(decision.entry_price - sessionCtx.rthHigh);
+
+      if (distFromHOD <= 50 && decision.stop_loss < sessionCtx.rthHigh) {
+        const neededStop = (sweepCtx?.hod?.sweepHigh || sessionCtx.rthHigh) + 8;
+        logger.warn(`REJECTED: SHORT stop (${decision.stop_loss.toFixed(2)}) below session high (${sessionCtx.rthHigh.toFixed(2)}) — will be swept on retest. Need stop above ${neededStop.toFixed(2)}`);
+        return;
+      }
+
+      if (distFromHOD <= 30 && sweepCtx?.hod && !sweepCtx.hod.swept) {
+        logger.warn(`REJECTED: SHORT within ${distFromHOD.toFixed(0)}pts of UNSWEPT HOD (${sessionCtx.rthHigh.toFixed(2)}) — wait for sweep`);
+        return;
+      }
+    }
+
+    if (sessionCtx && decision.side === 'buy') {
+      const distFromLOD = Math.abs(decision.entry_price - sessionCtx.rthLow);
+
+      if (distFromLOD <= 50 && decision.stop_loss > sessionCtx.rthLow) {
+        const neededStop = (sweepCtx?.lod?.sweepLow || sessionCtx.rthLow) - 8;
+        logger.warn(`REJECTED: LONG stop (${decision.stop_loss.toFixed(2)}) above session low (${sessionCtx.rthLow.toFixed(2)}) — will be swept on retest. Need stop below ${neededStop.toFixed(2)}`);
+        return;
+      }
+
+      if (distFromLOD <= 30 && sweepCtx?.lod && !sweepCtx.lod.swept) {
+        logger.warn(`REJECTED: LONG within ${distFromLOD.toFixed(0)}pts of UNSWEPT LOD (${sessionCtx.rthLow.toFixed(2)}) — wait for sweep`);
+        return;
+      }
+    }
+
     // ── Entry accepted ──────────────────────────────────────
     this.totalEntriesToday++;
     this.sessionEntries++;

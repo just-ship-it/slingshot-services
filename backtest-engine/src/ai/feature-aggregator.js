@@ -486,6 +486,107 @@ export class FeatureAggregator {
     };
   }
 
+  // ── Sweep Detection ──────────────────────────────────────
+
+  /**
+   * Detect liquidity sweep patterns at session extremes and reference levels.
+   * A "sweep" is when price wicks >3pts beyond a prior extreme then closes back inside.
+   */
+  _computeSweepContext(tradingDay, currentTimestamp, currentPrice) {
+    const rthOpen = getRTHOpenTime(tradingDay);
+    if (currentTimestamp < rthOpen) return null;
+    const rthCandles = this._getCandlesInRange(rthOpen, currentTimestamp);
+    if (rthCandles.length < 5) return null;
+
+    const result = {};
+    const rthHigh = Math.max(...rthCandles.map(c => c.high));
+    const rthLow = Math.min(...rthCandles.map(c => c.low));
+
+    // HOD analysis
+    const hodCandle = rthCandles.find(c => c.high === rthHigh);
+    if (hodCandle) {
+      const upperWick = hodCandle.high - Math.max(hodCandle.open, hodCandle.close);
+      const range = hodCandle.high - hodCandle.low;
+      result.hod = {
+        price: rthHigh,
+        rejectionCandle: upperWick >= 10 || (range > 0 && upperWick / range >= 0.4),
+        upperWickPts: upperWick,
+        swept: false, sweepHigh: null, sweepClose: null, sweepWickPts: null,
+      };
+      this._detectHighSweep(rthCandles, result.hod);
+    }
+
+    // LOD analysis
+    const lodCandle = rthCandles.find(c => c.low === rthLow);
+    if (lodCandle) {
+      const lowerWick = Math.min(lodCandle.open, lodCandle.close) - lodCandle.low;
+      const range = lodCandle.high - lodCandle.low;
+      result.lod = {
+        price: rthLow,
+        rejectionCandle: lowerWick >= 10 || (range > 0 && lowerWick / range >= 0.4),
+        lowerWickPts: lowerWick,
+        swept: false, sweepLow: null, sweepClose: null, sweepWickPts: null,
+      };
+      this._detectLowSweep(rthCandles, result.lod);
+    }
+
+    // Reference level sweep checks (overnight, prior day)
+    const overnight = this._getOvernightRange(tradingDay);
+    if (overnight) {
+      result.onHigh = this._checkLevelSwept(rthCandles, overnight.high, 'high');
+      result.onLow = this._checkLevelSwept(rthCandles, overnight.low, 'low');
+    }
+    const pdHLC = this._getPriorDayHLC(tradingDay);
+    if (pdHLC) {
+      result.pdHigh = this._checkLevelSwept(rthCandles, pdHLC.high, 'high');
+      result.pdLow = this._checkLevelSwept(rthCandles, pdHLC.low, 'low');
+    }
+
+    return result;
+  }
+
+  /** Running-high approach: detect if any candle wicked >3pts above the prior running high and closed back below. */
+  _detectHighSweep(rthCandles, hodObj) {
+    let runningHigh = -Infinity;
+    for (let i = 0; i < rthCandles.length; i++) {
+      const c = rthCandles[i];
+      if (i > 0 && c.high > runningHigh + 3 && c.close < runningHigh) {
+        hodObj.swept = true;
+        hodObj.sweepHigh = c.high;
+        hodObj.sweepClose = c.close;
+        hodObj.sweepWickPts = c.high - runningHigh;
+      }
+      if (c.high > runningHigh) runningHigh = c.high;
+    }
+  }
+
+  _detectLowSweep(rthCandles, lodObj) {
+    let runningLow = Infinity;
+    for (let i = 0; i < rthCandles.length; i++) {
+      const c = rthCandles[i];
+      if (i > 0 && c.low < runningLow - 3 && c.close > runningLow) {
+        lodObj.swept = true;
+        lodObj.sweepLow = c.low;
+        lodObj.sweepClose = c.close;
+        lodObj.sweepWickPts = runningLow - c.low;
+      }
+      if (c.low < runningLow) runningLow = c.low;
+    }
+  }
+
+  /** Check if a reference level (ON High, PD High, etc.) was swept: wick >3pts past + close back inside. */
+  _checkLevelSwept(rthCandles, levelPrice, side) {
+    const result = { price: levelPrice, swept: false };
+    for (const c of rthCandles) {
+      if (side === 'high' && c.high > levelPrice + 3 && c.close < levelPrice) {
+        result.swept = true;
+      } else if (side === 'low' && c.low < levelPrice - 3 && c.close > levelPrice) {
+        result.swept = true;
+      }
+    }
+    return result;
+  }
+
   /**
    * Phase 2: Build real-time state for entry evaluation.
    * Called when price is near a key level during RTH.
@@ -545,12 +646,14 @@ export class FeatureAggregator {
       structuralLevels = this.getStructuralLevels(timestamp, currentCandle.close, tradingDay);
     }
 
-    // Session context and recent momentum
+    // Session context, recent momentum, and sweep context
     let sessionContext = null;
     let recentMomentum = null;
+    let sweepContext = null;
     if (tradingDay) {
       sessionContext = this._getSessionContext(tradingDay, timestamp, currentCandle.close);
       recentMomentum = this._getRecentMomentum(timestamp, recentCandles);
+      sweepContext = this._computeSweepContext(tradingDay, timestamp, currentCandle.close);
     }
 
     return {
@@ -577,6 +680,7 @@ export class FeatureAggregator {
       htfSwingStructure,
       sessionContext,
       recentMomentum,
+      sweepContext,
     };
   }
 

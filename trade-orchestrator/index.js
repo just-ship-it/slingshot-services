@@ -1642,12 +1642,17 @@ async function handleWebhookReceived(message) {
       // Add trailing stop parameters if present
       trailing_trigger: signal.trailing_trigger,
       trailing_offset: signal.trailing_offset,
-      // Add point-based distances for market orders (no entry price to compute from)
-      // If signal provides absolute prices but no point distances, compute them from the signal's reference price
+      // For market orders, compute point-based distances from signal's reference price
+      // so Tradovate can place approximate brackets. The tradovate-service will correct
+      // the stop to the exact structural price after fill if structural_stop is set.
       stop_points: signal.stop_points || (mappedOrderType === 'Market' && signal.price && mappedStopPrice
         ? Math.abs(signal.price - mappedStopPrice) : undefined),
       target_points: signal.target_points || (mappedOrderType === 'Market' && signal.price && mappedTakeProfit
         ? Math.abs(mappedTakeProfit - signal.price) : undefined),
+      // Pass through structural stop flag and absolute prices for post-fill correction
+      structural_stop: signal.structural_stop || false,
+      structural_stop_price: signal.structural_stop ? mappedStopPrice : undefined,
+      structural_target_price: signal.structural_stop ? mappedTakeProfit : undefined,
       // Add position sizing metadata
       positionSizing: {
         originalSymbol: positionSizing.originalSymbol,

@@ -35,6 +35,13 @@ const pendingOrderSignals = new Map();
 // Map: parentStrategyId -> { signalId, childOrderIds: Set<orderId> }
 const strategyChildMap = new Map();
 
+// Track structural stop corrections needed after market order fills.
+// When a market order with structural_stop fills, the bracket stop (placed as a
+// relative distance) will be at the wrong level. This map stores the intended
+// absolute stop price so we can correct it immediately after fill.
+// Map: parentStrategyId -> { stopPrice, targetPrice, action }
+const pendingStructuralStops = new Map();
+
 // Track order to strategy mapping for multi-strategy cancellation support
 // Map: orderId -> strategyName (to enable strategy-specific order cancellation)
 const orderStrategyMap = new Map();
@@ -372,9 +379,13 @@ async function handleOrderRequest(message) {
       pendingOrderSignals.set(contractSymbol, {
         signalId: message.signalId,
         strategy: message.strategy,
-        timestamp: Date.now()
+        timestamp: Date.now(),
+        // Structural stop: absolute stop/target prices that must be honored post-fill
+        structural_stop: message.structural_stop || false,
+        structural_stop_price: message.structural_stop_price,
+        structural_target_price: message.structural_target_price,
       });
-      logger.info(`🔗 Pre-registered signal ${message.signalId} for symbol ${contractSymbol}`);
+      logger.info(`🔗 Pre-registered signal ${message.signalId} for symbol ${contractSymbol}${message.structural_stop ? ` (structural stop @ ${message.structural_stop_price})` : ''}`);
     }
 
     let result;
@@ -484,6 +495,19 @@ async function handleOrderRequest(message) {
         // Order strategy response - extract ID from response structure
         const strategyId = result.orderStrategy?.id || result.id;
         logger.info(`Order strategy placed with ID: ${strategyId}`);
+
+        // If structural stop is flagged, store the intended absolute prices for
+        // post-fill correction. Market order brackets use relative distances which
+        // drift from structural levels due to fill slippage.
+        if (message.structural_stop && message.structural_stop_price && strategyId) {
+          pendingStructuralStops.set(strategyId, {
+            stopPrice: message.structural_stop_price,
+            targetPrice: message.structural_target_price,
+            action: message.action,
+            timestamp: Date.now()
+          });
+          logger.info(`📌 Stored structural stop correction for strategy ${strategyId}: stop=${message.structural_stop_price}`);
+        }
         await messageBus.publish(CHANNELS.ORDER_PLACED, {
           strategyId: strategyId,
           orderId: strategyId,
@@ -2781,6 +2805,24 @@ async function startup() {
                 timestamp: new Date().toISOString(),
                 source: 'execution_fill_entry'
               });
+
+              // Post-fill structural stop correction:
+              // Market orders with structural_stop have brackets placed at relative distances
+              // from the fill price, but the stop must be at an absolute structural level.
+              // Now that we know the fill price, modify the bracket stop to the correct price.
+              if (parentStrategyId && pendingStructuralStops.has(parentStrategyId)) {
+                const structuralData = pendingStructuralStops.get(parentStrategyId);
+                pendingStructuralStops.delete(parentStrategyId);
+                const fillPrice = execution.avgPx || execution.price;
+
+                try {
+                  logger.info(`📌 Correcting structural stop for strategy ${parentStrategyId}: fill=${fillPrice}, intended stop=${structuralData.stopPrice}`);
+                  await tradovateClient.modifyBracketStop(parentStrategyId, structuralData.stopPrice);
+                  logger.info(`✅ Structural stop corrected to ${structuralData.stopPrice} (was relative to fill ${fillPrice})`);
+                } catch (stopError) {
+                  logger.error(`❌ Failed to correct structural stop for strategy ${parentStrategyId}: ${stopError.message}`);
+                }
+              }
             }
           }
         } catch (error) {
