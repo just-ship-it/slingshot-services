@@ -263,7 +263,7 @@ const config = {
       noFvgTargetPoints: 30,
       noFvgMaxRisk: 40,
       useTrailingStop: true,
-      trailingTrigger: 6,
+      trailingTrigger: 8,
       trailingOffset: 3,
       signalCooldownMs: 20 * 60 * 1000,
       maxHoldBars: 60,
