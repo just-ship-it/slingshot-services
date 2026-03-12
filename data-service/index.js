@@ -254,6 +254,27 @@ app.get('/ls/sentiment', (req, res) => {
   }
 });
 
+// === Options Chain Snapshot Endpoint ===
+
+app.get('/chains/snapshot', (req, res) => {
+  try {
+    if (!service.tradierExposureService?.chainManager) {
+      return res.status(404).json({ error: 'Options chain manager not available' });
+    }
+    const symbol = req.query.symbol?.toUpperCase();
+    const chains = symbol
+      ? { [symbol]: service.tradierExposureService.chainManager.getSymbolChains(symbol) }
+      : service.tradierExposureService.chainManager.getAllCachedChains();
+    res.json({
+      timestamp: new Date().toISOString(),
+      chains
+    });
+  } catch (error) {
+    logger.error('Chain snapshot error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // === Tradier Control Endpoints ===
 
 app.get('/tradier/status', (req, res) => {

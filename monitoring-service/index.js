@@ -1682,6 +1682,20 @@ app.post('/api/gex/refresh', dashboardAuth, async (req, res) => {
   }
 });
 
+// Options chain snapshot - proxy to data-service (for IV validation data collection)
+app.get('/api/chains/snapshot', dashboardAuth, async (req, res) => {
+  try {
+    const url = req.query.symbol
+      ? `${DATA_SERVICE_URL}/chains/snapshot?symbol=${req.query.symbol}`
+      : `${DATA_SERVICE_URL}/chains/snapshot`;
+    const response = await axios.get(url, { timeout: 10000 });
+    res.json(response.data);
+  } catch (error) {
+    logger.error('Failed to fetch chain snapshot:', error.message);
+    res.status(500).json({ error: 'Chain snapshot failed', message: error.message });
+  }
+});
+
 // TradingView manual token update - proxy to data-service (single TradingView connection)
 app.post('/api/tradingview/token', dashboardAuth, async (req, res) => {
   try {
