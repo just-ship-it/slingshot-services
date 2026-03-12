@@ -11,6 +11,7 @@ import OptionsExposureService from '../../signal-generator/src/tradier/options-e
 import HybridGexCalculator from '../../signal-generator/src/gex/hybrid-gex-calculator.js';
 import { getBestAvailableToken, cacheTokenInRedis, getTokenTTL } from '../../signal-generator/src/utils/tradingview-auth.js';
 import { CandleManager } from './candle-manager.js';
+import { ShortDTEIVCalculator } from './short-dte-iv-calculator.js';
 
 const logger = createLogger('data-service');
 
@@ -24,6 +25,7 @@ class DataService {
     // Tradier exposure service (handles both QQQ and SPY)
     this.tradierExposureService = null;
     this.ivSkewCalculator = null;
+    this.shortDTEIVCalculator = null;
 
     // Hybrid GEX calculators (per product)
     this.hybridGexCalculators = new Map();
@@ -313,6 +315,12 @@ class DataService {
         this.ivSkewCalculator = this.tradierExposureService.ivSkewCalculator;
         logger.info('IV Skew calculator available');
       }
+
+      // Wire up short-DTE IV calculator (0-2 DTE for short-dte-iv strategy)
+      this.shortDTEIVCalculator = new ShortDTEIVCalculator();
+      this.tradierExposureService.shortDTEIVCalculator = this.shortDTEIVCalculator;
+      this.shortDTEIVCalculator.startPreBoundaryTimer();
+      logger.info('Short-DTE IV calculator wired to exposure service (pre-boundary timer active)');
     } catch (error) {
       logger.error('Failed to initialize Tradier service:', error.message);
       this.tradierExposureService = null;
@@ -777,6 +785,10 @@ class DataService {
 
       if (this.tradierExposureService) {
         await this.tradierExposureService.stop();
+      }
+
+      if (this.shortDTEIVCalculator) {
+        this.shortDTEIVCalculator.stopPreBoundaryTimer();
       }
 
       logger.info('Data Service stopped');

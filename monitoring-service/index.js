@@ -2213,6 +2213,25 @@ app.get('/api/strategy/impulse-fvg/status', dashboardAuth, async (req, res) => {
   }
 });
 
+// Short-DTE IV strategy status - proxied from signal-generator (multi-strategy engine)
+app.get('/api/strategy/short-dte-iv/status', dashboardAuth, async (req, res) => {
+  try {
+    const response = await axios.get(`${SIGNAL_GENERATOR_URL}/strategy/status/short-dte-iv`, { timeout: 5000 });
+    res.json({ success: true, ...response.data });
+  } catch (error) {
+    if (error.code === 'ECONNREFUSED') {
+      res.json({
+        success: false,
+        error: 'signal-generator not running',
+        message: 'Start signal-generator: pm2 start ecosystem.config.cjs --only signal-generator'
+      });
+    } else {
+      logger.error('Failed to fetch short-dte-iv status:', error.message);
+      res.status(500).json({ error: 'Failed to fetch short-dte-iv status', details: error.message });
+    }
+  }
+});
+
 // AI Trader strategy status - proxied from siggen-nq-aitrader
 app.get('/api/strategy/ai-trader/status', dashboardAuth, async (req, res) => {
   try {

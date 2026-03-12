@@ -159,6 +159,17 @@ app.get('/iv/history', (req, res) => {
   }
 });
 
+// Short-DTE IV snapshot (0-2 DTE for short-dte-iv strategy)
+app.get('/iv/short-dte', (req, res) => {
+  try {
+    const snapshot = service.shortDTEIVCalculator?.getLatestSnapshot();
+    if (!snapshot) return res.status(404).json({ error: 'No short-DTE IV data available (need Tradier/Schwab running + 15min)' });
+    res.json(snapshot);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // === Exposure Endpoints (Tradier) ===
 
 app.get('/exposure/levels', async (req, res) => {

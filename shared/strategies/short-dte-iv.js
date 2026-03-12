@@ -74,7 +74,12 @@ export class ShortDTEIVStrategy extends BaseStrategy {
   }
 
   static getDataRequirements() {
-    return { shortDTEIV: true };
+    return {
+      shortDTEIV: true,
+      gex: false,    // Does not need GEX levels
+      lt: false,     // Does not need LT levels
+      ivSkew: false, // Does not need 7-45 DTE IV skew
+    };
   }
 
   /**
@@ -199,6 +204,73 @@ export class ShortDTEIVStrategy extends BaseStrategy {
           ? `0-DTE IV dropped ${(ivChange * 100).toFixed(2)}% → long`
           : `0-DTE IV spiked +${(ivChange * 100).toFixed(2)}% → short`
       }
+    };
+  }
+
+  getInternalState() {
+    const provider = this.shortDTEIVLoader;
+    const ivPair = provider?.getIVPair?.(Date.now());
+
+    let ivSnapshot = null;
+    let ivChangeInfo = null;
+    let signalDirection = null;
+
+    if (ivPair) {
+      const { prev, curr } = ivPair;
+      const field = this.params.ivChangeField;
+      const currVal = curr[field];
+      const prevVal = prev[field];
+      const change = (currVal != null && prevVal != null) ? currVal - prevVal : null;
+      const absChange = change != null ? Math.abs(change) : null;
+      const aboveThreshold = absChange != null && absChange >= this.params.ivChangeThreshold;
+
+      if (aboveThreshold) {
+        signalDirection = change < 0 ? 'long' : 'short';
+      }
+
+      ivSnapshot = {
+        dte0_avg_iv: curr.dte0_avg_iv,
+        dte1_avg_iv: curr.dte1_avg_iv,
+        skew: curr.dte0_skew,
+        termSlope: curr.term_slope,
+        termInverted: curr.dte0_avg_iv != null && curr.dte1_avg_iv != null && curr.dte0_avg_iv > curr.dte1_avg_iv,
+        quality: curr.quality,
+        spotPrice: curr.spot_price ?? null,
+        timestamp: curr.timestamp,
+      };
+
+      ivChangeInfo = {
+        field,
+        current: currVal,
+        previous: prevVal,
+        change,
+        absChange,
+        threshold: this.params.ivChangeThreshold,
+        aboveThreshold,
+        direction: change != null ? (change < 0 ? 'drop' : 'spike') : null,
+      };
+    }
+
+    return {
+      ivSnapshot,
+      ivChange: ivChangeInfo,
+      signalDirection,
+      providerStatus: {
+        snapshots: provider?.snapshots?.length ?? 0,
+        snapshotsNeeded: 2,
+        ready: provider?.isReady?.() ?? false,
+      },
+      params: {
+        ivChangeThreshold: this.params.ivChangeThreshold,
+        ivChangeField: this.params.ivChangeField,
+        targetPoints: this.params.targetPoints,
+        stopPoints: this.params.stopPoints,
+        maxHoldBars: this.params.maxHoldBars,
+        enableLong: this.params.enableLong,
+        enableShort: this.params.enableShort,
+        minQuality: this.params.minQuality,
+        cooldownMs: this.params.cooldownMs,
+      },
     };
   }
 

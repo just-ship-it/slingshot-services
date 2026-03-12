@@ -12,6 +12,7 @@ import { ESCrossSignalStrategy } from '../../../shared/strategies/es-cross-signa
 import { EsStopHuntStrategy } from '../../../shared/strategies/es-stop-hunt.js';
 import { MnqAdaptiveScalperStrategy } from '../../../shared/strategies/mnq-adaptive-scalper.js';
 import { ImpulseFVGStrategy } from '../../../shared/strategies/impulse-fvg.js';
+import { ShortDTEIVStrategy } from '../../../shared/strategies/short-dte-iv.js';
 
 const logger = createLogger('strategy-factory');
 
@@ -25,6 +26,7 @@ export const STRATEGY_TYPES = {
   ES_STOP_HUNT: 'es-stop-hunt',
   MNQ_ADAPTIVE_SCALPER: 'mnq-adaptive-scalper',
   IMPULSE_FVG: 'impulse-fvg',
+  SHORT_DTE_IV: 'short-dte-iv',
   AI_TRADER: 'ai-trader'
 };
 
@@ -63,6 +65,12 @@ export function createStrategy(strategyName, config) {
     case 'impulse_fvg':
     case 'impulsefvg':
       return createImpulseFVGStrategy(config);
+
+    case STRATEGY_TYPES.SHORT_DTE_IV:
+    case 'short_dte_iv':
+    case 'shortdteiv':
+    case 'sdiv':
+      return createShortDTEIVStrategy(config);
 
     case STRATEGY_TYPES.AI_TRADER:
     case 'ai_trader':
@@ -190,6 +198,12 @@ export function getStrategyConstant(strategyName) {
     case 'impulsefvg':
       return 'IMPULSE_FVG';
 
+    case STRATEGY_TYPES.SHORT_DTE_IV:
+    case 'short_dte_iv':
+    case 'shortdteiv':
+    case 'sdiv':
+      return 'SHORT_DTE_IV';
+
     case STRATEGY_TYPES.AI_TRADER:
     case 'ai_trader':
     case 'aitrader':
@@ -241,6 +255,12 @@ export function getDataRequirements(strategyName) {
     case 'impulse_fvg':
     case 'impulsefvg':
       return ImpulseFVGStrategy.getDataRequirements();
+
+    case STRATEGY_TYPES.SHORT_DTE_IV:
+    case 'short_dte_iv':
+    case 'shortdteiv':
+    case 'sdiv':
+      return ShortDTEIVStrategy.getDataRequirements();
 
     case STRATEGY_TYPES.AI_TRADER:
     case 'ai_trader':
@@ -316,6 +336,23 @@ function createImpulseFVGStrategy(config) {
     `cooldown=${params.signalCooldownMs}ms, minBody=${params.minBodyPoints}`);
 
   return new ImpulseFVGStrategy(params);
+}
+
+/**
+ * Create Short-DTE IV strategy with sweep-optimized parameters
+ */
+function createShortDTEIVStrategy(config) {
+  const params = config.getShortDTEIVParams();
+
+  params.tradingSymbol = config.TRADING_SYMBOL;
+  params.defaultQuantity = config.DEFAULT_QUANTITY;
+
+  logger.info(`Short-DTE-IV params: threshold=${params.ivChangeThreshold}, ` +
+    `stop=${params.stopPoints}, target=${params.targetPoints}, ` +
+    `long=${params.enableLong}, short=${params.enableShort}, ` +
+    `cooldown=${params.cooldownMs}ms`);
+
+  return new ShortDTEIVStrategy(params);
 }
 
 export default {

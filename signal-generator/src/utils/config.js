@@ -101,6 +101,16 @@ const config = {
   ES_CROSS_FILTER_LT_SPACING_MAX: parseFloat(process.env.ES_CROSS_FILTER_LT_SPACING_MAX || '40'),
   ES_CROSS_COOLDOWN_MS: parseInt(process.env.ES_CROSS_COOLDOWN_MS || '300000'), // 5 minutes
 
+  // Short-DTE IV Strategy Parameters (sweep-optimized: th=0.015, S30/T30)
+  SDIV_IV_THRESHOLD: parseFloat(process.env.SDIV_IV_THRESHOLD || '0.015'),
+  SDIV_STOP_POINTS: parseFloat(process.env.SDIV_STOP_POINTS || '30'),
+  SDIV_TARGET_POINTS: parseFloat(process.env.SDIV_TARGET_POINTS || '30'),
+  SDIV_ENABLE_LONG: process.env.SDIV_ENABLE_LONG?.toLowerCase() !== 'false',   // Default true
+  SDIV_ENABLE_SHORT: process.env.SDIV_ENABLE_SHORT?.toLowerCase() !== 'false', // Default true
+  SDIV_COOLDOWN_MS: parseInt(process.env.SDIV_COOLDOWN_MS || '900000'),        // 15 minutes
+  SDIV_MAX_HOLD_BARS: parseInt(process.env.SDIV_MAX_HOLD_BARS || '60'),
+  SDIV_TIMEOUT_CANDLES: parseInt(process.env.SDIV_TIMEOUT_CANDLES || '2'),
+
   // GF (Zero Gamma) Early Exit Configuration
   // Monitors Zero Gamma movement during trades and moves stop to breakeven after consecutive adverse moves
   // Check interval is fixed at 15 minutes to match backtest GEX data resolution
@@ -258,6 +268,24 @@ const config = {
       orbCandles: 15,
       ibCandles: 30,
       lastEntryTime: 15.917
+    };
+  },
+
+  getShortDTEIVParams() {
+    return {
+      ivChangeThreshold: this.SDIV_IV_THRESHOLD,
+      stopPoints: this.SDIV_STOP_POINTS,
+      targetPoints: this.SDIV_TARGET_POINTS,
+      enableLong: this.SDIV_ENABLE_LONG,
+      enableShort: this.SDIV_ENABLE_SHORT,
+      cooldownMs: this.SDIV_COOLDOWN_MS,
+      maxHoldBars: this.SDIV_MAX_HOLD_BARS,
+      timeoutCandles: this.SDIV_TIMEOUT_CANDLES,
+      // Disable trailing (pure TP/SL — best from sweep)
+      trailingTrigger: 9999,
+      trailingOffset: 0,
+      // Quality filter
+      minQuality: 2,
     };
   },
 

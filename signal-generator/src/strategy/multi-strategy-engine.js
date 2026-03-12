@@ -6,6 +6,7 @@ import { createLogger, messageBus, CHANNELS } from '../../../shared/index.js';
 import { CandleBuffer } from '../utils/candle-buffer.js';
 import { CandleAggregator } from '../../../shared/utils/candle-aggregator.js';
 import { createStrategy, getStrategyConstant, getDataRequirements, requiresIVData, supportsBreakevenStop } from './strategy-factory.js';
+import { LiveShortDTEIVProvider } from '../tradier/short-dte-iv-provider.js';
 import config from '../utils/config.js';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
@@ -153,6 +154,9 @@ class MultiStrategyEngine {
     // IV Skew calculator reference (set externally if available from data via HTTP)
     this.ivSkewCalculator = null;
 
+    // Live short-DTE IV provider (shared across strategies that need it)
+    this.shortDTEIVProvider = null;
+
     // Load strategy configuration
     this.strategyConfig = this.loadStrategyConfig();
     this.initializeProducts();
@@ -232,6 +236,18 @@ class MultiStrategyEngine {
             logger.warn(`Strategy factory returned null for ${name}, skipping`);
             continue;
           }
+
+          // Wire up live Short-DTE IV provider if strategy needs it
+          const reqs = getDataRequirements(name);
+          if (reqs?.shortDTEIV && typeof strategy.loadShortDTEIVData === 'function') {
+            if (!this.shortDTEIVProvider) {
+              this.shortDTEIVProvider = new LiveShortDTEIVProvider();
+              logger.info('Created LiveShortDTEIVProvider for short-dte-iv strategy');
+            }
+            strategy.loadShortDTEIVData(this.shortDTEIVProvider);
+            logger.info(`  Wired LiveShortDTEIVProvider → ${name}`);
+          }
+
           const runner = new StrategyRunner(name, strategy, stratConfig, productConfig);
           state.strategies.set(name, runner);
           logger.info(`  ${product}: ${name} (priority ${runner.priority}, ${runner.evalTimeframe}, ${stratConfig.enabled ? 'enabled' : 'disabled'})`);
@@ -301,6 +317,17 @@ class MultiStrategyEngine {
       }
     });
 
+    // Subscribe to short-DTE IV snapshots (0-2 DTE, from data-service)
+    if (this.shortDTEIVProvider) {
+      messageBus.subscribe(CHANNELS.SHORT_DTE_IV_SNAPSHOT, (message) => {
+        this.shortDTEIVProvider.receiveSnapshot(message);
+        // Re-check data readiness (provider needs 2 snapshots to be ready)
+        const nqState = this.products.get('NQ');
+        if (nqState) this.recheckDataReadiness(nqState);
+      });
+      logger.info('Subscribed to short_dte_iv.snapshot channel');
+    }
+
     // Subscribe to position events
     messageBus.subscribe(CHANNELS.POSITION_UPDATE, (message) => {
       this.handlePositionUpdate(message);
@@ -339,7 +366,7 @@ class MultiStrategyEngine {
       }
     });
 
-    logger.info('Subscribed to data channels: candle.close, gex.levels, lt.levels, iv.skew, data.ready, position.*, order.*');
+    logger.info('Subscribed to data channels: candle.close, gex.levels, lt.levels, iv.skew, short_dte_iv.snapshot, data.ready, position.*, order.*');
 
     // Initial seed attempt after brief delay (data-service may already have data)
     setTimeout(() => this.seedStrategies(), 5000);
@@ -402,6 +429,11 @@ class MultiStrategyEngine {
     // Check IV data (only if strategy requires it)
     if (reqs.ivSkew === true && !state.ivData) {
       blockers.push('IV data');
+    }
+
+    // Check short-DTE IV provider (needs 2 snapshots to compute IV change)
+    if (reqs.shortDTEIV === true && (!this.shortDTEIVProvider || !this.shortDTEIVProvider.isReady())) {
+      blockers.push('short-DTE IV data (need 2 snapshots)');
     }
 
     runner.dataReady = blockers.length === 0;
@@ -597,6 +629,12 @@ class MultiStrategyEngine {
       return;
     }
 
+    // Gate on short-DTE IV readiness
+    if (reqs?.shortDTEIV === true && (!this.shortDTEIVProvider || !this.shortDTEIVProvider.isReady())) {
+      logger.debug(`Short-DTE IV not ready for ${runner.name}, skipping`);
+      return;
+    }
+
     // Prepare market data
     const marketData = {
       gexLevels: gexLevels,
@@ -626,6 +664,23 @@ class MultiStrategyEngine {
       // Always use the per-product trading symbol from strategy-config.json
       // (strategy factory sets config.TRADING_SYMBOL which is the global NQ symbol)
       signal.symbol = state.tradingSymbol;
+
+      // Handle sameCandleFill signals in live mode: backtest uses candle.open
+      // with 1s replay, but in live mode we enter at current price (candle.close)
+      if (signal.sameCandleFill) {
+        const livePrice = candle.close;
+        const stopDist = runner.strategy.params?.stopPoints || 30;
+        const tpDist = runner.strategy.params?.targetPoints || 30;
+        signal.action = 'place_market';
+        signal.price = livePrice;
+        signal.entryPrice = livePrice;
+        signal.stop_loss = signal.side === 'buy' ? livePrice - stopDist : livePrice + stopDist;
+        signal.take_profit = signal.side === 'buy' ? livePrice + tpDist : livePrice - tpDist;
+        signal.stopLoss = signal.stop_loss;
+        signal.takeProfit = signal.take_profit;
+        delete signal.sameCandleFill;
+        logger.info(`Converted sameCandleFill → market order @ ${livePrice} (candle.open was ${candle.open})`);
+      }
 
       // Add breakeven parameters if supported
       if (runner.supportsBreakeven && runner.strategy.params.breakevenStop) {

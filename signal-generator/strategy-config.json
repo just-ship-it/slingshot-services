@@ -4,21 +4,27 @@
       "tradingSymbol": "NQH6",
       "strategies": [
         {
-          "name": "iv-skew-gex",
+          "name": "short-dte-iv",
           "enabled": true,
           "priority": 1,
-          "evalTimeframe": "1m"
+          "evalTimeframe": "15m"
         },
         {
-          "name": "impulse-fvg",
+          "name": "iv-skew-gex",
           "enabled": false,
           "priority": 2,
           "evalTimeframe": "1m"
         },
         {
-          "name": "gex-scalp",
+          "name": "impulse-fvg",
           "enabled": false,
           "priority": 3,
+          "evalTimeframe": "1m"
+        },
+        {
+          "name": "gex-scalp",
+          "enabled": false,
+          "priority": 4,
           "evalTimeframe": "1m"
         }
       ]

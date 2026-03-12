@@ -31,6 +31,7 @@ class OptionsExposureService {
     // Current data
     this.currentExposures = null;
     this.currentIVSkew = null;
+    this.shortDTEIVCalculator = null;  // Set externally by data-service
     this.lastCalculation = null;
     this.spotPrices = {};
 
@@ -360,6 +361,15 @@ class OptionsExposureService {
           this.currentIVSkew = this.ivSkewCalculator.calculateIVSkew(currentSpotPrices.QQQ, chainsData);
         } catch (error) {
           this.logger.warn('IV skew calculation failed:', error.message);
+        }
+      }
+
+      // Update short-DTE IV calculator (0-2 DTE, publishes to Redis)
+      if (this.shortDTEIVCalculator && currentSpotPrices.QQQ) {
+        try {
+          await this.shortDTEIVCalculator.update(currentSpotPrices.QQQ, chainsData);
+        } catch (error) {
+          this.logger.warn('Short-DTE IV update failed:', error.message);
         }
       }
       const skewMs = Date.now() - t2;

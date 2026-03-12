@@ -85,6 +85,7 @@ export const CHANNELS = {
   // IV Skew events
   IV_SKEW: 'iv.skew',
   IV_UPDATE: 'iv.update',
+  SHORT_DTE_IV_SNAPSHOT: 'short_dte_iv.snapshot',
 
   // Analytics events
   ANALYTICS: 'analytics.update',
