@@ -23,6 +23,7 @@
  */
 
 import { createLogger, messageBus, CHANNELS } from '../../../shared/index.js';
+import { roundToNQTick } from '../../../shared/strategies/strategy-utils.js';
 
 const logger = createLogger('live-trade-manager');
 
@@ -206,7 +207,7 @@ export class LiveTradeManager {
           newStop = t.entryPrice - (t.mfe * tier.lockPct);
         }
 
-        newStop = Math.round(newStop * 100) / 100;
+        newStop = roundToNQTick(newStop);
 
         // Only update if tighter than current
         if (this._isStopTighter(newStop)) {
@@ -266,7 +267,7 @@ export class LiveTradeManager {
       newStop = trailLevel.price + 2;
     }
 
-    newStop = Math.round(newStop * 100) / 100;
+    newStop = roundToNQTick(newStop);
 
     if (this._isStopTighter(newStop)) {
       const reason = `structural_trail (behind ${trailLevel.label} @ ${trailLevel.price.toFixed(2)})`;
@@ -302,7 +303,7 @@ export class LiveTradeManager {
         newStop = t.entryPrice - (t.mfe * 0.60);
       }
 
-      newStop = Math.round(newStop * 100) / 100;
+      newStop = roundToNQTick(newStop);
 
       if (this._isStopTighter(newStop)) {
         const reason = `condition_tightening (LT deteriorating, lock 60% of +${t.mfe.toFixed(0)}pt MFE)`;
@@ -475,7 +476,7 @@ export class LiveTradeManager {
         if (this._isStopTighter(proposed) && !beyondPrice && !isNaN(proposed)) {
           const reason = `llm_tighten: ${decision.reasoning || 'LLM tighten'}`;
           logger.info(`[LLM MGMT] TIGHTEN: ${t.currentStop?.toFixed(2) || 'initial'} -> ${proposed.toFixed(2)} (${decision.reasoning})`);
-          await this._modifyStop(Math.round(proposed * 100) / 100, reason, candle);
+          await this._modifyStop(roundToNQTick(proposed), reason, candle);
         } else {
           logger.info(`[LLM MGMT] TIGHTEN rejected (${beyondPrice ? 'beyond price' : 'not tighter'}) proposed=${proposed}`);
         }

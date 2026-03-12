@@ -2108,6 +2108,10 @@ async function handleModifyStop(tradeSignal, accountId, webhookId) {
       throw new Error('Missing required field: symbol');
     }
 
+    // Defensive tick rounding — NQ/ES tick size is 0.25
+    const tickSize = 0.25;
+    tradeSignal.new_stop_price = Math.round(tradeSignal.new_stop_price / tickSize) * tickSize;
+
     // Method 1: Modify via order strategy ID (bracket orders)
     if (tradeSignal.order_strategy_id) {
       logger.info(`🔧 Modifying bracket stop via order strategy ${tradeSignal.order_strategy_id}`);
