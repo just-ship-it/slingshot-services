@@ -1327,6 +1327,16 @@ async function handleWebhookReceived(message) {
     // Parse and validate trading signal
     // Handle both webhook format (message.body) and direct signal format (from siggen-nq-ivskew)
     const signalBody = message.body || message;
+
+    // Distributed dedup: content-based hash prevents duplicate processing across K8s pods
+    // Uses signal fields that are identical across all receiving pods
+    const dedupKey = `signal:dedup:${signalBody.strategy || 'unknown'}:${signalBody.side || ''}:${signalBody.price || ''}:${signalBody.timestamp || ''}`;
+    const acquired = await messageBus.publisher.set(dedupKey, '1', { NX: true, EX: 60 });
+    if (!acquired) {
+      logger.warn(`[DEDUP] Duplicate signal rejected (${dedupKey})`);
+      return;
+    }
+
     const signal = parseTradeSignal(signalBody);
     if (!signal) {
       logger.warn('Invalid trade signal format');
