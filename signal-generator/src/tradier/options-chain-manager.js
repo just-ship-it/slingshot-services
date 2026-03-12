@@ -108,21 +108,21 @@ class OptionsChainManager {
         if (result.status === 'fulfilled') {
           successCount++;
           const chainData = this.getSymbolChains(symbol);
-          const chainCount = chainData.length;
-          logger.info(`✅ Successfully polled ${symbol}: ${chainCount} options retrieved`);
-          if (chainCount === 0) {
-            logger.warn(`⚠️  ${symbol} returned 0 options - possible market hours, rate limiting, or data availability issue`);
+          const totalOptions = chainData.reduce((sum, c) => sum + (c.options?.length || 0), 0);
+          logger.info(`Polled ${symbol}: ${chainData.length} expirations, ${totalOptions} options`);
+          if (totalOptions === 0) {
+            logger.warn(`${symbol} returned 0 options - possible market hours, rate limiting, or data availability issue`);
           }
         } else {
           errorCount++;
-          logger.error(`❌ Failed to poll options chains for ${symbol}:`, result.reason?.message);
+          logger.error(`Failed to poll options chains for ${symbol}:`, result.reason?.message);
         }
       });
 
       this.lastPollTime = startTime;
       const duration = Date.now() - startTime;
 
-      logger.info(`Options chain poll completed: ${successCount} success, ${errorCount} errors in ${duration}ms`);
+      logger.info(`Options chain poll completed: ${successCount} success, ${errorCount} errors in ${(duration / 1000).toFixed(1)}s`);
 
     } catch (error) {
       logger.error('Options chain poll failed:', error.message, error.stack);

@@ -2,7 +2,7 @@
 
 // Compare GEX calculations between CBOE and Tradier sources
 import { createLogger } from '../../../shared/index.js';
-import TradierExposureService from './tradier-exposure-service.js';
+import OptionsExposureService from './options-exposure-service.js';
 import GexCalculator from '../gex/gex-calculator.js';
 import config from '../utils/config.js';
 

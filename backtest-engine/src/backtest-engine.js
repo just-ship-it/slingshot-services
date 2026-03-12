@@ -66,9 +66,11 @@ import { SweepReversalStrategy } from '../../shared/strategies/sweep-reversal.js
 import { NqLeadsEsStrategy } from '../../shared/strategies/nq-leads-es.js';
 import { GexSupportBounceStrategy } from '../../shared/strategies/gex-support-bounce.js';
 import { ImpulseFVGStrategy } from '../../shared/strategies/impulse-fvg.js';
+import { ShortDTEIVStrategy } from '../../shared/strategies/short-dte-iv.js';
 import { SqueezeMomentumIndicator } from '../../shared/indicators/squeeze-momentum.js';
 import { GexLoader } from './data-loaders/gex-loader.js';
 import { IVLoader } from './data-loaders/iv-loader.js';
+import { ShortDTEIVLoader } from './data-loaders/short-dte-iv-loader.js';
 import { CBBOLoader } from './data-loaders/cbbo-loader.js';
 import { CharmVannaLoader } from './data-loaders/charm-vanna-loader.js';
 import { DatabentoTradeLoader } from './data/databento-loader.js';
@@ -154,6 +156,9 @@ export class BacktestEngine {
     // Initialize IV loader for IV Skew GEX strategy
     this.ivLoader = new IVLoader(config.dataDir);
     this.ivData = null; // Will be populated in loadData if IV data exists
+
+    // Initialize Short-DTE IV loader for Short-DTE IV strategy
+    this.shortDTEIVLoader = new ShortDTEIVLoader(config.dataDir);
 
     // Initialize CBBO loader for CBBO-LT Volatility strategy
     const cbboDir = config.cbboDataDir || path.join(config.dataDir, 'cbbo-1m', 'qqq');
@@ -484,6 +489,20 @@ export class BacktestEngine {
       }
     }
 
+    // Load Short-DTE IV data for Short-DTE IV strategy
+    const isShortDTEIVStrategy = this.config.strategy === 'short-dte-iv' ||
+                                  this.config.strategy === 'sdiv';
+    if (isShortDTEIVStrategy) {
+      await this.shortDTEIVLoader.load(this.config.startDate, this.config.endDate);
+      const sdivStats = this.shortDTEIVLoader.getStats();
+      if (!this.config.quiet && sdivStats.count > 0) {
+        console.log(`📈 Short-DTE IV data: ${sdivStats.count} records (${sdivStats.startDate?.split('T')[0]} to ${sdivStats.endDate?.split('T')[0]})`);
+        console.log(`   DTE0: ${sdivStats.dte0Count} readings, avg IV=${sdivStats.avgDTE0IV?.toFixed(3)} | DTE1: ${sdivStats.dte1Count} readings, avg IV=${sdivStats.avgDTE1IV?.toFixed(3)}`);
+      } else if (!this.config.quiet && sdivStats.count === 0) {
+        console.warn('⚠️  No Short-DTE IV data found - run scripts/precompute-short-dte-iv.js first');
+      }
+    }
+
     // Load CBBO data for CBBO-LT Volatility strategy
     const isCBBOStrategy = this.config.strategy === 'cbbo-lt-volatility' ||
                            this.config.strategy === 'cbbo-lt' ||
@@ -551,6 +570,7 @@ export class BacktestEngine {
       cvdMap: this.cvdMap,               // CVD data aligned to candle timestamps (Phase 3)
       bookImbalanceMap: this.bookImbalanceMap,  // Book imbalance data (Phase 4)
       ivLoader: this.ivLoader,           // IV data for IV Skew GEX strategy
+      shortDTEIVLoader: isShortDTEIVStrategy ? this.shortDTEIVLoader : null,  // Short-DTE IV data
       cbboLoader: this.cbboDataLoaded ? this.cbboLoader : null,  // CBBO data for volatility strategy
       charmVannaLoader: this.charmVannaDataLoaded ? this.charmVannaLoader : null  // Charm/Vanna data
     };
@@ -604,6 +624,15 @@ export class BacktestEngine {
       const stats = data.ivLoader.getStats();
       if (!this.config.quiet && stats.count > 0) {
         console.log(`📈 IV data loaded into strategy (${stats.count} records)`);
+      }
+    }
+
+    // Load Short-DTE IV data into strategy if available
+    if (data.shortDTEIVLoader && this.strategy.loadShortDTEIVData) {
+      this.strategy.loadShortDTEIVData(data.shortDTEIVLoader);
+      const stats = data.shortDTEIVLoader.getStats();
+      if (!this.config.quiet && stats.count > 0) {
+        console.log(`📈 Short-DTE IV data loaded into strategy (${stats.count} records)`);
       }
     }
 
@@ -1139,7 +1168,9 @@ export class BacktestEngine {
     // The GEX JSON files store futures_spot from raw OHLCV without primary contract filtering,
     // which can differ from the backtest engine's filtered OHLCV by up to ~1.6%.
     // Re-translate all levels using: corrected = original * (actualPrice / stored_futures_spot)
-    if (gexLevels && actualPrice && gexLevels.futures_spot && gexLevels.futures_spot > 0) {
+    // Only apply for continuous (back-adjusted) data — raw contracts are already in the same price space.
+    const isContinuous = !this.config.noContinuous;
+    if (isContinuous && gexLevels && actualPrice && gexLevels.futures_spot && gexLevels.futures_spot > 0) {
       const correction = actualPrice / gexLevels.futures_spot;
       // Only correct if there's a meaningful difference (> 0.01%)
       if (Math.abs(correction - 1.0) > 0.0001) {
@@ -1439,6 +1470,9 @@ export class BacktestEngine {
       case 'impulse':
       case 'ifvg':
         return new ImpulseFVGStrategy(params);
+      case 'short-dte-iv':
+      case 'sdiv':
+        return new ShortDTEIVStrategy(params);
       default:
         throw new Error(`Unknown strategy: ${strategyName}`);
     }

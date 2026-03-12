@@ -126,6 +126,12 @@ const config = {
   // Tradovate Account ID (for position sync on startup)
   TRADOVATE_ACCOUNT_ID: process.env.TRADOVATE_DEFAULT_ACCOUNT_ID || '',
 
+  // Schwab API Configuration (alternative to Tradier for options data)
+  SCHWAB_ENABLED: process.env.SCHWAB_ENABLED?.toLowerCase() === 'true',
+  SCHWAB_APP_KEY: process.env.SCHWAB_APP_KEY || '',
+  SCHWAB_APP_SECRET: process.env.SCHWAB_APP_SECRET || '',
+  SCHWAB_CALLBACK_URL: process.env.SCHWAB_CALLBACK_URL || 'https://127.0.0.1:8182',
+
   // Tradier API Configuration
   TRADIER_ACCESS_TOKEN: process.env.TRADIER_ACCESS_TOKEN || '',
   TRADIER_ACCOUNT_ID: process.env.TRADIER_ACCOUNT_ID || '',
@@ -283,7 +289,12 @@ const config = {
       symbols: this.TRADIER_SYMBOLS,
       maxExpirations: this.TRADIER_MAX_EXPIRATIONS,
       pollInterval: this.EXPOSURE_POLL_INTERVAL_MINUTES,
-      riskFreeRate: this.RISK_FREE_RATE
+      riskFreeRate: this.RISK_FREE_RATE,
+      // Schwab override
+      useSchwab: this.SCHWAB_ENABLED,
+      schwabAppKey: this.SCHWAB_APP_KEY,
+      schwabAppSecret: this.SCHWAB_APP_SECRET,
+      schwabCallbackUrl: this.SCHWAB_CALLBACK_URL
     };
   },
 

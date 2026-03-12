@@ -7,7 +7,7 @@ import config from './config.js';
 import TradingViewClient from '../../signal-generator/src/websocket/tradingview-client.js';
 import LTMonitor from '../../signal-generator/src/websocket/lt-monitor.js';
 import GexCalculator from '../../signal-generator/src/gex/gex-calculator.js';
-import TradierExposureService from '../../signal-generator/src/tradier/tradier-exposure-service.js';
+import OptionsExposureService from '../../signal-generator/src/tradier/options-exposure-service.js';
 import HybridGexCalculator from '../../signal-generator/src/gex/hybrid-gex-calculator.js';
 import { getBestAvailableToken, cacheTokenInRedis, getTokenTTL } from '../../signal-generator/src/utils/tradingview-auth.js';
 import { CandleManager } from './candle-manager.js';
@@ -192,8 +192,8 @@ class DataService {
       }
     ];
 
-    const needsTradier = config.TRADIER_ENABLED && !!config.TRADIER_ACCESS_TOKEN;
-    const hybridEnabled = needsTradier && config.HYBRID_GEX_ENABLED;
+    const hasOptionsProvider = (config.SCHWAB_ENABLED && !!config.SCHWAB_APP_KEY) || (config.TRADIER_ENABLED && !!config.TRADIER_ACCESS_TOKEN);
+    const hybridEnabled = hasOptionsProvider && config.HYBRID_GEX_ENABLED;
 
     for (const product of products) {
       try {
@@ -201,7 +201,7 @@ class DataService {
           // Hybrid mode: Tradier + CBOE
           logger.info(`Initializing Hybrid GEX for ${product.key} (${product.etfSymbol}->${product.futuresSymbol})...`);
           const hybrid = new HybridGexCalculator({
-            tradierEnabled: config.TRADIER_ENABLED && config.TRADIER_AUTO_START,
+            tradierEnabled: hasOptionsProvider && config.TRADIER_AUTO_START,
             tradierRefreshMinutes: config.HYBRID_TRADIER_REFRESH_MINUTES || 3,
             cboeEnabled: true,
             cboeRefreshMinutes: config.HYBRID_CBOE_REFRESH_MINUTES || 15,
@@ -283,13 +283,19 @@ class DataService {
    * Initialize Tradier Exposure Service for both QQQ and SPY
    */
   async initializeTradierService() {
-    if (!config.TRADIER_ENABLED || !config.TRADIER_ACCESS_TOKEN) {
-      logger.info('Tradier not configured, skipping');
+    const schwabEnabled = config.SCHWAB_ENABLED && config.SCHWAB_APP_KEY;
+    const tradierEnabled = config.TRADIER_ENABLED && config.TRADIER_ACCESS_TOKEN;
+
+    if (!schwabEnabled && !tradierEnabled) {
+      logger.info('No options data provider configured (Schwab or Tradier), skipping');
       return;
     }
 
+    const provider = schwabEnabled ? 'Schwab' : 'Tradier';
+    logger.info(`Initializing options data via ${provider}...`);
+
     try {
-      this.tradierExposureService = new TradierExposureService({
+      this.tradierExposureService = new OptionsExposureService({
         symbols: config.TRADIER_SYMBOLS
       });
 

@@ -158,6 +158,105 @@ function calculateIVBisection(optionPrice, S, K, T, r, optionType) {
 }
 
 // ============================================================================
+// Black's Model Functions (forward-based pricing)
+// ============================================================================
+
+/**
+ * Standard normal CDF — Abramowitz & Stegun 26.2.17 (corrected coefficients)
+ * This matches schwab-client.js for consistency with live forward-based IV
+ */
+function normalCDF_fwd(x) {
+  if (x < -8) return 0;
+  if (x > 8) return 1;
+  const b1 = 0.319381530, b2 = -0.356563782, b3 = 1.781477937;
+  const b4 = -1.821255978, b5 = 1.330274429;
+  const pp = 0.2316419;
+  const ax = Math.abs(x);
+  const t = 1.0 / (1.0 + pp * ax);
+  const y = (1.0 / Math.sqrt(2 * Math.PI)) * Math.exp(-0.5 * x * x);
+  const cdf = 1 - y * t * (b1 + t * (b2 + t * (b3 + t * (b4 + t * b5))));
+  return x >= 0 ? cdf : 1 - cdf;
+}
+
+/**
+ * Black's model option price (forward-based)
+ * @param {number} F - Forward price
+ * @param {number} K - Strike price
+ * @param {number} T - Time to expiration in years
+ * @param {number} r - Risk-free rate
+ * @param {number} sigma - Implied volatility
+ * @param {boolean} isCall - true for call, false for put
+ */
+function blackPrice(F, K, T, r, sigma, isCall) {
+  if (T <= 0 || sigma <= 0) {
+    const df = Math.exp(-r * T);
+    return isCall ? Math.max(df * (F - K), 0) : Math.max(df * (K - F), 0);
+  }
+  const sqrtT = Math.sqrt(T);
+  const d1 = (Math.log(F / K) + 0.5 * sigma * sigma * T) / (sigma * sqrtT);
+  const d2 = d1 - sigma * sqrtT;
+  const df = Math.exp(-r * T);
+  if (isCall) {
+    return df * (F * normalCDF_fwd(d1) - K * normalCDF_fwd(d2));
+  } else {
+    return df * (K * normalCDF_fwd(-d2) - F * normalCDF_fwd(-d1));
+  }
+}
+
+/**
+ * Black's model vega
+ */
+function blackVega(F, K, T, r, sigma) {
+  if (T <= 0 || sigma <= 0) return 0;
+  const d1 = (Math.log(F / K) + 0.5 * sigma * sigma * T) / (sigma * Math.sqrt(T));
+  return Math.exp(-r * T) * F * Math.sqrt(T) * normalPDF(d1);
+}
+
+/**
+ * Compute forward price from put-call parity: F = K + e^(rT) * (C - P)
+ * Uses ATM call and put mid prices at the same strike
+ */
+function computeForwardPrice(spotPrice, callMid, putMid, strike, T, r) {
+  if (!callMid || !putMid || T <= 0) return null;
+  const F = strike + Math.exp(r * T) * (callMid - putMid);
+  // Sanity check: forward should be within 5% of spot
+  if (F <= 0 || Math.abs(F - spotPrice) / spotPrice > 0.05) return null;
+  return F;
+}
+
+/**
+ * Newton-Raphson IV solver for Black's model
+ */
+function impliedVolatilityFwd(midPrice, F, K, T, r, isCall) {
+  if (midPrice <= 0 || T <= 0 || F <= 0 || K <= 0) return null;
+
+  const df = Math.exp(-r * T);
+  const intrinsic = isCall ? Math.max(df * (F - K), 0) : Math.max(df * (K - F), 0);
+  if (midPrice <= intrinsic + 0.001) return null;
+
+  // Brenner-Subrahmanyam initial guess (adapted for forward)
+  let sigma = Math.sqrt(2 * Math.PI / T) * midPrice / (F * df);
+  if (sigma <= 0.01 || !isFinite(sigma)) sigma = 0.3;
+  if (sigma > 3) sigma = 1.0;
+
+  for (let i = 0; i < 50; i++) {
+    const price = blackPrice(F, K, T, r, sigma, isCall);
+    const vega = blackVega(F, K, T, r, sigma);
+    if (vega < 1e-10) break;
+
+    const diff = price - midPrice;
+    if (Math.abs(diff) < 1e-6) break;
+
+    sigma -= diff / vega;
+    if (sigma <= 0.001) sigma = 0.001;
+    if (sigma > 5) sigma = 5;
+  }
+
+  if (sigma <= 0 || sigma > 5 || !isFinite(sigma)) return null;
+  return sigma;
+}
+
+// ============================================================================
 // Option Symbol Parser
 // ============================================================================
 
@@ -401,7 +500,7 @@ function calculateATMIV(timestamp, spotPrice, optionQuotes, riskFreeRate = 0.05)
         strike: parsed.strike,
         optionType: parsed.optionType,
         dte,
-        mid,
+        mid,  // Needed for forward price computation
         iv
       });
     }
@@ -423,7 +522,7 @@ function calculateATMIV(timestamp, spotPrice, optionQuotes, riskFreeRate = 0.05)
   const atmCall = calls[0];
   const atmPut = puts[0];
 
-  // Average call and put IV for final ATM IV
+  // Average call and put IV for final ATM IV (vanilla BS — unchanged)
   let avgIV, callIV, putIV, atmStrike, dte;
 
   if (atmCall && atmPut) {
@@ -448,10 +547,28 @@ function calculateATMIV(timestamp, spotPrice, optionQuotes, riskFreeRate = 0.05)
     return null;
   }
 
+  // Forward-based IV (Black's model) — new dual output
+  let callIV_fwd = null;
+  let putIV_fwd = null;
+
+  if (atmCall && atmPut && atmCall.strike === atmPut.strike) {
+    const T = dte / 365;
+    const F = computeForwardPrice(spotPrice, atmCall.mid, atmPut.mid, atmCall.strike, T, riskFreeRate);
+    if (F) {
+      callIV_fwd = impliedVolatilityFwd(atmCall.mid, F, atmCall.strike, T, riskFreeRate, true);
+      putIV_fwd = impliedVolatilityFwd(atmPut.mid, F, atmPut.strike, T, riskFreeRate, false);
+      // Validate range
+      if (callIV_fwd !== null && (callIV_fwd < 0.05 || callIV_fwd > 2.0)) callIV_fwd = null;
+      if (putIV_fwd !== null && (putIV_fwd < 0.05 || putIV_fwd > 2.0)) putIV_fwd = null;
+    }
+  }
+
   return {
     iv: avgIV,
     callIV,
     putIV,
+    callIV_fwd,
+    putIV_fwd,
     atmStrike,
     dte
   };
@@ -540,7 +657,9 @@ async function main() {
           atmStrike: ivResult.atmStrike.toFixed(2),
           callIV: ivResult.callIV?.toFixed(4) || '',
           putIV: ivResult.putIV?.toFixed(4) || '',
-          dte: ivResult.dte
+          dte: ivResult.dte,
+          callIV_fwd: ivResult.callIV_fwd?.toFixed(4) || '',
+          putIV_fwd: ivResult.putIV_fwd?.toFixed(4) || ''
         });
 
         successfulIV++;
@@ -561,10 +680,10 @@ async function main() {
   // Sort by timestamp
   ivReadings.sort((a, b) => a.timestamp.localeCompare(b.timestamp));
 
-  // Write to CSV
-  const header = 'timestamp,iv,spot_price,atm_strike,call_iv,put_iv,dte';
+  // Write to CSV (new columns appended — backward compatible, old loaders ignore them)
+  const header = 'timestamp,iv,spot_price,atm_strike,call_iv,put_iv,dte,call_iv_fwd,put_iv_fwd';
   const rows = ivReadings.map(r =>
-    `${r.timestamp},${r.iv},${r.spotPrice},${r.atmStrike},${r.callIV},${r.putIV},${r.dte}`
+    `${r.timestamp},${r.iv},${r.spotPrice},${r.atmStrike},${r.callIV},${r.putIV},${r.dte},${r.callIV_fwd},${r.putIV_fwd}`
   );
 
   const outputDir = path.dirname(outputPath);

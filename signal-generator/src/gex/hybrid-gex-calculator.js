@@ -1,7 +1,7 @@
 // Hybrid GEX Calculator - Combines Tradier (fast, short-term) + CBOE (comprehensive, long-term)
 import { createLogger } from '../../../shared/index.js';
 import GexCalculator from './gex-calculator.js';
-import TradierExposureService from '../tradier/tradier-exposure-service.js';
+import OptionsExposureService from '../tradier/options-exposure-service.js';
 import { isOptionsRTH, isOptionsRTHCached, getCurrentSession, tradierMarketClock, isGexCalculationHoursAsync, isGexCalculationHours } from '../utils/session-utils.js';
 
 const logger = createLogger('hybrid-gex-calculator');
@@ -642,10 +642,12 @@ class HybridGexCalculator {
   setUpdateCallback(callback) {
     this.updateCallback = callback;
 
-    // Also set callbacks on individual calculators
+    // Note: Do NOT set a callback on cboeCalculator that calls refreshCBOEData(),
+    // as that creates an infinite loop (refresh → calculate → callback → refresh).
+    // The hybrid's own timer handles CBOE refresh scheduling.
     if (this.cboeCalculator) {
-      this.cboeCalculator.setUpdateCallback(() => {
-        this.refreshCBOEData();
+      this.cboeCalculator.setUpdateCallback((levels) => {
+        this.updateHybridData();
       });
     }
   }

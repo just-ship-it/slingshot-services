@@ -8,6 +8,10 @@ node_modules/
 !.env.example
 !*/.env.example
 
+# Schwab OAuth tokens
+.schwab-tokens.json
+*/.schwab-tokens.json
+
 # Logs
 logs/
 *.log

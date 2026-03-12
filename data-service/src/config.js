@@ -55,6 +55,12 @@ const config = {
   GEX_FETCH_TIME: process.env.GEX_FETCH_TIME || '16:35',
   GEX_COOLDOWN_MINUTES: parseInt(process.env.GEX_COOLDOWN_MINUTES || '5'),
 
+  // Schwab API Configuration (alternative to Tradier for options data)
+  SCHWAB_ENABLED: process.env.SCHWAB_ENABLED?.toLowerCase() === 'true',
+  SCHWAB_APP_KEY: process.env.SCHWAB_APP_KEY || '',
+  SCHWAB_APP_SECRET: process.env.SCHWAB_APP_SECRET || '',
+  SCHWAB_CALLBACK_URL: process.env.SCHWAB_CALLBACK_URL || 'https://127.0.0.1:8182',
+
   // Tradier API Configuration
   TRADIER_ACCESS_TOKEN: process.env.TRADIER_ACCESS_TOKEN || '',
   TRADIER_ACCOUNT_ID: process.env.TRADIER_ACCOUNT_ID || '',

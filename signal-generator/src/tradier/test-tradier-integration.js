@@ -6,7 +6,7 @@ import TradierClient from './tradier-client.js';
 import OptionsChainManager from './options-chain-manager.js';
 import ExposureCalculator from './exposure-calculator.js';
 import FuturesConverter from './futures-converter.js';
-import TradierExposureService from './tradier-exposure-service.js';
+import OptionsExposureService from './options-exposure-service.js';
 
 const logger = createLogger('tradier-test');
 
@@ -167,7 +167,7 @@ async function testOptionsChainManager() {
   }
 }
 
-async function testTradierExposureService() {
+async function testOptionsExposureService() {
   console.log('\n=== Testing Tradier Exposure Service ===');
 
   try {
@@ -176,13 +176,13 @@ async function testTradierExposureService() {
     process.env.TRADIER_BASE_URL = testConfig.baseUrl;
     process.env.TRADIER_SYMBOLS = testConfig.symbols.join(',');
 
-    const service = new TradierExposureService();
-    console.log('✅ TradierExposureService created');
+    const service = new OptionsExposureService();
+    console.log('✅ OptionsExposureService created');
 
     // Test initialization (will likely fail in sandbox but should show proper error handling)
     try {
       await service.initialize();
-      console.log('✅ TradierExposureService initialized');
+      console.log('✅ OptionsExposureService initialized');
 
       const health = service.getHealthStatus();
       console.log('✅ Health status:', health);
@@ -192,7 +192,7 @@ async function testTradierExposureService() {
     }
 
   } catch (error) {
-    console.error('❌ TradierExposureService test failed:', error.message);
+    console.error('❌ OptionsExposureService test failed:', error.message);
   }
 }
 
@@ -204,7 +204,7 @@ async function runAllTests() {
   await testExposureCalculator();
   await testFuturesConverter();
   await testOptionsChainManager();
-  await testTradierExposureService();
+  await testOptionsExposureService();
 
   console.log('\n✅ All tests completed!');
   console.log('\nℹ️  Note: Some tests may show warnings in sandbox/test mode - this is expected.');
