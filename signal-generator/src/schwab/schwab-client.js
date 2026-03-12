@@ -2,6 +2,7 @@ import axios from 'axios';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
+import Redis from 'ioredis';
 import { createLogger } from '../../../shared/index.js';
 
 const logger = createLogger('schwab-client');
@@ -9,6 +10,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 const TOKEN_FILE = join(__dirname, '../../../shared/.schwab-tokens.json');
+const REDIS_TOKEN_KEY = 'schwab:tokens';
 const BASE_URL = 'https://api.schwabapi.com';
 const TOKEN_REFRESH_INTERVAL = 25 * 60 * 1000; // 25 minutes (access token lasts 30 min)
 const REFRESH_TOKEN_WARN_DAYS = 5; // Warn when refresh token has < 5 days left
@@ -144,6 +146,7 @@ class SchwabClient {
     this.appKey = options.appKey;
     this.appSecret = options.appSecret;
     this.callbackUrl = options.callbackUrl || 'https://127.0.0.1:8182';
+    this.redisUrl = options.redisUrl || null;
 
     // Tokens
     this.accessToken = null;
@@ -172,50 +175,109 @@ class SchwabClient {
       throw new Error('Schwab app key and secret are required');
     }
 
-    // Load tokens from disk
-    this._loadTokens();
+    // Synchronous file-based load as initial fallback (constructor can't be async)
+    this._loadTokensFromFile();
   }
 
   // ===== Token Management =====
 
-  _loadTokens() {
+  /**
+   * Load tokens from Redis first, then fall back to file.
+   * Must be called after construction (async). testConnection() calls this.
+   */
+  async _loadTokens() {
+    // Try Redis first
+    if (this.redisUrl) {
+      const loaded = await this._loadTokensFromRedis();
+      if (loaded) return;
+    }
+    // Fall back to file
+    this._loadTokensFromFile();
+  }
+
+  async _loadTokensFromRedis() {
+    let redis;
+    try {
+      redis = new Redis(this.redisUrl, { lazyConnect: true, maxRetriesPerRequest: 2 });
+      await redis.connect();
+      const raw = await redis.get(REDIS_TOKEN_KEY);
+      if (raw) {
+        const data = JSON.parse(raw);
+        this.accessToken = data.access_token;
+        this.refreshToken = data.refresh_token;
+        this.tokenObtainedAt = data.obtained_at;
+        logger.info('Loaded Schwab tokens from Redis');
+        this._checkRefreshTokenAge();
+        return true;
+      }
+      logger.info('No Schwab tokens in Redis');
+      return false;
+    } catch (error) {
+      logger.warn('Failed to load Schwab tokens from Redis:', error.message);
+      return false;
+    } finally {
+      try { redis?.disconnect(); } catch {}
+    }
+  }
+
+  _loadTokensFromFile() {
     try {
       if (fs.existsSync(TOKEN_FILE)) {
         const data = JSON.parse(fs.readFileSync(TOKEN_FILE, 'utf-8'));
         this.accessToken = data.access_token;
         this.refreshToken = data.refresh_token;
         this.tokenObtainedAt = data.obtained_at;
-        logger.info('Loaded Schwab tokens from disk');
-
-        // Check refresh token age
-        if (this.tokenObtainedAt) {
-          const ageMs = Date.now() - new Date(this.tokenObtainedAt).getTime();
-          const ageDays = ageMs / (1000 * 60 * 60 * 24);
-          const remainDays = 7 - ageDays;
-          if (remainDays < REFRESH_TOKEN_WARN_DAYS) {
-            logger.warn(`Schwab refresh token expires in ~${remainDays.toFixed(1)} days — re-authenticate soon`);
-          }
-        }
+        logger.info('Loaded Schwab tokens from file');
+        this._checkRefreshTokenAge();
       } else {
         logger.warn('No Schwab token file found at', TOKEN_FILE);
       }
     } catch (error) {
-      logger.error('Failed to load Schwab tokens:', error.message);
+      logger.error('Failed to load Schwab tokens from file:', error.message);
     }
   }
 
-  _saveTokens() {
+  _checkRefreshTokenAge() {
+    if (this.tokenObtainedAt) {
+      const ageMs = Date.now() - new Date(this.tokenObtainedAt).getTime();
+      const ageDays = ageMs / (1000 * 60 * 60 * 24);
+      const remainDays = 7 - ageDays;
+      if (remainDays < REFRESH_TOKEN_WARN_DAYS) {
+        logger.warn(`Schwab refresh token expires in ~${remainDays.toFixed(1)} days — re-authenticate soon`);
+      }
+    }
+  }
+
+  async _saveTokens() {
+    const data = {
+      access_token: this.accessToken,
+      refresh_token: this.refreshToken,
+      token_type: 'Bearer',
+      obtained_at: new Date().toISOString()
+    };
+
+    // Save to Redis (primary)
+    if (this.redisUrl) {
+      let redis;
+      try {
+        redis = new Redis(this.redisUrl, { lazyConnect: true, maxRetriesPerRequest: 2 });
+        await redis.connect();
+        await redis.set(REDIS_TOKEN_KEY, JSON.stringify(data));
+        logger.debug('Saved Schwab tokens to Redis');
+      } catch (error) {
+        logger.error('Failed to save Schwab tokens to Redis:', error.message);
+      } finally {
+        try { redis?.disconnect(); } catch {}
+      }
+    }
+
+    // Save to file (local backup)
     try {
-      const data = {
-        access_token: this.accessToken,
-        refresh_token: this.refreshToken,
-        token_type: 'Bearer',
-        obtained_at: new Date().toISOString()
-      };
       fs.writeFileSync(TOKEN_FILE, JSON.stringify(data, null, 2));
-      logger.debug('Saved Schwab tokens to disk');
+      logger.debug('Saved Schwab tokens to file');
     } catch (error) {
-      logger.error('Failed to save Schwab tokens:', error.message);
+      // Expected to fail on Sevalla — not an error
+      logger.debug('Could not save Schwab tokens to file (expected in containerized env)');
     }
   }
 
@@ -242,7 +304,7 @@ class SchwabClient {
       this.accessToken = response.data.access_token;
       this.refreshToken = response.data.refresh_token;
       this.tokenObtainedAt = new Date().toISOString();
-      this._saveTokens();
+      await this._saveTokens();
 
       logger.info('Schwab access token refreshed successfully');
     } catch (error) {
@@ -602,6 +664,9 @@ class SchwabClient {
 
   async testConnection() {
     try {
+      // Load tokens from Redis (may have been seeded or updated by another instance)
+      await this._loadTokens();
+
       // Refresh token first in case access token expired
       if (this.refreshToken) {
         await this.refreshAccessToken();

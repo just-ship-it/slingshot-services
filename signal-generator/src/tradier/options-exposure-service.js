@@ -63,7 +63,8 @@ class OptionsExposureService {
         this.tradierClient = new SchwabClient({
           appKey: this.config.schwabAppKey,
           appSecret: this.config.schwabAppSecret,
-          callbackUrl: this.config.schwabCallbackUrl
+          callbackUrl: this.config.schwabCallbackUrl,
+          redisUrl: config.getRedisUrl()
         });
       } else if (this.config.accessToken) {
         this.logger.info('Using Tradier API for options data');
