@@ -7,6 +7,11 @@
  *
  * Usage:
  *   node scripts/precompute-iv.js --start 2023-03-28 --end 2025-12-26
+ *   node scripts/precompute-iv.js --start 2025-01-02 --end 2026-01-28 --interval 1
+ *
+ * Options:
+ *   --interval <minutes>  Aggregation interval in minutes (default: 15). Use 1 for
+ *                         1-minute resolution IV data that matches live trading refresh rates.
  */
 
 import fs from 'fs';
@@ -301,8 +306,10 @@ function parseOptionSymbol(symbol) {
 
 /**
  * Load QQQ spot prices from OHLCV CSV
+ * @param {string} dataDir - Data directory path
+ * @param {number} intervalMinutes - Aggregation interval in minutes (1, 5, 15)
  */
-function loadQQQSpotPrices(dataDir) {
+function loadQQQSpotPrices(dataDir, intervalMinutes = 15) {
   // Check multiple possible locations for QQQ OHLCV data
   const possiblePaths = [
     path.join(dataDir, 'ohlcv', 'qqq', 'QQQ_ohlcv_1m.csv'),  // Current location
@@ -331,7 +338,8 @@ function loadQQQSpotPrices(dataDir) {
   const tsIdx = header.indexOf('ts_event');
   const closeIdx = header.indexOf('close');
 
-  const spotPrices = new Map(); // timestamp -> close price
+  const intervalMs = intervalMinutes * 60 * 1000;
+  const spotPrices = new Map(); // intervalTs -> close price (last price in each interval)
 
   for (let i = 1; i < lines.length; i++) {
     const cols = lines[i].split(',');
@@ -343,7 +351,9 @@ function loadQQQSpotPrices(dataDir) {
     const close = parseFloat(cols[closeIdx]);
     if (isNaN(close)) continue;
 
-    spotPrices.set(ts, close);
+    // Bucket to interval — keep last price per interval
+    const intervalTs = Math.floor(ts / intervalMs) * intervalMs;
+    spotPrices.set(intervalTs, close);
   }
 
   console.log(`Loaded ${spotPrices.size} spot price records`);
@@ -405,8 +415,11 @@ function extractDateFromFilename(filename) {
 
 /**
  * Load CBBO data for a specific date using streaming to handle large files
+ * @param {string} filePath - Path to CBBO CSV file
+ * @param {number} intervalMinutes - Aggregation interval in minutes (1, 5, 15)
  */
-function loadCBBOForDate(filePath) {
+function loadCBBOForDate(filePath, intervalMinutes = 15) {
+  const intervalMs = intervalMinutes * 60 * 1000;
   return new Promise((resolve, reject) => {
     const intervals = new Map(); // intervalTs -> Map<symbol, {bid, ask}>
     let header = null;
@@ -433,8 +446,8 @@ function loadCBBOForDate(filePath) {
       const ts = new Date(cols[tsIdx]).getTime();
       if (isNaN(ts)) return;
 
-      // Round to 15-minute interval
-      const intervalTs = Math.floor(ts / (15 * 60 * 1000)) * (15 * 60 * 1000);
+      // Round to configured interval
+      const intervalTs = Math.floor(ts / intervalMs) * intervalMs;
 
       const bid = parseFloat(cols[bidIdx]);
       const ask = parseFloat(cols[askIdx]);
@@ -584,6 +597,7 @@ async function main() {
   let startDate = null;
   let endDate = null;
   let outputPath = null;
+  let intervalMinutes = 15;
 
   for (let i = 0; i < args.length; i++) {
     if (args[i] === '--start' && args[i + 1]) {
@@ -599,22 +613,30 @@ async function main() {
     } else if (args[i] === '--output' && args[i + 1]) {
       outputPath = args[i + 1];
       i++;
+    } else if (args[i] === '--interval' && args[i + 1]) {
+      intervalMinutes = parseInt(args[i + 1]);
+      if (![1, 5, 15].includes(intervalMinutes)) {
+        console.error(`Invalid interval: ${intervalMinutes}. Must be 1, 5, or 15.`);
+        process.exit(1);
+      }
+      i++;
     }
   }
 
   if (!startDate || !endDate) {
-    console.log('Usage: node precompute-iv.js --start YYYY-MM-DD --end YYYY-MM-DD [--output path]');
+    console.log('Usage: node precompute-iv.js --start YYYY-MM-DD --end YYYY-MM-DD [--interval 1|5|15] [--output path]');
     process.exit(1);
   }
 
   const dataDir = path.join(__dirname, '..', 'data');
-  outputPath = outputPath || path.join(dataDir, 'iv', 'qqq', 'qqq_atm_iv_15m.csv');
+  outputPath = outputPath || path.join(dataDir, 'iv', 'qqq', `qqq_atm_iv_${intervalMinutes}m.csv`);
 
   console.log(`\nPrecomputing ATM IV from ${startDate.toISOString().split('T')[0]} to ${endDate.toISOString().split('T')[0]}`);
+  console.log(`Interval: ${intervalMinutes}m`);
   console.log(`Output: ${outputPath}\n`);
 
-  // Load QQQ spot prices
-  const spotPrices = loadQQQSpotPrices(dataDir);
+  // Load QQQ spot prices (at the requested interval resolution)
+  const spotPrices = loadQQQSpotPrices(dataDir, intervalMinutes);
 
   // Get list of CBBO files
   const cbboFiles = getCBBOFiles(dataDir);
@@ -636,7 +658,7 @@ async function main() {
     process.stdout.write(`Processing ${file.filename}...`);
 
     try {
-      const intervals = await loadCBBOForDate(file.path);
+      const intervals = await loadCBBOForDate(file.path, intervalMinutes);
       let daySuccess = 0;
 
       for (const [intervalTs, quotes] of intervals) {

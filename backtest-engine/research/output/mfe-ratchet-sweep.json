@@ -1,0 +1,1443 @@
+{
+  "phase1": [
+    {
+      "phase": 1,
+      "target": 70,
+      "mode": "mfeRatchet",
+      "modeLabel": "mfeRatchet(default)",
+      "tiers": [
+        {
+          "minMFE": 100,
+          "lockPct": 0.6,
+          "label": "lock 60%"
+        },
+        {
+          "minMFE": 60,
+          "lockPct": 0.5,
+          "label": "lock 50%"
+        },
+        {
+          "minMFE": 40,
+          "lockPct": 0.4,
+          "label": "lock 40%"
+        },
+        {
+          "minMFE": 20,
+          "lockPct": 0.25,
+          "label": "lock 25%"
+        }
+      ],
+      "trades": 409,
+      "winRate": 94.38,
+      "pnl": 184923,
+      "pf": 7.83,
+      "expectancy": 452.13,
+      "maxDD": 1.75,
+      "sharpe": 16.21,
+      "avgWin": 0,
+      "avgLoss": 0,
+      "tpCount": 99,
+      "slCount": 18,
+      "trailCount": 0,
+      "ratchetCount": 281,
+      "mhCount": 10,
+      "mcCount": 1
+    },
+    {
+      "phase": 1,
+      "target": 70,
+      "mode": "timeBased",
+      "modeLabel": "timeBased(default)",
+      "tiers": null,
+      "trades": 408,
+      "winRate": 69.85,
+      "pnl": 315215,
+      "pf": 8.72,
+      "expectancy": 772.59,
+      "maxDD": 1.9,
+      "sharpe": 20.91,
+      "avgWin": 0,
+      "avgLoss": 0,
+      "tpCount": 233,
+      "slCount": 27,
+      "trailCount": 142,
+      "ratchetCount": 0,
+      "mhCount": 5,
+      "mcCount": 1
+    },
+    {
+      "phase": 1,
+      "target": 70,
+      "mode": "none",
+      "modeLabel": "none(TP/SL only)",
+      "tiers": null,
+      "trades": 385,
+      "winRate": 82.08,
+      "pnl": 319453,
+      "pf": 5.11,
+      "expectancy": 829.75,
+      "maxDD": 2.13,
+      "sharpe": 20,
+      "avgWin": 0,
+      "avgLoss": 0,
+      "tpCount": 263,
+      "slCount": 48,
+      "trailCount": 0,
+      "ratchetCount": 0,
+      "mhCount": 72,
+      "mcCount": 2
+    },
+    {
+      "phase": 1,
+      "target": 100,
+      "mode": "mfeRatchet",
+      "modeLabel": "mfeRatchet(default)",
+      "tiers": [
+        {
+          "minMFE": 100,
+          "lockPct": 0.6,
+          "label": "lock 60%"
+        },
+        {
+          "minMFE": 60,
+          "lockPct": 0.5,
+          "label": "lock 50%"
+        },
+        {
+          "minMFE": 40,
+          "lockPct": 0.4,
+          "label": "lock 40%"
+        },
+        {
+          "minMFE": 20,
+          "lockPct": 0.25,
+          "label": "lock 25%"
+        }
+      ],
+      "trades": 406,
+      "winRate": 94.33,
+      "pnl": 206873,
+      "pf": 8.64,
+      "expectancy": 509.54,
+      "maxDD": 1.7,
+      "sharpe": 16.31,
+      "avgWin": 0,
+      "avgLoss": 0,
+      "tpCount": 67,
+      "slCount": 18,
+      "trailCount": 0,
+      "ratchetCount": 308,
+      "mhCount": 12,
+      "mcCount": 1
+    },
+    {
+      "phase": 1,
+      "target": 100,
+      "mode": "timeBased",
+      "modeLabel": "timeBased(default)",
+      "tiers": null,
+      "trades": 403,
+      "winRate": 64.52,
+      "pnl": 373793,
+      "pf": 9.81,
+      "expectancy": 927.53,
+      "maxDD": 1.75,
+      "sharpe": 21.98,
+      "avgWin": 0,
+      "avgLoss": 0,
+      "tpCount": 165,
+      "slCount": 28,
+      "trailCount": 204,
+      "ratchetCount": 0,
+      "mhCount": 5,
+      "mcCount": 1
+    },
+    {
+      "phase": 1,
+      "target": 100,
+      "mode": "none",
+      "modeLabel": "none(TP/SL only)",
+      "tiers": null,
+      "trades": 371,
+      "winRate": 77.36,
+      "pnl": 373423,
+      "pf": 5.04,
+      "expectancy": 1006.53,
+      "maxDD": 2.99,
+      "sharpe": 21.3,
+      "avgWin": 0,
+      "avgLoss": 0,
+      "tpCount": 202,
+      "slCount": 58,
+      "trailCount": 0,
+      "ratchetCount": 0,
+      "mhCount": 106,
+      "mcCount": 5
+    },
+    {
+      "phase": 1,
+      "target": 130,
+      "mode": "mfeRatchet",
+      "modeLabel": "mfeRatchet(default)",
+      "tiers": [
+        {
+          "minMFE": 100,
+          "lockPct": 0.6,
+          "label": "lock 60%"
+        },
+        {
+          "minMFE": 60,
+          "lockPct": 0.5,
+          "label": "lock 50%"
+        },
+        {
+          "minMFE": 40,
+          "lockPct": 0.4,
+          "label": "lock 40%"
+        },
+        {
+          "minMFE": 20,
+          "lockPct": 0.25,
+          "label": "lock 25%"
+        }
+      ],
+      "trades": 401,
+      "winRate": 94.51,
+      "pnl": 216693,
+      "pf": 9.45,
+      "expectancy": 540.38,
+      "maxDD": 1.67,
+      "sharpe": 16.36,
+      "avgWin": 0,
+      "avgLoss": 0,
+      "tpCount": 39,
+      "slCount": 17,
+      "trailCount": 0,
+      "ratchetCount": 323,
+      "mhCount": 21,
+      "mcCount": 1
+    },
+    {
+      "phase": 1,
+      "target": 130,
+      "mode": "timeBased",
+      "modeLabel": "timeBased(default)",
+      "tiers": null,
+      "trades": 398,
+      "winRate": 63.32,
+      "pnl": 417697,
+      "pf": 10.52,
+      "expectancy": 1049.49,
+      "maxDD": 1.65,
+      "sharpe": 23.15,
+      "avgWin": 0,
+      "avgLoss": 0,
+      "tpCount": 107,
+      "slCount": 29,
+      "trailCount": 256,
+      "ratchetCount": 0,
+      "mhCount": 5,
+      "mcCount": 1
+    },
+    {
+      "phase": 1,
+      "target": 130,
+      "mode": "none",
+      "modeLabel": "none(TP/SL only)",
+      "tiers": null,
+      "trades": 360,
+      "winRate": 76.67,
+      "pnl": 413028,
+      "pf": 5.33,
+      "expectancy": 1147.3,
+      "maxDD": 2.56,
+      "sharpe": 22.81,
+      "avgWin": 0,
+      "avgLoss": 0,
+      "tpCount": 146,
+      "slCount": 60,
+      "trailCount": 0,
+      "ratchetCount": 0,
+      "mhCount": 148,
+      "mcCount": 6
+    },
+    {
+      "phase": 1,
+      "target": 150,
+      "mode": "mfeRatchet",
+      "modeLabel": "mfeRatchet(default)",
+      "tiers": [
+        {
+          "minMFE": 100,
+          "lockPct": 0.6,
+          "label": "lock 60%"
+        },
+        {
+          "minMFE": 60,
+          "lockPct": 0.5,
+          "label": "lock 50%"
+        },
+        {
+          "minMFE": 40,
+          "lockPct": 0.4,
+          "label": "lock 40%"
+        },
+        {
+          "minMFE": 20,
+          "lockPct": 0.25,
+          "label": "lock 25%"
+        }
+      ],
+      "trades": 401,
+      "winRate": 94.51,
+      "pnl": 215308,
+      "pf": 9.39,
+      "expectancy": 536.93,
+      "maxDD": 1.69,
+      "sharpe": 16.36,
+      "avgWin": 0,
+      "avgLoss": 0,
+      "tpCount": 23,
+      "slCount": 17,
+      "trailCount": 0,
+      "ratchetCount": 333,
+      "mhCount": 27,
+      "mcCount": 1
+    },
+    {
+      "phase": 1,
+      "target": 150,
+      "mode": "timeBased",
+      "modeLabel": "timeBased(default)",
+      "tiers": null,
+      "trades": 397,
+      "winRate": 62.47,
+      "pnl": 432259,
+      "pf": 10.85,
+      "expectancy": 1088.81,
+      "maxDD": 1.64,
+      "sharpe": 23.85,
+      "avgWin": 0,
+      "avgLoss": 0,
+      "tpCount": 78,
+      "slCount": 29,
+      "trailCount": 284,
+      "ratchetCount": 0,
+      "mhCount": 5,
+      "mcCount": 1
+    },
+    {
+      "phase": 1,
+      "target": 150,
+      "mode": "none",
+      "modeLabel": "none(TP/SL only)",
+      "tiers": null,
+      "trades": 357,
+      "winRate": 75.63,
+      "pnl": 428552,
+      "pf": 5.36,
+      "expectancy": 1200.43,
+      "maxDD": 2.66,
+      "sharpe": 23.08,
+      "avgWin": 0,
+      "avgLoss": 0,
+      "tpCount": 115,
+      "slCount": 62,
+      "trailCount": 0,
+      "ratchetCount": 0,
+      "mhCount": 174,
+      "mcCount": 6
+    },
+    {
+      "phase": 1,
+      "target": 200,
+      "mode": "mfeRatchet",
+      "modeLabel": "mfeRatchet(default)",
+      "tiers": [
+        {
+          "minMFE": 100,
+          "lockPct": 0.6,
+          "label": "lock 60%"
+        },
+        {
+          "minMFE": 60,
+          "lockPct": 0.5,
+          "label": "lock 50%"
+        },
+        {
+          "minMFE": 40,
+          "lockPct": 0.4,
+          "label": "lock 40%"
+        },
+        {
+          "minMFE": 20,
+          "lockPct": 0.25,
+          "label": "lock 25%"
+        }
+      ],
+      "trades": 401,
+      "winRate": 94.51,
+      "pnl": 210808,
+      "pf": 9.22,
+      "expectancy": 525.71,
+      "maxDD": 1.7,
+      "sharpe": 16.64,
+      "avgWin": 0,
+      "avgLoss": 0,
+      "tpCount": 7,
+      "slCount": 17,
+      "trailCount": 0,
+      "ratchetCount": 343,
+      "mhCount": 33,
+      "mcCount": 1
+    },
+    {
+      "phase": 1,
+      "target": 200,
+      "mode": "timeBased",
+      "modeLabel": "timeBased(default)",
+      "tiers": null,
+      "trades": 393,
+      "winRate": 61.58,
+      "pnl": 450745,
+      "pf": 11.61,
+      "expectancy": 1146.93,
+      "maxDD": 1.65,
+      "sharpe": 24,
+      "avgWin": 0,
+      "avgLoss": 0,
+      "tpCount": 32,
+      "slCount": 28,
+      "trailCount": 327,
+      "ratchetCount": 0,
+      "mhCount": 5,
+      "mcCount": 1
+    },
+    {
+      "phase": 1,
+      "target": 200,
+      "mode": "none",
+      "modeLabel": "none(TP/SL only)",
+      "tiers": null,
+      "trades": 346,
+      "winRate": 74.86,
+      "pnl": 443962,
+      "pf": 5.44,
+      "expectancy": 1283.13,
+      "maxDD": 3.17,
+      "sharpe": 23.61,
+      "avgWin": 0,
+      "avgLoss": 0,
+      "tpCount": 68,
+      "slCount": 63,
+      "trailCount": 0,
+      "ratchetCount": 0,
+      "mhCount": 210,
+      "mcCount": 5
+    }
+  ],
+  "phase2": [
+    {
+      "phase": 2,
+      "target": 130,
+      "mode": "mfeRatchet",
+      "tierName": "lower-thresholds-A",
+      "tiers": [
+        {
+          "minMFE": 50,
+          "lockPct": 0.5,
+          "label": "lock 50%"
+        },
+        {
+          "minMFE": 30,
+          "lockPct": 0.4,
+          "label": "lock 40%"
+        },
+        {
+          "minMFE": 20,
+          "lockPct": 0.3,
+          "label": "lock 30%"
+        },
+        {
+          "minMFE": 10,
+          "lockPct": 0.2,
+          "label": "lock 20%"
+        }
+      ],
+      "tiersStr": "50→50%, 30→40%, 20→30%, 10→20%",
+      "trades": 405,
+      "winRate": 97.28,
+      "pnl": 112498,
+      "pf": 8.67,
+      "expectancy": 277.77,
+      "maxDD": 1.16,
+      "sharpe": 11.21,
+      "avgWin": 0,
+      "avgLoss": 0,
+      "tpCount": 17,
+      "slCount": 10,
+      "trailCount": 0,
+      "ratchetCount": 367,
+      "mhCount": 10,
+      "mcCount": 1
+    },
+    {
+      "phase": 2,
+      "target": 130,
+      "mode": "mfeRatchet",
+      "tierName": "lower-thresholds-B",
+      "tiers": [
+        {
+          "minMFE": 60,
+          "lockPct": 0.55,
+          "label": "lock 55%"
+        },
+        {
+          "minMFE": 40,
+          "lockPct": 0.45,
+          "label": "lock 45%"
+        },
+        {
+          "minMFE": 25,
+          "lockPct": 0.35,
+          "label": "lock 35%"
+        },
+        {
+          "minMFE": 10,
+          "lockPct": 0.2,
+          "label": "lock 20%"
+        }
+      ],
+      "tiersStr": "60→55%, 40→45%, 25→35%, 10→20%",
+      "trades": 407,
+      "winRate": 97.3,
+      "pnl": 105617,
+      "pf": 8.2,
+      "expectancy": 259.5,
+      "maxDD": 1.17,
+      "sharpe": 11.17,
+      "avgWin": 0,
+      "avgLoss": 0,
+      "tpCount": 15,
+      "slCount": 10,
+      "trailCount": 0,
+      "ratchetCount": 377,
+      "mhCount": 4,
+      "mcCount": 1
+    },
+    {
+      "phase": 2,
+      "target": 130,
+      "mode": "mfeRatchet",
+      "tierName": "lower-thresholds-C",
+      "tiers": [
+        {
+          "minMFE": 80,
+          "lockPct": 0.55,
+          "label": "lock 55%"
+        },
+        {
+          "minMFE": 50,
+          "lockPct": 0.45,
+          "label": "lock 45%"
+        },
+        {
+          "minMFE": 30,
+          "lockPct": 0.35,
+          "label": "lock 35%"
+        },
+        {
+          "minMFE": 15,
+          "lockPct": 0.25,
+          "label": "lock 25%"
+        }
+      ],
+      "tiersStr": "80→55%, 50→45%, 30→35%, 15→25%",
+      "trades": 404,
+      "winRate": 96.29,
+      "pnl": 156148,
+      "pf": 9.08,
+      "expectancy": 386.5,
+      "maxDD": 1.48,
+      "sharpe": 13.68,
+      "avgWin": 0,
+      "avgLoss": 0,
+      "tpCount": 26,
+      "slCount": 13,
+      "trailCount": 0,
+      "ratchetCount": 352,
+      "mhCount": 12,
+      "mcCount": 1
+    },
+    {
+      "phase": 2,
+      "target": 130,
+      "mode": "mfeRatchet",
+      "tierName": "higher-lock-pct",
+      "tiers": [
+        {
+          "minMFE": 60,
+          "lockPct": 0.7,
+          "label": "lock 70%"
+        },
+        {
+          "minMFE": 40,
+          "lockPct": 0.6,
+          "label": "lock 60%"
+        },
+        {
+          "minMFE": 20,
+          "lockPct": 0.5,
+          "label": "lock 50%"
+        },
+        {
+          "minMFE": 10,
+          "lockPct": 0.4,
+          "label": "lock 40%"
+        }
+      ],
+      "tiersStr": "60→70%, 40→60%, 20→50%, 10→40%",
+      "trades": 410,
+      "winRate": 97.07,
+      "pnl": 72687,
+      "pf": 5.51,
+      "expectancy": 177.29,
+      "maxDD": 1.64,
+      "sharpe": 10.79,
+      "avgWin": 0,
+      "avgLoss": 0,
+      "tpCount": 1,
+      "slCount": 11,
+      "trailCount": 0,
+      "ratchetCount": 397,
+      "mhCount": 0,
+      "mcCount": 1
+    },
+    {
+      "phase": 2,
+      "target": 130,
+      "mode": "mfeRatchet",
+      "tierName": "aggressive",
+      "tiers": [
+        {
+          "minMFE": 40,
+          "lockPct": 0.6,
+          "label": "lock 60%"
+        },
+        {
+          "minMFE": 20,
+          "lockPct": 0.5,
+          "label": "lock 50%"
+        },
+        {
+          "minMFE": 10,
+          "lockPct": 0.4,
+          "label": "lock 40%"
+        },
+        {
+          "minMFE": 5,
+          "lockPct": 0.3,
+          "label": "lock 30%"
+        }
+      ],
+      "tiersStr": "40→60%, 20→50%, 10→40%, 5→30%",
+      "trades": 410,
+      "winRate": 98.54,
+      "pnl": 43352,
+      "pf": 6.76,
+      "expectancy": 105.74,
+      "maxDD": 1.26,
+      "sharpe": 7.46,
+      "avgWin": 0,
+      "avgLoss": 0,
+      "tpCount": 3,
+      "slCount": 5,
+      "trailCount": 0,
+      "ratchetCount": 400,
+      "mhCount": 1,
+      "mcCount": 1
+    },
+    {
+      "phase": 2,
+      "target": 130,
+      "mode": "mfeRatchet",
+      "tierName": "conservative",
+      "tiers": [
+        {
+          "minMFE": 100,
+          "lockPct": 0.55,
+          "label": "lock 55%"
+        },
+        {
+          "minMFE": 60,
+          "lockPct": 0.45,
+          "label": "lock 45%"
+        },
+        {
+          "minMFE": 40,
+          "lockPct": 0.35,
+          "label": "lock 35%"
+        },
+        {
+          "minMFE": 20,
+          "lockPct": 0.2,
+          "label": "lock 20%"
+        }
+      ],
+      "tiersStr": "100→55%, 60→45%, 40→35%, 20→20%",
+      "trades": 401,
+      "winRate": 94.51,
+      "pnl": 222403,
+      "pf": 9.67,
+      "expectancy": 554.62,
+      "maxDD": 1.65,
+      "sharpe": 16.78,
+      "avgWin": 0,
+      "avgLoss": 0,
+      "tpCount": 43,
+      "slCount": 17,
+      "trailCount": 0,
+      "ratchetCount": 311,
+      "mhCount": 27,
+      "mcCount": 3
+    },
+    {
+      "phase": 2,
+      "target": 130,
+      "mode": "mfeRatchet",
+      "tierName": "2-tier-simple",
+      "tiers": [
+        {
+          "minMFE": 40,
+          "lockPct": 0.55,
+          "label": "lock 55%"
+        },
+        {
+          "minMFE": 15,
+          "lockPct": 0.35,
+          "label": "lock 35%"
+        }
+      ],
+      "tiersStr": "40→55%, 15→35%",
+      "trades": 408,
+      "winRate": 96.08,
+      "pnl": 134587,
+      "pf": 7.49,
+      "expectancy": 329.87,
+      "maxDD": 1.46,
+      "sharpe": 13.08,
+      "avgWin": 0,
+      "avgLoss": 0,
+      "tpCount": 14,
+      "slCount": 14,
+      "trailCount": 0,
+      "ratchetCount": 373,
+      "mhCount": 6,
+      "mcCount": 1
+    },
+    {
+      "phase": 2,
+      "target": 130,
+      "mode": "mfeRatchet",
+      "tierName": "3-tier",
+      "tiers": [
+        {
+          "minMFE": 60,
+          "lockPct": 0.65,
+          "label": "lock 65%"
+        },
+        {
+          "minMFE": 30,
+          "lockPct": 0.5,
+          "label": "lock 50%"
+        },
+        {
+          "minMFE": 10,
+          "lockPct": 0.3,
+          "label": "lock 30%"
+        }
+      ],
+      "tiersStr": "60→65%, 30→50%, 10→30%",
+      "trades": 408,
+      "winRate": 97.06,
+      "pnl": 91452,
+      "pf": 6.68,
+      "expectancy": 224.15,
+      "maxDD": 1.18,
+      "sharpe": 11.05,
+      "avgWin": 0,
+      "avgLoss": 0,
+      "tpCount": 6,
+      "slCount": 11,
+      "trailCount": 0,
+      "ratchetCount": 389,
+      "mhCount": 1,
+      "mcCount": 1
+    },
+    {
+      "phase": 2,
+      "target": 130,
+      "mode": "mfeRatchet",
+      "tierName": "3-tier-tight",
+      "tiers": [
+        {
+          "minMFE": 40,
+          "lockPct": 0.7,
+          "label": "lock 70%"
+        },
+        {
+          "minMFE": 20,
+          "lockPct": 0.55,
+          "label": "lock 55%"
+        },
+        {
+          "minMFE": 8,
+          "lockPct": 0.4,
+          "label": "lock 40%"
+        }
+      ],
+      "tiersStr": "40→70%, 20→55%, 8→40%",
+      "trades": 410,
+      "winRate": 97.07,
+      "pnl": 53567,
+      "pf": 4.32,
+      "expectancy": 130.65,
+      "maxDD": 1.89,
+      "sharpe": 8.49,
+      "avgWin": 0,
+      "avgLoss": 0,
+      "tpCount": 0,
+      "slCount": 11,
+      "trailCount": 0,
+      "ratchetCount": 398,
+      "mhCount": 0,
+      "mcCount": 1
+    },
+    {
+      "phase": 2,
+      "target": 130,
+      "mode": "mfeRatchet",
+      "tierName": "ultra-tight",
+      "tiers": [
+        {
+          "minMFE": 30,
+          "lockPct": 0.75,
+          "label": "lock 75%"
+        },
+        {
+          "minMFE": 15,
+          "lockPct": 0.6,
+          "label": "lock 60%"
+        },
+        {
+          "minMFE": 5,
+          "lockPct": 0.4,
+          "label": "lock 40%"
+        }
+      ],
+      "tiersStr": "30→75%, 15→60%, 5→40%",
+      "trades": 411,
+      "winRate": 98.54,
+      "pnl": 35552,
+      "pf": 5.72,
+      "expectancy": 86.5,
+      "maxDD": 1.28,
+      "sharpe": 8.15,
+      "avgWin": 0,
+      "avgLoss": 0,
+      "tpCount": 0,
+      "slCount": 5,
+      "trailCount": 0,
+      "ratchetCount": 405,
+      "mhCount": 0,
+      "mcCount": 1
+    },
+    {
+      "phase": 2,
+      "target": 130,
+      "mode": "mfeRatchet",
+      "tierName": "breakeven-then-lock",
+      "tiers": [
+        {
+          "minMFE": 60,
+          "lockPct": 0.6,
+          "label": "lock 60%"
+        },
+        {
+          "minMFE": 30,
+          "lockPct": 0.4,
+          "label": "lock 40%"
+        },
+        {
+          "minMFE": 10,
+          "lockPct": 0,
+          "label": "breakeven"
+        }
+      ],
+      "tiersStr": "60→60%, 30→40%, 10→0%",
+      "trades": 406,
+      "winRate": 45.32,
+      "pnl": 123348,
+      "pf": 8.35,
+      "expectancy": 303.81,
+      "maxDD": 1.2,
+      "sharpe": 11.26,
+      "avgWin": 0,
+      "avgLoss": 0,
+      "tpCount": 19,
+      "slCount": 10,
+      "trailCount": 0,
+      "ratchetCount": 371,
+      "mhCount": 5,
+      "mcCount": 1
+    },
+    {
+      "phase": 2,
+      "target": 130,
+      "mode": "mfeRatchet",
+      "tierName": "wide-spacing",
+      "tiers": [
+        {
+          "minMFE": 120,
+          "lockPct": 0.65,
+          "label": "lock 65%"
+        },
+        {
+          "minMFE": 80,
+          "lockPct": 0.5,
+          "label": "lock 50%"
+        },
+        {
+          "minMFE": 40,
+          "lockPct": 0.35,
+          "label": "lock 35%"
+        },
+        {
+          "minMFE": 15,
+          "lockPct": 0.2,
+          "label": "lock 20%"
+        }
+      ],
+      "tiersStr": "120→65%, 80→50%, 40→35%, 15→20%",
+      "trades": 404,
+      "winRate": 96.04,
+      "pnl": 171523,
+      "pf": 9.27,
+      "expectancy": 424.56,
+      "maxDD": 1.48,
+      "sharpe": 14.3,
+      "avgWin": 0,
+      "avgLoss": 0,
+      "tpCount": 31,
+      "slCount": 14,
+      "trailCount": 0,
+      "ratchetCount": 337,
+      "mhCount": 20,
+      "mcCount": 2
+    },
+    {
+      "phase": 2,
+      "target": 150,
+      "mode": "mfeRatchet",
+      "tierName": "lower-thresholds-A",
+      "tiers": [
+        {
+          "minMFE": 50,
+          "lockPct": 0.5,
+          "label": "lock 50%"
+        },
+        {
+          "minMFE": 30,
+          "lockPct": 0.4,
+          "label": "lock 40%"
+        },
+        {
+          "minMFE": 20,
+          "lockPct": 0.3,
+          "label": "lock 30%"
+        },
+        {
+          "minMFE": 10,
+          "lockPct": 0.2,
+          "label": "lock 20%"
+        }
+      ],
+      "tiersStr": "50→50%, 30→40%, 20→30%, 10→20%",
+      "trades": 405,
+      "winRate": 97.28,
+      "pnl": 110433,
+      "pf": 8.52,
+      "expectancy": 272.67,
+      "maxDD": 1.15,
+      "sharpe": 11.13,
+      "avgWin": 0,
+      "avgLoss": 0,
+      "tpCount": 11,
+      "slCount": 10,
+      "trailCount": 0,
+      "ratchetCount": 372,
+      "mhCount": 11,
+      "mcCount": 1
+    },
+    {
+      "phase": 2,
+      "target": 150,
+      "mode": "mfeRatchet",
+      "tierName": "lower-thresholds-B",
+      "tiers": [
+        {
+          "minMFE": 60,
+          "lockPct": 0.55,
+          "label": "lock 55%"
+        },
+        {
+          "minMFE": 40,
+          "lockPct": 0.45,
+          "label": "lock 45%"
+        },
+        {
+          "minMFE": 25,
+          "lockPct": 0.35,
+          "label": "lock 35%"
+        },
+        {
+          "minMFE": 10,
+          "lockPct": 0.2,
+          "label": "lock 20%"
+        }
+      ],
+      "tiersStr": "60→55%, 40→45%, 25→35%, 10→20%",
+      "trades": 407,
+      "winRate": 97.3,
+      "pnl": 104807,
+      "pf": 8.14,
+      "expectancy": 257.51,
+      "maxDD": 1.16,
+      "sharpe": 11.12,
+      "avgWin": 0,
+      "avgLoss": 0,
+      "tpCount": 10,
+      "slCount": 10,
+      "trailCount": 0,
+      "ratchetCount": 381,
+      "mhCount": 5,
+      "mcCount": 1
+    },
+    {
+      "phase": 2,
+      "target": 150,
+      "mode": "mfeRatchet",
+      "tierName": "lower-thresholds-C",
+      "tiers": [
+        {
+          "minMFE": 80,
+          "lockPct": 0.55,
+          "label": "lock 55%"
+        },
+        {
+          "minMFE": 50,
+          "lockPct": 0.45,
+          "label": "lock 45%"
+        },
+        {
+          "minMFE": 30,
+          "lockPct": 0.35,
+          "label": "lock 35%"
+        },
+        {
+          "minMFE": 15,
+          "lockPct": 0.25,
+          "label": "lock 25%"
+        }
+      ],
+      "tiersStr": "80→55%, 50→45%, 30→35%, 15→25%",
+      "trades": 404,
+      "winRate": 96.29,
+      "pnl": 156538,
+      "pf": 9.1,
+      "expectancy": 387.47,
+      "maxDD": 1.47,
+      "sharpe": 13.53,
+      "avgWin": 0,
+      "avgLoss": 0,
+      "tpCount": 17,
+      "slCount": 13,
+      "trailCount": 0,
+      "ratchetCount": 357,
+      "mhCount": 16,
+      "mcCount": 1
+    },
+    {
+      "phase": 2,
+      "target": 150,
+      "mode": "mfeRatchet",
+      "tierName": "higher-lock-pct",
+      "tiers": [
+        {
+          "minMFE": 60,
+          "lockPct": 0.7,
+          "label": "lock 70%"
+        },
+        {
+          "minMFE": 40,
+          "lockPct": 0.6,
+          "label": "lock 60%"
+        },
+        {
+          "minMFE": 20,
+          "lockPct": 0.5,
+          "label": "lock 50%"
+        },
+        {
+          "minMFE": 10,
+          "lockPct": 0.4,
+          "label": "lock 40%"
+        }
+      ],
+      "tiersStr": "60→70%, 40→60%, 20→50%, 10→40%",
+      "trades": 410,
+      "winRate": 97.07,
+      "pnl": 73087,
+      "pf": 5.54,
+      "expectancy": 178.26,
+      "maxDD": 1.64,
+      "sharpe": 10.9,
+      "avgWin": 0,
+      "avgLoss": 0,
+      "tpCount": 1,
+      "slCount": 11,
+      "trailCount": 0,
+      "ratchetCount": 397,
+      "mhCount": 0,
+      "mcCount": 1
+    },
+    {
+      "phase": 2,
+      "target": 150,
+      "mode": "mfeRatchet",
+      "tierName": "aggressive",
+      "tiers": [
+        {
+          "minMFE": 40,
+          "lockPct": 0.6,
+          "label": "lock 60%"
+        },
+        {
+          "minMFE": 20,
+          "lockPct": 0.5,
+          "label": "lock 50%"
+        },
+        {
+          "minMFE": 10,
+          "lockPct": 0.4,
+          "label": "lock 40%"
+        },
+        {
+          "minMFE": 5,
+          "lockPct": 0.3,
+          "label": "lock 30%"
+        }
+      ],
+      "tiersStr": "40→60%, 20→50%, 10→40%, 5→30%",
+      "trades": 410,
+      "winRate": 98.54,
+      "pnl": 43122,
+      "pf": 6.73,
+      "expectancy": 105.18,
+      "maxDD": 1.27,
+      "sharpe": 7.61,
+      "avgWin": 0,
+      "avgLoss": 0,
+      "tpCount": 2,
+      "slCount": 5,
+      "trailCount": 0,
+      "ratchetCount": 401,
+      "mhCount": 1,
+      "mcCount": 1
+    },
+    {
+      "phase": 2,
+      "target": 150,
+      "mode": "mfeRatchet",
+      "tierName": "conservative",
+      "tiers": [
+        {
+          "minMFE": 100,
+          "lockPct": 0.55,
+          "label": "lock 55%"
+        },
+        {
+          "minMFE": 60,
+          "lockPct": 0.45,
+          "label": "lock 45%"
+        },
+        {
+          "minMFE": 40,
+          "lockPct": 0.35,
+          "label": "lock 35%"
+        },
+        {
+          "minMFE": 20,
+          "lockPct": 0.2,
+          "label": "lock 20%"
+        }
+      ],
+      "tiersStr": "100→55%, 60→45%, 40→35%, 20→20%",
+      "trades": 401,
+      "winRate": 94.51,
+      "pnl": 223088,
+      "pf": 9.7,
+      "expectancy": 556.33,
+      "maxDD": 1.67,
+      "sharpe": 16.44,
+      "avgWin": 0,
+      "avgLoss": 0,
+      "tpCount": 28,
+      "slCount": 17,
+      "trailCount": 0,
+      "ratchetCount": 319,
+      "mhCount": 34,
+      "mcCount": 3
+    },
+    {
+      "phase": 2,
+      "target": 150,
+      "mode": "mfeRatchet",
+      "tierName": "2-tier-simple",
+      "tiers": [
+        {
+          "minMFE": 40,
+          "lockPct": 0.55,
+          "label": "lock 55%"
+        },
+        {
+          "minMFE": 15,
+          "lockPct": 0.35,
+          "label": "lock 35%"
+        }
+      ],
+      "tiersStr": "40→55%, 15→35%",
+      "trades": 408,
+      "winRate": 96.08,
+      "pnl": 135557,
+      "pf": 7.53,
+      "expectancy": 332.25,
+      "maxDD": 1.45,
+      "sharpe": 13.05,
+      "avgWin": 0,
+      "avgLoss": 0,
+      "tpCount": 9,
+      "slCount": 14,
+      "trailCount": 0,
+      "ratchetCount": 375,
+      "mhCount": 9,
+      "mcCount": 1
+    },
+    {
+      "phase": 2,
+      "target": 150,
+      "mode": "mfeRatchet",
+      "tierName": "3-tier",
+      "tiers": [
+        {
+          "minMFE": 60,
+          "lockPct": 0.65,
+          "label": "lock 65%"
+        },
+        {
+          "minMFE": 30,
+          "lockPct": 0.5,
+          "label": "lock 50%"
+        },
+        {
+          "minMFE": 10,
+          "lockPct": 0.3,
+          "label": "lock 30%"
+        }
+      ],
+      "tiersStr": "60→65%, 30→50%, 10→30%",
+      "trades": 408,
+      "winRate": 97.06,
+      "pnl": 92557,
+      "pf": 6.74,
+      "expectancy": 226.86,
+      "maxDD": 1.17,
+      "sharpe": 11,
+      "avgWin": 0,
+      "avgLoss": 0,
+      "tpCount": 5,
+      "slCount": 11,
+      "trailCount": 0,
+      "ratchetCount": 390,
+      "mhCount": 1,
+      "mcCount": 1
+    },
+    {
+      "phase": 2,
+      "target": 150,
+      "mode": "mfeRatchet",
+      "tierName": "3-tier-tight",
+      "tiers": [
+        {
+          "minMFE": 40,
+          "lockPct": 0.7,
+          "label": "lock 70%"
+        },
+        {
+          "minMFE": 20,
+          "lockPct": 0.55,
+          "label": "lock 55%"
+        },
+        {
+          "minMFE": 8,
+          "lockPct": 0.4,
+          "label": "lock 40%"
+        }
+      ],
+      "tiersStr": "40→70%, 20→55%, 8→40%",
+      "trades": 410,
+      "winRate": 97.07,
+      "pnl": 53567,
+      "pf": 4.32,
+      "expectancy": 130.65,
+      "maxDD": 1.89,
+      "sharpe": 8.49,
+      "avgWin": 0,
+      "avgLoss": 0,
+      "tpCount": 0,
+      "slCount": 11,
+      "trailCount": 0,
+      "ratchetCount": 398,
+      "mhCount": 0,
+      "mcCount": 1
+    },
+    {
+      "phase": 2,
+      "target": 150,
+      "mode": "mfeRatchet",
+      "tierName": "ultra-tight",
+      "tiers": [
+        {
+          "minMFE": 30,
+          "lockPct": 0.75,
+          "label": "lock 75%"
+        },
+        {
+          "minMFE": 15,
+          "lockPct": 0.6,
+          "label": "lock 60%"
+        },
+        {
+          "minMFE": 5,
+          "lockPct": 0.4,
+          "label": "lock 40%"
+        }
+      ],
+      "tiersStr": "30→75%, 15→60%, 5→40%",
+      "trades": 411,
+      "winRate": 98.54,
+      "pnl": 35552,
+      "pf": 5.72,
+      "expectancy": 86.5,
+      "maxDD": 1.28,
+      "sharpe": 8.15,
+      "avgWin": 0,
+      "avgLoss": 0,
+      "tpCount": 0,
+      "slCount": 5,
+      "trailCount": 0,
+      "ratchetCount": 405,
+      "mhCount": 0,
+      "mcCount": 1
+    },
+    {
+      "phase": 2,
+      "target": 150,
+      "mode": "mfeRatchet",
+      "tierName": "breakeven-then-lock",
+      "tiers": [
+        {
+          "minMFE": 60,
+          "lockPct": 0.6,
+          "label": "lock 60%"
+        },
+        {
+          "minMFE": 30,
+          "lockPct": 0.4,
+          "label": "lock 40%"
+        },
+        {
+          "minMFE": 10,
+          "lockPct": 0,
+          "label": "breakeven"
+        }
+      ],
+      "tiersStr": "60→60%, 30→40%, 10→0%",
+      "trades": 406,
+      "winRate": 45.32,
+      "pnl": 123238,
+      "pf": 8.34,
+      "expectancy": 303.54,
+      "maxDD": 1.2,
+      "sharpe": 11.4,
+      "avgWin": 0,
+      "avgLoss": 0,
+      "tpCount": 13,
+      "slCount": 10,
+      "trailCount": 0,
+      "ratchetCount": 376,
+      "mhCount": 6,
+      "mcCount": 1
+    },
+    {
+      "phase": 2,
+      "target": 150,
+      "mode": "mfeRatchet",
+      "tierName": "wide-spacing",
+      "tiers": [
+        {
+          "minMFE": 120,
+          "lockPct": 0.65,
+          "label": "lock 65%"
+        },
+        {
+          "minMFE": 80,
+          "lockPct": 0.5,
+          "label": "lock 50%"
+        },
+        {
+          "minMFE": 40,
+          "lockPct": 0.35,
+          "label": "lock 35%"
+        },
+        {
+          "minMFE": 15,
+          "lockPct": 0.2,
+          "label": "lock 20%"
+        }
+      ],
+      "tiersStr": "120→65%, 80→50%, 40→35%, 15→20%",
+      "trades": 404,
+      "winRate": 96.04,
+      "pnl": 172203,
+      "pf": 9.3,
+      "expectancy": 426.25,
+      "maxDD": 1.48,
+      "sharpe": 14.29,
+      "avgWin": 0,
+      "avgLoss": 0,
+      "tpCount": 20,
+      "slCount": 14,
+      "trailCount": 0,
+      "ratchetCount": 346,
+      "mhCount": 22,
+      "mcCount": 2
+    }
+  ],
+  "baseline": {
+    "trades": 405,
+    "winRate": 90.12,
+    "pnl": 343946,
+    "label": "timeBased-70pt-baseline"
+  }
+}

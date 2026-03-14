@@ -103,6 +103,11 @@ export class BacktestEngine {
         swingBuffer: config.strategyParams.swingBuffer || 5,
         minSwingSize: config.strategyParams.minSwingSize || 3
       } : { enabled: false },
+      // MFE ratchet trailing stop configuration (lock % of peak profit at tier thresholds)
+      mfeRatchet: config.strategyParams?.mfeRatchet ? {
+        enabled: true,
+        tiers: config.strategyParams.mfeRatchetTiers || undefined  // Falls back to defaults in TradeSimulator
+      } : { enabled: false },
       // Time-based trailing stop configuration (progressive profit protection)
       timeBasedTrailing: config.strategyParams?.timeBasedTrailing ? {
         enabled: true,
@@ -154,7 +159,7 @@ export class BacktestEngine {
     this.bookImbalanceMap = null; // Will be populated in loadData if MBP data exists
 
     // Initialize IV loader for IV Skew GEX strategy
-    this.ivLoader = new IVLoader(config.dataDir);
+    this.ivLoader = new IVLoader(config.dataDir, { resolution: config.ivResolution || '15m' });
     this.ivData = null; // Will be populated in loadData if IV data exists
 
     // Initialize Short-DTE IV loader for Short-DTE IV strategy
@@ -482,7 +487,7 @@ export class BacktestEngine {
       await this.ivLoader.load(this.config.startDate, this.config.endDate);
       const ivStats = this.ivLoader.getStats();
       if (!this.config.quiet && ivStats.count > 0) {
-        console.log(`📈 IV data: ${ivStats.count} records (${ivStats.startDate?.split('T')[0]} to ${ivStats.endDate?.split('T')[0]})`);
+        console.log(`📈 IV data: ${ivStats.count} records @ ${ivStats.resolution} (${ivStats.startDate?.split('T')[0]} to ${ivStats.endDate?.split('T')[0]})`);
         console.log(`   Avg IV: ${ivStats.avgIV?.toFixed(3)} | Avg Skew: ${ivStats.avgSkew?.toFixed(4)}`);
       } else if (!this.config.quiet && ivStats.count === 0) {
         console.warn('⚠️  No IV data found for date range - IV Skew strategy will have no signals');
@@ -904,6 +909,14 @@ export class BacktestEngine {
                 { afterBars: 45, ifMFE: 40, trailDistance: 10 },
               ]
             };
+          }
+
+          // Add MFE ratchet config to signal if enabled
+          if (this.config.strategyParams?.mfeRatchet) {
+            signal.mfeRatchet = true;
+            if (this.config.strategyParams.mfeRatchetTiers) {
+              signal.mfeRatchetConfig = { tiers: this.config.strategyParams.mfeRatchetTiers };
+            }
           }
 
           // Add composite trailing config to signal if enabled via CLI

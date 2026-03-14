@@ -6,9 +6,8 @@ node index.js --ticker NQ --start 2025-01-01 --end 2025-12-31 --strategy ict-smc
 # ICT-OB
 node index.js --ticker NQ --start 2025-01-01 --end 2025-12-31 --strategy ict-ob --structure-timeframe 15m --entry-timeframe 1m
 
-# IV-SKEW-VEX
-node index.js --ticker NQ --start 2025-01-13 --end 2025-12-24 --strategy iv-skew-gex --timeframe 15m
-node index.js --ticker NQ --start 2025-01-13 --end 2025-12-24 --strategy iv-skew-gex --timeframe 15m --target-points 70 --stop-loss-points 70
+# IV-SKEW-GEX
+node index.js --ticker NQ --strategy iv-skew-gex --timeframe 1m --raw-contracts --start 2025-01-13 --end 2026-01-23 --target-points 70 --stop-loss-points 70 --max-hold-bars 60 --time-based-trailing --tb-rule-1 "20,35,trail:20" --tb-rule-2 "35,50,trail:10" --iv-resolution 1m
 
 # ES-CROSS
 node index.js --ticker ES --start 2023-03-28 --end 2026-01-23 --strategy es-cross-signal --timeframe 1m --target-points 10 --stop-points 10 --breakeven-stop --breakeven-trigger 3 --filter-regime-side "strong_positive_buy" --filter-lt-spacing-max 40 -o results/es-sweep/es-cross-baseline.json

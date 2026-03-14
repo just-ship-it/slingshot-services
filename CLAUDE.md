@@ -438,6 +438,33 @@ node index.js --ticker NQ --start 2023-03-01 --end 2025-12-25 \
   --output results.json --output-csv trades.csv
 ```
 
+### IV-SKEW-GEX Baseline Backtest
+
+Gold standard command for the IV-SKEW-GEX strategy (1m IV resolution, raw contracts):
+
+```bash
+cd backtest-engine
+node index.js --ticker NQ --strategy iv-skew-gex --timeframe 1m --raw-contracts \
+  --start 2025-01-13 --end 2026-01-23 \
+  --target-points 70 --stop-loss-points 70 --max-hold-bars 60 \
+  --time-based-trailing --tb-rule-1 "20,35,trail:20" --tb-rule-2 "35,50,trail:10" \
+  --iv-resolution 1m
+```
+
+**IMPORTANT**: Must use `--timeframe 1m --raw-contracts` — without `--raw-contracts`, continuous data breaks GEX proximity calculations and produces invalid results.
+
+### Short-DTE-IV Baseline Backtest
+
+Gold standard command for the Short-DTE-IV strategy (15m timeframe, production params from default.json):
+
+```bash
+cd backtest-engine
+node index.js --ticker NQ --strategy short-dte-iv --timeframe 15m \
+  --start 2025-01-13 --end 2026-01-23
+```
+
+Production defaults are baked into `src/config/default.json` under `short-dte-iv`: threshold 0.015, stop/target 30pts, maxHold 60 bars, trailing disabled (9999/0), minQuality 2, 15min cooldown. Does NOT require `--raw-contracts`.
+
 ### Available Strategies
 - `gex-recoil` (default) - Long entries on GEX support level crossovers
 - `gex-ldpm-confluence` - GEX + LDPM confluence strategy

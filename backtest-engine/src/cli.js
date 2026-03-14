@@ -146,6 +146,35 @@ export class CLI {
         default: false
       })
 
+      .option('iv-resolution', {
+        type: 'string',
+        description: 'IV data resolution for iv-skew-gex strategy (1m matches live 2-min refresh, 15m is original)',
+        default: '15m',
+        choices: ['1m', '5m', '15m']
+      })
+
+      .option('max-iv', {
+        type: 'number',
+        description: 'Maximum ATM IV for entry (e.g., 0.30 = 30%). Rejects entries in high-vol environments.',
+      })
+
+      .option('iv-dead-zone-min', {
+        type: 'number',
+        description: 'IV dead zone lower bound (e.g., 0.30). Blocks entries when IV is between min and max.',
+      })
+
+      .option('iv-dead-zone-max', {
+        type: 'number',
+        description: 'IV dead zone upper bound (e.g., 0.35). Blocks entries when IV is between min and max.',
+      })
+
+      .option('iv-dead-zone-side', {
+        type: 'string',
+        description: 'Which side the IV dead zone applies to.',
+        choices: ['long', 'short', 'both'],
+        default: 'both',
+      })
+
       // Strategy-specific parameters
       .group(['target-points', 'stop-buffer', 'stop-loss-points', 'max-risk', 'max-bars-after-sweep', 'use-liquidity-filter', 'use-structural-stops'], 'Strategy Parameters:')
 
@@ -332,6 +361,15 @@ export class CLI {
         type: 'string',
         description: 'Rule 3: "bars,mfe,action" e.g. "45,40,trail:10" (bars>=45, mfe>=40, trail 10pts behind)',
         default: ''
+      })
+
+      // MFE Ratchet Trailing Stop (lock % of profit at tier thresholds)
+      .group(['mfe-ratchet'], 'MFE Ratchet Trailing Stop:')
+
+      .option('mfe-ratchet', {
+        type: 'boolean',
+        description: 'Enable MFE ratchet trailing stop (lock % of profit at tier thresholds: 20pt→25%, 40pt→40%, 60pt→50%, 100pt→60%)',
+        default: false
       })
 
       // Composite Multi-Phase Trailing Stop (ICT methodology)
@@ -1423,6 +1461,9 @@ export class CLI {
     // Allow overnight holds (disable force-close at market close)
     if (args.allowOvernightHolds) strategyParams.forceCloseAtMarketClose = false;
 
+    // MFE ratchet trailing stop parameters
+    if (args.mfeRatchet) strategyParams.mfeRatchet = true;
+
     // Time-based trailing stop parameters (progressive profit protection)
     if (args.timeBasedTrailing !== undefined) strategyParams.timeBasedTrailing = args.timeBasedTrailing;
 
@@ -1461,6 +1502,14 @@ export class CLI {
     if (timeBasedRules.length > 0) {
       strategyParams.timeBasedTrailingConfig = { rules: timeBasedRules };
     }
+
+    // IV cap filter
+    if (args.maxIv !== undefined) strategyParams.maxIV = args.maxIv;
+
+    // IV dead zone filter
+    if (args.ivDeadZoneMin !== undefined) strategyParams.ivDeadZoneMin = args.ivDeadZoneMin;
+    if (args.ivDeadZoneMax !== undefined) strategyParams.ivDeadZoneMax = args.ivDeadZoneMax;
+    if (args.ivDeadZoneSide !== undefined) strategyParams.ivDeadZoneSide = args.ivDeadZoneSide;
 
     // Strategy-specific parameters
     if (args.confluenceThreshold !== undefined) strategyParams.confluenceThreshold = args.confluenceThreshold;
@@ -1764,6 +1813,7 @@ export class CLI {
       showTrades: args.showTrades,
       useSecondResolution: !args.minuteResolution,
       noContinuous: args.rawContracts,
+      ivResolution: args.ivResolution,
       useCBBO: args.useCbbo || args.strategy === 'cbbo-lt-volatility' || args.strategy === 'cbbo-lt',
       cbboDataDir: args.cbboDataDir || null, // null means use default: dataDir/cbbo-1m/qqq
       outputFiles: {

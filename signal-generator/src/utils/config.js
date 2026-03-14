@@ -89,6 +89,10 @@ const config = {
   IV_SKEW_NEG_THRESHOLD: parseFloat(process.env.IV_SKEW_NEG_THRESHOLD || '-0.01'),
   IV_SKEW_POS_THRESHOLD: parseFloat(process.env.IV_SKEW_POS_THRESHOLD || '0.01'),
   IV_SKEW_MIN_IV: parseFloat(process.env.IV_SKEW_MIN_IV || '0.18'),
+  IV_SKEW_MAX_IV: process.env.IV_SKEW_MAX_IV ? parseFloat(process.env.IV_SKEW_MAX_IV) : null,
+  IV_SKEW_IV_DEAD_ZONE_MIN: parseFloat(process.env.IV_SKEW_IV_DEAD_ZONE_MIN || '0.30'),
+  IV_SKEW_IV_DEAD_ZONE_MAX: parseFloat(process.env.IV_SKEW_IV_DEAD_ZONE_MAX || '0.35'),
+  IV_SKEW_IV_DEAD_ZONE_SIDE: process.env.IV_SKEW_IV_DEAD_ZONE_SIDE || 'long',
   IV_SKEW_COOLDOWN_MS: parseInt(process.env.IV_SKEW_COOLDOWN_MS || '1800000'), // 30 minutes
 
   // ES Cross-Signal Strategy Parameters
@@ -209,6 +213,10 @@ const config = {
       negSkewThreshold: this.IV_SKEW_NEG_THRESHOLD,
       posSkewThreshold: this.IV_SKEW_POS_THRESHOLD,
       minIV: this.IV_SKEW_MIN_IV,
+      maxIV: this.IV_SKEW_MAX_IV,
+      ivDeadZoneMin: this.IV_SKEW_IV_DEAD_ZONE_MIN,
+      ivDeadZoneMax: this.IV_SKEW_IV_DEAD_ZONE_MAX,
+      ivDeadZoneSide: this.IV_SKEW_IV_DEAD_ZONE_SIDE,
 
       // Signal cooldown
       signalCooldownMs: this.IV_SKEW_COOLDOWN_MS,

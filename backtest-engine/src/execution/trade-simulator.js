@@ -48,6 +48,10 @@ export class TradeSimulator {
     // Candle history for swing detection (per trade)
     this.tradeCandles = new Map(); // Map<tradeId, candle[]>
 
+    // MFE ratchet trailing stop configuration
+    // Locks a percentage of peak profit as the new stop level at tier thresholds
+    this.mfeRatchetConfig = config.mfeRatchet || { enabled: false };
+
     // Time-based trailing stop configuration
     // Progressive stop tightening based on bars held + profit level
     this.timeBasedTrailingConfig = config.timeBasedTrailing || {
@@ -414,8 +418,8 @@ export class TradeSimulator {
             console.log(`    ✅ [TRADE ${trade.id}] Order filled at ${fillResult.fillPrice} (1s: ${new Date(bar.timestamp).toISOString()})`);
           }
 
-          // Initialize trailing stop if enabled (regular trailing, breakeven, time-based, or composite mode)
-          if ((trade.trailingTrigger && trade.trailingOffset) || trade.breakevenStop || trade.signal?.timeBasedTrailing || this.timeBasedTrailingConfig?.enabled || trade.signal?.compositeTrailing) {
+          // Initialize trailing stop if enabled (regular trailing, breakeven, time-based, composite, or MFE ratchet mode)
+          if ((trade.trailingTrigger && trade.trailingOffset) || trade.breakevenStop || trade.signal?.timeBasedTrailing || this.timeBasedTrailingConfig?.enabled || trade.signal?.compositeTrailing || trade.signal?.mfeRatchet || this.mfeRatchetConfig?.enabled) {
             trade.trailingStop = this.initializeTrailingStop(trade, fillResult.fillPrice);
           }
 
@@ -617,8 +621,8 @@ export class TradeSimulator {
           console.log(`    ✅ [TRADE ${trade.id}] Order filled at ${fillResult.fillPrice}`);
         }
 
-        // Initialize trailing stop if enabled (regular trailing, breakeven, time-based, or composite mode)
-        if ((trade.trailingTrigger && trade.trailingOffset) || trade.breakevenStop || trade.signal?.timeBasedTrailing || this.timeBasedTrailingConfig?.enabled || trade.signal?.compositeTrailing) {
+        // Initialize trailing stop if enabled (regular trailing, breakeven, time-based, composite, or MFE ratchet mode)
+        if ((trade.trailingTrigger && trade.trailingOffset) || trade.breakevenStop || trade.signal?.timeBasedTrailing || this.timeBasedTrailingConfig?.enabled || trade.signal?.compositeTrailing || trade.signal?.mfeRatchet || this.mfeRatchetConfig?.enabled) {
           trade.trailingStop = this.initializeTrailingStop(trade, fillResult.fillPrice);
           if (debug) {
             const mode = trade.trailingStop.mode || 'fixed';
@@ -826,6 +830,11 @@ export class TradeSimulator {
       return this.updateCompositeTrailingStop(trade, candle);
     }
 
+    // Check if MFE ratchet trailing is enabled for this trade
+    if (trade.trailingStop?.mode === 'mfeRatchet') {
+      return this.updateMFERatchetStop(trade, candle);
+    }
+
     // Check if time-based trailing is enabled for this trade
     if (trade.trailingStop?.mode === 'timeBased') {
       return this.updateTimeBasedTrailingStop(trade, candle);
@@ -966,6 +975,72 @@ export class TradeSimulator {
       if (!trailing.triggered && candle.low <= zone.bottom) {
         trailing.triggered = true;
         trailing.currentStop = entryPrice;
+      }
+    }
+  }
+
+  /**
+   * Update MFE ratchet trailing stop - locks a percentage of peak profit at tier thresholds
+   *
+   * Modeled after the AI trader's LiveTradeManager ratchet system.
+   * As MFE grows, higher tiers lock a larger percentage of the peak profit as the stop level.
+   * Tiers are evaluated highest-first so only the best matching tier applies.
+   *
+   * @param {Object} trade - Trade object with MFE ratchet trailing stop
+   * @param {Object} candle - Current candle
+   */
+  updateMFERatchetStop(trade, candle) {
+    const trailing = trade.trailingStop;
+    const entryPrice = trade.actualEntry || trade.entryPrice;
+    const tiers = trailing.tiers;
+    const debug = this.debugMode;
+
+    if (this.isBuyPosition(trade)) {
+      // Long position: track high water mark
+      if (candle.high > trailing.highWaterMark) {
+        trailing.highWaterMark = candle.high;
+      }
+
+      const currentMFE = trailing.highWaterMark - entryPrice;
+
+      // Tiers are sorted highest-first, so first match is the best tier
+      for (const tier of tiers) {
+        if (currentMFE >= tier.minMFE) {
+          const newStop = entryPrice + (currentMFE * tier.lockPct);
+          const rounded = Math.round(newStop * 4) / 4; // Round to 0.25 tick
+          if (rounded > trailing.currentStop) {
+            if (debug) {
+              console.log(`    🔒 [MFE-RATCHET] Long ${trade.id}: MFE=${currentMFE.toFixed(1)}pts, ${tier.label} → stop ${trailing.currentStop.toFixed(2)} → ${rounded.toFixed(2)}`);
+            }
+            trailing.currentStop = rounded;
+            trailing.triggered = true;
+            trailing.lastAction = tier.label;
+          }
+          break; // Highest matching tier only
+        }
+      }
+    } else {
+      // Short position: track low water mark
+      if (candle.low < trailing.lowWaterMark) {
+        trailing.lowWaterMark = candle.low;
+      }
+
+      const currentMFE = entryPrice - trailing.lowWaterMark;
+
+      for (const tier of tiers) {
+        if (currentMFE >= tier.minMFE) {
+          const newStop = entryPrice - (currentMFE * tier.lockPct);
+          const rounded = Math.round(newStop * 4) / 4;
+          if (rounded < trailing.currentStop) {
+            if (debug) {
+              console.log(`    🔒 [MFE-RATCHET] Short ${trade.id}: MFE=${currentMFE.toFixed(1)}pts, ${tier.label} → stop ${trailing.currentStop.toFixed(2)} → ${rounded.toFixed(2)}`);
+            }
+            trailing.currentStop = rounded;
+            trailing.triggered = true;
+            trailing.lastAction = tier.label;
+          }
+          break;
+        }
       }
     }
   }
@@ -1631,6 +1706,25 @@ export class TradeSimulator {
         activePhase: 'initial',
         zoneBreakevenTriggered: false,
         compositeConfig: compositeConfig,
+      };
+    }
+
+    // Check if MFE ratchet mode is enabled (locks % of peak profit at tier thresholds)
+    const useMFERatchet = trade.signal?.mfeRatchet || this.mfeRatchetConfig?.enabled;
+
+    if (useMFERatchet) {
+      const defaultTiers = [
+        { minMFE: 100, lockPct: 0.60, label: 'lock 60%' },
+        { minMFE: 60,  lockPct: 0.50, label: 'lock 50%' },
+        { minMFE: 40,  lockPct: 0.40, label: 'lock 40%' },
+        { minMFE: 20,  lockPct: 0.25, label: 'lock 25%' },
+      ];
+      const tradeConfig = trade.signal?.mfeRatchetConfig || {};
+      return {
+        ...baseTrailing,
+        mode: 'mfeRatchet',
+        tiers: tradeConfig.tiers || this.mfeRatchetConfig?.tiers || defaultTiers,
+        lastAction: null,
       };
     }
 

@@ -26,6 +26,7 @@ class StrategyRunner {
     this.strategyConstant = getStrategyConstant(name);
     this.strategy = strategy;
     this.enabled = strategyConfig.enabled;
+    this.hidden = strategyConfig.hidden || false;
     this.priority = strategyConfig.priority || 99;
     this.evalTimeframe = strategyConfig.evalTimeframe || '1m';
     this.requiresIV = requiresIVData(name);
@@ -492,6 +493,25 @@ class MultiStrategyEngine {
    * Handle candle when in position: trailing stops, order timeouts, EOD close
    */
   async handleInPositionCandle(state, candle) {
+    // Check maxHoldBars (force exit after N candles in trade)
+    if (state.positionMaxHoldBars > 0) {
+      state.positionBarsInTrade++;
+      if (state.positionBarsInTrade >= state.positionMaxHoldBars) {
+        logger.info(`Max hold bars (${state.positionMaxHoldBars}) reached for ${state.product} — forcing close`);
+        const closeSignal = {
+          webhook_type: 'trade_signal',
+          action: 'position_closed',
+          symbol: state.currentPosition?.symbol || state.tradingSymbol,
+          side: state.currentPosition?.side,
+          strategy: state.positionStrategy,
+          reason: `max_hold_bars (${state.positionMaxHoldBars})`,
+          timestamp: new Date().toISOString()
+        };
+        await this.publishSignal(closeSignal);
+        return;
+      }
+    }
+
     // Check for EOD force close (3:55 PM EST)
     const estTime = new Date().toLocaleString('en-US', {
       timeZone: 'America/New_York',
@@ -690,6 +710,7 @@ class MultiStrategyEngine {
 
       // Store signal metadata for use when position closes
       state.pendingSignalMetadata = signal.metadata || {};
+      state.pendingMaxHoldBars = signal.maxHoldBars || 0;
 
       logger.info(`Signal from ${runner.name} for ${state.product}: ${signal.action} ${signal.side} @ ${signal.price}`);
       await this.publishSignal(signal);
@@ -730,7 +751,12 @@ class MultiStrategyEngine {
           };
           state.pendingSignalMetadata = null;
 
-          logger.info(`Position opened for ${product} (${strategy}): ${state.currentPosition.side} @ ${state.currentPosition.entryPrice}`);
+          // Initialize maxHoldBars tracking
+          state.positionBarsInTrade = 0;
+          state.positionMaxHoldBars = state.pendingMaxHoldBars || 0;
+          state.pendingMaxHoldBars = 0;
+
+          logger.info(`Position opened for ${product} (${strategy}): ${state.currentPosition.side} @ ${state.currentPosition.entryPrice}${state.positionMaxHoldBars > 0 ? ` [maxHold: ${state.positionMaxHoldBars} bars]` : ''}`);
 
           // Initialize GF tracking
           if (state.gfEarlyExitConfig.enabled) {
@@ -788,6 +814,8 @@ class MultiStrategyEngine {
         state.positionStrategy = null;
         state.gfTrackingState = null;
         state.timeBasedTrailingState = null;
+        state.positionBarsInTrade = 0;
+        state.positionMaxHoldBars = 0;
 
         // Reset cooldown on the strategy that was in position
         for (const [, runner] of state.strategies) {
@@ -1350,6 +1378,10 @@ class MultiStrategyEngine {
       const runner = state.strategies.get(strategyName)
         || [...state.strategies.values()].find(r => r.strategyConstant === strategyName);
       if (runner) {
+        if (runner.hidden) {
+          logger.warn(`Cannot enable hidden strategy: ${strategyName}`);
+          return false;
+        }
         runner.enable();
         logger.info(`Enabled strategy: ${strategyName}`);
         await this.persistStrategyEnabledState();
@@ -1446,6 +1478,7 @@ class MultiStrategyEngine {
 
     for (const [product, state] of this.products) {
       for (const [name, runner] of state.strategies) {
+        if (runner.hidden) continue;
         // Use strategy-level session check if available
         const strategy = runner.strategy;
         let inAllowedSession = this.isInTradingSession();
@@ -1477,7 +1510,7 @@ class MultiStrategyEngine {
         const gexOk = !needsGex || !!gexLevels;
         const isReady = runner.enabled && runner.dataReady && inAllowedSession && gexOk
           && !(state.inPosition && state.positionStrategy !== runner.strategyConstant)
-          && !pastCutoff && !inAvoidHour;
+          && !pastCutoff;
         const blockers = [
           !runner.enabled ? 'Strategy disabled' : null,
           !runner.dataReady ? 'Data not ready (waiting for history)' : null,
@@ -1485,7 +1518,7 @@ class MultiStrategyEngine {
           needsGex && !gexLevels ? 'No GEX levels' : null,
           state.inPosition ? `Position held by ${state.positionStrategy}` : null,
           pastCutoff ? `Past entry cutoff (${strategy.params.entryCutoffHour}:${String(strategy.params.entryCutoffMinute).padStart(2, '0')} ET)` : null,
-          inAvoidHour ? `Restricted hour (avoid hour ${strategy.params.avoidHours.join(', ')})` : null,
+          inAvoidHour ? `SHORT restricted (hour ${strategy.params.avoidHours.join(', ')} — longs OK)` : null,
         ].filter(Boolean);
         const conditionsMet = [
           runner.enabled ? 'Strategy enabled' : null,

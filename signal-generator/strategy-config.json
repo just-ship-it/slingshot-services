@@ -19,13 +19,15 @@
           "name": "impulse-fvg",
           "enabled": false,
           "priority": 3,
-          "evalTimeframe": "1m"
+          "evalTimeframe": "1m",
+          "hidden": true
         },
         {
           "name": "gex-scalp",
           "enabled": false,
           "priority": 4,
-          "evalTimeframe": "1m"
+          "evalTimeframe": "1m",
+          "hidden": true
         }
       ]
     },
@@ -36,7 +38,8 @@
           "name": "es-cross-signal",
           "enabled": false,
           "priority": 1,
-          "evalTimeframe": "15m"
+          "evalTimeframe": "15m",
+          "hidden": true
         }
       ]
     }

@@ -10,12 +10,33 @@ import path from 'path';
 import readline from 'readline';
 
 export class IVLoader {
-  constructor(dataDir) {
+  /**
+   * @param {string} dataDir - Data directory path
+   * @param {Object} [options] - Options
+   * @param {string} [options.resolution='15m'] - IV data resolution ('1m', '5m', '15m')
+   */
+  constructor(dataDir, options = {}) {
     this.dataDir = dataDir;
-    // Check both new (ticker subdirectory) and old (flat) locations
-    const newPath = path.join(dataDir, 'iv', 'qqq', 'qqq_atm_iv_15m.csv');
+    this.resolution = options.resolution || '15m';
+
+    // Build filename based on resolution
+    const filename = `qqq_atm_iv_${this.resolution}.csv`;
+    const newPath = path.join(dataDir, 'iv', 'qqq', filename);
+
+    // Fallback: try 15m if requested resolution not found, then old flat location
+    const fallback15m = path.join(dataDir, 'iv', 'qqq', 'qqq_atm_iv_15m.csv');
     const oldPath = path.join(dataDir, 'iv', 'qqq_atm_iv_15m.csv');
-    this.ivFile = fs.existsSync(newPath) ? newPath : oldPath;
+
+    if (fs.existsSync(newPath)) {
+      this.ivFile = newPath;
+    } else if (this.resolution !== '15m' && fs.existsSync(fallback15m)) {
+      console.warn(`IV file not found for resolution ${this.resolution}, falling back to 15m`);
+      this.ivFile = fallback15m;
+      this.resolution = '15m';
+    } else {
+      this.ivFile = fs.existsSync(fallback15m) ? fallback15m : oldPath;
+    }
+
     this.ivData = [];
     this.ivMap = new Map(); // Keyed by timestamp for fast lookup
   }
@@ -130,6 +151,7 @@ export class IVLoader {
 
     return {
       count: this.ivData.length,
+      resolution: this.resolution,
       startDate: new Date(this.ivData[0].timestamp).toISOString(),
       endDate: new Date(this.ivData[this.ivData.length - 1].timestamp).toISOString(),
       avgIV: this.ivData.reduce((s, r) => s + r.iv, 0) / this.ivData.length,

@@ -52,6 +52,13 @@ export class IVSkewGexStrategy extends BaseStrategy {
 
     // Filters
     this.params.minIV = params.minIV ?? 0.18;  // Skip low IV environments
+    this.params.maxIV = params.maxIV ?? null;   // Skip high IV environments (null = no cap)
+
+    // IV dead zone — block entries when IV falls in a specific range for a specific side
+    // Based on analysis: longs at 30-35% IV have 54% WR vs 79% at 40%+
+    this.params.ivDeadZoneMin = params.ivDeadZoneMin ?? null;
+    this.params.ivDeadZoneMax = params.ivDeadZoneMax ?? null;
+    this.params.ivDeadZoneSide = params.ivDeadZoneSide ?? 'both';  // 'long', 'short', or 'both'
     this.params.avoidHours = params.avoidHours ?? [12]; // Skip noon for shorts (20% win rate)
     this.params.useSessionFilter = params.useSessionFilter ?? true;
     this.params.allowedSessions = params.allowedSessions ?? ['rth'];
@@ -317,12 +324,23 @@ export class IVSkewGexStrategy extends BaseStrategy {
       return null;
     }
 
+    // Skip high IV environments
+    if (this.params.maxIV && iv.iv > this.params.maxIV) {
+      if (this.params.debug) console.log(`[IV-SKEW] High IV (${iv.iv.toFixed(3)}) at ${new Date(timestamp).toISOString()}`);
+      this.logEvaluationSummary(candle, iv, gexLevels, null, `high IV (${(iv.iv * 100).toFixed(1)}%)`);
+      return null;
+    }
+
     const hour = this.getETHour(timestamp);
     const price = candle.close;
 
     // Check for LONG signal: Negative skew (calls expensive = bullish flow) + near support
     // When calls are expensive at support, bullish positioning supports a bounce
     if (iv.skew < this.params.negSkewThreshold) {
+      if (this.isInIVDeadZone(iv.iv, 'long')) {
+        this.logEvaluationSummary(candle, iv, gexLevels, null, `IV dead zone for longs (${(iv.iv * 100).toFixed(1)}%)`);
+        return null;
+      }
       const level = this.findNearestLevel(price, gexLevels, 'support');
       if (level) {
         const signal = this.createSignal('long', candle, level, iv);
@@ -338,6 +356,10 @@ export class IVSkewGexStrategy extends BaseStrategy {
       if (this.params.avoidHours.includes(hour)) {
         if (this.params.debug) console.log(`[IV-SKEW] Avoiding hour ${hour} for SHORT`);
         this.logEvaluationSummary(candle, iv, gexLevels, null, `avoiding hour ${hour} for shorts`);
+        return null;
+      }
+      if (this.isInIVDeadZone(iv.iv, 'short')) {
+        this.logEvaluationSummary(candle, iv, gexLevels, null, `IV dead zone for shorts (${(iv.iv * 100).toFixed(1)}%)`);
         return null;
       }
 
@@ -427,6 +449,19 @@ export class IVSkewGexStrategy extends BaseStrategy {
     }
 
     return signal;
+  }
+
+  /**
+   * Check if IV falls in the dead zone for a given side
+   * @param {number} iv - Current ATM IV
+   * @param {string} side - 'long' or 'short'
+   * @returns {boolean} True if in dead zone
+   */
+  isInIVDeadZone(iv, side) {
+    if (!this.params.ivDeadZoneMin || !this.params.ivDeadZoneMax) return false;
+    if (iv < this.params.ivDeadZoneMin || iv > this.params.ivDeadZoneMax) return false;
+    const dzSide = this.params.ivDeadZoneSide || 'both';
+    return dzSide === 'both' || dzSide === side;
   }
 
   /**
