@@ -110,7 +110,7 @@ const STRATEGY_ALERT_RULES = [
     conflicting: { strategy: 'SHORT_DTE_IV', direction: 'short' },
     sameUnderlying: true,
     severity: 'warning',
-    message: 'ISG long contradicts active SDIV short — ISG WR drops to 54% in this scenario',
+    message: 'ISG long contradicts active SDIV short — ISG WR drops to 48%, SDIV 72% WR (n=25)',
   },
   {
     name: 'isg-short-sdiv-long-conflict',
@@ -120,7 +120,7 @@ const STRATEGY_ALERT_RULES = [
     conflicting: { strategy: 'SHORT_DTE_IV', direction: 'long' },
     sameUnderlying: true,
     severity: 'warning',
-    message: 'ISG short contradicts active SDIV long — strategies disagree on direction',
+    message: 'ISG short contradicts active SDIV long — ISG 75% WR, SDIV 83% WR (n=12)',
   },
   {
     name: 'sdiv-long-isg-short-conflict',
@@ -130,7 +130,7 @@ const STRATEGY_ALERT_RULES = [
     conflicting: { strategy: 'IV_SKEW_GEX', direction: 'short' },
     sameUnderlying: true,
     severity: 'warning',
-    message: 'SDIV long contradicts active ISG short — strategies disagree (SDIV has edge at 73.7% WR)',
+    message: 'SDIV long contradicts active ISG short — ISG 75% WR, SDIV 83% WR (n=12)',
   },
   {
     name: 'sdiv-short-isg-long-conflict',
@@ -140,27 +140,47 @@ const STRATEGY_ALERT_RULES = [
     conflicting: { strategy: 'IV_SKEW_GEX', direction: 'long' },
     sameUnderlying: true,
     severity: 'warning',
-    message: 'SDIV short contradicts active ISG long — ISG WR drops to 54% when opposed by SDIV',
+    message: 'SDIV short contradicts active ISG long — ISG drops to 48% WR, SDIV 72% WR (n=25)',
   },
   {
-    name: 'isg-sdiv-agreement',
+    name: 'isg-sdiv-agreement-short',
     enabled: true,
-    description: 'Both ISG and SDIV agree on direction — high confidence signal',
-    incoming: { strategy: 'IV_SKEW_GEX' },
-    agreeing: { strategy: 'SHORT_DTE_IV' },
+    description: 'Both ISG and SDIV agree SHORT — highest confidence (ISG 100% WR, n=12)',
+    incoming: { strategy: 'IV_SKEW_GEX', direction: 'short' },
+    agreeing: { strategy: 'SHORT_DTE_IV', direction: 'short' },
     sameUnderlying: true,
     severity: 'info',
-    message: 'ISG and SDIV agree — backtest shows 95% ISG WR / 88% SDIV WR when aligned',
+    message: 'ISG + SDIV both SHORT — ISG 100% WR / SDIV 92% WR when both short (n=12)',
   },
   {
-    name: 'sdiv-isg-agreement',
+    name: 'sdiv-isg-agreement-short',
     enabled: true,
-    description: 'Both SDIV and ISG agree on direction — high confidence signal',
-    incoming: { strategy: 'SHORT_DTE_IV' },
-    agreeing: { strategy: 'IV_SKEW_GEX' },
+    description: 'Both SDIV and ISG agree SHORT — highest confidence (ISG 100% WR, n=12)',
+    incoming: { strategy: 'SHORT_DTE_IV', direction: 'short' },
+    agreeing: { strategy: 'IV_SKEW_GEX', direction: 'short' },
     sameUnderlying: true,
     severity: 'info',
-    message: 'SDIV and ISG agree — backtest shows 95% ISG WR / 88% SDIV WR when aligned',
+    message: 'SDIV + ISG both SHORT — ISG 100% WR / SDIV 92% WR when both short (n=12)',
+  },
+  {
+    name: 'isg-sdiv-agreement-long',
+    enabled: true,
+    description: 'Both ISG and SDIV agree LONG — strong signal',
+    incoming: { strategy: 'IV_SKEW_GEX', direction: 'long' },
+    agreeing: { strategy: 'SHORT_DTE_IV', direction: 'long' },
+    sameUnderlying: true,
+    severity: 'info',
+    message: 'ISG + SDIV both LONG — ISG 90% WR / SDIV 77% WR when both long (n=60)',
+  },
+  {
+    name: 'sdiv-isg-agreement-long',
+    enabled: true,
+    description: 'Both SDIV and ISG agree LONG — strong signal',
+    incoming: { strategy: 'SHORT_DTE_IV', direction: 'long' },
+    agreeing: { strategy: 'IV_SKEW_GEX', direction: 'long' },
+    sameUnderlying: true,
+    severity: 'info',
+    message: 'SDIV + ISG both LONG — ISG 90% WR / SDIV 77% WR when both long (n=60)',
   },
 ];
 
@@ -220,10 +240,17 @@ export function evaluateStrategyAlerts(signal, signalUnderlying, signalDirection
 
     // For agreement rules: check if the other strategy has a position in the same direction
     if (rule.agreeing) {
+      // If the rule specifies a direction for the incoming signal, it must match
+      if (rule.incoming.direction && rule.incoming.direction !== signalDirection) continue;
+
       for (const [underlying, posInfo] of positions) {
         if (!rule.sameUnderlying || underlying === signalUnderlying) {
           const source = (posInfo.source || '').toUpperCase();
-          if (source === rule.agreeing.strategy && posInfo.position === signalDirection) {
+          // If the rule specifies a direction for the agreeing strategy, check it
+          const directionMatch = rule.agreeing.direction
+            ? posInfo.position === rule.agreeing.direction
+            : posInfo.position === signalDirection;
+          if (source === rule.agreeing.strategy && directionMatch) {
             alerts.push({
               ruleName: rule.name,
               severity: rule.severity,
