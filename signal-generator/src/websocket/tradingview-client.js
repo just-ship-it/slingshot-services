@@ -885,19 +885,22 @@ class TradingViewClient extends EventEmitter {
    * Called from handleQuoteData() on every qsd message with lp.
    */
   checkQuoteDelay(values) {
+    // Suppress all delayed detection during startup grace period.
+    // TradingView often sends initial quotes with update_mode:"delayed" or stale
+    // lp_time before the auth token is fully processed, then switches to real-time.
+    const inGracePeriod = this.connectionEstablishedAt &&
+      (Date.now() - this.connectionEstablishedAt) < STARTUP_GRACE_PERIOD_MS;
+
+    if (inGracePeriod) return;
+
     // Check update_mode field for "delayed" indicator
     if (values.update_mode && typeof values.update_mode === 'string' && values.update_mode.includes('delayed')) {
       this.transitionAuthState('delayed');
       return;
     }
 
-    // Check lp_time (last price time, epoch seconds) for staleness.
-    // Skip lag-based detection during startup grace period — the first few quotes
-    // often carry stale lp_time before real-time data starts flowing.
-    const inGracePeriod = this.connectionEstablishedAt &&
-      (Date.now() - this.connectionEstablishedAt) < STARTUP_GRACE_PERIOD_MS;
-
-    if (values.lp_time && !inGracePeriod) {
+    // Check lp_time (last price time, epoch seconds) for staleness
+    if (values.lp_time) {
       const nowS = Math.floor(Date.now() / 1000);
       const lag = nowS - values.lp_time;
 
