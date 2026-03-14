@@ -226,6 +226,62 @@ async function handleTradeSignalDiscord(message) {
 }
 
 /**
+ * Handle strategy alert (multi-strategy conflict/agreement notifications)
+ */
+const ALERTS_REDIS_KEY = 'alerts:strategy';
+const MAX_PERSISTED_ALERTS = 50;
+
+/**
+ * Persist an alert to Redis and broadcast to WebSocket clients.
+ */
+async function persistAndBroadcastAlert(alert) {
+  // Assign a unique id
+  alert.id = alert.id || `${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+  alert.receivedAt = alert.receivedAt || new Date().toISOString();
+
+  // Broadcast to connected clients
+  broadcast('strategy_alert', alert);
+
+  // Persist to Redis (prepend, trim to max)
+  try {
+    await messageBus.publisher.lPush(ALERTS_REDIS_KEY, JSON.stringify(alert));
+    await messageBus.publisher.lTrim(ALERTS_REDIS_KEY, 0, MAX_PERSISTED_ALERTS - 1);
+  } catch (err) {
+    logger.error('Failed to persist alert to Redis:', err.message);
+  }
+}
+
+/**
+ * Load persisted alerts from Redis.
+ */
+async function loadAlertsFromRedis() {
+  try {
+    const raw = await messageBus.publisher.lRange(ALERTS_REDIS_KEY, 0, MAX_PERSISTED_ALERTS - 1);
+    return (raw || []).map(s => { try { return JSON.parse(s); } catch { return null; } }).filter(Boolean);
+  } catch (err) {
+    logger.error('Failed to load alerts from Redis:', err.message);
+    return [];
+  }
+}
+
+async function handleStrategyAlert(message) {
+  logActivity('alert', message.message || 'Strategy alert', message);
+  await persistAndBroadcastAlert(message);
+
+  await sendDiscordNotification({
+    title: `${message.severity === 'warning' ? '⚠️' : 'ℹ️'} Strategy Alert`,
+    color: message.severity === 'warning' ? 0xf59e0b : message.severity === 'critical' ? 0xef4444 : 0x3b82f6,
+    fields: [
+      { name: 'Rule', value: message.ruleName || 'N/A', inline: true },
+      { name: 'Severity', value: message.severity || 'info', inline: true },
+      { name: 'Strategy', value: message.signal?.strategy || 'N/A', inline: true },
+      { name: 'Detail', value: message.message || 'N/A', inline: false },
+    ],
+    timestamp: new Date().toISOString(),
+  });
+}
+
+/**
  * Handle trade rejected for Discord notification
  */
 async function handleTradeRejectedDiscord(message) {
@@ -751,17 +807,19 @@ const io = new Server(server, {
 });
 
 // Socket.IO connection handling
-io.on('connection', (socket) => {
+io.on('connection', async (socket) => {
   logger.debug('New Socket.IO client connected');
 
-  // Send current state to new client
+  // Load persisted alerts and send current state to new client
+  const persistedAlerts = await loadAlertsFromRedis();
   socket.emit('initial_state', {
     accounts: Array.from(monitoringState.accounts.values()),
     positions: Array.from(monitoringState.positions.values()),
     services: Array.from(monitoringState.services.values()),
     activity: monitoringState.activity.slice(-100),
     signals: monitoringState.signals.slice(0, 50),
-    quotes: Object.fromEntries(monitoringState.prices)
+    quotes: Object.fromEntries(monitoringState.prices),
+    alerts: persistedAlerts
   });
 
   // Handle ping/pong
@@ -1083,6 +1141,25 @@ app.get('/api/positions', dashboardAuth, (req, res) => {
 app.get('/api/activity', dashboardAuth, (req, res) => {
   const limit = parseInt(req.query.limit) || 100;
   res.json(monitoringState.activity.slice(-limit));
+});
+
+app.get('/api/alerts', dashboardAuth, async (req, res) => {
+  try {
+    const alerts = await loadAlertsFromRedis();
+    res.json(alerts);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.delete('/api/alerts', dashboardAuth, async (req, res) => {
+  try {
+    await messageBus.publisher.del(ALERTS_REDIS_KEY);
+    broadcast('alerts_cleared', {});
+    res.json({ status: 'ok' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 app.get('/api/signals', dashboardAuth, (req, res) => {
@@ -3567,10 +3644,26 @@ async function handleWebhookReceived(message) {
 
 async function handleTradeValidated(message) {
   logActivity('trade', `Trade validated: ${message.signal.action} ${message.signal.symbol}`, message);
+  const sig = message.signal || {};
+  await persistAndBroadcastAlert({
+    ruleName: 'signal',
+    severity: 'signal',
+    message: `${(sig.side || '').toUpperCase()} ${sig.symbol || '?'} @ ${sig.price ?? '?'}${sig.stop_loss ? ` SL:${sig.stop_loss}` : ''}${sig.take_profit ? ` TP:${sig.take_profit}` : ''}`,
+    signal: { strategy: sig.strategy, symbol: sig.symbol, side: sig.side, action: sig.action, price: sig.price, stop_loss: sig.stop_loss, take_profit: sig.take_profit },
+    timestamp: message.timestamp || new Date().toISOString(),
+  });
 }
 
 async function handleTradeRejected(message) {
   logActivity('trade', `Trade rejected: ${message.reason}`, message);
+  const sig = message.signal || message.rejectedSignal || {};
+  await persistAndBroadcastAlert({
+    ruleName: 'rejected',
+    severity: 'rejected',
+    message: `Rejected: ${message.reason || 'unknown'}`,
+    signal: { strategy: sig.strategy, symbol: sig.symbol, side: sig.side, action: sig.action, price: sig.price },
+    timestamp: message.timestamp || new Date().toISOString(),
+  });
 }
 
 async function handleMarketNews(message) {
@@ -3642,6 +3735,7 @@ async function startup() {
       [CHANNELS.ANALYTICS, handleAnalytics],
       [CHANNELS.EXPOSURE_LEVELS, handleExposureLevels],
       [CHANNELS.IV_SKEW, handleIVSkew],
+      [CHANNELS.STRATEGY_ALERT, handleStrategyAlert],
       // Discord notification subscriptions
       [CHANNELS.TRADE_VALIDATED, handleTradeSignalDiscord],
       [CHANNELS.TRADE_REJECTED, handleTradeRejectedDiscord],

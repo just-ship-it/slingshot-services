@@ -2,7 +2,7 @@ import express from 'express';
 import axios from 'axios';
 // File system imports removed - using Redis for persistence
 import { messageBus, CHANNELS, createLogger, configManager, healthCheck } from '../shared/index.js';
-import { evaluateCrossStrategyRules, getCrossStrategyRules } from './cross-strategy-filter.js';
+import { evaluateCrossStrategyRules, getCrossStrategyRules, evaluateStrategyAlerts } from './cross-strategy-filter.js';
 
 const SERVICE_NAME = 'trade-orchestrator';
 const logger = createLogger(SERVICE_NAME);
@@ -1399,6 +1399,16 @@ async function handleWebhookReceived(message) {
         timestamp: new Date().toISOString()
       });
       return;
+    }
+
+    // Evaluate multi-strategy alerts (informational, doesn't block)
+    const strategyAlerts = evaluateStrategyAlerts(signal, signalUnderlying, signalDirection, tradingState.strategyState.positions);
+    for (const alert of strategyAlerts) {
+      await messageBus.publish(CHANNELS.STRATEGY_ALERT, {
+        ...alert,
+        signal: { strategy: signal.strategy, symbol: signal.symbol, side: signal.side, action: signal.action, price: signal.price },
+        timestamp: new Date().toISOString(),
+      });
     }
 
     // Sync latest position sizing settings before processing

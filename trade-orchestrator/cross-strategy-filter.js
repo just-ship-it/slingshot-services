@@ -97,6 +97,154 @@ export function evaluateCrossStrategyRules(signal, signalUnderlying, signalDirec
 }
 
 /**
+ * Same-underlying multi-strategy alert rules.
+ * These produce informational alerts (not rejections) when noteworthy
+ * multi-strategy conditions are detected.
+ */
+const STRATEGY_ALERT_RULES = [
+  {
+    name: 'isg-long-sdiv-short-conflict',
+    enabled: true,
+    description: 'Flag when IV-SKEW-GEX goes long but SHORT-DTE-IV is short on same underlying',
+    incoming: { strategy: 'IV_SKEW_GEX', direction: 'long' },
+    conflicting: { strategy: 'SHORT_DTE_IV', direction: 'short' },
+    sameUnderlying: true,
+    severity: 'warning',
+    message: 'ISG long contradicts active SDIV short — ISG WR drops to 54% in this scenario',
+  },
+  {
+    name: 'isg-short-sdiv-long-conflict',
+    enabled: true,
+    description: 'Flag when IV-SKEW-GEX goes short but SHORT-DTE-IV is long on same underlying',
+    incoming: { strategy: 'IV_SKEW_GEX', direction: 'short' },
+    conflicting: { strategy: 'SHORT_DTE_IV', direction: 'long' },
+    sameUnderlying: true,
+    severity: 'warning',
+    message: 'ISG short contradicts active SDIV long — strategies disagree on direction',
+  },
+  {
+    name: 'sdiv-long-isg-short-conflict',
+    enabled: true,
+    description: 'Flag when SHORT-DTE-IV goes long but IV-SKEW-GEX is short on same underlying',
+    incoming: { strategy: 'SHORT_DTE_IV', direction: 'long' },
+    conflicting: { strategy: 'IV_SKEW_GEX', direction: 'short' },
+    sameUnderlying: true,
+    severity: 'warning',
+    message: 'SDIV long contradicts active ISG short — strategies disagree (SDIV has edge at 73.7% WR)',
+  },
+  {
+    name: 'sdiv-short-isg-long-conflict',
+    enabled: true,
+    description: 'Flag when SHORT-DTE-IV goes short but IV-SKEW-GEX is long on same underlying',
+    incoming: { strategy: 'SHORT_DTE_IV', direction: 'short' },
+    conflicting: { strategy: 'IV_SKEW_GEX', direction: 'long' },
+    sameUnderlying: true,
+    severity: 'warning',
+    message: 'SDIV short contradicts active ISG long — ISG WR drops to 54% when opposed by SDIV',
+  },
+  {
+    name: 'isg-sdiv-agreement',
+    enabled: true,
+    description: 'Both ISG and SDIV agree on direction — high confidence signal',
+    incoming: { strategy: 'IV_SKEW_GEX' },
+    agreeing: { strategy: 'SHORT_DTE_IV' },
+    sameUnderlying: true,
+    severity: 'info',
+    message: 'ISG and SDIV agree — backtest shows 95% ISG WR / 88% SDIV WR when aligned',
+  },
+  {
+    name: 'sdiv-isg-agreement',
+    enabled: true,
+    description: 'Both SDIV and ISG agree on direction — high confidence signal',
+    incoming: { strategy: 'SHORT_DTE_IV' },
+    agreeing: { strategy: 'IV_SKEW_GEX' },
+    sameUnderlying: true,
+    severity: 'info',
+    message: 'SDIV and ISG agree — backtest shows 95% ISG WR / 88% SDIV WR when aligned',
+  },
+];
+
+/**
+ * Evaluate informational multi-strategy alerts for an incoming signal.
+ * Returns an array of alert objects (may be empty).
+ *
+ * @param {Object} signal - The parsed trade signal
+ * @param {string} signalUnderlying - Normalized underlying (e.g. 'NQ', 'ES')
+ * @param {string} signalDirection - 'long' or 'short'
+ * @param {Map<string, {position: string, source: string}>} positions - strategyState.positions map
+ * @returns {Array<{ruleName: string, severity: string, message: string}>}
+ */
+export function evaluateStrategyAlerts(signal, signalUnderlying, signalDirection, positions) {
+  if (process.env.STRATEGY_ALERTS_ENABLED === 'false') {
+    return [];
+  }
+
+  // Non-entry actions don't trigger alerts
+  if (BYPASS_ACTIONS.has(signal.action)) {
+    return [];
+  }
+
+  const incomingStrategy = (signal.strategy || '').toUpperCase();
+  const alerts = [];
+
+  for (const rule of STRATEGY_ALERT_RULES) {
+    if (!rule.enabled) continue;
+
+    // Check if the incoming signal matches this rule's incoming strategy
+    if (rule.incoming.strategy !== incomingStrategy) continue;
+
+    // For conflict rules: check if opposing strategy has a position in the opposite direction
+    if (rule.conflicting) {
+      if (rule.incoming.direction && rule.incoming.direction !== signalDirection) continue;
+
+      // Find any position from the conflicting strategy
+      for (const [underlying, posInfo] of positions) {
+        if (!rule.sameUnderlying || underlying === signalUnderlying) {
+          const source = (posInfo.source || '').toUpperCase();
+          if (source === rule.conflicting.strategy && posInfo.position === rule.conflicting.direction) {
+            alerts.push({
+              ruleName: rule.name,
+              severity: rule.severity,
+              message: rule.message,
+              underlying: signalUnderlying,
+              incomingStrategy: incomingStrategy,
+              incomingDirection: signalDirection,
+              conflictingStrategy: rule.conflicting.strategy,
+              conflictingDirection: posInfo.position,
+            });
+            logger.info(`[STRATEGY-ALERT] ${rule.name}: ${rule.message}`);
+          }
+        }
+      }
+    }
+
+    // For agreement rules: check if the other strategy has a position in the same direction
+    if (rule.agreeing) {
+      for (const [underlying, posInfo] of positions) {
+        if (!rule.sameUnderlying || underlying === signalUnderlying) {
+          const source = (posInfo.source || '').toUpperCase();
+          if (source === rule.agreeing.strategy && posInfo.position === signalDirection) {
+            alerts.push({
+              ruleName: rule.name,
+              severity: rule.severity,
+              message: rule.message,
+              underlying: signalUnderlying,
+              incomingStrategy: incomingStrategy,
+              incomingDirection: signalDirection,
+              agreeingStrategy: rule.agreeing.strategy,
+              agreeingDirection: posInfo.position,
+            });
+            logger.info(`[STRATEGY-ALERT] ${rule.name}: ${rule.message}`);
+          }
+        }
+      }
+    }
+  }
+
+  return alerts;
+}
+
+/**
  * Return sanitized rules config for health/status endpoints.
  */
 export function getCrossStrategyRules() {

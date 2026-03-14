@@ -63,6 +63,7 @@ export const CHANNELS = {
 
   // Strategy status events
   STRATEGY_STATUS: 'strategy.status',
+  STRATEGY_ALERT: 'strategy.alert',
 
   // Signal Generator events
   LT_LEVELS: 'lt.levels',

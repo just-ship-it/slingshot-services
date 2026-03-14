@@ -14,6 +14,7 @@ const logger = createLogger('tradingview-client');
 const TOKEN_REFRESH_RETRY_MS = 4 * 60 * 60 * 1000; // 4 hours on failure (no rush if WS still works)
 const TOKEN_REFRESH_MAX_RETRIES = 3; // Stop retrying after 3 consecutive failures
 const DELAYED_QUOTE_THRESHOLD_S = 10 * 60; // 10 minutes lag = delayed
+const STARTUP_GRACE_PERIOD_MS = 30 * 1000; // Suppress lag-based delayed detection for 30s after connect
 
 // TradingView WebSocket endpoints (match working Python implementation)
 const TV_WEBSOCKET_URL = 'wss://data.tradingview.com/socket.io/websocket?from=chart%2FVEPYsueI%2F&type=chart';
@@ -71,6 +72,7 @@ class TradingViewClient extends EventEmitter {
     this.isRefreshingToken = false; // Prevent reconnect loop during token refresh
     this.tokenRefreshRetryCount = 0; // Track consecutive refresh failures
     this.lastDelayedAlert = null; // Throttle delayed-quote alerts
+    this.connectionEstablishedAt = null; // Startup grace period for delayed detection
   }
 
   async initializeRedis() {
@@ -188,6 +190,7 @@ class TradingViewClient extends EventEmitter {
     logger.info('WebSocket connection opened');
     this.reconnectAttempts = 0;
     this.tokenRefreshRetryCount = 0; // Reset on successful connection
+    this.connectionEstablishedAt = Date.now();
 
     // Initialize sessions
     this.initializeSessions();
@@ -888,8 +891,13 @@ class TradingViewClient extends EventEmitter {
       return;
     }
 
-    // Check lp_time (last price time, epoch seconds) for staleness
-    if (values.lp_time) {
+    // Check lp_time (last price time, epoch seconds) for staleness.
+    // Skip lag-based detection during startup grace period — the first few quotes
+    // often carry stale lp_time before real-time data starts flowing.
+    const inGracePeriod = this.connectionEstablishedAt &&
+      (Date.now() - this.connectionEstablishedAt) < STARTUP_GRACE_PERIOD_MS;
+
+    if (values.lp_time && !inGracePeriod) {
       const nowS = Math.floor(Date.now() / 1000);
       const lag = nowS - values.lp_time;
 
