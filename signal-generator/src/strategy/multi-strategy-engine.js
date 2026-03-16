@@ -1569,6 +1569,15 @@ class MultiStrategyEngine {
             in_position: state.inPosition && state.positionStrategy === runner.strategyConstant,
             current: state.inPosition && state.positionStrategy === runner.strategyConstant ? state.currentPosition : null
           },
+          product_position: state.inPosition ? {
+            in_position: true,
+            strategy: state.positionStrategy,
+            side: state.currentPosition?.side || null,
+            symbol: state.currentPosition?.symbol || state.tradingSymbol,
+            entry_price: state.currentPosition?.entryPrice || null,
+            quantity: state.currentPosition?.quantity || null,
+            is_own: state.positionStrategy === runner.strategyConstant
+          } : { in_position: false },
           gex_levels: gexLevels ? {
             futures_spot: gexLevels.futures_spot || gexLevels.nqSpot || null,
             put_wall: gexLevels.putWall,
