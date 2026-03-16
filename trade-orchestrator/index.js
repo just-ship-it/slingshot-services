@@ -237,10 +237,10 @@ async function loadContractMappings() {
       return {
         lastUpdated: new Date().toISOString(),
         currentContracts: {
-          'NQ': 'NQH6',
-          'MNQ': 'MNQH6',
-          'ES': 'ESH6',
-          'MES': 'MESH6'
+          'NQ': process.env.NQ_CONTRACT || 'NQM6',
+          'MNQ': process.env.MNQ_CONTRACT || 'MNQM6',
+          'ES': process.env.ES_CONTRACT || 'ESM6',
+          'MES': process.env.MES_CONTRACT || 'MESM6'
         }
       };
     }
@@ -259,10 +259,10 @@ async function loadContractMappings() {
   const defaults = {
     lastUpdated: new Date().toISOString(),
     currentContracts: {
-      'NQ': 'NQH6',
-      'MNQ': 'MNQH6',
-      'ES': 'ESH6',
-      'MES': 'MESH6'
+      'NQ': process.env.NQ_CONTRACT || 'NQM6',
+      'MNQ': process.env.MNQ_CONTRACT || 'MNQM6',
+      'ES': process.env.ES_CONTRACT || 'ESM6',
+      'MES': process.env.MES_CONTRACT || 'MESM6'
     },
     pointValues: {
       'NQ': 20,
@@ -271,7 +271,7 @@ async function loadContractMappings() {
       'MES': 5
     },
     tickSize: 0.25,
-    notes: 'March 2026 contract mappings - stored in Redis for rollover updates'
+    notes: 'Contract mappings driven by env vars (*_CONTRACT) - update in .env for rollover'
   };
 
   // Save defaults to Redis

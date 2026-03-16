@@ -1129,8 +1129,8 @@
     },
     "overnight-lt-crossing": {
       "scoreThreshold": 4,
-      "stopLossPoints": 20,
-      "takeProfitPoints": 20,
+      "stopLossPoints": 70,
+      "takeProfitPoints": 30,
       "trailingTrigger": 0,
       "trailingOffset": 0,
       "maxHoldBars": 840,

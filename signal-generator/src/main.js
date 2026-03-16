@@ -137,19 +137,10 @@ class SignalGeneratorService {
     const gexCacheFile = process.env.GEX_CACHE_FILE || `./data/gex_cache_${gexFuturesSymbol.toLowerCase()}.json`;
     const targetProduct = gexFuturesSymbol.toUpperCase();
 
-    // Resolve trading symbol from strategy-config.json (single source of truth)
-    const strategyConfigPath = new URL('../../strategy-config.json', import.meta.url).pathname;
-    let tradingSymbol = config.TRADING_SYMBOL; // fallback to env var
-    try {
-      const stratCfg = JSON.parse(fs.readFileSync(strategyConfigPath, 'utf-8'));
-      const productCfg = stratCfg.products?.[targetProduct];
-      if (productCfg?.tradingSymbol) {
-        tradingSymbol = productCfg.tradingSymbol;
-        logger.info(`Trading symbol from strategy-config.json: ${tradingSymbol} (product: ${targetProduct})`);
-      }
-    } catch (e) {
-      logger.warn(`Could not load strategy-config.json, using env TRADING_SYMBOL: ${tradingSymbol}`);
-    }
+    // Resolve trading symbol from env vars (*_CONTRACT) - single source of truth for contract rollover
+    const contractEnvVar = `${targetProduct}_CONTRACT`;
+    const tradingSymbol = process.env[contractEnvVar] || config.TRADING_SYMBOL;
+    logger.info(`Trading symbol from env ${contractEnvVar}: ${tradingSymbol} (product: ${targetProduct})`);
 
     // Initialize GEX calculator (for cached levels on startup)
     this.gexCalculator = new GexCalculator({

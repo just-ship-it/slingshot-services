@@ -48,9 +48,6 @@ Each service supports the same npm scripts:
 - **Port 3019**: Data Service - Centralized market data sourcing: TradingView streaming, GEX calculations (CBOE + hybrid Tradier), LT monitoring, candle management, IV skew
 - **Port 3020**: Dashboard UI - React frontend served via `serve`
 
-**Deprecated:**
-- ~~**Port 3012**: Market Data Service~~ - Replaced by Data Service (3019). Directory still exists but is not in PM2 config.
-
 ### Key Dependencies
 - All services use Node.js with ES modules (`"type": "module"` in package.json)
 - Shared utilities in `/shared/` directory provide common functionality across all services
@@ -87,9 +84,8 @@ Services must start in this order (handled by `start-all.sh`):
 6. AI Trader Service (depends on data-service; runs as separate PM2 instance of signal-generator codebase)
 7. Macro Briefing Service (independent; cron-scheduled)
 
-## Webhook Data Formats
+## Webhook Trade Signal Format
 
-### Trade Signal Format
 The system accepts trade signals via webhook at `http://localhost:3014/webhook`:
 
 ```json
@@ -102,51 +98,18 @@ The system accepts trade signals via webhook at `http://localhost:3014/webhook`:
   "price": 25534.5,
   "stop_loss": 25482.5,
   "take_profit": 25634.5,
-  "trailing_trigger": 22,      // Points from entry, not price
-  "trailing_offset": 6,         // Points, not price
+  "trailing_trigger": 22,
+  "trailing_offset": 6,
   "quantity": 1,
-  "strategy": "LDPS"
+  "strategy": "SHORT_DTE_IV"
 }
 ```
 
-**Supported Actions:**
-- `place_limit` - Place a limit order with bracket orders (stop loss and take profit)
-- `place_market` - Place a market order
-- `position_closed` - Close an existing position
-- `cancel_limit` - Cancel pending limit orders
+**Supported Actions:** `place_limit`, `place_market`, `position_closed`, `cancel_limit`, `modify_stop`
 
 **Key Fields:**
-- `webhook_type`: Must be "trade_signal" for trading signals
-- `secret`: Webhook authentication secret (configured in .env)
-- `trailing_trigger`: Distance in points from entry where trailing stop activates
-- `trailing_offset`: Trailing stop distance in points
-- `strategy`: Strategy identifier for tracking and grouping orders
-
-### Quote Data Format
-Real-time market quotes are sent from NinjaTrader via webhook:
-
-```json
-{
-  "webhook_type": "quote",
-  "type": "quote_batch",
-  "source": "ninjatrader",
-  "timestamp": "2024-12-03T12:00:00Z",
-  "quotes": [
-    {
-      "symbol": "MNQZ5",
-      "baseSymbol": "MNQ",
-      "open": 25500.0,
-      "high": 25550.0,
-      "low": 25480.0,
-      "close": 25530.0,
-      "previousClose": 25495.0,
-      "volume": 1234
-    }
-  ]
-}
-```
-
-The monitoring service receives these webhooks and routes them to the appropriate services via Redis pub/sub.
+- `trailing_trigger` / `trailing_offset`: Distance in points (not price) for trailing stop activation and offset
+- `strategy`: Strategy identifier (e.g., `IV_SKEW_GEX`, `SHORT_DTE_IV`, `AI_TRADER`)
 
 ## Order Execution and Backtesting
 
@@ -160,12 +123,10 @@ Limit orders fill at the EXACT limit price when the market reaches that level:
 **BUY Limit Orders:**
 - Fill condition: `candle.low <= limit_price`
 - Fill price: Exactly `limit_price` (no slippage)
-- Rationale: If candle low went at/below your limit, you get filled at your limit price
 
 **SELL Limit Orders:**
 - Fill condition: `candle.high >= limit_price`
 - Fill price: Exactly `limit_price` (no slippage)
-- Rationale: If candle high went at/above your limit, you get filled at your limit price
 
 #### Market Orders
 Market orders fill immediately with slippage applied:
@@ -177,11 +138,7 @@ Stop losses convert to market orders when triggered, incurring slippage:
 - **BUY Stop Loss**: When `candle.low <= stop_price`, fill at `stop_price - slippage`
 - **SELL Stop Loss**: When `candle.high >= stop_price`, fill at `stop_price + slippage`
 
-### Why This Matters
-Incorrect order simulation can invalidate entire backtesting analyses. The key principle is that **limit orders should NEVER have slippage** - they either fill at the limit price or not at all. Only market orders and triggered stop losses experience slippage due to immediate execution requirements.
-
-### Implementation Location
-Order fill logic is implemented in `/backtest-engine/src/execution/trade-simulator.js` in the `checkOrderFill()` method.
+**Key principle**: Limit orders should NEVER have slippage — they either fill at the limit price or not at all. Only market orders and triggered stop losses experience slippage. Implementation: `/backtest-engine/src/execution/trade-simulator.js` `checkOrderFill()`.
 
 ## Common Development Tasks
 
@@ -199,118 +156,33 @@ Order fill logic is implemented in `/backtest-engine/src/execution/trade-simulat
 ### Health Checks
 - All services expose `/health` endpoints
 - Use shared helper: `import { healthCheck } from '../shared/index.js'`
-- Health data is automatically published to `service.health` channel
 
 ### Logging
 - Use shared logger: `import { createLogger } from '../shared/index.js'`
-- Logs are written to `logs/[service-name].log` when using startup scripts
 - PM2 provides centralized log management: `pm2 logs [service-name]`
 
 ## Service Endpoints
 
 ### Public Endpoints (Monitoring Service - Port 3014)
-- **Webhook Endpoint**: `http://localhost:3014/webhook` - Receives trade signals and quotes
-- **Dashboard API**: `http://localhost:3014/api/dashboard` - Dashboard data aggregation
-- **GEX Levels**: `http://localhost:3014/api/gex/levels` - Current GEX levels (proxied)
-- **GEX Refresh**: `http://localhost:3014/api/gex/refresh` - Force GEX recalculation (proxied)
-- **Strategy Status**: `http://localhost:3014/api/strategy/gex-scalp/status` - Real-time strategy monitoring
-- **Health Check**: `http://localhost:3014/health` - Service health status
-- **WebSocket**: `ws://localhost:3014` - Real-time updates
+- `POST /webhook` - Receives trade signals and quotes
+- `GET /api/dashboard` - Dashboard data aggregation
+- `GET /api/gex/levels` - Current GEX levels (proxied from data-service)
+- `POST /api/gex/refresh` - Force GEX recalculation
+- `GET /api/strategy/gex-scalp/status` - Real-time strategy monitoring
+- `POST /api/trading/enable|disable` - Trading kill switch
+- `GET /health` - Service health status
+- `ws://localhost:3014` - Real-time WebSocket updates
 
-### Internal Service Endpoints (localhost only)
-- **Tradovate Service** (3011): `http://localhost:3011/health` - Tradovate API gateway
-- **Trade Orchestrator** (3013): `http://localhost:3013/health` - Trade logic service
-- **Signal Generator** (3015): `http://localhost:3015/health` - Strategy evaluation
-  - `/strategies` - List all strategies with status
-  - `/strategy/status` - Get all strategy statuses
-  - `/strategy/status/:name` - Get specific strategy status
-  - `/strategy/enable` - Enable one or all strategies
-  - `/strategy/disable` - Disable one or all strategies
-- **Data Service** (3019): `http://localhost:3019/health` - Centralized market data
-  - `/gex/levels?product=NQ|ES` - Get current GEX levels
-  - `/gex/levels/nq`, `/gex/levels/es` - Convenience aliases
-  - `/gex/refresh?product=NQ|ES` - Force GEX recalculation
-  - `/gex/health` - GEX-specific health (hybrid status, Tradier status)
-  - `/lt/levels?product=NQ|ES` - Get Liquidity Trigger levels
-  - `/candles?symbol=NQ&count=60` - Get 1-minute candle history
-  - `/candles/hourly?symbol=NQ&count=300` - Get 1-hour candle history
-  - `/iv/skew` - Current IV skew data
-  - `/iv/history` - IV skew history
-  - `/exposure/levels` - Tradier exposure levels
-  - `/vex/levels` - Vega exposure levels
-  - `/cex/levels` - Charm exposure levels
-  - `/tradier/status` - Tradier service status
-  - `/tradingview/token` - Update JWT token (POST)
-- **AI Trader** (3018): `http://localhost:3018/health` - AI strategy service
-  - `/ai/status` - AI engine status and daily metrics
-  - `/ai/test-cycle` - Trigger test evaluation cycle (POST)
-- **Macro Briefing** (3017): `http://localhost:3017/health` - Macro briefing service
+Note: Internal services bind to 127.0.0.1. Only the monitoring service (3014) binds to 0.0.0.0. See individual service `index.js` files for their specific endpoints.
 
-Note: Internal services bind to 127.0.0.1 and are not publicly accessible. Only the monitoring service (3014) binds to 0.0.0.0 for external access.
+## Dashboard (React Frontend)
 
-## Slingshot Dashboard (React Frontend)
+**Location**: `/mnt/c/projects/ereptor/slingshot/frontend` | **Port**: 3002
+React 18 + Tailwind CSS + Socket.io + Lightweight Charts. Communicates exclusively through Monitoring Service (3014) via REST `/api/*` endpoints and WebSocket. Auth via Bearer token in localStorage (`dashboardToken`).
 
-The dashboard is a React-based web application for monitoring and controlling the trading system.
+## Data Service (Port 3019)
 
-**Location**: `/mnt/c/projects/ereptor/slingshot/frontend`
-
-### Tech Stack
-- React 18.2 with Create React App
-- Tailwind CSS 3.3 for styling
-- Socket.io Client for real-time WebSocket updates
-- Lightweight Charts for financial charting (GEX levels, price action)
-- Chart.js for additional visualizations
-- Axios for REST API communication
-
-### Quick Start
-```bash
-cd /mnt/c/projects/ereptor/slingshot/frontend
-npm install
-npm start  # Runs on port 3002
-```
-
-### Key Components
-- **Dashboard.jsx** - Main dashboard with accounts, positions, orders, GEX levels, service health
-- **GexChart.jsx** - Financial chart with price action and GEX support/resistance overlay
-- **GexLevelsPanel.jsx** - GEX support/resistance level display
-- **GexComparisonPanel.jsx** - CBOE vs Tradier GEX comparison
-- **EnhancedTradingStatus.jsx** - Real-time position/order tracking with P&L
-- **QuotesPanel.jsx** - Real-time market quotes (NQ, ES, QQQ, SPY, BTC)
-- **TestTrading.jsx** - Manual trade testing interface
-- **Login.jsx** - Token-based authentication
-
-### Configuration
-Environment variables in `.env`:
-```
-PORT=3002
-REACT_APP_API_URL=http://localhost:3014
-REACT_APP_ENVIRONMENT=development
-```
-
-### Backend Integration
-The frontend communicates exclusively through the **Monitoring Service (Port 3014)**:
-- All REST API calls go through `/api/*` endpoints
-- WebSocket connection for real-time updates (positions, orders, prices)
-- Authentication via Bearer token (stored in localStorage as `dashboardToken`)
-
-### Key API Endpoints Used
-```
-GET  /api/dashboard              - Comprehensive dashboard data
-GET  /api/gex/levels             - Current GEX levels
-GET  /api/strategy/gex-scalp/status - Strategy evaluation status
-POST /api/gex/refresh            - Force GEX recalculation
-POST /api/trading/enable|disable - Trading kill switch
-```
-
-### WebSocket Events
-- `position_update` / `position_realtime_update` - Position changes
-- `order_placed` / `order_update` - Order status changes
-- `market_data` - Price/quote updates
-- `pnl_update` - P&L changes
-
-## Data Service (Centralized Market Data)
-
-The Data Service is the centralized market data sourcing and aggregation layer. It consolidates functionality previously spread across signal-generator and market-data-service into a single authoritative source for all real-time market data and derivatives calculations.
+Centralized market data sourcing and aggregation layer — single authoritative source for all real-time market data.
 
 ### Core Functionality
 - **TradingView Data Streaming**: Real-time OHLCV data (NQ, ES) and quote-only updates (MNQ, MES, QQQ, SPY, BTC) via WebSocket
@@ -321,127 +193,50 @@ The Data Service is the centralized market data sourcing and aggregation layer. 
 - **IV Skew Calculation**: Call/put IV skew from Tradier data
 - **Tradier Exposure Service**: Optional real-time options Greeks (VEX, CEX)
 
-### Key Components
-- **TradingView Client**: `/signal-generator/src/websocket/tradingview-client.js` (imported from signal-generator)
-  - Streams real-time quotes from TradingView via WebSocket
-  - Auto-reconnection with proper session management
-  - Publishes real-time price updates to `price.update` channel
-- **LT Monitor**: `/signal-generator/src/websocket/lt-monitor.js` (imported from signal-generator)
-  - Dedicated WebSocket per product for Liquidity Trigger level monitoring
-  - Fetches indicator metadata from TradingView's pine-facade API
-  - Publishes LT levels to `lt.levels` channel
-- **GEX Calculator**: `/signal-generator/src/gex/gex-calculator.js` (imported from signal-generator)
-  - Fetches CBOE options data and calculates gamma exposure levels
-  - Translates ETF levels (QQQ→NQ, SPY→ES) using live price ratios
-  - Caches levels and provides HTTP endpoints
-- **Hybrid GEX Calculator**: `/signal-generator/src/gex/hybrid-gex-calculator.js`
-  - Blends Tradier + CBOE data; prefers Tradier when fresh (< 5 min)
-- **Candle Manager**: `/data-service/src/candle-manager.js`
-  - Per-symbol candle buffers, close detection, history serving
-  - Publishes `candle.close` events to Redis
-- **HTTP Server**: `/data-service/index.js`
-  - REST API for GEX levels, LT levels, candle history, IV skew, Tradier exposure
+**Note**: Key components (TradingView client, LT monitor, GEX calculators) still live under `/signal-generator/src/` but are imported by data-service.
 
-**Note**: Several key components (TradingView client, LT monitor, GEX calculators) still live under `/signal-generator/src/` but are imported by data-service. They have not yet been refactored to `/shared/`.
+## Signal Generator Service (Port 3015)
 
-### Development Commands
-- **Start**: `pm2 start ecosystem.config.cjs --only data-service`
-- **Logs**: `pm2 logs data-service`
-- **Restart**: `pm2 restart data-service`
-- **Direct run**: `cd data-service && node index.js`
+Pure strategy evaluation engine. Consumes market data from Data Service via Redis pub/sub, applies configured strategies, generates trade signals.
 
-## Signal Generator Service (Strategy Evaluation)
+- **Multi-Strategy Engine**: `/signal-generator/src/strategy/multi-strategy-engine.js` — subscribes to `candle.close`, `gex.levels`, `lt.levels`, `price.update`
+- **Strategy Config**: `/signal-generator/strategy-config.json` — enable/disable strategies per product with priority ordering
+- **Strategy Factory**: `/signal-generator/src/strategy/strategy-factory.js` — registered live strategies
+- **Position State**: Tracks positions per product, syncs with Tradovate at startup, reconciles every 5 minutes
 
-The Signal Generator Service is now a pure strategy evaluation engine. It **consumes** market data from the Data Service via Redis pub/sub and applies configured strategies to generate trade signals. It no longer sources data directly from TradingView.
-
-### Core Functionality
-- **Multi-Strategy Engine**: Evaluates multiple strategies (GEX Scalp, GEX Recoil, IV Skew, etc.) against incoming market data
-- **Per-Product Strategy Runners**: Independent strategy evaluation for NQ and ES
-- **Position State Management**: Tracks positions per product, syncs with Tradovate at startup
-- **Pending Order Management**: Tracks unfilled orders with timeout logic
-- **Strategy Status Publishing**: Real-time strategy monitoring via Redis `strategy.status` channel
-- **Background Reconciliation**: Checks position state against Tradovate every 5 minutes
-
-### Key Components
-- **Multi-Strategy Engine**: `/signal-generator/src/strategy/multi-strategy-engine.js`
-  - Subscribes to `candle.close`, `gex.levels`, `lt.levels`, `price.update` from data-service
-  - Runs per-product strategy runners
-  - Publishes trade signals to `trade.signal` channel
-- **HTTP Server**: `/signal-generator/index.js`
-  - Strategy enable/disable endpoints, health check
+### Active Strategies
+- **IV-SKEW-GEX** (`iv-skew-gex`): IV skew + GEX confluence strategy (1m timeframe, requires `--raw-contracts` for backtesting)
+- **Short-DTE-IV** (`short-dte-iv`): 0-DTE QQQ IV change predicts NQ direction (15m timeframe)
 
 ### Environment Configuration
 - `ACTIVE_STRATEGY`: Strategy mode (`multi-strategy` or `ai-trader`)
 - `STRATEGY_ENABLED`: Enable/disable strategy evaluation (true/false)
-- `TRADING_SYMBOL`: Symbol to trade (e.g., `NQH6`)
+- `TRADING_SYMBOL`: Symbol to trade (e.g., `NQM6`)
 - `DEFAULT_QUANTITY`: Default order quantity
 - `USE_SESSION_FILTER`: Enable session-based filtering (true/false, default: true)
 - `ALLOWED_SESSIONS`: Comma-separated sessions to trade (overnight, premarket, rth, afterhours)
 
-### Development Commands
-- **Start**: `pm2 start ecosystem.config.cjs --only signal-generator`
-- **Logs**: `pm2 logs signal-generator`
-- **Restart**: `pm2 restart signal-generator`
-- **Direct run**: `cd signal-generator && node index.js`
-- **Development mode**: `cd signal-generator && npm run dev` (with hot reload)
+## AI Trader Service (Port 3018)
 
-## AI Trader Service
+Separate PM2 instance of signal-generator codebase with `ACTIVE_STRATEGY=ai-trader`. Uses Claude API (Sonnet) for market analysis and trade decisions.
 
-The AI Trader is a separate PM2 instance of the signal-generator codebase, activated with `ACTIVE_STRATEGY=ai-trader`. It uses Claude AI models to evaluate market conditions and generate trade signals.
-
-### Core Functionality
-- **AI-Powered Strategy Evaluation**: Uses Claude API (Sonnet) for market analysis and trade decisions
-- **Feature Aggregation**: Collects 1m and 1h candle history, GEX levels, LT levels for AI context
+- **AI Strategy Engine**: `/signal-generator/src/ai/`
+- **Live Feature Aggregator**: `/signal-generator/src/ai/live-feature-aggregator.js` — collects 1m/1h candles, GEX, LT levels
 - **Historical Seeding**: Seeds 500 bars (1m) + 300 bars (1h) from data-service HTTP API at startup
 - **Cost Tracking**: Monitors LLM API usage costs
 
-### Key Components
-- **AI Strategy Engine**: `/signal-generator/src/ai/`
-- **Live Feature Aggregator**: `/signal-generator/src/ai/live-feature-aggregator.js`
-  - Subscribes to `candle.close` and `gex.levels` from data-service
-  - Aggregates 1m candles into 1h bars for daily context
-
-### Development Commands
-- **Start**: `pm2 start ecosystem.config.cjs --only ai-trader`
-- **Logs**: `pm2 logs ai-trader`
-- **Restart**: `pm2 restart ai-trader`
-
-## Macro Briefing Service
+## Macro Briefing Service (Port 3017)
 
 Generates daily macro trading briefings using Claude AI. Located in `/macro-briefing/`.
-
-### Core Functionality
-- Cron-scheduled briefing generation (default: 6:30 AM ET weekdays)
-- Anthropic SDK integration for AI-generated market analysis
-- Email notifications via nodemailer
-
-### Development Commands
-- **Start**: `pm2 start ecosystem.config.cjs --only macro-briefing`
-- **Logs**: `pm2 logs macro-briefing`
+Cron-scheduled (default: 6:30 AM ET weekdays), Anthropic SDK, email via nodemailer.
 
 ## Backtest Engine
 
-The backtest engine is a CLI tool for running historical strategy analysis. Located in `/backtest-engine/`.
+CLI tool for historical strategy analysis. Located in `/backtest-engine/`.
 
-### Usage
+### Gold Standard Commands
 
-```bash
-cd backtest-engine
-
-# Basic backtest
-node index.js --ticker NQ --start 2023-03-01 --end 2025-12-25
-
-# Full configuration
-node index.js --ticker NQ --start 2023-03-01 --end 2025-12-25 \
-  --strategy gex-recoil --timeframe 15m \
-  --target-points 25 --stop-buffer 10 \
-  --output results.json --output-csv trades.csv
-```
-
-### IV-SKEW-GEX Baseline Backtest
-
-Gold standard command for the IV-SKEW-GEX strategy (1m IV resolution, raw contracts):
-
+**IV-SKEW-GEX** (1m IV resolution, raw contracts):
 ```bash
 cd backtest-engine
 node index.js --ticker NQ --strategy iv-skew-gex --timeframe 1m --raw-contracts \
@@ -450,224 +245,38 @@ node index.js --ticker NQ --strategy iv-skew-gex --timeframe 1m --raw-contracts 
   --time-based-trailing --tb-rule-1 "20,35,trail:20" --tb-rule-2 "35,50,trail:10" \
   --iv-resolution 1m
 ```
-
 **IMPORTANT**: Must use `--timeframe 1m --raw-contracts` — without `--raw-contracts`, continuous data breaks GEX proximity calculations and produces invalid results.
 
-### Short-DTE-IV Baseline Backtest
-
-Gold standard command for the Short-DTE-IV strategy (15m timeframe, production params from default.json):
-
+**Short-DTE-IV** (15m timeframe, production params from default.json):
 ```bash
 cd backtest-engine
 node index.js --ticker NQ --strategy short-dte-iv --timeframe 15m \
   --start 2025-01-13 --end 2026-01-23
 ```
+Production defaults baked into `src/config/default.json`. Does NOT require `--raw-contracts`.
 
-Production defaults are baked into `src/config/default.json` under `short-dte-iv`: threshold 0.015, stop/target 30pts, maxHold 60 bars, trailing disabled (9999/0), minQuality 2, 15min cooldown. Does NOT require `--raw-contracts`.
+Run `node index.js --help` for all available strategies and options.
 
-### Available Strategies
-- `gex-recoil` (default) - Long entries on GEX support level crossovers
-- `gex-ldpm-confluence` - GEX + LDPM confluence strategy
-- `gex-ldpm-confluence-lt` - With LT level filtering
-- `gex-ldpm-confluence-enhanced` - Enhanced confluence
-- `gex-level-sweep` - Level sweep detection
-- `gex-squeeze-confluence` - With squeeze momentum
-- `gex-ldpm-confluence-pullback` - Pullback entries
-
-Run `node index.js --help` for all options.
-
-### Architecture
-- `/backtest-engine/src/cli.js` - Command-line interface
+### Key Architecture
 - `/backtest-engine/src/backtest-engine.js` - Core engine
 - `/backtest-engine/src/execution/trade-simulator.js` - Order fill simulation
-- `/backtest-engine/src/analytics/performance-calculator.js` - Performance metrics
 - `/backtest-engine/src/data/csv-loader.js` - Historical data loading
-- `/backtest-engine/data/` - Historical candle and GEX data (CSV)
+- `/backtest-engine/data/` - Historical candle, GEX, LT, IV, and options data (CSV/JSON)
 
-## Backtest Data Sources
+## Backtest Data: Critical Filtering Rules
 
-Historical data for backtesting is stored in `/backtest-engine/data/`:
+Historical data is stored in `/backtest-engine/data/`. Column schemas and date ranges can be discovered by reading CSV headers and listing directories.
 
-### Data Overview
+### Calendar Spread Filtering (IMPORTANT)
+The NQ and ES OHLCV files contain calendar spread entries that must be filtered out. These are NOT actual price quotes — they represent price differences between contracts. Filter by checking if the `symbol` column contains a dash (e.g., `NQH1-NQM1`).
 
-| Data Type | Location | Format | Date Range | Frequency |
-|-----------|----------|--------|------------|-----------|
-| NQ OHLCV | `ohlcv/nq/NQ_ohlcv_1m.csv` | CSV | Dec 2020 - Dec 2025 | 1-minute |
-| ES OHLCV | `ohlcv/es/ES_ohlcv_1m.csv` | CSV | Jan 2021 - Jan 2026 | 1-minute |
-| QQQ OHLCV | `ohlcv/qqq/QQQ_ohlcv_1m.csv` | CSV | Dec 2020 - present | 1-minute |
-| SPY OHLCV | `ohlcv/spy/SPY_ohlcv_1m.csv` | CSV | Dec 2020 - present | 1-minute |
-| NQ GEX Daily | `gex/nq/NQ_gex_levels.csv` | CSV | Mar 2023 - Dec 2025 | Daily |
-| NQ GEX Intraday | `gex/nq/nq_gex_*.json` | JSON | Mar 2023 - Jan 2026 | 15-min snapshots |
-| ES GEX Intraday | `gex/es/es_gex_*.json` | JSON | Mar 2023 - Jan 2026 | 15-min snapshots |
-| NQ LT Levels | `liquidity/nq/NQ_liquidity_levels.csv` | CSV | Mar 2023 - Dec 2025 | 15-minute |
-| ES LT Levels (Daily) | `liquidity/es/ES_liquidity_levels_1D.csv` | CSV | Apr 2000 - Feb 2026 | Daily |
-| ES LT Levels (Hourly) | `liquidity/es/ES_liquidity_levels_1h.csv` | CSV | Feb 2020 - Feb 2026 | Hourly |
-| ES LT Levels (15m) | `liquidity/es/ES_liquidity_levels_15m.csv` | CSV | Jan 2020 - Feb 2026 | 15-minute |
-| ATM IV | `iv/qqq_atm_iv_15m.csv` | CSV | Jan 2025 - Dec 2025 | 15-minute |
-| Options CBBO | `cbbo-1m/*.csv` | CSV | Jan 2025 | 1-minute |
-| Options Definitions | `definition/*.csv` | CSV | Jan 2021 - present | Daily |
-| QQQ Options Stats | `statistics/qqq/*.csv` | CSV | Mar 2023 - present | Daily |
-| SPY Options Stats | `statistics/spy/*.csv` | CSV | Jan 2021 - Jan 2026 | Daily |
-| NQ MBO (L3) | `orderflow/nq/mbo/*.csv` | CSV | Dec 2025 - Jan 2026 | Tick-level |
-| VIX Options OHLCV | `ohlcv/vix/*.csv` | CSV | Jan 2021 - Jan 2026 | 1-minute |
-| QQQ Options TCBBO | `tcbbo/qqq/*.csv` | CSV | Jan 2025 - Jan 2026 | Tick-level |
+### Primary Contract Filtering (IMPORTANT)
+The NQ and ES OHLCV files contain multiple contract months at the same timestamps (e.g., NQH5 at 21200 and NQM5 at 21425 simultaneously). Loading all candles without filtering causes artificial price swings, FALSE signals, and INVALID results.
 
-### OHLCV Data
-Price data with columns: `ts_event, rtype, publisher_id, instrument_id, open, high, low, close, volume, symbol`
-- NQ futures: ~2.5M 1-minute bars (also 1-second available)
-- ES futures: ~10.2M 1-minute bars (also 1-second available, ~6.3GB)
-- QQQ ETF: ~1M 1-minute bars
-- SPY ETF: ~1M 1-minute bars
-- VIX options: 1-minute bars per contract (Jan 2021 - Jan 2026, ~600MB)
-- 1-second data available for NQ and ES (large files)
+**You MUST use `filterPrimaryContract()` when loading OHLCV data for any analysis or backtesting.** This function groups candles by hour, finds the highest-volume contract per hour, and only includes candles from that primary contract. Implemented in `csv-loader.js`. Failure to filter produces dramatically wrong results (e.g., 84% win rate when actual is 30%).
 
-**IMPORTANT: Calendar Spread Filtering**: The NQ and ES OHLCV files contain calendar spread entries that must be filtered out during backtesting. These are NOT actual price quotes - they represent the price difference between two contracts with different expiries. Calendar spreads have a dash between two symbols:
-```
-2020-12-28T09:00:00.000000000Z,33,1,20987,-14.850000000,-14.850000000,-14.850000000,-14.850000000,1,NQH1-NQM1
-```
-Filter by checking if the `symbol` column contains a dash (e.g., `NQH1-NQM1`).
-
-**IMPORTANT: Primary Contract Filtering**: The NQ and ES OHLCV files contain multiple contract months at the same timestamps (e.g., NQH5 at 21200 and NQM5 at 21425 simultaneously, or ESH6 and ESM6). These different contracts have significant price differences. If you load all candles without filtering, your analysis will see artificial price swings when switching between contracts, causing FALSE signals and INVALID results.
-
-**You MUST use `filterPrimaryContract()` when loading OHLCV data for any analysis or backtesting.** This function:
-1. Groups candles by hour
-2. Finds the highest-volume contract symbol per hour
-3. Only includes candles from that primary contract
-
-The backtest engine implements this in `csv-loader.js`. Any standalone analysis scripts must also implement this filtering. Failure to do so will produce dramatically wrong results (e.g., 84% win rate when actual is 30%).
-
-### GEX Levels
-Gamma exposure levels calculated from ETF options and translated to futures prices:
-- **NQ GEX** (from QQQ options): `gex/nq/` — daily CSV + 15-min intraday JSON
-- **ES GEX** (from SPY options): `gex/es/` — 15-min intraday JSON
-
-**Daily CSV** (NQ only): `date, nq_gamma_flip, nq_put_wall_1/2/3, nq_call_wall_1/2/3, total_gex, regime`
-
-**Intraday JSON** (both NQ and ES): 15-min snapshots with fields:
-- `{futures}_spot`, `{etf}_spot`, `multiplier` — price translation ratio
-- `gamma_flip`, `call_wall`, `put_wall` — key levels (in futures price space)
-- `resistance[0-4]`, `support[0-4]` — 5 levels each
-- `total_gex`, `total_vex`, `total_cex` — aggregate Greeks
-- `regime` — `strong_positive`, `positive`, `neutral`, `negative`, `strong_negative`
-- `options_count` — number of contracts in calculation
-
-**Generation**: Both products use `backtest-engine/scripts/generate-intraday-gex.py`:
-```bash
-# NQ (default)
-python3 generate-intraday-gex.py --start 2023-03-28 --end 2026-01-28
-
-# ES
-python3 generate-intraday-gex.py --product es --start 2023-03-28 --end 2026-01-28
-```
-
-The script uses Brenner-Subrahmanyam IV approximation from OPRA statistics (OI + close prices), computes Black-Scholes gamma/vega/charm per contract, aggregates by strike, and translates ETF levels to futures using the intraday spot ratio.
-
-**TradingView Indicator Format**: The GEX levels can be exported in a CSV format compatible with the TradingView GEX indicator:
-```
-cboe_zero,cboe_call,cboe_put,cboe_r1,cboe_r2,cboe_r3,cboe_r4,cboe_r5,cboe_s1,cboe_s2,cboe_s3,cboe_s4,cboe_s5,tradier_zero,tradier_call,tradier_put,tradier_r1,tradier_r2,tradier_r3,tradier_r4,tradier_r5,tradier_s1,tradier_s2,tradier_s3,tradier_s4,tradier_s5
-```
-
-### Liquidity Trigger Levels
-TradingView-sourced support/resistance levels exported from the Liquidity Data Exporter indicator.
-
-**NQ**: `liquidity/nq/NQ_liquidity_levels.csv` — 15-minute, Mar 2023 - Dec 2025
-**ES**: Multi-timeframe coverage in `liquidity/es/`:
-- `ES_liquidity_levels_1D.csv` — Daily, Apr 2000 - Feb 2026 (6,531 snapshots)
-- `ES_liquidity_levels_1h.csv` — Hourly, Feb 2020 - Feb 2026 (35,408 snapshots)
-- `ES_liquidity_levels_15m.csv` — 15-minute, Jan 2020 - Feb 2026 (143,181 snapshots)
-
-**Important**: LT levels are fundamentally different across timeframes — different Fibonacci lookback periods on different chart resolutions produce distinct level sets. They should NOT be merged; each timeframe captures different liquidity dynamics.
-
-**CSV format**: `datetime,unix_timestamp,sentiment,level_1,level_2,level_3,level_4,level_5`
-
-**Conversion**: Raw TradingView xlsx exports are converted via `scripts/convert-lt-excel.py`:
-```bash
-python3 scripts/convert-lt-excel.py <input.xlsx> <output.csv>
-```
-
-- Sentiment: BULLISH or BEARISH (derived from level configuration — not independently predictive, see LT Configuration Filters below)
-- 5 price levels per timestamp, each corresponding to a Fibonacci lookback period:
-
-| CSV Field | Fibonacci Lookback | Timeframe Significance |
-|-----------|-------------------|------------------------|
-| level_1 | 34 bars | Short-term liquidity |
-| level_2 | 55 bars | Short-term liquidity |
-| level_3 | 144 bars | Medium-term liquidity |
-| level_4 | 377 bars | Long-term liquidity |
-| level_5 | 610 bars | Long-term liquidity |
-
-**Key insight:** The levels are NOT ordered by price — the indicator outputs them in fixed series order (fib-34 first, fib-610 last). They reorder frequently relative to each other (~93.7% of snapshots have inversions). The *relative dynamics* between levels are more informative than any single level's position:
-- **Level crossings through price** (a level migrating from above to below spot, or vice versa) predict post-volatility-event direction at ~74% accuracy (5min lookforward, n=62 events)
-- **Which Fibonacci lookback crossed** matters: short-term (fib 34/55) crossings indicate near-term liquidity shifts; long-term (fib 377/610) crossings indicate structural zone breaks
-- **Migration direction** (levels converging toward vs diverging from price) provides additional signal
-- Sentiment is a byproduct of level configuration and should not be used as a standalone predictor
-
-### Implied Volatility
-ATM implied volatility for QQQ: `timestamp, iv, spot_price, atm_strike, call_iv, put_iv, dte`
-
-### OPRA Options Data (Databento)
-Raw options market data from OPRA.PILLAR feed:
-- **CBBO**: Best bid/offer per option contract
-- **Definitions**: Contract specifications (strikes, expirations, multipliers)
-- **Statistics**: Market statistics per instrument (open interest, volume)
-  - `statistics/qqq/` - QQQ options (Mar 2023 - present)
-  - `statistics/spy/` - SPY options (Jan 2021 - Jan 2026, ~67GB, 1255 daily files)
-
-**Statistics columns**: `ts_recv, ts_event, rtype, publisher_id, instrument_id, ts_ref, price, quantity, sequence, ts_in_delta, stat_type, channel_id, update_action, stat_flags, symbol`
-
-### TCBBO (Trade-Corrected Best Bid/Offer)
-Trade data with corrected BBO at time of execution. More accurate than raw CBBO for execution analysis.
-- `tcbbo/qqq/` - QQQ options (Jan 2025 - Jan 2026, ~24GB, 251 daily files)
-
-**TCBBO columns**: `ts_recv, ts_event, rtype, publisher_id, instrument_id, action, side, price, size, flags, ts_in_delta, bid_px_00, ask_px_00, bid_sz_00, ask_sz_00, bid_pb_00, ask_pb_00, symbol`
-
-### NQ Market-By-Order Data (Databento GLBX.MDP3)
-Level 3 order book data from CME Globex for NQ futures. This is the most granular market data available, showing every individual order event.
-
-**Location**: `orderflow/nq/mbo/`
-**Source**: Databento GLBX.MDP3 dataset
-**Schema**: MBO (Market-By-Order)
-**Date Range**: Dec 29, 2025 - Jan 28, 2026
-**Size**: ~58GB (26 daily files)
-
-**Columns**:
-| Column | Description |
-|--------|-------------|
-| `ts_recv` | Timestamp received by Databento |
-| `ts_event` | Timestamp of market event from exchange |
-| `rtype` | Record type (160 = MBO) |
-| `publisher_id` | Publisher identifier |
-| `instrument_id` | Unique instrument ID (see symbology.csv) |
-| `action` | Order action: R=Reset, A=Add, C=Cancel, M=Modify, T=Trade, F=Fill |
-| `side` | Order side: B=Bid, A=Ask, N=None |
-| `price` | Order price |
-| `size` | Order size |
-| `channel_id` | Market data channel |
-| `order_id` | Unique order identifier |
-| `flags` | Various flags |
-| `ts_in_delta` | Timestamp delta |
-| `sequence` | Sequence number |
-| `symbol` | Human-readable symbol |
-
-**Included Instruments** (from `symbology.json`):
-- **Outright contracts**: NQH6, NQM6, NQU6, NQZ6, NQH7, NQM7, NQZ7, NQZ8, NQZ9, NQZ0
-- **Calendar spreads**: NQH6-NQM6, NQH6-NQU6, NQH6-NQZ6, NQM6-NQU6, NQM6-NQZ6, NQU6-NQZ6, etc.
-
-**Metadata Files**:
-- `metadata.json` - Query parameters and job ID
-- `symbology.json` - Instrument ID to symbol mapping
-- `symbology.csv` - Daily symbol mappings
-- `condition.json` - Data availability per date
-- `manifest.json` - File checksums and download URLs
-
-**IMPORTANT: Calendar Spread Filtering**: Same as OHLCV data, filter out symbols containing a dash (e.g., `NQH6-NQM6`) for outright futures analysis.
-
-**Use Cases**:
-- Order flow analysis and imbalance detection
-- Reconstruction of limit order book at any point in time
-- Trade execution quality analysis
-- Market microstructure research
-- High-frequency strategy backtesting
+### GEX Data Generation
+Intraday GEX data (15-min snapshots) generated via `backtest-engine/scripts/generate-intraday-gex.py`. Supports both NQ (from QQQ options) and ES (from SPY options). Uses Brenner-Subrahmanyam IV approximation from OPRA statistics.
 
 ## Shared Utilities
 
@@ -676,183 +285,33 @@ The `/shared/` directory contains reusable components:
 - `/shared/strategies/` - Strategy implementations shared between live trading and backtesting (extend `base-strategy.js`)
 - `/shared/utils/` - Common utilities (logger, technical analysis helpers)
 
-## Trading Strategies
-
-### GEX Scalp (Primary Live Strategy)
-Fast scalping strategy that trades bounces off GEX Support 1 and Resistance 1 levels.
-Implementation: `/shared/strategies/gex-scalp.js`
-
-**Entry Conditions:**
-- Long: Price within 3 points of Support 1 (S1)
-- Short: Price within 3 points of Resistance 1 (R1)
-- RTH session by default (9:30 AM - 4:00 PM EST), configurable via `ALLOWED_SESSIONS`
-- Cooldown: 60 seconds between signals
-- Not already in position
-
-**Exit Parameters:**
-- Target: 7 points profit
-- Stop Loss: 3 points
-- Trailing Stop: Activates at 3 points profit, trails 1 point behind
-- Max Hold: 10 minutes (10 candles on 1m chart)
-- Limit Order Timeout: Cancel unfilled orders after 3 candles
-
-**Order Flow:**
-1. Signal generates `place_limit` at current price
-2. If not filled within 3 candles, sends `cancel_limit`
-3. On fill, Tradovate manages bracket orders (stop/target/trailing)
-4. On position close (via stop/target/trailing), strategy resets for next signal
-
-**Signal Format (snake_case for trade orchestrator):**
-```json
-{
-  "strategy": "GEX_SCALP",
-  "action": "place_limit",
-  "side": "buy",
-  "symbol": "NQH6",
-  "price": 21455.00,
-  "stop_loss": 21452.00,
-  "take_profit": 21462.00,
-  "trailing_trigger": 3,
-  "trailing_offset": 1,
-  "quantity": 1
-}
-```
-
-### GEX Recoil (Backtesting Strategy)
-Enters long when price crosses below GEX support levels (put walls), anticipating a reversion to mean.
-Used primarily for backtesting via the backtest engine.
-
-**Entry Conditions:**
-- Price crosses below a GEX support level (put_wall, gamma_flip, or support levels)
-- Risk within acceptable parameters
-- Cooldown period elapsed since last signal
-
-**Key Parameters:**
-- `targetPoints`: Profit target (default: 25 points)
-- `stopBuffer`: Points below candle low for stop (default: 10)
-- `maxRisk`: Maximum acceptable risk in points (default: 30)
-- `useLiquidityFilter`: Filter by LT levels below entry
-- `filterByLtConfiguration`: Use LDPM pattern analysis
-
-**LT Configuration Filters:**
-Based on historical performance analysis:
-- BULLISH sentiment: ~$169 avg P&L (2x better than BEARISH) — but sentiment is derived from level configuration, not independently informative
-- ASCENDING ordering: Poor performer ($8 avg), typically blocked
-- BULLISH_REVERSAL / BEARISH_REVERSAL: Negative P&L, blocked
-- WIDE spacing: Best performance ($121 avg)
-
-**⚠️ Important:** Sentiment-based filtering has historically been the focus, but the underlying price levels themselves carry stronger predictive signal. Level crossing events (a Fibonacci lookback zone migrating through spot price) predict post-event direction at ~74% accuracy. Future LT filter work should prioritize level dynamics (crossing, migration, convergence) over the derived sentiment label. See `scripts/analyze-lt-dynamics-vs-cbbo.js` for the crossing analysis.
-
 ## Symbol Conventions
 
 ### TradingView Symbols
-- `NQ1!` - Nasdaq 100 E-mini continuous front-month contract
-- `ES1!` - S&P 500 E-mini continuous front-month contract
+- `NQ1!` / `ES1!` - Continuous front-month contracts
 - Format: `{ROOT}{MONTH_CODE}!` or `{ROOT}1!` for continuous
 
 ### Broker Symbols (Tradovate)
-- `MNQZ5` - Micro Nasdaq December 2025 contract
-- `MNQ` - Base symbol for micro Nasdaq
-- Format: `{ROOT}{MONTH}{YEAR}` where month is F,G,H,J,K,M,N,Q,U,V,X,Z
+- Format: `{ROOT}{MONTH}{YEAR}` (e.g., `MNQM6` = Micro Nasdaq June 2026)
+- Month codes: F=Jan, G=Feb, H=Mar, J=Apr, K=May, M=Jun, N=Jul, Q=Aug, U=Sep, V=Oct, X=Nov, Z=Dec
 
 ### GEX/Options Symbols
-- `QQQ` - Options tracked for Nasdaq GEX calculation
-- `SPY` - Options tracked for S&P GEX calculation
-- GEX levels are translated from ETF prices to futures prices using live ratios
-
-### Month Codes
-F=Jan, G=Feb, H=Mar, J=Apr, K=May, M=Jun, N=Jul, Q=Aug, U=Sep, V=Oct, X=Nov, Z=Dec
+- `QQQ` → Nasdaq GEX, `SPY` → S&P GEX (translated from ETF to futures prices using live ratios)
 
 ## Debugging
 
-### Redis Commands
+### Redis
 ```bash
-# Check Redis is running
-redis-cli ping
-
-# Monitor all Redis traffic in real-time
-redis-cli monitor
-
-# List active pub/sub channels
-redis-cli pubsub channels
-
-# Subscribe to a channel manually
-redis-cli subscribe "price.update"
-
-# Check channel subscriber count
-redis-cli pubsub numsub "trade.signal"
+redis-cli ping                          # Check Redis
+redis-cli monitor                       # Monitor all traffic
+redis-cli pubsub channels               # List active channels
+redis-cli subscribe "price.update"      # Subscribe to channel
+redis-cli pubsub numsub "trade.signal"  # Check subscriber count
 ```
 
-### Service Health
-```bash
-# Check all service health endpoints
-curl http://localhost:3011/health  # Tradovate
-curl http://localhost:3013/health  # Trade Orchestrator
-curl http://localhost:3014/health  # Monitoring
-curl http://localhost:3015/health  # Signal Generator
-curl http://localhost:3017/health  # Macro Briefing
-curl http://localhost:3018/health  # AI Trader
-curl http://localhost:3019/health  # Data Service
-```
-
-### Test Webhook
-```bash
-curl -X POST http://localhost:3014/webhook \
-  -H "Content-Type: application/json" \
-  -d '{
-    "webhook_type": "trade_signal",
-    "secret": "your_webhook_secret",
-    "action": "place_limit",
-    "side": "buy",
-    "symbol": "NQ1!",
-    "price": 21000.00,
-    "stop_loss": 20980.00,
-    "take_profit": 21050.00,
-    "quantity": 1,
-    "strategy": "TEST"
-  }'
-```
-
-## Troubleshooting
-
-### Redis Connection Failures
-**Symptom**: Services fail to start with Redis connection errors
-**Solutions**:
-1. Verify Redis is running: `redis-cli ping`
-2. Check Redis host/port in `shared/.env`
-3. Restart Redis: `sudo systemctl restart redis`
-
-### WebSocket Reconnection Issues
-**Symptom**: TradingView data stops streaming
-**Solutions**:
-1. Check `pm2 logs data-service` for auth errors
-2. Verify `TRADINGVIEW_CREDENTIALS` in `.env`
-3. Restart data service: `pm2 restart data-service`
-
-### Service Startup Order Failures
-**Symptom**: Services report missing dependencies
-**Solution**: Use `./start-all.sh` which handles startup order, or start manually in order:
-1. Tradovate Service
-2. Trade Orchestrator
-3. Monitoring Service
-4. Data Service
-5. Signal Generator
-6. AI Trader
-
-### No Trade Signals Generated
-**Symptoms**: Strategy running but no signals
-**Check**:
-1. GEX levels loaded: `curl http://localhost:3019/gex/levels?product=NQ`
-2. Price streaming: `redis-cli subscribe "price.update"`
-3. Strategy enabled: Check `STRATEGY_ENABLED=true` in `.env`
-4. Session filter: Check `USE_SESSION_FILTER` and `ALLOWED_SESSIONS` settings
-5. Check strategy status: `curl http://localhost:3014/api/strategy/gex-scalp/status`
-6. Data service healthy: `curl http://localhost:3019/health`
-7. GEX Scalp cooldown is 60 seconds between signals
-
-### Backtest Data Issues
-**Symptom**: Backtest fails with missing data
-**Solutions**:
-1. Verify CSV data exists in `backtest-engine/data/`
-2. Check date range matches available data
-3. Ensure ticker matches data file naming convention
+### Troubleshooting
+- **Redis connection failures**: `redis-cli ping`, check `shared/.env`, `sudo systemctl restart redis`
+- **TradingView data stops**: Check `pm2 logs data-service`, verify `TRADINGVIEW_CREDENTIALS` in `.env`, `pm2 restart data-service`
+- **No trade signals**: Check GEX levels (`curl localhost:3019/gex/levels?product=NQ`), price streaming (`redis-cli subscribe "price.update"`), `STRATEGY_ENABLED=true`, session filter settings, data service health
+- **Service startup issues**: Use `./start-all.sh` which handles startup order
+- **Backtest data issues**: Verify CSV data exists in `backtest-engine/data/`, check date range, ensure ticker matches file naming

@@ -17,6 +17,13 @@ if (fs.existsSync(sharedEnvPath)) {
   dotenv.config({ path: localEnvPath });
 }
 
+// Derive TradingView symbols from contract env vars (update *_CONTRACT for quarterly rollover)
+const nqContract = process.env.NQ_CONTRACT || 'NQH6';
+const mnqContract = process.env.MNQ_CONTRACT || 'MNQH6';
+const esContract = process.env.ES_CONTRACT || 'ESH6';
+const mesContract = process.env.MES_CONTRACT || 'MESH6';
+const additionalQuoteSymbols = process.env.ADDITIONAL_QUOTE_SYMBOLS || 'NASDAQ:QQQ,AMEX:SPY,BITSTAMP:BTCUSD';
+
 const config = {
   // Redis Configuration
   REDIS_HOST: process.env.REDIS_HOST || 'localhost',
@@ -30,9 +37,9 @@ const config = {
   TRADINGVIEW_CREDENTIALS: process.env.TRADINGVIEW_CREDENTIALS || '',
   TRADINGVIEW_JWT_TOKEN: process.env.TRADINGVIEW_JWT_TOKEN || '',
 
-  // Symbols to Stream
-  OHLCV_SYMBOLS: (process.env.OHLCV_SYMBOLS || 'CME_MINI:NQ1!,CME_MINI:MNQ1!,CME_MINI:ES1!,CME_MINI:MES1!,NASDAQ:QQQ,AMEX:SPY,BITSTAMP:BTCUSD').split(','),
-  LT_SYMBOL: process.env.LT_SYMBOL || 'CME_MINI:NQ1!',
+  // Symbols to Stream — derived from *_CONTRACT env vars
+  OHLCV_SYMBOLS: (process.env.OHLCV_SYMBOLS || `CME_MINI:${nqContract},CME_MINI:${mnqContract},CME_MINI:${esContract},CME_MINI:${mesContract},${additionalQuoteSymbols}`).split(','),
+  LT_SYMBOL: process.env.LT_SYMBOL || `CME_MINI:${nqContract}`,
   LT_TIMEFRAME: process.env.LT_TIMEFRAME || '15',
 
   // GEX Calculator Configuration
@@ -50,7 +57,7 @@ const config = {
 
   // Strategy Configuration
   STRATEGY_ENABLED: process.env.STRATEGY_ENABLED?.toLowerCase() === 'true',
-  TRADING_SYMBOL: process.env.TRADING_SYMBOL || 'NQH5',
+  TRADING_SYMBOL: process.env.TRADING_SYMBOL || process.env.NQ_CONTRACT || 'NQM6',
   DEFAULT_QUANTITY: parseInt(process.env.DEFAULT_QUANTITY || '1'),
   EVAL_TIMEFRAME: process.env.EVAL_TIMEFRAME || '1m',
 

@@ -17,6 +17,13 @@ if (fs.existsSync(sharedEnvPath)) {
   dotenv.config({ path: localEnvPath });
 }
 
+// Derive TradingView symbols from contract env vars (update *_CONTRACT for quarterly rollover)
+const nqContract = process.env.NQ_CONTRACT || 'NQH6';
+const mnqContract = process.env.MNQ_CONTRACT || 'MNQH6';
+const esContract = process.env.ES_CONTRACT || 'ESH6';
+const mesContract = process.env.MES_CONTRACT || 'MESH6';
+const additionalQuoteSymbols = process.env.ADDITIONAL_QUOTE_SYMBOLS || 'NASDAQ:QQQ,AMEX:SPY,BITSTAMP:BTCUSD';
+
 const config = {
   // Redis Configuration
   REDIS_HOST: process.env.REDIS_HOST || 'localhost',
@@ -27,16 +34,17 @@ const config = {
   TRADINGVIEW_JWT_TOKEN: process.env.TRADINGVIEW_JWT_TOKEN || '',
 
   // Chart symbols (get full OHLCV chart sessions - needed for candle buffers)
-  OHLCV_SYMBOLS: (process.env.OHLCV_SYMBOLS || 'CME_MINI:NQ1!,CME_MINI:ES1!').split(','),
+  // Derived from *_CONTRACT env vars — no need to update separately for rollover
+  OHLCV_SYMBOLS: (process.env.OHLCV_SYMBOLS || `CME_MINI:${nqContract},CME_MINI:${esContract}`).split(','),
 
   // Quote-only symbols (added to quote session only - just last price, no chart session)
-  // Used for GEX translation (QQQ, SPY), dashboard display (MNQ, MES, BTC)
-  QUOTE_ONLY_SYMBOLS: (process.env.QUOTE_ONLY_SYMBOLS || 'CME_MINI:MNQ1!,CME_MINI:MES1!,NASDAQ:QQQ,AMEX:SPY,BITSTAMP:BTCUSD').split(','),
+  // Micro contracts derived from env vars; additional symbols (QQQ, SPY, BTC) are static
+  QUOTE_ONLY_SYMBOLS: (process.env.QUOTE_ONLY_SYMBOLS || `CME_MINI:${mnqContract},CME_MINI:${mesContract},${additionalQuoteSymbols}`).split(','),
 
-  // LT Monitor Configuration (per product)
-  LT_NQ_SYMBOL: process.env.LT_NQ_SYMBOL || 'CME_MINI:NQ1!',
+  // LT Monitor Configuration (per product) — derived from contract env vars
+  LT_NQ_SYMBOL: process.env.LT_NQ_SYMBOL || `CME_MINI:${nqContract}`,
   LT_NQ_TIMEFRAME: process.env.LT_NQ_TIMEFRAME || '15',
-  LT_ES_SYMBOL: process.env.LT_ES_SYMBOL || 'CME_MINI:ES1!',
+  LT_ES_SYMBOL: process.env.LT_ES_SYMBOL || `CME_MINI:${esContract}`,
   LT_ES_TIMEFRAME: process.env.LT_ES_TIMEFRAME || '15',
 
   // NQ GEX Configuration (from QQQ)

@@ -220,6 +220,14 @@ class MultiStrategyEngine {
     const productsConfig = this.strategyConfig.products || {};
 
     for (const [product, productConfig] of Object.entries(productsConfig)) {
+      // Derive tradingSymbol from env vars (*_CONTRACT) - single source of truth for contract rollover
+      const contractEnvVar = `${product}_CONTRACT`;
+      if (process.env[contractEnvVar]) {
+        productConfig.tradingSymbol = process.env[contractEnvVar];
+      } else if (!productConfig.tradingSymbol) {
+        productConfig.tradingSymbol = config.TRADING_SYMBOL;
+      }
+
       const state = new ProductState(product, productConfig);
 
       for (const stratConfig of (productConfig.strategies || [])) {

@@ -36,7 +36,7 @@ export class AIStrategyEngine {
   constructor(opts = {}) {
     this.featureAggregator = opts.featureAggregator;
     this.gexCalculator = opts.gexCalculator;
-    this.tradingSymbol = opts.tradingSymbol || config.TRADING_SYMBOL || 'NQH6';
+    this.tradingSymbol = opts.tradingSymbol || config.TRADING_SYMBOL;
 
     // LLM components — imported from backtest-engine
     this.promptBuilder = new PromptBuilder({ ticker: opts.ticker || config.CANDLE_BASE_SYMBOL || 'NQ' });

@@ -1329,34 +1329,40 @@ class TradovateClient extends EventEmitter {
     }
   }
 
-  // Map generic symbols like "MNQ" to full contract symbols like "MNQH6"
+  // Map generic symbols like "MNQ" to full contract symbols like "MNQM6"
+  // Contract symbols are driven by env vars (*_CONTRACT) - update in .env for quarterly rollover
   mapToFullContractSymbol(symbol) {
+    const nq = process.env.NQ_CONTRACT || 'NQM6';
+    const mnq = process.env.MNQ_CONTRACT || 'MNQM6';
+    const es = process.env.ES_CONTRACT || 'ESM6';
+    const mes = process.env.MES_CONTRACT || 'MESM6';
+
     const symbolMap = {
       // Micro E-mini NASDAQ-100
-      'MNQ': 'MNQH6',  // March 2026
-      'MNQH6': 'MNQH6',
+      'MNQ': mnq,
+      [mnq]: mnq,
 
       // E-mini NASDAQ-100
-      'NQ': 'NQH6',    // March 2026
-      'NQ!': 'NQH6',   // TradingView continuous contract
-      'NQ1!': 'NQH6',  // TradingView format variant
-      'NQH6': 'NQH6',
+      'NQ': nq,
+      'NQ!': nq,    // TradingView continuous contract
+      'NQ1!': nq,   // TradingView format variant
+      [nq]: nq,
 
       // Micro E-mini S&P 500
-      'MES': 'MESH6',  // March 2026
-      'MESH6': 'MESH6',
+      'MES': mes,
+      [mes]: mes,
 
       // E-mini S&P 500
-      'ES': 'ESH6',    // March 2026
-      'ESH6': 'ESH6',
+      'ES': es,
+      [es]: es,
 
-      // E-mini Russell 2000
-      'RTY': 'RTYH6',  // March 2026
-      'RTYH6': 'RTYH6',
+      // E-mini Russell 2000 (update manually or add RTY_CONTRACT env var)
+      'RTY': 'RTYM6',
+      'RTYM6': 'RTYM6',
 
       // Micro E-mini Russell 2000
-      'M2K': 'M2KH6',  // March 2026
-      'M2KH6': 'M2KH6'
+      'M2K': 'M2KM6',
+      'M2KM6': 'M2KM6'
     };
 
     return symbolMap[symbol.toUpperCase()] || symbol;
