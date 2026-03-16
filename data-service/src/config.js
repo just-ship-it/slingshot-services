@@ -24,6 +24,16 @@ const esContract = process.env.ES_CONTRACT || 'ESH6';
 const mesContract = process.env.MES_CONTRACT || 'MESH6';
 const additionalQuoteSymbols = process.env.ADDITIONAL_QUOTE_SYMBOLS || 'NASDAQ:QQQ,AMEX:SPY,BITSTAMP:BTCUSD';
 
+// TradingView uses full-year format (e.g., NQM2026) instead of short (NQM6)
+// Expand single-digit year to full year: H6 → H2026, M6 → M2026, etc.
+function toTradingViewSymbol(contract) {
+  return contract.replace(/(\d)$/, (_, d) => `202${d}`);
+}
+const tvNQ = toTradingViewSymbol(nqContract);
+const tvMNQ = toTradingViewSymbol(mnqContract);
+const tvES = toTradingViewSymbol(esContract);
+const tvMES = toTradingViewSymbol(mesContract);
+
 const config = {
   // Redis Configuration
   REDIS_HOST: process.env.REDIS_HOST || 'localhost',
@@ -35,16 +45,16 @@ const config = {
 
   // Chart symbols (get full OHLCV chart sessions - needed for candle buffers)
   // Derived from *_CONTRACT env vars — no need to update separately for rollover
-  OHLCV_SYMBOLS: (process.env.OHLCV_SYMBOLS || `CME_MINI:${nqContract},CME_MINI:${esContract}`).split(','),
+  OHLCV_SYMBOLS: (process.env.OHLCV_SYMBOLS || `CME_MINI:${tvNQ},CME_MINI:${tvES}`).split(','),
 
   // Quote-only symbols (added to quote session only - just last price, no chart session)
   // Micro contracts derived from env vars; additional symbols (QQQ, SPY, BTC) are static
-  QUOTE_ONLY_SYMBOLS: (process.env.QUOTE_ONLY_SYMBOLS || `CME_MINI:${mnqContract},CME_MINI:${mesContract},${additionalQuoteSymbols}`).split(','),
+  QUOTE_ONLY_SYMBOLS: (process.env.QUOTE_ONLY_SYMBOLS || `CME_MINI:${tvMNQ},CME_MINI:${tvMES},${additionalQuoteSymbols}`).split(','),
 
   // LT Monitor Configuration (per product) — derived from contract env vars
-  LT_NQ_SYMBOL: process.env.LT_NQ_SYMBOL || `CME_MINI:${nqContract}`,
+  LT_NQ_SYMBOL: process.env.LT_NQ_SYMBOL || `CME_MINI:${tvNQ}`,
   LT_NQ_TIMEFRAME: process.env.LT_NQ_TIMEFRAME || '15',
-  LT_ES_SYMBOL: process.env.LT_ES_SYMBOL || `CME_MINI:${esContract}`,
+  LT_ES_SYMBOL: process.env.LT_ES_SYMBOL || `CME_MINI:${tvES}`,
   LT_ES_TIMEFRAME: process.env.LT_ES_TIMEFRAME || '15',
 
   // NQ GEX Configuration (from QQQ)

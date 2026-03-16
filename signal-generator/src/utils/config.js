@@ -24,6 +24,15 @@ const esContract = process.env.ES_CONTRACT || 'ESH6';
 const mesContract = process.env.MES_CONTRACT || 'MESH6';
 const additionalQuoteSymbols = process.env.ADDITIONAL_QUOTE_SYMBOLS || 'NASDAQ:QQQ,AMEX:SPY,BITSTAMP:BTCUSD';
 
+// TradingView uses full-year format (e.g., NQM2026) instead of short (NQM6)
+function toTradingViewSymbol(contract) {
+  return contract.replace(/(\d)$/, (_, d) => `202${d}`);
+}
+const tvNQ = toTradingViewSymbol(nqContract);
+const tvMNQ = toTradingViewSymbol(mnqContract);
+const tvES = toTradingViewSymbol(esContract);
+const tvMES = toTradingViewSymbol(mesContract);
+
 const config = {
   // Redis Configuration
   REDIS_HOST: process.env.REDIS_HOST || 'localhost',
@@ -38,8 +47,8 @@ const config = {
   TRADINGVIEW_JWT_TOKEN: process.env.TRADINGVIEW_JWT_TOKEN || '',
 
   // Symbols to Stream — derived from *_CONTRACT env vars
-  OHLCV_SYMBOLS: (process.env.OHLCV_SYMBOLS || `CME_MINI:${nqContract},CME_MINI:${mnqContract},CME_MINI:${esContract},CME_MINI:${mesContract},${additionalQuoteSymbols}`).split(','),
-  LT_SYMBOL: process.env.LT_SYMBOL || `CME_MINI:${nqContract}`,
+  OHLCV_SYMBOLS: (process.env.OHLCV_SYMBOLS || `CME_MINI:${tvNQ},CME_MINI:${tvMNQ},CME_MINI:${tvES},CME_MINI:${tvMES},${additionalQuoteSymbols}`).split(','),
+  LT_SYMBOL: process.env.LT_SYMBOL || `CME_MINI:${tvNQ}`,
   LT_TIMEFRAME: process.env.LT_TIMEFRAME || '15',
 
   // GEX Calculator Configuration
