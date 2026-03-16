@@ -3656,7 +3656,7 @@ async function handleTradeValidated(message) {
 
 async function handleTradeRejected(message) {
   logActivity('trade', `Trade rejected: ${message.reason}`, message);
-  const sig = message.signal || message.rejectedSignal || {};
+  const sig = message.signal || message.rejectedSignal || message.originalSignal?.body || message.originalSignal || {};
   await persistAndBroadcastAlert({
     ruleName: 'rejected',
     severity: 'rejected',
