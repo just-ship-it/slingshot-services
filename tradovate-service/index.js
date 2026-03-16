@@ -340,6 +340,28 @@ async function handleOrderRequest(message) {
       throw new Error(`Contract not found or invalid response: ${message.symbol}`);
     }
 
+    // Last-line-of-defense: block orders if broker already has a position for this contract
+    try {
+      const positions = await tradovateClient.getPositions(message.accountId);
+      const existingPosition = positions.find(p =>
+        p.contractId === contractId && p.netPos !== 0
+      );
+
+      if (existingPosition) {
+        const msg = `🚫 Order blocked: ${contractSymbol} already has position (netPos=${existingPosition.netPos}). One position per ticker enforced.`;
+        logger.warn(msg);
+        await messageBus.publish(CHANNELS.ORDER_REJECTED, {
+          reason: msg,
+          symbol: contractSymbol,
+          existingNetPos: existingPosition.netPos,
+          rejectedOrder: message
+        });
+        return;
+      }
+    } catch (posCheckError) {
+      logger.warn(`⚠️ Position guard check failed (proceeding with order): ${posCheckError.message}`);
+    }
+
     // Prepare order data
     const orderData = {
       accountId: message.accountId,

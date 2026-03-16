@@ -1460,6 +1460,7 @@ class TradovateClient extends EventEmitter {
         this.logger.info('✅ WebSocket connected to Tradovate');
         this.wsConnected = true;
         this.wsReconnectAttempts = 0;
+        this.wsRequestId = 1;  // Reset for clean state on each new connection
 
         // Don't send anything immediately - wait for open frame
         // Authorization and sync will be triggered by open frame
@@ -1548,6 +1549,7 @@ class TradovateClient extends EventEmitter {
       return;
     }
 
+    this._authRequestId = this.wsRequestId;  // Track auth requestId before incrementing
     const requestId = this.wsRequestId++;
 
     // Tradovate WebSocket format: endpoint\nid\nquery\nbody
@@ -1563,6 +1565,7 @@ class TradovateClient extends EventEmitter {
       return;
     }
 
+    this._syncRequestId = this.wsRequestId;  // Track sync requestId before incrementing
     const requestId = this.wsRequestId++;
 
     // Try without any body first, based on WebSocket documentation format
@@ -1597,8 +1600,8 @@ class TradovateClient extends EventEmitter {
     this.logger.info(`📨 Response ${requestId}: status ${status}`);
 
     if (status === 200) {
-      // Check if this is an authorization response (requestId 1)
-      if (requestId === 1) {
+      // Check if this is an authorization response (dynamic requestId)
+      if (requestId === this._authRequestId) {
         this.logger.info('✅ WebSocket authorization successful');
         // Now request user sync
         this.subscribeToUserSync();
@@ -1614,8 +1617,8 @@ class TradovateClient extends EventEmitter {
   handleSuccessfulResponse(requestId, data) {
     this.logger.debug(`✅ Request ${requestId} successful`);
 
-    if (requestId === 2) {
-      // This is likely the sync response
+    if (requestId === this._syncRequestId) {
+      // This is the sync response
       this.handleInitialSyncResponse({ d: data, i: requestId });
     } else {
       this.logger.debug('Response data:', JSON.stringify(data, null, 2));

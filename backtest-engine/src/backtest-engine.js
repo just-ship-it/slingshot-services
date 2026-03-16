@@ -67,6 +67,9 @@ import { NqLeadsEsStrategy } from '../../shared/strategies/nq-leads-es.js';
 import { GexSupportBounceStrategy } from '../../shared/strategies/gex-support-bounce.js';
 import { ImpulseFVGStrategy } from '../../shared/strategies/impulse-fvg.js';
 import { ShortDTEIVStrategy } from '../../shared/strategies/short-dte-iv.js';
+import { OvernightScoringStrategy } from '../../shared/strategies/overnight-scoring.js';
+import { OvernightCompositeStrategy } from '../../shared/strategies/overnight-composite.js';
+import { OvernightLTCrossingStrategy } from '../../shared/strategies/overnight-lt-crossing.js';
 import { SqueezeMomentumIndicator } from '../../shared/indicators/squeeze-momentum.js';
 import { GexLoader } from './data-loaders/gex-loader.js';
 import { IVLoader } from './data-loaders/iv-loader.js';
@@ -1486,6 +1489,18 @@ export class BacktestEngine {
       case 'short-dte-iv':
       case 'sdiv':
         return new ShortDTEIVStrategy(params);
+      case 'overnight-scoring':
+      case 'overnight-score':
+      case 'ons':
+        return new OvernightScoringStrategy(params);
+      case 'overnight-composite':
+      case 'overnight-comp':
+      case 'onc':
+        return new OvernightCompositeStrategy(params);
+      case 'overnight-lt-crossing':
+      case 'overnight-ltx':
+      case 'oltx':
+        return new OvernightLTCrossingStrategy(params);
       default:
         throw new Error(`Unknown strategy: ${strategyName}`);
     }

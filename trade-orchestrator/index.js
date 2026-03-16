@@ -1592,6 +1592,9 @@ async function handleWebhookReceived(message) {
         }
       }
 
+      // Also check broker-authoritative position map (tradingPositions)
+      const hasBrokerPosition = hasPositionForUnderlying(signalUnderlying);
+
       if (existingPos) {
         logger.warn(`📊 [${strategy}] Signal skipped - ${signalUnderlying} already in ${existingPos.position} position from ${existingPos.source}`);
         logger.warn(`📊 Signal attempted: ${mappedAction} ${positionSizing.quantity} ${positionSizing.symbol} @ ${mappedPrice}`);
@@ -1615,6 +1618,26 @@ async function handleWebhookReceived(message) {
         });
 
         return; // Exit early - already in position for this underlying
+      }
+
+      if (!existingPos && hasBrokerPosition) {
+        logger.warn(`📊 [${strategy}] Signal skipped - ${signalUnderlying} has open broker position (not in strategyState). Blocking to prevent position stacking.`);
+        logger.warn(`📊 Signal attempted: ${mappedAction} ${positionSizing.quantity} ${positionSizing.symbol} @ ${mappedPrice}`);
+
+        await messageBus.publish(CHANNELS.TRADE_REJECTED, {
+          reason: `${signalUnderlying} has open broker position not tracked in strategyState — blocking to prevent stacking`,
+          rejectedSignal: {
+            strategy: strategy,
+            symbol: positionSizing.symbol,
+            action: mappedAction,
+            quantity: positionSizing.quantity,
+            price: mappedPrice
+          },
+          originalSignal: message,
+          timestamp: new Date().toISOString()
+        });
+
+        return; // Exit early - broker has position even though strategyState doesn't know
       }
 
       if (existingPending) {

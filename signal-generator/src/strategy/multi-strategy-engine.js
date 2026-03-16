@@ -1223,7 +1223,21 @@ class MultiStrategyEngine {
             state.reconciliationConfirmed = false;
             logger.warn(`[RECONCILE] Missed ${product} position open: ${state.currentPosition.side} @ ${state.currentPosition.entryPrice} (owned by ${owner})`);
           } else {
-            logger.info(`[RECONCILE] ${product} position (${openPos.symbol}) owned by ${owner || 'unknown/manual'} — not managed by this engine`);
+            // Safety: block all signals for this product when broker has ANY position,
+            // regardless of ownership. Prevents duplicate signals when orchestrator
+            // state is stale or position was opened manually.
+            state.inPosition = true;
+            state.positionStrategy = owner || 'EXTERNAL';
+            state.currentPosition = {
+              symbol: openPos.symbol,
+              side: openPos.netPos > 0 ? 'long' : 'short',
+              entryPrice: openPos.netPrice || 0,
+              entryTime: openPos.timestamp || new Date().toISOString(),
+              strategy: owner || 'EXTERNAL',
+              quantity: Math.abs(openPos.netPos)
+            };
+            state.reconciliationConfirmed = false;
+            logger.warn(`[RECONCILE] ${product} position (${openPos.symbol}) owned by ${owner || 'unknown/manual'} — claiming as safety measure to block duplicate signals`);
           }
         } else if (!state.reconciliationConfirmed) {
           const desc = state.inPosition ? `in position (${state.currentPosition?.side})` : 'flat';
