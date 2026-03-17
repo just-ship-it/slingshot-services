@@ -14,131 +14,80 @@ const REDIS_TOKEN_KEY = 'schwab:tokens';
 const BASE_URL = 'https://api.schwabapi.com';
 const TOKEN_REFRESH_INTERVAL = 25 * 60 * 1000; // 25 minutes (access token lasts 30 min)
 const REFRESH_TOKEN_WARN_DAYS = 5; // Warn when refresh token has < 5 days left
-const RISK_FREE_RATE = 0.045;
+const RISK_FREE_RATE = 0.05;
 
-// ===== Black's Model IV Solver =====
-// Schwab returns a single IV per strike (identical for call and put).
-// We need independent call/put IVs for skew calculation, so we solve
-// implied volatility from each option's bid/ask mid price using Black's
-// model (forward-based). This correctly handles dividends without needing
-// to know the dividend schedule — the forward price from put-call parity
-// already incorporates expected dividends.
+// ===== Vanilla Black-Scholes IV Solver (spot-based) =====
+// Matches the backtest precompute-short-dte-iv.js exactly.
+// Schwab returns a single shared IV per strike, so we solve independent
+// call/put IVs from bid/ask mid prices using the same vanilla BS model
+// that the backtest uses. This ensures live and backtest IV values align.
 
-// Abramowitz & Stegun 26.2.17, max error 7.5e-8
 function normalCDF(x) {
-  if (x < -8) return 0;
-  if (x > 8) return 1;
-  const b1 = 0.319381530, b2 = -0.356563782, b3 = 1.781477937;
-  const b4 = -1.821255978, b5 = 1.330274429;
-  const pp = 0.2316419;
-  const ax = Math.abs(x);
-  const t = 1.0 / (1.0 + pp * ax);
-  const y = (1.0 / Math.sqrt(2 * Math.PI)) * Math.exp(-0.5 * x * x);
-  const cdf = 1 - y * t * (b1 + t * (b2 + t * (b3 + t * (b4 + t * b5))));
-  return x >= 0 ? cdf : 1 - cdf;
+  const a1 = 0.254829592, a2 = -0.284496736, a3 = 1.421413741;
+  const a4 = -1.453152027, a5 = 1.061405429, p = 0.3275911;
+  const sign = x < 0 ? -1 : 1;
+  x = Math.abs(x) / Math.sqrt(2);
+  const t = 1.0 / (1.0 + p * x);
+  const y = 1.0 - (((((a5 * t + a4) * t) + a3) * t + a2) * t + a1) * t * Math.exp(-x * x);
+  return 0.5 * (1.0 + sign * y);
 }
 
 function normalPDF(x) {
   return Math.exp(-0.5 * x * x) / Math.sqrt(2 * Math.PI);
 }
 
-/**
- * Black's model option price (forward-based, handles dividends implicitly).
- * F = forward price, K = strike, T = time to expiry, r = risk-free rate
- */
-function blackPrice(F, K, T, r, sigma, isCall) {
-  if (T <= 0 || sigma <= 0) {
-    const df = Math.exp(-r * T);
-    return isCall ? Math.max(df * (F - K), 0) : Math.max(df * (K - F), 0);
-  }
-  const sqrtT = Math.sqrt(T);
-  const d1 = (Math.log(F / K) + 0.5 * sigma * sigma * T) / (sigma * sqrtT);
-  const d2 = d1 - sigma * sqrtT;
-  const df = Math.exp(-r * T);
-  if (isCall) {
-    return df * (F * normalCDF(d1) - K * normalCDF(d2));
-  } else {
-    return df * (K * normalCDF(-d2) - F * normalCDF(-d1));
-  }
-}
-
-function blackVega(F, K, T, r, sigma) {
+function blackScholesPrice(S, K, T, r, sigma, optionType) {
   if (T <= 0 || sigma <= 0) return 0;
-  const d1 = (Math.log(F / K) + 0.5 * sigma * sigma * T) / (sigma * Math.sqrt(T));
-  return Math.exp(-r * T) * F * Math.sqrt(T) * normalPDF(d1);
+  const d1 = (Math.log(S / K) + (r + 0.5 * sigma * sigma) * T) / (sigma * Math.sqrt(T));
+  const d2 = d1 - sigma * Math.sqrt(T);
+  if (optionType === 'C') {
+    return S * normalCDF(d1) - K * Math.exp(-r * T) * normalCDF(d2);
+  } else {
+    return K * Math.exp(-r * T) * normalCDF(-d2) - S * normalCDF(-d1);
+  }
+}
+
+function blackScholesVega(S, K, T, r, sigma) {
+  if (T <= 0 || sigma <= 0) return 0;
+  const d1 = (Math.log(S / K) + (r + 0.5 * sigma * sigma) * T) / (sigma * Math.sqrt(T));
+  return S * Math.sqrt(T) * normalPDF(d1);
 }
 
 /**
- * Newton-Raphson IV solver using Black's model (forward-based).
+ * Newton-Raphson IV solver using vanilla Black-Scholes (spot-based).
+ * Matches backtest precompute-short-dte-iv.js exactly.
  * Returns decimal IV (e.g. 0.25) or null if it can't converge.
  */
-function impliedVolatility(midPrice, F, K, T, r, isCall) {
-  if (midPrice <= 0 || T <= 0 || F <= 0 || K <= 0) return null;
+function calculateIV(optionPrice, S, K, T, r, optionType) {
+  if (optionPrice <= 0 || T <= 0) return null;
 
-  const df = Math.exp(-r * T);
-  const intrinsic = isCall ? Math.max(df * (F - K), 0) : Math.max(df * (K - F), 0);
-  if (midPrice <= intrinsic + 0.001) return null;
+  const intrinsic = optionType === 'C' ? Math.max(0, S - K) : Math.max(0, K - S);
+  if (optionPrice < intrinsic * 0.99) return null;
 
-  // Brenner-Subrahmanyam initial guess (adapted for forward)
-  let sigma = Math.sqrt(2 * Math.PI / T) * midPrice / (F * df);
-  if (sigma <= 0.01 || !isFinite(sigma)) sigma = 0.3;
-  if (sigma > 3) sigma = 1.0;
-
-  for (let i = 0; i < 50; i++) {
-    const price = blackPrice(F, K, T, r, sigma, isCall);
-    const vega = blackVega(F, K, T, r, sigma);
-    if (vega < 1e-10) break;
-
-    const diff = price - midPrice;
-    if (Math.abs(diff) < 1e-6) break;
-
-    sigma -= diff / vega;
-    if (sigma <= 0.001) sigma = 0.001;
-    if (sigma > 5) sigma = 5;
+  let iv = 0.30;
+  for (let i = 0; i < 100; i++) {
+    const price = blackScholesPrice(S, K, T, r, iv, optionType);
+    const vega = blackScholesVega(S, K, T, r, iv);
+    if (vega < 0.0001) return calculateIVBisection(optionPrice, S, K, T, r, optionType);
+    const diff = price - optionPrice;
+    if (Math.abs(diff) < 0.0001) return iv;
+    iv = iv - diff / vega;
+    if (iv <= 0.001) iv = 0.001;
+    if (iv > 5.0) iv = 5.0;
   }
-
-  if (sigma <= 0 || sigma > 5 || !isFinite(sigma)) return null;
-  return sigma;
+  return calculateIVBisection(optionPrice, S, K, T, r, optionType);
 }
 
-/**
- * Compute the implied forward price from ATM put-call parity.
- * F = K + e^(rT) * (C_mid - P_mid)
- * This inherently accounts for dividends.
- */
-function computeForwardPrice(spotPrice, callContracts, putContracts, T, r) {
-  if (!spotPrice || callContracts.length === 0 || putContracts.length === 0) return spotPrice;
-
-  // Build strike→contract maps
-  const callByStrike = new Map();
-  for (const c of callContracts) {
-    if (c.bid > 0 && c.ask > 0) callByStrike.set(c.strikePrice, c);
+function calculateIVBisection(optionPrice, S, K, T, r, optionType) {
+  let low = 0.001, high = 5.0;
+  for (let i = 0; i < 100; i++) {
+    const mid = (low + high) / 2;
+    const price = blackScholesPrice(S, K, T, r, mid, optionType);
+    if (Math.abs(price - optionPrice) < 0.0001) return mid;
+    if (price > optionPrice) high = mid;
+    else low = mid;
   }
-  const putByStrike = new Map();
-  for (const p of putContracts) {
-    if (p.bid > 0 && p.ask > 0) putByStrike.set(p.strikePrice, p);
-  }
-
-  // Find ATM strike with both call and put
-  let bestStrike = null;
-  let bestDist = Infinity;
-  for (const strike of callByStrike.keys()) {
-    if (!putByStrike.has(strike)) continue;
-    const dist = Math.abs(strike - spotPrice);
-    if (dist < bestDist) {
-      bestDist = dist;
-      bestStrike = strike;
-    }
-  }
-
-  if (bestStrike === null) return spotPrice;
-
-  const callMid = (callByStrike.get(bestStrike).bid + callByStrike.get(bestStrike).ask) / 2;
-  const putMid = (putByStrike.get(bestStrike).bid + putByStrike.get(bestStrike).ask) / 2;
-
-  // Put-call parity: F = K + e^(rT) * (C - P)
-  const F = bestStrike + Math.exp(r * T) * (callMid - putMid);
-  return F;
+  return (low + high) / 2;
 }
 
 class SchwabClient {
@@ -488,26 +437,25 @@ class SchwabClient {
 
   /**
    * Flatten Schwab's nested chain structure into Tradier's flat array format
-   * for a specific expiration date. Computes the implied forward price from
-   * ATM put-call parity to handle dividends in IV calculation.
+   * for a specific expiration date. Uses spot price for vanilla BS IV calculation
+   * to match the backtest pipeline.
    */
   _flattenChainForExpiration(chain, expiration) {
-    const underlyingPrice = chain.underlyingPrice || 0;
+    const spotPrice = chain.underlyingPrice || 0;
 
-    // Collect raw contracts by type for this expiration
-    const callContracts = [];
-    const putContracts = [];
+    // Collect raw contracts for this expiration
+    const allContracts = [];
 
     for (const [expKey, strikes] of Object.entries(chain.callExpDateMap || {})) {
       if (!expKey.startsWith(expiration)) continue;
       for (const [, contracts] of Object.entries(strikes)) {
-        for (const contract of contracts) callContracts.push(contract);
+        for (const contract of contracts) allContracts.push(contract);
       }
     }
     for (const [expKey, strikes] of Object.entries(chain.putExpDateMap || {})) {
       if (!expKey.startsWith(expiration)) continue;
       for (const [, contracts] of Object.entries(strikes)) {
-        for (const contract of contracts) putContracts.push(contract);
+        for (const contract of contracts) allContracts.push(contract);
       }
     }
 
@@ -515,16 +463,10 @@ class SchwabClient {
     const expMs = new Date(expiration + 'T16:00:00-05:00').getTime();
     const T = Math.max((expMs - Date.now()) / (365.25 * 24 * 60 * 60 * 1000), 1 / 365);
 
-    // Compute forward price from ATM put-call parity (handles dividends)
-    const forwardPrice = computeForwardPrice(underlyingPrice, callContracts, putContracts, T, RISK_FREE_RATE);
-
-    // Convert all contracts using the forward price
+    // Convert all contracts using spot price and vanilla BS
     const options = [];
-    for (const contract of callContracts) {
-      options.push(this._convertToTradierFormat(contract, forwardPrice, T));
-    }
-    for (const contract of putContracts) {
-      options.push(this._convertToTradierFormat(contract, forwardPrice, T));
+    for (const contract of allContracts) {
+      options.push(this._convertToTradierFormat(contract, spotPrice, T));
     }
 
     return options;
@@ -532,15 +474,16 @@ class SchwabClient {
 
   /**
    * Convert a single Schwab option contract to Tradier format.
-   * Calculates independent IV from bid/ask mid price via Black's model
-   * (forward-based), since Schwab returns a single shared IV per strike.
+   * Calculates independent IV from bid/ask mid price via vanilla Black-Scholes
+   * (spot-based) to match the backtest pipeline exactly.
    *
    * @param {Object} contract - Raw Schwab contract
-   * @param {number} forwardPrice - Implied forward from ATM put-call parity
+   * @param {number} spotPrice - Underlying spot price
    * @param {number} T - Time to expiration in years (precomputed per expiration)
    */
-  _convertToTradierFormat(contract, forwardPrice, T) {
+  _convertToTradierFormat(contract, spotPrice, T) {
     const isCall = (contract.putCall || '').toUpperCase() === 'CALL';
+    const optionType = isCall ? 'C' : 'P';
 
     // Schwab expirationDate is ISO with timezone: "2026-03-11T20:00:00.000+00:00"
     let expirationDate = '';
@@ -548,14 +491,14 @@ class SchwabClient {
       expirationDate = contract.expirationDate.substring(0, 10);
     }
 
-    // Calculate independent IV from bid/ask mid price using Black's model
+    // Calculate independent IV from bid/ask mid price using vanilla BS
     const bid = contract.bid || 0;
     const ask = contract.ask || 0;
     const midPrice = (bid + ask) / 2;
 
     let midIV = (contract.volatility || 0) / 100; // fallback to Schwab's shared IV
-    if (forwardPrice > 0 && midPrice > 0 && T > 0 && contract.strikePrice > 0) {
-      const solved = impliedVolatility(midPrice, forwardPrice, contract.strikePrice, T, RISK_FREE_RATE, isCall);
+    if (spotPrice > 0 && midPrice > 0 && T > 0 && contract.strikePrice > 0) {
+      const solved = calculateIV(midPrice, spotPrice, contract.strikePrice, T, RISK_FREE_RATE, optionType);
       if (solved !== null) {
         midIV = solved;
       }

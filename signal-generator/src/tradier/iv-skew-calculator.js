@@ -317,7 +317,7 @@ class IVSkewCalculator {
         const dte = this.calculateDTE(exp);
         const T = dte / 365;
 
-        // Forward-based IV from greeks.mid_iv (Black's model, from schwab-client)
+        // IV from greeks.mid_iv (vanilla BS, from schwab-client)
         const fwdIV = option.greeks?.mid_iv || null;
 
         // Vanilla BS IV from bid/ask mid price
