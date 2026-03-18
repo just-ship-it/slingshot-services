@@ -1487,10 +1487,12 @@ async function handleWebhookTrade(webhookMessage) {
       throw new Error('Invalid trade signal: missing symbol field');
     }
 
-    // Get account ID
-    const accountId = tradovateClient.accounts.length > 0 ? tradovateClient.accounts[0].id : null;
+    // Get account ID - prefer explicit env var over accounts[0] to avoid multi-account mismatch
+    const accountId = config.tradovate.defaultAccountId
+      ? parseInt(config.tradovate.defaultAccountId, 10)
+      : (tradovateClient.accounts.length > 0 ? tradovateClient.accounts[0].id : null);
     if (!accountId) {
-      throw new Error('No Tradovate accounts available');
+      throw new Error('No Tradovate accounts available (set TRADOVATE_DEFAULT_ACCOUNT_ID or ensure accounts are loaded)');
     }
 
     // Handle different action types from LDPS Trader
