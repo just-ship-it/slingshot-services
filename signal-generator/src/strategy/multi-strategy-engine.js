@@ -825,12 +825,8 @@ class MultiStrategyEngine {
         state.positionBarsInTrade = 0;
         state.positionMaxHoldBars = 0;
 
-        // Reset cooldown on the strategy that was in position
-        for (const [, runner] of state.strategies) {
-          if (runner.strategyConstant === strategy) {
-            runner.strategy.lastSignalTime = 0;
-          }
-        }
+        // Cooldown is NOT reset on position close — it continues from signal time,
+        // matching backtest behavior (30min cooldown from signal generation)
 
         state.reconciliationConfirmed = false;
         logger.info(`${product}: Strategy reset, ready for next signal`);
