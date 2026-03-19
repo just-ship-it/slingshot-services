@@ -51,10 +51,13 @@ class ExposureCalculator {
 
   /**
    * Calculate time to expiry in years
+   * Uses a 2.5-hour floor to prevent gamma from exploding as 0-DTE options approach expiration
    */
   calculateTimeToExpiry(expiryDate) {
     const now = new Date();
-    const timeToExpiry = Math.max(0, (expiryDate - now) / (1000 * 60 * 60 * 24 * 365.25));
+    const MIN_T_HOURS = 2.5;
+    const minT = MIN_T_HOURS / (24 * 365.25); // ~0.000285 years
+    const timeToExpiry = Math.max(minT, (expiryDate - now) / (1000 * 60 * 60 * 24 * 365.25));
     return timeToExpiry;
   }
 
