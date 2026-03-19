@@ -1287,7 +1287,7 @@ class MultiStrategyEngine {
       const strategiesWithWorkingOrders = new Set();
       const workingStatuses = ['Working', 'Accepted', 'PendingNew'];
       for (const order of orders) {
-        if (workingStatuses.includes(order.status)) {
+        if (workingStatuses.includes(order.ordStatus)) {
           const mapping = mappingsData.mappings?.find(m => String(m.orderId) === String(order.id));
           if (mapping?.strategy) {
             strategiesWithWorkingOrders.add(mapping.strategy);
