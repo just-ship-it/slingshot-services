@@ -716,27 +716,57 @@ class DataService {
   }
 
   /**
-   * Update Schwab refresh token via UI, store in Redis, and reinitialize the service
+   * Exchange Schwab authorization code for tokens, store in Redis, and reinitialize the service
    */
-  async updateSchwabToken(refreshToken) {
+  async updateSchwabToken(authorizationCode) {
     const redisUrl = config.getRedisUrl();
+    const appKey = config.SCHWAB_APP_KEY;
+    const appSecret = config.SCHWAB_APP_SECRET;
+    const callbackUrl = config.SCHWAB_CALLBACK_URL || 'https://127.0.0.1:8182';
 
-    // Store the new refresh token in Redis (same key/format as SchwabClient)
+    if (!appKey || !appSecret) {
+      throw new Error('SCHWAB_APP_KEY and SCHWAB_APP_SECRET must be configured');
+    }
+
+    // Exchange authorization code for access + refresh tokens
+    const axios = (await import('axios')).default;
+    const basicAuth = Buffer.from(`${appKey}:${appSecret}`).toString('base64');
+
+    logger.info('Exchanging Schwab authorization code for tokens...');
+    const tokenResponse = await axios.post('https://api.schwabapi.com/v1/oauth/token',
+      `grant_type=authorization_code&code=${encodeURIComponent(authorizationCode)}&redirect_uri=${encodeURIComponent(callbackUrl)}`,
+      {
+        headers: {
+          'Authorization': `Basic ${basicAuth}`,
+          'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        timeout: 15000,
+        decompress: true
+      }
+    );
+
+    const { access_token, refresh_token } = tokenResponse.data;
+    if (!refresh_token) {
+      throw new Error('No refresh token in Schwab response');
+    }
+
+    logger.info('Schwab authorization code exchanged successfully');
+
+    // Store tokens in Redis (same key/format as SchwabClient)
     const Redis = (await import('ioredis')).default;
     let redis;
     try {
       redis = new Redis(redisUrl, { lazyConnect: true, maxRetriesPerRequest: 2 });
       await redis.connect();
 
-      // Build token payload matching SchwabClient's expected format
       const tokenData = {
-        access_token: null, // will be refreshed on init
-        refresh_token: refreshToken,
+        access_token,
+        refresh_token,
         token_type: 'Bearer',
         obtained_at: new Date().toISOString()
       };
       await redis.set('schwab:tokens', JSON.stringify(tokenData));
-      logger.info('Schwab refresh token stored in Redis');
+      logger.info('Schwab tokens stored in Redis');
     } finally {
       try { redis?.disconnect(); } catch {}
     }
@@ -751,7 +781,7 @@ class DataService {
       this.tradierExposureService = null;
     }
 
-    // Reinitialize — this will pick up the new token from Redis
+    // Reinitialize — this will pick up the new tokens from Redis
     await this.initializeTradierService();
 
     // Reinitialize hybrid GEX calculators to use the new Schwab service
@@ -762,7 +792,7 @@ class DataService {
     const running = this.tradierExposureService?.isRunning || false;
     return {
       success: true,
-      message: running ? 'Schwab token updated and service restarted' : 'Token stored but service failed to start — check logs',
+      message: running ? 'Schwab authenticated and service restarted' : 'Tokens stored but service failed to start — check logs',
       running
     };
   }

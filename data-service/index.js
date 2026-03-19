@@ -323,11 +323,23 @@ app.post('/tradingview/token', async (req, res) => {
 
 app.post('/schwab/token', async (req, res) => {
   try {
-    const { refreshToken } = req.body;
-    if (!refreshToken || typeof refreshToken !== 'string' || refreshToken.length < 10) {
-      return res.status(400).json({ error: 'Invalid refresh token' });
+    const { redirectUrl } = req.body;
+    if (!redirectUrl || typeof redirectUrl !== 'string') {
+      return res.status(400).json({ error: 'Paste the full redirect URL from the Schwab OAuth flow' });
     }
-    const result = await service.updateSchwabToken(refreshToken);
+
+    // Extract authorization code from the redirect URL or raw code string
+    let code = redirectUrl;
+    if (redirectUrl.includes('code=')) {
+      const url = new URL(redirectUrl.startsWith('http') ? redirectUrl : `https://127.0.0.1:8182?${redirectUrl}`);
+      code = url.searchParams.get('code');
+    }
+
+    if (!code) {
+      return res.status(400).json({ error: 'Could not extract authorization code from URL' });
+    }
+
+    const result = await service.updateSchwabToken(code);
     res.json(result);
   } catch (error) {
     logger.error('Schwab token update error:', error);
