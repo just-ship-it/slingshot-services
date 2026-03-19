@@ -319,6 +319,22 @@ app.post('/tradingview/token', async (req, res) => {
   }
 });
 
+// === Schwab Token Endpoint ===
+
+app.post('/schwab/token', async (req, res) => {
+  try {
+    const { refreshToken } = req.body;
+    if (!refreshToken || typeof refreshToken !== 'string' || refreshToken.length < 10) {
+      return res.status(400).json({ error: 'Invalid refresh token' });
+    }
+    const result = await service.updateSchwabToken(refreshToken);
+    res.json(result);
+  } catch (error) {
+    logger.error('Schwab token update error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Start HTTP server
 const PORT = config.HTTP_PORT;
 const BIND_HOST = process.env.BIND_HOST || '127.0.0.1';

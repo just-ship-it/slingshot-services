@@ -68,7 +68,7 @@ export class CLI {
         type: 'string',
         description: 'Strategy to backtest',
         default: 'gex-recoil',
-        choices: ['gex-recoil', 'gex-recoil-enhanced', 'gex-ldpm-confluence', 'gex-ldpm-confluence-pullback', 'contrarian-bounce', 'gex-scalp', 'gex-scalp-confirmed', 'ict-smc', 'ict-ob', 'ldpm-level-sweep', 'order-flow-momentum', 'ofm', 'contrarian-orderflow', 'cof', 'gex-absorption', 'absorption', 'iv-skew-gex', 'iv-skew', 'cbbo-lt-volatility', 'cbbo-lt', 'gex-mean-reversion', 'gex-mr', 'lt-failed-breakdown', 'lt-fb', 'lt-level-crossing', 'lt-cross', 'lt-level-migration', 'lt-mig', 'regime-scalp', 'rs', 'gex-level-sweep', 'gex-sweep', 'sweep', 'micro-structure-scalper', 'micro-scalper', 'mss', 'trend-scalp', 'ts', 'level-bounce', 'lb', 'overnight-gex-touch', 'overnight-gex', 'ogt', 'overnight-charm-vanna', 'ocv', 'es-cross-signal', 'es-cross', 'ecs', 'es-micro-scalper', 'es-micro', 'esms', 'es-stop-hunt', 'es-hunt', 'esh', 'ohlcv-absorption', 'absorption-detect', 'abs', 'ohlcv-liquidity-sweep', 'liquidity-sweep', 'lsweep', 'ohlcv-vpin', 'vpin', 'ohlcv-mtf-rejection', 'mtf-rejection', 'mtfr', 'momentum-microstructure', 'momentum-micro', 'mm', 'midnight-open-retracement', 'midnight-open', 'mor', 'initial-balance-breakout', 'ib-breakout', 'ibb', 'gap-fill', 'gap', 'daily-level-sweep', 'daily-sweep', 'dls', 'vwap-bounce', 'vwap', 'session-transition', 'session', 'st', 'value-area-80', 'va80', 'swing-reversal', 'sr', 'ict-silver-bullet', 'silver-bullet', 'isb', 'price-action-exhaustion', 'pa-exhaust', 'pae', 'ict-mtf-sweep', 'mtf-sweep', 'jv', 'dc-st1', 'dc1', 'dc-st2', 'dc2', 'dc-st3', 'dc3', 'dc-st4', 'dc4', 'dc-st5', 'dc5', 'dc-st6', 'dc6', 'dc-st7', 'dc7', 'dc-st8', 'dc8', 'dc-mstgam', 'mstgam', 'mnq-adaptive-scalper', 'mnq-scalper', 'mnq', 'sweep-reversal', 'sweep-rev', 'nq-leads-es', 'nq-lead', 'nle', 'gex-support-bounce', 'gex-bounce', 'gsb', 'impulse-fvg', 'impulse', 'ifvg', 'short-dte-iv', 'sdiv', 'overnight-scoring', 'overnight-score', 'ons', 'overnight-composite', 'overnight-comp', 'onc', 'overnight-lt-crossing', 'overnight-ltx', 'oltx']
+        choices: ['gex-recoil', 'gex-recoil-enhanced', 'gex-ldpm-confluence', 'gex-ldpm-confluence-pullback', 'contrarian-bounce', 'gex-scalp', 'gex-scalp-confirmed', 'ict-smc', 'ict-ob', 'ldpm-level-sweep', 'order-flow-momentum', 'ofm', 'contrarian-orderflow', 'cof', 'gex-absorption', 'absorption', 'iv-skew-gex', 'iv-skew', 'cbbo-lt-volatility', 'cbbo-lt', 'gex-mean-reversion', 'gex-mr', 'lt-failed-breakdown', 'lt-fb', 'lt-level-crossing', 'lt-cross', 'lt-level-migration', 'lt-mig', 'regime-scalp', 'rs', 'gex-level-sweep', 'gex-sweep', 'sweep', 'micro-structure-scalper', 'micro-scalper', 'mss', 'trend-scalp', 'ts', 'level-bounce', 'lb', 'overnight-gex-touch', 'overnight-gex', 'ogt', 'overnight-charm-vanna', 'ocv', 'es-cross-signal', 'es-cross', 'ecs', 'es-micro-scalper', 'es-micro', 'esms', 'es-stop-hunt', 'es-hunt', 'esh', 'ohlcv-absorption', 'absorption-detect', 'abs', 'ohlcv-liquidity-sweep', 'liquidity-sweep', 'lsweep', 'ohlcv-vpin', 'vpin', 'ohlcv-mtf-rejection', 'mtf-rejection', 'mtfr', 'momentum-microstructure', 'momentum-micro', 'mm', 'midnight-open-retracement', 'midnight-open', 'mor', 'initial-balance-breakout', 'ib-breakout', 'ibb', 'gap-fill', 'gap', 'daily-level-sweep', 'daily-sweep', 'dls', 'vwap-bounce', 'vwap', 'session-transition', 'session', 'st', 'value-area-80', 'va80', 'swing-reversal', 'sr', 'ict-silver-bullet', 'silver-bullet', 'isb', 'price-action-exhaustion', 'pa-exhaust', 'pae', 'ict-mtf-sweep', 'mtf-sweep', 'jv', 'dc-st1', 'dc1', 'dc-st2', 'dc2', 'dc-st3', 'dc3', 'dc-st4', 'dc4', 'dc-st5', 'dc5', 'dc-st6', 'dc6', 'dc-st7', 'dc7', 'dc-st8', 'dc8', 'dc-mstgam', 'mstgam', 'mnq-adaptive-scalper', 'mnq-scalper', 'mnq', 'sweep-reversal', 'sweep-rev', 'nq-leads-es', 'nq-lead', 'nle', 'gex-support-bounce', 'gex-bounce', 'gsb', 'impulse-fvg', 'impulse', 'ifvg', 'short-dte-iv', 'sdiv', 'overnight-scoring', 'overnight-score', 'ons', 'overnight-composite', 'overnight-comp', 'onc', 'overnight-lt-crossing', 'overnight-ltx', 'oltx', 'lt-crossover', 'ltx', 'lt-structure-confirm', 'ltsc', 'lt-struct']
       })
 
       .option('timeframe', {
@@ -1294,6 +1294,30 @@ export class CLI {
         description: 'Require ES to be far from GEX levels (cross-product filter, gex-support-bounce)'
       })
 
+      // LT Structure Confirm Strategy Parameters
+      .group(['entry-mode'], 'LT Structure Confirm Strategy:')
+
+      .option('entry-mode', {
+        type: 'string',
+        description: 'Entry mode: limit (at swing level), market (at signal candle close), proximity (market if within N pts of swing)',
+        choices: ['limit', 'market', 'proximity']
+      })
+
+      .option('proximity-pts', {
+        type: 'number',
+        description: 'Max distance from swing level for proximity entry mode (lt-structure-confirm)'
+      })
+
+      .option('pivot-lookback', {
+        type: 'number',
+        description: 'Bars on each side to confirm a swing pivot (lt-structure-confirm, default 9)'
+      })
+
+      .option('min-swing-size', {
+        type: 'number',
+        description: 'Minimum points a pivot must stand out from surrounding bars (lt-structure-confirm, default 15)'
+      })
+
       // Impulse FVG Strategy Parameters
       .group(['min-body-points', 'impulse-mode', 'fvg-pullback-buffer', 'fvg-stop-buffer', 'fvg-target-points', 'fvg-max-wait-bars', 'no-fvg-stop-buffer', 'no-fvg-target-points', 'no-fvg-max-risk', 'signal-cooldown-ms', 'use-limit-entry', 'limit-retrace-pct', 'limit-timeout-bars'], 'Impulse FVG Strategy:')
 
@@ -1793,6 +1817,12 @@ export class CLI {
 
     // Both strategies need dataDir for companion data loading
     strategyParams.dataDir = args.dataDir;
+
+    // LT Structure Confirm Strategy Parameters
+    if (args.entryMode !== undefined) strategyParams.entryMode = args.entryMode;
+    if (args.proximityPts !== undefined) strategyParams.proximityPts = args.proximityPts;
+    if (args.pivotLookback !== undefined) strategyParams.pivotLookback = args.pivotLookback;
+    if (args.minSwingSize !== undefined) strategyParams.minSwingSize = args.minSwingSize;
 
     // Suppress strategy debug logging when --quiet
     if (args.quiet) strategyParams.debug = false;

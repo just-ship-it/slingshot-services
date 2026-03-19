@@ -70,6 +70,8 @@ import { ShortDTEIVStrategy } from '../../shared/strategies/short-dte-iv.js';
 import { OvernightScoringStrategy } from '../../shared/strategies/overnight-scoring.js';
 import { OvernightCompositeStrategy } from '../../shared/strategies/overnight-composite.js';
 import { OvernightLTCrossingStrategy } from '../../shared/strategies/overnight-lt-crossing.js';
+import { LTCrossoverStrategy } from '../../shared/strategies/lt-crossover.js';
+import { LTStructureConfirmStrategy } from '../../shared/strategies/lt-structure-confirm.js';
 import { SqueezeMomentumIndicator } from '../../shared/indicators/squeeze-momentum.js';
 import { GexLoader } from './data-loaders/gex-loader.js';
 import { IVLoader } from './data-loaders/iv-loader.js';
@@ -1501,6 +1503,13 @@ export class BacktestEngine {
       case 'overnight-ltx':
       case 'oltx':
         return new OvernightLTCrossingStrategy(params);
+      case 'lt-crossover':
+      case 'ltx':
+        return new LTCrossoverStrategy(params);
+      case 'lt-structure-confirm':
+      case 'ltsc':
+      case 'lt-struct':
+        return new LTStructureConfirmStrategy(params);
       default:
         throw new Error(`Unknown strategy: ${strategyName}`);
     }

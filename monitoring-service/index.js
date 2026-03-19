@@ -1785,6 +1785,19 @@ app.post('/api/tradingview/token', dashboardAuth, async (req, res) => {
   }
 });
 
+// Schwab manual token update - proxy to data-service
+app.post('/api/schwab/token', dashboardAuth, async (req, res) => {
+  try {
+    logger.info('Proxying Schwab token update to data-service');
+    const response = await axios.post(`${DATA_SERVICE_URL}/schwab/token`, req.body, { timeout: 30000 });
+    res.json(response.data);
+  } catch (error) {
+    logger.error('Failed to update Schwab token:', error.message);
+    const msg = error.response?.data?.error || error.message;
+    res.status(error.response?.status || 500).json({ error: 'Schwab token update failed', message: msg });
+  }
+});
+
 // ES GEX levels endpoint - proxy to data-service
 app.get('/api/es/gex/levels', dashboardAuth, async (req, res) => {
   try {

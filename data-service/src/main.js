@@ -716,6 +716,58 @@ class DataService {
   }
 
   /**
+   * Update Schwab refresh token via UI, store in Redis, and reinitialize the service
+   */
+  async updateSchwabToken(refreshToken) {
+    const redisUrl = config.getRedisUrl();
+
+    // Store the new refresh token in Redis (same key/format as SchwabClient)
+    const Redis = (await import('ioredis')).default;
+    let redis;
+    try {
+      redis = new Redis(redisUrl, { lazyConnect: true, maxRetriesPerRequest: 2 });
+      await redis.connect();
+
+      // Build token payload matching SchwabClient's expected format
+      const tokenData = {
+        access_token: null, // will be refreshed on init
+        refresh_token: refreshToken,
+        token_type: 'Bearer',
+        obtained_at: new Date().toISOString()
+      };
+      await redis.set('schwab:tokens', JSON.stringify(tokenData));
+      logger.info('Schwab refresh token stored in Redis');
+    } finally {
+      try { redis?.disconnect(); } catch {}
+    }
+
+    // Stop existing service if running
+    if (this.tradierExposureService) {
+      try {
+        await this.tradierExposureService.stop();
+      } catch (err) {
+        logger.warn('Error stopping existing Schwab service:', err.message);
+      }
+      this.tradierExposureService = null;
+    }
+
+    // Reinitialize — this will pick up the new token from Redis
+    await this.initializeTradierService();
+
+    // Reinitialize hybrid GEX calculators to use the new Schwab service
+    if (this.tradierExposureService) {
+      await this.initializeGexCalculators();
+    }
+
+    const running = this.tradierExposureService?.isRunning || false;
+    return {
+      success: true,
+      message: running ? 'Schwab token updated and service restarted' : 'Token stored but service failed to start — check logs',
+      running
+    };
+  }
+
+  /**
    * Health check
    */
   getHealth() {

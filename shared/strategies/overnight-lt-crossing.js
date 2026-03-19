@@ -79,6 +79,20 @@ export class OvernightLTCrossingStrategy extends BaseStrategy {
     return d.getUTCHours() + d.getUTCMinutes() / 60;
   }
 
+  // ── Roll dates (second Thursday of Mar/Jun/Sep/Dec quarterly expiry months) ──
+  // NQ rolls happen on these dates — skip overnight trading to avoid price gaps
+
+  _isRollWeek(ts) {
+    const d = new Date(ts + (this._isDST(ts) ? -4 : -5) * 3600000);
+    const month = d.getUTCMonth(); // 0-indexed
+    // Only roll months: Mar(2), Jun(5), Sep(8), Dec(11)
+    if (month !== 2 && month !== 5 && month !== 8 && month !== 11) return false;
+    // Roll is second Thursday — typically day 8-14
+    // Be conservative: skip the whole roll week (day 7-15)
+    const day = d.getUTCDate();
+    return day >= 7 && day <= 15;
+  }
+
   // ── Crossing detection ──
 
   static FIB_WEIGHTS = [1, 1, 2, 3, 4]; // level_1=fib34, level_2=fib55, level_3=fib144, level_4=fib377, level_5=fib610
@@ -171,6 +185,12 @@ export class OvernightLTCrossingStrategy extends BaseStrategy {
 
     // Check if score threshold reached
     if (Math.abs(this._runningScore) < this.params.scoreThreshold) return null;
+
+    // Skip roll weeks to avoid contract roll price gaps
+    if (this._isRollWeek(ts)) return null;
+
+    // Block 8-10pm EST entries (worst performing window, drags WR from 85% to 74%)
+    if (estHour >= 20 && estHour < 23) return null;
 
     // Cooldown
     if (!this.checkCooldown(ts, this.params.signalCooldownMs)) return null;
