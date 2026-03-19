@@ -168,12 +168,11 @@ class ExposureCalculator {
       return 0;
     }
 
-    // Use provided gamma or calculate it
+    // Always compute BS gamma from IV for GEX calculations.
+    // Broker-provided greeks.gamma (e.g. Schwab) can be 2-3x lower than BS gamma
+    // for short-dated options, which understates put gamma and flips the regime sign.
     let optionGamma = gamma;
-    if (gamma === null && option.greeks?.gamma) {
-      optionGamma = option.greeks.gamma;
-    } else if (gamma === null) {
-      // Calculate gamma if not provided
+    if (gamma === null) {
       const tte = this.calculateTimeToExpiry(new Date(option.expiration_date));
       const vol = option.greeks?.mid_iv || 0.25; // Default IV
       optionGamma = this.calculateGamma(spotPrice, strike, this.riskFreeRate, vol, tte, this.dividendYield);

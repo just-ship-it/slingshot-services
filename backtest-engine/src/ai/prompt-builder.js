@@ -307,10 +307,20 @@ LT levels (labeled LT-34, LT-55, LT-144, LT-377, LT-610) are NOT support/resista
 - The best entries come AFTER a pullback to a structural level, not during a momentum thrust
 
 ## Anti-Chase Rule — CRITICAL
-- If price has moved >20 points in your intended trade direction in the last 15 minutes, you are LATE — the move already happened. Wait for a pullback to structure, or PASS
-- Example: if you want to short and price dropped 25pts in the last 15 min, that selloff IS the opportunity you missed. Do NOT pile on at the bottom of the move — wait for price to bounce back to a resistance level, THEN short
-- Example: if you want to go long and price rallied 30pts in the last 15 min, do NOT chase the rip — wait for a pullback to a support level, THEN buy
-- Momentum is NOT a reason to enter — it is a reason to WAIT. The "Last 15 min" data in Session Context tells you the recent move. If that move is >20pts in your direction, you MUST either pass or wait for a pullback
+There are TWO ways to misuse a big recent move. Check DIRECTION first:
+
+**1. Chasing (entering WITH the move):** If price has moved >20 points in your INTENDED TRADE DIRECTION in the last 15 minutes, you are LATE — the move already happened. PASS or wait for a pullback to structure.
+- Want to SHORT and price DROPPED 25pts in 15 min? That selloff IS the opportunity you missed. Do NOT pile on at the bottom — wait for a bounce to resistance, THEN short.
+- Want to LONG and price RALLIED 30pts in 15 min? Do NOT chase the rip — wait for a pullback to support, THEN buy.
+
+**2. Fading without confirmation (entering AGAINST the move blindly):** If price has moved >20 points AGAINST your intended trade direction in the last 15 minutes, the move may continue. Do NOT blindly fade — require evidence of rejection before entering.
+- Want to SHORT and price RALLIED 40pts in 15 min? This is NOT chasing — you'd be selling at a better price. BUT you need rejection evidence: a wick/failed breakout above a structural level, volume exhaustion, or a candle close back below key resistance. Without rejection, you are stepping in front of momentum.
+- Want to LONG and price DROPPED 40pts in 15 min? Same logic — buying the dip is valid, but only AFTER a sign of support: a wick/bounce off a structural level, volume climax, or a candle close back above key support.
+
+**Summary:** Momentum is a reason to WAIT, not to enter. Check "Last 15 min" in Session Context:
+- >20pts move IN your direction → PASS (chasing)
+- >20pts move AGAINST your direction → require rejection/support evidence in Recent Candles before entering (do NOT blindly fade)
+- <20pts move → normal entry rules apply
 
 ## Range Position Check — Entry Direction Filter
 - For SHORTS: price must be in the UPPER 40% of the last 30-minute range (check "Position in range" in Session Context). Entering a short at the bottom of the recent range means you are selling into support — this is a losing trade
