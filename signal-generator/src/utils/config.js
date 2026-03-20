@@ -313,6 +313,18 @@ const config = {
     };
   },
 
+  getLTCandleRegimeParams() {
+    return {
+      holdBars: parseInt(process.env.LT_REGIME_HOLD_BARS || '15'),
+      ratchetTrigger: parseFloat(process.env.LT_REGIME_RATCHET_TRIGGER || '25'),
+      ratchetTrailDist: parseFloat(process.env.LT_REGIME_RATCHET_TRAIL_DIST || '15'),
+      maxHoldWithTrail: parseInt(process.env.LT_REGIME_MAX_HOLD || '120'),
+      cooldownMs: parseInt(process.env.LT_REGIME_COOLDOWN_MS || '900000'),
+      direction: process.env.LT_REGIME_DIRECTION || 'both',
+      requireSentiment: process.env.LT_REGIME_REQUIRE_SENTIMENT === 'true',
+    };
+  },
+
   getImpulseFVGParams() {
     return {
       mode: 'no-fvg-fade',

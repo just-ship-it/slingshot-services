@@ -15,6 +15,12 @@
           "evalTimeframe": "1m"
         },
         {
+          "name": "lt-candle-regime",
+          "enabled": false,
+          "priority": 3,
+          "evalTimeframe": "1m"
+        },
+        {
           "name": "impulse-fvg",
           "enabled": false,
           "priority": 3,

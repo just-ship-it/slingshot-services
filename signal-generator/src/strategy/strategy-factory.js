@@ -13,6 +13,7 @@ import { EsStopHuntStrategy } from '../../../shared/strategies/es-stop-hunt.js';
 import { MnqAdaptiveScalperStrategy } from '../../../shared/strategies/mnq-adaptive-scalper.js';
 import { ImpulseFVGStrategy } from '../../../shared/strategies/impulse-fvg.js';
 import { ShortDTEIVStrategy } from '../../../shared/strategies/short-dte-iv.js';
+import { LTCandleRegimeStrategy } from '../../../shared/strategies/lt-candle-regime.js';
 
 const logger = createLogger('strategy-factory');
 
@@ -27,6 +28,7 @@ export const STRATEGY_TYPES = {
   MNQ_ADAPTIVE_SCALPER: 'mnq-adaptive-scalper',
   IMPULSE_FVG: 'impulse-fvg',
   SHORT_DTE_IV: 'short-dte-iv',
+  LT_CANDLE_REGIME: 'lt-candle-regime',
   AI_TRADER: 'ai-trader'
 };
 
@@ -71,6 +73,12 @@ export function createStrategy(strategyName, config) {
     case 'shortdteiv':
     case 'sdiv':
       return createShortDTEIVStrategy(config);
+
+    case STRATEGY_TYPES.LT_CANDLE_REGIME:
+    case 'lt_candle_regime':
+    case 'ltcandleregime':
+    case 'lcr':
+      return createLTCandleRegimeStrategy(config);
 
     case STRATEGY_TYPES.AI_TRADER:
     case 'ai_trader':
@@ -204,6 +212,12 @@ export function getStrategyConstant(strategyName) {
     case 'sdiv':
       return 'SHORT_DTE_IV';
 
+    case STRATEGY_TYPES.LT_CANDLE_REGIME:
+    case 'lt_candle_regime':
+    case 'ltcandleregime':
+    case 'lcr':
+      return 'LT_CANDLE_REGIME';
+
     case STRATEGY_TYPES.AI_TRADER:
     case 'ai_trader':
     case 'aitrader':
@@ -261,6 +275,12 @@ export function getDataRequirements(strategyName) {
     case 'shortdteiv':
     case 'sdiv':
       return ShortDTEIVStrategy.getDataRequirements();
+
+    case STRATEGY_TYPES.LT_CANDLE_REGIME:
+    case 'lt_candle_regime':
+    case 'ltcandleregime':
+    case 'lcr':
+      return LTCandleRegimeStrategy.getDataRequirements();
 
     case STRATEGY_TYPES.AI_TRADER:
     case 'ai_trader':
@@ -353,6 +373,21 @@ function createShortDTEIVStrategy(config) {
     `cooldown=${params.cooldownMs}ms`);
 
   return new ShortDTEIVStrategy(params);
+}
+
+function createLTCandleRegimeStrategy(config) {
+  const params = config.getLTCandleRegimeParams();
+
+  params.tradingSymbol = config.TRADING_SYMBOL;
+  params.defaultQuantity = config.DEFAULT_QUANTITY;
+  params.debug = true;
+
+  logger.info(`LT-Candle-Regime params: holdBars=${params.holdBars}, ` +
+    `ratchetTrigger=${params.ratchetTrigger}, ratchetTrailDist=${params.ratchetTrailDist}, ` +
+    `maxHold=${params.maxHoldWithTrail}, direction=${params.direction}, ` +
+    `requireSentiment=${params.requireSentiment}`);
+
+  return new LTCandleRegimeStrategy(params);
 }
 
 export default {

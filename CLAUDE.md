@@ -263,7 +263,74 @@ Run `node index.js --help` for all available strategies and options.
 - `/backtest-engine/src/data/csv-loader.js` - Historical data loading
 - `/backtest-engine/data/` - Historical candle, GEX, LT, IV, and options data (CSV/JSON)
 
-## Backtest Data: Critical Filtering Rules
+## CRITICAL: Price Space & Contract Rollover Rules
+
+**THIS SECTION IS MANDATORY READING FOR ANY ANALYSIS, BACKTESTING, OR STRATEGY WORK INVOLVING HISTORICAL DATA.**
+
+Failure to follow these rules has caused incorrect results repeatedly. Do NOT skip this section.
+
+### The Two Price Spaces
+
+There are TWO versions of OHLCV data. They are NOT interchangeable:
+
+| File | Price Space | Example (Dec 2020 NQH1) |
+|------|-------------|--------------------------|
+| `NQ_ohlcv_1m.csv` | **Raw contract** — actual traded prices | 12,676 |
+| `NQ_ohlcv_1m_continuous.csv` | **Back-adjusted** — prices shifted to form a continuous series | 15,643 (shifted +2,967) |
+
+### LT Levels Are ALWAYS Raw Contract Prices
+
+Liquidity Trigger (LT) levels in `backtest-engine/data/liquidity/` are in **raw contract price space**. They reflect actual market prices at the time they were generated.
+
+**LT levels MUST be compared against raw contract OHLCV data (`NQ_ohlcv_1m.csv` with `filterPrimaryContract()`), NEVER against continuous/back-adjusted data.** Comparing LT levels against continuous data produces phantom 200+ point gaps that do not exist in reality.
+
+GEX levels have the same constraint — they are in raw price space.
+
+### When To Use Raw vs Continuous
+
+- **Raw contracts (`--raw-contracts`)**: REQUIRED for any analysis involving LT levels, GEX levels, or GEX proximity calculations. Use `NQ_ohlcv_1m.csv` + `filterPrimaryContract()`.
+- **Continuous**: Only appropriate for pure price-action analysis where no external level data (LT, GEX) is involved and you need a gap-free price series.
+- **When in doubt, use raw contracts.** It is always correct. Continuous is a convenience that breaks level comparisons.
+
+### Contract Rollover in Raw Data (CRITICAL)
+
+Raw OHLCV data contains **multiple contract months simultaneously** (e.g., NQH5 and NQM5 trading at the same time). `filterPrimaryContract()` selects the highest-volume contract per hour, which means at rollover the primary contract **switches** and prices **jump by the roll spread**.
+
+**This is NOT a gap in the market — it is a contract change.** The rollover spread for NQ is typically 200-300 points (see `backtest-engine/data/ohlcv/nq/NQ_rollover_log.csv` for exact values per roll date).
+
+#### What happens at rollover:
+1. `filterPrimaryContract()` switches from e.g. NQH5 (~19,683) to NQM5 (~19,899)
+2. Price appears to "jump" ~208 points — this is the contract spread, not a market move
+3. Any LT/GEX levels from before the roll are still valid — LT data transitions naturally because the LT provider tracks the front contract
+4. **Stale LT levels from the old contract era will be ~200pts off from new contract prices** — they must be flushed or shifted by the roll spread at the boundary
+
+#### The rollover log:
+`backtest-engine/data/ohlcv/nq/NQ_rollover_log.csv` contains every roll date with the exact spread:
+```
+date,from_symbol,to_symbol,spread
+2025-03-18,NQH5,NQM5,208.5
+2024-12-17,NQZ4,NQH5,297.5
+```
+
+#### Handling open trades at rollover:
+The trade simulator (`trade-simulator.js`) attempts to convert prices between contracts using calendar spread bars. This works when spread data exists but **fails silently when it doesn't**, causing trades to get "stuck" — the old contract stops emitting candles and the trade never closes. When writing analysis or strategy code that spans rollovers:
+
+1. **Track the current contract symbol** from the `symbol` column in raw OHLCV data
+2. **Detect when it changes** — that's the rollover
+3. **Force-close any open position** at the last price of the old contract (or use the rollover log spread to translate)
+4. **Flush/shift all cached levels** (LT, GEX, support/resistance) by the roll spread
+5. **Never assume prices are continuous** — a 200pt jump between bars is normal at rollover
+
+### The `symbol` Column Is Your Source of Truth
+
+Every row in the raw OHLCV data has a `symbol` column (e.g., `NQH5`, `NQM5`, `NQH5-NQM5`). This tells you:
+- Which contract the price belongs to
+- Whether it's a calendar spread (contains `-`) — **filter these out, they are NOT price quotes**
+- When the rollover happened (symbol changes from one contract month to the next)
+
+**Always check and use the `symbol` column.** Never assume all rows are the same contract.
+
+## Backtest Data: Additional Filtering Rules
 
 Historical data is stored in `/backtest-engine/data/`. Column schemas and date ranges can be discovered by reading CSV headers and listing directories.
 

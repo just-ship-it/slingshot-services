@@ -72,6 +72,7 @@ import { OvernightCompositeStrategy } from '../../shared/strategies/overnight-co
 import { OvernightLTCrossingStrategy } from '../../shared/strategies/overnight-lt-crossing.js';
 import { LTCrossoverStrategy } from '../../shared/strategies/lt-crossover.js';
 import { LTStructureConfirmStrategy } from '../../shared/strategies/lt-structure-confirm.js';
+import { LTCandleRegimeStrategy } from '../../shared/strategies/lt-candle-regime.js';
 import { SqueezeMomentumIndicator } from '../../shared/indicators/squeeze-momentum.js';
 import { GexLoader } from './data-loaders/gex-loader.js';
 import { IVLoader } from './data-loaders/iv-loader.js';
@@ -1510,6 +1511,10 @@ export class BacktestEngine {
       case 'ltsc':
       case 'lt-struct':
         return new LTStructureConfirmStrategy(params);
+      case 'lt-candle-regime':
+      case 'lt-regime':
+      case 'lcr':
+        return new LTCandleRegimeStrategy(params);
       default:
         throw new Error(`Unknown strategy: ${strategyName}`);
     }

@@ -543,8 +543,8 @@ class MultiStrategyEngine {
       return;
     }
 
-    // Update time-based trailing
-    if (state.timeBasedTrailingConfig.enabled && state.timeBasedTrailingState) {
+    // Update time-based trailing (global config OR per-signal rules)
+    if (state.timeBasedTrailingState) {
       this.updateTimeBasedTrailing(state, candle);
     }
 
@@ -719,6 +719,8 @@ class MultiStrategyEngine {
       // Store signal metadata for use when position closes
       state.pendingSignalMetadata = signal.metadata || {};
       state.pendingMaxHoldBars = signal.maxHoldBars || 0;
+      state.pendingTimeBasedConfig = signal.timeBasedConfig || null;
+      state.pendingTimeBasedTrailing = signal.timeBasedTrailing || false;
 
       logger.info(`Signal from ${runner.name} for ${state.product}: ${signal.action} ${signal.side} @ ${signal.price}`);
       await this.publishSignal(signal);
@@ -771,10 +773,16 @@ class MultiStrategyEngine {
             this.initializeGFTracking(state);
           }
 
-          // Initialize time-based trailing
-          if (state.timeBasedTrailingConfig.enabled) {
+          // Initialize time-based trailing (per-signal config takes priority over global)
+          const signalHasTimeBased = state.pendingTimeBasedTrailing && state.pendingTimeBasedConfig;
+          if (signalHasTimeBased || state.timeBasedTrailingConfig.enabled) {
             this.initializeTimeBasedTrailing(state);
+            if (signalHasTimeBased) {
+              state.timeBasedTrailingState.signalRules = state.pendingTimeBasedConfig.rules || [];
+            }
           }
+          state.pendingTimeBasedConfig = null;
+          state.pendingTimeBasedTrailing = false;
 
           return;
         }
@@ -1026,7 +1034,7 @@ class MultiStrategyEngine {
   }
 
   updateTimeBasedTrailing(state, candle) {
-    if (!state.timeBasedTrailingConfig.enabled || !state.inPosition || !state.timeBasedTrailingState) return;
+    if (!state.inPosition || !state.timeBasedTrailingState) return;
 
     const tbState = state.timeBasedTrailingState;
     const isLong = state.currentPosition.side === 'long' || state.currentPosition.side === 'buy';
@@ -1045,10 +1053,13 @@ class MultiStrategyEngine {
       }
     }
 
-    // Check rules
-    for (let i = 0; i < state.timeBasedTrailingConfig.rules.length; i++) {
+    // Use per-signal rules if available, otherwise global config
+    const rules = tbState.signalRules || state.timeBasedTrailingConfig.rules;
+
+    // Check rules for new activations
+    for (let i = 0; i < rules.length; i++) {
       if (tbState.rulesTriggered.includes(i)) continue;
-      const rule = state.timeBasedTrailingConfig.rules[i];
+      const rule = rules[i];
 
       if (tbState.barsInTrade >= rule.afterBars && tbState.mfe >= rule.ifMFE) {
         let newStopPrice;
@@ -1069,6 +1080,22 @@ class MultiStrategyEngine {
           tbState.activeRuleIndex = i;
           tbState.lastModificationBar = tbState.barsInTrade;
           this.sendTimeBasedTrailingModification(state, newStopPrice, rule, i);
+        }
+      }
+    }
+
+    // Continuous trailing: keep moving stop behind peak for active trail rules
+    if (tbState.activeRuleIndex >= 0) {
+      const activeRule = rules[tbState.activeRuleIndex];
+      if (activeRule && activeRule.trailDistance) {
+        const continuousStop = isLong
+          ? tbState.peakPrice - activeRule.trailDistance
+          : tbState.peakPrice + activeRule.trailDistance;
+        const shouldUpdate = tbState.currentStopPrice === null ||
+          (isLong ? continuousStop > tbState.currentStopPrice : continuousStop < tbState.currentStopPrice);
+        if (shouldUpdate) {
+          tbState.currentStopPrice = continuousStop;
+          this.sendTimeBasedTrailingModification(state, continuousStop, activeRule, tbState.activeRuleIndex);
         }
       }
     }
