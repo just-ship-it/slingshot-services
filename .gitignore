@@ -51,6 +51,7 @@ coverage/
 .pm2/
 pids/
 logs/
+prod-logs/
 
 # Temporary files
 *.tmp
