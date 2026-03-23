@@ -142,7 +142,8 @@ const monitoringState = {
   squeezeData: null, // Current squeeze momentum data
   analyticsData: new Map(), // Analytics data by type
   gexLevels: { cboe: null, tradier: null }, // GEX levels from both sources
-  ivSkew: null // IV skew data from Tradier
+  ivSkew: null, // IV skew data from Tradier
+  ltLevels: { NQ: null, ES: null } // LT levels from data-service
 };
 
 // ============================================
@@ -3162,6 +3163,18 @@ async function handleExposureLevels(message) {
   }
 }
 
+// Handler for LT levels from data-service
+async function handleLtLevels(message) {
+  try {
+    if (!message) return;
+    const product = (message.product || 'NQ').toUpperCase();
+    monitoringState.ltLevels[product] = message;
+    broadcast('lt_levels', message);
+  } catch (error) {
+    logger.error('Error handling LT levels:', error);
+  }
+}
+
 // Handler for IV Skew updates from Tradier
 async function handleIVSkew(message) {
   try {
@@ -3767,6 +3780,7 @@ async function startup() {
       [CHANNELS.ANALYTICS, handleAnalytics],
       [CHANNELS.EXPOSURE_LEVELS, handleExposureLevels],
       [CHANNELS.IV_SKEW, handleIVSkew],
+      [CHANNELS.LT_LEVELS, handleLtLevels],
       [CHANNELS.STRATEGY_ALERT, handleStrategyAlert],
       // Discord notification subscriptions
       [CHANNELS.TRADE_VALIDATED, handleTradeSignalDiscord],
