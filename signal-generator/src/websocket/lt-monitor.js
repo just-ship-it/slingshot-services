@@ -177,7 +177,7 @@ class LTMonitor extends EventEmitter {
       's1',
       'sds_sym_1',
       this.timeframe,  // 15-minute timeframe
-      300,             // Request 300 bars for LT calculation
+      700,             // Request 700 bars (LT Fib 7 needs 610 bars to calculate)
       ''
     ]);
 
@@ -352,8 +352,8 @@ class LTMonitor extends EventEmitter {
         const latest = studyData[studyData.length - 1];
         const values = latest.v;
 
-        if (values && values.length >= 18) {
-          // DIAGNOSTIC: dump raw values to verify index mapping
+        if (values && values.length >= 20) {
+          // DIAGNOSTIC: dump raw values to verify index mapping (temporary)
           logger.info(`📍 LT raw values (len=${values.length}): ${values.map((v, i) => `[${i}]=${v === 1e+100 ? 'null' : typeof v === 'number' ? v.toFixed(2) : v}`).join(', ')}`);
 
           const timestamp = values[0];
@@ -363,7 +363,9 @@ class LTMonitor extends EventEmitter {
             return;
           }
 
-          // Parse LT levels (positions 5, 7, 9, 11, 13, 15, 17)
+          // Parse LT levels - alternating value/counter pattern at odd indices
+          // TV plots: Granular[1], LT[3], L1[5], L2[7], L3[9], L4[11], L5[13], L6[15], L7[17], Ref1[19], Ref2[21]
+          // We map L1-L7 (Fib 8,13,34,55,144,377,610) as L0-L6 + L7
           const levels = {
             timestamp: timestamp,
             candleTime: new Date(timestamp * 1000).toISOString(),
@@ -373,7 +375,8 @@ class LTMonitor extends EventEmitter {
             L3: values[11] !== 1e+100 ? values[11] : null,
             L4: values[13] !== 1e+100 ? values[13] : null,
             L5: values[15] !== 1e+100 ? values[15] : null,
-            L6: values[17] !== 1e+100 ? values[17] : null
+            L6: values[17] !== 1e+100 ? values[17] : null,
+            L7: values[19] !== 1e+100 ? values[19] : null
           };
 
           this.currentLevels = levels;
