@@ -492,10 +492,11 @@ class MultiStrategyEngine {
     // If in position, handle position management (time-based trailing, order timeouts, EOD close)
     if (state.inPosition) {
       await this.handleInPositionCandle(state, candle);
-      return;
     }
 
-    // Evaluate all enabled strategies for this product
+    // Always evaluate strategies — keeps internal state (e.g. LT regime tracking) warm
+    // even when another strategy owns the position. Signals are suppressed in
+    // evaluateStrategyOnCandle() when state.inPosition is true.
     await this.evaluateStrategies(state, candle);
   }
 
@@ -568,6 +569,7 @@ class MultiStrategyEngine {
   async evaluateStrategies(state, candle) {
     if (!this.enabled) return;
     const inSession = this.isInTradingSession();
+    const wasInPosition = state.inPosition;
 
     // Get strategies sorted by priority
     const runners = Array.from(state.strategies.values())
@@ -589,8 +591,8 @@ class MultiStrategyEngine {
 
         await this.evaluateStrategyOnCandle(state, runner, evalCandle, inSession);
 
-        // If we just entered a position, stop evaluating other strategies
-        if (state.inPosition) break;
+        // If a strategy JUST entered a position on this candle, stop evaluating lower-priority ones
+        if (state.inPosition && !wasInPosition) break;
       } catch (error) {
         logger.error(`Error evaluating ${runner.name} for ${state.product}:`, error);
       }
@@ -701,9 +703,16 @@ class MultiStrategyEngine {
       marketData.ivData = state.ivData;
     }
 
-    // Evaluate
+    // Evaluate — always called to keep strategy internal state warm,
+    // even when another strategy owns the position
     const signal = runner.strategy.evaluateSignal(candle, runner.prevCandle, marketData);
     runner.prevCandle = candle;
+
+    // Suppress signals when another strategy has an open position
+    if (signal && state.inPosition) {
+      logger.debug(`Signal from ${runner.name} suppressed — ${state.product} in position (${state.positionStrategy})`);
+      return;
+    }
 
     if (signal && !inSession) {
       logger.warn(`⏰ [${runner.name}] Signal BLOCKED by session filter: ${signal.side} @ ${signal.price} (server hour outside ${this.sessionStart}-${this.sessionEnd} EST window)`);
