@@ -497,7 +497,7 @@ async function handleOrderRequest(message) {
       // we can still determine the correct orderRole (stop_loss vs take_profit).
       if (!hasTrailingStop && result.orderId) {
         const osoLinks = {
-          strategyId: null,
+          strategyId: result.orderId, // placeOSO returns the orderStrategyId as orderId
           timestamp: new Date().toISOString(),
           entryOrderId: result.orderId,
           stopOrderId: result.oso1Id || result.bracket1OrderId || null,
@@ -631,8 +631,16 @@ async function handleOrderRequest(message) {
         }
       } else {
         // Standard bracket order response
+        // Note: placeOSO returns the orderStrategyId as result.orderId;
+        // include all bracket leg IDs so the orchestrator has the complete picture
+        // in a single message (avoids race with WebSocket fill events)
+        const stopOrderId = result.oso1Id || result.bracket1OrderId || null;
+        const targetOrderId = result.oso2Id || result.bracket2OrderId || null;
         await messageBus.publish(CHANNELS.ORDER_PLACED, {
           orderId: result.orderId,
+          orderStrategyId: result.orderId,
+          stopOrderId: stopOrderId,
+          targetOrderId: targetOrderId,
           accountId: message.accountId,
           symbol: contractSymbol,
           action: message.action,
@@ -667,6 +675,7 @@ async function handleOrderRequest(message) {
         if (stopOrderId) {
           await messageBus.publish(CHANNELS.ORDER_PLACED, {
             orderId: stopOrderId,
+            orderStrategyId: result.orderId,
             accountId: message.accountId,
             symbol: contractSymbol,
             action: orderData.bracket1.action,
@@ -698,6 +707,7 @@ async function handleOrderRequest(message) {
         if (targetOrderId) {
           await messageBus.publish(CHANNELS.ORDER_PLACED, {
             orderId: targetOrderId,
+            orderStrategyId: result.orderId,
             accountId: message.accountId,
             symbol: contractSymbol,
             action: orderData.bracket2.action,
@@ -2174,8 +2184,16 @@ async function handleModifyStop(tradeSignal, accountId, webhookId) {
       const orderId = tradeSignal.order_id || tradeSignal.orderId;
       logger.info(`🔧 Modifying stop order directly: ${orderId}`);
 
+      // Resolve orderQty and orderType — Tradovate requires both for modifyorder.
+      // Try enrichment cache first (no API call), fall back to signal, then default.
+      const cachedOrder = tradovateClient.enrichmentCache?.get(orderId);
+      const orderQty = cachedOrder?.orderQty || tradeSignal.quantity || 1;
+      const orderType = cachedOrder?.orderType || 'Stop';
+
       const result = await tradovateClient.modifyOrder({
         orderId: orderId,
+        orderQty: orderQty,
+        orderType: orderType,
         stopPrice: tradeSignal.new_stop_price
       });
 

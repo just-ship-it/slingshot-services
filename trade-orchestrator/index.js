@@ -1329,12 +1329,15 @@ async function handleWebhookReceived(message) {
     const signalBody = message.body || message;
 
     // Distributed dedup: content-based hash prevents duplicate processing across K8s pods
-    // Uses signal fields that are identical across all receiving pods
-    const dedupKey = `signal:dedup:${signalBody.strategy || 'unknown'}:${signalBody.side || ''}:${signalBody.price || ''}:${signalBody.timestamp || ''}`;
-    const acquired = await messageBus.publisher.set(dedupKey, '1', { NX: true, EX: 60 });
-    if (!acquired) {
-      logger.warn(`[DEDUP] Duplicate signal rejected (${dedupKey})`);
-      return;
+    // Uses signal fields that are identical across all receiving pods.
+    // Skip dedup for modify_stop — it's idempotent and may fire rapidly during trailing.
+    if (signalBody.action !== 'modify_stop') {
+      const dedupKey = `signal:dedup:${signalBody.strategy || 'unknown'}:${signalBody.side || ''}:${signalBody.price || ''}:${signalBody.timestamp || ''}`;
+      const acquired = await messageBus.publisher.set(dedupKey, '1', { NX: true, EX: 60 });
+      if (!acquired) {
+        logger.warn(`[DEDUP] Duplicate signal rejected (${dedupKey})`);
+        return;
+      }
     }
 
     const signal = parseTradeSignal(signalBody);
@@ -2089,6 +2092,27 @@ async function handleOrderPlaced(message) {
       // Also map the strategy ID to the signal ID
       tradingState.orderToStrategy.set(message.strategyId, message.signalId);
       logger.info(`📡 Creating strategy mapping: order ${message.orderId} → strategy ${message.strategyId} → signal ${message.signalId}`);
+    }
+
+    // Store bracket order IDs in signal context from the entry ORDER_PLACED.
+    // The tradovate service includes all IDs from the placeOSO response so we
+    // have the complete bracket picture before any WebSocket fill arrives.
+    if (message.orderStrategyId || message.stopOrderId || message.targetOrderId) {
+      const ctx = tradingState.signalContext.get(message.signalId);
+      if (ctx) {
+        if (message.orderStrategyId && !ctx.orderStrategyId) {
+          ctx.orderStrategyId = message.orderStrategyId;
+          logger.info(`📡 Stored orderStrategyId ${message.orderStrategyId} in signal context for ${message.signalId}`);
+        }
+        if (message.stopOrderId && !ctx.bracketStopOrderId) {
+          ctx.bracketStopOrderId = message.stopOrderId;
+          logger.info(`📡 Stored bracket stopOrderId ${message.stopOrderId} in signal context for ${message.signalId}`);
+        }
+        if (message.targetOrderId && !ctx.bracketTargetOrderId) {
+          ctx.bracketTargetOrderId = message.targetOrderId;
+          logger.info(`📡 Stored bracket targetOrderId ${message.targetOrderId} in signal context for ${message.signalId}`);
+        }
+      }
     }
   }
 
@@ -3023,8 +3047,14 @@ async function updatePositionFromFill(fillMessage) {
     // Link bracket orders to the new position
     await linkBracketOrdersToPosition(newPosition, signalContext, fillMessage.orderId);
 
-    // After bracket linking, publish updated position with stop order ID if now available
-    if (newPosition.stopLossOrder?.orderId) {
+    // After bracket linking, publish updated position with stop order ID if now available.
+    // Prefer the linked stopLossOrder, but fall back to signal context's pre-stored
+    // bracket IDs (handles race where stop ORDER_PLACED hasn't arrived yet).
+    const resolvedStopOrderId = newPosition.stopLossOrder?.orderId
+      || signalContext?.bracketStopOrderId || null;
+    const resolvedOrderStrategyId = newPosition.signalContext?.orderStrategyId || null;
+
+    if (resolvedStopOrderId || resolvedOrderStrategyId) {
       await messageBus.publish(CHANNELS.POSITION_UPDATE, {
         symbol: newPosition.symbol,
         netPos: newPosition.netPos,
@@ -3035,12 +3065,12 @@ async function updatePositionFromFill(fillMessage) {
         side: newPosition.side,
         accountId: newPosition.accountId,
         strategy: newPosition.strategy,
-        stopOrderId: newPosition.stopLossOrder.orderId,
-        orderStrategyId: newPosition.signalContext?.orderStrategyId || null,
+        stopOrderId: resolvedStopOrderId,
+        orderStrategyId: resolvedOrderStrategyId,
         timestamp: new Date().toISOString(),
         source: 'bracket_linked'
       });
-      logger.info(`📡 Broadcasted stop order ID ${newPosition.stopLossOrder.orderId} for ${symbol} after bracket linking`);
+      logger.info(`📡 Broadcasted stop order ID ${resolvedStopOrderId} and orderStrategyId ${resolvedOrderStrategyId} for ${symbol} after bracket linking`);
     }
   }
 
@@ -3091,39 +3121,62 @@ async function linkBracketOrdersToPosition(position, signalContext, entryOrderId
   let stopOrdersLinked = 0;
   let targetOrdersLinked = 0;
 
-  // Find bracket orders that belong to the same signal/strategy
-  for (const [orderId, order] of tradingState.workingOrders.entries()) {
-    // Check if this order belongs to the same signal
-    const orderSignalContext = tradingState.signalContext.get(orderId);
-    const strategyId = tradingState.orderToStrategy.get(orderId);
-    const strategySignalContext = strategyId ? tradingState.signalContext.get(strategyId) : null;
+  // Method 1: Direct lookup from pre-stored bracket IDs in signal context.
+  // The tradovate service includes stopOrderId/targetOrderId from the placeOSO
+  // response in the entry ORDER_PLACED event, so signal context has them before
+  // any fill arrives — no race condition with WebSocket fills.
+  if (signalContext.bracketStopOrderId) {
+    tradingState.orderRelationships.set(signalContext.bracketStopOrderId, {
+      orderRole: 'stop_loss',
+      positionSymbol: position.symbol,
+      signalId: signalContext.signalId
+    });
+    stopOrdersLinked++;
+    logger.info(`🔗 Linked stop loss order ${signalContext.bracketStopOrderId} to position ${position.symbol} (from signal context)`);
+  }
+  if (signalContext.bracketTargetOrderId) {
+    tradingState.orderRelationships.set(signalContext.bracketTargetOrderId, {
+      orderRole: 'take_profit',
+      positionSymbol: position.symbol,
+      signalId: signalContext.signalId
+    });
+    targetOrdersLinked++;
+    logger.info(`🔗 Linked take profit order ${signalContext.bracketTargetOrderId} to position ${position.symbol} (from signal context)`);
+  }
 
-    const orderContext = orderSignalContext || strategySignalContext;
+  // Method 2: Scan workingOrders for bracket orders matching by signalId (fallback
+  // for orders not pre-registered, e.g. OrderStrategy child orders)
+  if (stopOrdersLinked === 0 || targetOrdersLinked === 0) {
+    for (const [orderId, order] of tradingState.workingOrders.entries()) {
+      const orderSignalContext = tradingState.signalContext.get(orderId);
+      const strategyId = tradingState.orderToStrategy.get(orderId);
+      const strategySignalContext = strategyId ? tradingState.signalContext.get(strategyId) : null;
+      const orderOwnSignalContext = order.signalId ? tradingState.signalContext.get(order.signalId) : null;
 
-    if (orderContext && orderContext.signalId === signalContext.signalId && order.symbol === position.symbol) {
-      // This is a bracket order from the same signal - determine its role
-      const isStopOrder = order.orderType === 'Stop' || order.orderType === 'StopLimit' ||
-                         (orderContext.stopPrice && Math.abs(order.price - orderContext.stopPrice) < 1);
-      const isTargetOrder = orderContext.takeProfit && Math.abs(order.price - orderContext.takeProfit) < 1;
+      const orderContext = orderSignalContext || strategySignalContext || orderOwnSignalContext;
 
-      if (isStopOrder) {
-        // Link as stop loss order
-        tradingState.orderRelationships.set(orderId, {
-          orderRole: 'stop_loss',
-          positionSymbol: position.symbol,
-          signalId: signalContext.signalId
-        });
-        stopOrdersLinked++;
-        logger.info(`🔗 Linked stop loss order ${orderId} to position ${position.symbol}`);
-      } else if (isTargetOrder) {
-        // Link as take profit order
-        tradingState.orderRelationships.set(orderId, {
-          orderRole: 'take_profit',
-          positionSymbol: position.symbol,
-          signalId: signalContext.signalId
-        });
-        targetOrdersLinked++;
-        logger.info(`🔗 Linked take profit order ${orderId} to position ${position.symbol}`);
+      if (orderContext && orderContext.signalId === signalContext.signalId && order.symbol === position.symbol) {
+        const isStopOrder = order.orderType === 'Stop' || order.orderType === 'StopLimit' ||
+                           (orderContext.stopPrice && Math.abs(order.price - orderContext.stopPrice) < 1);
+        const isTargetOrder = orderContext.takeProfit && Math.abs(order.price - orderContext.takeProfit) < 1;
+
+        if (isStopOrder && stopOrdersLinked === 0) {
+          tradingState.orderRelationships.set(orderId, {
+            orderRole: 'stop_loss',
+            positionSymbol: position.symbol,
+            signalId: signalContext.signalId
+          });
+          stopOrdersLinked++;
+          logger.info(`🔗 Linked stop loss order ${orderId} to position ${position.symbol} (from workingOrders scan)`);
+        } else if (isTargetOrder && targetOrdersLinked === 0) {
+          tradingState.orderRelationships.set(orderId, {
+            orderRole: 'take_profit',
+            positionSymbol: position.symbol,
+            signalId: signalContext.signalId
+          });
+          targetOrdersLinked++;
+          logger.info(`🔗 Linked take profit order ${orderId} to position ${position.symbol} (from workingOrders scan)`);
+        }
       }
     }
   }
