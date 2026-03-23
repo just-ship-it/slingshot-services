@@ -519,6 +519,8 @@ class LTMonitor extends EventEmitter {
 
       if (metainfo) {
         logger.info('📋 Successfully fetched indicator metadata');
+        // DIAGNOSTIC: log plot count and input names
+        logger.info(`📋 Plots: ${metainfo.plots?.length || 0}, Inputs: ${(metainfo.inputs || []).map(i => `${i.id}=${i.defval}`).join(', ')}`);
         return metainfo;
       }
 
@@ -565,7 +567,9 @@ class LTMonitor extends EventEmitter {
     });
 
     logger.info('📋 Prepared indicator metadata successfully');
-    logger.debug('Prepared payload:', JSON.stringify(studyPayload, null, 2));
+    // DIAGNOSTIC: log full payload to verify fib inputs
+    logger.info('📋 Study payload keys:', Object.keys(studyPayload).join(', '));
+    logger.info('📋 Study payload:', JSON.stringify(studyPayload));
     return studyPayload;
   }
 }
