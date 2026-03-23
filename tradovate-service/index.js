@@ -499,6 +499,7 @@ async function handleOrderRequest(message) {
         const osoLinks = {
           strategyId: result.orderId, // placeOSO returns the orderStrategyId as orderId
           timestamp: new Date().toISOString(),
+          quantity: message.quantity,
           entryOrderId: result.orderId,
           stopOrderId: result.oso1Id || result.bracket1OrderId || null,
           targetOrderId: result.oso2Id || result.bracket2OrderId || null,
@@ -2185,10 +2186,20 @@ async function handleModifyStop(tradeSignal, accountId, webhookId) {
       logger.info(`🔧 Modifying stop order directly: ${orderId}`);
 
       // Resolve orderQty and orderType — Tradovate requires both for modifyorder.
-      // Try enrichment cache first (no API call), fall back to signal, then default.
-      const cachedOrder = tradovateClient.enrichmentCache?.get(orderId);
-      const orderQty = cachedOrder?.orderQty || tradeSignal.quantity || 1;
-      const orderType = cachedOrder?.orderType || 'Stop';
+      // Look up the original quantity from orderStrategyLinks (set at placement time)
+      // rather than trusting the signal, which may have the pre-position-sizing value.
+      let orderQty = null;
+      for (const [, links] of orderStrategyLinks.entries()) {
+        if (links.stopOrderId === orderId || links.targetOrderId === orderId) {
+          orderQty = links.quantity;
+          break;
+        }
+      }
+      if (!orderQty) {
+        orderQty = tradeSignal.quantity || 1;
+        logger.warn(`⚠️ Could not find original quantity for order ${orderId} in orderStrategyLinks, using ${orderQty}`);
+      }
+      const orderType = 'Stop';
 
       const result = await tradovateClient.modifyOrder({
         orderId: orderId,

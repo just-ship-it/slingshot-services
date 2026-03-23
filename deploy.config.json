@@ -4,31 +4,31 @@
   "production_branch": "production",
   "services": {
     "tradovate-service": {
-      "app_id": "",
+      "app_id": "70a68761-395c-4773-9bc0-7bdb9dcddc53",
       "directories": ["tradovate-service"]
     },
     "trade-orchestrator": {
-      "app_id": "",
+      "app_id": "588e37da-cebf-4be1-892b-58e67569c813",
       "directories": ["trade-orchestrator"]
     },
     "monitoring-service": {
-      "app_id": "",
+      "app_id": "62c3e8a4-bb68-440e-b3d5-6c0e889393e8",
       "directories": ["monitoring-service"]
     },
     "data-service": {
-      "app_id": "",
+      "app_id": "af7aeee4-8712-4a62-994f-c9d09d70d15e",
       "directories": ["data-service", "signal-generator/src/data", "signal-generator/src/tradingview"]
     },
     "signal-generator": {
-      "app_id": "",
+      "app_id": "1fe0898f-1f2c-4677-bea8-71012cbd2188",
       "directories": ["signal-generator"]
     },
     "ai-trader": {
-      "app_id": "",
+      "app_id": "081d3d7f-f464-4501-964e-34b30ff43a32",
       "directories": ["signal-generator"]
     },
     "macro-briefing": {
-      "app_id": "",
+      "app_id": "a287bf53-0e8f-44e5-a3ae-4bcf03a4637b",
       "directories": ["macro-briefing"]
     }
   },

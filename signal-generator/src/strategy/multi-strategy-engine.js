@@ -797,6 +797,7 @@ class MultiStrategyEngine {
             side: message.side || (message.action === 'Buy' ? 'long' : 'short'),
             entryPrice: message.price || message.entryPrice,
             entryTime: message.timestamp || new Date().toISOString(),
+            quantity: Math.abs(message.netPos) || 1,
             strategy: strategy,
             orderStrategyId: message.orderStrategyId || message.order_strategy_id,
             stopOrderId: message.stopOrderId || message.stop_order_id,
