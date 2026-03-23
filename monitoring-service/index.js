@@ -823,6 +823,10 @@ io.on('connection', async (socket) => {
     alerts: persistedAlerts
   });
 
+  // Send cached LT levels if available
+  if (monitoringState.ltLevels.NQ) socket.emit('lt_levels', monitoringState.ltLevels.NQ);
+  if (monitoringState.ltLevels.ES) socket.emit('lt_levels', monitoringState.ltLevels.ES);
+
   // Handle ping/pong
   socket.on('ping', (data) => {
     socket.emit('pong', data);
@@ -3815,6 +3819,19 @@ async function startup() {
       requestedBy: SERVICE_NAME,
       timestamp: new Date().toISOString()
     });
+
+    // Seed LT levels from data-service
+    for (const product of ['NQ', 'ES']) {
+      try {
+        const ltResponse = await axios.get(`${DATA_SERVICE_URL}/lt/levels?product=${product}`, { timeout: 3000 });
+        if (ltResponse.data) {
+          monitoringState.ltLevels[product] = { ...ltResponse.data, product };
+          logger.info(`Seeded LT levels for ${product}`);
+        }
+      } catch (error) {
+        logger.debug(`No LT levels available for ${product} at startup: ${error.message}`);
+      }
+    }
 
     // Start server - bind to all interfaces for external access
     const bindHost = process.env.BIND_HOST || '0.0.0.0';
