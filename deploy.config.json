@@ -1,0 +1,48 @@
+{
+  "sevalla_api_key_env": "SEVALLA_API_KEY",
+  "git_remote": "origin",
+  "production_branch": "production",
+  "services": {
+    "tradovate-service": {
+      "app_id": "",
+      "directories": ["tradovate-service"]
+    },
+    "trade-orchestrator": {
+      "app_id": "",
+      "directories": ["trade-orchestrator"]
+    },
+    "monitoring-service": {
+      "app_id": "",
+      "directories": ["monitoring-service"]
+    },
+    "data-service": {
+      "app_id": "",
+      "directories": ["data-service", "signal-generator/src/data", "signal-generator/src/tradingview"]
+    },
+    "signal-generator": {
+      "app_id": "",
+      "directories": ["signal-generator"]
+    },
+    "ai-trader": {
+      "app_id": "",
+      "directories": ["signal-generator"]
+    },
+    "macro-briefing": {
+      "app_id": "",
+      "directories": ["macro-briefing"]
+    }
+  },
+  "shared_directories": ["shared"],
+  "ignore_patterns": [
+    "backtest-engine/",
+    "*.md",
+    ".claude/",
+    ".gitignore",
+    "deploy.sh",
+    "deploy.config.json",
+    "start-all.sh",
+    "stop-all.sh",
+    "clear-logs.sh",
+    "ecosystem.config.cjs"
+  ]
+}
