@@ -353,6 +353,9 @@ class LTMonitor extends EventEmitter {
         const values = latest.v;
 
         if (values && values.length >= 18) {
+          // DIAGNOSTIC: dump raw values to verify index mapping
+          logger.info(`📍 LT raw values (len=${values.length}): ${values.map((v, i) => `[${i}]=${v === 1e+100 ? 'null' : typeof v === 'number' ? v.toFixed(2) : v}`).join(', ')}`);
+
           const timestamp = values[0];
 
           // Skip if same timestamp as last update
