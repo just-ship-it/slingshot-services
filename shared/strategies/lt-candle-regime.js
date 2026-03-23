@@ -73,6 +73,9 @@ export class LTCandleRegimeStrategy extends BaseStrategy {
     // Live LT 15m sampling — only latch new LT values on 15m boundaries
     this._liveLatched15mLT = null;
     this._lastLatch15mBoundary = 0;
+
+    // Last evaluated candle (for dashboard proximity display)
+    this._lastCandle = null;
   }
 
   /**
@@ -90,6 +93,7 @@ export class LTCandleRegimeStrategy extends BaseStrategy {
     this._ltIndex = 0;
     this._liveLatched15mLT = null;
     this._lastLatch15mBoundary = 0;
+    this._lastCandle = null;
   }
 
   /**
@@ -167,6 +171,7 @@ export class LTCandleRegimeStrategy extends BaseStrategy {
 
   evaluateSignal(candle, prevCandle, marketData, options = {}) {
     const timestamp = this.toMs(candle.timestamp);
+    this._lastCandle = candle;
 
     // Get current LT snapshot
     const lt = this._getCurrentLT(timestamp, marketData);
@@ -303,12 +308,34 @@ export class LTCandleRegimeStrategy extends BaseStrategy {
     const lt = this._liveLatched15mLT || null;
 
     const levelStates = {};
+    const candle = this._lastCandle;
     for (let i = 0; i < this.levelKeys.length; i++) {
       const key = this.levelKeys[i];
       const name = this.levelNames[i];
+      const levelPrice = lt ? lt[key] : null;
+      const state = this._prevStates[key] || null;
+
+      // Compute trigger proximity: how far the candle edge is from flipping
+      let triggerDist = null;
+      let pendingSignal = null;
+      if (levelPrice != null && candle && state) {
+        if (state === 'ABOVE') {
+          triggerDist = candle.low - levelPrice; // gap before low drops below level
+          pendingSignal = 'SHORT';
+        } else if (state === 'BELOW') {
+          triggerDist = levelPrice - candle.high; // gap before high breaks above level
+          pendingSignal = 'LONG';
+        } else {
+          triggerDist = 0;
+          pendingSignal = 'EITHER';
+        }
+      }
+
       levelStates[name] = {
-        price: lt ? lt[key] : null,
-        candleState: this._prevStates[key] || null,
+        price: levelPrice,
+        candleState: state,
+        triggerDist: triggerDist != null ? Math.round(triggerDist * 10) / 10 : null,
+        pendingSignal,
       };
     }
 
