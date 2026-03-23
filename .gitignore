@@ -60,6 +60,9 @@ prod-logs/
 # Claude IDE settings
 .claude/settings.local.json
 
+# Deploy state
+.last-deploy
+
 # Runtime data directories
 data/
 */data/
