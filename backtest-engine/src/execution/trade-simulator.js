@@ -496,7 +496,23 @@ export class TradeSimulator {
         // This ensures we check stops BEFORE updating the trailing, preventing
         // the issue where trailing updates and stop checks happen "atomically"
         if (trade.trailingStop) {
+          const prevStop = trade.trailingStop.currentStop;
           this.updateTrailingStop(trade, bar);
+          const newStop = trade.trailingStop.currentStop;
+
+          // If the trailing stop just moved to a level that's already been breached
+          // by current price, we can't place it as a stop order — exit at market.
+          // This matches live behavior where brokers reject stops on the wrong side.
+          if (newStop !== prevStop) {
+            const isBuy = this.isBuyPosition(trade);
+            const stopInvalid = isBuy ? newStop > bar.close : newStop < bar.close;
+            if (stopInvalid) {
+              if (debug) {
+                console.log(`    ⚠️  [TRADE ${trade.id}] Trailing stop ${newStop.toFixed(2)} crossed through price ${bar.close.toFixed(2)} — exiting at market`);
+              }
+              return this.exitTrade(trade, bar, 'trailing_stop', bar.close);
+            }
+          }
         }
       }
     }
@@ -713,6 +729,20 @@ export class TradeSimulator {
           const waterMark = this.isBuyPosition(trade) ? trade.trailingStop.highWaterMark : trade.trailingStop.lowWaterMark;
           console.log(`    📈 [TRADE ${trade.id}] Trailing stop updated: ${oldStop} → ${trade.trailingStop.currentStop} | Water mark: ${waterMark}`);
         }
+
+        // If the trailing stop crossed through current price, exit at market
+        // (broker would reject a stop on the wrong side of market)
+        const newStop = trade.trailingStop.currentStop;
+        if (newStop !== oldStop) {
+          const isBuy = this.isBuyPosition(trade);
+          const stopInvalid = isBuy ? newStop > candle.close : newStop < candle.close;
+          if (stopInvalid) {
+            if (debug) {
+              console.log(`    ⚠️  [TRADE ${trade.id}] Trailing stop ${newStop.toFixed(2)} crossed through price ${candle.close.toFixed(2)} — exiting at market`);
+            }
+            return this.exitTrade(trade, candle, 'trailing_stop', candle.close);
+          }
+        }
       }
 
       // Check stop loss
@@ -828,6 +858,11 @@ export class TradeSimulator {
     // Check if composite trailing is enabled for this trade
     if (trade.trailingStop?.mode === 'composite') {
       return this.updateCompositeTrailingStop(trade, candle);
+    }
+
+    // Check if combined mode (time-based + MFE ratchet) is enabled
+    if (trade.trailingStop?.mode === 'combined') {
+      return this.updateCombinedTrailingStop(trade, candle);
     }
 
     // Check if MFE ratchet trailing is enabled for this trade
@@ -1042,6 +1077,114 @@ export class TradeSimulator {
           break;
         }
       }
+    }
+  }
+
+  /**
+   * Update combined trailing stop - runs BOTH time-based trailing AND MFE ratchet simultaneously.
+   * On each candle, both mechanisms compute their desired stop level and the tighter one wins.
+   *
+   * Time-based trailing handles the general case (progressive tightening based on bars + profit).
+   * MFE ratchet handles near-target protection (locks % of peak profit at tier thresholds).
+   * Together they prevent the pattern: +50pts → -90pts → +70pts.
+   *
+   * @param {Object} trade - Trade object with combined trailing stop
+   * @param {Object} candle - Current candle
+   */
+  updateCombinedTrailingStop(trade, candle) {
+    const trailing = trade.trailingStop;
+    const entryPrice = trade.actualEntry || trade.entryPrice;
+    const debug = this.debugMode;
+    const isBuy = this.isBuyPosition(trade);
+
+    // --- Shared: Update water marks ---
+    if (isBuy) {
+      if (candle.high > trailing.highWaterMark) trailing.highWaterMark = candle.high;
+    } else {
+      if (candle.low < trailing.lowWaterMark) trailing.lowWaterMark = candle.low;
+    }
+
+    const currentMFE = isBuy
+      ? trailing.highWaterMark - entryPrice
+      : entryPrice - trailing.lowWaterMark;
+    const barsHeld = trade.barsSinceEntry;
+
+    // --- Time-based trailing stop computation ---
+    let tbStop = trailing.currentStop;
+    const rules = trailing.rules || [];
+    const activeRuleIndex = trailing.activeRuleIndex ?? -1;
+
+    let newActiveRule = null;
+    let newActiveIndex = -1;
+    for (let i = 0; i < rules.length; i++) {
+      const rule = rules[i];
+      if (barsHeld >= rule.afterBars && currentMFE >= rule.ifMFE) {
+        newActiveRule = rule;
+        newActiveIndex = i;
+      }
+    }
+
+    if (newActiveRule && newActiveIndex > activeRuleIndex) {
+      trailing.activeRuleIndex = newActiveIndex;
+
+      if (newActiveRule.action === 'breakeven') {
+        const beStop = entryPrice;
+        if (isBuy ? beStop > tbStop : beStop < tbStop) {
+          tbStop = beStop;
+          trailing.currentTrailDistance = null;
+          if (debug) console.log(`    ⏱️  [COMBINED-TB] ${isBuy ? 'Long' : 'Short'} ${trade.id}: Rule ${newActiveIndex} → BREAKEVEN @ ${beStop.toFixed(2)}`);
+        }
+      } else if (newActiveRule.trailDistance != null) {
+        trailing.currentTrailDistance = newActiveRule.trailDistance;
+        const trailStop = isBuy
+          ? trailing.highWaterMark - newActiveRule.trailDistance
+          : trailing.lowWaterMark + newActiveRule.trailDistance;
+        if (isBuy ? trailStop > tbStop : trailStop < tbStop) {
+          tbStop = trailStop;
+          if (debug) console.log(`    ⏱️  [COMBINED-TB] ${isBuy ? 'Long' : 'Short'} ${trade.id}: Rule ${newActiveIndex} → Trail ${newActiveRule.trailDistance}pts @ ${trailStop.toFixed(2)}`);
+        }
+      }
+    }
+
+    // Continue trailing if we have an active trail distance
+    if (trailing.currentTrailDistance != null && trailing.currentTrailDistance > 0) {
+      const trailStop = isBuy
+        ? trailing.highWaterMark - trailing.currentTrailDistance
+        : trailing.lowWaterMark + trailing.currentTrailDistance;
+      if (isBuy ? trailStop > tbStop : trailStop < tbStop) {
+        tbStop = trailStop;
+      }
+    }
+
+    // --- MFE ratchet stop computation ---
+    let ratchetStop = trailing.currentStop;
+    const tiers = trailing.tiers || [];
+
+    for (const tier of tiers) {
+      if (currentMFE >= tier.minMFE) {
+        const raw = isBuy
+          ? entryPrice + (currentMFE * tier.lockPct)
+          : entryPrice - (currentMFE * tier.lockPct);
+        const rounded = Math.round(raw * 4) / 4;
+        if (isBuy ? rounded > ratchetStop : rounded < ratchetStop) {
+          ratchetStop = rounded;
+          if (debug) console.log(`    🔒 [COMBINED-RATCHET] ${isBuy ? 'Long' : 'Short'} ${trade.id}: MFE=${currentMFE.toFixed(1)}pts, ${tier.label} → ${rounded.toFixed(2)}`);
+        }
+        break; // Highest matching tier only
+      }
+    }
+
+    // --- Take the tighter stop ---
+    const bestStop = isBuy ? Math.max(tbStop, ratchetStop) : Math.min(tbStop, ratchetStop);
+
+    if (isBuy ? bestStop > trailing.currentStop : bestStop < trailing.currentStop) {
+      const source = (bestStop === ratchetStop && ratchetStop !== tbStop) ? 'ratchet' : 'timeBased';
+      if (debug && bestStop !== trailing.currentStop) {
+        console.log(`    🔀 [COMBINED] ${isBuy ? 'Long' : 'Short'} ${trade.id}: Stop ${trailing.currentStop.toFixed(2)} → ${bestStop.toFixed(2)} (via ${source})`);
+      }
+      trailing.currentStop = bestStop;
+      trailing.triggered = true;
+      trailing.lastAction = source === 'ratchet' ? trailing.ratchetLastAction : (trailing.currentTrailDistance ? `trail_${trailing.currentTrailDistance}` : 'breakeven');
     }
   }
 
@@ -1709,9 +1852,40 @@ export class TradeSimulator {
       };
     }
 
-    // Check if MFE ratchet mode is enabled (locks % of peak profit at tier thresholds)
+    // Check if both MFE ratchet AND time-based trailing are enabled → combined mode
     const useMFERatchet = trade.signal?.mfeRatchet || this.mfeRatchetConfig?.enabled;
+    const useTimeBased = trade.signal?.timeBasedTrailing ||
+                         trade.timeBasedTrailing ||
+                         this.timeBasedTrailingConfig?.enabled;
 
+    if (useMFERatchet && useTimeBased) {
+      const defaultTiers = [
+        { minMFE: 100, lockPct: 0.60, label: 'lock 60%' },
+        { minMFE: 60,  lockPct: 0.50, label: 'lock 50%' },
+        { minMFE: 40,  lockPct: 0.40, label: 'lock 40%' },
+        { minMFE: 20,  lockPct: 0.25, label: 'lock 25%' },
+      ];
+      const tradeConfig = trade.signal?.mfeRatchetConfig || {};
+      const ratchetTiers = tradeConfig.tiers || this.mfeRatchetConfig?.tiers || defaultTiers;
+
+      const tbConfig = trade.signal?.timeBasedConfig || trade.timeBasedConfig || {};
+      const tbRules = tbConfig.rules || this.timeBasedTrailingConfig?.rules || [];
+
+      return {
+        ...baseTrailing,
+        mode: 'combined',
+        // Time-based state
+        rules: tbRules,
+        activeRuleIndex: -1,
+        currentTrailDistance: null,
+        lastAction: null,
+        // MFE ratchet state
+        tiers: ratchetTiers,
+        ratchetLastAction: null,
+      };
+    }
+
+    // Check if MFE ratchet mode is enabled (locks % of peak profit at tier thresholds)
     if (useMFERatchet) {
       const defaultTiers = [
         { minMFE: 100, lockPct: 0.60, label: 'lock 60%' },
@@ -1728,12 +1902,7 @@ export class TradeSimulator {
       };
     }
 
-    // Check if time-based mode is enabled (highest priority - most sophisticated)
-    // This mode uses progressive rules based on bars held + profit level
-    const useTimeBased = trade.signal?.timeBasedTrailing ||
-                         trade.timeBasedTrailing ||
-                         this.timeBasedTrailingConfig?.enabled;
-
+    // Check if time-based mode is enabled (progressive rules based on bars held + profit level)
     if (useTimeBased) {
       // Merge trade-specific config with defaults
       const tradeConfig = trade.signal?.timeBasedConfig || trade.timeBasedConfig || {};

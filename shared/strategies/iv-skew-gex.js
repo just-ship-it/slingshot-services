@@ -43,8 +43,8 @@ export class IVSkewGexStrategy extends BaseStrategy {
     this.params.levelProximity = params.levelProximity ?? 25;  // Points from level
 
     // Risk management
-    this.params.stopLossPoints = params.stopLossPoints ?? 15;
-    this.params.takeProfitPoints = params.takeProfitPoints ?? 30;
+    this.params.stopLossPoints = params.stopLossPoints ?? 80;
+    this.params.takeProfitPoints = params.takeProfitPoints ?? 120;
     this.params.maxHoldBars = params.maxHoldBars ?? 60;
 
     // Signal management

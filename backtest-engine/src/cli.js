@@ -364,12 +364,18 @@ export class CLI {
       })
 
       // MFE Ratchet Trailing Stop (lock % of profit at tier thresholds)
-      .group(['mfe-ratchet'], 'MFE Ratchet Trailing Stop:')
+      .group(['mfe-ratchet', 'mfe-ratchet-tiers'], 'MFE Ratchet Trailing Stop:')
 
       .option('mfe-ratchet', {
         type: 'boolean',
-        description: 'Enable MFE ratchet trailing stop (lock % of profit at tier thresholds: 20pt→25%, 40pt→40%, 60pt→50%, 100pt→60%)',
+        description: 'Enable MFE ratchet trailing stop (lock % of profit at tier thresholds)',
         default: false
+      })
+
+      .option('mfe-ratchet-tiers', {
+        type: 'string',
+        description: 'Custom MFE ratchet tiers as "minMFE:lockPct,..." e.g. "60:0.90,50:0.85" (highest minMFE first)',
+        default: ''
       })
 
       // Composite Multi-Phase Trailing Stop (ICT methodology)
@@ -1487,6 +1493,20 @@ export class CLI {
 
     // MFE ratchet trailing stop parameters
     if (args.mfeRatchet) strategyParams.mfeRatchet = true;
+
+    // Parse custom MFE ratchet tiers: "minMFE:lockPct,minMFE:lockPct,..."
+    if (args.mfeRatchetTiers) {
+      const tiers = args.mfeRatchetTiers.split(',').map(s => s.trim()).map(tierStr => {
+        const [minMFE, lockPct] = tierStr.split(':').map(Number);
+        return { minMFE, lockPct, label: `lock ${Math.round(lockPct * 100)}%` };
+      }).filter(t => !isNaN(t.minMFE) && !isNaN(t.lockPct));
+      // Sort highest minMFE first (ratchet evaluates highest-first)
+      tiers.sort((a, b) => b.minMFE - a.minMFE);
+      if (tiers.length > 0) {
+        strategyParams.mfeRatchet = true;
+        strategyParams.mfeRatchetTiers = tiers;
+      }
+    }
 
     // Time-based trailing stop parameters (progressive profit protection)
     if (args.timeBasedTrailing !== undefined) strategyParams.timeBasedTrailing = args.timeBasedTrailing;

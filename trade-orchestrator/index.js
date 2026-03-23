@@ -2791,6 +2791,8 @@ async function updatePositionFromFill(fillMessage) {
         side: existing.side,
         accountId: existing.accountId,
         strategy: existing.strategy,
+        stopOrderId: existing.stopLossOrder?.orderId || null,
+        orderStrategyId: existing.signalContext?.orderStrategyId || null,
         timestamp: new Date().toISOString(),
         source: 'order_fill_update'
       });
@@ -2970,6 +2972,8 @@ async function updatePositionFromFill(fillMessage) {
       side: newPosition.side,
       accountId: newPosition.accountId,
       strategy: newPosition.strategy,
+      stopOrderId: newPosition.stopLossOrder?.orderId || null,
+      orderStrategyId: newPosition.signalContext?.orderStrategyId || null,
       timestamp: new Date().toISOString(),
       source: 'order_fill'
     });
@@ -3018,6 +3022,26 @@ async function updatePositionFromFill(fillMessage) {
 
     // Link bracket orders to the new position
     await linkBracketOrdersToPosition(newPosition, signalContext, fillMessage.orderId);
+
+    // After bracket linking, publish updated position with stop order ID if now available
+    if (newPosition.stopLossOrder?.orderId) {
+      await messageBus.publish(CHANNELS.POSITION_UPDATE, {
+        symbol: newPosition.symbol,
+        netPos: newPosition.netPos,
+        netPrice: newPosition.netPrice,
+        entryPrice: newPosition.entryPrice,
+        currentPrice: newPosition.currentPrice,
+        unrealizedPnL: newPosition.unrealizedPnL,
+        side: newPosition.side,
+        accountId: newPosition.accountId,
+        strategy: newPosition.strategy,
+        stopOrderId: newPosition.stopLossOrder.orderId,
+        orderStrategyId: newPosition.signalContext?.orderStrategyId || null,
+        timestamp: new Date().toISOString(),
+        source: 'bracket_linked'
+      });
+      logger.info(`📡 Broadcasted stop order ID ${newPosition.stopLossOrder.orderId} for ${symbol} after bracket linking`);
+    }
   }
 
   // Update statistics

@@ -241,10 +241,13 @@ CLI tool for historical strategy analysis. Located in `/backtest-engine/`.
 cd backtest-engine
 node index.js --ticker NQ --strategy iv-skew-gex --timeframe 1m --raw-contracts \
   --start 2025-01-13 --end 2026-01-23 \
-  --target-points 70 --stop-loss-points 70 --max-hold-bars 60 \
-  --time-based-trailing --tb-rule-1 "20,35,trail:20" --tb-rule-2 "35,50,trail:10" \
+  --target-points 120 --stop-loss-points 80 --max-hold-bars 60 \
+  --time-based-trailing --tb-rule-1 "15,50,breakeven" --tb-rule-2 "40,50,trail:10" \
   --iv-resolution 1m
 ```
+Gold standard results (v2, 2026-03-22): 385 trades, $418K PnL, 72% WR, PF 7.65, Sharpe 22.7, Max DD 2.1%.
+TB trailing rules: Rule 1 moves to breakeven after 15 bars if MFE >= 50pts. Rule 2 trails 10pts behind peak after 40 bars if MFE >= 50pts.
+
 **IMPORTANT**: Must use `--timeframe 1m --raw-contracts` — without `--raw-contracts`, continuous data breaks GEX proximity calculations and produces invalid results.
 
 **Short-DTE-IV** (15m timeframe, production params from default.json):

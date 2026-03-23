@@ -734,6 +734,25 @@ class MultiStrategyEngine {
       this.handlePositionClosed(message);
       return;
     }
+
+    // If we already have a position for this strategy, update stop order ID if provided
+    if (message.stopOrderId || message.orderStrategyId) {
+      const strategy = message.strategy;
+      for (const [product, state] of this.products) {
+        if (state.inPosition && state.currentPosition?.strategy === strategy) {
+          if (message.stopOrderId && !state.currentPosition.stopOrderId) {
+            state.currentPosition.stopOrderId = message.stopOrderId;
+            logger.info(`Updated stopOrderId for ${product}: ${message.stopOrderId}`);
+          }
+          if (message.orderStrategyId && !state.currentPosition.orderStrategyId) {
+            state.currentPosition.orderStrategyId = message.orderStrategyId;
+            logger.info(`Updated orderStrategyId for ${product}: ${message.orderStrategyId}`);
+          }
+          return;
+        }
+      }
+    }
+
     if (message.netPos !== 0) {
       this.handlePositionOpened(message);
     }
