@@ -93,6 +93,7 @@ class ProductState {
 
     // Cached market data from data service
     this.gexLevels = null;
+    this.gexLevelsReceivedAt = 0; // Epoch ms — tracks when GEX data last arrived via Redis
     this.ltLevels = null;
     this.ivData = null;
 
@@ -285,6 +286,7 @@ class MultiStrategyEngine {
       const state = this.products.get(product);
       if (state) {
         state.gexLevels = message;
+        state.gexLevelsReceivedAt = Date.now();
         logger.debug(`GEX levels updated for ${product}`);
         // Re-check data readiness for strategies waiting on GEX
         this.recheckDataReadiness(state);
@@ -647,6 +649,28 @@ class MultiStrategyEngine {
     if (!runner.dataReady && !this.checkStrategyDataReady(runner, state)) {
       logger.debug(`${runner.name} (${state.product}): data not ready, skipping evaluation`);
       return;
+    }
+
+    // Gate iv-skew-gex on fresh GEX data during RTH.
+    // Pre-market GEX is calculated with stale QQQ quotes (previous close);
+    // require a GEX update received AFTER today's 09:30 ET before allowing entry.
+    if (runner.name === 'iv-skew-gex') {
+      const now = new Date();
+      const et = new Date(now.toLocaleString('en-US', { timeZone: 'America/New_York' }));
+      const h = et.getHours();
+      const m = et.getMinutes();
+      const isRTH = (h > 9 || (h === 9 && m >= 30)) && h < 16;
+
+      if (isRTH) {
+        const rthOpen = new Date(et);
+        rthOpen.setHours(9, 30, 0, 0);
+        const rthOpenMs = rthOpen.getTime();
+
+        if (state.gexLevelsReceivedAt < rthOpenMs) {
+          logger.info(`${runner.name} (${state.product}): waiting for fresh RTH GEX data (last update: ${state.gexLevelsReceivedAt ? new Date(state.gexLevelsReceivedAt).toISOString() : 'never'})`);
+          return;
+        }
+      }
     }
 
     // Get GEX levels from cached data (for strategies that need them)

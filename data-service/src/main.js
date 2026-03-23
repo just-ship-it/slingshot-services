@@ -139,6 +139,7 @@ class DataService {
 
       // Set up GEX refresh schedules
       this.scheduleGexRefresh();
+      this.scheduleRTHOpenRefresh();
 
       // Publish cached GEX levels to Redis so signal generators pick them up immediately
       for (const [product, calculator] of this.gexCalculators) {
@@ -489,6 +490,69 @@ class DataService {
         logger.error('Error in GEX refresh schedule:', error);
       }
     }, 60000);
+  }
+
+  /**
+   * Schedule forced GEX + IV/exposure refresh shortly after RTH open (09:30 ET).
+   * Pre-market GEX/IV uses stale QQQ quotes (previous close); this ensures
+   * fresh calculations run once the options chain is actively quoting.
+   */
+  scheduleRTHOpenRefresh() {
+    let lastRTHRefreshDate = null;
+
+    setInterval(async () => {
+      try {
+        const now = new Date();
+        const et = new Date(now.toLocaleString('en-US', { timeZone: 'America/New_York' }));
+
+        const day = et.getDay();
+        if (day === 0 || day === 6) return; // Skip weekends
+
+        const hour = et.getHours();
+        const minute = et.getMinutes();
+        const second = et.getSeconds();
+        const timeInSeconds = hour * 3600 + minute * 60 + second;
+
+        // Target window: 09:30:30 to 09:31:30 ET (gives options chain ~30s to start quoting)
+        const windowStart = 9 * 3600 + 30 * 60 + 30;  // 09:30:30
+        const windowEnd   = 9 * 3600 + 31 * 60 + 30;  // 09:31:30
+        if (timeInSeconds < windowStart || timeInSeconds >= windowEnd) return;
+
+        // Only fire once per calendar date
+        const todayStr = et.toDateString();
+        if (lastRTHRefreshDate === todayStr) return;
+        lastRTHRefreshDate = todayStr;
+
+        logger.info('RTH open detected — forcing GEX + IV/exposure refresh with live quotes...');
+
+        // Force GEX refresh for all products
+        for (const [product, calculator] of this.gexCalculators) {
+          try {
+            const levels = await calculator.calculateLevels(true);
+            if (levels) {
+              await messageBus.publish(CHANNELS.GEX_LEVELS, { ...levels, product });
+              logger.info(`RTH refresh: GEX for ${product} published`);
+            }
+          } catch (err) {
+            logger.error(`RTH refresh: GEX for ${product} failed:`, err.message);
+          }
+        }
+
+        // Force Tradier exposure + IV skew refresh (clears chain cache, re-fetches live data)
+        if (this.tradierExposureService) {
+          try {
+            await this.tradierExposureService.forceRefresh();
+            logger.info('RTH refresh: Tradier exposure + IV skew completed');
+          } catch (err) {
+            logger.error('RTH refresh: Tradier exposure failed:', err.message);
+          }
+        }
+
+        logger.info('RTH open refresh cycle complete');
+      } catch (error) {
+        logger.error('Error in RTH open refresh:', error);
+      }
+    }, 30000); // Check every 30 seconds
   }
 
   // === Public API methods (called by HTTP routes) ===
