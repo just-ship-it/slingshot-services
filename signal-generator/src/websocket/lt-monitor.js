@@ -352,10 +352,7 @@ class LTMonitor extends EventEmitter {
         const latest = studyData[studyData.length - 1];
         const values = latest.v;
 
-        if (values && values.length >= 20) {
-          // DIAGNOSTIC: dump raw values to verify index mapping (temporary)
-          logger.info(`📍 LT raw values (len=${values.length}): ${values.map((v, i) => `[${i}]=${v === 1e+100 ? 'null' : typeof v === 'number' ? v.toFixed(2) : v}`).join(', ')}`);
-
+        if (values && values.length >= 18) {
           const timestamp = values[0];
 
           // Skip if same timestamp as last update
@@ -363,9 +360,9 @@ class LTMonitor extends EventEmitter {
             return;
           }
 
-          // Parse LT levels - alternating value/counter pattern at odd indices
-          // TV plots: Granular[1], LT[3], L1[5], L2[7], L3[9], L4[11], L5[13], L6[15], L7[17], Ref1[19], Ref2[21]
-          // We map L1-L7 (Fib 8,13,34,55,144,377,610) as L0-L6 + L7
+          // Parse LT levels - alternating value/counter at odd indices [5..17]
+          // Maps to Fib 8,13,34,55,144,377,610 (verified via velocity analysis)
+          // [19],[21] are disabled Reference Lines (always null)
           const levels = {
             timestamp: timestamp,
             candleTime: new Date(timestamp * 1000).toISOString(),
@@ -375,8 +372,7 @@ class LTMonitor extends EventEmitter {
             L3: values[11] !== 1e+100 ? values[11] : null,
             L4: values[13] !== 1e+100 ? values[13] : null,
             L5: values[15] !== 1e+100 ? values[15] : null,
-            L6: values[17] !== 1e+100 ? values[17] : null,
-            L7: values[19] !== 1e+100 ? values[19] : null
+            L6: values[17] !== 1e+100 ? values[17] : null
           };
 
           this.currentLevels = levels;
@@ -519,8 +515,6 @@ class LTMonitor extends EventEmitter {
 
       if (metainfo) {
         logger.info('📋 Successfully fetched indicator metadata');
-        // DIAGNOSTIC: log plot count and input names
-        logger.info(`📋 Plots: ${metainfo.plots?.length || 0}, Inputs: ${(metainfo.inputs || []).map(i => `${i.id}=${i.defval}`).join(', ')}`);
         return metainfo;
       }
 
@@ -567,9 +561,7 @@ class LTMonitor extends EventEmitter {
     });
 
     logger.info('📋 Prepared indicator metadata successfully');
-    // DIAGNOSTIC: log full payload to verify fib inputs
-    logger.info('📋 Study payload keys:', Object.keys(studyPayload).join(', '));
-    logger.info('📋 Study payload:', JSON.stringify(studyPayload));
+    logger.debug('Prepared payload:', JSON.stringify(studyPayload, null, 2));
     return studyPayload;
   }
 }
