@@ -119,6 +119,73 @@ export class AIStrategyEngine {
     this.pendingOrder = null;
   }
 
+  // ── Redis State Persistence ─────────────────────────────────
+
+  async _saveState() {
+    try {
+      const state = {
+        version: '1.0',
+        observationMode: this.observationMode,
+        tradingDay: this.currentTradingDay,
+        activeBias: this.activeBias,
+        biasFormed: this.biasFormed,
+        totalEntriesToday: this.totalEntriesToday,
+        totalLossesToday: this.totalLossesToday,
+        sessionEntries: this.sessionEntries,
+        llmCallsToday: this.llmCallsToday,
+        biasHistory: this.biasHistory,
+        entriesMade: this.entriesMade,
+        outcomesReceived: this.outcomesReceived,
+        lastEntryEvaluation: this.lastEntryEvaluation,
+        lastReassessmentTime: this.lastReassessmentTime,
+        eodCloseSent: this.eodCloseSent,
+        timestamp: new Date().toISOString(),
+      };
+      await messageBus.publisher.set('ai-trader:state', JSON.stringify(state));
+    } catch (error) {
+      logger.error('Failed to save state to Redis:', error);
+    }
+  }
+
+  async _restoreState() {
+    try {
+      const data = await messageBus.publisher.get('ai-trader:state');
+      if (!data) return false;
+
+      const state = JSON.parse(data);
+
+      // Always restore observation mode regardless of trading day
+      this.observationMode = state.observationMode ?? false;
+
+      // Only restore day state if same trading day
+      const currentDay = this._getCurrentTradingDay();
+      if (state.tradingDay !== currentDay) {
+        logger.info(`Restored observation mode (${this.observationMode}), skipping day state (saved: ${state.tradingDay}, current: ${currentDay})`);
+        return true;
+      }
+
+      this.currentTradingDay = state.tradingDay;
+      this.activeBias = state.activeBias;
+      this.biasFormed = state.biasFormed ?? false;
+      this.totalEntriesToday = state.totalEntriesToday ?? 0;
+      this.totalLossesToday = state.totalLossesToday ?? 0;
+      this.sessionEntries = state.sessionEntries ?? 0;
+      this.llmCallsToday = state.llmCallsToday ?? 0;
+      this.biasHistory = state.biasHistory ?? [];
+      this.entriesMade = state.entriesMade ?? [];
+      this.outcomesReceived = state.outcomesReceived ?? [];
+      this.lastEntryEvaluation = state.lastEntryEvaluation ?? null;
+      this.lastReassessmentTime = state.lastReassessmentTime ?? 0;
+      this.eodCloseSent = state.eodCloseSent ?? false;
+
+      logger.info(`Restored AI trader state from Redis (day: ${state.tradingDay}, bias: ${this.activeBias?.bias || 'none'}, entries: ${this.totalEntriesToday}, observation: ${this.observationMode})`);
+      return true;
+    } catch (error) {
+      logger.error('Failed to restore state from Redis:', error);
+      return false;
+    }
+  }
+
   /**
    * Determine the current trading day string (YYYY-MM-DD) in ET.
    * Trading day rolls at 18:00 ET (overnight session start).
@@ -262,6 +329,7 @@ export class AIStrategyEngine {
     }
 
     logger.info('Ready for next entry');
+    await this._saveState();
   }
 
   // ── Order Event Handling ─────────────────────────────────
@@ -715,6 +783,8 @@ export class AIStrategyEngine {
         logger.info(`  Level: ${kl.price} (${kl.type}) -> ${kl.action}`);
       }
     }
+
+    await this._saveState();
   }
 
   // ── Bias Reassessment ─────────────────────────────────────
@@ -783,6 +853,8 @@ export class AIStrategyEngine {
       conviction: this.activeBias.conviction,
       source: 'reassessment',
     });
+
+    await this._saveState();
   }
 
   // ── Entry Evaluation ──────────────────────────────────────
@@ -969,6 +1041,8 @@ export class AIStrategyEngine {
       };
       logger.info(`Tracking pending order: ${decision.side} @ ${decision.entry_price}`);
     }
+
+    await this._saveState();
   }
 
   // ── Signal Publishing ─────────────────────────────────────
@@ -997,6 +1071,9 @@ export class AIStrategyEngine {
    */
   async run() {
     logger.info('AI Strategy Engine run loop started');
+
+    // Restore persisted state from Redis (observation mode, bias, counters)
+    await this._restoreState();
 
     while (true) {
       try {

@@ -253,7 +253,7 @@ app.post('/ai/reassess-bias', async (req, res) => {
   }
 });
 
-app.post('/ai/observation-mode', (req, res) => {
+app.post('/ai/observation-mode', async (req, res) => {
   try {
     if (!service.aiEngine) {
       return res.status(404).json({ error: 'AI Strategy Engine not available' });
@@ -263,7 +263,8 @@ app.post('/ai/observation-mode', (req, res) => {
       return res.status(400).json({ error: 'Missing required field: enabled (boolean)' });
     }
     service.aiEngine.observationMode = enabled;
-    logger.info(`AI Trader observation mode ${enabled ? 'ENABLED' : 'DISABLED'}`);
+    await service.aiEngine._saveState();
+    logger.info(`AI Trader observation mode ${enabled ? 'ENABLED' : 'DISABLED'} (persisted to Redis)`);
     res.json({
       success: true,
       observationMode: enabled,
