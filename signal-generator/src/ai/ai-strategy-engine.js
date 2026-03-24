@@ -248,14 +248,14 @@ export class AIStrategyEngine {
   _subscribeToPositionEvents() {
     messageBus.subscribe(CHANNELS.POSITION_UPDATE, (message) => {
       if (message.netPos === 0 || message.source === 'position_closed') {
-        this._handlePositionClosed(message);
+        this._handlePositionClosed(message).catch(e => logger.error('Error handling position closed:', e));
       } else if (message.netPos !== 0) {
         this._handlePositionOpened(message);
       }
     });
 
     messageBus.subscribe(CHANNELS.POSITION_CLOSED, (message) => {
-      this._handlePositionClosed(message);
+      this._handlePositionClosed(message).catch(e => logger.error('Error handling position closed:', e));
     });
 
     logger.info('Subscribed to position events');
@@ -289,7 +289,7 @@ export class AIStrategyEngine {
     }
   }
 
-  _handlePositionClosed(message) {
+  async _handlePositionClosed(message) {
     if (message.strategy !== this.strategyConstant && this.currentPosition?.strategy !== this.strategyConstant) {
       return;
     }
