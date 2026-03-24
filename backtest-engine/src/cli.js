@@ -1512,7 +1512,7 @@ export class CLI {
     if (args.timeBasedTrailing !== undefined) strategyParams.timeBasedTrailing = args.timeBasedTrailing;
 
     // Parse time-based trailing rules from CLI format: "bars,mfe,action"
-    // action can be "breakeven" or "trail:N" where N is the trailing distance
+    // action can be "breakeven", "trail:N", or "close_below" (close if MFE < threshold)
     const parseTimeBasedRule = (ruleStr) => {
       if (!ruleStr) return null;
       const parts = ruleStr.split(',').map(s => s.trim());
@@ -1527,6 +1527,9 @@ export class CLI {
         rule.action = 'breakeven';
       } else if (parts[2].startsWith('trail:')) {
         rule.trailDistance = parseFloat(parts[2].replace('trail:', ''));
+      } else if (parts[2] === 'close_below') {
+        // Inverse rule: close the trade if MFE is BELOW ifMFE after afterBars bars
+        rule.action = 'close_below';
       } else {
         return null;
       }

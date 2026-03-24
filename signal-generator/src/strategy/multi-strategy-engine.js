@@ -1090,7 +1090,10 @@ class MultiStrategyEngine {
   updateTimeBasedTrailing(state, candle) {
     if (!state.inPosition || !state.timeBasedTrailingState) return;
 
+    // Don't send a new modify while a previous one is still in-flight
     const tbState = state.timeBasedTrailingState;
+    if (tbState._modifyInFlight) return;
+
     const isLong = state.currentPosition.side === 'long' || state.currentPosition.side === 'buy';
 
     tbState.barsInTrade++;
@@ -1130,10 +1133,25 @@ class MultiStrategyEngine {
           (isLong ? newStopPrice > tbState.currentStopPrice : newStopPrice < tbState.currentStopPrice);
 
         if (shouldUpdate) {
+          // Check if the new stop would be invalid (on the wrong side of market).
+          // Mirrors backtest engine logic: broker would reject a stop on the wrong
+          // side of market, so close the position at market instead.
+          const currentPrice = candle.close;
+          const stopInvalid = isLong
+            ? newStopPrice <= currentPrice   // long buy-stop can't be at/below market
+            : newStopPrice >= currentPrice;  // short buy-stop can't be at/above market
+          if (stopInvalid) {
+            logger.info(`TB-Trail: ${state.product} stop ${newStopPrice.toFixed(2)} would be invalid (price=${currentPrice.toFixed(2)}, ${isLong ? 'long' : 'short'}) — closing at market`);
+            this.sendTrailingStopMarketClose(state, newStopPrice, rule, i);
+            return;
+          }
+
           tbState.rulesTriggered.push(i);
           tbState.activeRuleIndex = i;
           tbState.lastModificationBar = tbState.barsInTrade;
+          tbState.currentStopPrice = newStopPrice;
           this.sendTimeBasedTrailingModification(state, newStopPrice, rule, i);
+          return; // One modification per candle — wait for it to complete
         }
       }
     }
@@ -1148,6 +1166,17 @@ class MultiStrategyEngine {
         const shouldUpdate = tbState.currentStopPrice === null ||
           (isLong ? continuousStop > tbState.currentStopPrice : continuousStop < tbState.currentStopPrice);
         if (shouldUpdate) {
+          // Check if the continuous trail stop would be invalid
+          const currentPrice = candle.close;
+          const stopInvalid = isLong
+            ? continuousStop <= currentPrice
+            : continuousStop >= currentPrice;
+          if (stopInvalid) {
+            logger.info(`TB-Trail: ${state.product} continuous stop ${continuousStop.toFixed(2)} would be invalid (price=${currentPrice.toFixed(2)}, ${isLong ? 'long' : 'short'}) — closing at market`);
+            this.sendTrailingStopMarketClose(state, continuousStop, activeRule, tbState.activeRuleIndex);
+            return;
+          }
+
           tbState.currentStopPrice = continuousStop;
           this.sendTimeBasedTrailingModification(state, continuousStop, activeRule, tbState.activeRuleIndex);
         }
@@ -1180,9 +1209,36 @@ class MultiStrategyEngine {
       timestamp: new Date().toISOString()
     };
 
-    await messageBus.publish(CHANNELS.TRADE_SIGNAL, signal);
-    tbState.currentStopPrice = newStopPrice;
-    logger.info(`TB-Trail: ${state.product} stop -> ${newStopPrice.toFixed(2)} (Rule ${ruleIndex + 1}: ${actionStr})`);
+    // Prevent duplicate sends: mark in-flight until publish completes
+    tbState._modifyInFlight = true;
+    try {
+      await messageBus.publish(CHANNELS.TRADE_SIGNAL, signal);
+      tbState.currentStopPrice = newStopPrice;
+      logger.info(`TB-Trail: ${state.product} stop -> ${newStopPrice.toFixed(2)} (Rule ${ruleIndex + 1}: ${actionStr})`);
+    } finally {
+      tbState._modifyInFlight = false;
+    }
+  }
+
+  /**
+   * Close position at market when a trailing stop would be invalid (on the wrong side of market).
+   * Mirrors backtest engine behavior (trade-simulator.js lines 753-764).
+   */
+  async sendTrailingStopMarketClose(state, invalidStopPrice, rule, ruleIndex) {
+    if (!state.currentPosition) return;
+    const tbState = state.timeBasedTrailingState;
+    const actionStr = rule.action === 'breakeven' ? 'breakeven' : `trail:${rule.trailDistance}`;
+
+    const closeSignal = {
+      webhook_type: 'trade_signal',
+      action: 'position_closed',
+      symbol: state.currentPosition?.symbol || state.tradingSymbol,
+      side: state.currentPosition?.side,
+      strategy: state.positionStrategy,
+      reason: `trailing_stop_invalid (Rule ${ruleIndex + 1}: ${actionStr}, stop=${invalidStopPrice.toFixed(2)} crossed market)`,
+      timestamp: new Date().toISOString()
+    };
+    await this.publishSignal(closeSignal);
   }
 
   // === Position Sync ===

@@ -498,6 +498,16 @@ export class TradeSimulator {
         if (trade.trailingStop) {
           const prevStop = trade.trailingStop.currentStop;
           this.updateTrailingStop(trade, bar);
+
+          // Check for forced exit (e.g., close_below rule triggered)
+          if (trade.trailingStop._forceExit) {
+            const reason = trade.trailingStop._forceExitReason || 'mfe_timeout';
+            if (debug) {
+              console.log(`    ⏱️  [TRADE ${trade.id}] ${reason.toUpperCase()} — forced exit at ${bar.close.toFixed(2)}`);
+            }
+            return this.exitTrade(trade, bar, reason, bar.close);
+          }
+
           const newStop = trade.trailingStop.currentStop;
 
           // If the trailing stop just moved to a level that's already been breached
@@ -725,6 +735,16 @@ export class TradeSimulator {
       if (trade.trailingStop) {
         const oldStop = trade.trailingStop.currentStop;
         this.updateTrailingStop(trade, candle);
+
+        // Check for forced exit (e.g., close_below rule triggered)
+        if (trade.trailingStop._forceExit) {
+          const reason = trade.trailingStop._forceExitReason || 'mfe_timeout';
+          if (debug) {
+            console.log(`    ⏱️  [TRADE ${trade.id}] ${reason.toUpperCase()} — forced exit at ${candle.close.toFixed(2)}`);
+          }
+          return this.exitTrade(trade, candle, reason, candle.close);
+        }
+
         if (debug && trade.trailingStop.currentStop !== oldStop) {
           const waterMark = this.isBuyPosition(trade) ? trade.trailingStop.highWaterMark : trade.trailingStop.lowWaterMark;
           console.log(`    📈 [TRADE ${trade.id}] Trailing stop updated: ${oldStop} → ${trade.trailingStop.currentStop} | Water mark: ${waterMark}`);
@@ -1114,10 +1134,23 @@ export class TradeSimulator {
     const rules = trailing.rules || [];
     const activeRuleIndex = trailing.activeRuleIndex ?? -1;
 
+    // Check close_below rules first (inverse rules: close if MFE < threshold)
+    for (const rule of rules) {
+      if (rule.action === 'close_below' && barsHeld >= rule.afterBars && currentMFE < rule.ifMFE) {
+        if (debug) {
+          console.log(`    ⏱️  [COMBINED-TB] ${isBuy ? 'Long' : 'Short'} ${trade.id}: CLOSE_BELOW triggered (bars=${barsHeld}>=${rule.afterBars}, MFE=${currentMFE.toFixed(1)}<${rule.ifMFE})`);
+        }
+        trailing._forceExit = true;
+        trailing._forceExitReason = 'mfe_timeout';
+        return;
+      }
+    }
+
     let newActiveRule = null;
     let newActiveIndex = -1;
     for (let i = 0; i < rules.length; i++) {
       const rule = rules[i];
+      if (rule.action === 'close_below') continue; // Skip inverse rules
       if (barsHeld >= rule.afterBars && currentMFE >= rule.ifMFE) {
         newActiveRule = rule;
         newActiveIndex = i;
@@ -1227,12 +1260,25 @@ export class TradeSimulator {
       const currentMFE = trailing.highWaterMark - entryPrice;
       const barsHeld = trade.barsSinceEntry;
 
+      // Check close_below rules first (inverse rules: close if MFE < threshold)
+      for (const rule of rules) {
+        if (rule.action === 'close_below' && barsHeld >= rule.afterBars && currentMFE < rule.ifMFE) {
+          if (debug) {
+            console.log(`    ⏱️  [TIME-BASED] Long ${trade.id}: CLOSE_BELOW triggered (bars=${barsHeld}>=${rule.afterBars}, MFE=${currentMFE.toFixed(1)}<${rule.ifMFE})`);
+          }
+          trailing._forceExit = true;
+          trailing._forceExitReason = 'mfe_timeout';
+          return;
+        }
+      }
+
       // Find the most advanced rule that should be active
       let newActiveRule = null;
       let newActiveIndex = -1;
 
       for (let i = 0; i < rules.length; i++) {
         const rule = rules[i];
+        if (rule.action === 'close_below') continue; // Skip inverse rules
         // Rule applies if we've held long enough AND achieved required MFE
         if (barsHeld >= rule.afterBars && currentMFE >= rule.ifMFE) {
           newActiveRule = rule;
@@ -1289,12 +1335,25 @@ export class TradeSimulator {
       const currentMFE = entryPrice - trailing.lowWaterMark;
       const barsHeld = trade.barsSinceEntry;
 
+      // Check close_below rules first (inverse rules: close if MFE < threshold)
+      for (const rule of rules) {
+        if (rule.action === 'close_below' && barsHeld >= rule.afterBars && currentMFE < rule.ifMFE) {
+          if (debug) {
+            console.log(`    ⏱️  [TIME-BASED] Short ${trade.id}: CLOSE_BELOW triggered (bars=${barsHeld}>=${rule.afterBars}, MFE=${currentMFE.toFixed(1)}<${rule.ifMFE})`);
+          }
+          trailing._forceExit = true;
+          trailing._forceExitReason = 'mfe_timeout';
+          return;
+        }
+      }
+
       // Find the most advanced rule that should be active
       let newActiveRule = null;
       let newActiveIndex = -1;
 
       for (let i = 0; i < rules.length; i++) {
         const rule = rules[i];
+        if (rule.action === 'close_below') continue; // Skip inverse rules
         if (barsHeld >= rule.afterBars && currentMFE >= rule.ifMFE) {
           newActiveRule = rule;
           newActiveIndex = i;
