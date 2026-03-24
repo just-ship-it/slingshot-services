@@ -2139,8 +2139,8 @@ app.get('/api/briefing/status', dashboardAuth, async (req, res) => {
     const response = await axios.get(`${MACRO_BRIEFING_URL}/briefing/status`, { timeout: 5000 });
     res.json(response.data);
   } catch (error) {
-    logger.error('Failed to fetch briefing status:', error.message);
-    res.status(500).json({ error: 'Failed to fetch briefing status', message: error.message });
+    // Service is down — not generating
+    res.json({ generating: false, serviceDown: true });
   }
 });
 
@@ -2149,10 +2149,18 @@ app.get('/api/briefing/latest', dashboardAuth, async (req, res) => {
     const response = await axios.get(`${MACRO_BRIEFING_URL}/briefing/latest`, { timeout: 5000 });
     res.json(response.data);
   } catch (error) {
+    // Fallback: read from Redis if macro-briefing service is down
+    try {
+      const data = await messageBus.publisher.get('briefing:latest');
+      if (data) {
+        return res.json(JSON.parse(data));
+      }
+    } catch (redisError) {
+      logger.error('Failed to fetch briefing from Redis fallback:', redisError.message);
+    }
     if (error.response?.status === 404) {
       return res.status(404).json(error.response.data);
     }
-    logger.error('Failed to fetch latest briefing:', error.message);
     res.status(500).json({ error: 'Failed to fetch latest briefing', message: error.message });
   }
 });
@@ -2162,10 +2170,21 @@ app.get('/api/briefing/latest/markdown', dashboardAuth, async (req, res) => {
     const response = await axios.get(`${MACRO_BRIEFING_URL}/briefing/latest/markdown`, { timeout: 5000 });
     res.type('text/markdown').send(response.data);
   } catch (error) {
+    // Fallback: read from Redis if macro-briefing service is down
+    try {
+      const data = await messageBus.publisher.get('briefing:latest');
+      if (data) {
+        const briefing = JSON.parse(data);
+        if (briefing.fullReport) {
+          return res.type('text/markdown').send(briefing.fullReport);
+        }
+      }
+    } catch (redisError) {
+      logger.error('Failed to fetch briefing markdown from Redis fallback:', redisError.message);
+    }
     if (error.response?.status === 404) {
       return res.status(404).json(error.response.data);
     }
-    logger.error('Failed to fetch briefing markdown:', error.message);
     res.status(500).json({ error: 'Failed to fetch briefing markdown', message: error.message });
   }
 });
