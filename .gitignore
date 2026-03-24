@@ -58,7 +58,7 @@ prod-logs/
 .temp/
 
 # Claude IDE settings
-.claude/settings.local.json
+.claude/
 
 # Deploy state
 .last-deploy
