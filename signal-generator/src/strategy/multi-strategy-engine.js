@@ -531,7 +531,7 @@ class MultiStrategyEngine {
       hour12: false
     });
     const [h, m] = estTime.split(':').map(Number);
-    if (h > 15 || (h === 15 && m >= 55)) {
+    if ((h === 15 && m >= 55) || (h === 16 && m === 0)) {
       logger.info(`EOD force close for ${state.product}: ${h}:${String(m).padStart(2, '0')} EST`);
       const closeSignal = {
         webhook_type: 'trade_signal',

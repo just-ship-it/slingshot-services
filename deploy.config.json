@@ -33,6 +33,10 @@
     }
   },
   "shared_directories": ["shared"],
+  "shared_subdirectory_map": {
+    "shared/strategies": ["signal-generator", "ai-trader"],
+    "shared/indicators": ["signal-generator", "ai-trader"]
+  },
   "ignore_patterns": [
     "backtest-engine/",
     "*.md",

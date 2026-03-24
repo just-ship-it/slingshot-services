@@ -385,3 +385,64 @@ redis-cli pubsub numsub "trade.signal"  # Check subscriber count
 - **No trade signals**: Check GEX levels (`curl localhost:3019/gex/levels?product=NQ`), price streaming (`redis-cli subscribe "price.update"`), `STRATEGY_ENABLED=true`, session filter settings, data service health
 - **Service startup issues**: Use `./start-all.sh` which handles startup order
 - **Backtest data issues**: Verify CSV data exists in `backtest-engine/data/`, check date range, ensure ticker matches file naming
+
+### Production Logs (Sevalla MCP)
+
+The Sevalla MCP server provides direct access to production runtime logs from all services. Use it as the first step when diagnosing production issues.
+
+**MCP tools:** `mcp__sevalla__search` (discover API endpoints) and `mcp__sevalla__execute` (make API calls via `sevalla.request()`).
+
+**IMPORTANT:** The MCP base URL already includes `/v3`. All paths must omit it:
+```js
+// CORRECT
+sevalla.request({ method: "GET", path: `/applications/${appId}/runtime-logs` })
+// WRONG — doubles the prefix, returns 404
+sevalla.request({ method: "GET", path: `/v3/applications/${appId}/runtime-logs` })
+```
+
+**Pull runtime logs:**
+```js
+async () => {
+  const res = await sevalla.request({
+    method: "GET",
+    path: `/applications/${appId}/runtime-logs`,
+    query: { limit: 50 }
+  });
+  return res.body.map(l => ({
+    time: l.timestamp,
+    severity: l.severity,
+    msg: l.message.replace(/\u001b\[\d+m/g, '').substring(0, 200)
+  }));
+}
+```
+
+**Query parameters:**
+- `limit`: 1–5000 (default 1000)
+- `from` / `to`: ISO 8601 time range (default: last hour)
+- `filters`: JSON array, e.g. `[{"key":"severity","operator":"EQUALS","value":"ERROR"}]`
+
+**Service app IDs** are in `deploy.config.json`. Key mappings:
+| Service | App ID |
+|---------|--------|
+| tradovate-service | `70a68761-395c-4773-9bc0-7bdb9dcddc53` |
+| trade-orchestrator | `588e37da-cebf-4be1-892b-58e67569c813` |
+| monitoring-service | `62c3e8a4-bb68-440e-b3d5-6c0e889393e8` |
+| data-service | `af7aeee4-8712-4a62-994f-c9d09d70d15e` |
+| signal-generator | `1fe0898f-1f2c-4677-bea8-71012cbd2188` |
+| ai-trader | `081d3d7f-f464-4501-964e-34b30ff43a32` |
+| macro-briefing | `a287bf53-0e8f-44e5-a3ae-4bcf03a4637b` |
+
+**Auth:** Requires OAuth via `/mcp` command after each Claude Code restart.
+
+### Selective Deployment
+
+`deploy.sh` diffs changes since the last deploy, maps affected directories to Sevalla services, and only redeploys what changed. Config in `deploy.config.json`, last-deploy marker in `.last-deploy`.
+
+```bash
+./deploy.sh              # Auto-detect and deploy affected services
+./deploy.sh --dry-run    # Preview without deploying
+./deploy.sh --all        # Deploy everything
+./deploy.sh --status     # Show pending changes since last deploy
+```
+
+Requires `SEVALLA_API_KEY` env var. Changes to `shared/` trigger all services.

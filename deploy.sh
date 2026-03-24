@@ -135,6 +135,23 @@ print('\n'.join(c.get('shared_directories', [])))
 " 2>/dev/null
 }
 
+# Returns services mapped to a shared subdirectory, or empty if no specific mapping exists
+get_shared_subdir_services() {
+  local file="$1"
+  python3 -c "
+import json
+with open('$CONFIG_FILE') as f:
+    c = json.load(f)
+subdir_map = c.get('shared_subdirectory_map', {})
+file = '$file'
+# Check most specific (longest) paths first
+for subdir in sorted(subdir_map.keys(), key=len, reverse=True):
+    if file.startswith(subdir + '/') or file == subdir:
+        print('\n'.join(subdir_map[subdir]))
+        break
+" 2>/dev/null
+}
+
 get_all_services() {
   read_config "services"
 }
@@ -225,25 +242,41 @@ map_changes_to_services() {
   fi
 
   local affected_services=()
-  local shared_changed=false
+  local shared_all=false
   local shared_dirs
   shared_dirs=$(get_shared_dirs)
 
-  # Check if shared directories were modified
+  # Check shared directory changes — use subdirectory map when available
   while IFS= read -r file; do
     [[ -z "$file" ]] && continue
     is_ignored "$file" && continue
     while IFS= read -r sdir; do
       [[ -z "$sdir" ]] && continue
       if [[ "$file" == "$sdir/"* ]]; then
-        shared_changed=true
-        break 2
+        # Check if this file has a specific subdirectory mapping
+        local subdir_svcs
+        subdir_svcs=$(get_shared_subdir_services "$file")
+        if [[ -n "$subdir_svcs" ]]; then
+          # Add only the mapped services
+          while IFS= read -r mapped_svc; do
+            [[ -z "$mapped_svc" ]] && continue
+            local already=false
+            for a in "${affected_services[@]+"${affected_services[@]}"}"; do
+              [[ "$a" == "$mapped_svc" ]] && already=true && break
+            done
+            [[ "$already" == false ]] && affected_services+=("$mapped_svc")
+          done <<< "$subdir_svcs"
+        else
+          # No subdirectory mapping — shared root change affects all services
+          shared_all=true
+          break 2
+        fi
       fi
     done <<< "$shared_dirs"
   done <<< "$changed_files"
 
-  # If shared changed, all services are affected
-  if [[ "$shared_changed" == true ]]; then
+  # If a shared root-level file changed, all services are affected
+  if [[ "$shared_all" == true ]]; then
     get_all_services
     return
   fi
@@ -301,7 +334,25 @@ categorize_changes() {
     local shared_dirs
     shared_dirs=$(get_shared_dirs)
     while IFS= read -r sdir; do
-      [[ "$dir" == "$sdir" ]] && marker=" ${YELLOW}(affects ALL services)${NC}"
+      if [[ "$dir" == "$sdir" ]]; then
+        # Check if all changes in this dir have subdirectory mappings
+        local has_unmapped=false
+        while IFS= read -r file; do
+          [[ -z "$file" ]] && continue
+          [[ "$file" != "$dir/"* ]] && continue
+          local subdir_svcs
+          subdir_svcs=$(get_shared_subdir_services "$file")
+          if [[ -z "$subdir_svcs" ]]; then
+            has_unmapped=true
+            break
+          fi
+        done <<< "$changed_files"
+        if [[ "$has_unmapped" == true ]]; then
+          marker=" ${YELLOW}(affects ALL services)${NC}"
+        else
+          marker=" ${YELLOW}(subdirectory mapping)${NC}"
+        fi
+      fi
     done <<< "$shared_dirs"
     # Mark ignored dirs
     if is_ignored "$dir/"; then
