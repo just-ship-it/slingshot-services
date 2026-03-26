@@ -710,7 +710,14 @@ class MultiStrategyEngine {
 
     // Suppress signals when another strategy has an open position
     if (signal && state.inPosition) {
-      logger.debug(`Signal from ${runner.name} suppressed — ${state.product} in position (${state.positionStrategy})`);
+      logger.info(`Signal from ${runner.name} suppressed — ${state.product} in position (${state.positionStrategy})`);
+      messageBus.publish(CHANNELS.STRATEGY_ALERT, {
+        ruleName: 'signal-suppressed',
+        severity: 'info',
+        message: `${runner.strategyConstant} ${signal.side} @ ${signal.price} suppressed — position held by ${state.positionStrategy} (TP: ${signal.take_profit}, SL: ${signal.stop_loss})`,
+        signal: { strategy: runner.strategyConstant, symbol: state.tradingSymbol, side: signal.side, action: signal.action, price: signal.price, stop_loss: signal.stop_loss, take_profit: signal.take_profit },
+        timestamp: new Date().toISOString(),
+      });
       return;
     }
 
