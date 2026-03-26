@@ -1138,8 +1138,8 @@ class MultiStrategyEngine {
           // side of market, so close the position at market instead.
           const currentPrice = candle.close;
           const stopInvalid = isLong
-            ? newStopPrice <= currentPrice   // long buy-stop can't be at/below market
-            : newStopPrice >= currentPrice;  // short buy-stop can't be at/above market
+            ? newStopPrice >= currentPrice   // long sell-stop can't be at/above market (price gapped through)
+            : newStopPrice <= currentPrice;  // short buy-stop can't be at/below market (price gapped through)
           if (stopInvalid) {
             logger.info(`TB-Trail: ${state.product} stop ${newStopPrice.toFixed(2)} would be invalid (price=${currentPrice.toFixed(2)}, ${isLong ? 'long' : 'short'}) — closing at market`);
             this.sendTrailingStopMarketClose(state, newStopPrice, rule, i);
@@ -1169,8 +1169,8 @@ class MultiStrategyEngine {
           // Check if the continuous trail stop would be invalid
           const currentPrice = candle.close;
           const stopInvalid = isLong
-            ? continuousStop <= currentPrice
-            : continuousStop >= currentPrice;
+            ? continuousStop >= currentPrice
+            : continuousStop <= currentPrice;
           if (stopInvalid) {
             logger.info(`TB-Trail: ${state.product} continuous stop ${continuousStop.toFixed(2)} would be invalid (price=${currentPrice.toFixed(2)}, ${isLong ? 'long' : 'short'}) — closing at market`);
             this.sendTrailingStopMarketClose(state, continuousStop, activeRule, tbState.activeRuleIndex);
