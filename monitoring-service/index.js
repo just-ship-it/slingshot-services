@@ -2,7 +2,8 @@ import express from 'express';
 import cors from 'cors';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
-// File system imports removed - using Redis for persistence
+import { execFile } from 'child_process';
+import cron from 'node-cron';
 import axios from 'axios';
 import { messageBus, CHANNELS, createLogger, configManager, healthCheck } from '../shared/index.js';
 
@@ -1165,6 +1166,80 @@ app.delete('/api/alerts', dashboardAuth, async (req, res) => {
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
+});
+
+// P&L endpoints - reads from Redis (populated by scripts/sync-pnl.js)
+const PNL_NOT_FOUND = { error: 'No P&L data found. Run: node scripts/sync-pnl.js --live' };
+
+app.get('/api/pnl/trades', dashboardAuth, async (req, res) => {
+  try {
+    const raw = await messageBus.publisher.hGetAll('pnl:trades');
+    if (!raw || Object.keys(raw).length === 0) return res.status(404).json(PNL_NOT_FOUND);
+
+    let trades = Object.values(raw).map(json => JSON.parse(json))
+      .sort((a, b) => a.entryTime.localeCompare(b.entryTime));
+
+    if (req.query.since) trades = trades.filter(t => t.tradeDate >= req.query.since);
+    if (req.query.symbol) trades = trades.filter(t => t.symbol === req.query.symbol);
+    if (req.query.product) trades = trades.filter(t => t.product === req.query.product);
+
+    const syncedAt = await messageBus.publisher.get('pnl:last_sync');
+    res.json({ syncedAt, trades });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.get('/api/pnl/daily', dashboardAuth, async (req, res) => {
+  try {
+    // Scan for all pnl:daily:* keys
+    const keys = [];
+    for await (const key of messageBus.publisher.scanIterator({ MATCH: 'pnl:daily:*', COUNT: 100 })) {
+      keys.push(key);
+    }
+    if (keys.length === 0) return res.status(404).json(PNL_NOT_FOUND);
+
+    const values = await Promise.all(keys.map(k => messageBus.publisher.get(k)));
+    let daily = values.map(v => JSON.parse(v)).sort((a, b) => a.date.localeCompare(b.date));
+
+    if (req.query.since) daily = daily.filter(d => d.date >= req.query.since);
+
+    // Add cumulative P&L
+    let cumulative = 0;
+    daily = daily.map(d => {
+      cumulative += d.netPnl;
+      return { ...d, cumulativeNetPnl: Math.round(cumulative * 100) / 100 };
+    });
+
+    const syncedAt = await messageBus.publisher.get('pnl:last_sync');
+    res.json({ syncedAt, daily });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.get('/api/pnl/summary', dashboardAuth, async (req, res) => {
+  try {
+    const data = await messageBus.publisher.get('pnl:summary');
+    if (!data) return res.status(404).json(PNL_NOT_FOUND);
+    const syncedAt = await messageBus.publisher.get('pnl:last_sync');
+    res.json({ syncedAt, summary: JSON.parse(data) });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/pnl/sync', dashboardAuth, (req, res) => {
+  logger.info('Manual P&L sync triggered via API');
+  execFile('node', ['../scripts/sync-pnl.js'], { cwd: process.cwd(), timeout: 120000 }, (err, stdout, stderr) => {
+    if (err) {
+      logger.error(`Manual P&L sync failed: ${err.message}`);
+    } else {
+      logger.info(`Manual P&L sync completed`);
+    }
+  });
+
+  res.json({ status: 'sync started' });
 });
 
 app.get('/api/signals', dashboardAuth, (req, res) => {
@@ -3872,6 +3947,22 @@ async function startup() {
       } else {
         logger.info('📢 Discord notifications: NOT CONFIGURED (add DISCORD_WEBHOOK_URL to .env)');
       }
+
+      // Schedule end-of-day P&L sync (4:45 PM ET weekdays)
+      // Schedule end-of-day P&L sync (4:45 PM ET weekdays)
+      const pnlSchedule = process.env.PNL_SYNC_SCHEDULE || '45 16 * * 1-5';
+      cron.schedule(pnlSchedule, () => {
+        logger.info('Running scheduled P&L sync...');
+        execFile('node', ['../scripts/sync-pnl.js'], { cwd: process.cwd(), timeout: 120000 }, (err, stdout, stderr) => {
+          if (err) {
+            logger.error(`P&L sync failed: ${err.message}`);
+            if (stderr) logger.error(`stderr: ${stderr}`);
+            return;
+          }
+          logger.info(`P&L sync completed:\n${stdout}`);
+        });
+      }, { timezone: 'America/New_York' });
+      logger.info(`P&L sync scheduled: "${pnlSchedule}" ET`);
     });
 
     // Graceful shutdown

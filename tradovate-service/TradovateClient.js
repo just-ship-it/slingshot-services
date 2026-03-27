@@ -1314,6 +1314,57 @@ class TradovateClient extends EventEmitter {
     }
   }
 
+  // Fill & Trade History Methods
+  async getFills(accountId) {
+    try {
+      const response = await this.makeRequest('GET', `/fill/list?accountId=${accountId}`);
+      return response;
+    } catch (error) {
+      this.logger.error('Failed to get fills:', error.message);
+      throw error;
+    }
+  }
+
+  async getFillPairs() {
+    try {
+      const response = await this.makeRequest('GET', '/fillPair/list');
+      return response;
+    } catch (error) {
+      this.logger.error('Failed to get fill pairs:', error.message);
+      throw error;
+    }
+  }
+
+  async getFillFees() {
+    try {
+      const response = await this.makeRequest('GET', '/fillFee/list');
+      return response;
+    } catch (error) {
+      this.logger.error('Failed to get fill fees:', error.message);
+      throw error;
+    }
+  }
+
+  async getContractMaturity(maturityId) {
+    try {
+      const response = await this.makeRequest('GET', `/contractMaturity/item?id=${maturityId}`);
+      return response;
+    } catch (error) {
+      this.logger.error(`Failed to get contract maturity ${maturityId}:`, error.message);
+      throw error;
+    }
+  }
+
+  async getProduct(productId) {
+    try {
+      const response = await this.makeRequest('GET', `/product/item?id=${productId}`);
+      return response;
+    } catch (error) {
+      this.logger.error(`Failed to get product ${productId}:`, error.message);
+      throw error;
+    }
+  }
+
   // Contract/Instrument Methods
   async findContract(symbol) {
     try {
