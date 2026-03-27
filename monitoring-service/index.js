@@ -2,7 +2,6 @@ import express from 'express';
 import cors from 'cors';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
-import { execFile } from 'child_process';
 import cron from 'node-cron';
 import axios from 'axios';
 import { messageBus, CHANNELS, createLogger, configManager, healthCheck } from '../shared/index.js';
@@ -1168,8 +1167,137 @@ app.delete('/api/alerts', dashboardAuth, async (req, res) => {
   }
 });
 
-// P&L endpoints - reads from Redis (populated by scripts/sync-pnl.js)
-const PNL_NOT_FOUND = { error: 'No P&L data found. Run: node scripts/sync-pnl.js --live' };
+// P&L sync and endpoints - pulls from tradovate-service API, stores in Redis
+const PNL_NOT_FOUND = { error: 'No P&L data found. Click Sync Now to pull trades from Tradovate.' };
+const KNOWN_POINT_VALUES = { MNQ: 2, NQ: 20, MES: 5, ES: 50, M2K: 5, RTY: 50 };
+
+function getProductRoot(name) {
+  const match = name.match(/^([A-Z]+\d?[A-Z]*?)([FGHJKMNQUVXZ]\d+)$/i);
+  return match ? match[1].toUpperCase() : name.toUpperCase();
+}
+
+function round2(n) { return Math.round(n * 100) / 100; }
+
+async function syncPnLFromTradovate() {
+  const tradovateUrl = process.env.TRADOVATE_SERVICE_URL || 'http://localhost:3011';
+  logger.info(`P&L sync: fetching data from ${tradovateUrl}/pnl/data`);
+
+  const { data } = await axios.get(`${tradovateUrl}/pnl/data`);
+  const { fills, fillPairs, fillFees, contracts } = data;
+  logger.info(`P&L sync: ${fills.length} fills, ${fillPairs.length} fill pairs, ${fillFees.length} fees`);
+
+  const fillById = new Map(fills.map(f => [f.id, f]));
+  const feeByFillId = new Map(fillFees.map(f => [f.id, f]));
+
+  const sumFees = (rec) => rec ? (rec.clearingFee || 0) + (rec.exchangeFee || 0) + (rec.nfaFee || 0) +
+    (rec.brokerageFee || 0) + (rec.ipFee || 0) + (rec.commission || 0) + (rec.orderRoutingFee || 0) : 0;
+
+  const trades = [];
+  for (const pair of fillPairs) {
+    const buyFill = fillById.get(pair.buyFillId);
+    const sellFill = fillById.get(pair.sellFillId);
+    if (!buyFill || !sellFill) continue;
+
+    const c = contracts[buyFill.contractId] || {};
+    const vpp = c.valuePerPoint || KNOWN_POINT_VALUES[getProductRoot(c.name || '')] || null;
+
+    const buyTime = new Date(buyFill.timestamp);
+    const sellTime = new Date(sellFill.timestamp);
+    const entryTime = buyTime < sellTime ? buyTime : sellTime;
+    const exitTime = buyTime < sellTime ? sellTime : buyTime;
+    const side = buyTime < sellTime ? 'Long' : 'Short';
+
+    const pnlPoints = pair.sellPrice - pair.buyPrice;
+    const pnlDollars = vpp ? pnlPoints * pair.qty * vpp : null;
+    const fees = sumFees(feeByFillId.get(pair.buyFillId)) + sumFees(feeByFillId.get(pair.sellFillId));
+    const netPnl = pnlDollars !== null ? pnlDollars - fees : null;
+
+    const td = buyFill.tradeDate;
+    const tradeDate = td?.year && td?.month && td?.day
+      ? `${td.year}-${String(td.month).padStart(2, '0')}-${String(td.day).padStart(2, '0')}`
+      : entryTime.toISOString().split('T')[0];
+
+    trades.push({
+      id: pair.id, positionId: pair.positionId,
+      symbol: c.name || 'unknown', product: c.productName || getProductRoot(c.name || ''),
+      side, qty: pair.qty,
+      entryPrice: side === 'Long' ? pair.buyPrice : pair.sellPrice,
+      exitPrice: side === 'Long' ? pair.sellPrice : pair.buyPrice,
+      entryTime: entryTime.toISOString(), exitTime: exitTime.toISOString(),
+      tradeDate, durationMinutes: Math.round((exitTime - entryTime) / 60000),
+      pnlPoints: round2(pnlPoints), pnlDollars: pnlDollars !== null ? round2(pnlDollars) : null,
+      fees: round2(fees), netPnl: netPnl !== null ? round2(netPnl) : null,
+    });
+  }
+
+  // Store trades in Redis (keyed by fillPair ID for idempotency)
+  const redis = messageBus.publisher;
+  for (const trade of trades) {
+    await redis.hSet('pnl:trades', String(trade.id), JSON.stringify(trade));
+  }
+
+  // Reload all trades and recompute summaries
+  const allRaw = await redis.hGetAll('pnl:trades');
+  const allTrades = Object.values(allRaw).map(j => JSON.parse(j)).sort((a, b) => a.entryTime.localeCompare(b.entryTime));
+
+  // Daily summaries
+  const dailyMap = new Map();
+  for (const t of allTrades) {
+    if (!dailyMap.has(t.tradeDate)) {
+      dailyMap.set(t.tradeDate, { date: t.tradeDate, trades: 0, wins: 0, losses: 0, breakeven: 0,
+        grossPnl: 0, fees: 0, netPnl: 0, maxWin: 0, maxLoss: 0, totalContracts: 0 });
+    }
+    const d = dailyMap.get(t.tradeDate);
+    d.trades++; d.totalContracts += t.qty; d.fees += t.fees;
+    if (t.pnlDollars !== null) {
+      d.grossPnl += t.pnlDollars; d.netPnl += t.netPnl;
+      if (t.pnlDollars > 0) { d.wins++; d.maxWin = Math.max(d.maxWin, t.pnlDollars); }
+      else if (t.pnlDollars < 0) { d.losses++; d.maxLoss = Math.min(d.maxLoss, t.pnlDollars); }
+      else d.breakeven++;
+    }
+  }
+  for (const [date, d] of dailyMap) {
+    d.grossPnl = round2(d.grossPnl); d.fees = round2(d.fees); d.netPnl = round2(d.netPnl);
+    d.maxWin = round2(d.maxWin); d.maxLoss = round2(d.maxLoss);
+    d.winRate = d.trades > 0 ? round2((d.wins / d.trades) * 100) : 0;
+    await redis.set(`pnl:daily:${date}`, JSON.stringify(d));
+  }
+
+  // Overall summary
+  const completed = allTrades.filter(t => t.pnlDollars !== null);
+  const wins = completed.filter(t => t.pnlDollars > 0);
+  const losses = completed.filter(t => t.pnlDollars < 0);
+  let maxWS = 0, maxLS = 0, cWS = 0, cLS = 0;
+  for (const t of completed) {
+    if (t.pnlDollars > 0) { cWS++; cLS = 0; maxWS = Math.max(maxWS, cWS); }
+    else if (t.pnlDollars < 0) { cLS++; cWS = 0; maxLS = Math.max(maxLS, cLS); }
+  }
+  const grossWins = wins.reduce((s, t) => s + t.pnlDollars, 0);
+  const grossLosses = Math.abs(losses.reduce((s, t) => s + t.pnlDollars, 0));
+  const totalNet = completed.reduce((s, t) => s + t.netPnl, 0);
+  const summary = {
+    totalTrades: completed.length, totalContracts: completed.reduce((s, t) => s + t.qty, 0),
+    wins: wins.length, losses: losses.length, breakeven: completed.filter(t => t.pnlDollars === 0).length,
+    winRate: completed.length > 0 ? round2((wins.length / completed.length) * 100) : 0,
+    grossPnl: round2(completed.reduce((s, t) => s + t.pnlDollars, 0)),
+    totalFees: round2(completed.reduce((s, t) => s + t.fees, 0)),
+    netPnl: round2(totalNet),
+    avgWin: wins.length > 0 ? round2(grossWins / wins.length) : 0,
+    avgLoss: losses.length > 0 ? round2(-grossLosses / losses.length) : 0,
+    maxWin: wins.length > 0 ? round2(Math.max(...wins.map(t => t.pnlDollars))) : 0,
+    maxLoss: losses.length > 0 ? round2(Math.min(...losses.map(t => t.pnlDollars))) : 0,
+    avgTrade: completed.length > 0 ? round2(totalNet / completed.length) : 0,
+    profitFactor: grossLosses > 0 ? round2(grossWins / grossLosses) : (grossWins > 0 ? Infinity : 0),
+    maxWinStreak: maxWS, maxLossStreak: maxLS,
+    avgDurationMinutes: completed.length > 0
+      ? Math.round(completed.reduce((s, t) => s + t.durationMinutes, 0) / completed.length) : 0,
+  };
+  await redis.set('pnl:summary', JSON.stringify(summary));
+  await redis.set('pnl:last_sync', new Date().toISOString());
+
+  logger.info(`P&L sync complete: ${trades.length} new, ${allTrades.length} total trades`);
+  return { synced: trades.length, total: allTrades.length, summary };
+}
 
 app.get('/api/pnl/trades', dashboardAuth, async (req, res) => {
   try {
@@ -1192,7 +1320,6 @@ app.get('/api/pnl/trades', dashboardAuth, async (req, res) => {
 
 app.get('/api/pnl/daily', dashboardAuth, async (req, res) => {
   try {
-    // Scan for all pnl:daily:* keys
     const keys = [];
     for await (const key of messageBus.publisher.scanIterator({ MATCH: 'pnl:daily:*', COUNT: 100 })) {
       keys.push(key);
@@ -1204,7 +1331,6 @@ app.get('/api/pnl/daily', dashboardAuth, async (req, res) => {
 
     if (req.query.since) daily = daily.filter(d => d.date >= req.query.since);
 
-    // Add cumulative P&L
     let cumulative = 0;
     daily = daily.map(d => {
       cumulative += d.netPnl;
@@ -1229,17 +1355,15 @@ app.get('/api/pnl/summary', dashboardAuth, async (req, res) => {
   }
 });
 
-app.post('/api/pnl/sync', dashboardAuth, (req, res) => {
-  logger.info('Manual P&L sync triggered via API');
-  execFile('node', ['../scripts/sync-pnl.js'], { cwd: process.cwd(), timeout: 120000 }, (err, stdout, stderr) => {
-    if (err) {
-      logger.error(`Manual P&L sync failed: ${err.message}`);
-    } else {
-      logger.info(`Manual P&L sync completed`);
-    }
-  });
-
-  res.json({ status: 'sync started' });
+app.post('/api/pnl/sync', dashboardAuth, async (req, res) => {
+  try {
+    logger.info('Manual P&L sync triggered via API');
+    const result = await syncPnLFromTradovate();
+    res.json({ status: 'ok', ...result });
+  } catch (err) {
+    logger.error(`P&L sync failed: ${err.message}`);
+    res.status(500).json({ error: `Sync failed: ${err.message}` });
+  }
 });
 
 app.get('/api/signals', dashboardAuth, (req, res) => {
@@ -3949,18 +4073,15 @@ async function startup() {
       }
 
       // Schedule end-of-day P&L sync (4:45 PM ET weekdays)
-      // Schedule end-of-day P&L sync (4:45 PM ET weekdays)
       const pnlSchedule = process.env.PNL_SYNC_SCHEDULE || '45 16 * * 1-5';
-      cron.schedule(pnlSchedule, () => {
-        logger.info('Running scheduled P&L sync...');
-        execFile('node', ['../scripts/sync-pnl.js'], { cwd: process.cwd(), timeout: 120000 }, (err, stdout, stderr) => {
-          if (err) {
-            logger.error(`P&L sync failed: ${err.message}`);
-            if (stderr) logger.error(`stderr: ${stderr}`);
-            return;
-          }
-          logger.info(`P&L sync completed:\n${stdout}`);
-        });
+      cron.schedule(pnlSchedule, async () => {
+        try {
+          logger.info('Running scheduled P&L sync...');
+          const result = await syncPnLFromTradovate();
+          logger.info(`Scheduled P&L sync complete: ${result.total} trades`);
+        } catch (err) {
+          logger.error(`Scheduled P&L sync failed: ${err.message}`);
+        }
       }, { timezone: 'America/New_York' });
       logger.info(`P&L sync scheduled: "${pnlSchedule}" ET`);
     });

@@ -187,6 +187,12 @@ if [[ ! -f "$CONFIG_FILE" ]]; then
   exit 1
 fi
 
+# Load SEVALLA_API_KEY from .env if not already set in shell
+if [[ -z "${SEVALLA_API_KEY:-}" && -f "$SCRIPT_DIR/shared/.env" ]]; then
+  SEVALLA_API_KEY=$(grep '^SEVALLA_API_KEY=' "$SCRIPT_DIR/shared/.env" | cut -d= -f2- | tr -d '\r')
+  export SEVALLA_API_KEY
+fi
+
 # Get API key
 API_KEY_ENV=$(read_config "sevalla_api_key_env")
 API_KEY="${!API_KEY_ENV:-}"

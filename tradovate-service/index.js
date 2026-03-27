@@ -206,6 +206,48 @@ app.get('/contract/:contractId', async (req, res) => {
   }
 });
 
+// P&L data endpoint - returns fills, fill pairs, fees, and contract info for P&L computation
+app.get('/pnl/data', async (req, res) => {
+  try {
+    const accountId = req.query.accountId || config.tradovate.defaultAccountId || tradovateClient.accounts[0]?.id;
+    if (!accountId) return res.status(400).json({ error: 'No account ID available' });
+
+    const [fills, fillPairs, fillFees] = await Promise.all([
+      tradovateClient.getFills(accountId),
+      tradovateClient.getFillPairs(),
+      tradovateClient.getFillFees(),
+    ]);
+
+    // Resolve contract details for all unique contractIds in fills
+    const contractIds = [...new Set(fills.map(f => f.contractId))];
+    const contracts = {};
+    for (const cid of contractIds) {
+      try {
+        const contract = await tradovateClient.getContractDetails(cid);
+        let valuePerPoint = null, productName = null;
+        if (contract.contractMaturityId) {
+          try {
+            const maturity = await tradovateClient.getContractMaturity(contract.contractMaturityId);
+            if (maturity.productId) {
+              const product = await tradovateClient.getProduct(maturity.productId);
+              valuePerPoint = product.valuePerPoint;
+              productName = product.name;
+            }
+          } catch (e) { /* skip */ }
+        }
+        contracts[cid] = { name: contract.name, productName, valuePerPoint };
+      } catch (e) {
+        contracts[cid] = { name: `unknown-${cid}`, productName: null, valuePerPoint: null };
+      }
+    }
+
+    res.json({ accountId, fills, fillPairs, fillFees, contracts });
+  } catch (error) {
+    logger.error('Failed to get P&L data:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 app.get('/balance/:accountId', async (req, res) => {
   try {
     const [account, cash] = await Promise.all([
