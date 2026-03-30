@@ -256,8 +256,8 @@ export class ShortDTEIVStrategy extends BaseStrategy {
       ivChange: ivChangeInfo,
       signalDirection,
       providerStatus: {
-        snapshots: provider?.snapshots?.length ?? 0,
-        snapshotsNeeded: 2,
+        periods: provider?.periodKeys?.length ?? provider?.snapshots?.length ?? 0,
+        periodsNeeded: 2,
         ready: provider?.isReady?.() ?? false,
       },
       params: {

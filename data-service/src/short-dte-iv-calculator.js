@@ -91,6 +91,9 @@ export class ShortDTEIVCalculator {
     // Pre-boundary timer
     this.preBoundaryTimer = null;
     this.PRE_BOUNDARY_OFFSET_SEC = 10; // Fire 10 seconds before boundary
+
+    // Guard against concurrent update() calls racing on lastSnapshotPeriod
+    this._updating = false;
   }
 
   /**
@@ -191,6 +194,11 @@ export class ShortDTEIVCalculator {
     const periodKey = this._getPeriodKey();
     if (periodKey === this.lastSnapshotPeriod) return;
 
+    // Prevent concurrent calls from both publishing for the same period
+    if (this._updating) return;
+    this._updating = true;
+
+    try {
     // Skip 0-DTE after 3:45 PM ET (too noisy near expiry)
     const nowET = new Date().toLocaleString('en-US', { timeZone: 'America/New_York' });
     const etDate = new Date(nowET);
@@ -292,10 +300,12 @@ export class ShortDTEIVCalculator {
     logger.info(`Short-DTE IV snapshot [${periodKey}]: ${d0} | ${d1} | Q=${quality}`);
 
     // Publish to Redis
-    try {
-      await messageBus.publish(CHANNELS.SHORT_DTE_IV_SNAPSHOT, snapshot);
+    await messageBus.publish(CHANNELS.SHORT_DTE_IV_SNAPSHOT, snapshot);
+
     } catch (error) {
-      logger.warn('Failed to publish short-DTE IV snapshot:', error.message);
+      logger.warn('Short-DTE IV update failed:', error.message);
+    } finally {
+      this._updating = false;
     }
   }
 
