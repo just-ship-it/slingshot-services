@@ -1419,43 +1419,6 @@ async function computeLogicalTrades() {
   return { total: trades.length, summary };
 }
 
-// Group fillPairs into logical trades (flat → position → flat = one trade)
-function groupFillPairsIntoLogicalTrades(fills, fillPairs) {
-  const fillById = new Map(fills.map(f => [f.id, f]));
-  const byContract = new Map();
-  for (const pair of fillPairs) {
-    const fill = fillById.get(pair.buyFillId) || fillById.get(pair.sellFillId);
-    if (!fill) continue;
-    const cid = fill.contractId;
-    if (!byContract.has(cid)) byContract.set(cid, []);
-    byContract.get(cid).push(pair);
-  }
-  const groups = [];
-  for (const [, pairs] of byContract) {
-    const pairFillIds = new Set();
-    for (const p of pairs) { pairFillIds.add(p.buyFillId); pairFillIds.add(p.sellFillId); }
-    const seen = new Set();
-    const uniqueFills = fills
-      .filter(f => pairFillIds.has(f.id) && !seen.has(f.id) && seen.add(f.id))
-      .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
-    let netPos = 0, sessionFillIds = new Set();
-    for (const fill of uniqueFills) {
-      sessionFillIds.add(fill.id);
-      netPos += fill.action === 'Buy' ? fill.qty : -fill.qty;
-      if (netPos === 0 && sessionFillIds.size > 0) {
-        const sp = pairs.filter(p => sessionFillIds.has(p.buyFillId) || sessionFillIds.has(p.sellFillId));
-        if (sp.length > 0) groups.push(sp);
-        sessionFillIds = new Set();
-      }
-    }
-    if (sessionFillIds.size > 0) {
-      const sp = pairs.filter(p => sessionFillIds.has(p.buyFillId) || sessionFillIds.has(p.sellFillId));
-      if (sp.length > 0) groups.push(sp);
-    }
-  }
-  return groups;
-}
-
 // Combined sync: pull raw data then recompute
 async function syncPnLFromTradovate() {
   const rawResult = await syncRawPnLData();
