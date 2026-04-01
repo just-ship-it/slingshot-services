@@ -101,6 +101,11 @@ class ProductState {
     this.reconciliationConfirmed = false;
     this.lastInPositionLogTime = 0;
 
+    // Force-close retry tracking (max hold bars, EOD close)
+    this.forceCloseAttempts = 0;
+    this.forceCloseMaxRetries = 3;
+    this.forceCloseReason = null;
+
     // GF Early Exit tracking (per-product, for position-holding strategy)
     this.gfTrackingState = null;
     this.gfEarlyExitConfig = {
@@ -504,21 +509,16 @@ class MultiStrategyEngine {
    * Handle candle when in position: trailing stops, order timeouts, EOD close
    */
   async handleInPositionCandle(state, candle) {
+    // If we've already exhausted force-close retries, stop trying — alert was already sent
+    if (state.forceCloseAttempts >= state.forceCloseMaxRetries) {
+      return;
+    }
+
     // Check maxHoldBars (force exit after N candles in trade)
     if (state.positionMaxHoldBars > 0) {
       state.positionBarsInTrade++;
       if (state.positionBarsInTrade >= state.positionMaxHoldBars) {
-        logger.info(`Max hold bars (${state.positionMaxHoldBars}) reached for ${state.product} — forcing close`);
-        const closeSignal = {
-          webhook_type: 'trade_signal',
-          action: 'position_closed',
-          symbol: state.currentPosition?.symbol || state.tradingSymbol,
-          side: state.currentPosition?.side,
-          strategy: state.positionStrategy,
-          reason: `max_hold_bars (${state.positionMaxHoldBars})`,
-          timestamp: new Date().toISOString()
-        };
-        await this.publishSignal(closeSignal);
+        await this.attemptForceClose(state, `max_hold_bars (${state.positionMaxHoldBars})`);
         return;
       }
     }
@@ -532,17 +532,7 @@ class MultiStrategyEngine {
     });
     const [h, m] = estTime.split(':').map(Number);
     if ((h === 15 && m >= 55) || (h === 16 && m === 0)) {
-      logger.info(`EOD force close for ${state.product}: ${h}:${String(m).padStart(2, '0')} EST`);
-      const closeSignal = {
-        webhook_type: 'trade_signal',
-        action: 'position_closed',
-        symbol: state.currentPosition?.symbol || state.tradingSymbol,
-        side: state.currentPosition?.side,
-        strategy: state.positionStrategy,
-        reason: 'EOD force close (3:55 PM EST)',
-        timestamp: new Date().toISOString()
-      };
-      await this.publishSignal(closeSignal);
+      await this.attemptForceClose(state, `EOD force close (${h}:${String(m).padStart(2, '0')} EST)`);
       return;
     }
 
@@ -560,6 +550,55 @@ class MultiStrategyEngine {
     // Check order timeouts for all strategies on this product
     for (const [, runner] of state.strategies) {
       await this.checkOrderTimeouts(runner);
+    }
+  }
+
+  /**
+   * Attempt a force close with retry tracking and alerting.
+   * Publishes the close signal up to maxRetries times across consecutive candles.
+   * After exhausting retries, sends a critical alert to dashboard/Discord and stops retrying.
+   */
+  async attemptForceClose(state, reason) {
+    state.forceCloseAttempts++;
+    const attempt = state.forceCloseAttempts;
+    const maxRetries = state.forceCloseMaxRetries;
+
+    if (attempt <= maxRetries) {
+      // Store reason on first attempt for the alert message
+      if (attempt === 1) {
+        state.forceCloseReason = reason;
+      }
+
+      logger.info(`Force close attempt ${attempt}/${maxRetries} for ${state.product}: ${reason}`);
+      const closeSignal = {
+        webhook_type: 'trade_signal',
+        action: 'position_closed',
+        symbol: state.currentPosition?.symbol || state.tradingSymbol,
+        side: state.currentPosition?.side,
+        strategy: state.positionStrategy,
+        reason,
+        timestamp: new Date().toISOString()
+      };
+      await this.publishSignal(closeSignal);
+    }
+
+    if (attempt >= maxRetries) {
+      const alertMsg = `FORCE CLOSE FAILED after ${maxRetries} attempts for ${state.product} ` +
+        `(${state.positionStrategy} ${state.currentPosition?.side} @ ${state.currentPosition?.entryPrice}). ` +
+        `Reason: ${state.forceCloseReason}. Manual intervention required.`;
+      logger.error(alertMsg);
+
+      await messageBus.publish(CHANNELS.STRATEGY_ALERT, {
+        ruleName: 'force-close-failed',
+        severity: 'critical',
+        message: alertMsg,
+        signal: {
+          strategy: state.positionStrategy,
+          symbol: state.currentPosition?.symbol || state.tradingSymbol,
+          side: state.currentPosition?.side,
+          entryPrice: state.currentPosition?.entryPrice
+        }
+      });
     }
   }
 
@@ -854,7 +893,19 @@ class MultiStrategyEngine {
     const strategy = message.strategy;
 
     for (const [product, state] of this.products) {
-      if (state.positionStrategy === strategy || state.currentPosition?.strategy === strategy) {
+      // Match by strategy if available, OR fall back to symbol matching when
+      // the orchestrator couldn't resolve the strategy (e.g. manual close, fill
+      // without signal context). Without this fallback the signal generator gets
+      // stuck thinking it's still in a position.
+      const strategyMatch = strategy && (state.positionStrategy === strategy || state.currentPosition?.strategy === strategy);
+      const symbolMatch = !strategyMatch && state.inPosition && message.symbol &&
+        (state.currentPosition?.symbol === message.symbol ||
+         message.symbol.includes(product));
+
+      if (strategyMatch || symbolMatch) {
+        if (symbolMatch) {
+          logger.warn(`Position closed for ${product} via symbol fallback (strategy mismatch: msg=${strategy || 'none'}, expected=${state.positionStrategy})`);
+        }
         const exitInfo = message.exitPrice ? ` @ ${message.exitPrice}` : '';
         const pnlInfo = message.pnl ? ` (P&L: ${message.pnl > 0 ? '+' : ''}${message.pnl})` : '';
         logger.info(`Position closed for ${product}${exitInfo}${pnlInfo}`);
@@ -870,8 +921,9 @@ class MultiStrategyEngine {
               ? exitPrice - entryPrice
               : entryPrice - exitPrice;
 
+            const matchStrategy = strategy || state.positionStrategy;
             for (const [, runner] of state.strategies) {
-              if (runner.strategyConstant === strategy && typeof runner.strategy.onPositionClosed === 'function') {
+              if (runner.strategyConstant === matchStrategy && typeof runner.strategy.onPositionClosed === 'function') {
                 runner.strategy.onPositionClosed({
                   entryPrice,
                   exitPrice,
@@ -892,6 +944,8 @@ class MultiStrategyEngine {
         state.timeBasedTrailingState = null;
         state.positionBarsInTrade = 0;
         state.positionMaxHoldBars = 0;
+        state.forceCloseAttempts = 0;
+        state.forceCloseReason = null;
 
         // Cooldown is NOT reset on position close — it continues from signal time,
         // matching backtest behavior (30min cooldown from signal generation)
@@ -1348,6 +1402,8 @@ class MultiStrategyEngine {
           state.positionStrategy = null;
           state.gfTrackingState = null;
           state.timeBasedTrailingState = null;
+          state.forceCloseAttempts = 0;
+          state.forceCloseReason = null;
           for (const [, runner] of state.strategies) {
             runner.strategy.lastSignalTime = 0;
           }
