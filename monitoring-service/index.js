@@ -1167,7 +1167,13 @@ app.delete('/api/alerts', dashboardAuth, async (req, res) => {
   }
 });
 
-// P&L sync and endpoints - pulls from tradovate-service API, stores in Redis
+// ─── P&L System ─────────────────────────────────────────────────────────────
+// Two-layer architecture:
+//   1. Raw data: pnl:raw:fills, pnl:raw:fillPairs, pnl:raw:fillFees, pnl:raw:contracts
+//      - Source of truth, deduplicated by ID, never deleted
+//   2. Computed: pnl:trades, pnl:daily:*, pnl:summary
+//      - Derived from raw data, recomputable anytime via /api/pnl/recompute
+// ─────────────────────────────────────────────────────────────────────────────
 const PNL_NOT_FOUND = { error: 'No P&L data found. Click Sync Now to pull trades from Tradovate.' };
 const KNOWN_POINT_VALUES = { MNQ: 2, NQ: 20, MES: 5, ES: 50, M2K: 5, RTY: 50 };
 
@@ -1178,71 +1184,182 @@ function getProductRoot(name) {
 
 function round2(n) { return Math.round(n * 100) / 100; }
 
-async function syncPnLFromTradovate() {
+// Group fillPairs into logical trades (flat → position → flat = one trade).
+// Uses raw fills to reconstruct position timeline per contract.
+function groupFillPairsIntoLogicalTrades(fills, fillPairs) {
+  const fillById = new Map(fills.map(f => [f.id, f]));
+
+  // Group fillPairs by contract
+  const byContract = new Map();
+  for (const pair of fillPairs) {
+    const fill = fillById.get(pair.buyFillId) || fillById.get(pair.sellFillId);
+    if (!fill) continue;
+    const cid = fill.contractId;
+    if (!byContract.has(cid)) byContract.set(cid, []);
+    byContract.get(cid).push(pair);
+  }
+
+  const groups = []; // each element is an array of fillPairs = one logical trade
+
+  for (const [contractId, pairs] of byContract) {
+    // Collect unique fills referenced by these pairs
+    const pairFillIds = new Set();
+    for (const p of pairs) { pairFillIds.add(p.buyFillId); pairFillIds.add(p.sellFillId); }
+
+    const seen = new Set();
+    const uniqueFills = fills
+      .filter(f => f.contractId === contractId && pairFillIds.has(f.id) && !seen.has(f.id) && seen.add(f.id))
+      .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+
+    // Walk fills, track position, split at flat
+    let netPos = 0;
+    let sessionFillIds = new Set();
+
+    for (const fill of uniqueFills) {
+      sessionFillIds.add(fill.id);
+      netPos += fill.action === 'Buy' ? fill.qty : -fill.qty;
+
+      if (netPos === 0 && sessionFillIds.size > 0) {
+        const sessionPairs = pairs.filter(p => sessionFillIds.has(p.buyFillId) || sessionFillIds.has(p.sellFillId));
+        if (sessionPairs.length > 0) groups.push(sessionPairs);
+        sessionFillIds = new Set();
+      }
+    }
+
+    // Unclosed session (still in a position)
+    if (sessionFillIds.size > 0) {
+      const sessionPairs = pairs.filter(p => sessionFillIds.has(p.buyFillId) || sessionFillIds.has(p.sellFillId));
+      if (sessionPairs.length > 0) groups.push(sessionPairs);
+    }
+  }
+
+  return groups;
+}
+
+// Step 1: Pull raw data from Tradovate and merge into Redis (deduplicates by ID)
+async function syncRawPnLData() {
   const tradovateUrl = process.env.TRADOVATE_SERVICE_URL || 'http://localhost:3011';
-  logger.info(`P&L sync: fetching data from ${tradovateUrl}/pnl/data`);
+  logger.info(`P&L raw sync: fetching from ${tradovateUrl}/pnl/data`);
 
   const { data } = await axios.get(`${tradovateUrl}/pnl/data`);
   const { fills, fillPairs, fillFees, contracts } = data;
-  logger.info(`P&L sync: ${fills.length} fills, ${fillPairs.length} fill pairs, ${fillFees.length} fees`);
+  logger.info(`P&L raw sync: ${fills.length} fills, ${fillPairs.length} fill pairs, ${fillFees.length} fees`);
+
+  const redis = messageBus.publisher;
+  for (const f of fills) await redis.hSet('pnl:raw:fills', String(f.id), JSON.stringify(f));
+  for (const fp of fillPairs) await redis.hSet('pnl:raw:fillPairs', String(fp.id), JSON.stringify(fp));
+  for (const ff of fillFees) await redis.hSet('pnl:raw:fillFees', String(ff.id), JSON.stringify(ff));
+  for (const [cid, c] of Object.entries(contracts)) await redis.hSet('pnl:raw:contracts', String(cid), JSON.stringify(c));
+  await redis.set('pnl:last_raw_sync', new Date().toISOString());
+
+  logger.info(`P&L raw sync: stored in Redis`);
+  return { fills: fills.length, fillPairs: fillPairs.length };
+}
+
+// Step 2: Read all raw data from Redis and compute logical trades
+async function computeLogicalTrades() {
+  const redis = messageBus.publisher;
+
+  const rawFills = await redis.hGetAll('pnl:raw:fills');
+  const rawPairs = await redis.hGetAll('pnl:raw:fillPairs');
+  const rawFees = await redis.hGetAll('pnl:raw:fillFees');
+  const rawContracts = await redis.hGetAll('pnl:raw:contracts');
+
+  const fills = Object.values(rawFills).map(j => JSON.parse(j));
+  const fillPairs = Object.values(rawPairs).map(j => JSON.parse(j));
+  const fillFees = Object.values(rawFees).map(j => JSON.parse(j));
+  const contracts = {};
+  for (const [k, v] of Object.entries(rawContracts)) contracts[k] = JSON.parse(v);
+
+  if (!fills.length || !fillPairs.length) {
+    logger.info('P&L compute: no raw data in Redis');
+    return { total: 0 };
+  }
+
+  logger.info(`P&L compute: ${fills.length} fills, ${fillPairs.length} fill pairs from raw store`);
 
   const fillById = new Map(fills.map(f => [f.id, f]));
   const feeByFillId = new Map(fillFees.map(f => [f.id, f]));
-
   const sumFees = (rec) => rec ? (rec.clearingFee || 0) + (rec.exchangeFee || 0) + (rec.nfaFee || 0) +
     (rec.brokerageFee || 0) + (rec.ipFee || 0) + (rec.commission || 0) + (rec.orderRoutingFee || 0) : 0;
 
+  // Group fillPairs into logical trades (flat-to-flat)
+  const groups = groupFillPairsIntoLogicalTrades(fills, fillPairs);
+  logger.info(`P&L compute: ${fillPairs.length} fill pairs → ${groups.length} logical trades`);
+
   const trades = [];
-  for (const pair of fillPairs) {
-    const buyFill = fillById.get(pair.buyFillId);
-    const sellFill = fillById.get(pair.sellFillId);
-    if (!buyFill || !sellFill) continue;
+  for (const group of groups) {
+    let totalPnlDollars = 0, totalFees = 0, totalQty = 0;
+    let earliestEntry = null, latestExit = null, maxPos = 0;
+    let symbol = 'unknown', product = '', firstSide = null, tradeDate = null;
 
-    const c = contracts[buyFill.contractId] || {};
-    const vpp = c.valuePerPoint || KNOWN_POINT_VALUES[getProductRoot(c.name || '')] || null;
+    // Track max position and side
+    const groupFillIds = new Set();
+    for (const p of group) { groupFillIds.add(p.buyFillId); groupFillIds.add(p.sellFillId); }
+    const seenFills = new Set();
+    let runningPos = 0;
+    for (const f of fills.filter(f => groupFillIds.has(f.id)).sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp))) {
+      if (seenFills.has(f.id)) continue;
+      seenFills.add(f.id);
+      runningPos += f.action === 'Buy' ? f.qty : -f.qty;
+      maxPos = Math.max(maxPos, Math.abs(runningPos));
+      if (firstSide === null && runningPos !== 0) firstSide = runningPos > 0 ? 'Long' : 'Short';
+    }
 
-    const buyTime = new Date(buyFill.timestamp);
-    const sellTime = new Date(sellFill.timestamp);
-    const entryTime = buyTime < sellTime ? buyTime : sellTime;
-    const exitTime = buyTime < sellTime ? sellTime : buyTime;
-    const side = buyTime < sellTime ? 'Long' : 'Short';
+    for (const pair of group) {
+      const buyFill = fillById.get(pair.buyFillId);
+      const sellFill = fillById.get(pair.sellFillId);
+      if (!buyFill || !sellFill) continue;
 
-    const pnlPoints = pair.sellPrice - pair.buyPrice;
-    const pnlDollars = vpp ? pnlPoints * pair.qty * vpp : null;
-    const fees = sumFees(feeByFillId.get(pair.buyFillId)) + sumFees(feeByFillId.get(pair.sellFillId));
-    const netPnl = pnlDollars !== null ? pnlDollars - fees : null;
+      const c = contracts[buyFill.contractId] || {};
+      const vpp = c.valuePerPoint || KNOWN_POINT_VALUES[getProductRoot(c.name || '')] || null;
+      symbol = c.name || symbol;
+      product = c.productName || getProductRoot(c.name || '') || product;
 
-    const td = buyFill.tradeDate;
-    const tradeDate = td?.year && td?.month && td?.day
-      ? `${td.year}-${String(td.month).padStart(2, '0')}-${String(td.day).padStart(2, '0')}`
-      : entryTime.toISOString().split('T')[0];
+      const buyTime = new Date(buyFill.timestamp);
+      const sellTime = new Date(sellFill.timestamp);
+      const entryTime = buyTime < sellTime ? buyTime : sellTime;
+      const exitTime = buyTime < sellTime ? sellTime : buyTime;
+      if (!earliestEntry || entryTime < earliestEntry) earliestEntry = entryTime;
+      if (!latestExit || exitTime > latestExit) latestExit = exitTime;
 
+      const pnlPoints = pair.sellPrice - pair.buyPrice;
+      totalQty += pair.qty;
+      if (vpp) totalPnlDollars += pnlPoints * pair.qty * vpp;
+      totalFees += sumFees(feeByFillId.get(pair.buyFillId)) + sumFees(feeByFillId.get(pair.sellFillId));
+
+      if (!tradeDate) {
+        const td = buyFill.tradeDate;
+        tradeDate = td?.year && td?.month && td?.day
+          ? `${td.year}-${String(td.month).padStart(2, '0')}-${String(td.day).padStart(2, '0')}`
+          : earliestEntry.toISOString().split('T')[0];
+      }
+    }
+
+    const id = group[0].buyFillId + '-' + group[0].sellFillId;
     trades.push({
-      id: pair.id, positionId: pair.positionId,
-      symbol: c.name || 'unknown', product: c.productName || getProductRoot(c.name || ''),
-      side, qty: pair.qty,
-      entryPrice: side === 'Long' ? pair.buyPrice : pair.sellPrice,
-      exitPrice: side === 'Long' ? pair.sellPrice : pair.buyPrice,
-      entryTime: entryTime.toISOString(), exitTime: exitTime.toISOString(),
-      tradeDate, durationMinutes: Math.round((exitTime - entryTime) / 60000),
-      pnlPoints: round2(pnlPoints), pnlDollars: pnlDollars !== null ? round2(pnlDollars) : null,
-      fees: round2(fees), netPnl: netPnl !== null ? round2(netPnl) : null,
+      id, symbol, product, side: firstSide || 'Long',
+      qty: maxPos, fillPairCount: group.length,
+      entryTime: earliestEntry.toISOString(), exitTime: latestExit.toISOString(),
+      tradeDate: tradeDate || earliestEntry.toISOString().split('T')[0],
+      durationMinutes: Math.round((latestExit - earliestEntry) / 60000),
+      pnlDollars: round2(totalPnlDollars), fees: round2(totalFees),
+      netPnl: round2(totalPnlDollars - totalFees),
     });
   }
 
-  // Store trades in Redis (keyed by fillPair ID for idempotency)
-  const redis = messageBus.publisher;
-  for (const trade of trades) {
-    await redis.hSet('pnl:trades', String(trade.id), JSON.stringify(trade));
-  }
+  trades.sort((a, b) => a.entryTime.localeCompare(b.entryTime));
 
-  // Reload all trades and recompute summaries
-  const allRaw = await redis.hGetAll('pnl:trades');
-  const allTrades = Object.values(allRaw).map(j => JSON.parse(j)).sort((a, b) => a.entryTime.localeCompare(b.entryTime));
+  // Clear and store computed trades
+  await redis.del('pnl:trades');
+  for (const t of trades) await redis.hSet('pnl:trades', String(t.id), JSON.stringify(t));
+
+  // Clear old daily keys
+  for await (const key of redis.scanIterator({ MATCH: 'pnl:daily:*', COUNT: 100 })) await redis.del(key);
 
   // Daily summaries
   const dailyMap = new Map();
-  for (const t of allTrades) {
+  for (const t of trades) {
     if (!dailyMap.has(t.tradeDate)) {
       dailyMap.set(t.tradeDate, { date: t.tradeDate, trades: 0, wins: 0, losses: 0, breakeven: 0,
         grossPnl: 0, fees: 0, netPnl: 0, maxWin: 0, maxLoss: 0, totalContracts: 0 });
@@ -1264,7 +1381,7 @@ async function syncPnLFromTradovate() {
   }
 
   // Overall summary
-  const completed = allTrades.filter(t => t.pnlDollars !== null);
+  const completed = trades.filter(t => t.pnlDollars !== null);
   const wins = completed.filter(t => t.pnlDollars > 0);
   const losses = completed.filter(t => t.pnlDollars < 0);
   let maxWS = 0, maxLS = 0, cWS = 0, cLS = 0;
@@ -1295,8 +1412,52 @@ async function syncPnLFromTradovate() {
   await redis.set('pnl:summary', JSON.stringify(summary));
   await redis.set('pnl:last_sync', new Date().toISOString());
 
-  logger.info(`P&L sync complete: ${trades.length} new, ${allTrades.length} total trades`);
-  return { synced: trades.length, total: allTrades.length, summary };
+  logger.info(`P&L compute complete: ${trades.length} logical trades`);
+  return { total: trades.length, summary };
+}
+
+// Group fillPairs into logical trades (flat → position → flat = one trade)
+function groupFillPairsIntoLogicalTrades(fills, fillPairs) {
+  const fillById = new Map(fills.map(f => [f.id, f]));
+  const byContract = new Map();
+  for (const pair of fillPairs) {
+    const fill = fillById.get(pair.buyFillId) || fillById.get(pair.sellFillId);
+    if (!fill) continue;
+    const cid = fill.contractId;
+    if (!byContract.has(cid)) byContract.set(cid, []);
+    byContract.get(cid).push(pair);
+  }
+  const groups = [];
+  for (const [, pairs] of byContract) {
+    const pairFillIds = new Set();
+    for (const p of pairs) { pairFillIds.add(p.buyFillId); pairFillIds.add(p.sellFillId); }
+    const seen = new Set();
+    const uniqueFills = fills
+      .filter(f => pairFillIds.has(f.id) && !seen.has(f.id) && seen.add(f.id))
+      .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+    let netPos = 0, sessionFillIds = new Set();
+    for (const fill of uniqueFills) {
+      sessionFillIds.add(fill.id);
+      netPos += fill.action === 'Buy' ? fill.qty : -fill.qty;
+      if (netPos === 0 && sessionFillIds.size > 0) {
+        const sp = pairs.filter(p => sessionFillIds.has(p.buyFillId) || sessionFillIds.has(p.sellFillId));
+        if (sp.length > 0) groups.push(sp);
+        sessionFillIds = new Set();
+      }
+    }
+    if (sessionFillIds.size > 0) {
+      const sp = pairs.filter(p => sessionFillIds.has(p.buyFillId) || sessionFillIds.has(p.sellFillId));
+      if (sp.length > 0) groups.push(sp);
+    }
+  }
+  return groups;
+}
+
+// Combined sync: pull raw data then recompute
+async function syncPnLFromTradovate() {
+  const rawResult = await syncRawPnLData();
+  const computeResult = await computeLogicalTrades();
+  return { ...rawResult, ...computeResult };
 }
 
 app.get('/api/pnl/trades', dashboardAuth, async (req, res) => {
@@ -1363,6 +1524,17 @@ app.post('/api/pnl/sync', dashboardAuth, async (req, res) => {
   } catch (err) {
     logger.error(`P&L sync failed: ${err.message}`);
     res.status(500).json({ error: `Sync failed: ${err.message}` });
+  }
+});
+
+app.post('/api/pnl/recompute', dashboardAuth, async (req, res) => {
+  try {
+    logger.info('P&L recompute triggered via API');
+    const result = await computeLogicalTrades();
+    res.json({ status: 'ok', ...result });
+  } catch (err) {
+    logger.error(`P&L recompute failed: ${err.message}`);
+    res.status(500).json({ error: `Recompute failed: ${err.message}` });
   }
 });
 
