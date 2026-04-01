@@ -1176,6 +1176,8 @@ app.delete('/api/alerts', dashboardAuth, async (req, res) => {
 // ─────────────────────────────────────────────────────────────────────────────
 const PNL_NOT_FOUND = { error: 'No P&L data found. Click Sync Now to pull trades from Tradovate.' };
 const KNOWN_POINT_VALUES = { MNQ: 2, NQ: 20, MES: 5, ES: 50, M2K: 5, RTY: 50 };
+// Tradovate "Free" tier all-in round-trip fees per contract (fallback when API fee data missing)
+const FEES_PER_RT = { MNQ: 1.90, NQ: 5.76, MES: 1.90, ES: 5.76, M2K: 1.90, RTY: 5.76 };
 
 function getProductRoot(name) {
   const match = name.match(/^([A-Z]+\d?[A-Z]*?)([FGHJKMNQUVXZ]\d+)$/i);
@@ -1326,7 +1328,8 @@ async function computeLogicalTrades() {
       const pnlPoints = pair.sellPrice - pair.buyPrice;
       totalQty += pair.qty;
       if (vpp) totalPnlDollars += pnlPoints * pair.qty * vpp;
-      totalFees += sumFees(feeByFillId.get(pair.buyFillId)) + sumFees(feeByFillId.get(pair.sellFillId));
+      const apiFees = sumFees(feeByFillId.get(pair.buyFillId)) + sumFees(feeByFillId.get(pair.sellFillId));
+      totalFees += apiFees > 0 ? apiFees : pair.qty * (FEES_PER_RT[getProductRoot(symbol)] || 1.90);
 
       if (!tradeDate) {
         const td = buyFill.tradeDate;
