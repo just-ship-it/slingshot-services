@@ -1267,18 +1267,23 @@ async function computeLogicalTrades() {
   const rawFees = await redis.hGetAll('pnl:raw:fillFees');
   const rawContracts = await redis.hGetAll('pnl:raw:contracts');
 
-  const fills = Object.values(rawFills).map(j => JSON.parse(j));
-  const fillPairs = Object.values(rawPairs).map(j => JSON.parse(j));
+  const allFills = Object.values(rawFills).map(j => JSON.parse(j));
+  const allPairs = Object.values(rawPairs).map(j => JSON.parse(j));
   const fillFees = Object.values(rawFees).map(j => JSON.parse(j));
   const contracts = {};
   for (const [k, v] of Object.entries(rawContracts)) contracts[k] = JSON.parse(v);
 
+  // Only process fills/pairs with valid contractIds (from API, not CSV imports)
+  const fills = allFills.filter(f => f.contractId && f.contractId !== 0);
+  const apiFillIds = new Set(fills.map(f => f.id));
+  const fillPairs = allPairs.filter(p => apiFillIds.has(p.buyFillId) || apiFillIds.has(p.sellFillId));
+
   if (!fills.length || !fillPairs.length) {
-    logger.info('P&L compute: no raw data in Redis');
+    logger.info('P&L compute: no API-sourced raw data to recompute (CSV-imported trades preserved)');
     return { total: 0 };
   }
 
-  logger.info(`P&L compute: ${fills.length} fills, ${fillPairs.length} fill pairs from raw store`);
+  logger.info(`P&L compute: ${fills.length} API fills, ${fillPairs.length} fill pairs (skipping ${allFills.length - fills.length} CSV-imported fills)`);
 
   const fillById = new Map(fills.map(f => [f.id, f]));
   const feeByFillId = new Map(fillFees.map(f => [f.id, f]));
@@ -1353,16 +1358,19 @@ async function computeLogicalTrades() {
 
   trades.sort((a, b) => a.entryTime.localeCompare(b.entryTime));
 
-  // Clear and store computed trades
-  await redis.del('pnl:trades');
+  // Merge API-computed trades into Redis (preserves CSV-imported trades)
   for (const t of trades) await redis.hSet('pnl:trades', String(t.id), JSON.stringify(t));
+  logger.info(`P&L compute: merged ${trades.length} API-computed trades`);
 
-  // Clear old daily keys
+  // Rebuild daily summaries and overall summary from ALL trades (API + CSV)
+  const allTradeData = await redis.hGetAll('pnl:trades');
+  const allTrades = Object.values(allTradeData).map(j => JSON.parse(j)).sort((a, b) => a.entryTime.localeCompare(b.entryTime));
+
   for await (const key of redis.scanIterator({ MATCH: 'pnl:daily:*', COUNT: 100 })) await redis.del(key);
 
   // Daily summaries
   const dailyMap = new Map();
-  for (const t of trades) {
+  for (const t of allTrades) {
     if (!dailyMap.has(t.tradeDate)) {
       dailyMap.set(t.tradeDate, { date: t.tradeDate, trades: 0, wins: 0, losses: 0, breakeven: 0,
         grossPnl: 0, fees: 0, netPnl: 0, maxWin: 0, maxLoss: 0, totalContracts: 0 });
@@ -1383,8 +1391,8 @@ async function computeLogicalTrades() {
     await redis.set(`pnl:daily:${date}`, JSON.stringify(d));
   }
 
-  // Overall summary
-  const completed = trades.filter(t => t.pnlDollars !== null);
+  // Overall summary (from ALL trades, not just newly computed)
+  const completed = allTrades.filter(t => t.pnlDollars !== null);
   const wins = completed.filter(t => t.pnlDollars > 0);
   const losses = completed.filter(t => t.pnlDollars < 0);
   let maxWS = 0, maxLS = 0, cWS = 0, cLS = 0;
@@ -1415,8 +1423,8 @@ async function computeLogicalTrades() {
   await redis.set('pnl:summary', JSON.stringify(summary));
   await redis.set('pnl:last_sync', new Date().toISOString());
 
-  logger.info(`P&L compute complete: ${trades.length} logical trades`);
-  return { total: trades.length, summary };
+  logger.info(`P&L compute complete: ${trades.length} new from API, ${allTrades.length} total trades`);
+  return { total: allTrades.length, summary };
 }
 
 // Combined sync: pull raw data then recompute
