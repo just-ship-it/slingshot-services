@@ -17,7 +17,7 @@
     },
     "data-service": {
       "app_id": "af7aeee4-8712-4a62-994f-c9d09d70d15e",
-      "directories": ["data-service", "signal-generator/src/data", "signal-generator/src/tradingview"]
+      "directories": ["data-service", "signal-generator/src/data", "signal-generator/src/gex", "signal-generator/src/tradier", "signal-generator/src/utils", "signal-generator/src/websocket"]
     },
     "signal-generator": {
       "app_id": "1fe0898f-1f2c-4677-bea8-71012cbd2188",

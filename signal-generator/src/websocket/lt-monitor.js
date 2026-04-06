@@ -10,13 +10,13 @@ const logger = createLogger('lt-monitor');
 const TV_WEBSOCKET_URL = 'wss://data.tradingview.com/socket.io/websocket?from=chart%2FVEPYsueI%2F&type=chart';
 const TV_ORIGIN = 'https://www.tradingview.com';
 
-// Liquidity Triggers indicator by DeepDiveStocks
-const LIQUIDITY_TRIGGER_INDICATOR = 'PUB;7e87924bf26940f3b0e4e245ec9e30b2';
+// Liquidity Triggers indicator by DDScript
+const LIQUIDITY_TRIGGER_INDICATOR = 'PUB;93e43ec4c20f420fac2b70f0f2b286cf';
 const LIQUIDITY_TRIGGER_VERSION = '1';
 
-// Liquidity Status indicator by DeepDiveStocks
+// Liquidity Status indicator by DDScript
 // Set to empty string to disable LS subscription
-const LIQUIDITY_STATUS_INDICATOR = 'PUB;88c2b5522d5d4c568501da83445ea154';
+const LIQUIDITY_STATUS_INDICATOR = 'PUB;eb74f266acd04379bd7828ba0fd54c84';
 const LIQUIDITY_STATUS_VERSION = '1';
 
 class LTMonitor extends EventEmitter {
