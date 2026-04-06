@@ -246,11 +246,11 @@ class LTMonitor extends EventEmitter {
           setTimeout(async () => {
             try {
               // Fetch metadata first, like Python does
-              const metainfo = await this.fetchIndicatorMetadata(LIQUIDITY_TRIGGER_INDICATOR, LIQUIDITY_TRIGGER_VERSION);
+              const ltResult = await this.fetchIndicatorMetadata(LIQUIDITY_TRIGGER_INDICATOR, LIQUIDITY_TRIGGER_VERSION);
 
-              if (metainfo) {
+              if (ltResult) {
                 // Prepare study payload using fetched metadata
-                const studyPayload = this.prepareIndicatorMetadata(LIQUIDITY_TRIGGER_INDICATOR, metainfo);
+                const studyPayload = this.prepareIndicatorMetadata(LIQUIDITY_TRIGGER_INDICATOR, ltResult.metainfo);
 
                 // Create study parameters matching Python's format exactly
                 const studyParams = [
@@ -258,12 +258,12 @@ class LTMonitor extends EventEmitter {
                   'st9',  // Study ID (matching Python)
                   'st1',  // Output ID
                   'sds_1',  // Data source
-                  'Script@tv-scripting-101!',
+                  ltResult.scriptEndpoint,
                   studyPayload
                 ];
 
                 this.sendMessage('create_study', studyParams);
-                logger.info('📐 LT study creation sent using fetched metadata');
+                logger.info(`📐 LT study creation sent using fetched metadata (${ltResult.scriptEndpoint})`);
               } else {
                 logger.error('❌ Failed to fetch LT indicator metadata, cannot create study');
               }
@@ -272,20 +272,20 @@ class LTMonitor extends EventEmitter {
               if (LIQUIDITY_STATUS_INDICATOR && !this.lsStudyAdded) {
                 this.lsStudyAdded = true;
                 try {
-                  const lsMetainfo = await this.fetchIndicatorMetadata(LIQUIDITY_STATUS_INDICATOR, LIQUIDITY_STATUS_VERSION);
-                  if (lsMetainfo) {
-                    const lsPayload = this.prepareIndicatorMetadata(LIQUIDITY_STATUS_INDICATOR, lsMetainfo);
+                  const lsResult = await this.fetchIndicatorMetadata(LIQUIDITY_STATUS_INDICATOR, LIQUIDITY_STATUS_VERSION);
+                  if (lsResult) {
+                    const lsPayload = this.prepareIndicatorMetadata(LIQUIDITY_STATUS_INDICATOR, lsResult.metainfo);
                     // Use Simplified mode (default) for clean BULLISH/BEARISH binary output
                     const lsStudyParams = [
                       this.chartSession,
                       'st10',   // LS study ID (distinct from LT's st9)
                       'st2',    // Output ID
                       'sds_1',  // Same data source
-                      'Script@tv-scripting-101!',
+                      lsResult.scriptEndpoint,
                       lsPayload
                     ];
                     this.sendMessage('create_study', lsStudyParams);
-                    logger.info('📐 LS study creation sent using fetched metadata');
+                    logger.info(`📐 LS study creation sent using fetched metadata (${lsResult.scriptEndpoint})`);
                   } else {
                     logger.error('❌ Failed to fetch LS indicator metadata, cannot create study');
                   }
@@ -512,10 +512,11 @@ class LTMonitor extends EventEmitter {
 
       const data = await response.json();
       const metainfo = data.result?.metaInfo;
+      const scriptEndpoint = this.extractScriptEndpoint(data.result?.id);
 
       if (metainfo) {
-        logger.info('📋 Successfully fetched indicator metadata');
-        return metainfo;
+        logger.info(`📋 Successfully fetched indicator metadata (endpoint: ${scriptEndpoint})`);
+        return { metainfo, scriptEndpoint };
       }
 
       logger.error('No metainfo found in indicator metadata');
@@ -563,6 +564,19 @@ class LTMonitor extends EventEmitter {
     logger.info('📋 Prepared indicator metadata successfully');
     logger.debug('Prepared payload:', JSON.stringify(studyPayload, null, 2));
     return studyPayload;
+  }
+
+  extractScriptEndpoint(resultId) {
+    /**
+     * Extract the script endpoint from the translate API result id.
+     * e.g., "Script$PUB;abc123@tv-scripting-707" → "Script@tv-scripting-707!"
+     */
+    if (!resultId) return 'Script@tv-scripting-101!';
+    const match = resultId.match(/@(tv-scripting-\d+)/);
+    if (match) {
+      return `Script@${match[1]}!`;
+    }
+    return 'Script@tv-scripting-101!';
   }
 }
 
