@@ -395,30 +395,37 @@ class ExposureCalculator {
 
   /**
    * Find zero gamma crossing point
+   * Sorts strikes numerically and scans adjacent pairs for sign changes,
+   * then returns the crossing nearest to spot price.
    */
   findZeroGammaCrossing(exposuresByStrike, spotPrice) {
-    // Convert keys to numbers and sort by distance from spot (like CBOE does)
-    const strikes = Object.keys(exposuresByStrike)
-      .map(s => parseFloat(s))
-      .sort((a, b) => Math.abs(a - spotPrice) - Math.abs(b - spotPrice));
+    // Sort strikes numerically so we check truly adjacent pairs
+    const strikes = Array.from(exposuresByStrike.keys()).sort((a, b) => a - b);
+
+    let bestCrossing = null;
+    let bestDistance = Infinity;
 
     for (let i = 0; i < strikes.length - 1; i++) {
       const strike1 = strikes[i];
       const strike2 = strikes[i + 1];
-      const gex1 = exposuresByStrike[strike1].gex;
-      const gex2 = exposuresByStrike[strike2].gex;
+      const gex1 = exposuresByStrike.get(strike1).gex;
+      const gex2 = exposuresByStrike.get(strike2).gex;
 
-      // Check for sign change
+      // Check for sign change between adjacent strikes
       if ((gex1 > 0 && gex2 < 0) || (gex1 < 0 && gex2 > 0)) {
         // Linear interpolation to find crossing point
         const ratio = Math.abs(gex1) / (Math.abs(gex1) + Math.abs(gex2));
         const crossing = strike1 + (strike2 - strike1) * ratio;
-        return Math.round(crossing);
+        const distance = Math.abs(crossing - spotPrice);
+
+        if (distance < bestDistance) {
+          bestDistance = distance;
+          bestCrossing = crossing;
+        }
       }
     }
 
-    // If no crossing found, return spot price
-    return Math.round(spotPrice);
+    return bestCrossing !== null ? Math.round(bestCrossing) : Math.round(spotPrice);
   }
 
   /**

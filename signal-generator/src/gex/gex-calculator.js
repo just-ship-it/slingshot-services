@@ -345,7 +345,11 @@ class GexCalculator {
   }
 
   findZeroGammaCrossing(gexByStrike, spot) {
-    const strikes = Array.from(gexByStrike.keys()).sort((a, b) => Math.abs(a - spot) - Math.abs(b - spot));
+    // Sort strikes numerically so we check truly adjacent pairs
+    const strikes = Array.from(gexByStrike.keys()).sort((a, b) => a - b);
+
+    let bestCrossing = null;
+    let bestDistance = Infinity;
 
     for (let i = 0; i < strikes.length - 1; i++) {
       const strike1 = strikes[i];
@@ -356,11 +360,16 @@ class GexCalculator {
       if (gex1 * gex2 < 0) {
         // Linear interpolation
         const zeroCrossing = strike1 + (strike2 - strike1) * (-gex1 / (gex2 - gex1));
-        return Math.round(zeroCrossing);
+        const distance = Math.abs(zeroCrossing - spot);
+
+        if (distance < bestDistance) {
+          bestDistance = distance;
+          bestCrossing = zeroCrossing;
+        }
       }
     }
 
-    return Math.round(spot);
+    return bestCrossing !== null ? Math.round(bestCrossing) : Math.round(spot);
   }
 
   findResistanceLevels(strikes, spot, gexByStrike, callOIByStrike, n = 5) {
