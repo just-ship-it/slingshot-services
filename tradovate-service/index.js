@@ -386,6 +386,12 @@ async function handleOrderRequest(message, env = defaultEnv) {
   try {
     logger.info('Received order request:', message);
 
+    // Override accountId with per-env config (orchestrator sends its own default which may not match this env)
+    const envAccountId = env === 'demo' ? config.tradovate.demoAccountId : config.tradovate.liveAccountId;
+    if (envAccountId) {
+      message.accountId = parseInt(envAccountId, 10);
+    }
+
     // Validate order data
     if (!message.accountId || !message.action || !message.symbol || !message.quantity) {
       throw new Error('Invalid order request: missing required fields');

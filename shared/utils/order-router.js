@@ -188,7 +188,8 @@ export function createOrderRouter(logger, messageBus = null, tradovateHandlers =
 
     logger.info(`[Router] ORDER_REQUEST [${strategy}] → [${destinations.join(', ')}]`);
 
-    const promises = destinations.map(dest => dispatchOrder(dest, message));
+    // Clone message per destination to prevent mutation race conditions (e.g., accountId override)
+    const promises = destinations.map(dest => dispatchOrder(dest, { ...message }));
     const results = await Promise.allSettled(promises);
 
     for (let i = 0; i < results.length; i++) {
@@ -224,7 +225,8 @@ export function createOrderRouter(logger, messageBus = null, tradovateHandlers =
 
     logger.info(`[Router] WEBHOOK_TRADE ${action} [${strategy}] → [${destinations.join(', ')}]`);
 
-    const promises = destinations.map(dest => dispatchWebhook(dest, message));
+    // Clone message per destination to prevent mutation race conditions
+    const promises = destinations.map(dest => dispatchWebhook(dest, { ...message }));
     const results = await Promise.allSettled(promises);
 
     for (let i = 0; i < results.length; i++) {
