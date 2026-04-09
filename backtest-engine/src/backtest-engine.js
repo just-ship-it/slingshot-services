@@ -125,7 +125,9 @@ export class BacktestEngine {
           { afterBars: 30, ifMFE: 30, trailDistance: 20 },
           { afterBars: 45, ifMFE: 40, trailDistance: 10 },
         ]
-      } : { enabled: false }
+      } : { enabled: false },
+      // IV shift filter: cancel fills where IV shifted too much between signal and fill
+      maxIVShiftAtFill: config.strategyParams?.maxIVShiftAtFill || 0
     });
     this.performanceCalculator = new PerformanceCalculator(
       config.initialCapital,
@@ -667,6 +669,14 @@ export class BacktestEngine {
     // Initialize trade simulator with calendar spread data
     if (data.calendarSpreads && data.calendarSpreads.length > 0) {
       this.tradeSimulator.initializeCalendarSpreads(data.calendarSpreads);
+    }
+
+    // Pass IV loader to trade simulator for per-trade IV tracking
+    if (data.ivLoader) {
+      this.tradeSimulator.setIVLoader(data.ivLoader);
+      if (!this.config.quiet) {
+        console.log('📊 IV tracking enabled: per-trade IV/skew at entry, during, and exit');
+      }
     }
 
     // Initialize GF early exit if enabled in strategy params

@@ -158,6 +158,21 @@ export class CLI {
         description: 'Maximum ATM IV for entry (e.g., 0.30 = 30%). Rejects entries in high-vol environments.',
       })
 
+      .option('max-iv-shift-at-fill', {
+        type: 'number',
+        description: 'Max allowed IV change between signal and fill (e.g., 0.03 = 3%). Cancels fill if exceeded.',
+      })
+
+      .option('max-iv-volatility', {
+        type: 'number',
+        description: 'Max pre-signal IV volatility (stddev, e.g., 0.02 = 2%). Rejects signals when IV is too unstable.',
+      })
+
+      .option('iv-volatility-lookback', {
+        type: 'number',
+        description: 'Minutes to look back for IV volatility calculation (default: 15).',
+      })
+
       .option('iv-dead-zone-min', {
         type: 'number',
         description: 'IV dead zone lower bound (e.g., 0.30). Blocks entries when IV is between min and max.',
@@ -1552,6 +1567,13 @@ export class CLI {
 
     // IV cap filter
     if (args.maxIv !== undefined) strategyParams.maxIV = args.maxIv;
+
+    // IV shift at fill filter
+    if (args.maxIvShiftAtFill !== undefined) strategyParams.maxIVShiftAtFill = args.maxIvShiftAtFill;
+
+    // IV volatility filter
+    if (args.maxIvVolatility !== undefined) strategyParams.maxIVVolatility = args.maxIvVolatility;
+    if (args.ivVolatilityLookback !== undefined) strategyParams.ivVolatilityLookback = args.ivVolatilityLookback;
 
     // IV dead zone filter
     if (args.ivDeadZoneMin !== undefined) strategyParams.ivDeadZoneMin = args.ivDeadZoneMin;

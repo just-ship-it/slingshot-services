@@ -53,6 +53,8 @@ export class IVSkewGexStrategy extends BaseStrategy {
     // Filters
     this.params.minIV = params.minIV ?? 0.18;  // Skip low IV environments
     this.params.maxIV = params.maxIV ?? null;   // Skip high IV environments (null = no cap)
+    this.params.maxIVVolatility = params.maxIVVolatility ?? null;  // Max pre-signal IV stddev (null = disabled)
+    this.params.ivVolatilityLookback = params.ivVolatilityLookback ?? 15;  // Minutes to look back for IV volatility
 
     // IV dead zone — block entries when IV falls in a specific range for a specific side
     // Based on analysis: longs at 30-35% IV have 54% WR vs 79% at 40%+
@@ -96,6 +98,7 @@ export class IVSkewGexStrategy extends BaseStrategy {
     this.ivData = null;
     this.ivLoader = null;
     this.liveIVData = null;  // For live trading
+    this.liveIVHistory = [];  // Rolling buffer for IV volatility calculation
   }
 
   /**
@@ -116,6 +119,15 @@ export class IVSkewGexStrategy extends BaseStrategy {
    */
   setLiveIVData(ivData) {
     this.liveIVData = ivData;
+    // Maintain rolling IV history for volatility calculation
+    if (ivData && ivData.iv != null) {
+      this.liveIVHistory.push({ timestamp: Date.now(), iv: ivData.iv, skew: ivData.skew });
+      // Keep only the lookback window + buffer
+      const maxSamples = (this.params.ivVolatilityLookback || 15) + 5;
+      if (this.liveIVHistory.length > maxSamples) {
+        this.liveIVHistory = this.liveIVHistory.slice(-maxSamples);
+      }
+    }
   }
 
   /**
@@ -329,6 +341,34 @@ export class IVSkewGexStrategy extends BaseStrategy {
       if (this.params.debug) console.log(`[IV-SKEW] High IV (${iv.iv.toFixed(3)}) at ${new Date(timestamp).toISOString()}`);
       this.logEvaluationSummary(candle, iv, gexLevels, null, `high IV (${(iv.iv * 100).toFixed(1)}%)`);
       return null;
+    }
+
+    // Skip when pre-signal IV is too volatile (unstable IV environment)
+    if (this.params.maxIVVolatility) {
+      const lookback = this.params.ivVolatilityLookback;
+      let samples = [];
+
+      if (this.ivLoader) {
+        // Backtesting: sample from IV loader
+        for (let i = lookback; i >= 0; i--) {
+          const t = timestamp - (i * 60000);
+          const sample = this.ivLoader.getIVAtTime(t);
+          if (sample) samples.push(sample.iv);
+        }
+      } else if (this.liveIVHistory.length >= 3) {
+        // Live trading: use rolling IV history buffer
+        samples = this.liveIVHistory.slice(-lookback).map(s => s.iv);
+      }
+
+      if (samples.length >= 3) {
+        const mean = samples.reduce((s, v) => s + v, 0) / samples.length;
+        const stddev = Math.sqrt(samples.reduce((s, v) => s + (v - mean) ** 2, 0) / samples.length);
+        if (stddev > this.params.maxIVVolatility) {
+          if (this.params.debug) console.log(`[IV-SKEW] IV too volatile (stddev=${(stddev * 100).toFixed(2)}%) at ${new Date(timestamp).toISOString()}`);
+          this.logEvaluationSummary(candle, iv, gexLevels, null, `IV too volatile (${(stddev * 100).toFixed(2)}% stddev)`);
+          return null;
+        }
+      }
     }
 
     const hour = this.getETHour(timestamp);

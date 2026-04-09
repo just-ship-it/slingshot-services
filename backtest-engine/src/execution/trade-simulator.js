@@ -76,6 +76,12 @@ export class TradeSimulator {
     // GEX loader reference (set by backtest engine)
     this.gexLoader = null;
 
+    // IV loader reference (set by backtest engine for per-trade IV tracking)
+    this.ivLoader = null;
+
+    // IV shift filter: cancel fills where IV shifted too much between signal and fill
+    this.maxIVShiftAtFill = config.maxIVShiftAtFill || 0; // 0 = disabled
+
     // GF tracking state per trade
     this.tradeGFState = new Map(); // Map<tradeId, { lastGF, lastCheckTime, consecutiveAdverse, breakevenTriggered }>
   }
@@ -406,6 +412,30 @@ export class TradeSimulator {
           trade._mfePrice = fillResult.fillPrice;
           trade._maePrice = fillResult.fillPrice;
 
+          // Capture IV at entry fill and initialize per-bar IV history
+          trade._entryIV = this._getIVSnapshot(bar.timestamp);
+          trade._ivHistory = [];
+          if (trade._entryIV) {
+            trade._ivHistory.push({ ...trade._entryIV, bar: 0 });
+          }
+
+          // Check IV shift between signal and fill — reject if too large
+          if (this.maxIVShiftAtFill > 0 && trade._entryIV && trade.signal?.ivValue != null) {
+            const ivShift = Math.abs(trade._entryIV.iv - trade.signal.ivValue);
+            if (ivShift > this.maxIVShiftAtFill) {
+              trade.status = 'cancelled';
+              if (debug) {
+                console.log(`    ❌ [TRADE ${trade.id}] IV shift at fill too large: ${(ivShift * 100).toFixed(2)}% > ${(this.maxIVShiftAtFill * 100).toFixed(1)}% threshold`);
+              }
+              return {
+                ...trade,
+                event: 'order_cancelled',
+                cancelReason: 'iv_shift_exceeded',
+                ivShiftAtFill: ivShift
+              };
+            }
+          }
+
           // Recalculate stop from actual fill price if stopDistance is specified
           if (trade.signal?.stopDistance) {
             const isBuy = trade.side === 'buy' || trade.side === 'long';
@@ -547,6 +577,14 @@ export class TradeSimulator {
     if (trade.status === 'active' && minuteCandle) {
       trade.barsSinceEntry++;
 
+      // Track IV snapshot per bar (sampled every 5 bars to keep data size manageable)
+      if (trade._ivHistory && trade.barsSinceEntry % 5 === 0) {
+        const ivSnap = this._getIVSnapshot(minuteCandle.timestamp);
+        if (ivSnap) {
+          trade._ivHistory.push({ ...ivSnap, bar: trade.barsSinceEntry });
+        }
+      }
+
       // Soft stop: check PnL at bar close (not every tick) to let trades breathe through intra-bar noise
       if (trade.softStopPoints > 0) {
         const entryPrice = trade.actualEntry || trade.entryPrice;
@@ -634,6 +672,30 @@ export class TradeSimulator {
         // Initialize MFE/MAE tracking
         trade._mfePrice = fillResult.fillPrice;
         trade._maePrice = fillResult.fillPrice;
+
+        // Capture IV at entry fill and initialize per-bar IV history
+        trade._entryIV = this._getIVSnapshot(candle.timestamp);
+        trade._ivHistory = [];
+        if (trade._entryIV) {
+          trade._ivHistory.push({ ...trade._entryIV, bar: 0 });
+        }
+
+        // Check IV shift between signal and fill — reject if too large
+        if (this.maxIVShiftAtFill > 0 && trade._entryIV && trade.signal?.ivValue != null) {
+          const ivShift = Math.abs(trade._entryIV.iv - trade.signal.ivValue);
+          if (ivShift > this.maxIVShiftAtFill) {
+            trade.status = 'cancelled';
+            if (debug) {
+              console.log(`    ❌ [TRADE ${trade.id}] IV shift at fill too large: ${(ivShift * 100).toFixed(2)}% > ${(this.maxIVShiftAtFill * 100).toFixed(1)}% threshold`);
+            }
+            return {
+              ...trade,
+              event: 'order_cancelled',
+              cancelReason: 'iv_shift_exceeded',
+              ivShiftAtFill: ivShift
+            };
+          }
+        }
 
         // Recalculate stop from actual fill price if stopDistance is specified
         if (trade.signal?.stopDistance) {
@@ -2186,6 +2248,19 @@ export class TradeSimulator {
       gfBreakevenTriggered: gfState.breakevenTriggered
     } : {};
 
+    // Capture IV at exit and compute IV trajectory metrics
+    const exitIV = this._getIVSnapshot(candle.timestamp);
+    const ivTracking = {};
+    if (trade._entryIV) {
+      ivTracking.entryIV = trade._entryIV;
+      ivTracking.exitIV = exitIV;
+      ivTracking.ivHistory = trade._ivHistory || [];
+      if (exitIV && trade._entryIV) {
+        ivTracking.ivChange = roundTo(exitIV.iv - trade._entryIV.iv, 6);
+        ivTracking.skewChange = roundTo(exitIV.skew - trade._entryIV.skew, 6);
+      }
+    }
+
     const completedTrade = {
       ...trade,
       status: 'completed',
@@ -2202,7 +2277,8 @@ export class TradeSimulator {
       event: 'trade_completed',
       pointValue: pointValue,
       baseSymbol: baseSymbol,
-      ...gfMetadata  // Include GF tracking data in trade record
+      ...gfMetadata,  // Include GF tracking data in trade record
+      ...ivTracking   // Include IV tracking data in trade record
     };
 
     // Add additional trade statistics
@@ -2566,6 +2642,31 @@ export class TradeSimulator {
    */
   setGexLoader(gexLoader) {
     this.gexLoader = gexLoader;
+  }
+
+  /**
+   * Set the IV loader for per-trade IV/skew tracking
+   *
+   * @param {Object} ivLoader - IVLoader instance with getIVAtTime() method
+   */
+  setIVLoader(ivLoader) {
+    this.ivLoader = ivLoader;
+  }
+
+  /**
+   * Get current IV snapshot from the loader, returns null if unavailable
+   */
+  _getIVSnapshot(timestamp) {
+    if (!this.ivLoader) return null;
+    const iv = this.ivLoader.getIVAtTime(timestamp);
+    if (!iv) return null;
+    return {
+      timestamp,
+      iv: iv.iv,
+      skew: iv.skew,
+      callIV: iv.callIV,
+      putIV: iv.putIV,
+    };
   }
 
   /**
