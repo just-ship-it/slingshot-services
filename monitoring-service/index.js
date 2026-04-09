@@ -3074,72 +3074,99 @@ app.post('/api/trading/disable', dashboardAuth, async (req, res) => {
 });
 
 // ============================================================
-// Connector Management Endpoints (for multi-broker routing)
+// Order Routing Management Endpoints
 // ============================================================
 
-// Get status of all configured connectors and routing config
-app.get('/api/connectors/status', dashboardAuth, async (req, res) => {
+// Helper: get routing config from Redis, fall back to file
+async function getRoutingConfig() {
   try {
-    // Read routing config
+    const cached = await messageBus.publisher.get('routing:config');
+    if (cached) return JSON.parse(cached);
+  } catch { /* fall through */ }
+
+  // Fall back to file
+  try {
     const fs = await import('fs');
     const { join, dirname } = await import('path');
     const { fileURLToPath } = await import('url');
     const __dir = dirname(fileURLToPath(import.meta.url));
-    let routingConfig = null;
-    try {
-      routingConfig = JSON.parse(fs.readFileSync(join(__dir, '../shared/routing-config.json'), 'utf-8'));
-    } catch { /* no config */ }
+    return JSON.parse(fs.readFileSync(join(__dir, '../shared/routing-config.json'), 'utf-8'));
+  } catch { return null; }
+}
 
-    // Check which connectors are configured (env vars present)
-    const connectors = {};
+// Helper: get list of available destinations from env vars
+function getAvailableDestinations() {
+  const dests = [];
+  if (process.env.TRADOVATE_DEMO_ACCOUNT_ID) dests.push('tradovate-demo');
+  if (process.env.TRADOVATE_LIVE_ACCOUNT_ID) dests.push('tradovate-live');
+  if (process.env.PICKMYTRADE_ENABLED === 'true') dests.push('pickmytrade');
+  return dests;
+}
 
-    // PickMyTrade
-    const pmtConfigured = process.env.PICKMYTRADE_ENABLED === 'true' && !!process.env.PICKMYTRADE_TOKEN;
-    if (pmtConfigured) {
-      let enabled = true;
-      try {
-        const val = await messageBus.publisher.get('connector:pickmytrade:enabled');
-        if (val !== null) enabled = val === 'true';
-      } catch { /* default true */ }
-      connectors.pickmytrade = { configured: true, enabled };
-    }
-
+// Get full routing config + available destinations
+app.get('/api/routing/config', dashboardAuth, async (req, res) => {
+  try {
+    const config = await getRoutingConfig();
     res.json({
-      connectors,
-      routes: routingConfig?.routes || {},
-      defaultDestinations: routingConfig?.defaultDestinations || ['tradovate'],
+      defaultDestinations: config?.defaultDestinations || ['tradovate'],
+      routes: config?.routes || {},
+      availableDestinations: getAvailableDestinations(),
       timestamp: new Date().toISOString()
     });
   } catch (error) {
-    logger.error('Failed to get connector status:', error.message);
+    logger.error('Failed to get routing config:', error.message);
     res.status(500).json({ error: error.message });
   }
 });
 
-// Enable a connector
-app.post('/api/connectors/:name/enable', dashboardAuth, async (req, res) => {
-  const { name } = req.params;
+// Enable a destination for a strategy
+app.post('/api/routing/strategy/:strategyName/destination/:dest/enable', dashboardAuth, async (req, res) => {
+  const { strategyName, dest } = req.params;
   try {
-    await messageBus.publisher.set(`connector:${name}:enabled`, 'true');
-    logger.info(`Connector ${name} ENABLED via dashboard`);
-    broadcast('connector_status_changed', { connector: name, enabled: true, timestamp: new Date().toISOString() });
-    res.json({ connector: name, enabled: true, timestamp: new Date().toISOString() });
+    const config = await getRoutingConfig() || { defaultDestinations: ['tradovate'], routes: {} };
+
+    // Get current destinations for this strategy (fall back to defaults)
+    const currentDests = config.routes[strategyName] || [...config.defaultDestinations];
+
+    // Add destination if not already present
+    if (!currentDests.includes(dest)) {
+      currentDests.push(dest);
+    }
+    config.routes[strategyName] = currentDests;
+
+    // Save to Redis
+    await messageBus.publisher.set('routing:config', JSON.stringify(config));
+    logger.info(`[Routing] ${strategyName}: added ${dest} → [${currentDests.join(', ')}]`);
+
+    broadcast('routing_config_changed', { config, timestamp: new Date().toISOString() });
+    res.json({ strategy: strategyName, destinations: currentDests, timestamp: new Date().toISOString() });
   } catch (error) {
-    logger.error(`Failed to enable connector ${name}:`, error.message);
+    logger.error(`Failed to update routing for ${strategyName}:`, error.message);
     res.status(500).json({ error: error.message });
   }
 });
 
-// Disable a connector
-app.post('/api/connectors/:name/disable', dashboardAuth, async (req, res) => {
-  const { name } = req.params;
+// Disable a destination for a strategy
+app.post('/api/routing/strategy/:strategyName/destination/:dest/disable', dashboardAuth, async (req, res) => {
+  const { strategyName, dest } = req.params;
   try {
-    await messageBus.publisher.set(`connector:${name}:enabled`, 'false');
-    logger.info(`Connector ${name} DISABLED via dashboard`);
-    broadcast('connector_status_changed', { connector: name, enabled: false, timestamp: new Date().toISOString() });
-    res.json({ connector: name, enabled: false, timestamp: new Date().toISOString() });
+    const config = await getRoutingConfig() || { defaultDestinations: ['tradovate'], routes: {} };
+
+    // Get current destinations for this strategy (fall back to defaults)
+    const currentDests = config.routes[strategyName] || [...config.defaultDestinations];
+
+    // Remove destination
+    const filtered = currentDests.filter(d => d !== dest);
+    config.routes[strategyName] = filtered;
+
+    // Save to Redis
+    await messageBus.publisher.set('routing:config', JSON.stringify(config));
+    logger.info(`[Routing] ${strategyName}: removed ${dest} → [${filtered.join(', ')}]`);
+
+    broadcast('routing_config_changed', { config, timestamp: new Date().toISOString() });
+    res.json({ strategy: strategyName, destinations: filtered, timestamp: new Date().toISOString() });
   } catch (error) {
-    logger.error(`Failed to disable connector ${name}:`, error.message);
+    logger.error(`Failed to update routing for ${strategyName}:`, error.message);
     res.status(500).json({ error: error.message });
   }
 });

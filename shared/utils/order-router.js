@@ -5,12 +5,13 @@
  * to configured connector destinations (tradovate-live, tradovate-demo,
  * pickmytrade, etc.) based on strategy-level routing rules.
  *
+ * Routing config is persisted in Redis (key: routing:config) and read
+ * dynamically on each routing call. Falls back to routing-config.json
+ * if Redis has no config. Dashboard can update routing per-strategy
+ * without service restarts.
+ *
  * Error isolation: connectors run in parallel via Promise.allSettled.
  * A PickMyTrade failure will never block Tradovate execution.
- *
- * Runtime toggle: each non-tradovate connector's enabled state is checked
- * in Redis (key: connector:{name}:enabled) on every routing call, allowing
- * dashboard-driven enable/disable without restarts.
  */
 
 import fs from 'fs';
@@ -21,10 +22,9 @@ import { PickMyTradeConnector } from './pickmytrade-connector.js';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 /**
- * Load routing config from env var (base64) or JSON file.
- * Returns null if no config exists → tradovate-only default.
+ * Load routing config from JSON file (fallback).
  */
-function loadRoutingConfig(logger) {
+function loadRoutingConfigFromFile(logger) {
   const configEnv = process.env.ROUTING_CONFIG;
   if (configEnv) {
     try {
@@ -78,39 +78,36 @@ function initConnectors(logger) {
 }
 
 /**
- * Check if a connector is enabled at runtime via Redis.
- * Falls back to true (enabled) if Redis is unavailable or key doesn't exist.
- */
-async function isConnectorEnabled(redisClient, connectorName) {
-  if (!redisClient) return true;
-  try {
-    const val = await redisClient.get(`connector:${connectorName}:enabled`);
-    if (val === null) return true;
-    return val === 'true';
-  } catch {
-    return true;
-  }
-}
-
-/**
  * Create the order router.
  *
  * @param {Object} logger - Logger instance
- * @param {Object} [messageBus] - Message bus instance (for Redis-backed connector toggles)
+ * @param {Object} [messageBus] - Message bus instance (for Redis-backed config)
  * @param {Object} [tradovateHandlers] - Map of tradovate destination names to handler objects.
- *   Each handler: { order: async (message) => ..., webhook: async (message) => ... }
- *   Example: { 'tradovate-live': { order: fn, webhook: fn }, 'tradovate-demo': { order: fn, webhook: fn } }
- * @returns {{ routeOrderRequest: Function, routeWebhookTrade: Function, getConnectorStatus: Function }}
+ * @returns {{ routeOrderRequest: Function, routeWebhookTrade: Function, getRoutingConfig: Function }}
  */
 export function createOrderRouter(logger, messageBus = null, tradovateHandlers = {}) {
-  const config = loadRoutingConfig(logger);
+  const fileConfig = loadRoutingConfigFromFile(logger);
   const connectors = initConnectors(logger);
   const redisClient = messageBus?.publisher || null;
 
   /**
+   * Get the current routing config. Reads from Redis first, falls back to file.
+   */
+  async function getActiveConfig() {
+    if (redisClient) {
+      try {
+        const cached = await redisClient.get('routing:config');
+        if (cached) return JSON.parse(cached);
+      } catch { /* fall through to file */ }
+    }
+    return fileConfig;
+  }
+
+  /**
    * Resolve destinations for a given strategy name.
    */
-  function getDestinations(strategy) {
+  async function getDestinations(strategy) {
+    const config = await getActiveConfig();
     if (!config) return [Object.keys(tradovateHandlers)[0] || 'tradovate'];
     if (strategy && config.routes && config.routes[strategy]) {
       return config.routes[strategy];
@@ -119,31 +116,29 @@ export function createOrderRouter(logger, messageBus = null, tradovateHandlers =
   }
 
   /**
-   * Check if a destination is a tradovate handler (tradovate, tradovate-live, tradovate-demo).
+   * Check if a destination is a tradovate handler.
    */
   function isTradovateDestination(dest) {
     return dest === 'tradovate' || dest.startsWith('tradovate-');
   }
 
   /**
-   * Filter destinations by checking enabled state.
-   * Tradovate destinations are always available (controlled by trading kill switch).
-   * External connectors check Redis enabled state.
+   * Filter destinations to only those with available handlers/connectors.
    */
-  async function filterEnabledDestinations(destinations) {
-    const enabled = [];
+  function filterAvailableDestinations(destinations) {
+    const available = [];
     for (const dest of destinations) {
       if (isTradovateDestination(dest)) {
         if (tradovateHandlers[dest]) {
-          enabled.push(dest);
+          available.push(dest);
         } else {
           logger.warn(`[Router] No tradovate handler registered for: ${dest}`);
         }
-      } else if (connectors.has(dest) && await isConnectorEnabled(redisClient, dest)) {
-        enabled.push(dest);
+      } else if (connectors.has(dest)) {
+        available.push(dest);
       }
     }
-    return enabled;
+    return available;
   }
 
   /**
@@ -178,11 +173,11 @@ export function createOrderRouter(logger, messageBus = null, tradovateHandlers =
    */
   async function routeOrderRequest(message) {
     const strategy = message.strategy || 'UNKNOWN';
-    const configuredDests = getDestinations(strategy);
-    const destinations = await filterEnabledDestinations(configuredDests);
+    const configuredDests = await getDestinations(strategy);
+    const destinations = filterAvailableDestinations(configuredDests);
 
     if (destinations.length === 0) {
-      logger.warn(`[Router] ORDER_REQUEST [${strategy}] — no enabled destinations (configured: [${configuredDests.join(', ')}])`);
+      logger.warn(`[Router] ORDER_REQUEST [${strategy}] — no available destinations (configured: [${configuredDests.join(', ')}])`);
       return;
     }
 
@@ -215,11 +210,11 @@ export function createOrderRouter(logger, messageBus = null, tradovateHandlers =
   async function routeWebhookTrade(message) {
     const strategy = message.body?.strategy || 'UNKNOWN';
     const action = message.body?.action || 'unknown';
-    const configuredDests = getDestinations(strategy);
-    const destinations = await filterEnabledDestinations(configuredDests);
+    const configuredDests = await getDestinations(strategy);
+    const destinations = filterAvailableDestinations(configuredDests);
 
     if (destinations.length === 0) {
-      logger.warn(`[Router] WEBHOOK_TRADE ${action} [${strategy}] — no enabled destinations`);
+      logger.warn(`[Router] WEBHOOK_TRADE ${action} [${strategy}] — no available destinations`);
       return;
     }
 
@@ -246,34 +241,24 @@ export function createOrderRouter(logger, messageBus = null, tradovateHandlers =
   }
 
   /**
-   * Get status of all configured external connectors.
+   * Get the current routing config (for API responses).
    */
-  async function getConnectorStatus() {
-    const status = {};
-    for (const [name, connector] of connectors) {
-      const enabled = await isConnectorEnabled(redisClient, name);
-      status[name] = {
-        configured: true,
-        enabled,
-        webhookUrl: connector.webhookUrl ? connector.webhookUrl.replace(/token=[^&]+/, 'token=***') : null,
-      };
-    }
-    return status;
-  }
-
-  function getRoutingConfig() {
-    return config;
+  async function getRoutingConfig() {
+    return await getActiveConfig();
   }
 
   // Log routing table on startup
-  if (config && config.routes) {
-    for (const [strategy, dests] of Object.entries(config.routes)) {
+  if (fileConfig && fileConfig.routes) {
+    for (const [strategy, dests] of Object.entries(fileConfig.routes)) {
       logger.info(`[Router]   ${strategy} → [${dests.join(', ')}]`);
     }
   }
   if (Object.keys(tradovateHandlers).length > 0) {
     logger.info(`[Router] Tradovate handlers: [${Object.keys(tradovateHandlers).join(', ')}]`);
   }
+  if (connectors.size > 0) {
+    logger.info(`[Router] External connectors: [${[...connectors.keys()].join(', ')}]`);
+  }
 
-  return { routeOrderRequest, routeWebhookTrade, getConnectorStatus, getRoutingConfig };
+  return { routeOrderRequest, routeWebhookTrade, getRoutingConfig };
 }
