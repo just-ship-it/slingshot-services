@@ -2,6 +2,7 @@
 export { default as messageBus, MessageBus } from './message-bus/index.js';
 export { default as createLogger } from './utils/logger.js';
 export { default as configManager } from './utils/config.js';
+export { createOrderRouter } from './utils/order-router.js';
 
 // Message bus channel constants
 export const CHANNELS = {

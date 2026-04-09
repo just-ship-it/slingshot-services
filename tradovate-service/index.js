@@ -1,5 +1,6 @@
 import express from 'express';
 import { messageBus, CHANNELS, createLogger, configManager, healthCheck } from '../shared/index.js';
+import { createOrderRouter } from '../shared/utils/order-router.js';
 import TradovateClient from './TradovateClient.js';
 
 const SERVICE_NAME = 'tradovate-service';
@@ -15,86 +16,107 @@ if (debugConfig.tradovate && debugConfig.tradovate.password) {
 }
 logger.info('Loaded configuration:', debugConfig);
 
-// Initialize Tradovate client
-const tradovateClient = new TradovateClient(config.tradovate, logger, messageBus, CHANNELS);
+// Build per-env config from shared credentials
+function buildClientConfig(baseConfig, env) {
+  return {
+    ...baseConfig,
+    useDemo: env === 'demo',
+    defaultAccountId: env === 'demo' ? baseConfig.demoAccountId : baseConfig.liveAccountId,
+    deviceId: `${baseConfig.deviceId || 'slingshot'}-${env}`,
+  };
+}
 
-// Track orderStrategy relationships
-// Map: strategyId -> { entryOrderId, stopOrderId, targetOrderId, symbol, isTrailing, trailingTrigger, trailingOffset }
-const orderStrategyLinks = new Map();
+// Per-client state factory
+function createClientState() {
+  return {
+    orderStrategyLinks: new Map(),
+    orderSignalMap: new Map(),
+    pendingOrderSignals: new Map(),
+    strategyChildMap: new Map(),
+    pendingStructuralStops: new Map(),
+    orderStrategyMap: new Map(),
+  };
+}
 
-// Track order to signal mapping for WebSocket fill notifications
-// Map: orderId -> signalId (to preserve signal context when orders fill via WebSocket)
-const orderSignalMap = new Map();
+// Initialize clients + state
+const clients = {};
+const clientState = {};
+const dualMode = !!(config.tradovate.demoAccountId && config.tradovate.liveAccountId);
 
-// Pre-register signal ID by symbol BEFORE placing orders, so immediate fills
-// (where the WebSocket executionUpdate fires before handleOrderRequest completes)
-// can still resolve signal context. Map: symbol -> { signalId, strategy, timestamp }
-const pendingOrderSignals = new Map();
+if (dualMode) {
+  for (const env of ['demo', 'live']) {
+    clients[env] = new TradovateClient(buildClientConfig(config.tradovate, env), logger, messageBus, CHANNELS);
+    clientState[env] = createClientState();
+  }
+  logger.info('Dual Tradovate mode: demo + live clients initialized');
+} else {
+  const env = config.tradovate.useDemo ? 'demo' : 'live';
+  clients[env] = new TradovateClient(config.tradovate, logger, messageBus, CHANNELS);
+  clientState[env] = createClientState();
+  logger.info(`Single Tradovate mode: ${env} client initialized`);
+}
+const defaultEnv = Object.keys(clients)[0];
 
-// Track OrderStrategy parent-child relationships
-// Map: parentStrategyId -> { signalId, childOrderIds: Set<orderId> }
-const strategyChildMap = new Map();
-
-// Track structural stop corrections needed after market order fills.
-// When a market order with structural_stop fills, the bracket stop (placed as a
-// relative distance) will be at the wrong level. This map stores the intended
-// absolute stop price so we can correct it immediately after fill.
-// Map: parentStrategyId -> { stopPrice, targetPrice, action }
-const pendingStructuralStops = new Map();
-
-// Track order to strategy mapping for multi-strategy cancellation support
-// Map: orderId -> strategyName (to enable strategy-specific order cancellation)
-const orderStrategyMap = new Map();
+// Backward-compat aliases for code outside handler functions (HTTP endpoints, etc.)
+const tradovateClient = clients[defaultEnv];
+const orderStrategyLinks = clientState[defaultEnv].orderStrategyLinks;
+const orderSignalMap = clientState[defaultEnv].orderSignalMap;
+const pendingOrderSignals = clientState[defaultEnv].pendingOrderSignals;
+const strategyChildMap = clientState[defaultEnv].strategyChildMap;
+const pendingStructuralStops = clientState[defaultEnv].pendingStructuralStops;
+const orderStrategyMap = clientState[defaultEnv].orderStrategyMap;
 
 // Order-to-strategy persistence functions
-async function saveOrderStrategyMappings() {
+async function saveOrderStrategyMappings(env = defaultEnv) {
   try {
     if (!messageBus.isConnected) {
       logger.warn('Redis disconnected, skipping saveOrderStrategyMappings operation');
       return;
     }
 
+    const envOrderStrategyMap = clientState[env].orderStrategyMap;
+
     // Convert Map to object for JSON serialization
     const mappingsData = {};
-    for (const [orderId, strategy] of orderStrategyMap) {
+    for (const [orderId, strategy] of envOrderStrategyMap) {
       mappingsData[orderId] = strategy;
     }
 
     const dataToSave = {
       timestamp: new Date().toISOString(),
       mappings: mappingsData,
-      count: orderStrategyMap.size,
+      count: envOrderStrategyMap.size,
       version: '1.0'
     };
 
-    await messageBus.publisher.set('tradovate:order:strategy:mappings', JSON.stringify(dataToSave));
-    logger.info(`💾 Order-to-strategy mappings saved to Redis (${orderStrategyMap.size} mappings)`);
+    await messageBus.publisher.set(`tradovate:${env}:order:strategy:mappings`, JSON.stringify(dataToSave));
+    logger.info(`💾 Order-to-strategy mappings saved to Redis [${env}] (${envOrderStrategyMap.size} mappings)`);
   } catch (error) {
     logger.error('❌ Failed to save order-strategy mappings to Redis:', error);
   }
 }
 
 // Helper function to add order-strategy mapping and persist to Redis
-async function addOrderStrategyMapping(orderId, strategy) {
+async function addOrderStrategyMapping(orderId, strategy, env = defaultEnv) {
   if (!orderId || !strategy) return;
 
   // Always use string keys for consistent lookups
   const orderIdStr = String(orderId);
-  orderStrategyMap.set(orderIdStr, strategy);
+  clientState[env].orderStrategyMap.set(orderIdStr, strategy);
   logger.info(`🎯 Mapped order ${orderIdStr} → strategy ${strategy}`);
 
   // Save to Redis immediately for persistence
-  await saveOrderStrategyMappings();
+  await saveOrderStrategyMappings(env);
 }
 
-async function loadOrderStrategyMappings() {
+async function loadOrderStrategyMappings(env = defaultEnv) {
   try {
     if (!messageBus.isConnected) {
       logger.warn('Redis disconnected, skipping loadOrderStrategyMappings operation');
       return;
     }
 
-    const data = await messageBus.publisher.get('tradovate:order:strategy:mappings');
+    const data = await messageBus.publisher.get(`tradovate:${env}:order:strategy:mappings`);
     if (data) {
       const parsedData = JSON.parse(data);
 
@@ -102,13 +124,13 @@ async function loadOrderStrategyMappings() {
       if (parsedData.mappings) {
         let loadedCount = 0;
         for (const [orderId, strategy] of Object.entries(parsedData.mappings)) {
-          orderStrategyMap.set(orderId, strategy);
+          clientState[env].orderStrategyMap.set(orderId, strategy);
           loadedCount++;
         }
-        logger.info(`📂 Loaded ${loadedCount} order-to-strategy mappings from Redis (saved at ${parsedData.timestamp})`);
+        logger.info(`📂 Loaded ${loadedCount} order-to-strategy mappings from Redis [${env}] (saved at ${parsedData.timestamp})`);
       }
     } else {
-      logger.info('📂 No existing order-strategy mappings found in Redis');
+      logger.info(`📂 No existing order-strategy mappings found in Redis [${env}]`);
     }
   } catch (error) {
     logger.error('❌ Failed to load order-strategy mappings from Redis:', error);
@@ -316,7 +338,8 @@ app.post('/sync/trigger', async (req, res) => {
 });
 
 // Handle individual order cancel requests (multi-strategy support)
-async function handleOrderCancelRequest(message) {
+async function handleOrderCancelRequest(message, env = defaultEnv) {
+  const tradovateClient = clients[env]; const { orderSignalMap, orderStrategyLinks, pendingOrderSignals, strategyChildMap, pendingStructuralStops, orderStrategyMap } = clientState[env];
   try {
     logger.info(`🎯 Received order cancel request: ${message.orderId} (reason: ${message.reason})`);
 
@@ -358,7 +381,8 @@ async function handleOrderCancelRequest(message) {
 }
 
 // Message bus event handlers
-async function handleOrderRequest(message) {
+async function handleOrderRequest(message, env = defaultEnv) {
+  const tradovateClient = clients[env]; const { orderSignalMap, orderStrategyLinks, pendingOrderSignals, strategyChildMap, pendingStructuralStops, orderStrategyMap } = clientState[env];
   try {
     logger.info('Received order request:', message);
 
@@ -609,7 +633,7 @@ async function handleOrderRequest(message) {
 
           // Map parent OrderStrategy to the strategy name for multi-strategy cancellation support
           if (message.strategy) {
-            await addOrderStrategyMapping(strategyId, message.strategy);
+            await addOrderStrategyMapping(strategyId, message.strategy, env);
             logger.info(`📦 Mapped parent OrderStrategy ${strategyId} → strategy ${message.strategy}`);
           }
 
@@ -643,7 +667,7 @@ async function handleOrderRequest(message) {
 
                     // Map child order to strategy for multi-strategy cancellation support
                     if (message.strategy) {
-                      await addOrderStrategyMapping(dep.orderId, message.strategy);
+                      await addOrderStrategyMapping(dep.orderId, message.strategy, env);
                     }
 
                     // Track which order is which based on label or order
@@ -707,7 +731,7 @@ async function handleOrderRequest(message) {
 
         // Store strategy mapping for position tracking (independent of signalId)
         if (message.strategy && result.orderId) {
-          await addOrderStrategyMapping(result.orderId, message.strategy);
+          await addOrderStrategyMapping(result.orderId, message.strategy, env);
         }
       }
 
@@ -741,7 +765,7 @@ async function handleOrderRequest(message) {
 
           // Store strategy mapping for bracket stop loss order (independent of signalId)
           if (message.strategy) {
-            await addOrderStrategyMapping(stopOrderId, message.strategy);
+            await addOrderStrategyMapping(stopOrderId, message.strategy, env);
           }
         }
 
@@ -773,7 +797,7 @@ async function handleOrderRequest(message) {
 
           // Store strategy mapping for bracket take profit order (independent of signalId)
           if (message.strategy) {
-            await addOrderStrategyMapping(targetOrderId, message.strategy);
+            await addOrderStrategyMapping(targetOrderId, message.strategy, env);
           }
         }
       }
@@ -811,7 +835,7 @@ async function handleOrderRequest(message) {
 
         // Store strategy mapping for regular order
         if (message.strategy) {
-          await addOrderStrategyMapping(result.orderId, message.strategy);
+          await addOrderStrategyMapping(result.orderId, message.strategy, env);
         }
       }
     }
@@ -894,7 +918,8 @@ async function handleAccountUpdate() {
 }
 
 // Sync existing orders and positions from Tradovate on startup
-async function syncExistingData() {
+async function syncExistingData(env = defaultEnv) {
+  const tradovateClient = clients[env]; const { orderSignalMap, orderStrategyLinks, pendingOrderSignals, strategyChildMap, pendingStructuralStops, orderStrategyMap } = clientState[env];
   try {
     logger.info('🔄 Syncing existing orders and positions from Tradovate...');
 
@@ -1101,7 +1126,8 @@ async function syncExistingData() {
 
 // Comprehensive full re-sync function to reconcile trading state with Tradovate
 // Handles stale orders, archived orders, and position discrepancies
-async function performFullSync(options = {}) {
+async function performFullSync(options = {}, env = defaultEnv) {
+  const tradovateClient = clients[env]; const { orderSignalMap, orderStrategyLinks, pendingOrderSignals, strategyChildMap, pendingStructuralStops, orderStrategyMap } = clientState[env];
   const {
     dryRun = false,
     requestedBy = 'system',
@@ -1183,7 +1209,7 @@ async function performFullSync(options = {}) {
               orderStrategyMap.delete(order.id);
               logger.info(`🧹 Removed strategy mapping for completed order ${order.id}`);
               // Save updated mappings to Redis
-              await saveOrderStrategyMappings();
+              await saveOrderStrategyMappings(env);
             }
           }
           cleanedMappings++;
@@ -1324,7 +1350,7 @@ async function performFullSync(options = {}) {
 
     // If we cleaned any strategy mappings, save to Redis
     if (strategyMappingsCleaned > 0 && !dryRun) {
-      await saveOrderStrategyMappings();
+      await saveOrderStrategyMappings(env);
       logger.info(`💾 Saved cleaned strategy mappings to Redis (removed ${strategyMappingsCleaned} stale entries)`);
     }
 
@@ -1333,7 +1359,7 @@ async function performFullSync(options = {}) {
       logger.info(`🧹 No working orders found - clearing all strategy mappings`);
       if (!dryRun) {
         orderStrategyMap.clear();
-        await saveOrderStrategyMappings();
+        await saveOrderStrategyMappings(env);
         logger.info(`💾 Cleared all strategy mappings from memory and Redis`);
       } else {
         logger.info(`🧹 [DRY RUN] Would clear all strategy mappings (${orderStrategyMap.size} entries)`);
@@ -1377,13 +1403,14 @@ async function performFullSync(options = {}) {
 }
 
 // Handle full sync requests
-async function handleFullSyncRequest(message) {
+async function handleFullSyncRequest(message, env = defaultEnv) {
+  const tradovateClient = clients[env]; const { orderSignalMap, orderStrategyLinks, pendingOrderSignals, strategyChildMap, pendingStructuralStops, orderStrategyMap } = clientState[env];
   const { requestedBy = 'unknown', reason = 'unknown', dryRun = false } = message;
 
   logger.info(`🔄 Received full sync request from ${requestedBy} (reason: ${reason}, dryRun: ${dryRun})`);
 
   try {
-    await performFullSync({ requestedBy, reason, dryRun });
+    await performFullSync({ requestedBy, reason, dryRun }, env);
   } catch (error) {
     logger.error(`❌ Failed to handle full sync request: ${error.message}`);
   }
@@ -1524,7 +1551,8 @@ function startMarketHoursSync(enabled = false) {
 }
 
 // Handle webhook trade signals from TradingView
-async function handleWebhookTrade(webhookMessage) {
+async function handleWebhookTrade(webhookMessage, env = defaultEnv) {
+  const tradovateClient = clients[env]; const { orderSignalMap, orderStrategyLinks, pendingOrderSignals, strategyChildMap, pendingStructuralStops, orderStrategyMap } = clientState[env];
   try {
     logger.info('Received trade signal webhook:', webhookMessage.id);
     const tradeSignal = webhookMessage.body;
@@ -1541,9 +1569,8 @@ async function handleWebhookTrade(webhookMessage) {
     }
 
     // Get account ID - prefer explicit env var over accounts[0] to avoid multi-account mismatch
-    const accountId = config.tradovate.defaultAccountId
-      ? parseInt(config.tradovate.defaultAccountId, 10)
-      : (tradovateClient.accounts.length > 0 ? tradovateClient.accounts[0].id : null);
+    const envAccountId = env === 'demo' ? config.tradovate.demoAccountId : config.tradovate.liveAccountId;
+    const accountId = envAccountId ? parseInt(envAccountId, 10) : (tradovateClient.accounts.length > 0 ? tradovateClient.accounts[0].id : null);
     if (!accountId) {
       throw new Error('No Tradovate accounts available (set TRADOVATE_DEFAULT_ACCOUNT_ID or ensure accounts are loaded)');
     }
@@ -1551,27 +1578,27 @@ async function handleWebhookTrade(webhookMessage) {
     // Handle different action types from LDPS Trader
     switch (tradeSignal.action) {
       case 'place_limit':
-        await handlePlaceLimitOrder(tradeSignal, accountId, webhookMessage.id);
+        await handlePlaceLimitOrder(tradeSignal, accountId, webhookMessage.id, env);
         break;
 
       case 'cancel_limit':
-        await handleCancelLimitOrders(tradeSignal, accountId, webhookMessage.id);
+        await handleCancelLimitOrders(tradeSignal, accountId, webhookMessage.id, env);
         break;
 
       case 'position_closed':
-        await handlePositionClosed(tradeSignal, accountId, webhookMessage.id);
+        await handlePositionClosed(tradeSignal, accountId, webhookMessage.id, env);
         break;
 
       case 'update_limit':
-        await handleUpdateLimitOrder(tradeSignal, accountId, webhookMessage.id);
+        await handleUpdateLimitOrder(tradeSignal, accountId, webhookMessage.id, env);
         break;
 
       case 'place_market':
-        await handlePlaceMarketOrder(tradeSignal, accountId, webhookMessage.id);
+        await handlePlaceMarketOrder(tradeSignal, accountId, webhookMessage.id, env);
         break;
 
       case 'modify_stop':
-        await handleModifyStop(tradeSignal, accountId, webhookMessage.id);
+        await handleModifyStop(tradeSignal, accountId, webhookMessage.id, env);
         break;
 
       default:
@@ -1602,7 +1629,8 @@ async function handleWebhookTrade(webhookMessage) {
 }
 
 // Handle place_limit action from LDPS Trader
-async function handlePlaceLimitOrder(tradeSignal, accountId, webhookId) {
+async function handlePlaceLimitOrder(tradeSignal, accountId, webhookId, env = defaultEnv) {
+  const tradovateClient = clients[env]; const { orderSignalMap, orderStrategyLinks, pendingOrderSignals, strategyChildMap, pendingStructuralStops, orderStrategyMap } = clientState[env];
   // Map side to Tradovate action
   let action;
   if (tradeSignal.side === 'buy') action = 'Buy';
@@ -1660,11 +1688,12 @@ async function handlePlaceLimitOrder(tradeSignal, accountId, webhookId) {
   }
 
   // Forward to order handler
-  await handleOrderRequest(orderRequest);
+  await handleOrderRequest(orderRequest, env);
 }
 
 // Handle place_market action - market order with optional OCO brackets
-async function handlePlaceMarketOrder(tradeSignal, accountId, webhookId) {
+async function handlePlaceMarketOrder(tradeSignal, accountId, webhookId, env = defaultEnv) {
+  const tradovateClient = clients[env]; const { orderSignalMap, orderStrategyLinks, pendingOrderSignals, strategyChildMap, pendingStructuralStops, orderStrategyMap } = clientState[env];
   // Map side to Tradovate action
   let action;
   if (tradeSignal.side === 'buy') action = 'Buy';
@@ -1697,11 +1726,12 @@ async function handlePlaceMarketOrder(tradeSignal, accountId, webhookId) {
   }
 
   // Forward to order handler
-  await handleOrderRequest(orderRequest);
+  await handleOrderRequest(orderRequest, env);
 }
 
 // Handle account sync requests from monitoring service
-async function handleAccountSyncRequest(message) {
+async function handleAccountSyncRequest(message, env = defaultEnv) {
+  const tradovateClient = clients[env]; const { orderSignalMap, orderStrategyLinks, pendingOrderSignals, strategyChildMap, pendingStructuralStops, orderStrategyMap } = clientState[env];
   logger.info(`🔄 Received account sync request from ${message.requestedBy}`);
 
   try {
@@ -1745,7 +1775,8 @@ async function handleAccountSyncRequest(message) {
 }
 
 // Handle position sync requests from trade-orchestrator
-async function handlePositionSyncRequest(message) {
+async function handlePositionSyncRequest(message, env = defaultEnv) {
+  const tradovateClient = clients[env]; const { orderSignalMap, orderStrategyLinks, pendingOrderSignals, strategyChildMap, pendingStructuralStops, orderStrategyMap } = clientState[env];
   const { requestedBy = 'unknown', reason = 'unknown' } = message;
   logger.info(`🔄 Received position sync request from ${requestedBy} (reason: ${reason})`);
 
@@ -1847,7 +1878,8 @@ async function handlePositionSyncRequest(message) {
 }
 
 // Handle cancel_limit action with multi-strategy support
-async function handleCancelLimitOrders(tradeSignal, accountId, webhookId) {
+async function handleCancelLimitOrders(tradeSignal, accountId, webhookId, env = defaultEnv) {
+  const tradovateClient = clients[env]; const { orderSignalMap, orderStrategyLinks, pendingOrderSignals, strategyChildMap, pendingStructuralStops, orderStrategyMap } = clientState[env];
   logger.info(`Processing cancel_limit: ${tradeSignal.side} ${tradeSignal.symbol} (strategy: ${tradeSignal.strategy || 'ALL'}, reason: ${tradeSignal.reason})`);
 
   try {
@@ -1944,7 +1976,8 @@ async function handleCancelLimitOrders(tradeSignal, accountId, webhookId) {
 }
 
 // Handle update_limit action from LDPS Trader
-async function handleUpdateLimitOrder(tradeSignal, accountId, webhookId) {
+async function handleUpdateLimitOrder(tradeSignal, accountId, webhookId, env = defaultEnv) {
+  const tradovateClient = clients[env]; const { orderSignalMap, orderStrategyLinks, pendingOrderSignals, strategyChildMap, pendingStructuralStops, orderStrategyMap } = clientState[env];
   logger.info(`🔄 STARTING handleUpdateLimitOrder function`);
   logger.info(`Processing update_limit: ${tradeSignal.side} ${tradeSignal.symbol} from ${tradeSignal.old_price} to ${tradeSignal.new_price}`);
   logger.debug(`Full tradeSignal object:`, JSON.stringify(tradeSignal, null, 2));
@@ -2021,7 +2054,7 @@ async function handleUpdateLimitOrder(tradeSignal, accountId, webhookId) {
       };
 
       // Call the place limit handler (which will handle duplicates)
-      await handlePlaceLimitOrder(fallbackSignal, accountId, webhookId);
+      await handlePlaceLimitOrder(fallbackSignal, accountId, webhookId, env);
 
       logger.info(`✅ Placed new limit order (fallback from update_limit)`);
       return;
@@ -2171,7 +2204,8 @@ async function handleUpdateLimitOrder(tradeSignal, accountId, webhookId) {
  *   reason: 'breakeven_triggered'
  * }
  */
-async function handleModifyStop(tradeSignal, accountId, webhookId) {
+async function handleModifyStop(tradeSignal, accountId, webhookId, env = defaultEnv) {
+  const tradovateClient = clients[env]; const { orderSignalMap, orderStrategyLinks, pendingOrderSignals, strategyChildMap, pendingStructuralStops, orderStrategyMap } = clientState[env];
   logger.info(`🎯 Processing modify_stop for ${tradeSignal.strategy}: ${tradeSignal.symbol}`);
   logger.info(`   New stop price: ${tradeSignal.new_stop_price}, Reason: ${tradeSignal.reason}`);
 
@@ -2357,7 +2391,8 @@ async function handleModifyStop(tradeSignal, accountId, webhookId) {
 }
 
 // Handle position_closed action from LDPS Trader - liquidate position and cancel orders
-async function handlePositionClosed(tradeSignal, accountId, webhookId) {
+async function handlePositionClosed(tradeSignal, accountId, webhookId, env = defaultEnv) {
+  const tradovateClient = clients[env]; const { orderSignalMap, orderStrategyLinks, pendingOrderSignals, strategyChildMap, pendingStructuralStops, orderStrategyMap } = clientState[env];
   logger.info(`Processing position_closed: ${tradeSignal.side} ${tradeSignal.symbol} - liquidating position`);
 
   try {
@@ -2439,42 +2474,193 @@ async function startup() {
       // Service continues running - reconnection logic will handle recovery
     });
 
-    // NOTE: orderPlaced events are NOT forwarded here — each order placement path
-    // (bracket, regular, OSO) already publishes ORDER_PLACED with enriched fields
-    // (symbol, orderRole, signalId). Forwarding the raw Tradovate response would
-    // create duplicates missing those fields.
+    // Connect clients sequentially to avoid CAPTCHA rate limiting
+    if (config.tradovate.username && config.tradovate.password) {
+      for (const [env, client] of Object.entries(clients)) {
+        logger.info(`Connecting to Tradovate ${env.toUpperCase()}...`);
+        try {
+          await client.connect();
+          logger.info(`Tradovate ${env.toUpperCase()} connected`);
 
-    tradovateClient.on('orderFilled', async (data) => {
-      await messageBus.publish(CHANNELS.ORDER_FILLED, data);
-    });
+          setupWebSocketHandlers(env);
+          await loadOrderStrategyMappings(env);
+          await syncExistingData(env);
+        } catch (error) {
+          logger.error(`Failed to connect Tradovate ${env.toUpperCase()}:`, error.message);
+          if (env === 'live') throw error; // Live failure is critical
+        }
+      }
 
-    tradovateClient.on('positionOpened', async (data) => {
-      await messageBus.publish(CHANNELS.POSITION_OPENED, data);
-    });
+      // Start periodic updates
+      startPeriodicUpdates();
 
-    tradovateClient.on('positionClosed', async (data) => {
-      await messageBus.publish(CHANNELS.POSITION_CLOSED, data);
-    });
+      logger.info('Initial data sync completed');
 
-    // Handle orderStrategy placement to track relationships
-    tradovateClient.on('orderStrategyPlaced', async (data) => {
-      logger.info(`🔗 OrderStrategy placed: ${data.id}`);
+      // Initialize scheduled sync functionality
+      // Can be configured via environment variables
+      const syncIntervalHours = parseInt(process.env.SYNC_INTERVAL_HOURS) || 6;
+      const enableScheduledSync = process.env.ENABLE_SCHEDULED_SYNC !== 'false'; // Default enabled
+      const enableMarketHoursSync = process.env.ENABLE_MARKET_HOURS_SYNC === 'true'; // Default disabled
 
-      // We'll need to track the resulting orders when they appear
-      // The strategy ID can be used to link orders together later
-      const strategyInfo = {
-        strategyId: data.id,
-        timestamp: new Date().toISOString(),
-        // We'll populate order IDs as they get created
-        entryOrderId: null,
-        stopOrderId: null,
-        targetOrderId: null,
-        isTrailing: data.hasTrailingStop || false
+      if (enableScheduledSync) {
+        logger.info(`🔄 Enabling scheduled sync every ${syncIntervalHours} hours`);
+        startScheduledSync(syncIntervalHours, true);
+      }
+
+      if (enableMarketHoursSync) {
+        logger.info('🔄 Enabling market hours sync (5:15pm & 5:45pm EST)');
+        startMarketHoursSync(true);
+      }
+    } else {
+      logger.warn('Tradovate credentials not configured');
+    }
+
+    // Build tradovate handler map for order router
+    const tradovateHandlers = {};
+    for (const env of Object.keys(clients)) {
+      tradovateHandlers[`tradovate-${env}`] = {
+        order: (msg) => handleOrderRequest(msg, env),
+        webhook: (msg) => handleWebhookTrade(msg, env),
       };
+    }
+    // Backward compat: "tradovate" routes to default env
+    tradovateHandlers['tradovate'] = {
+      order: (msg) => handleOrderRequest(msg, defaultEnv),
+      webhook: (msg) => handleWebhookTrade(msg, defaultEnv),
+    };
 
-      orderStrategyLinks.set(data.id, strategyInfo);
-      logger.info(`🔗 Tracking orderStrategy: ${data.id}`);
+    const orderRouter = createOrderRouter(logger, messageBus, tradovateHandlers);
+
+    await messageBus.subscribe(CHANNELS.ORDER_REQUEST, (message) =>
+      orderRouter.routeOrderRequest(message)
+    );
+    logger.info(`Subscribed to ${CHANNELS.ORDER_REQUEST} (via order router)`);
+
+    await messageBus.subscribe(CHANNELS.ORDER_CANCEL_REQUEST, (msg) => handleOrderCancelRequest(msg));
+    logger.info(`Subscribed to ${CHANNELS.ORDER_CANCEL_REQUEST}`);
+
+    await messageBus.subscribe(CHANNELS.WEBHOOK_TRADE, (message) =>
+      orderRouter.routeWebhookTrade(message)
+    );
+    logger.info(`Subscribed to ${CHANNELS.WEBHOOK_TRADE} (via order router)`);
+
+    // Subscribe to account sync requests
+    await messageBus.subscribe('account.sync.request', (msg) => {
+      for (const env of Object.keys(clients)) handleAccountSyncRequest(msg, env);
     });
+    logger.info('Subscribed to account.sync.request');
+
+    // Subscribe to position sync requests
+    await messageBus.subscribe(CHANNELS.POSITION_SYNC_REQUEST, (msg) => {
+      for (const env of Object.keys(clients)) handlePositionSyncRequest(msg, env);
+    });
+    logger.info(`Subscribed to ${CHANNELS.POSITION_SYNC_REQUEST}`);
+
+    // Subscribe to full sync requests
+    await messageBus.subscribe(CHANNELS.TRADOVATE_FULL_SYNC_REQUESTED, (msg) => {
+      for (const env of Object.keys(clients)) handleFullSyncRequest(msg, env);
+    });
+    logger.info(`Subscribed to ${CHANNELS.TRADOVATE_FULL_SYNC_REQUESTED}`);
+
+    // Publish startup event
+    await messageBus.publish(CHANNELS.SERVICE_STARTED, {
+      service: SERVICE_NAME,
+      port: config.service.port,
+      tradovateConnected: Object.fromEntries(Object.entries(clients).map(([env, c]) => [env, c.isConnected])),
+      environment: config.tradovate.useDemo ? 'demo' : 'live',
+      timestamp: new Date().toISOString()
+    });
+
+    // Start Express server - bind to all interfaces for container networking
+    const bindHost = process.env.BIND_HOST || '0.0.0.0';
+    const server = app.listen(config.service.port, bindHost, () => {
+      logger.info(`${SERVICE_NAME} listening on ${bindHost}:${config.service.port}`);
+      logger.info(`Environment: ${config.service.env}`);
+      logger.info(`Tradovate: ${Object.keys(clients).join(' + ').toUpperCase()} mode`);
+      logger.info(`Health check: http://localhost:${config.service.port}/health`);
+    });
+
+    // Graceful shutdown
+    const shutdown = async (signal) => {
+      logger.info(`${signal} received, starting graceful shutdown...`);
+
+      // Stop accepting new connections
+      server.close(() => {
+        logger.info('HTTP server closed');
+      });
+
+      // Disconnect from Tradovate
+      for (const client of Object.values(clients)) {
+        client.disconnect();
+      }
+
+      // Publish shutdown event
+      try {
+        await messageBus.publish(CHANNELS.SERVICE_STOPPED, {
+          service: SERVICE_NAME,
+          reason: signal,
+          timestamp: new Date().toISOString()
+        });
+      } catch (error) {
+        logger.error('Failed to publish shutdown event:', error);
+      }
+
+      // Disconnect from message bus
+      await messageBus.disconnect();
+      logger.info('Message bus disconnected');
+
+      process.exit(0);
+    };
+
+    process.on('SIGINT', () => shutdown('SIGINT'));
+    process.on('SIGTERM', () => shutdown('SIGTERM'));
+
+  } catch (error) {
+    logger.error('Startup failed:', error);
+    process.exit(1);
+  }
+}
+
+// Setup WebSocket handlers for a specific client environment
+function setupWebSocketHandlers(env) {
+  const tradovateClient = clients[env]; const { orderSignalMap, orderStrategyLinks, pendingOrderSignals, strategyChildMap, pendingStructuralStops, orderStrategyMap } = clientState[env];
+
+  // NOTE: orderPlaced events are NOT forwarded here — each order placement path
+  // (bracket, regular, OSO) already publishes ORDER_PLACED with enriched fields
+  // (symbol, orderRole, signalId). Forwarding the raw Tradovate response would
+  // create duplicates missing those fields.
+
+  tradovateClient.on('orderFilled', async (data) => {
+    await messageBus.publish(CHANNELS.ORDER_FILLED, { ...data, env });
+  });
+
+  tradovateClient.on('positionOpened', async (data) => {
+    await messageBus.publish(CHANNELS.POSITION_OPENED, { ...data, env });
+  });
+
+  tradovateClient.on('positionClosed', async (data) => {
+    await messageBus.publish(CHANNELS.POSITION_CLOSED, { ...data, env });
+  });
+
+  // Handle orderStrategy placement to track relationships
+  tradovateClient.on('orderStrategyPlaced', async (data) => {
+    logger.info(`🔗 OrderStrategy placed: ${data.id}`);
+
+    // We'll need to track the resulting orders when they appear
+    // The strategy ID can be used to link orders together later
+    const strategyInfo = {
+      strategyId: data.id,
+      timestamp: new Date().toISOString(),
+      // We'll populate order IDs as they get created
+      entryOrderId: null,
+      stopOrderId: null,
+      targetOrderId: null,
+      isTrailing: data.hasTrailingStop || false
+    };
+
+    orderStrategyLinks.set(data.id, strategyInfo);
+    logger.info(`🔗 Tracking orderStrategy: ${data.id}`);
+  });
 
     // Handle WebSocket order updates (critical for orderStrategy tracking)
     tradovateClient.on('orderUpdate', async (data) => {
@@ -2853,7 +3039,7 @@ async function startup() {
             orderStrategyMap.delete(execution.orderId);
             logger.info(`🧹 Cleaned up strategy mapping for filled order ${execution.orderId} (strategy: ${strategy})`);
             // Save updated mappings to Redis
-            await saveOrderStrategyMappings();
+            await saveOrderStrategyMappings(env);
           }
         }
 
@@ -3072,10 +3258,10 @@ async function startup() {
         logger.info(`🔚 OrderStrategy ${strategy.id} completed with status: ${strategy.status}`);
 
         // Enhanced cleanup: Get child orders from the strategy and cancel them explicitly
-        await cleanupOrderStrategyChildren(strategy);
+        await cleanupOrderStrategyChildren(strategy, env);
 
         // Also run general orphaned order cleanup as a fallback
-        await cleanupOrphanedBracketOrders(strategy);
+        await cleanupOrphanedBracketOrders(strategy, env);
 
         // Notify trade-orchestrator about strategy cancellation
         await messageBus.publish(CHANNELS.ORDER_CANCELLED, {
@@ -3275,132 +3461,12 @@ async function startup() {
       } catch (error) {
         logger.error('❌ Error processing WebSocket sync data:', error);
       }
-    });
-
-    // Load persisted order-strategy mappings from Redis
-    logger.info('Loading persisted order-strategy mappings...');
-    await loadOrderStrategyMappings();
-
-    // Connect to Tradovate
-    if (config.tradovate.username && config.tradovate.password) {
-      logger.info('Connecting to Tradovate...');
-      await tradovateClient.connect();
-      logger.info('Tradovate connected');
-
-      // Start periodic updates
-      startPeriodicUpdates();
-
-      // Perform initial data sync
-      logger.info('Performing initial data sync...');
-      // Skip REST API account/position updates - WebSocket provides this data
-      // await handleAccountUpdate();
-      // await handlePositionUpdate();
-
-      // Sync existing orders and positions from Tradovate
-      await syncExistingData();
-
-      logger.info('Initial data sync completed');
-
-      // Initialize scheduled sync functionality
-      // Can be configured via environment variables
-      const syncIntervalHours = parseInt(process.env.SYNC_INTERVAL_HOURS) || 6;
-      const enableScheduledSync = process.env.ENABLE_SCHEDULED_SYNC !== 'false'; // Default enabled
-      const enableMarketHoursSync = process.env.ENABLE_MARKET_HOURS_SYNC === 'true'; // Default disabled
-
-      if (enableScheduledSync) {
-        logger.info(`🔄 Enabling scheduled sync every ${syncIntervalHours} hours`);
-        startScheduledSync(syncIntervalHours, true);
-      }
-
-      if (enableMarketHoursSync) {
-        logger.info('🔄 Enabling market hours sync (5:15pm & 5:45pm EST)');
-        startMarketHoursSync(true);
-      }
-    } else {
-      logger.warn('Tradovate credentials not configured');
-    }
-
-    // Subscribe to message bus channels
-    await messageBus.subscribe(CHANNELS.ORDER_REQUEST, handleOrderRequest);
-    logger.info(`Subscribed to ${CHANNELS.ORDER_REQUEST}`);
-
-    await messageBus.subscribe(CHANNELS.ORDER_CANCEL_REQUEST, handleOrderCancelRequest);
-    logger.info(`Subscribed to ${CHANNELS.ORDER_CANCEL_REQUEST}`);
-
-    await messageBus.subscribe(CHANNELS.WEBHOOK_TRADE, handleWebhookTrade);
-    logger.info(`Subscribed to ${CHANNELS.WEBHOOK_TRADE}`);
-
-    // Subscribe to account sync requests
-    await messageBus.subscribe('account.sync.request', handleAccountSyncRequest);
-    logger.info('Subscribed to account.sync.request');
-
-    // Subscribe to position sync requests
-    await messageBus.subscribe(CHANNELS.POSITION_SYNC_REQUEST, handlePositionSyncRequest);
-    logger.info(`Subscribed to ${CHANNELS.POSITION_SYNC_REQUEST}`);
-
-    // Subscribe to full sync requests
-    await messageBus.subscribe(CHANNELS.TRADOVATE_FULL_SYNC_REQUESTED, handleFullSyncRequest);
-    logger.info(`Subscribed to ${CHANNELS.TRADOVATE_FULL_SYNC_REQUESTED}`);
-
-    // Publish startup event
-    await messageBus.publish(CHANNELS.SERVICE_STARTED, {
-      service: SERVICE_NAME,
-      port: config.service.port,
-      tradovateConnected: tradovateClient.isConnected,
-      environment: config.tradovate.useDemo ? 'demo' : 'live',
-      timestamp: new Date().toISOString()
-    });
-
-    // Start Express server - bind to all interfaces for container networking
-    const bindHost = process.env.BIND_HOST || '0.0.0.0';
-    const server = app.listen(config.service.port, bindHost, () => {
-      logger.info(`${SERVICE_NAME} listening on ${bindHost}:${config.service.port}`);
-      logger.info(`Environment: ${config.service.env}`);
-      logger.info(`Tradovate: ${config.tradovate.useDemo ? 'DEMO' : 'LIVE'} mode`);
-      logger.info(`Health check: http://localhost:${config.service.port}/health`);
-    });
-
-    // Graceful shutdown
-    const shutdown = async (signal) => {
-      logger.info(`${signal} received, starting graceful shutdown...`);
-
-      // Stop accepting new connections
-      server.close(() => {
-        logger.info('HTTP server closed');
-      });
-
-      // Disconnect from Tradovate
-      tradovateClient.disconnect();
-
-      // Publish shutdown event
-      try {
-        await messageBus.publish(CHANNELS.SERVICE_STOPPED, {
-          service: SERVICE_NAME,
-          reason: signal,
-          timestamp: new Date().toISOString()
-        });
-      } catch (error) {
-        logger.error('Failed to publish shutdown event:', error);
-      }
-
-      // Disconnect from message bus
-      await messageBus.disconnect();
-      logger.info('Message bus disconnected');
-
-      process.exit(0);
-    };
-
-    process.on('SIGINT', () => shutdown('SIGINT'));
-    process.on('SIGTERM', () => shutdown('SIGTERM'));
-
-  } catch (error) {
-    logger.error('Startup failed:', error);
-    process.exit(1);
-  }
+  });
 }
 
 // Enhanced OrderStrategy cleanup - get and cancel child orders explicitly
-async function cleanupOrderStrategyChildren(strategy) {
+async function cleanupOrderStrategyChildren(strategy, env = defaultEnv) {
+  const tradovateClient = clients[env]; const { orderSignalMap, orderStrategyLinks, pendingOrderSignals, strategyChildMap, pendingStructuralStops, orderStrategyMap } = clientState[env];
   try {
     logger.info(`🧹 Getting child orders for strategy ${strategy.id}`);
 
@@ -3460,7 +3526,8 @@ async function cleanupOrderStrategyChildren(strategy) {
 }
 
 // Clean up orphaned bracket orders when a strategy completes
-async function cleanupOrphanedBracketOrders(strategy) {
+async function cleanupOrphanedBracketOrders(strategy, env = defaultEnv) {
+  const tradovateClient = clients[env]; const { orderSignalMap, orderStrategyLinks, pendingOrderSignals, strategyChildMap, pendingStructuralStops, orderStrategyMap } = clientState[env];
   try {
     logger.info(`🧹 Looking for orphaned bracket orders from strategy ${strategy.id}`);
 
@@ -3485,7 +3552,7 @@ async function cleanupOrphanedBracketOrders(strategy) {
 
         // Check if this is a bracket order by looking for orders without associated positions
         // In a properly closed strategy, the main position should be closed but stops might remain
-        const hasMatchingPosition = await checkOrderHasMatchingPosition(order);
+        const hasMatchingPosition = await checkOrderHasMatchingPosition(order, env);
 
         if (isStopOrder && !hasMatchingPosition) {
           logger.info(`🎯 Found potential orphaned stop order: ${order.id} (${order.ordType}) for contract ${order.contractId}`);
@@ -3528,7 +3595,8 @@ async function cleanupOrphanedBracketOrders(strategy) {
 }
 
 // Helper function to check if an order has a matching open position
-async function checkOrderHasMatchingPosition(order) {
+async function checkOrderHasMatchingPosition(order, env = defaultEnv) {
+  const tradovateClient = clients[env]; const { orderSignalMap, orderStrategyLinks, pendingOrderSignals, strategyChildMap, pendingStructuralStops, orderStrategyMap } = clientState[env];
   try {
     const positions = await tradovateClient.getPositions(order.accountId);
 

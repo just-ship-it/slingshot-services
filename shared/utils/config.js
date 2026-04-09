@@ -54,7 +54,9 @@ class ConfigManager {
         deviceId: process.env.TRADOVATE_DEVICE_ID || `${serviceName}-${Date.now()}`,
         cid: process.env.TRADOVATE_CID,
         secret: process.env.TRADOVATE_SECRET,
-        defaultAccountId: process.env.TRADOVATE_DEFAULT_ACCOUNT_ID
+        defaultAccountId: process.env.TRADOVATE_DEFAULT_ACCOUNT_ID,
+        demoAccountId: process.env.TRADOVATE_DEMO_ACCOUNT_ID,
+        liveAccountId: process.env.TRADOVATE_LIVE_ACCOUNT_ID
       },
       logging: {
         level: process.env.LOG_LEVEL || 'info',

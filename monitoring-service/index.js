@@ -3073,6 +3073,77 @@ app.post('/api/trading/disable', dashboardAuth, async (req, res) => {
   }
 });
 
+// ============================================================
+// Connector Management Endpoints (for multi-broker routing)
+// ============================================================
+
+// Get status of all configured connectors and routing config
+app.get('/api/connectors/status', dashboardAuth, async (req, res) => {
+  try {
+    // Read routing config
+    const fs = await import('fs');
+    const { join, dirname } = await import('path');
+    const { fileURLToPath } = await import('url');
+    const __dir = dirname(fileURLToPath(import.meta.url));
+    let routingConfig = null;
+    try {
+      routingConfig = JSON.parse(fs.readFileSync(join(__dir, '../shared/routing-config.json'), 'utf-8'));
+    } catch { /* no config */ }
+
+    // Check which connectors are configured (env vars present)
+    const connectors = {};
+
+    // PickMyTrade
+    const pmtConfigured = process.env.PICKMYTRADE_ENABLED === 'true' && !!process.env.PICKMYTRADE_TOKEN;
+    if (pmtConfigured) {
+      let enabled = true;
+      try {
+        const val = await messageBus.publisher.get('connector:pickmytrade:enabled');
+        if (val !== null) enabled = val === 'true';
+      } catch { /* default true */ }
+      connectors.pickmytrade = { configured: true, enabled };
+    }
+
+    res.json({
+      connectors,
+      routes: routingConfig?.routes || {},
+      defaultDestinations: routingConfig?.defaultDestinations || ['tradovate'],
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    logger.error('Failed to get connector status:', error.message);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Enable a connector
+app.post('/api/connectors/:name/enable', dashboardAuth, async (req, res) => {
+  const { name } = req.params;
+  try {
+    await messageBus.publisher.set(`connector:${name}:enabled`, 'true');
+    logger.info(`Connector ${name} ENABLED via dashboard`);
+    broadcast('connector_status_changed', { connector: name, enabled: true, timestamp: new Date().toISOString() });
+    res.json({ connector: name, enabled: true, timestamp: new Date().toISOString() });
+  } catch (error) {
+    logger.error(`Failed to enable connector ${name}:`, error.message);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Disable a connector
+app.post('/api/connectors/:name/disable', dashboardAuth, async (req, res) => {
+  const { name } = req.params;
+  try {
+    await messageBus.publisher.set(`connector:${name}:enabled`, 'false');
+    logger.info(`Connector ${name} DISABLED via dashboard`);
+    broadcast('connector_status_changed', { connector: name, enabled: false, timestamp: new Date().toISOString() });
+    res.json({ connector: name, enabled: false, timestamp: new Date().toISOString() });
+  } catch (error) {
+    logger.error(`Failed to disable connector ${name}:`, error.message);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Proxy endpoint to trade-orchestrator for enhanced trading status
 app.get('/api/trading/enhanced-status', dashboardAuth, async (req, res) => {
   try {

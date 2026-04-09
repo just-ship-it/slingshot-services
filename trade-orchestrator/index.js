@@ -1472,6 +1472,7 @@ async function handleWebhookReceived(message) {
             action: 'position_closed',
             symbol: positionSizing.symbol, // Use converted symbol
             side: signal.side,
+            strategy: signal.strategy, // Required for order routing
             accountId: signal.accountId || getDefaultAccountId(),
             timestamp: new Date().toISOString()
           }

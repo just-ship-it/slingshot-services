@@ -1,0 +1,8 @@
+{
+  "defaultDestinations": ["tradovate-live"],
+  "routes": {
+    "IV_SKEW_GEX": ["tradovate-live", "pickmytrade"],
+    "SHORT_DTE_IV": ["tradovate-demo", "pickmytrade"],
+    "AI_TRADER": ["tradovate-live"]
+  }
+}
