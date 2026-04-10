@@ -99,6 +99,7 @@ export class IVSkewGexStrategy extends BaseStrategy {
     this.ivLoader = null;
     this.liveIVData = null;  // For live trading
     this.liveIVHistory = [];  // Rolling buffer for IV volatility calculation
+    this.evaluationLog = [];  // Last N evaluation summaries for dashboard visibility
   }
 
   /**
@@ -528,6 +529,28 @@ export class IVSkewGexStrategy extends BaseStrategy {
    * @param {Object} result - Signal result (or null)
    * @param {string} reason - Reason for no signal (if applicable)
    */
+  /**
+   * Get internal state for dashboard display (called by multi-strategy-engine getStrategiesStatus)
+   */
+  getInternalState() {
+    // Compute current IV volatility from rolling buffer
+    let ivVolatility = null;
+    const lookback = this.params.ivVolatilityLookback || 15;
+    const samples = this.liveIVHistory.slice(-lookback).map(s => s.iv);
+    if (samples.length >= 3) {
+      const mean = samples.reduce((s, v) => s + v, 0) / samples.length;
+      ivVolatility = Math.sqrt(samples.reduce((s, v) => s + (v - mean) ** 2, 0) / samples.length);
+    }
+
+    return {
+      ivVolatility,
+      ivVolatilityThreshold: this.params.maxIVVolatility || null,
+      ivVolatilitySamples: samples.length,
+      maxIV: this.params.maxIV || null,
+      evaluationLog: this.evaluationLog.slice(-10),
+    };
+  }
+
   logEvaluationSummary(candle, iv, gexLevels, result, reason) {
     // Only log in live mode or debug mode
     if (!this.params.liveMode && !this.params.debug) {
@@ -598,6 +621,20 @@ export class IVSkewGexStrategy extends BaseStrategy {
       resultStr = `→ ${result.side.toUpperCase()} SIGNAL FIRED`;
     } else {
       resultStr = `→ No signal: ${reason}`;
+    }
+
+    // Buffer evaluation for dashboard visibility
+    this.evaluationLog.push({
+      time: timeStr,
+      price: candle.close,
+      iv: iv?.iv || null,
+      skew: iv?.skew || null,
+      level: levelStr,
+      result: result ? `${result.side.toUpperCase()} SIGNAL` : reason,
+      fired: !!result,
+    });
+    if (this.evaluationLog.length > 15) {
+      this.evaluationLog = this.evaluationLog.slice(-15);
     }
 
     console.log(`[IV-SKEW] ${timeStr} | ${price} | ${ivStr} | ${levelStr} | ${resultStr}`);
