@@ -38,7 +38,7 @@ fi
 pm2 delete all 2>/dev/null || true
 
 # Start only the trade execution stack
-SERVICES="tradovate-service,trade-orchestrator,monitoring-service,data-service,dashboard,cloudflared"
+SERVICES="tradovate-service,trade-orchestrator,monitoring-service,data-service,signal-generator,dashboard,cloudflared"
 
 echo -e "${YELLOW}Starting: ${SERVICES}${NC}"
 pm2 start "$SERVICES_DIR/ecosystem.config.cjs" --only "$SERVICES"
