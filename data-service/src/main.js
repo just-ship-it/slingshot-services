@@ -206,7 +206,7 @@ class DataService {
           const hybrid = new HybridGexCalculator({
             tradierEnabled: hasOptionsProvider && config.TRADIER_AUTO_START,
             tradierRefreshMinutes: config.HYBRID_TRADIER_REFRESH_MINUTES || 3,
-            cboeEnabled: true,
+            cboeEnabled: config.HYBRID_CBOE_ENABLED !== false && process.env.HYBRID_CBOE_ENABLED !== 'false',
             cboeRefreshMinutes: config.HYBRID_CBOE_REFRESH_MINUTES || 15,
             preferTradierWhenFresh: config.HYBRID_PREFER_TRADIER_WHEN_FRESH ?? true,
             tradierFreshnessMinutes: config.HYBRID_TRADIER_FRESHNESS_MINUTES || 5,
