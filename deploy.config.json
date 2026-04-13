@@ -22,20 +22,12 @@
     "signal-generator": {
       "app_id": "1fe0898f-1f2c-4677-bea8-71012cbd2188",
       "directories": ["signal-generator"]
-    },
-    "ai-trader": {
-      "app_id": "081d3d7f-f464-4501-964e-34b30ff43a32",
-      "directories": ["signal-generator"]
-    },
-    "macro-briefing": {
-      "app_id": "a287bf53-0e8f-44e5-a3ae-4bcf03a4637b",
-      "directories": ["macro-briefing"]
     }
   },
   "shared_directories": ["shared"],
   "shared_subdirectory_map": {
-    "shared/strategies": ["signal-generator", "ai-trader"],
-    "shared/indicators": ["signal-generator", "ai-trader"]
+    "shared/strategies": ["signal-generator"],
+    "shared/indicators": ["signal-generator"]
   },
   "ignore_patterns": [
     "backtest-engine/",
