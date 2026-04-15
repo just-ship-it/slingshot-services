@@ -333,6 +333,19 @@ function generateChart(candles, trades, options) {
     .trade .pnl.positive { color: #4caf50; }
     .trade .pnl.negative { color: #f44336; }
     .trade .trade-reason { font-size: 0.68rem; color: #888; grid-column: 1 / -1; }
+    .trade .trade-date { font-size: 0.7rem; color: #4fc3f7; grid-column: 1 / -1; font-weight: bold; }
+    .trade.hidden { display: none; }
+    #date-filter {
+      width: 100%;
+      box-sizing: border-box;
+      background: #0a1628;
+      color: #fff;
+      border: 1px solid #0f3460;
+      padding: 6px 8px;
+      font-size: 0.8rem;
+      font-family: inherit;
+    }
+    #date-filter:focus { outline: 1px solid #4fc3f7; }
     .toolbar {
       display: flex;
       gap: 6px;
@@ -395,7 +408,10 @@ function generateChart(candles, trades, options) {
     </div>
 
     <div class="trade-list">
-      <div class="trade-list-header">Trades (${trades.length})</div>
+      <div class="trade-list-header">
+        Trades (<span id="trade-count">${trades.length}</span>)
+        <input id="date-filter" type="text" placeholder="Filter: 2025-12-16 or 2025-12" style="margin-top: 6px;" />
+      </div>
       <div class="trade-row-header">
         <div>#</div>
         <div>Side</div>
@@ -409,8 +425,13 @@ function generateChart(candles, trades, options) {
         const em = t.metadata?.entryModel || '';
         const emShort = em === 'MW_PATTERN' ? 'MW' : em === 'STRUCTURE_RETRACE' ? 'SR' : em === 'STRUCTURE_DIRECT' ? 'SD' : em === 'MOMENTUM_CONTINUATION' ? 'MC' : em;
         const emClass = em === 'MW_PATTERN' ? 'MW' : em === 'STRUCTURE_RETRACE' ? 'SR' : em === 'STRUCTURE_DIRECT' ? 'SD' : em === 'MOMENTUM_CONTINUATION' ? 'MC' : '';
+        const entryMs = t.entryTime || t.signalTime;
+        const entryDate = entryMs ? new Date(entryMs) : null;
+        const dateStr = entryDate ? entryDate.toISOString().slice(0,10) : '';
+        const timeStr = entryDate ? entryDate.toISOString().slice(11,16) + 'Z' : '';
         return `
-        <div class="trade" data-idx="${i}">
+        <div class="trade" data-idx="${i}" data-date="${dateStr}">
+          <div class="trade-date">${dateStr} ${timeStr}</div>
           <div style="color: #666; font-size: 0.7rem;">${i + 1}</div>
           <div style="color: ${sideColor}; font-weight: bold;">${sideLabel}</div>
           <div>${t.entryPrice?.toFixed(2) || 'N/A'}</div>
@@ -1060,6 +1081,22 @@ function generateChart(candles, trades, options) {
       btn.addEventListener('click', () => setTool(btn.dataset.tool));
     });
     document.getElementById('clear-fibs').addEventListener('click', clearAllFibs);
+
+    // Date filter
+    const dateFilterInput = document.getElementById('date-filter');
+    const tradeCountEl = document.getElementById('trade-count');
+    const totalTradeCount = tradesData.length;
+    dateFilterInput.addEventListener('input', (e) => {
+      const q = e.target.value.trim().toLowerCase();
+      let visible = 0;
+      document.querySelectorAll('.trade[data-idx]').forEach(el => {
+        const d = el.dataset.date || '';
+        const match = !q || d.startsWith(q);
+        el.classList.toggle('hidden', !match);
+        if (match) visible++;
+      });
+      tradeCountEl.textContent = q ? (visible + ' / ' + totalTradeCount) : totalTradeCount;
+    });
 
     // Keyboard navigation + fib shortcuts (registered first to avoid being blocked by chart API errors)
     document.addEventListener('keydown', (e) => {

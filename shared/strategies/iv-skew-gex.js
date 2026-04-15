@@ -61,6 +61,20 @@ export class IVSkewGexStrategy extends BaseStrategy {
     this.params.ivDeadZoneMin = params.ivDeadZoneMin ?? null;
     this.params.ivDeadZoneMax = params.ivDeadZoneMax ?? null;
     this.params.ivDeadZoneSide = params.ivDeadZoneSide ?? 'both';  // 'long', 'short', or 'both'
+
+    // Wall-magnitude / gamma-imbalance filters (from 2026-04-14 research).
+    // All default to null (disabled) for backward compatibility.
+    // SHORTS: weak-wall shorts (rank 1/3/4) had ~49% WR vs rank-0 at 83% WR.
+    // The losing subset was price far from primary call wall + deep negative
+    // gamma regime. Filter only rejects when BOTH conditions hit (rank>=1 + weak gamma).
+    this.params.shortMaxCallWallDistance = params.shortMaxCallWallDistance ?? null;  // pts; reject if price > N pts below primary call wall
+    this.params.shortMinTotalGex = params.shortMinTotalGex ?? null;                  // reject if total_gex < N (e.g. -1e9)
+    this.params.shortMinTradeLevelGex = params.shortMinTradeLevelGex ?? null;        // reject if trade-level gamma < N when level is not primary
+    // LONGS: gamma_imbalance < -0.5 bucket was 50.5% WR. Within bucket, weak put
+    // wall + inverted 0-DTE skew + crashing price were the losers. Simplest
+    // snapshot-only filter: reject when imbalance deeply negative AND put wall weak.
+    this.params.longMinGammaImbalance = params.longMinGammaImbalance ?? null;        // reject long if gamma_imbalance < N (e.g. -0.5) combined with weak put wall
+    this.params.longMinPutWallGex = params.longMinPutWallGex ?? null;                // reject long if put_wall_gex below N in bad-imbalance regime
     this.params.avoidHours = params.avoidHours ?? [12]; // Skip noon for shorts (20% win rate)
     this.params.useSessionFilter = params.useSessionFilter ?? true;
     this.params.allowedSessions = params.allowedSessions ?? ['rth'];
@@ -382,6 +396,20 @@ export class IVSkewGexStrategy extends BaseStrategy {
         this.logEvaluationSummary(candle, iv, gexLevels, null, `IV dead zone for longs (${(iv.iv * 100).toFixed(1)}%)`);
         return null;
       }
+      // Gamma-imbalance + weak put wall filter
+      if (this.params.longMinGammaImbalance != null &&
+          gexLevels.gamma_imbalance != null &&
+          gexLevels.gamma_imbalance < this.params.longMinGammaImbalance) {
+        const putWallSize = gexLevels.put_wall_gex != null ? Math.abs(gexLevels.put_wall_gex) : null;
+        const putWallTooWeak = this.params.longMinPutWallGex != null &&
+          putWallSize != null && putWallSize < this.params.longMinPutWallGex;
+        if (putWallTooWeak || this.params.longMinPutWallGex == null) {
+          const reason = `gamma_imbalance too negative (${gexLevels.gamma_imbalance.toFixed(2)})` +
+            (putWallSize != null ? ` + weak put_wall_gex ($${(putWallSize/1e6).toFixed(0)}M)` : '');
+          this.logEvaluationSummary(candle, iv, gexLevels, null, reason);
+          return null;
+        }
+      }
       const level = this.findNearestLevel(price, gexLevels, 'support');
       if (level) {
         const signal = this.createSignal('long', candle, level, iv);
@@ -403,9 +431,43 @@ export class IVSkewGexStrategy extends BaseStrategy {
         this.logEvaluationSummary(candle, iv, gexLevels, null, `IV dead zone for shorts (${(iv.iv * 100).toFixed(1)}%)`);
         return null;
       }
+      // Deep-negative gamma regime filter — price rips through weak levels
+      if (this.params.shortMinTotalGex != null &&
+          gexLevels.total_gex != null &&
+          gexLevels.total_gex < this.params.shortMinTotalGex) {
+        this.logEvaluationSummary(candle, iv, gexLevels, null, `total_gex too negative ($${(gexLevels.total_gex/1e9).toFixed(2)}B)`);
+        return null;
+      }
+      // Primary call wall too far above — trading a weak backup level is fighting air
+      if (this.params.shortMaxCallWallDistance != null &&
+          gexLevels.call_wall != null) {
+        const dist = gexLevels.call_wall - price;
+        if (dist > this.params.shortMaxCallWallDistance) {
+          this.logEvaluationSummary(candle, iv, gexLevels, null, `primary call wall ${dist.toFixed(0)}pts above (>${this.params.shortMaxCallWallDistance})`);
+          return null;
+        }
+      }
 
       const level = this.findNearestLevel(price, gexLevels, 'resistance');
       if (level) {
+        // Weak non-primary-wall filter: when trading R2/R3 (rank >=1), require
+        // meaningful gamma at that strike. Rank-0 (R1/CallWall) always allowed.
+        if (this.params.shortMinTradeLevelGex != null &&
+            level.type !== 'R1' && level.type !== 'CallWall' &&
+            Array.isArray(gexLevels.resistance_gex)) {
+          // R2→idx 1, R3→idx 2, etc. GammaFlip falls through (skip filter).
+          const rankMatch = /^R(\d+)$/.exec(level.type);
+          if (rankMatch) {
+            const idx = parseInt(rankMatch[1], 10) - 1;
+            if (idx >= 1 && idx < gexLevels.resistance_gex.length) {
+              const levelGex = Math.abs(gexLevels.resistance_gex[idx]);
+              if (levelGex < this.params.shortMinTradeLevelGex) {
+                this.logEvaluationSummary(candle, iv, gexLevels, null, `weak ${level.type} wall ($${(levelGex/1e6).toFixed(0)}M gex)`);
+                return null;
+              }
+            }
+          }
+        }
         const signal = this.createSignal('short', candle, level, iv);
         this.logEvaluationSummary(candle, iv, gexLevels, signal, null);
         return signal;

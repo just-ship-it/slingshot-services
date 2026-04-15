@@ -103,12 +103,19 @@ export class GexLoader {
         multiplier: record.multiplier,
         gamma_flip: record.gamma_flip,
         call_wall: record.call_wall,
+        call_wall_gex: record.call_wall_gex,
         put_wall: record.put_wall,
+        put_wall_gex: record.put_wall_gex,
         total_gex: record.total_gex,
         total_vex: record.total_vex,
         total_cex: record.total_cex,
-        resistance: record.resistance || [],  // All 5 resistance levels
-        support: record.support || [],        // All 5 support levels
+        gamma_above_spot: record.gamma_above_spot,
+        gamma_below_spot: record.gamma_below_spot,
+        gamma_imbalance: record.gamma_imbalance,
+        resistance: record.resistance || [],
+        resistance_gex: record.resistance_gex || [],
+        support: record.support || [],
+        support_gex: record.support_gex || [],
         regime: record.regime,
         options_count: record.options_count || 0,
         // Computed fields for backtesting

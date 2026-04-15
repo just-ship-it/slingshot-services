@@ -276,13 +276,27 @@ def calculate_gex_at_spot(stats_df, spot, ref_date):
 
     # Support levels (negative GEX below spot)
     support = [s for s, g in put_walls[:5]]
+    support_gex = [float(g) for s, g in put_walls[:5]]
 
     # Resistance levels (positive GEX above spot)
     resistance = [s for s, g in call_walls[:5]]
+    resistance_gex = [float(g) for s, g in call_walls[:5]]
 
-    # Primary walls
+    # Primary walls + their gamma magnitude
     put_wall = put_walls[0][0] if put_walls else None
+    put_wall_gex = float(put_walls[0][1]) if put_walls else None
     call_wall = call_walls[0][0] if call_walls else None
+    call_wall_gex = float(call_walls[0][1]) if call_walls else None
+
+    # Gamma imbalance: distribution of GEX above vs below spot (near-spot strikes only, ±10%)
+    near_mask = [s for s in strikes if spot * 0.9 <= s <= spot * 1.1]
+    gamma_above_spot = sum(gex_dict[s] for s in near_mask if s > spot and gex_dict[s] > 0)
+    gamma_below_spot = abs(sum(gex_dict[s] for s in near_mask if s < spot and gex_dict[s] < 0))
+    total_near = gamma_above_spot + gamma_below_spot
+    gamma_imbalance = (
+        (gamma_above_spot - gamma_below_spot) / total_near
+        if total_near > 0 else None
+    )
 
     # Regime (matching gex_calculator.py thresholds)
     if total_gex > 5e9:
@@ -299,12 +313,19 @@ def calculate_gex_at_spot(stats_df, spot, ref_date):
     return {
         'gamma_flip': gamma_flip,
         'call_wall': call_wall,
+        'call_wall_gex': call_wall_gex,
         'put_wall': put_wall,
+        'put_wall_gex': put_wall_gex,
         'resistance': resistance,
+        'resistance_gex': resistance_gex,
         'support': support,
-        'total_gex': total_gex,
-        'total_vex': total_vex,
-        'total_cex': total_cex,
+        'support_gex': support_gex,
+        'total_gex': float(total_gex),
+        'total_vex': float(total_vex),
+        'total_cex': float(total_cex),
+        'gamma_above_spot': float(gamma_above_spot),
+        'gamma_below_spot': float(gamma_below_spot),
+        'gamma_imbalance': gamma_imbalance,
         'options_count': options_count,
         'regime': regime
     }
@@ -335,7 +356,9 @@ def generate_day(date_str, stats_df, etf_prices, futures_prices, config):
         # Calculate multiplier (futures / ETF)
         multiplier = futures_spot / etf_spot
 
-        # Translate levels to futures
+        # Translate levels to futures. Gamma magnitudes are in ETF-dollar space
+        # (gamma × OI × 100 × spot²); kept unscaled so they compare consistently
+        # across trades on the same product.
         snapshot = {
             'timestamp': bucket_key,
             f'{futures_sym}_spot': round(futures_spot, 2),
@@ -343,12 +366,19 @@ def generate_day(date_str, stats_df, etf_prices, futures_prices, config):
             'multiplier': round(multiplier, 4),
             'gamma_flip': round(gex['gamma_flip'] * multiplier, 2) if gex['gamma_flip'] else None,
             'call_wall': round(gex['call_wall'] * multiplier, 2) if gex['call_wall'] else None,
+            'call_wall_gex': gex['call_wall_gex'],
             'put_wall': round(gex['put_wall'] * multiplier, 2) if gex['put_wall'] else None,
+            'put_wall_gex': gex['put_wall_gex'],
             'total_gex': gex['total_gex'],
             'total_vex': gex['total_vex'],
             'total_cex': gex['total_cex'],
+            'gamma_above_spot': gex['gamma_above_spot'],
+            'gamma_below_spot': gex['gamma_below_spot'],
+            'gamma_imbalance': gex['gamma_imbalance'],
             'resistance': [round(r * multiplier, 2) for r in gex['resistance']],
+            'resistance_gex': gex['resistance_gex'],
             'support': [round(s * multiplier, 2) for s in gex['support']],
+            'support_gex': gex['support_gex'],
             'regime': gex['regime'],
             'options_count': gex['options_count']
         }
