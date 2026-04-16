@@ -202,15 +202,46 @@ async function loadPositionSizing(redis) {
   }
 }
 
+function parseTbRulesFromEnv() {
+  if (process.env.TIME_BASED_TRAILING_ENABLED !== 'true') return null;
+  const raw = process.env.TIME_BASED_TRAILING_RULES;
+  if (!raw) return null;
+  // Format: "15,50,breakeven|40,50,trail:10"
+  try {
+    const rules = raw.split('|').map(part => {
+      const [afterMinutes, mfeThreshold, actionStr] = part.split(',');
+      const rule = { afterMinutes: Number(afterMinutes), mfeThreshold: Number(mfeThreshold) };
+      if (actionStr.startsWith('trail:')) {
+        rule.action = 'trail';
+        rule.trailOffset = Number(actionStr.split(':')[1]);
+      } else {
+        rule.action = actionStr; // 'breakeven'
+      }
+      return rule;
+    });
+    return rules;
+  } catch (err) {
+    logger.warn(`Failed to parse TIME_BASED_TRAILING_RULES: ${err.message}`);
+    return null;
+  }
+}
+
 async function loadTbRules(redis) {
   try {
     const raw = await redis.get(TB_RULES_KEY);
     if (raw) {
       state.tbRules = JSON.parse(raw);
-      logger.info(`TB rules loaded: ${Object.keys(state.tbRules).join(', ')}`);
+      logger.info(`TB rules loaded from Redis: ${Object.keys(state.tbRules).join(', ')}`);
+      return;
     }
   } catch (err) {
-    logger.warn(`Failed to load TB rules: ${err.message}`);
+    logger.warn(`Failed to load TB rules from Redis: ${err.message}`);
+  }
+  // Fallback: parse from env vars (old format) and apply to IV_SKEW_GEX
+  const envRules = parseTbRulesFromEnv();
+  if (envRules) {
+    state.tbRules = { IV_SKEW_GEX: envRules };
+    logger.info(`TB rules loaded from env: ${envRules.length} rules for IV_SKEW_GEX`);
   }
 }
 
