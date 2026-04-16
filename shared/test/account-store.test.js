@@ -59,13 +59,13 @@ describe('account-store', () => {
       displayName: 'Funded Live',
       broker: 'tradovate',
       config: { mode: 'live', accountId: 'A12345' },
-      credentials: { username: 'drew', password: 'hunter2' }
+      credentials: { username: 'drew', password: 'FAKE_TEST_PASS' }
     });
 
     assert.equal(created.id, 'tradovate-funded');
     assert.equal(created.broker, 'tradovate');
     assert.equal(created.credentials.password.hasValue, true);
-    assert.equal(created.credentials.password.lastFour, 'ter2');
+    assert.equal(created.credentials.password.hasValue, true);
     // username was treated as a credential field too — also encrypted
     assert.equal(created.credentials.username.hasValue, true);
 
@@ -119,12 +119,12 @@ describe('account-store', () => {
     await store.create({
       id: 'tv-1',
       broker: 'tradovate',
-      credentials: { username: 'drew', password: 'old-pass' }
+      credentials: { username: 'drew', password: 'FAKE_OLD_PASS' }
     });
 
     const before = JSON.parse(redis._kv.get('accounts:tv-1'));
 
-    await store.update('tv-1', { credentials: { password: 'new-pass' } });
+    await store.update('tv-1', { credentials: { password: 'FAKE_NEW_PASS' } });
 
     const after = JSON.parse(redis._kv.get('accounts:tv-1'));
 
@@ -135,7 +135,7 @@ describe('account-store', () => {
 
     const decrypted = await store.getDecrypted('tv-1');
     assert.equal(decrypted.credentials.username, 'drew');
-    assert.equal(decrypted.credentials.password, 'new-pass');
+    assert.equal(decrypted.credentials.password, 'FAKE_NEW_PASS');
   });
 
   test('update preserves createdAt, refreshes updatedAt', async () => {

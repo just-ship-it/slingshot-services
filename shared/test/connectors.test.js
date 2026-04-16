@@ -88,7 +88,7 @@ describe('PickMyTradeConnector', () => {
       id: 'pmt-prop',
       broker: 'pickmytrade',
       config: { webhookUrl: 'https://pmt.example/hook', pmtAccountId: 'PA-1' },
-      credentials: { token: 'secret-token' }
+      credentials: { token: 'FAKE_PMT_TOKEN' }
     };
     const conn = new PickMyTradeConnector(account, silentLogger(), { fetch: fakeFetch });
     await conn.init();
@@ -108,7 +108,7 @@ describe('PickMyTradeConnector', () => {
     assert.equal(calls[0].body.order_type, 'LMT');
     assert.equal(calls[0].body.sl, 24900);
     assert.equal(calls[0].body.tp, 25100);
-    assert.equal(calls[0].body.token, 'secret-token');
+    assert.equal(calls[0].body.token, 'FAKE_PMT_TOKEN');
     assert.equal(calls[0].body.account_id, 'PA-1');
   });
 

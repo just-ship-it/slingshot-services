@@ -4,7 +4,7 @@ import { redactObject } from '../utils/logger-redactor.js';
 
 describe('logger-redactor', () => {
   test('redacts known sensitive keys', () => {
-    const input = { username: 'drew', password: 'hunter2', token: 'abc123' };
+    const input = { username: 'drew', password: 'FAKE_TEST_PASS', token: 'FAKE_TOKEN' };
     const out = redactObject(input);
     assert.equal(out.username, 'drew');
     assert.equal(out.password, '[REDACTED]');
@@ -12,7 +12,7 @@ describe('logger-redactor', () => {
   });
 
   test('redacts case-insensitively and ignores separators', () => {
-    const input = { API_KEY: 'k', 'api-secret': 's', PMTToken: 't' };
+    const input = { API_KEY: 'FAKE_KEY', 'api-secret': 'FAKE_SECRET', PMTToken: 'FAKE_PMT' };
     const out = redactObject(input);
     assert.equal(out.API_KEY, '[REDACTED]');
     assert.equal(out['api-secret'], '[REDACTED]');
@@ -28,7 +28,7 @@ describe('logger-redactor', () => {
   });
 
   test('walks nested objects', () => {
-    const input = { account: { id: 'a', credentials: { token: 'secret' } } };
+    const input = { account: { id: 'a', credentials: { token: 'FAKE_TOKEN' } } };
     const out = redactObject(input);
     assert.equal(out.account.id, 'a');
     assert.equal(out.account.credentials.token, '[REDACTED]');
