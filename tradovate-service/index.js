@@ -120,7 +120,8 @@ async function tearDownConnector(accountId) {
 function findShadowIds(accounts) {
   const ids = new Set();
   for (const a of accounts) {
-    if (a.broker === 'pickmytrade' && a.tracking?.via) ids.add(a.tracking.via);
+    const via = a.tracking?.via || a.config?.tracking?.via;
+    if (a.broker === 'pickmytrade' && via) ids.add(via);
   }
   return ids;
 }

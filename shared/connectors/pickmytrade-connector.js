@@ -25,7 +25,7 @@ export class PickMyTradeConnector extends BaseConnector {
     this.webhookUrl = config.webhookUrl || credentials.webhookUrl;
     this.token = credentials.token;
     this.pmtAccountId = config.pmtAccountId || null;
-    this.tracking = account.tracking || null;
+    this.tracking = account.tracking || account.config?.tracking || null;
     this.fetchImpl = deps.fetch || globalThis.fetch;
   }
 
