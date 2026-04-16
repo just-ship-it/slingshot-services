@@ -33,7 +33,7 @@ const SERVICE_NAME = 'tradovate-service';
 const logger = createLogger(SERVICE_NAME);
 
 const PORT = Number(process.env.TRADOVATE_SERVICE_PORT || 3011);
-const BIND_HOST = '127.0.0.1';
+const BIND_HOST = process.env.BIND_HOST || '127.0.0.1';
 
 const connectors = new Map(); // accountId → TradovateConnector
 const router = createOrderRouter({ logger });
