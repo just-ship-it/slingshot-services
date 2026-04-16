@@ -37,7 +37,7 @@ const CONTRACTS_MAPPINGS_KEY = 'contracts:mappings';
 const SIGNAL_DEDUP_PREFIX = 'signal:dedup:';
 const SIGNAL_DEDUP_TTL_SEC = 60;
 
-const PORT = Number(process.env.TRADE_ORCHESTRATOR_PORT || 3013);
+const PORT = Number(process.env.PORT || process.env.TRADE_ORCHESTRATOR_PORT || 3013);
 const BIND_HOST = process.env.BIND_HOST || '127.0.0.1';
 const POSITION_SIZING_KEY = 'config:position-sizing';
 const TB_RULES_KEY = 'config:tb-rules';
