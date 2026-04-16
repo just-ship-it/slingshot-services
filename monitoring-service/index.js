@@ -20,7 +20,6 @@ const config = configManager.loadConfig(SERVICE_NAME, { defaultPort: 3014 });
 
 // Auth secrets from environment
 const DASHBOARD_SECRET = process.env.DASHBOARD_SECRET;
-const WEBHOOK_SECRET = process.env.WEBHOOK_SECRET;
 
 // Internal service URLs
 const SIGNAL_GENERATOR_URL = process.env.SIGNAL_GENERATOR_URL || 'http://localhost:3015';
@@ -520,57 +519,6 @@ function parseBaseSymbol(symbol) {
 }
 
 /**
- * Create human-readable summary from trade signal webhook data
- */
-function createSignalSummary(signalData) {
-  try {
-    const { action, side, symbol, quantity, price, stop_loss, take_profit, trailing_trigger, trailing_offset, strategy } = signalData;
-
-    // Determine action type
-    const actionText = action === 'place_limit' ? (side === 'buy' ? 'Buy' : 'Sell') :
-                      action === 'place_market' ? (side === 'buy' ? 'Buy Market' : 'Sell Market') :
-                      action === 'position_closed' ? 'Close Position' :
-                      action === 'cancel_limit' ? 'Cancel Order' : action;
-
-    // Base summary
-    let summary = `${actionText} ${quantity} ${symbol}`;
-
-    // Add price for limit orders
-    if (price && action === 'place_limit') {
-      summary += ` at ${price}`;
-    }
-
-    // Add stop/target info
-    const parts = [];
-    if (stop_loss && price) {
-      const stopPoints = Math.abs(price - stop_loss);
-      parts.push(`Stop: ${stopPoints.toFixed(0)}pts`);
-    }
-    if (take_profit && price) {
-      const targetPoints = Math.abs(take_profit - price);
-      parts.push(`Target: ${targetPoints.toFixed(0)}pts`);
-    }
-    if (trailing_trigger && trailing_offset) {
-      parts.push(`Trailing: ${trailing_trigger}/${trailing_offset}`);
-    }
-
-    if (parts.length > 0) {
-      summary += ` (${parts.join(', ')})`;
-    }
-
-    // Add strategy if present
-    if (strategy) {
-      summary += ` [${strategy}]`;
-    }
-
-    return summary;
-  } catch (error) {
-    logger.error('Failed to create signal summary:', error);
-    return `Signal: ${signalData.action || 'unknown'} ${signalData.symbol || 'unknown'}`;
-  }
-}
-
-/**
  * Get account balance for risk-based calculations
  */
 function getAccountBalance() {
@@ -742,60 +690,6 @@ const dashboardAuth = (req, res, next) => {
   next();
 };
 
-// Webhook auth validation functions
-function validateTradingViewWebhook(body) {
-  if (!WEBHOOK_SECRET) {
-    logger.warn('WEBHOOK_SECRET not configured, skipping TradingView webhook validation');
-    return true;
-  }
-
-  if (!body.secret) {
-    logger.warn('TradingView webhook missing secret field');
-    return false;
-  }
-
-  return body.secret === WEBHOOK_SECRET;
-}
-
-function validateNinjaTraderWebhook(headers) {
-  if (!WEBHOOK_SECRET) {
-    logger.warn('WEBHOOK_SECRET not configured, skipping NinjaTrader webhook validation');
-    return true;
-  }
-
-  const apiKey = headers['x-api-key'];
-
-  if (!apiKey) {
-    logger.warn('NinjaTrader webhook missing X-API-Key header');
-    return false;
-  }
-
-  return apiKey === WEBHOOK_SECRET;
-}
-
-// Webhook type detection
-function detectWebhookType(body) {
-  // Check explicit webhook_type field first (preferred method)
-  if (body.webhook_type) {
-    // Normalize trading_signal to trade_signal for consistency
-    if (body.webhook_type === 'trading_signal') {
-      return 'trade_signal';
-    }
-    return body.webhook_type;
-  }
-
-  // Fallback to content-based detection
-  if (body.type === 'quote_update' || body.source === 'tradingview') {
-    return 'quote';
-  }
-
-  if (body.action || body.orderAction || body.side) {
-    return 'trade_signal';
-  }
-
-  return 'unknown';
-}
-
 // Create HTTP server
 const server = createServer(app);
 
@@ -861,144 +755,6 @@ function broadcast(eventName, data) {
   }
   io.emit(eventName, data);
 }
-
-// Webhook endpoints (no auth required)
-app.post('/webhook', async (req, res) => {
-  const startTime = Date.now();
-
-  try {
-    logger.debug(`Webhook received: ${req.id}`, {
-      headers: req.headers,
-      bodySize: JSON.stringify(req.body).length
-    });
-
-    // Quick validation
-    if (!req.body || Object.keys(req.body).length === 0) {
-      logger.warn(`Empty webhook body: ${req.id}`);
-      res.status(400).json({ error: 'Empty request body' });
-      return;
-    }
-
-    // Detect webhook source and validate
-    const isNinjaTrader = req.headers['x-api-key'] !== undefined;
-    const isTradingView = req.body.secret !== undefined;
-
-    if (isNinjaTrader) {
-      if (!validateNinjaTraderWebhook(req.headers)) {
-        logger.warn(`Unauthorized NinjaTrader webhook: ${req.id}`);
-        res.status(401).json({ error: 'Unauthorized' });
-        return;
-      }
-    } else if (isTradingView) {
-      if (!validateTradingViewWebhook(req.body)) {
-        logger.warn(`Unauthorized TradingView webhook: ${req.id}`);
-        res.status(401).json({ error: 'Unauthorized' });
-        return;
-      }
-    }
-
-    const webhookType = detectWebhookType(req.body);
-    if (webhookType === 'trade_signal') {
-      logger.info(`Detected webhook type: ${webhookType} for request ${req.id}`);
-    } else {
-      logger.debug(`Detected webhook type: ${webhookType} for request ${req.id}`);
-    }
-
-    // Prepare webhook message
-    const webhookMessage = {
-      id: req.id,
-      receivedAt: req.receivedAt,
-      type: webhookType,
-      source: req.headers['x-source'] || (isNinjaTrader ? 'ninjatrader' : isTradingView ? 'tradingview' : 'unknown'),
-      userAgent: req.headers['user-agent'],
-      ip: req.ip,
-      body: req.body,
-      headers: req.headers
-    };
-
-    // Route to appropriate service
-    if (messageBus.isConnected) {
-      switch(webhookType) {
-        case 'quote':
-          await messageBus.publish(CHANNELS.WEBHOOK_QUOTE, webhookMessage);
-          logger.debug(`Quote webhook routed to market-data-service: ${req.id}`);
-          break;
-
-        case 'trade_signal':
-          // Store the signal in monitoring state
-          const signalData = {
-            id: req.id,
-            timestamp: new Date().toISOString(),
-            summary: createSignalSummary(req.body),
-            status: 'received',
-            rawData: req.body,
-            source: req.headers['user-agent'] || 'unknown'
-          };
-
-          monitoringState.signals.unshift(signalData);
-
-          // Limit signal storage
-          if (monitoringState.signals.length > monitoringState.maxSignalsSize) {
-            monitoringState.signals = monitoringState.signals.slice(0, monitoringState.maxSignalsSize);
-          }
-
-          // Emit WebSocket event for real-time updates
-          io.emit('signal_received', signalData);
-
-          await messageBus.publish(CHANNELS.WEBHOOK_RECEIVED, webhookMessage);
-          logger.info(`Trade signal webhook stored and routed: ${req.id} - ${signalData.summary}`);
-          break;
-
-        default:
-          await messageBus.publish(CHANNELS.WEBHOOK_RECEIVED, webhookMessage);
-          logger.warn(`Unknown webhook type routed to generic handler: ${req.id}`);
-          break;
-      }
-    } else {
-      logger.error(`Message bus not connected, webhook dropped: ${req.id}`);
-      res.status(503).json({ error: 'Service temporarily unavailable' });
-      return;
-    }
-
-    // Send immediate response
-    const processingTime = Date.now() - startTime;
-    res.status(200).json({
-      status: 'accepted',
-      id: req.id,
-      type: webhookType,
-      processingTime: `${processingTime}ms`
-    });
-
-    if (webhookType === 'trade_signal') {
-      logger.info(`Webhook processed: ${req.id} (${webhookType}) in ${processingTime}ms`);
-    } else {
-      logger.debug(`Webhook processed: ${req.id} (${webhookType}) in ${processingTime}ms`);
-    }
-  } catch (error) {
-    logger.error(`Error processing webhook: ${req.id}`, error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-});
-
-// Legacy webhook endpoints for compatibility
-app.post('/autotrader', async (req, res) => {
-  logger.info('Legacy autotrader webhook received');
-  req.headers['x-source'] = 'autotrader-legacy';
-  return app._router.handle(Object.assign(req, { url: '/webhook', method: 'POST' }), res);
-});
-
-app.post('/slingshot', async (req, res) => {
-  logger.info('Slingshot webhook received on dedicated endpoint');
-  req.headers['x-source'] = 'slingshot-endpoint';
-  return app._router.handle(Object.assign(req, { url: '/webhook', method: 'POST' }), res);
-});
-
-app.post('/quote', async (req, res) => {
-  logger.info('Quote webhook received on legacy endpoint');
-  req.body.webhook_type = 'quote';
-  req.headers['x-source'] = 'quote-endpoint-legacy';
-  return app._router.handle(Object.assign(req, { url: '/webhook', method: 'POST' }), res);
-});
 
 // REST API Endpoints (auth required except for health)
 app.get('/health', async (req, res) => {
@@ -1095,11 +851,11 @@ app.get('/api/dashboard', dashboardAuth, (req, res) => {
   });
 });
 
-app.get('/api/accounts', dashboardAuth, (req, res) => {
+app.get('/api/accounts/legacy', dashboardAuth, (req, res) => {
   res.json(Array.from(monitoringState.accounts.values()));
 });
 
-app.get('/api/accounts/:accountId', dashboardAuth, (req, res) => {
+app.get('/api/accounts/legacy/:accountId', dashboardAuth, (req, res) => {
   const accountId = req.params.accountId;
   // Try both string and number lookups since account IDs might be stored differently
   let account = monitoringState.accounts.get(accountId) ||
@@ -1134,13 +890,47 @@ app.get('/api/accounts/:accountId', dashboardAuth, (req, res) => {
 });
 
 app.get('/api/positions', dashboardAuth, (req, res) => {
-  const positions = Array.from(monitoringState.positions.values());
+  let positions = Array.from(monitoringState.positions.values());
   if (req.query.accountId) {
-    const filtered = positions.filter(p => p.accountId === req.query.accountId);
-    res.json(filtered);
-  } else {
-    res.json(positions);
+    positions = positions.filter(p => p.accountId === req.query.accountId);
   }
+  // Enrich with live price from quote cache (symbols may be contract-specific like NQM6
+  // while cache keys are base symbols like NQ)
+  const enriched = positions.map(p => {
+    if (p.currentPrice != null) return p;
+    const sym = p.symbol || '';
+    // Try exact match, then strip month/year to get base symbol
+    const base = sym.replace(/[FGHJKMNQUVXZ]\d{1,2}$/i, '');
+    const quote = monitoringState.prices.get(sym) || monitoringState.prices.get(base);
+    const currentPrice = quote?.close ?? quote?.price ?? quote?.last ?? null;
+    if (currentPrice == null) return p;
+    const entry = Number(p.entryPrice) || 0;
+    const netPos = Number(p.netPos) || 0;
+    const pointValue = base === 'NQ' || base === 'MNQ' ? (base === 'NQ' ? 20 : 2) :
+                        base === 'ES' || base === 'MES' ? (base === 'ES' ? 50 : 5) : 1;
+    const unrealizedPnL = netPos * (currentPrice - entry) * pointValue;
+    return { ...p, currentPrice, unrealizedPnL };
+  });
+  res.json(enriched);
+});
+
+app.get('/api/positions/summary', dashboardAuth, (req, res) => {
+  // Aggregate per-account positions by symbol across all accounts
+  const bySymbol = new Map();
+  for (const pos of monitoringState.positions.values()) {
+    const entry = bySymbol.get(pos.symbol) || { symbol: pos.symbol, totalNetPos: 0, accounts: [] };
+    entry.totalNetPos += Number(pos.netPos || 0);
+    entry.accounts.push({
+      accountId: pos.accountId,
+      strategy: pos.strategy,
+      netPos: pos.netPos,
+      side: pos.side,
+      entryPrice: pos.entryPrice,
+      unrealizedPnL: pos.unrealizedPnL
+    });
+    bySymbol.set(pos.symbol, entry);
+  }
+  res.json([...bySymbol.values()]);
 });
 
 app.get('/api/activity', dashboardAuth, (req, res) => {
@@ -3074,101 +2864,216 @@ app.post('/api/trading/disable', dashboardAuth, async (req, res) => {
 });
 
 // ============================================================
-// Order Routing Management Endpoints
+// Accounts + Routes Management Endpoints (new multi-account model)
 // ============================================================
 
-// Helper: get routing config from Redis, fall back to file
-async function getRoutingConfig() {
-  try {
-    const cached = await messageBus.publisher.get('routing:config');
-    if (cached) return JSON.parse(cached);
-  } catch { /* fall through */ }
+// Lazily-constructed stores (depend on messageBus being connected)
+let _accountStore = null;
+let _routesStore = null;
 
-  // Fall back to file
-  try {
-    const fs = await import('fs');
-    const { join, dirname } = await import('path');
-    const { fileURLToPath } = await import('url');
-    const __dir = dirname(fileURLToPath(import.meta.url));
-    return JSON.parse(fs.readFileSync(join(__dir, '../shared/routing-config.json'), 'utf-8'));
-  } catch { return null; }
+async function getStores() {
+  if (_accountStore && _routesStore) return { accountStore: _accountStore, routesStore: _routesStore };
+  const { createAccountStore } = await import('../shared/utils/account-store.js');
+  const { createRoutesStore } = await import('../shared/utils/routes-store.js');
+  _accountStore = createAccountStore({ redis: messageBus.publisher, messageBus, logger });
+  _routesStore = createRoutesStore({ redis: messageBus.publisher, messageBus, logger });
+  return { accountStore: _accountStore, routesStore: _routesStore };
 }
 
-// Helper: get list of available destinations from env vars
-function getAvailableDestinations() {
-  const dests = [];
-  if (process.env.TRADOVATE_DEMO_ACCOUNT_ID) dests.push('tradovate-demo');
-  if (process.env.TRADOVATE_LIVE_ACCOUNT_ID) dests.push('tradovate-live');
-  if (process.env.PICKMYTRADE_ENABLED === 'true') dests.push('pickmytrade');
-  return dests;
-}
+// ----- Signal resend -----
 
-// Get full routing config + available destinations
-app.get('/api/routing/config', dashboardAuth, async (req, res) => {
+app.post('/api/signals/resend', dashboardAuth, async (req, res) => {
   try {
-    const config = await getRoutingConfig();
-    res.json({
-      defaultDestinations: config?.defaultDestinations || ['tradovate'],
-      routes: config?.routes || {},
-      availableDestinations: getAvailableDestinations(),
-      timestamp: new Date().toISOString()
-    });
-  } catch (error) {
-    logger.error('Failed to get routing config:', error.message);
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// Enable a destination for a strategy
-app.post('/api/routing/strategy/:strategyName/destination/:dest/enable', dashboardAuth, async (req, res) => {
-  const { strategyName, dest } = req.params;
-  try {
-    const config = await getRoutingConfig() || { defaultDestinations: ['tradovate'], routes: {} };
-
-    // Get current destinations for this strategy (fall back to defaults)
-    const currentDests = config.routes[strategyName] || [...config.defaultDestinations];
-
-    // Add destination if not already present
-    if (!currentDests.includes(dest)) {
-      currentDests.push(dest);
+    const { signal, targetAccountId } = req.body || {};
+    if (!signal || !signal.strategy || !signal.symbol) {
+      return res.status(400).json({ error: 'signal with strategy and symbol is required' });
     }
-    config.routes[strategyName] = currentDests;
-
-    // Save to Redis
-    await messageBus.publisher.set('routing:config', JSON.stringify(config));
-    logger.info(`[Routing] ${strategyName}: added ${dest} → [${currentDests.join(', ')}]`);
-
-    broadcast('routing_config_changed', { config, timestamp: new Date().toISOString() });
-    res.json({ strategy: strategyName, destinations: currentDests, timestamp: new Date().toISOString() });
-  } catch (error) {
-    logger.error(`Failed to update routing for ${strategyName}:`, error.message);
-    res.status(500).json({ error: error.message });
+    const tradeSignal = {
+      strategy: signal.strategy,
+      symbol: signal.symbol,
+      side: signal.side,
+      action: signal.action || (signal.side === 'short' || signal.side === 'sell' ? 'place_limit' : 'place_limit'),
+      price: signal.price,
+      stop_loss: signal.stop_loss,
+      take_profit: signal.take_profit,
+      quantity: signal.quantity || null,
+      ...(targetAccountId ? { targetAccountId } : {})
+    };
+    await messageBus.publish(CHANNELS.TRADE_SIGNAL, tradeSignal);
+    logger.info(`[Resend] Published trade.signal: ${signal.strategy} ${signal.side} ${signal.symbol} @ ${signal.price}${targetAccountId ? ` → ${targetAccountId}` : ' → all routes'}`);
+    res.json({ ok: true, signalId: tradeSignal.signalId, targetAccountId: targetAccountId || 'all_routes' });
+  } catch (err) {
+    logger.error(`Signal resend failed: ${err.message}`);
+    res.status(500).json({ error: err.message });
   }
 });
 
-// Disable a destination for a strategy
-app.post('/api/routing/strategy/:strategyName/destination/:dest/disable', dashboardAuth, async (req, res) => {
-  const { strategyName, dest } = req.params;
+// ----- Proxy endpoints (frontend talks only to monitoring-service) -----
+
+app.get('/api/accounts/:id/balance', dashboardAuth, async (req, res) => {
   try {
-    const config = await getRoutingConfig() || { defaultDestinations: ['tradovate'], routes: {} };
-
-    // Get current destinations for this strategy (fall back to defaults)
-    const currentDests = config.routes[strategyName] || [...config.defaultDestinations];
-
-    // Remove destination
-    const filtered = currentDests.filter(d => d !== dest);
-    config.routes[strategyName] = filtered;
-
-    // Save to Redis
-    await messageBus.publisher.set('routing:config', JSON.stringify(config));
-    logger.info(`[Routing] ${strategyName}: removed ${dest} → [${filtered.join(', ')}]`);
-
-    broadcast('routing_config_changed', { config, timestamp: new Date().toISOString() });
-    res.json({ strategy: strategyName, destinations: filtered, timestamp: new Date().toISOString() });
-  } catch (error) {
-    logger.error(`Failed to update routing for ${strategyName}:`, error.message);
-    res.status(500).json({ error: error.message });
+    const url = `${process.env.TRADOVATE_SERVICE_URL || 'http://localhost:3011'}/accounts/${req.params.id}/balance`;
+    const r = await axios.get(url, { timeout: 5000 });
+    res.json(r.data);
+  } catch (err) {
+    res.status(err.response?.status || 502).json({ error: err.message });
   }
+});
+
+app.get('/api/pending', dashboardAuth, async (_req, res) => {
+  try {
+    const url = `${process.env.TRADE_ORCHESTRATOR_URL || 'http://localhost:3013'}/api/pending`;
+    const r = await axios.get(url, { timeout: 5000 });
+    res.json(r.data);
+  } catch (err) {
+    res.status(err.response?.status || 502).json({ error: err.message });
+  }
+});
+
+// ----- Full sync (triggers snapshot from all broker connectors) -----
+
+app.post('/api/proxy/tradovate/sync/full', dashboardAuth, async (_req, res) => {
+  try {
+    const tvUrl = process.env.TRADOVATE_SERVICE_URL || 'http://localhost:3011';
+    const healthResp = await axios.get(`${tvUrl}/accounts`, { timeout: 5000 });
+    const connectors = healthResp.data?.connectors || [];
+    const results = [];
+    for (const c of connectors) {
+      try {
+        await axios.post(`${tvUrl}/accounts/${c.accountId}/snapshot`, {}, { timeout: 10000 });
+        results.push({ accountId: c.accountId, ok: true });
+      } catch (err) {
+        results.push({ accountId: c.accountId, ok: false, error: err.message });
+      }
+    }
+    res.json({ status: 'completed', results, timestamp: new Date().toISOString() });
+  } catch (err) {
+    logger.error(`Full sync failed: ${err.message}`);
+    res.status(502).json({ error: err.message });
+  }
+});
+
+// ----- Accounts CRUD -----
+
+app.get('/api/accounts', dashboardAuth, async (_req, res) => {
+  try {
+    const { accountStore } = await getStores();
+    const ids = await accountStore.listIds();
+    logger.info(`[accounts] listIds returned ${ids.length}: ${JSON.stringify(ids)}`);
+    const list = await accountStore.list();
+    logger.info(`[accounts] list returned ${list.length} accounts`);
+    res.json(list);
+  } catch (err) {
+    logger.error(`[accounts] list failed: ${err.message}`, err.stack);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/accounts', dashboardAuth, async (req, res) => {
+  try {
+    const { accountStore } = await getStores();
+    const account = await accountStore.create(req.body || {});
+    res.status(201).json(account);
+  } catch (err) { res.status(400).json({ error: err.message }); }
+});
+
+app.get('/api/accounts/:id', dashboardAuth, async (req, res) => {
+  try {
+    const { accountStore } = await getStores();
+    const account = await accountStore.get(req.params.id);
+    if (!account) return res.status(404).json({ error: 'not found' });
+    res.json(account);
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+app.put('/api/accounts/:id', dashboardAuth, async (req, res) => {
+  try {
+    const { accountStore } = await getStores();
+    res.json(await accountStore.update(req.params.id, req.body || {}));
+  } catch (err) { res.status(400).json({ error: err.message }); }
+});
+
+app.delete('/api/accounts/:id', dashboardAuth, async (req, res) => {
+  try {
+    const { accountStore } = await getStores();
+    const existed = await accountStore.remove(req.params.id);
+    res.json({ ok: true, existed });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+app.post('/api/accounts/:id/test', dashboardAuth, async (req, res) => {
+  // Proxy to tradovate-service for Tradovate accounts; otherwise return basic info
+  try {
+    const { accountStore } = await getStores();
+    const account = await accountStore.get(req.params.id);
+    if (!account) return res.status(404).json({ error: 'not found' });
+
+    if (account.broker === 'tradovate') {
+      const url = process.env.TRADOVATE_SERVICE_URL || 'http://localhost:3011';
+      const r = await axios.post(`${url}/accounts/${req.params.id}/test`, {}, { timeout: 5000 });
+      return res.json(r.data);
+    }
+    res.json({ ok: true, note: `Test not implemented for broker: ${account.broker}` });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ----- Connector schemas (drives dynamic frontend forms) -----
+
+app.get('/api/connectors/schemas', dashboardAuth, async (_req, res) => {
+  try {
+    await import('../shared/connectors/tradovate-connector.js');
+    await import('../shared/connectors/pickmytrade-connector.js');
+    const { listSchemas } = await import('../shared/connectors/registry.js');
+    res.json(listSchemas());
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// ----- Routes CRUD -----
+
+app.get('/api/routes', dashboardAuth, async (_req, res) => {
+  try {
+    const { routesStore } = await getStores();
+    res.json(await routesStore.get());
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+app.put('/api/routes/defaults', dashboardAuth, async (req, res) => {
+  try {
+    const { routesStore } = await getStores();
+    res.json(await routesStore.setDefaults(req.body?.accountIds || []));
+  } catch (err) { res.status(400).json({ error: err.message }); }
+});
+
+app.put('/api/routes/:strategy', dashboardAuth, async (req, res) => {
+  try {
+    const { routesStore } = await getStores();
+    res.json(await routesStore.setRoute(req.params.strategy, req.body?.accountIds || []));
+  } catch (err) { res.status(400).json({ error: err.message }); }
+});
+
+app.delete('/api/routes/:strategy', dashboardAuth, async (req, res) => {
+  try {
+    const { routesStore } = await getStores();
+    res.json(await routesStore.deleteRoute(req.params.strategy));
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// ----- Backup export -----
+
+app.get('/api/routes/export', dashboardAuth, async (_req, res) => {
+  try {
+    const { accountStore, routesStore } = await getStores();
+    const accounts = await accountStore.list();      // credentials already redacted here
+    const routes = await routesStore.get();
+    res.json({
+      exportedAt: new Date().toISOString(),
+      note: 'Credentials are redacted; this is not a restorable backup of secrets.',
+      accounts,
+      routes
+    });
+  } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
 // Proxy endpoint to trade-orchestrator for enhanced trading status
@@ -3184,7 +3089,7 @@ app.get('/api/trading/enhanced-status', dashboardAuth, async (req, res) => {
     logger.debug('✅ Enhanced trade-orchestrator proxy response received');
     res.json(response.data);
   } catch (error) {
-    logger.error('❌ Enhanced trade-orchestrator proxy failed:', error.message);
+    logger.debug('Enhanced trade-orchestrator proxy unavailable, using local fallback');
 
     // Enhanced fallback with signal context simulation
     const openPositions = Array.from(monitoringState.positions.values())
@@ -3754,12 +3659,21 @@ async function handlePositionUpdate(message) {
       return;
     }
 
+    const existing = monitoringState.positions.get(positionKey) || {};
     const position = {
+      ...existing,
       id: message.positionId,
       accountId: message.accountId,
+      brokerAccountId: message.brokerAccountId,
+      strategy: message.strategy || existing.strategy,
+      signalId: message.signalId || existing.signalId,
       symbol: message.symbol,
+      side: message.side,
       netPos: netPos,
-      currentPrice: message.currentPrice,
+      entryPrice: message.entryPrice || existing.entryPrice,
+      stopLoss: message.stopLoss ?? existing.stopLoss ?? null,
+      takeProfit: message.takeProfit ?? existing.takeProfit ?? null,
+      currentPrice: message.currentPrice || existing.currentPrice,
       pnl: message.pnl || message.unrealizedPnL || 0,
       realizedPnL: message.realizedPnL || 0,
       unrealizedPnL: message.unrealizedPnL || message.pnl || 0,
@@ -3773,6 +3687,43 @@ async function handlePositionUpdate(message) {
   broadcast('position_update', message);
 
   logActivity('position', `Position updated for ${message.symbol || 'multiple symbols'}`, message);
+}
+
+async function handlePositionSnapshot(message) {
+  const { accountId, positions } = message || {};
+  if (!accountId || !Array.isArray(positions)) return;
+
+  // Wipe all known positions for this account and rebuild from snapshot
+  const prefix = `${accountId}-`;
+  for (const key of [...monitoringState.positions.keys()]) {
+    if (key.startsWith(prefix)) monitoringState.positions.delete(key);
+  }
+
+  for (const p of positions) {
+    if (!p.symbol || !p.netPos) continue;
+    const key = `${accountId}-${p.symbol}`;
+    const existing = monitoringState.positions.get(key) || {};
+    monitoringState.positions.set(key, {
+      ...existing,
+      accountId,
+      brokerAccountId: message.brokerAccountId,
+      strategy: p.strategy || existing.strategy || null,
+      symbol: p.symbol,
+      side: p.netPos > 0 ? 'long' : 'short',
+      netPos: p.netPos,
+      entryPrice: p.entryPrice,
+      stopLoss: p.stopLoss ?? existing.stopLoss ?? null,
+      takeProfit: p.takeProfit ?? existing.takeProfit ?? null,
+      pnl: existing.pnl || 0,
+      realizedPnL: existing.realizedPnL || 0,
+      unrealizedPnL: existing.unrealizedPnL || 0,
+      lastUpdate: message.timestamp || new Date().toISOString(),
+      source: 'snapshot'
+    });
+  }
+
+  broadcast('position_snapshot', { accountId, count: positions.length, timestamp: message.timestamp });
+  logActivity('position', `Position snapshot from ${accountId}: ${positions.length} positions`, message);
 }
 
 async function handlePositionClosed(message) {
@@ -3863,6 +3814,38 @@ async function handlePriceUpdate(message) {
   }
 
   broadcast('market_data', quoteData);
+
+  // Update any open positions that match this symbol and broadcast real-time P&L
+  const price = message.close;
+  const baseSymbol = message.baseSymbol || key;
+  // Map micro ↔ full-size so NQ prices update MNQ positions and vice versa
+  const MICRO_MAP = { NQ: 'MNQ', ES: 'MES', YM: 'MYM', RTY: 'M2K' };
+  const FULL_MAP = { MNQ: 'NQ', MES: 'ES', MYM: 'YM', M2K: 'RTY' };
+  const relatedSymbol = MICRO_MAP[baseSymbol] || FULL_MAP[baseSymbol] || null;
+  const POINT_VALUES = { NQ: 20, MNQ: 2, ES: 50, MES: 5, YM: 5, MYM: 0.5, RTY: 50, M2K: 5 };
+  for (const [posKey, pos] of monitoringState.positions.entries()) {
+    if (!pos.netPos) continue;
+    const posBase = (pos.symbol || '').replace(/[FGHJKMNQUVXZ]\d{1,2}$/i, '');
+    if (posBase !== baseSymbol && posBase !== relatedSymbol && pos.symbol !== message.symbol) continue;
+    const entry = Number(pos.entryPrice) || 0;
+    const netPos = Number(pos.netPos) || 0;
+    const pv = POINT_VALUES[posBase] || 1;
+    const unrealizedPnL = netPos * (price - entry) * pv;
+    pos.currentPrice = price;
+    pos.unrealizedPnL = unrealizedPnL;
+    pos.lastUpdate = message.timestamp || new Date().toISOString();
+    broadcast('position_realtime_update', {
+      positionId: posKey,
+      accountId: pos.accountId,
+      symbol: pos.symbol,
+      currentPrice: price,
+      entryPrice: entry,
+      unrealizedPnL,
+      netPos,
+      side: pos.side,
+      lastUpdate: pos.lastUpdate
+    });
+  }
 }
 
 async function handleOrderUpdate(message) {
@@ -4149,13 +4132,10 @@ async function handleServiceStopped(message) {
   logActivity('system', `Service ${message.service} stopped: ${message.reason}`, message);
 }
 
-async function handleWebhookReceived(message) {
-  logActivity('webhook', `Webhook received from ${message.source || 'unknown'}`, message);
-}
-
 async function handleTradeValidated(message) {
-  logActivity('trade', `Trade validated: ${message.signal.action} ${message.signal.symbol}`, message);
   const sig = message.signal || {};
+  logActivity('trade', `Trade validated: ${sig.action || '?'} ${sig.symbol || '?'}`, message);
+  broadcast('signal_received', { signalId: message.signalId, signal: sig, acceptedAccounts: message.acceptedAccounts, timestamp: message.timestamp });
   await persistAndBroadcastAlert({
     ruleName: 'signal',
     severity: 'signal',
@@ -4225,6 +4205,7 @@ async function startup() {
       [CHANNELS.ACCOUNT_UPDATE, handleAccountUpdate],
       [CHANNELS.POSITION_UPDATE, handlePositionUpdate],
       [CHANNELS.POSITION_CLOSED, handlePositionClosed],
+      [CHANNELS.POSITION_SNAPSHOT, handlePositionSnapshot],
       [CHANNELS.POSITION_REALTIME_UPDATE, handlePositionRealtimeUpdate],
       [CHANNELS.PRICE_UPDATE, handlePriceUpdate],
       [CHANNELS.ORDER_PLACED, handleOrderUpdate],
@@ -4237,7 +4218,6 @@ async function startup() {
       [CHANNELS.SERVICE_HEALTH, handleServiceHealth],
       [CHANNELS.SERVICE_STARTED, handleServiceStarted],
       [CHANNELS.SERVICE_STOPPED, handleServiceStopped],
-      [CHANNELS.WEBHOOK_RECEIVED, handleWebhookReceived],
       [CHANNELS.TRADE_VALIDATED, handleTradeValidated],
       [CHANNELS.TRADE_REJECTED, handleTradeRejected],
       [CHANNELS.MARKET_NEWS, handleMarketNews],
@@ -4303,7 +4283,23 @@ async function startup() {
       logger.info(`Health check: http://localhost:${config.service.port}/health`);
       logger.info(`Dashboard API: http://localhost:${config.service.port}/api/dashboard`);
       logger.info(`WebSocket: ws://localhost:${config.service.port}`);
-      logger.info(`Webhook endpoint: http://localhost:${config.service.port}/webhook`);
+
+      // Request snapshots from tradovate-service so positions aren't empty on startup
+      setTimeout(async () => {
+        try {
+          const tvUrl = process.env.TRADOVATE_SERVICE_URL || 'http://localhost:3011';
+          const resp = await axios.get(`${tvUrl}/accounts`, { timeout: 5000 });
+          const connectors = resp.data?.connectors || [];
+          for (const c of connectors) {
+            try {
+              await axios.post(`${tvUrl}/accounts/${c.accountId}/snapshot`, {}, { timeout: 10000 });
+              logger.info(`Startup snapshot requested for ${c.accountId}`);
+            } catch {}
+          }
+        } catch (err) {
+          logger.warn(`Startup snapshot request failed: ${err.message}`);
+        }
+      }, 3000);
 
       // Log Discord notification status
       const discordEnabled = process.env.DISCORD_NOTIFICATIONS_ENABLED === 'true';

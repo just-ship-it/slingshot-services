@@ -416,39 +416,6 @@ export class MnqAdaptiveScalperStrategy extends BaseStrategy {
     return this._generateSignal(candle, best);
   }
 
-  /**
-   * Called by multi-strategy-engine when a position closes.
-   * Tracks daily P&L and enforces loss limits.
-   */
-  onPositionClosed(closeData) {
-    const { pnl, timestamp } = closeData;
-    const debug = this.params.debug;
-
-    this.dayPnL += pnl;
-
-    if (debug) {
-      console.log(`[MNQ_SCALPER] Position closed: P&L=${roundTo(pnl)}pts, dayPnL=${roundTo(this.dayPnL)}pts, trades=${this.dayTradeCount}`);
-    }
-
-    // Mark level as broken on real losses (> 1pt)
-    if (pnl < -1 && closeData.metadata?.levelCategory) {
-      this.levelBroken[closeData.metadata.levelCategory] = true;
-      if (debug) console.log(`[MNQ_SCALPER] Level category broken: ${closeData.metadata.levelCategory}`);
-    }
-
-    // Daily loss limit
-    if (this.dayPnL <= this.params.dailyLossLimit) {
-      this.tradingHalted = true;
-      if (debug) console.log(`[MNQ_SCALPER] DAILY LOSS LIMIT HIT: ${roundTo(this.dayPnL)}pts`);
-    }
-
-    // Daily target hit
-    if (this.dayPnL >= this.params.dailyTarget) {
-      this.dayTargetHit = true;
-      if (debug) console.log(`[MNQ_SCALPER] DAILY TARGET HIT: ${roundTo(this.dayPnL)}pts`);
-    }
-  }
-
   // ============================================================
   // HISTORICAL DATA SEEDING (for mid-day restarts)
   // ============================================================

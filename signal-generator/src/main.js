@@ -108,9 +108,6 @@ class SignalGeneratorService {
     // Subscribe to data channels from data-service
     await this.multiStrategyEngine.subscribeToDataChannels();
 
-    // Sync position state from Tradovate
-    await this.multiStrategyEngine.syncPositionState();
-
     // Start background loop (reconciliation, status publishing, GF checks)
     this.multiStrategyEngine.run().catch(error => {
       logger.error('Multi-strategy engine error:', error);
@@ -294,16 +291,10 @@ class SignalGeneratorService {
       }
     });
 
-    // Subscribe to order lifecycle events for pending order tracking
-    messageBus.subscribe(CHANNELS.ORDER_PLACED, (msg) => this.aiEngine._handleOrderPlaced(msg));
-    messageBus.subscribe(CHANNELS.ORDER_FILLED, (msg) => this.aiEngine._handleOrderFilled(msg));
-    messageBus.subscribe(CHANNELS.ORDER_CANCELLED, (msg) => this.aiEngine._handleOrderCancelled(msg));
-
     // Seed current LT levels and LS sentiment from data-service HTTP API
     await this._seedLtLevels(targetProduct);
     await this._seedLsSentiment(targetProduct);
 
-    await this.aiEngine.syncPositionState();
     if (this.gexCalculator?.getCurrentLevels()) {
       this.aiEngine.markGexReady();
     }
@@ -573,8 +564,6 @@ class SignalGeneratorService {
               enabled: runner.enabled,
               evalTimeframe: runner.evalTimeframe
             })),
-            inPosition: state.inPosition,
-            positionStrategy: state.positionStrategy,
             gexAvailable: !!state.gexLevels,
             ltAvailable: !!state.ltLevels,
             ivAvailable: !!state.ivData

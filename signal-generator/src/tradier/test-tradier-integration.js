@@ -15,7 +15,7 @@ const testConfig = {
   accessToken: process.env.TRADIER_ACCESS_TOKEN || 'demo_token',
   baseUrl: 'https://sandbox.tradier.com/v1', // Sandbox for testing
   symbols: ['SPY', 'QQQ'],
-  maxExpirations: 3
+  chainMaxDTE: 50
 };
 
 async function testTradierClient() {
@@ -140,24 +140,25 @@ async function testOptionsChainManager() {
     const manager = new OptionsChainManager({
       tradierClient: client,
       symbols: testConfig.symbols,
-      maxExpirations: testConfig.maxExpirations,
+      chainMaxDTE: testConfig.chainMaxDTE,
       pollIntervalMinutes: 1
     });
 
     console.log('✅ OptionsChainManager created');
 
-    // Test expiration selection logic
+    // Test DTE-based expiration filtering
     const mockExpirations = [
-      '2026-01-09', // 0DTE (today)
+      '2026-01-09',
       '2026-01-10',
-      '2026-01-17', // Weekly
-      '2026-01-24', // Weekly
+      '2026-01-17',
+      '2026-01-24',
       '2026-01-31',
-      '2026-02-21'  // Monthly (third Friday)
+      '2026-02-21',
+      '2026-06-19' // Outside chainMaxDTE window — should be filtered out
     ];
 
-    const selected = manager.selectExpirations(mockExpirations, 'SPY');
-    console.log('✅ Expiration selection test:', selected);
+    const filtered = manager.filterExpirationsByDTE(mockExpirations);
+    console.log('✅ DTE filter test:', filtered);
 
     const stats = manager.getCacheStats();
     console.log('✅ Cache stats:', stats);

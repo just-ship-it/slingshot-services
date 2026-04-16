@@ -18,149 +18,17 @@ import fs from 'fs';
 import path from 'path';
 import readline from 'readline';
 import { fileURLToPath } from 'url';
+import {
+  normalCDF,
+  normalPDF,
+  blackScholesPrice,
+  blackScholesVega,
+  calculateIV,
+  calculateIVBisection
+} from '../../shared/utils/black-scholes.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-
-// ============================================================================
-// Black-Scholes Functions
-// ============================================================================
-
-/**
- * Standard normal cumulative distribution function
- */
-function normalCDF(x) {
-  const a1 = 0.254829592;
-  const a2 = -0.284496736;
-  const a3 = 1.421413741;
-  const a4 = -1.453152027;
-  const a5 = 1.061405429;
-  const p = 0.3275911;
-
-  const sign = x < 0 ? -1 : 1;
-  x = Math.abs(x) / Math.sqrt(2);
-
-  const t = 1.0 / (1.0 + p * x);
-  const y = 1.0 - (((((a5 * t + a4) * t) + a3) * t + a2) * t + a1) * t * Math.exp(-x * x);
-
-  return 0.5 * (1.0 + sign * y);
-}
-
-/**
- * Standard normal probability density function
- */
-function normalPDF(x) {
-  return Math.exp(-0.5 * x * x) / Math.sqrt(2 * Math.PI);
-}
-
-/**
- * Black-Scholes option price
- * @param {number} S - Spot price
- * @param {number} K - Strike price
- * @param {number} T - Time to expiration in years
- * @param {number} r - Risk-free rate
- * @param {number} sigma - Implied volatility
- * @param {string} optionType - 'C' for call, 'P' for put
- */
-function blackScholesPrice(S, K, T, r, sigma, optionType) {
-  if (T <= 0 || sigma <= 0) return 0;
-
-  const d1 = (Math.log(S / K) + (r + 0.5 * sigma * sigma) * T) / (sigma * Math.sqrt(T));
-  const d2 = d1 - sigma * Math.sqrt(T);
-
-  if (optionType === 'C') {
-    return S * normalCDF(d1) - K * Math.exp(-r * T) * normalCDF(d2);
-  } else {
-    return K * Math.exp(-r * T) * normalCDF(-d2) - S * normalCDF(-d1);
-  }
-}
-
-/**
- * Black-Scholes vega (sensitivity to volatility)
- */
-function blackScholesVega(S, K, T, r, sigma) {
-  if (T <= 0 || sigma <= 0) return 0;
-
-  const d1 = (Math.log(S / K) + (r + 0.5 * sigma * sigma) * T) / (sigma * Math.sqrt(T));
-  return S * Math.sqrt(T) * normalPDF(d1);
-}
-
-/**
- * Calculate implied volatility using Newton-Raphson iteration
- * @param {number} optionPrice - Observed option price (mid)
- * @param {number} S - Spot price
- * @param {number} K - Strike price
- * @param {number} T - Time to expiration in years
- * @param {number} r - Risk-free rate
- * @param {string} optionType - 'C' for call, 'P' for put
- * @returns {number|null} Implied volatility or null if calculation fails
- */
-function calculateIV(optionPrice, S, K, T, r, optionType) {
-  if (optionPrice <= 0 || T <= 0) return null;
-
-  // Check for intrinsic value violations
-  const intrinsic = optionType === 'C'
-    ? Math.max(0, S - K)
-    : Math.max(0, K - S);
-
-  if (optionPrice < intrinsic * 0.99) return null; // Allow small tolerance
-
-  let iv = 0.25; // Initial guess
-  const maxIterations = 100;
-  const tolerance = 0.0001;
-
-  for (let i = 0; i < maxIterations; i++) {
-    const price = blackScholesPrice(S, K, T, r, iv, optionType);
-    const vega = blackScholesVega(S, K, T, r, iv);
-
-    if (vega < 0.0001) {
-      // Vega too small, try bisection instead
-      return calculateIVBisection(optionPrice, S, K, T, r, optionType);
-    }
-
-    const diff = price - optionPrice;
-
-    if (Math.abs(diff) < tolerance) {
-      return iv;
-    }
-
-    iv = iv - diff / vega;
-
-    // Keep IV in reasonable bounds
-    if (iv <= 0.001) iv = 0.001;
-    if (iv > 5.0) iv = 5.0;
-  }
-
-  // Newton-Raphson didn't converge, try bisection
-  return calculateIVBisection(optionPrice, S, K, T, r, optionType);
-}
-
-/**
- * Bisection method for IV calculation (backup)
- */
-function calculateIVBisection(optionPrice, S, K, T, r, optionType) {
-  let low = 0.001;
-  let high = 3.0;
-  const maxIterations = 100;
-  const tolerance = 0.0001;
-
-  for (let i = 0; i < maxIterations; i++) {
-    const mid = (low + high) / 2;
-    const price = blackScholesPrice(S, K, T, r, mid, optionType);
-
-    if (Math.abs(price - optionPrice) < tolerance) {
-      return mid;
-    }
-
-    if (price > optionPrice) {
-      high = mid;
-    } else {
-      low = mid;
-    }
-  }
-
-  return (low + high) / 2;
-}
 
 // ============================================================================
 // Black's Model Functions (forward-based pricing)

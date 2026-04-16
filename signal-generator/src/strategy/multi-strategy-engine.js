@@ -79,11 +79,6 @@ class ProductState {
     // Strategy runners keyed by name
     this.strategies = new Map();
 
-    // Mutual exclusion: only one position per product
-    this.inPosition = false;
-    this.currentPosition = null;
-    this.positionStrategy = null;  // Which strategy holds the position
-
     // Rolling candle buffer (for prevCandle + multi-bar lookback)
     this.candleBuffer = new CandleBuffer({
       symbol: product,
@@ -96,52 +91,6 @@ class ProductState {
     this.gexLevelsReceivedAt = 0; // Epoch ms — tracks when GEX data last arrived via Redis
     this.ltLevels = null;
     this.ivData = null;
-
-    // Position reconciliation
-    this.reconciliationConfirmed = false;
-    this.lastInPositionLogTime = 0;
-
-    // Force-close retry tracking (max hold bars, EOD close)
-    this.forceCloseAttempts = 0;
-    this.forceCloseMaxRetries = 3;
-    this.forceCloseReason = null;
-
-    // GF Early Exit tracking (per-product, for position-holding strategy)
-    this.gfTrackingState = null;
-    this.gfEarlyExitConfig = {
-      enabled: config.GF_EARLY_EXIT_ENABLED ?? false,
-      breakevenThreshold: config.GF_BREAKEVEN_THRESHOLD ?? 2,
-      checkIntervalMs: 15 * 60 * 1000
-    };
-
-    // Time-based trailing (per-product)
-    this.timeBasedTrailingConfig = {
-      enabled: config.TIME_BASED_TRAILING_ENABLED ?? false,
-      rules: this._parseTimeBasedTrailingRules(config.TIME_BASED_TRAILING_RULES || '')
-    };
-    this.timeBasedTrailingState = null;
-  }
-
-  _parseTimeBasedTrailingRules(rulesStr) {
-    if (!rulesStr || rulesStr.trim() === '') return [];
-    const rules = [];
-    for (const part of rulesStr.split('|')) {
-      const [barsStr, mfeStr, actionStr] = part.split(',').map(s => s.trim());
-      if (!barsStr || !mfeStr || !actionStr) continue;
-      const afterBars = parseInt(barsStr, 10);
-      const ifMFE = parseFloat(mfeStr);
-      if (isNaN(afterBars) || isNaN(ifMFE)) continue;
-      let action, trailDistance;
-      if (actionStr === 'breakeven') { action = 'breakeven'; trailDistance = 0; }
-      else if (actionStr.startsWith('trail:')) {
-        action = 'trail';
-        trailDistance = parseFloat(actionStr.substring(6));
-        if (isNaN(trailDistance)) continue;
-      } else continue;
-      rules.push({ afterBars, ifMFE, action, trailDistance });
-    }
-    rules.sort((a, b) => a.afterBars - b.afterBars);
-    return rules;
   }
 }
 
@@ -344,25 +293,6 @@ class MultiStrategyEngine {
       logger.info('Subscribed to short_dte_iv.snapshot channel');
     }
 
-    // Subscribe to position events
-    messageBus.subscribe(CHANNELS.POSITION_UPDATE, (message) => {
-      this.handlePositionUpdate(message);
-    });
-    messageBus.subscribe(CHANNELS.POSITION_CLOSED, (message) => {
-      this.handlePositionClosed(message);
-    });
-
-    // Subscribe to order events
-    messageBus.subscribe(CHANNELS.ORDER_PLACED, (message) => {
-      this.handleOrderPlaced(message);
-    });
-    messageBus.subscribe(CHANNELS.ORDER_FILLED, (message) => {
-      this.handleOrderFilled(message);
-    });
-    messageBus.subscribe(CHANNELS.ORDER_CANCELLED, (message) => {
-      this.handleOrderCancelled(message);
-    });
-
     // Subscribe to data.ready events from data-service
     messageBus.subscribe(CHANNELS.DATA_READY, async (message) => {
       logger.info(`Data ready: ${message.product} ${message.timeframe} (${message.candleCount} candles)`);
@@ -494,112 +424,8 @@ class MultiStrategyEngine {
     state.candleBuffer.candles.push({ ...candle, toDict: () => candle });
     state.candleBuffer.maintainBufferSize();
 
-    // If in position, handle position management (time-based trailing, order timeouts, EOD close)
-    if (state.inPosition) {
-      await this.handleInPositionCandle(state, candle);
-    }
-
-    // Always evaluate strategies — keeps internal state (e.g. LT regime tracking) warm
-    // even when another strategy owns the position. Signals are suppressed in
-    // evaluateStrategyOnCandle() when state.inPosition is true.
+    // Always evaluate strategies — pure intent emission, no position gating
     await this.evaluateStrategies(state, candle);
-  }
-
-  /**
-   * Handle candle when in position: trailing stops, order timeouts, EOD close
-   */
-  async handleInPositionCandle(state, candle) {
-    // If we've already exhausted force-close retries, stop trying — alert was already sent
-    if (state.forceCloseAttempts >= state.forceCloseMaxRetries) {
-      return;
-    }
-
-    // Check maxHoldBars (force exit after N candles in trade)
-    if (state.positionMaxHoldBars > 0) {
-      state.positionBarsInTrade++;
-      if (state.positionBarsInTrade >= state.positionMaxHoldBars) {
-        await this.attemptForceClose(state, `max_hold_bars (${state.positionMaxHoldBars})`);
-        return;
-      }
-    }
-
-    // Check for EOD force close (3:55 PM EST)
-    const estTime = new Date().toLocaleString('en-US', {
-      timeZone: 'America/New_York',
-      hour: 'numeric',
-      minute: 'numeric',
-      hour12: false
-    });
-    const [h, m] = estTime.split(':').map(Number);
-    if ((h === 15 && m >= 55) || (h === 16 && m === 0)) {
-      await this.attemptForceClose(state, `EOD force close (${h}:${String(m).padStart(2, '0')} EST)`);
-      return;
-    }
-
-    // Update time-based trailing (global config OR per-signal rules)
-    if (state.timeBasedTrailingState) {
-      this.updateTimeBasedTrailing(state, candle);
-    }
-
-    const now = Date.now();
-    if (now - state.lastInPositionLogTime >= 60000) {
-      logger.info(`${state.product}: In position (${state.positionStrategy}) ${state.currentPosition?.side} @ ${state.currentPosition?.entryPrice}`);
-      state.lastInPositionLogTime = now;
-    }
-
-    // Check order timeouts for all strategies on this product
-    for (const [, runner] of state.strategies) {
-      await this.checkOrderTimeouts(runner);
-    }
-  }
-
-  /**
-   * Attempt a force close with retry tracking and alerting.
-   * Publishes the close signal up to maxRetries times across consecutive candles.
-   * After exhausting retries, sends a critical alert to dashboard/Discord and stops retrying.
-   */
-  async attemptForceClose(state, reason) {
-    state.forceCloseAttempts++;
-    const attempt = state.forceCloseAttempts;
-    const maxRetries = state.forceCloseMaxRetries;
-
-    if (attempt <= maxRetries) {
-      // Store reason on first attempt for the alert message
-      if (attempt === 1) {
-        state.forceCloseReason = reason;
-      }
-
-      logger.info(`Force close attempt ${attempt}/${maxRetries} for ${state.product}: ${reason}`);
-      const closeSignal = {
-        webhook_type: 'trade_signal',
-        action: 'position_closed',
-        symbol: state.currentPosition?.symbol || state.tradingSymbol,
-        side: state.currentPosition?.side,
-        strategy: state.positionStrategy,
-        reason,
-        timestamp: new Date().toISOString()
-      };
-      await this.publishSignal(closeSignal);
-    }
-
-    if (attempt >= maxRetries) {
-      const alertMsg = `FORCE CLOSE FAILED after ${maxRetries} attempts for ${state.product} ` +
-        `(${state.positionStrategy} ${state.currentPosition?.side} @ ${state.currentPosition?.entryPrice}). ` +
-        `Reason: ${state.forceCloseReason}. Manual intervention required.`;
-      logger.error(alertMsg);
-
-      await messageBus.publish(CHANNELS.STRATEGY_ALERT, {
-        ruleName: 'force-close-failed',
-        severity: 'critical',
-        message: alertMsg,
-        signal: {
-          strategy: state.positionStrategy,
-          symbol: state.currentPosition?.symbol || state.tradingSymbol,
-          side: state.currentPosition?.side,
-          entryPrice: state.currentPosition?.entryPrice
-        }
-      });
-    }
   }
 
   /**
@@ -608,7 +434,6 @@ class MultiStrategyEngine {
   async evaluateStrategies(state, candle) {
     if (!this.enabled) return;
     const inSession = this.isInTradingSession();
-    const wasInPosition = state.inPosition;
 
     // Get strategies sorted by priority
     const runners = Array.from(state.strategies.values())
@@ -622,24 +447,15 @@ class MultiStrategyEngine {
         if (runner.aggregator) {
           evalCandle = this.getAggregatedCandle(runner, candle);
           if (!evalCandle) {
-            await this.checkOrderTimeouts(runner);
             continue;  // Still accumulating
           }
           logger.info(`${runner.evalTimeframe} candle closed for ${runner.name}: O=${evalCandle.open} H=${evalCandle.high} L=${evalCandle.low} C=${evalCandle.close}`);
         }
 
         await this.evaluateStrategyOnCandle(state, runner, evalCandle, inSession);
-
-        // If a strategy JUST entered a position on this candle, stop evaluating lower-priority ones
-        if (state.inPosition && !wasInPosition) break;
       } catch (error) {
         logger.error(`Error evaluating ${runner.name} for ${state.product}:`, error);
       }
-    }
-
-    // Check order timeouts for all strategies
-    for (const [, runner] of state.strategies) {
-      await this.checkOrderTimeouts(runner);
     }
   }
 
@@ -742,23 +558,9 @@ class MultiStrategyEngine {
       marketData.ivData = state.ivData;
     }
 
-    // Evaluate — always called to keep strategy internal state warm,
-    // even when another strategy owns the position
+    // Evaluate — pure intent emission, no position gating
     const signal = runner.strategy.evaluateSignal(candle, runner.prevCandle, marketData);
     runner.prevCandle = candle;
-
-    // Suppress signals when another strategy has an open position
-    if (signal && state.inPosition) {
-      logger.info(`Signal from ${runner.name} suppressed — ${state.product} in position (${state.positionStrategy})`);
-      messageBus.publish(CHANNELS.STRATEGY_ALERT, {
-        ruleName: 'signal-suppressed',
-        severity: 'info',
-        message: `${runner.strategyConstant} ${signal.side} @ ${signal.price} suppressed — position held by ${state.positionStrategy} (TP: ${signal.take_profit}, SL: ${signal.stop_loss})`,
-        signal: { strategy: runner.strategyConstant, symbol: state.tradingSymbol, side: signal.side, action: signal.action, price: signal.price, stop_loss: signal.stop_loss, take_profit: signal.take_profit },
-        timestamp: new Date().toISOString(),
-      });
-      return;
-    }
 
     if (signal && !inSession) {
       logger.warn(`⏰ [${runner.name}] Signal BLOCKED by session filter: ${signal.side} @ ${signal.price} (server hour outside ${this.sessionStart}-${this.sessionEnd} EST window)`);
@@ -806,711 +608,6 @@ class MultiStrategyEngine {
     }
   }
 
-  // === Position Management ===
-
-  handlePositionUpdate(message) {
-    if (message.netPos === 0 || message.source === 'position_closed') {
-      this.handlePositionClosed(message);
-      return;
-    }
-
-    // If we already have a position for this strategy, update stop order ID if provided
-    if (message.stopOrderId || message.orderStrategyId) {
-      const strategy = message.strategy;
-      for (const [product, state] of this.products) {
-        if (state.inPosition && state.currentPosition?.strategy === strategy) {
-          if (message.stopOrderId && !state.currentPosition.stopOrderId) {
-            state.currentPosition.stopOrderId = message.stopOrderId;
-            logger.info(`Updated stopOrderId for ${product}: ${message.stopOrderId}`);
-          }
-          if (message.orderStrategyId && !state.currentPosition.orderStrategyId) {
-            state.currentPosition.orderStrategyId = message.orderStrategyId;
-            logger.info(`Updated orderStrategyId for ${product}: ${message.orderStrategyId}`);
-          }
-          return;
-        }
-      }
-    }
-
-    if (message.netPos !== 0) {
-      this.handlePositionOpened(message);
-    }
-  }
-
-  handlePositionOpened(message) {
-    const strategy = message.strategy;
-
-    // Find which product this position belongs to
-    for (const [product, state] of this.products) {
-      // Check if any strategy on this product matches
-      for (const [, runner] of state.strategies) {
-        if (runner.strategyConstant === strategy) {
-          state.inPosition = true;
-          state.positionStrategy = strategy;
-          state.currentPosition = {
-            symbol: message.symbol,
-            side: message.side || (message.action === 'Buy' ? 'long' : 'short'),
-            entryPrice: message.price || message.entryPrice,
-            entryTime: message.timestamp || new Date().toISOString(),
-            quantity: Math.abs(message.netPos) || 1,
-            strategy: strategy,
-            orderStrategyId: message.orderStrategyId || message.order_strategy_id,
-            stopOrderId: message.stopOrderId || message.stop_order_id,
-            metadata: state.pendingSignalMetadata || {}
-          };
-          state.pendingSignalMetadata = null;
-
-          // Initialize maxHoldBars tracking
-          state.positionBarsInTrade = 0;
-          state.positionMaxHoldBars = state.pendingMaxHoldBars || 0;
-          state.pendingMaxHoldBars = 0;
-
-          logger.info(`Position opened for ${product} (${strategy}): ${state.currentPosition.side} @ ${state.currentPosition.entryPrice}${state.positionMaxHoldBars > 0 ? ` [maxHold: ${state.positionMaxHoldBars} bars]` : ''}`);
-
-          // Initialize GF tracking
-          if (state.gfEarlyExitConfig.enabled) {
-            this.initializeGFTracking(state);
-          }
-
-          // Initialize time-based trailing (per-signal config takes priority over global)
-          const signalHasTimeBased = state.pendingTimeBasedTrailing && state.pendingTimeBasedConfig;
-          if (signalHasTimeBased || state.timeBasedTrailingConfig.enabled) {
-            this.initializeTimeBasedTrailing(state);
-            if (signalHasTimeBased) {
-              state.timeBasedTrailingState.signalRules = state.pendingTimeBasedConfig.rules || [];
-            }
-          }
-          state.pendingTimeBasedConfig = null;
-          state.pendingTimeBasedTrailing = false;
-
-          return;
-        }
-      }
-    }
-  }
-
-  handlePositionClosed(message) {
-    const strategy = message.strategy;
-
-    for (const [product, state] of this.products) {
-      // Match by strategy if available, OR fall back to symbol matching when
-      // the orchestrator couldn't resolve the strategy (e.g. manual close, fill
-      // without signal context). Without this fallback the signal generator gets
-      // stuck thinking it's still in a position.
-      const strategyMatch = strategy && (state.positionStrategy === strategy || state.currentPosition?.strategy === strategy);
-      const symbolMatch = !strategyMatch && state.inPosition && message.symbol &&
-        (state.currentPosition?.symbol === message.symbol ||
-         message.symbol.includes(product));
-
-      if (strategyMatch || symbolMatch) {
-        if (symbolMatch) {
-          logger.warn(`Position closed for ${product} via symbol fallback (strategy mismatch: msg=${strategy || 'none'}, expected=${state.positionStrategy})`);
-        }
-        const exitInfo = message.exitPrice ? ` @ ${message.exitPrice}` : '';
-        const pnlInfo = message.pnl ? ` (P&L: ${message.pnl > 0 ? '+' : ''}${message.pnl})` : '';
-        logger.info(`Position closed for ${product}${exitInfo}${pnlInfo}`);
-
-        // Notify strategy of position close (for P&L tracking, loss limits, etc.)
-        if (state.currentPosition) {
-          const entryPrice = state.currentPosition.entryPrice;
-          const exitPrice = message.exitPrice || message.price || message.currentPrice;
-          const side = state.currentPosition.side;
-
-          if (entryPrice && exitPrice) {
-            const pnl = side === 'long' || side === 'buy'
-              ? exitPrice - entryPrice
-              : entryPrice - exitPrice;
-
-            const matchStrategy = strategy || state.positionStrategy;
-            for (const [, runner] of state.strategies) {
-              if (runner.strategyConstant === matchStrategy && typeof runner.strategy.onPositionClosed === 'function') {
-                runner.strategy.onPositionClosed({
-                  entryPrice,
-                  exitPrice,
-                  pnl,
-                  side,
-                  timestamp: message.timestamp || new Date().toISOString(),
-                  metadata: { ...(state.currentPosition.metadata || {}), ...(message.metadata || {}) }
-                });
-              }
-            }
-          }
-        }
-
-        state.inPosition = false;
-        state.currentPosition = null;
-        state.positionStrategy = null;
-        state.gfTrackingState = null;
-        state.timeBasedTrailingState = null;
-        state.positionBarsInTrade = 0;
-        state.positionMaxHoldBars = 0;
-        state.forceCloseAttempts = 0;
-        state.forceCloseReason = null;
-
-        // Cooldown is NOT reset on position close — it continues from signal time,
-        // matching backtest behavior (30min cooldown from signal generation)
-
-        state.reconciliationConfirmed = false;
-        logger.info(`${product}: Strategy reset, ready for next signal`);
-        return;
-      }
-    }
-  }
-
-  // === Order Tracking ===
-
-  handleOrderPlaced(message) {
-    for (const [, state] of this.products) {
-      for (const [, runner] of state.strategies) {
-        if (runner.strategyConstant === message.strategy) {
-          const orderId = message.orderId || message.strategyId;
-          if (!orderId) return;
-          runner.pendingOrders.set(orderId, {
-            orderId,
-            symbol: message.symbol,
-            side: message.action === 'Buy' ? 'buy' : 'sell',
-            price: message.price,
-            candleCount: 0,
-            placedAt: new Date().toISOString(),
-            strategy: message.strategy
-          });
-          logger.info(`Tracking pending order ${orderId} for ${runner.name} (${runner.orderTimeoutCandles} candle timeout)`);
-          return;
-        }
-      }
-    }
-  }
-
-  handleOrderFilled(message) {
-    const orderId = message.orderId || message.strategyId;
-    if (!orderId) return;
-    for (const [, state] of this.products) {
-      for (const [, runner] of state.strategies) {
-        if (runner.pendingOrders.has(orderId)) {
-          runner.pendingOrders.delete(orderId);
-          return;
-        }
-      }
-    }
-  }
-
-  handleOrderCancelled(message) {
-    const orderId = message.orderId || message.strategyId;
-
-    // Try matching by orderId first
-    if (orderId) {
-      for (const [, state] of this.products) {
-        for (const [, runner] of state.strategies) {
-          if (runner.pendingOrders.has(orderId)) {
-            runner.pendingOrders.delete(orderId);
-            logger.info(`Cleared pending order ${orderId} for ${runner.name} (matched by orderId)`);
-            return;
-          }
-        }
-      }
-    }
-
-    // Fallback: match by strategy name (cancel_limit events may lack orderId)
-    if (message.strategy) {
-      for (const [, state] of this.products) {
-        for (const [, runner] of state.strategies) {
-          if (runner.strategyConstant === message.strategy && runner.pendingOrders.size > 0) {
-            const count = runner.pendingOrders.size;
-            runner.pendingOrders.clear();
-            logger.info(`Cleared ${count} pending orders for ${runner.name} (matched by strategy: ${message.strategy})`);
-            return;
-          }
-        }
-      }
-    }
-  }
-
-  async checkOrderTimeouts(runner) {
-    if (runner.pendingOrders.size === 0) return;
-
-    // If strategy is disabled, clear stale pending orders silently
-    if (!runner.enabled) {
-      const count = runner.pendingOrders.size;
-      runner.pendingOrders.clear();
-      logger.info(`Cleared ${count} stale pending orders for disabled strategy ${runner.name}`);
-      return;
-    }
-
-    const ordersToCancel = [];
-    for (const [orderId, order] of runner.pendingOrders) {
-      order.candleCount++;
-      if (order.candleCount >= runner.orderTimeoutCandles) {
-        ordersToCancel.push(order);
-      }
-    }
-
-    for (const order of ordersToCancel) {
-      logger.info(`Order ${order.orderId} timed out after ${order.candleCount} candles (${runner.name})`);
-      const cancelSignal = {
-        webhook_type: 'trade_signal',
-        action: 'cancel_limit',
-        symbol: order.symbol,
-        side: order.side,
-        strategy: order.strategy,
-        reason: `Limit order timeout after ${order.candleCount} candles`,
-        original_price: order.price,
-        placed_at: order.placedAt,
-        timestamp: new Date().toISOString()
-      };
-      await this.publishSignal(cancelSignal);
-      runner.pendingOrders.delete(order.orderId);
-    }
-  }
-
-  // === GF Early Exit ===
-
-  initializeGFTracking(state) {
-    const gexLevels = state.gexLevels;
-    if (!gexLevels || gexLevels.gammaFlip == null) return;
-
-    const now = Date.now();
-    const periodMs = state.gfEarlyExitConfig.checkIntervalMs;
-    state.gfTrackingState = {
-      entryGF: gexLevels.gammaFlip,
-      lastGF: gexLevels.gammaFlip,
-      lastCheckPeriod: Math.floor(now / periodMs),
-      consecutiveAdverse: 0,
-      breakevenTriggered: false
-    };
-    logger.info(`GF tracking initialized for ${state.product}: entry GF = ${gexLevels.gammaFlip.toFixed(2)}`);
-  }
-
-  checkGFEarlyExit(state) {
-    if (!state.gfEarlyExitConfig.enabled || !state.inPosition || !state.gfTrackingState) return;
-
-    const now = Date.now();
-    const periodMs = state.gfEarlyExitConfig.checkIntervalMs;
-    const currentPeriod = Math.floor(now / periodMs);
-
-    if (currentPeriod <= state.gfTrackingState.lastCheckPeriod) return;
-
-    const gexLevels = state.gexLevels;
-    if (!gexLevels || gexLevels.gammaFlip == null) return;
-
-    const currentGF = gexLevels.gammaFlip;
-    const gfDelta = currentGF - state.gfTrackingState.lastGF;
-    const isLong = state.currentPosition.side === 'long' || state.currentPosition.side === 'buy';
-    const isAdverse = isLong ? gfDelta < 0 : gfDelta > 0;
-
-    state.gfTrackingState.lastCheckPeriod = currentPeriod;
-
-    if (isAdverse && Math.abs(gfDelta) > 0.5) {
-      state.gfTrackingState.consecutiveAdverse++;
-    } else if (!isAdverse && Math.abs(gfDelta) > 0.5) {
-      state.gfTrackingState.consecutiveAdverse = 0;
-    }
-
-    state.gfTrackingState.lastGF = currentGF;
-
-    if (state.gfTrackingState.consecutiveAdverse >= state.gfEarlyExitConfig.breakevenThreshold &&
-        !state.gfTrackingState.breakevenTriggered) {
-      state.gfTrackingState.breakevenTriggered = true;
-      this.sendBreakevenStopModification(state);
-    }
-  }
-
-  async sendBreakevenStopModification(state) {
-    if (!state.currentPosition) return;
-    const signal = {
-      webhook_type: 'trade_signal',
-      action: 'modify_stop',
-      strategy: state.currentPosition.strategy,
-      symbol: state.currentPosition.symbol,
-      new_stop_price: state.currentPosition.entryPrice,
-      quantity: state.currentPosition.quantity || 1,
-      reason: 'gf_adverse_breakeven',
-      order_strategy_id: state.currentPosition.orderStrategyId,
-      order_id: state.currentPosition.stopOrderId,
-      timestamp: new Date().toISOString()
-    };
-    await messageBus.publish(CHANNELS.TRADE_SIGNAL, signal);
-    logger.info(`GF breakeven stop sent for ${state.product}: stop -> ${state.currentPosition.entryPrice}`);
-  }
-
-  // === Time-Based Trailing ===
-
-  initializeTimeBasedTrailing(state) {
-    if (!state.currentPosition) return;
-    state.timeBasedTrailingState = {
-      entryPrice: state.currentPosition.entryPrice,
-      barsInTrade: 0,
-      mfe: 0,
-      peakPrice: state.currentPosition.entryPrice,
-      currentStopPrice: null,
-      activeRuleIndex: -1,
-      lastModificationBar: -1,
-      rulesTriggered: []
-    };
-  }
-
-  updateTimeBasedTrailing(state, candle) {
-    if (!state.inPosition || !state.timeBasedTrailingState) return;
-
-    // Don't send a new modify while a previous one is still in-flight
-    const tbState = state.timeBasedTrailingState;
-    if (tbState._modifyInFlight) return;
-
-    const isLong = state.currentPosition.side === 'long' || state.currentPosition.side === 'buy';
-
-    tbState.barsInTrade++;
-
-    if (isLong) {
-      if (candle.high > tbState.peakPrice) {
-        tbState.peakPrice = candle.high;
-        tbState.mfe = tbState.peakPrice - tbState.entryPrice;
-      }
-    } else {
-      if (candle.low < tbState.peakPrice) {
-        tbState.peakPrice = candle.low;
-        tbState.mfe = tbState.entryPrice - tbState.peakPrice;
-      }
-    }
-
-    // Use per-signal rules if available, otherwise global config
-    const rules = tbState.signalRules || state.timeBasedTrailingConfig.rules;
-
-    // Check rules for new activations
-    for (let i = 0; i < rules.length; i++) {
-      if (tbState.rulesTriggered.includes(i)) continue;
-      const rule = rules[i];
-
-      if (tbState.barsInTrade >= rule.afterBars && tbState.mfe >= rule.ifMFE) {
-        let newStopPrice;
-        if (rule.action === 'breakeven') {
-          newStopPrice = tbState.entryPrice;
-        } else {
-          newStopPrice = isLong
-            ? tbState.peakPrice - rule.trailDistance
-            : tbState.peakPrice + rule.trailDistance;
-        }
-
-        // Only update if tighter
-        const shouldUpdate = tbState.currentStopPrice === null ||
-          (isLong ? newStopPrice > tbState.currentStopPrice : newStopPrice < tbState.currentStopPrice);
-
-        if (shouldUpdate) {
-          // Check if the new stop would be invalid (on the wrong side of market).
-          // Mirrors backtest engine logic: broker would reject a stop on the wrong
-          // side of market, so close the position at market instead.
-          const currentPrice = candle.close;
-          const stopInvalid = isLong
-            ? newStopPrice >= currentPrice   // long sell-stop can't be at/above market (price gapped through)
-            : newStopPrice <= currentPrice;  // short buy-stop can't be at/below market (price gapped through)
-          if (stopInvalid) {
-            logger.info(`TB-Trail: ${state.product} stop ${newStopPrice.toFixed(2)} would be invalid (price=${currentPrice.toFixed(2)}, ${isLong ? 'long' : 'short'}) — closing at market`);
-            this.sendTrailingStopMarketClose(state, newStopPrice, rule, i);
-            return;
-          }
-
-          tbState.rulesTriggered.push(i);
-          tbState.activeRuleIndex = i;
-          tbState.lastModificationBar = tbState.barsInTrade;
-          tbState.currentStopPrice = newStopPrice;
-          this.sendTimeBasedTrailingModification(state, newStopPrice, rule, i);
-          return; // One modification per candle — wait for it to complete
-        }
-      }
-    }
-
-    // Continuous trailing: keep moving stop behind peak for active trail rules
-    if (tbState.activeRuleIndex >= 0) {
-      const activeRule = rules[tbState.activeRuleIndex];
-      if (activeRule && activeRule.trailDistance) {
-        const continuousStop = isLong
-          ? tbState.peakPrice - activeRule.trailDistance
-          : tbState.peakPrice + activeRule.trailDistance;
-        const shouldUpdate = tbState.currentStopPrice === null ||
-          (isLong ? continuousStop > tbState.currentStopPrice : continuousStop < tbState.currentStopPrice);
-        if (shouldUpdate) {
-          // Check if the continuous trail stop would be invalid
-          const currentPrice = candle.close;
-          const stopInvalid = isLong
-            ? continuousStop >= currentPrice
-            : continuousStop <= currentPrice;
-          if (stopInvalid) {
-            logger.info(`TB-Trail: ${state.product} continuous stop ${continuousStop.toFixed(2)} would be invalid (price=${currentPrice.toFixed(2)}, ${isLong ? 'long' : 'short'}) — closing at market`);
-            this.sendTrailingStopMarketClose(state, continuousStop, activeRule, tbState.activeRuleIndex);
-            return;
-          }
-
-          tbState.currentStopPrice = continuousStop;
-          this.sendTimeBasedTrailingModification(state, continuousStop, activeRule, tbState.activeRuleIndex);
-        }
-      }
-    }
-  }
-
-  async sendTimeBasedTrailingModification(state, newStopPrice, rule, ruleIndex) {
-    if (!state.currentPosition) return;
-    const tbState = state.timeBasedTrailingState;
-    const actionStr = rule.action === 'breakeven' ? 'breakeven' : `trail:${rule.trailDistance}`;
-
-    const signal = {
-      webhook_type: 'trade_signal',
-      action: 'modify_stop',
-      strategy: state.currentPosition.strategy,
-      symbol: state.currentPosition.symbol,
-      new_stop_price: newStopPrice,
-      quantity: state.currentPosition.quantity || 1,
-      reason: `time_based_trailing_rule_${ruleIndex + 1}`,
-      order_strategy_id: state.currentPosition.orderStrategyId,
-      order_id: state.currentPosition.stopOrderId,
-      metadata: {
-        entryPrice: tbState.entryPrice,
-        barsInTrade: tbState.barsInTrade,
-        mfe: tbState.mfe,
-        peakPrice: tbState.peakPrice,
-        ruleAction: actionStr
-      },
-      timestamp: new Date().toISOString()
-    };
-
-    // Prevent duplicate sends: mark in-flight until publish completes
-    tbState._modifyInFlight = true;
-    try {
-      await messageBus.publish(CHANNELS.TRADE_SIGNAL, signal);
-      tbState.currentStopPrice = newStopPrice;
-      logger.info(`TB-Trail: ${state.product} stop -> ${newStopPrice.toFixed(2)} (Rule ${ruleIndex + 1}: ${actionStr})`);
-    } finally {
-      tbState._modifyInFlight = false;
-    }
-  }
-
-  /**
-   * Close position at market when a trailing stop would be invalid (on the wrong side of market).
-   * Mirrors backtest engine behavior (trade-simulator.js lines 753-764).
-   */
-  async sendTrailingStopMarketClose(state, invalidStopPrice, rule, ruleIndex) {
-    if (!state.currentPosition) return;
-    const tbState = state.timeBasedTrailingState;
-    const actionStr = rule.action === 'breakeven' ? 'breakeven' : `trail:${rule.trailDistance}`;
-
-    const closeSignal = {
-      webhook_type: 'trade_signal',
-      action: 'position_closed',
-      symbol: state.currentPosition?.symbol || state.tradingSymbol,
-      side: state.currentPosition?.side,
-      strategy: state.positionStrategy,
-      reason: `trailing_stop_invalid (Rule ${ruleIndex + 1}: ${actionStr}, stop=${invalidStopPrice.toFixed(2)} crossed market)`,
-      timestamp: new Date().toISOString()
-    };
-    await this.publishSignal(closeSignal);
-  }
-
-  // === Position Sync ===
-
-  async syncPositionState() {
-    const accountId = config.TRADOVATE_ACCOUNT_ID;
-    if (!accountId) {
-      logger.warn('No TRADOVATE_ACCOUNT_ID, skipping position sync');
-      return;
-    }
-
-    for (let attempt = 1; attempt <= 3; attempt++) {
-      try {
-        logger.info(`Syncing position state (attempt ${attempt}/3)...`);
-        const response = await fetch(`${config.TRADOVATE_SERVICE_URL}/positions/${accountId}`);
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-
-        const positions = await response.json();
-
-        for (const [product, state] of this.products) {
-          const openPos = positions.find(p => p.netPos !== 0 && p.symbol && p.symbol.includes(product));
-          if (openPos) {
-            // Check orchestrator's Redis state for position ownership
-            const owner = await this._getOrchestratorPositionOwner(product);
-            const matchedRunner = owner
-              ? Array.from(state.strategies.values()).find(r => r.strategyConstant === owner)
-              : null;
-            if (matchedRunner) {
-              state.inPosition = true;
-              state.positionStrategy = owner;
-              state.currentPosition = {
-                symbol: openPos.symbol || `Contract ${openPos.contractId}`,
-                side: openPos.netPos > 0 ? 'long' : 'short',
-                entryPrice: openPos.netPrice || 0,
-                entryTime: openPos.timestamp || new Date().toISOString(),
-                strategy: owner,
-                quantity: Math.abs(openPos.netPos)
-              };
-              logger.info(`Found ${product} position: ${state.currentPosition.side} @ ${state.currentPosition.entryPrice} (owned by ${owner})`);
-            } else {
-              logger.info(`Found ${product} position (${openPos.symbol} @ ${openPos.netPrice}) owned by ${owner || 'unknown/manual'} — NOT claiming`);
-            }
-          } else {
-            logger.info(`No open ${product} position`);
-          }
-        }
-        return;
-      } catch (error) {
-        logger.warn(`Position sync attempt ${attempt} failed: ${error.message}`);
-        if (attempt < 3) await new Promise(r => setTimeout(r, 3000));
-      }
-    }
-    logger.warn('Position sync failed after 3 attempts');
-  }
-
-  /**
-   * Read the trade orchestrator's authoritative strategy-to-position mapping
-   * from Redis. Returns the strategy source (e.g. 'GEX_SCALP', 'AI_TRADER')
-   * for the given underlying, or null if no position tracked / unknown / manual.
-   */
-  async _getOrchestratorPositionOwner(underlying) {
-    try {
-      const data = await messageBus.publisher.get('multi-strategy:state');
-      if (!data) return null;
-      const parsed = JSON.parse(data);
-      if (parsed.version !== '2.0' || !parsed.positions) return null;
-      const posInfo = parsed.positions[underlying];
-      if (!posInfo || !posInfo.source || posInfo.source === 'UNKNOWN') return null;
-      return posInfo.source;
-    } catch (e) {
-      logger.debug(`[RECONCILE] Could not read orchestrator state: ${e.message}`);
-      return null;
-    }
-  }
-
-  findStrategyForPosition(state) {
-    // Return the highest-priority enabled strategy's constant
-    const runners = Array.from(state.strategies.values())
-      .filter(r => r.enabled)
-      .sort((a, b) => a.priority - b.priority);
-    return runners.length > 0 ? runners[0].strategyConstant : null;
-  }
-
-  async reconcilePositionState() {
-    const accountId = config.TRADOVATE_ACCOUNT_ID;
-    if (!accountId) return;
-
-    try {
-      const response = await fetch(`${config.TRADOVATE_SERVICE_URL}/positions/${accountId}`);
-      if (!response.ok) return;
-      const positions = await response.json();
-
-      for (const [product, state] of this.products) {
-        const openPos = positions.find(p => p.netPos !== 0 && p.symbol && p.symbol.includes(product));
-
-        if (state.inPosition && !openPos) {
-          logger.warn(`[RECONCILE] Stale ${product} position detected, resetting`);
-          state.inPosition = false;
-          state.currentPosition = null;
-          state.positionStrategy = null;
-          state.gfTrackingState = null;
-          state.timeBasedTrailingState = null;
-          state.forceCloseAttempts = 0;
-          state.forceCloseReason = null;
-          for (const [, runner] of state.strategies) {
-            runner.strategy.lastSignalTime = 0;
-          }
-          state.reconciliationConfirmed = false;
-        } else if (!state.inPosition && openPos) {
-          // Check orchestrator's Redis state for position ownership
-          const owner = await this._getOrchestratorPositionOwner(product);
-          const matchedRunner = owner
-            ? Array.from(state.strategies.values()).find(r => r.strategyConstant === owner)
-            : null;
-          if (matchedRunner) {
-            state.inPosition = true;
-            state.positionStrategy = owner;
-            state.currentPosition = {
-              symbol: openPos.symbol,
-              side: openPos.netPos > 0 ? 'long' : 'short',
-              entryPrice: openPos.netPrice || 0,
-              entryTime: openPos.timestamp || new Date().toISOString(),
-              strategy: owner,
-              quantity: Math.abs(openPos.netPos)
-            };
-            state.reconciliationConfirmed = false;
-            logger.warn(`[RECONCILE] Missed ${product} position open: ${state.currentPosition.side} @ ${state.currentPosition.entryPrice} (owned by ${owner})`);
-          } else {
-            // Safety: block all signals for this product when broker has ANY position,
-            // regardless of ownership. Prevents duplicate signals when orchestrator
-            // state is stale or position was opened manually.
-            state.inPosition = true;
-            state.positionStrategy = owner || 'EXTERNAL';
-            state.currentPosition = {
-              symbol: openPos.symbol,
-              side: openPos.netPos > 0 ? 'long' : 'short',
-              entryPrice: openPos.netPrice || 0,
-              entryTime: openPos.timestamp || new Date().toISOString(),
-              strategy: owner || 'EXTERNAL',
-              quantity: Math.abs(openPos.netPos)
-            };
-            state.reconciliationConfirmed = false;
-            logger.warn(`[RECONCILE] ${product} position (${openPos.symbol}) owned by ${owner || 'unknown/manual'} — claiming as safety measure to block duplicate signals`);
-          }
-        } else if (!state.reconciliationConfirmed) {
-          const desc = state.inPosition ? `in position (${state.currentPosition?.side})` : 'flat';
-          logger.info(`[RECONCILE] ${product}: ${desc}`);
-          state.reconciliationConfirmed = true;
-        }
-      }
-    } catch (error) {
-      logger.debug(`[RECONCILE] Skipped: ${error.message}`);
-    }
-  }
-
-  /**
-   * Reconcile pending orders against broker state.
-   * Uses strategy-name matching (not order IDs) to avoid OrderStrategy vs child order ID mismatch.
-   */
-  async reconcilePendingOrders() {
-    // Skip if no runner has pending orders
-    let totalPending = 0;
-    for (const [, state] of this.products) {
-      for (const [, runner] of state.strategies) {
-        totalPending += runner.pendingOrders.size;
-      }
-    }
-    if (totalPending === 0) return;
-
-    const accountId = config.TRADOVATE_ACCOUNT_ID;
-    if (!accountId) return;
-
-    try {
-      // Fetch working orders and strategy mappings from tradovate-service
-      const [ordersRes, mappingsRes] = await Promise.all([
-        fetch(`${config.TRADOVATE_SERVICE_URL}/orders/${accountId}`),
-        fetch(`${config.TRADOVATE_SERVICE_URL}/api/order-strategy-mappings`)
-      ]);
-
-      if (!ordersRes.ok || !mappingsRes.ok) return;
-
-      const orders = await ordersRes.json();
-      const mappingsData = await mappingsRes.json();
-
-      // Build set of strategy names that still have working orders at the broker
-      const strategiesWithWorkingOrders = new Set();
-      const workingStatuses = ['Working', 'Accepted', 'PendingNew'];
-      for (const order of orders) {
-        if (workingStatuses.includes(order.ordStatus)) {
-          const mapping = mappingsData.mappings?.find(m => String(m.orderId) === String(order.id));
-          if (mapping?.strategy) {
-            strategiesWithWorkingOrders.add(mapping.strategy);
-          }
-        }
-      }
-
-      // Clear pending orders for runners whose strategy has no working orders at broker
-      for (const [, state] of this.products) {
-        for (const [, runner] of state.strategies) {
-          if (runner.pendingOrders.size > 0 && !strategiesWithWorkingOrders.has(runner.strategyConstant)) {
-            const count = runner.pendingOrders.size;
-            runner.pendingOrders.clear();
-            logger.warn(`[RECONCILE] Cleared ${count} stale pending orders for ${runner.name} — no working orders at broker`);
-          }
-        }
-      }
-    } catch (error) {
-      logger.debug(`[RECONCILE] Pending order reconciliation skipped: ${error.message}`);
-    }
-  }
-
   // === Session & Lifecycle ===
 
   isInTradingSession() {
@@ -1528,8 +625,9 @@ class MultiStrategyEngine {
 
   async publishSignal(signal) {
     try {
+      signal.signalId = signal.signalId || `${signal.strategy || 'UNKNOWN'}-${signal.side || 'na'}-${(signal.price ?? signal.entryPrice ?? 'mkt')}-${Date.now()}`;
       await messageBus.publish(CHANNELS.TRADE_SIGNAL, signal);
-      logger.info(`Published trade signal: ${signal.action} ${signal.side || ''} ${signal.symbol || ''} (${signal.strategy})`);
+      logger.info(`Published trade signal: ${signal.action} ${signal.side || ''} ${signal.symbol || ''} (${signal.strategy}) [${signal.signalId}]`);
     } catch (error) {
       logger.error('Failed to publish signal:', error);
     }
@@ -1551,12 +649,6 @@ class MultiStrategyEngine {
             priority: runner.priority,
             evalTimeframe: runner.evalTimeframe,
             tradingSymbol: state.tradingSymbol,
-            inPosition: state.inPosition && state.positionStrategy === runner.strategyConstant,
-            position: state.inPosition && state.positionStrategy === runner.strategyConstant ? {
-              side: state.currentPosition?.side,
-              entryPrice: state.currentPosition?.entryPrice,
-              entryTime: state.currentPosition?.entryTime
-            } : null,
             pendingOrders: runner.pendingOrders.size,
             gexAvailable: !!state.gexLevels,
             ltAvailable: !!state.ltLevels,
@@ -1585,7 +677,6 @@ class MultiStrategyEngine {
     for (const [, runner] of state.strategies) {
       runner.reset();
     }
-    state.reconciliationConfirmed = false;
     logger.info(`${product}: All strategies reset for new session`);
   }
 
@@ -1728,14 +819,12 @@ class MultiStrategyEngine {
 
         const gexOk = !needsGex || !!gexLevels;
         const isReady = runner.enabled && runner.dataReady && inAllowedSession && gexOk
-          && !(state.inPosition && state.positionStrategy !== runner.strategyConstant)
           && !pastCutoff;
         const blockers = [
           !runner.enabled ? 'Strategy disabled' : null,
           !runner.dataReady ? 'Data not ready (waiting for history)' : null,
           !inAllowedSession ? 'Outside allowed session' : null,
           needsGex && !gexLevels ? 'No GEX levels' : null,
-          state.inPosition ? `Position held by ${state.positionStrategy}` : null,
           pastCutoff ? `Past entry cutoff (${strategy.params.entryCutoffHour}:${String(strategy.params.entryCutoffMinute).padStart(2, '0')} ET)` : null,
           inAvoidHour ? `SHORT restricted (hour ${strategy.params.avoidHours.join(', ')} — longs OK)` : null,
         ].filter(Boolean);
@@ -1744,7 +833,6 @@ class MultiStrategyEngine {
           runner.dataReady ? 'Data ready' : null,
           inAllowedSession ? 'In allowed session' : null,
           needsGex ? (gexLevels ? 'GEX levels loaded' : null) : null,
-          !state.inPosition ? 'No active position' : null,
           !pastCutoff ? 'Before entry cutoff' : null,
           !inAvoidHour || !strategy?.params?.avoidHours?.length ? null : 'Outside restricted hours',
         ].filter(Boolean);
@@ -1770,19 +858,6 @@ class MultiStrategyEngine {
             seconds_remaining: Math.max(0, Math.ceil((runner.strategy.lastSignalTime + runner.strategy.params.signalCooldownMs - now.getTime()) / 1000))
           },
           internals: typeof runner.strategy.getInternalState === 'function' ? runner.strategy.getInternalState() : null,
-          position: {
-            in_position: state.inPosition && state.positionStrategy === runner.strategyConstant,
-            current: state.inPosition && state.positionStrategy === runner.strategyConstant ? state.currentPosition : null
-          },
-          product_position: state.inPosition ? {
-            in_position: true,
-            strategy: state.positionStrategy,
-            side: state.currentPosition?.side || null,
-            symbol: state.currentPosition?.symbol || state.tradingSymbol,
-            entry_price: state.currentPosition?.entryPrice || null,
-            quantity: state.currentPosition?.quantity || null,
-            is_own: state.positionStrategy === runner.strategyConstant
-          } : { in_position: false },
           gex_levels: gexLevels ? {
             futures_spot: gexLevels.futures_spot || gexLevels.nqSpot || null,
             put_wall: gexLevels.putWall,
@@ -1815,8 +890,6 @@ class MultiStrategyEngine {
    */
   async run() {
     logger.info('Multi-strategy engine started');
-    let lastReconciliationTime = 0;
-    const reconciliationIntervalMs = 5 * 60 * 1000;
 
     while (true) {
       try {
@@ -1834,21 +907,8 @@ class MultiStrategyEngine {
           }
         }
 
-        // Position + pending order reconciliation
-        const now = Date.now();
-        if (now - lastReconciliationTime >= reconciliationIntervalMs) {
-          await this.reconcilePositionState();
-          await this.reconcilePendingOrders();
-          lastReconciliationTime = now;
-        }
-
         // Publish strategy status
         await this.publishStrategyStatus();
-
-        // GF early exit checks
-        for (const [, state] of this.products) {
-          this.checkGFEarlyExit(state);
-        }
 
         await new Promise(resolve => setTimeout(resolve, 30000));
       } catch (error) {

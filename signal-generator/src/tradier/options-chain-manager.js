@@ -8,7 +8,6 @@ class OptionsChainManager {
   constructor(options = {}) {
     this.tradierClient = options.tradierClient;
     this.symbols = options.symbols || ['SPY', 'QQQ'];
-    this.maxExpirations = options.maxExpirations || 6;
     this.pollIntervalMs = (options.pollIntervalMinutes || 2) * 60 * 1000;
 
     // Cache for options chain data
@@ -21,12 +20,11 @@ class OptionsChainManager {
     this.pollTimer = null;
     this.lastPollTime = 0;
 
-    // Strategy for selecting expirations
-    this.expirationStrategy = {
-      include0DTE: true,
-      weeklyCount: 2,
-      includeMonthly: true
-    };
+    // Cache every expiration from today through chainMaxDTE so each strategy
+    // (0-1 DTE short-dte-iv, 7-45 DTE iv-skew-gex, GEX/VEX/CEX) can filter
+    // the same superset to its own needs. No pre-selection — that produced
+    // the 2026-04-15 incident where iv-skew-gex was starved of weekly data.
+    this.chainMaxDTE = options.chainMaxDTE ?? 50;
 
     if (!this.tradierClient) {
       throw new Error('TradierClient instance is required');
@@ -131,18 +129,23 @@ class OptionsChainManager {
   }
 
   /**
-   * Poll options chains for a single symbol
+   * Poll options chains for a single symbol. Fetches every expiration in the
+   * 0..chainMaxDTE window so downstream strategies can each filter to their
+   * own DTE range from one shared cache.
    */
   async pollSymbol(symbol) {
     try {
-      // Get available expirations
       const expirations = await this.getExpirations(symbol);
+      const targetExpirations = this.filterExpirationsByDTE(expirations);
 
-      // Select which expirations to fetch
-      const selectedExpirations = this.selectExpirations(expirations, symbol);
+      if (targetExpirations.length === 0) {
+        logger.warn(`⚠️  ${symbol}: no expirations within 0..${this.chainMaxDTE} DTE (got ${expirations.length} from API)`);
+        return;
+      }
 
-      // Fetch options chains for selected expirations
-      const chainPromises = selectedExpirations.map(exp =>
+      logger.info(`🎯 ${symbol}: polling ${targetExpirations.length}/${expirations.length} expirations within 0..${this.chainMaxDTE} DTE`);
+
+      const chainPromises = targetExpirations.map(exp =>
         this.getOptionsChain(symbol, exp)
       );
 
@@ -247,67 +250,28 @@ class OptionsChainManager {
   }
 
   /**
-   * Select which expirations to fetch based on strategy
+   * Keep every expiration whose DTE is within [0, chainMaxDTE]. The cache
+   * stores the full superset; per-strategy DTE filtering happens in each
+   * IV / exposure calculator (see iv-skew-calculator, short-dte-iv-calculator,
+   * exposure-calculator).
    */
-  selectExpirations(allExpirations, symbol) {
-    if (!allExpirations || allExpirations.length === 0) {
-      return [];
-    }
+  filterExpirationsByDTE(allExpirations) {
+    if (!allExpirations || allExpirations.length === 0) return [];
 
     const today = new Date();
     today.setHours(0, 0, 0, 0);
+    const todayMs = today.getTime();
+    const dayMs = 1000 * 60 * 60 * 24;
 
-    const selected = [];
-    const sortedExpirations = allExpirations
-      .map(exp => ({
-        date: exp,
-        dateObj: new Date(exp + 'T16:00:00-05:00'), // 4PM ET expiry
-        daysToExpiry: Math.ceil((new Date(exp + 'T16:00:00-05:00') - today) / (1000 * 60 * 60 * 24))
-      }))
-      .sort((a, b) => a.dateObj - b.dateObj);
-
-    // 0DTE (same day expiration)
-    if (this.expirationStrategy.include0DTE) {
-      const dte0 = sortedExpirations.find(exp => exp.daysToExpiry === 0);
-      if (dte0) {
-        selected.push(dte0.date);
-      }
-    }
-
-    // Weekly expirations (within next few weeks, excluding 0DTE)
-    const weeklyExpirations = sortedExpirations
-      .filter(exp => exp.daysToExpiry > 0 && exp.daysToExpiry <= 30)
-      .slice(0, this.expirationStrategy.weeklyCount);
-
-    weeklyExpirations.forEach(exp => {
-      if (!selected.includes(exp.date)) {
-        selected.push(exp.date);
-      }
-    });
-
-    // Monthly expiration (third Friday of the month)
-    if (this.expirationStrategy.includeMonthly) {
-      const monthlyExp = sortedExpirations.find(exp => {
-        const date = exp.dateObj;
-        const friday = date.getDay() === 5; // Friday
-        const dayOfMonth = date.getDate();
-        // Third Friday is typically between 15th-21st
-        return friday && dayOfMonth >= 15 && dayOfMonth <= 21 && exp.daysToExpiry > 7;
-      });
-
-      if (monthlyExp && !selected.includes(monthlyExp.date)) {
-        selected.push(monthlyExp.date);
-      }
-    }
-
-    // Limit to maxExpirations
-    const finalSelected = selected.slice(0, this.maxExpirations);
-
-    logger.info(`🎯 ${symbol}: selected ${finalSelected.length}/${allExpirations.length} expirations: [${finalSelected.join(', ')}]`);
-    if (finalSelected.length === 0) {
-      logger.warn(`⚠️  ${symbol}: No expirations selected from ${allExpirations.length} available. Available: [${allExpirations.slice(0, 5).join(', ')}${allExpirations.length > 5 ? '...' : ''}]`);
-    }
-    return finalSelected;
+    return allExpirations
+      .map(exp => {
+        const dateObj = new Date(exp + 'T16:00:00-05:00');
+        const dte = Math.ceil((dateObj.getTime() - todayMs) / dayMs);
+        return { date: exp, dte };
+      })
+      .filter(e => e.dte >= 0 && e.dte <= this.chainMaxDTE)
+      .sort((a, b) => a.dte - b.dte)
+      .map(e => e.date);
   }
 
   /**

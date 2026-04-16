@@ -64,7 +64,8 @@ class OptionsExposureService {
           appKey: this.config.schwabAppKey,
           appSecret: this.config.schwabAppSecret,
           callbackUrl: this.config.schwabCallbackUrl,
-          redisUrl: config.getRedisUrl()
+          redisUrl: config.getRedisUrl(),
+          chainMaxDTE: this.config.chainMaxDTE
         });
       } else if (this.config.accessToken) {
         this.logger.info('Using Tradier API for options data');
@@ -87,7 +88,7 @@ class OptionsExposureService {
       this.chainManager = new OptionsChainManager({
         tradierClient: this.tradierClient,
         symbols: this.config.symbols,
-        maxExpirations: this.config.maxExpirations,
+        chainMaxDTE: this.config.chainMaxDTE,
         pollIntervalMinutes: this.config.pollInterval
       });
 

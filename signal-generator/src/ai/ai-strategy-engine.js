@@ -63,13 +63,6 @@ export class AIStrategyEngine {
     // ── Day State (resets each trading day) ─────────────────
     this._resetDayState();
 
-    // ── Position State ──────────────────────────────────────
-    this.inPosition = false;
-    this.currentPosition = null;
-
-    // ── Pending Order State ───────────────────────────────
-    this.pendingOrder = null;
-
     // ── 5m Candle Aggregation ───────────────────────────────
     this.aggregator = new CandleAggregator();
     this.aggregator.initIncremental('5m', this.strategyConstant);
@@ -82,14 +75,6 @@ export class AIStrategyEngine {
     this.gexReady = false;
     this.enabled = true;
     this.observationMode = false; // When true, runs full cycle but blocks signal publishing
-
-    // ── Reconciliation ──────────────────────────────────────
-    this.reconciliationConfirmed = false;
-    this.lastReconciliationTime = 0;
-    this.reconciliationIntervalMs = 5 * 60 * 1000;
-
-    // Subscribe to position events
-    this._subscribeToPositionEvents();
 
     logger.info(`AI Strategy Engine initialized (dry-run: ${this.dryRun}, model: ${this.llm.model}, symbol: ${this.tradingSymbol})`);
   }
@@ -116,7 +101,6 @@ export class AIStrategyEngine {
     this.biasHistory = [];
     this.lastEntryEvaluation = null;
     this.eodCloseSent = false;
-    this.pendingOrder = null;
   }
 
   // ── Redis State Persistence ─────────────────────────────────
@@ -243,268 +227,6 @@ export class AIStrategyEngine {
     return this.featureAggregator.dataReady;
   }
 
-  // ── Position Event Handling ───────────────────────────────
-
-  _subscribeToPositionEvents() {
-    messageBus.subscribe(CHANNELS.POSITION_UPDATE, (message) => {
-      if (message.netPos === 0 || message.source === 'position_closed') {
-        this._handlePositionClosed(message).catch(e => logger.error('Error handling position closed:', e));
-      } else if (message.netPos !== 0) {
-        this._handlePositionOpened(message);
-      }
-    });
-
-    messageBus.subscribe(CHANNELS.POSITION_CLOSED, (message) => {
-      this._handlePositionClosed(message).catch(e => logger.error('Error handling position closed:', e));
-    });
-
-    logger.info('Subscribed to position events');
-  }
-
-  _handlePositionOpened(message) {
-    if (message.strategy !== this.strategyConstant) return;
-
-    this.inPosition = true;
-    this.currentPosition = {
-      symbol: message.symbol,
-      side: message.side || (message.action === 'Buy' ? 'long' : 'short'),
-      entryPrice: message.price || message.entryPrice,
-      entryTime: message.timestamp || new Date().toISOString(),
-      strategy: message.strategy,
-      orderStrategyId: message.orderStrategyId || message.order_strategy_id,
-      stopOrderId: message.stopOrderId || message.stop_order_id,
-    };
-
-    logger.info(`Position opened: ${this.currentPosition.side} ${this.currentPosition.symbol} @ ${this.currentPosition.entryPrice}`);
-
-    // Initialize trade manager if available (Sprint 5)
-    if (this.tradeManager) {
-      this.tradeManager.activate(this.currentPosition);
-      // Populate initial stop/target from pending order signal
-      if (this.pendingOrder) {
-        this.tradeManager.trade.initialStop = this.pendingOrder.stop_loss;
-        this.tradeManager.trade.initialTarget = this.pendingOrder.take_profit;
-        this.tradeManager.trade.currentStop = this.pendingOrder.stop_loss;
-      }
-    }
-  }
-
-  async _handlePositionClosed(message) {
-    if (message.strategy !== this.strategyConstant && this.currentPosition?.strategy !== this.strategyConstant) {
-      return;
-    }
-
-    const exitPrice = message.exitPrice || message.price;
-    const pnl = message.pnl;
-    logger.info(`Position closed${exitPrice ? ` @ ${exitPrice}` : ''}${pnl ? ` (P&L: ${pnl > 0 ? '+' : ''}${pnl})` : ''}`);
-
-    // Track outcome for reassessment context
-    if (this.currentPosition && exitPrice) {
-      const isLong = this.currentPosition.side === 'long' || this.currentPosition.side === 'buy';
-      const computedPnl = isLong ? exitPrice - this.currentPosition.entryPrice : this.currentPosition.entryPrice - exitPrice;
-      this.outcomesReceived.push({
-        pnl: pnl || computedPnl,
-        exitPrice,
-        side: this.currentPosition.side,
-        entryPrice: this.currentPosition.entryPrice,
-      });
-      const finalPnl = pnl || computedPnl;
-      if (finalPnl < 0) {
-        this.totalLossesToday++;
-        this.lastStopTimestamp = Date.now();
-        logger.info(`Stop loss hit — ${this.stopCooldownMs / 60000} min cooldown active (losses today: ${this.totalLossesToday})`);
-      } else {
-        // Managed exit or breakeven — apply shorter cooldown
-        this.lastManagedExitTimestamp = Date.now();
-        logger.info(`Managed exit — ${this.managedExitCooldownMs / 60000} min cooldown active`);
-      }
-    }
-
-    this.inPosition = false;
-    this.currentPosition = null;
-
-    // Deactivate trade manager
-    if (this.tradeManager) {
-      this.tradeManager.deactivate();
-    }
-
-    logger.info('Ready for next entry');
-    await this._saveState();
-  }
-
-  // ── Order Event Handling ─────────────────────────────────
-
-  _handleOrderPlaced(message) {
-    if (message.strategy !== this.strategyConstant) return;
-
-    if (this.pendingOrder) {
-      // Enrich existing pending order with broker orderId
-      this.pendingOrder.orderId = message.orderId || message.order_id || message.strategyId;
-      logger.info(`Pending order confirmed by broker: id=${this.pendingOrder.orderId}, ${this.pendingOrder.side} @ ${this.pendingOrder.price}`);
-    } else if (!this.inPosition && message.price) {
-      // Recover pending order state (e.g. after restart mid-order)
-      const side = (message.action || '').toLowerCase() === 'buy' ? 'buy' : 'sell';
-      this.pendingOrder = {
-        orderId: message.orderId || message.order_id || message.strategyId,
-        price: message.price,
-        side,
-        stop_loss: message.stopPrice || message.stop_loss,
-        take_profit: message.takeProfit || message.take_profit,
-        publishedAt: Date.now(),
-      };
-      if (!this.pendingOrder.take_profit) {
-        logger.warn(`Recovered pending order has no take_profit — price-based cancel will use MFE ratchet only`);
-      }
-      logger.info(`Tracking pending order from broker event: ${side} @ ${message.price} (id: ${this.pendingOrder.orderId})`);
-    }
-  }
-
-  _handleOrderFilled(message) {
-    if (!this.pendingOrder) return;
-    if (message.strategy !== this.strategyConstant) return;
-    logger.info(`Pending order filled — clearing tracking`);
-    this.pendingOrder = null;
-  }
-
-  _handleOrderCancelled(message) {
-    if (!this.pendingOrder) return;
-    if (message.strategy !== this.strategyConstant) return;
-    logger.info(`Pending order cancelled — clearing tracking`);
-    this.pendingOrder = null;
-  }
-
-  // ── Orchestrator State Lookup ─────────────────────────────
-
-  /**
-   * Read the trade orchestrator's authoritative strategy-to-position mapping
-   * from Redis. Returns the strategy source (e.g. 'AI_TRADER', 'GEX_SCALP')
-   * for the given underlying, or null if no position tracked / unknown / manual.
-   */
-  async _getOrchestratorPositionOwner(underlying) {
-    try {
-      const data = await messageBus.publisher.get('multi-strategy:state');
-      if (!data) return null;
-      const parsed = JSON.parse(data);
-      if (parsed.version !== '2.0' || !parsed.positions) return null;
-      const posInfo = parsed.positions[underlying];
-      if (!posInfo || !posInfo.source || posInfo.source === 'UNKNOWN') return null;
-      return posInfo.source;
-    } catch (e) {
-      logger.debug(`[RECONCILE] Could not read orchestrator state: ${e.message}`);
-      return null;
-    }
-  }
-
-  // ── Position Reconciliation ───────────────────────────────
-
-  async _reconcilePositionState() {
-    const accountId = config.TRADOVATE_ACCOUNT_ID;
-    if (!accountId) return;
-
-    try {
-      const response = await fetch(`${config.TRADOVATE_SERVICE_URL}/positions/${accountId}`);
-      if (!response.ok) return;
-
-      const positions = await response.json();
-      const baseSymbol = config.CANDLE_BASE_SYMBOL || 'NQ';
-      const openPosition = positions.find(p => p.netPos !== 0 && p.symbol && p.symbol.includes(baseSymbol));
-
-      if (this.inPosition && !openPosition) {
-        logger.warn(`[RECONCILE] Stale position detected — Tradovate is flat. Resetting.`);
-        this.inPosition = false;
-        this.currentPosition = null;
-        if (this.tradeManager) this.tradeManager.deactivate();
-        this.reconciliationConfirmed = false;
-      } else if (!this.inPosition && openPosition) {
-        // Check orchestrator's Redis state for position ownership
-        const owner = await this._getOrchestratorPositionOwner(baseSymbol);
-        if (owner === this.strategyConstant) {
-          this.inPosition = true;
-          this.currentPosition = {
-            symbol: openPosition.symbol || `Contract ${openPosition.contractId}`,
-            side: openPosition.netPos > 0 ? 'long' : 'short',
-            entryPrice: openPosition.netPrice || 0,
-            entryTime: openPosition.timestamp || new Date().toISOString(),
-            strategy: this.strategyConstant,
-            quantity: Math.abs(openPosition.netPos),
-          };
-          this.reconciliationConfirmed = false;
-          logger.warn(`[RECONCILE] Missed position open: ${this.currentPosition.side} ${this.currentPosition.symbol} @ ${this.currentPosition.entryPrice}`);
-
-          // Activate trade manager so MFE ratcheting begins
-          if (this.tradeManager) {
-            this.tradeManager.activate(this.currentPosition);
-            logger.info(`[RECONCILE] Trade manager activated for missed position`);
-          }
-        } else {
-          logger.info(`[RECONCILE] Open position (${openPosition.symbol} @ ${openPosition.netPrice}) owned by ${owner || 'unknown/manual'} — ignoring`);
-        }
-      } else if (!this.reconciliationConfirmed) {
-        const stateDesc = this.inPosition
-          ? `in position (${this.currentPosition?.side} ${this.currentPosition?.symbol})`
-          : 'flat';
-        logger.info(`[RECONCILE] Position state confirmed: ${stateDesc}`);
-        this.reconciliationConfirmed = true;
-      }
-    } catch (error) {
-      logger.debug(`[RECONCILE] Check skipped: ${error.message}`);
-    }
-  }
-
-  // ── Startup Sync ──────────────────────────────────────────
-
-  async syncPositionState() {
-    const accountId = config.TRADOVATE_ACCOUNT_ID;
-    if (!accountId) {
-      logger.warn('No TRADOVATE_ACCOUNT_ID configured, skipping position sync');
-      return;
-    }
-
-    for (let attempt = 1; attempt <= 3; attempt++) {
-      try {
-        logger.info(`Syncing position state from Tradovate (attempt ${attempt}/3)...`);
-        const response = await fetch(`${config.TRADOVATE_SERVICE_URL}/positions/${accountId}`);
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-
-        const positions = await response.json();
-        const baseSymbol = config.CANDLE_BASE_SYMBOL || 'NQ';
-        const openPosition = positions.find(p => p.netPos !== 0 && p.symbol && p.symbol.includes(baseSymbol));
-
-        if (openPosition) {
-          // Check orchestrator's Redis state for position ownership
-          const owner = await this._getOrchestratorPositionOwner(baseSymbol);
-          if (owner === this.strategyConstant) {
-            this.inPosition = true;
-            this.currentPosition = {
-              symbol: openPosition.symbol || `Contract ${openPosition.contractId}`,
-              side: openPosition.netPos > 0 ? 'long' : 'short',
-              entryPrice: openPosition.netPrice || 0,
-              entryTime: openPosition.timestamp || new Date().toISOString(),
-              strategy: this.strategyConstant,
-              quantity: Math.abs(openPosition.netPos),
-            };
-            logger.info(`Found existing position: ${this.currentPosition.side} ${this.currentPosition.symbol} @ ${this.currentPosition.entryPrice}`);
-
-            // Activate trade manager so MFE ratcheting begins
-            if (this.tradeManager) {
-              this.tradeManager.activate(this.currentPosition);
-              logger.info(`Trade manager activated for existing position`);
-            }
-          } else {
-            logger.info(`Found existing position (${openPosition.symbol} @ ${openPosition.netPrice}) owned by ${owner || 'unknown/manual'} — NOT claiming`);
-          }
-        } else {
-          logger.info('No open positions — starting fresh');
-        }
-        return;
-      } catch (error) {
-        logger.warn(`Position sync attempt ${attempt} failed: ${error.message}`);
-        if (attempt < 3) await new Promise(r => setTimeout(r, 3000));
-      }
-    }
-    logger.warn('Continuing without position sync');
-  }
-
   // ── Core: Process 1m Candle ───────────────────────────────
 
   /**
@@ -542,60 +264,8 @@ export class AIStrategyEngine {
 
     if (!isTradingDay(tradingDay)) return;
 
-    // ── Pending Order Cancellation (price-based) ──────────
-    if (this.pendingOrder && !this.inPosition) {
-      const po = this.pendingOrder;
-      const isBuy = po.side === 'buy' || po.side === 'long';
-      const mfeThreshold = isBuy ? po.price + 20 : po.price - 20;
-      const cancelLevel = po.take_profit
-        ? (isBuy ? Math.min(po.take_profit, mfeThreshold) : Math.max(po.take_profit, mfeThreshold))
-        : mfeThreshold;
-
-      const shouldCancel = isBuy
-        ? candle.high >= cancelLevel
-        : candle.low <= cancelLevel;
-
-      if (shouldCancel) {
-        const reason = (po.take_profit && (isBuy ? candle.high >= po.take_profit : candle.low <= po.take_profit))
-          ? 'Price reached take profit without fill'
-          : 'Price reached MFE ratchet (20pt) without fill';
-        logger.info(`Cancelling stale pending order: ${reason} (${isBuy ? 'high' : 'low'}=${isBuy ? candle.high : candle.low}, cancel_level=${cancelLevel})`);
-
-        await this._publishSignal({
-          webhook_type: 'trade_signal',
-          action: 'cancel_limit',
-          symbol: this.tradingSymbol,
-          side: po.side,
-          strategy: this.strategyConstant,
-          reason,
-          timestamp: new Date().toISOString(),
-        });
-        this.pendingOrder = null;
-      }
-    }
-
-    // ── Position Management (on every 1m candle while in position) ──
-    if (this.inPosition && this.tradeManager) {
-      await this.tradeManager.processCandle(candle);
-    }
-
-    // ── EOD Force Close (15:55 ET) ──────────────────────────
     const et = toET(candleTs);
     const totalMinutes = et.hour * 60 + et.minute;
-    if (this.inPosition && totalMinutes >= 955 && !this.eodCloseSent) {
-      logger.info(`EOD force close triggered at ${et.hour}:${String(et.minute).padStart(2, '0')} ET`);
-      await this._publishSignal({
-        webhook_type: 'trade_signal',
-        action: 'position_closed',
-        symbol: this.currentPosition?.symbol || this.tradingSymbol,
-        side: this.currentPosition?.side,
-        strategy: this.strategyConstant,
-        reason: 'EOD force close (3:55 PM ET)',
-        timestamp: new Date().toISOString(),
-      });
-      this.eodCloseSent = true;
-      return;
-    }
 
     // ── Bias Formation (gated on fresh GEX after 9:30 AM) ──────
     // Wait for fresh GEX from Tradier/CBOE before forming bias.
@@ -624,12 +294,6 @@ export class AIStrategyEngine {
 
     // ── Skip if not enough context yet (no bias formed) ─────
     if (!this.biasFormed) return;
-
-    // ── Skip if in position (management only) ───────────────
-    if (this.inPosition) return;
-
-    // ── Skip if pending order awaiting fill ────────────────
-    if (this.pendingOrder) return;
 
     // ── Daily/session limits ────────────────────────────────
     if (this.totalEntriesToday >= this.maxEntriesPerDay) return;
@@ -1030,34 +694,24 @@ export class AIStrategyEngine {
 
     await this._publishSignal(signal);
 
-    // Track pending order (cleared on fill, cancel, or price-based cancel)
-    if (!this.dryRun) {
-      this.pendingOrder = {
-        price: decision.entry_price,
-        side: decision.side,
-        stop_loss: decision.stop_loss,
-        take_profit: decision.take_profit,
-        publishedAt: Date.now(),
-      };
-      logger.info(`Tracking pending order: ${decision.side} @ ${decision.entry_price}`);
-    }
-
     await this._saveState();
   }
 
   // ── Signal Publishing ─────────────────────────────────────
 
   async _publishSignal(signal) {
+    signal.signalId = signal.signalId || `${signal.strategy || 'UNKNOWN'}-${signal.side || 'na'}-${(signal.price ?? signal.entryPrice ?? 'mkt')}-${Date.now()}`;
+
     if (this.dryRun || this.observationMode) {
       const prefix = this.observationMode ? '[OBSERVATION]' : '[DRY RUN]';
-      logger.info(`${prefix} Would publish: ${signal.action} ${signal.side || ''} ${signal.symbol} @ ${signal.price || ''}`);
+      logger.info(`${prefix} Would publish: ${signal.action} ${signal.side || ''} ${signal.symbol} @ ${signal.price || ''} [${signal.signalId}]`);
       logger.info(`${prefix} Signal: ${JSON.stringify(signal, null, 2)}`);
       return;
     }
 
     try {
       await messageBus.publish(CHANNELS.TRADE_SIGNAL, signal);
-      logger.info(`Published trade signal: ${signal.action} ${signal.side || ''} ${signal.symbol}`);
+      logger.info(`Published trade signal: ${signal.action} ${signal.side || ''} ${signal.symbol} [${signal.signalId}]`);
     } catch (error) {
       logger.error('Failed to publish signal:', error);
     }
@@ -1077,14 +731,6 @@ export class AIStrategyEngine {
 
     while (true) {
       try {
-        const now = Date.now();
-
-        // Periodic position reconciliation
-        if (now - this.lastReconciliationTime >= this.reconciliationIntervalMs) {
-          await this._reconcilePositionState();
-          this.lastReconciliationTime = now;
-        }
-
         // Publish strategy status
         await this._publishStatus();
 
@@ -1136,22 +782,6 @@ export class AIStrategyEngine {
           biasHistory: this.biasHistory,
           lastEntryEvaluation: this.lastEntryEvaluation,
         },
-        position: {
-          in_position: this.inPosition,
-          current: this.currentPosition ? {
-            symbol: this.currentPosition.symbol,
-            side: this.currentPosition.side,
-            entry_price: this.currentPosition.entryPrice,
-            entry_time: this.currentPosition.entryTime,
-          } : null,
-          pending_order: this.pendingOrder ? {
-            side: this.pendingOrder.side,
-            price: this.pendingOrder.price,
-            take_profit: this.pendingOrder.take_profit,
-            stop_loss: this.pendingOrder.stop_loss,
-            age_seconds: Math.round((Date.now() - this.pendingOrder.publishedAt) / 1000),
-          } : null,
-        },
         trading_window: (() => {
           const ts = now.getTime();
           const window = getTradingWindowName(ts);
@@ -1159,7 +789,6 @@ export class AIStrategyEngine {
           const blockers = [];
           if (window === 'midday_break') blockers.push('Midday break (11:00-1:00 ET)');
           if (window === 'outside') blockers.push('Outside trading hours');
-          if (this.inPosition) blockers.push('In position');
           if (this.totalEntriesToday >= this.maxEntriesPerDay) blockers.push(`Daily entry limit (${this.maxEntriesPerDay})`);
           if (this.totalLossesToday >= this.maxLossesPerDay) blockers.push(`Daily loss limit (${this.maxLossesPerDay})`);
           if (this.lastStopTimestamp > 0 && ts - this.lastStopTimestamp < this.stopCooldownMs) {

@@ -46,14 +46,6 @@ export class BaseStrategy {
   }
 
   /**
-   * Called when a position is closed. Override in subclass for P&L tracking.
-   * @param {Object} closeData - { entryPrice, exitPrice, pnl, side, timestamp }
-   */
-  onPositionClosed(closeData) {
-    // Override in subclass
-  }
-
-  /**
    * Reset strategy state (useful for backtesting)
    */
   reset() {

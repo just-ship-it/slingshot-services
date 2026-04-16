@@ -1,3 +1,11 @@
+// Load shared .env before anything else. configManager.loadConfig() also does
+// this, but not every service calls loadConfig (e.g. the new thin bootstrappers).
+import { dirname, join } from 'path';
+import { fileURLToPath } from 'url';
+import dotenv from 'dotenv';
+const __shared = dirname(fileURLToPath(import.meta.url));
+dotenv.config({ path: join(__shared, '.env'), override: false });
+
 // Shared utilities for all microservices
 export { default as messageBus, MessageBus } from './message-bus/index.js';
 export { default as createLogger } from './utils/logger.js';
@@ -6,13 +14,6 @@ export { createOrderRouter } from './utils/order-router.js';
 
 // Message bus channel constants
 export const CHANNELS = {
-  // Webhook events
-  WEBHOOK_RECEIVED: 'webhook.received',
-  WEBHOOK_VALIDATED: 'webhook.validated',
-  WEBHOOK_REJECTED: 'webhook.rejected',
-  WEBHOOK_QUOTE: 'webhook.quote',
-  WEBHOOK_TRADE: 'webhook.trade',
-
   // Trading signals
   TRADE_SIGNAL: 'trade.signal',
   TRADE_VALIDATED: 'trade.validated',
@@ -27,12 +28,17 @@ export const CHANNELS = {
   ORDER_CANCEL_REQUEST: 'order.cancel_request',
   ORDER_REALTIME_UPDATE: 'order.realtime_update',
 
-  // Position events
+  // Position events (all stamped with accountId)
   POSITION_OPENED: 'position.opened',
   POSITION_CLOSED: 'position.closed',
   POSITION_UPDATE: 'position.update',
   POSITION_REALTIME_UPDATE: 'position.realtime_update',
   POSITION_SYNC_REQUEST: 'position.sync_request',
+  POSITION_SNAPSHOT: 'position.snapshot',
+  ORDERS_SNAPSHOT: 'orders.snapshot',
+
+  // Signal lifecycle (deferred wiring — orchestrator will emit when implemented)
+  SIGNAL_OUTCOME: 'signal.outcome',
 
   // Market data events
   PRICE_UPDATE: 'price.update',

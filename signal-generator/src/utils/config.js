@@ -175,7 +175,10 @@ const config = {
   RISK_FREE_RATE: parseFloat(process.env.RISK_FREE_RATE || '0.05'),
   EXPOSURE_POLL_INTERVAL_MINUTES: parseInt(process.env.EXPOSURE_POLL_INTERVAL_MINUTES || '2'),
   TRADIER_SYMBOLS: (process.env.TRADIER_SYMBOLS || 'SPY,QQQ').split(',').map(s => s.trim()),
-  TRADIER_MAX_EXPIRATIONS: parseInt(process.env.TRADIER_MAX_EXPIRATIONS || '6'),
+  // Cache every expiration in [0, CHAIN_MAX_DTE] days. Must cover the longest
+  // DTE any consumer needs: iv-skew-gex uses 7-45 DTE, short-dte-iv uses 0-1
+  // DTE, GEX/VEX/CEX use whatever the chain provides.
+  CHAIN_MAX_DTE: parseInt(process.env.CHAIN_MAX_DTE || '50'),
 
   // Hybrid GEX Configuration
   HYBRID_GEX_ENABLED: process.env.HYBRID_GEX_ENABLED === 'true',
@@ -355,7 +358,7 @@ const config = {
       accountId: this.TRADIER_ACCOUNT_ID,
       baseUrl: this.TRADIER_BASE_URL,
       symbols: this.TRADIER_SYMBOLS,
-      maxExpirations: this.TRADIER_MAX_EXPIRATIONS,
+      chainMaxDTE: this.CHAIN_MAX_DTE,
       pollInterval: this.EXPOSURE_POLL_INTERVAL_MINUTES,
       riskFreeRate: this.RISK_FREE_RATE,
       // Schwab override

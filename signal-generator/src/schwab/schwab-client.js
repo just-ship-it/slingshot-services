@@ -116,6 +116,9 @@ class SchwabClient {
     // Internal cache: fetch full chain once per symbol per poll cycle
     this._fullChainCache = new Map();
     this._fullChainCacheExpiry = 90 * 1000; // 90 seconds
+    // Window of expirations to fetch from Schwab. Must cover the longest DTE
+    // any downstream consumer needs. iv-skew-gex uses up to 45 DTE; +5 buffer.
+    this._chainMaxDTE = options.chainMaxDTE ?? 50;
 
     // Token refresh timer
     this._refreshTimer = null;
@@ -353,8 +356,12 @@ class SchwabClient {
   }
 
   // ===== Full Chain Cache (internal) =====
-  // Schwab returns ALL expirations in one call, so we cache it
-  // and serve both getExpirations() and getOptionsChain() from the same response.
+  // Fetches every expiration from today through today + chainMaxDTE so that
+  // downstream calculators (iv-skew-gex 7-45 DTE, short-dte-iv 0-1 DTE,
+  // exposure GEX/VEX/CEX) can each filter the cache to their own needs
+  // without re-fetching. Without an explicit fromDate/toDate Schwab returns
+  // a narrow default subset (today + tomorrow + next monthly), which silently
+  // starved the iv-skew-gex calculator and caused an incident on 2026-04-15.
 
   async _getFullChain(symbol) {
     const cached = this._fullChainCache.get(symbol);
@@ -362,10 +369,16 @@ class SchwabClient {
       return cached.data;
     }
 
+    const today = new Date();
+    const fromDate = today.toISOString().slice(0, 10);
+    const to = new Date(today.getTime() + this._chainMaxDTE * 86400000);
+    const toDate = to.toISOString().slice(0, 10);
+
     // Fetch per-expiration to avoid 502 errors from overly large responses.
-    // First get the list of expirations with a minimal chain call.
+    // The stub call enumerates expirations in [fromDate, toDate] only.
     const stub = await this.makeRequest(
-      `/marketdata/v1/chains?symbol=${encodeURIComponent(symbol)}&contractType=ALL&strikeCount=1`
+      `/marketdata/v1/chains?symbol=${encodeURIComponent(symbol)}` +
+      `&contractType=ALL&strikeCount=1&fromDate=${fromDate}&toDate=${toDate}`
     );
 
     // Build a merged chain by fetching each expiration individually
