@@ -406,7 +406,10 @@ async function handleTradeSignal(raw) {
 
   const now = new Date().toISOString();
   const action = directionToAction(direction);
-  const quantity = signal.quantity ?? state.positionSizing.fixedQuantity ?? 1;
+  const quantity = Math.min(
+    state.positionSizing.fixedQuantity ?? signal.quantity ?? 1,
+    state.positionSizing.maxContracts ?? 10
+  );
 
   for (const accountId of accepted) {
     const orderRequest = {
