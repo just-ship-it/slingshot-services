@@ -91,7 +91,26 @@ export class PickMyTradeConnector extends BaseConnector {
       // Every event the shadow publishes will be stamped with this.account.id
       // instead of the shadow's own id. To the orchestrator and dashboard,
       // fills look like they belong to the PMT account.
-      accountIdOverride: this.account.id
+      accountIdOverride: this.account.id,
+      // When the shadow's TB trailing logic modifies a stop, forward the
+      // modification to the PMT prop-firm account via webhook.
+      onTbStopModified: async ({ strategyId, newStop, symbol, direction }) => {
+        try {
+          const side = direction === 'long' ? 'buy' : 'sell';
+          const payload = {
+            symbol: this._extractRoot(symbol),
+            data: side,
+            quantity: 1,
+            update_sl: true,
+            sl: newStop,
+            token: this.token
+          };
+          if (this.pmtAccountId) payload.account_id = this.pmtAccountId;
+          await this._send(payload, `TB MODIFY STOP ${symbol} → ${newStop}`);
+        } catch (err) {
+          this.logger.warn(`[${this._label()}] PMT TB stop modify failed: ${err.message}`);
+        }
+      }
     });
 
     await this.shadow.init();

@@ -667,6 +667,7 @@ export class TradovateConnector extends BaseConnector {
             rule.triggered = true;
             tb.currentStop = newStop;
             this.logger.info(`[${this._label()}] TB breakeven: ${strategyId} stop → ${newStop} (${minutesInTrade.toFixed(0)}min, MFE=${tb.mfe.toFixed(1)}pts)`);
+            this.deps.onTbStopModified?.({ strategyId, newStop, symbol: tb.symbol, direction: tb.direction, rule: 'breakeven', mfe: tb.mfe });
           } catch (err) {
             this.logger.warn(`[${this._label()}] TB breakeven modifyStop failed: ${err.message}`);
           }
@@ -682,6 +683,7 @@ export class TradovateConnector extends BaseConnector {
               rule.triggered = true;
               tb.currentStop = newStop;
               this.logger.info(`[${this._label()}] TB trail: ${strategyId} stop → ${newStop} (${minutesInTrade.toFixed(0)}min, MFE=${tb.mfe.toFixed(1)}pts, watermark=${watermark})`);
+              this.deps.onTbStopModified?.({ strategyId, newStop, symbol: tb.symbol, direction: tb.direction, rule: 'trail', mfe: tb.mfe });
             } catch (err) {
               this.logger.warn(`[${this._label()}] TB trail modifyStop failed: ${err.message}`);
             }
