@@ -299,22 +299,25 @@ class GexCalculator {
     // Find key levels
     const strikes = Array.from(gexByStrike.keys()).sort((a, b) => a - b);
 
-    // Call wall - highest call OI
+    // Call wall: strike with most positive GEX above spot (matching backtest
+    // generate-intraday-gex.py:273-275). Selects near-ATM gamma concentration
+    // where dealer hedging is strongest.
     let callWall = 0;
-    let maxCallOI = 0;
-    for (const [strike, oi] of callOIByStrike) {
-      if (oi > maxCallOI) {
-        maxCallOI = oi;
+    let maxCallGex = 0;
+    for (const [strike, gex] of gexByStrike) {
+      if (strike > spotPrice && gex > maxCallGex) {
+        maxCallGex = gex;
         callWall = strike;
       }
     }
 
-    // Put wall - highest put OI
+    // Put wall: strike with most negative GEX below spot (matching backtest
+    // generate-intraday-gex.py:269-271).
     let putWall = 0;
-    let maxPutOI = 0;
-    for (const [strike, oi] of putOIByStrike) {
-      if (oi > maxPutOI) {
-        maxPutOI = oi;
+    let minPutGex = 0;
+    for (const [strike, gex] of gexByStrike) {
+      if (strike < spotPrice && gex < minPutGex) {
+        minPutGex = gex;
         putWall = strike;
       }
     }
@@ -373,31 +376,21 @@ class GexCalculator {
   }
 
   findResistanceLevels(strikes, spot, gexByStrike, callOIByStrike, n = 5) {
-    const strikesAbove = strikes.filter(s => s > spot);
+    // Matching backtest: strikes with most positive GEX above spot
+    const strikesAbove = strikes.filter(s => s > spot && (gexByStrike.get(s) || 0) > 0);
     if (strikesAbove.length === 0) return [];
 
-    // Score by call OI + abs(GEX)
-    const scored = strikesAbove.map(strike => ({
-      strike,
-      score: (callOIByStrike.get(strike) || 0) + Math.abs(gexByStrike.get(strike) || 0)
-    }));
-
-    scored.sort((a, b) => b.score - a.score);
-    return scored.slice(0, n).map(s => Math.round(s.strike)).sort((a, b) => a - b);
+    strikesAbove.sort((a, b) => (gexByStrike.get(b) || 0) - (gexByStrike.get(a) || 0));
+    return strikesAbove.slice(0, n).map(s => Math.round(s)).sort((a, b) => a - b);
   }
 
   findSupportLevels(strikes, spot, gexByStrike, putOIByStrike, n = 5) {
-    const strikesBelow = strikes.filter(s => s < spot);
+    // Matching backtest: strikes with most negative GEX below spot
+    const strikesBelow = strikes.filter(s => s < spot && (gexByStrike.get(s) || 0) < 0);
     if (strikesBelow.length === 0) return [];
 
-    // Score by put OI + abs(GEX)
-    const scored = strikesBelow.map(strike => ({
-      strike,
-      score: (putOIByStrike.get(strike) || 0) + Math.abs(gexByStrike.get(strike) || 0)
-    }));
-
-    scored.sort((a, b) => b.score - a.score);
-    return scored.slice(0, n).map(s => Math.round(s.strike)).sort((a, b) => b - a);
+    strikesBelow.sort((a, b) => (gexByStrike.get(a) || 0) - (gexByStrike.get(b) || 0));
+    return strikesBelow.slice(0, n).map(s => Math.round(s)).sort((a, b) => b - a);
   }
 
   translateToFutures(etfLevels, futuresSpot = null, etfSpot = null) {

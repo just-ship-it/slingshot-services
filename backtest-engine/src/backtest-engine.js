@@ -139,8 +139,15 @@ export class BacktestEngine {
       showSummary: this.defaultConfig.output.console.showSummary
     });
 
-    // Initialize GEX loader for 15-minute interval JSON files
-    this.gexLoader = new GexLoader(path.join(config.dataDir, 'gex'), config.ticker);
+    // Initialize GEX loader — use custom directory if provided (e.g., CBBO-based GEX),
+    // otherwise default to statistics-based 15m JSON files under data/gex/
+    const gexPath = config.gexDir
+      ? (path.isAbsolute(config.gexDir) ? config.gexDir : path.join(config.dataDir, config.gexDir))
+      : path.join(config.dataDir, 'gex');
+    this.gexLoader = new GexLoader(gexPath, config.ticker);
+    if (config.gexDir) {
+      console.log(`📊 Using custom GEX directory: ${gexPath}`);
+    }
 
     // 1-second data provider for accurate trade execution (initialized in loadData)
     this.secondDataProvider = null;

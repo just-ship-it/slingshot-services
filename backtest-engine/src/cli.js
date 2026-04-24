@@ -153,6 +153,11 @@ export class CLI {
         choices: ['1m', '5m', '15m']
       })
 
+      .option('gex-dir', {
+        type: 'string',
+        description: 'Custom GEX data directory (e.g., data/gex-cbbo/nq/ for CBBO-based GEX). Overrides default statistics-based GEX.'
+      })
+
       .option('max-iv', {
         type: 'number',
         description: 'Maximum ATM IV for entry (e.g., 0.30 = 30%). Rejects entries in high-vol environments.',
@@ -1889,6 +1894,7 @@ export class CLI {
       useSecondResolution: !args.minuteResolution,
       noContinuous: args.rawContracts,
       ivResolution: args.ivResolution,
+      gexDir: args.gexDir || null, // Custom GEX directory (e.g., data/gex-cbbo/nq/ for CBBO-based GEX)
       useCBBO: args.useCbbo || args.strategy === 'cbbo-lt-volatility' || args.strategy === 'cbbo-lt',
       cbboDataDir: args.cbboDataDir || null, // null means use default: dataDir/cbbo-1m/qqq
       outputFiles: {

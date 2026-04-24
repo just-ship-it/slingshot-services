@@ -361,19 +361,27 @@ class ExposureCalculator {
     // Find gamma flip (zero gamma crossing)
     const gammaFlip = this.findZeroGammaCrossing(exposuresByStrike, spotPrice);
 
-    // Find call and put walls (highest OI)
+    // Call wall: strike with most POSITIVE GEX above spot (matching backtest
+    // generate-intraday-gex.py:273-275). This selects the near-ATM strike where
+    // dealer gamma hedging is strongest, not a deep OTM strike with high OI.
+    // Previous logic used highest OI, which often landed on deep OTM institutional
+    // hedges that don't act as true resistance — see memory/gex-wall-divergence.md.
     let callWall = null;
-    let putWall = null;
-    let maxCallOI = 0;
-    let maxPutOI = 0;
-
+    let callWallGex = 0;
     for (const [strike, data] of exposuresByStrike) {
-      if (data.callOI > maxCallOI) {
-        maxCallOI = data.callOI;
+      if (strike > spotPrice && data.gex > callWallGex) {
+        callWallGex = data.gex;
         callWall = strike;
       }
-      if (data.putOI > maxPutOI) {
-        maxPutOI = data.putOI;
+    }
+
+    // Put wall: strike with most NEGATIVE GEX below spot (matching backtest
+    // generate-intraday-gex.py:269-271).
+    let putWall = null;
+    let putWallGex = 0;
+    for (const [strike, data] of exposuresByStrike) {
+      if (strike < spotPrice && data.gex < putWallGex) {
+        putWallGex = data.gex;
         putWall = strike;
       }
     }
@@ -388,8 +396,8 @@ class ExposureCalculator {
       putWall,
       resistance,
       support,
-      maxCallOI,
-      maxPutOI
+      callWallGex,
+      putWallGex
     };
   }
 
@@ -429,36 +437,34 @@ class ExposureCalculator {
   }
 
   /**
-   * Find resistance levels (above current price)
+   * Find resistance levels (above current price).
+   * Matches backtest generate-intraday-gex.py:273-283: strikes with most
+   * positive GEX above spot, sorted by GEX magnitude descending then by
+   * strike ascending for the final output.
    */
   findResistanceLevels(exposuresByStrike, spotPrice, count = 5) {
-    const strikesAbove = Array.from(exposuresByStrike.keys())
-      .filter(strike => strike > spotPrice)
-      .map(strike => ({
-        strike,
-        score: exposuresByStrike.get(strike).callOI + Math.abs(exposuresByStrike.get(strike).gex) / 1e6
-      }))
-      .sort((a, b) => b.score - a.score)
+    const strikesAbove = Array.from(exposuresByStrike.entries())
+      .filter(([strike, data]) => strike > spotPrice && data.gex > 0)
+      .sort((a, b) => b[1].gex - a[1].gex) // Most positive GEX first
       .slice(0, count)
-      .map(item => Math.round(item.strike))
+      .map(([strike]) => Math.round(strike))
       .sort((a, b) => a - b);
 
     return strikesAbove;
   }
 
   /**
-   * Find support levels (below current price)
+   * Find support levels (below current price).
+   * Matches backtest generate-intraday-gex.py:269-279: strikes with most
+   * negative GEX below spot, sorted by GEX magnitude (most negative first)
+   * then by strike descending for the final output.
    */
   findSupportLevels(exposuresByStrike, spotPrice, count = 5) {
-    const strikesBelow = Array.from(exposuresByStrike.keys())
-      .filter(strike => strike < spotPrice)
-      .map(strike => ({
-        strike,
-        score: exposuresByStrike.get(strike).putOI + Math.abs(exposuresByStrike.get(strike).gex) / 1e6
-      }))
-      .sort((a, b) => b.score - a.score)
+    const strikesBelow = Array.from(exposuresByStrike.entries())
+      .filter(([strike, data]) => strike < spotPrice && data.gex < 0)
+      .sort((a, b) => a[1].gex - b[1].gex) // Most negative GEX first
       .slice(0, count)
-      .map(item => Math.round(item.strike))
+      .map(([strike]) => Math.round(strike))
       .sort((a, b) => b - a);
 
     return strikesBelow;
