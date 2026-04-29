@@ -117,8 +117,10 @@ class SchwabClient {
     this._fullChainCache = new Map();
     this._fullChainCacheExpiry = 90 * 1000; // 90 seconds
     // Window of expirations to fetch from Schwab. Must cover the longest DTE
-    // any downstream consumer needs. iv-skew-gex uses up to 45 DTE; +5 buffer.
-    this._chainMaxDTE = options.chainMaxDTE ?? 50;
+    // any downstream consumer needs. GEX integrates the full chain including
+    // LEAPS to match the backtest's OPRA-Statistics universe (~32 expirations
+    // out to 12/2028 on QQQ).
+    this._chainMaxDTE = options.chainMaxDTE ?? 730;
 
     // Token refresh timer
     this._refreshTimer = null;

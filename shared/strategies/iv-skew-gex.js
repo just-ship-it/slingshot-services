@@ -62,6 +62,18 @@ export class IVSkewGexStrategy extends BaseStrategy {
     this.params.ivDeadZoneMax = params.ivDeadZoneMax ?? null;
     this.params.ivDeadZoneSide = params.ivDeadZoneSide ?? 'both';  // 'long', 'short', or 'both'
 
+    // Skew-trajectory entry filter (2026-04-28 research)
+    // Combined rule reduces max DD by 68.8% with WR +5.3pp (66.3% vs 61.0%, PF 4.09 vs 2.97).
+    // Holds up out-of-sample on 2026 YTD: train PF +42.6%, test PF +16.4%.
+    // Skip entry if EITHER:
+    //   1. fav_skew_chg_30m >= favSkew30mMaxAdverse (skew widened ≥215bps AGAINST thesis over 30m)
+    //   2. |skew_chg_10m| < skewChg10mDeadZone (no directional info from skew over 10m)
+    this.params.skewEntryFilter = params.skewEntryFilter ?? false;
+    this.params.favSkew30mMaxAdverse = params.favSkew30mMaxAdverse ?? 0.0215;
+    this.params.skewChg10mDeadZone = params.skewChg10mDeadZone ?? 0.005;
+    this.params.skewLookback30mMin = params.skewLookback30mMin ?? 30;
+    this.params.skewLookback10mMin = params.skewLookback10mMin ?? 10;
+
     // Wall-magnitude / gamma-imbalance filters (from 2026-04-14 research).
     // All default to null (disabled) for backward compatibility.
     // SHORTS: weak-wall shorts (rank 1/3/4) had ~49% WR vs rank-0 at 83% WR.
@@ -137,8 +149,12 @@ export class IVSkewGexStrategy extends BaseStrategy {
     // Maintain rolling IV history for volatility calculation
     if (ivData && ivData.iv != null) {
       this.liveIVHistory.push({ timestamp: Date.now(), iv: ivData.iv, skew: ivData.skew });
-      // Keep only the lookback window + buffer
-      const maxSamples = (this.params.ivVolatilityLookback || 15) + 5;
+      // Keep enough history for both IV-volatility and skew-trajectory lookbacks.
+      const lookbackMin = Math.max(
+        this.params.ivVolatilityLookback || 15,
+        this.params.skewEntryFilter ? this.params.skewLookback30mMin : 0,
+      );
+      const maxSamples = lookbackMin + 5;
       if (this.liveIVHistory.length > maxSamples) {
         this.liveIVHistory = this.liveIVHistory.slice(-maxSamples);
       }
@@ -160,6 +176,70 @@ export class IVSkewGexStrategy extends BaseStrategy {
     if (this.ivLoader) {
       return this.ivLoader.getIVAtTime(timestamp);
     }
+    return null;
+  }
+
+  /**
+   * Get historical IV record at-or-before a past timestamp. For backtesting,
+   * uses the IV loader's binary search. For live trading, scans the rolling
+   * liveIVHistory buffer.
+   * @param {number} timestamp - Past timestamp in ms
+   * @returns {Object|null}
+   */
+  getIVAtPastTime(timestamp) {
+    if (this.ivLoader) {
+      return this.ivLoader.getIVAtTime(timestamp);
+    }
+    if (this.liveIVHistory && this.liveIVHistory.length > 0) {
+      let match = null;
+      for (const sample of this.liveIVHistory) {
+        if (sample.timestamp <= timestamp) match = sample;
+        else break;
+      }
+      return match;
+    }
+    return null;
+  }
+
+  /**
+   * Skew-trajectory entry filter. Returns null if the trade passes, or a
+   * rejection reason string if it should be skipped.
+   * Rule (only applied when skewEntryFilter is enabled):
+   *   - skip if 30m thesis-aligned skew change >= favSkew30mMaxAdverse
+   *     (i.e., skew widened against thesis by more than the threshold)
+   *   - skip if |10m skew change| < skewChg10mDeadZone (no directional info)
+   * If historical lookups fail, the trade passes (graceful degradation).
+   * @param {number} timestamp - Current bar timestamp (ms)
+   * @param {string} side - 'long' or 'short'
+   * @param {Object} iv - Current IV record (must have .skew)
+   * @returns {string|null}
+   */
+  checkSkewEntryFilter(timestamp, side, iv) {
+    if (!this.params.skewEntryFilter) return null;
+    if (!iv || iv.skew == null) return null;
+
+    const past30 = this.getIVAtPastTime(timestamp - this.params.skewLookback30mMin * 60_000);
+    const past10 = this.getIVAtPastTime(timestamp - this.params.skewLookback10mMin * 60_000);
+
+    // 30m thesis-aligned skew change. fav = +chg for longs, -chg for shorts.
+    // Research: top-quintile "favorable" 30m widening (>=2.15%) preceded worse
+    // outcomes — likely chasing already-extended flow. Skip these.
+    if (past30 && past30.skew != null) {
+      const skewChg30 = iv.skew - past30.skew;
+      const favChg30 = side === 'long' ? skewChg30 : -skewChg30;
+      if (favChg30 >= this.params.favSkew30mMaxAdverse) {
+        return `30m fav-skew shift ${(favChg30 * 100).toFixed(2)}% >= ${(this.params.favSkew30mMaxAdverse * 100).toFixed(2)}%`;
+      }
+    }
+
+    // 10m dead-zone check
+    if (past10 && past10.skew != null) {
+      const skewChg10 = iv.skew - past10.skew;
+      if (Math.abs(skewChg10) < this.params.skewChg10mDeadZone) {
+        return `skew 10m dead zone (|Δ|=${(Math.abs(skewChg10) * 100).toFixed(3)}% < ${(this.params.skewChg10mDeadZone * 100).toFixed(3)}%)`;
+      }
+    }
+
     return null;
   }
 
@@ -392,6 +472,11 @@ export class IVSkewGexStrategy extends BaseStrategy {
     // Check for LONG signal: Negative skew (calls expensive = bullish flow) + near support
     // When calls are expensive at support, bullish positioning supports a bounce
     if (iv.skew < this.params.negSkewThreshold) {
+      const skewReject = this.checkSkewEntryFilter(timestamp, 'long', iv);
+      if (skewReject) {
+        this.logEvaluationSummary(candle, iv, gexLevels, null, skewReject);
+        return null;
+      }
       if (this.isInIVDeadZone(iv.iv, 'long')) {
         this.logEvaluationSummary(candle, iv, gexLevels, null, `IV dead zone for longs (${(iv.iv * 100).toFixed(1)}%)`);
         return null;
@@ -421,6 +506,11 @@ export class IVSkewGexStrategy extends BaseStrategy {
     // Check for SHORT signal: Positive skew (puts expensive = bearish flow) + near resistance
     // When puts are expensive at resistance, hedging pressure supports a pullback
     if (iv.skew > this.params.posSkewThreshold) {
+      const skewReject = this.checkSkewEntryFilter(timestamp, 'short', iv);
+      if (skewReject) {
+        this.logEvaluationSummary(candle, iv, gexLevels, null, skewReject);
+        return null;
+      }
       // Skip avoided hours for shorts
       if (this.params.avoidHours.includes(hour)) {
         if (this.params.debug) console.log(`[IV-SKEW] Avoiding hour ${hour} for SHORT`);

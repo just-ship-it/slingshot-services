@@ -5,7 +5,9 @@ const logger = createLogger('exposure-calculator');
 class ExposureCalculator {
   constructor(options = {}) {
     this.riskFreeRate = options.riskFreeRate || 0.05;
-    this.dividendYield = options.dividendYield || 0.01; // Default 1% for SPY/QQQ
+    // Dividend yield set to 0 to match the backtest GEX calculator
+    // (generate-intraday-gex.py), which omits dividend yield from gamma.
+    this.dividendYield = options.dividendYield ?? 0;
   }
 
   /**
@@ -50,15 +52,15 @@ class ExposureCalculator {
   }
 
   /**
-   * Calculate time to expiry in years
-   * Uses a 2.5-hour floor to prevent gamma from exploding as 0-DTE options approach expiration
+   * Calculate time to expiry in years.
+   * Matches backtest generate-intraday-gex.py: T = max(dte/365, 0.001).
+   * No 2.5hr floor — backtest has no equivalent floor and we are converging
+   * to the backtest's gamma surface for live-backtest parity.
    */
   calculateTimeToExpiry(expiryDate) {
     const now = new Date();
-    const MIN_T_HOURS = 2.5;
-    const minT = MIN_T_HOURS / (24 * 365.25); // ~0.000285 years
-    const timeToExpiry = Math.max(minT, (expiryDate - now) / (1000 * 60 * 60 * 24 * 365.25));
-    return timeToExpiry;
+    const yearsToExpiry = (expiryDate - now) / (1000 * 60 * 60 * 24 * 365.25);
+    return Math.max(yearsToExpiry, 0.001);
   }
 
   /**
@@ -160,9 +162,46 @@ class ExposureCalculator {
   }
 
   /**
-   * Calculate Gamma Exposure (GEX)
+   * Approximate IV using the Brenner-Subrahmanyam method on the bid/ask mid.
+   * Mirrors the backtest GEX calculator (generate-intraday-gex.py:189-204):
+   * IV ≈ (time_value / spot) × √(2π / T), clamped to [0.05, 2.0].
+   *
+   * The 0.05 floor matches the backtest's "no time value" case. We never
+   * fall back to a richer default like 0.20 — that would inflate gamma on
+   * deep-OTM puts that have bid=0/ask=0.01, breaking the cumulative-GEX
+   * cumsum that the gamma-flip detector walks.
    */
-  calculateGEX(option, spotPrice, gamma = null) {
+  bsApproxIV(option, spotPrice) {
+    const bid = option.bid > 0 ? option.bid : 0;
+    const ask = option.ask > 0 ? option.ask : 0;
+    // Use mid when both sides quote, otherwise fall back to the available side.
+    // Schwab returns bid=0, ask=0.01 for many deep-OTM contracts — that's a
+    // real (tiny) premium quote, not a missing one.
+    const optionPrice = bid > 0 && ask > 0 ? (bid + ask) / 2 : (bid > 0 ? bid : ask);
+    if (optionPrice <= 0 || spotPrice <= 0) return 0.05;
+
+    const tte = this.calculateTimeToExpiry(new Date(option.expiration_date));
+    if (tte <= 0) return 0.05;
+
+    const intrinsic = option.option_type === 'call'
+      ? Math.max(0, spotPrice - option.strike)
+      : Math.max(0, option.strike - spotPrice);
+    const timeValue = optionPrice - intrinsic;
+    if (timeValue <= 0) return 0.05;
+
+    const iv = (timeValue / spotPrice) * Math.sqrt(2 * Math.PI / tte);
+    return Math.max(0.05, Math.min(2.0, iv));
+  }
+
+  /**
+   * Calculate Gamma Exposure (GEX)
+   *
+   * @param sharedIV  Optional pre-computed IV for this (strike, expiration).
+   *                  When provided, used in place of bsApproxIV(option, ...) so
+   *                  calls and puts at the same strike share an IV (put-call
+   *                  parity). Falls back to per-option IV when omitted.
+   */
+  calculateGEX(option, spotPrice, gamma = null, sharedIV = null) {
     const { option_type, strike, open_interest } = option;
     const type = option_type;
     const openInterest = open_interest;
@@ -177,7 +216,7 @@ class ExposureCalculator {
     let optionGamma = gamma;
     if (gamma === null) {
       const tte = this.calculateTimeToExpiry(new Date(option.expiration_date));
-      const vol = option.greeks?.mid_iv || 0.25; // Default IV
+      const vol = sharedIV != null ? sharedIV : this.bsApproxIV(option, spotPrice);
       optionGamma = this.calculateGamma(spotPrice, strike, this.riskFreeRate, vol, tte, this.dividendYield);
     }
 
@@ -199,8 +238,10 @@ class ExposureCalculator {
 
   /**
    * Calculate Vanna Exposure (VEX)
+   *
+   * @param sharedIV  Optional pre-computed IV for this (strike, expiration).
    */
-  calculateVEX(option, spotPrice) {
+  calculateVEX(option, spotPrice, sharedIV = null) {
     const { option_type, strike, open_interest, expiration_date } = option;
     const type = option_type;
     const openInterest = open_interest;
@@ -210,7 +251,7 @@ class ExposureCalculator {
     }
 
     const tte = this.calculateTimeToExpiry(new Date(expiration_date));
-    const vol = option.greeks?.mid_iv || 0.25;
+    const vol = sharedIV != null ? sharedIV : this.bsApproxIV(option, spotPrice);
 
     const vanna = this.calculateVanna(spotPrice, strike, this.riskFreeRate, vol, tte, this.dividendYield);
 
@@ -229,8 +270,10 @@ class ExposureCalculator {
 
   /**
    * Calculate Charm Exposure (CEX)
+   *
+   * @param sharedIV  Optional pre-computed IV for this (strike, expiration).
    */
-  calculateCEX(option, spotPrice) {
+  calculateCEX(option, spotPrice, sharedIV = null) {
     const { option_type, strike, open_interest, expiration_date } = option;
     const type = option_type;
     const openInterest = open_interest;
@@ -240,7 +283,7 @@ class ExposureCalculator {
     }
 
     const tte = this.calculateTimeToExpiry(new Date(expiration_date));
-    const vol = option.greeks?.mid_iv || 0.25;
+    const vol = sharedIV != null ? sharedIV : this.bsApproxIV(option, spotPrice);
 
     const charm = this.calculateCharm(spotPrice, strike, this.riskFreeRate, vol, tte, type, this.dividendYield);
 
@@ -256,6 +299,48 @@ class ExposureCalculator {
     const cex = positionSign * charm * openInterest * 100 * spotPrice;
 
     return cex;
+  }
+
+  /**
+   * Build a per-(strike, expiration) IV map using the OTM-side quote.
+   *
+   * Why: Black-Scholes gamma is type-agnostic — the same (S, K, T, σ) gives
+   * the same gamma for the call and the put. Empirically, ITM contracts have
+   * wide bid/ask spreads that inflate apparent time value, producing a
+   * spurious high IV (e.g., 597C 5/29 reads time_value ≈ $5 vs the put's
+   * authoritative $2.81 at the same strike). When call IV escapes the 0.05
+   * floor but put IV stays clamped, call gamma comes out 4-5 orders of
+   * magnitude larger than put gamma at the same strike, breaking the
+   * cumulative-GEX flip detection at deep ITM/OTM strikes.
+   *
+   * The OTM-side quote is the more reliable IV source because intrinsic = 0,
+   * so mid ≈ time value directly, with no spread-leverage on the small
+   * time-value component. Apply that single IV to both call and put gamma.
+   */
+  buildIVByStrikeExp(chains, spotPrice) {
+    // First pass: collect both sides per (strike, expiration).
+    const quotes = new Map();
+    for (const chain of chains) {
+      if (!chain.options) continue;
+      for (const o of chain.options) {
+        if (!o || !o.strike || !o.expiration_date) continue;
+        const key = `${o.strike}:${o.expiration_date}`;
+        if (!quotes.has(key)) quotes.set(key, {});
+        quotes.get(key)[o.option_type] = o;
+      }
+    }
+
+    // Second pass: pick the OTM side, fall back to whichever exists.
+    const ivMap = new Map();
+    for (const [key, q] of quotes) {
+      const strikeStr = key.split(':')[0];
+      const strike = parseFloat(strikeStr);
+      const otmType = strike >= spotPrice ? 'call' : 'put';
+      const ref = q[otmType] || q.call || q.put;
+      if (!ref) continue;
+      ivMap.set(key, this.bsApproxIV(ref, spotPrice));
+    }
+    return ivMap;
   }
 
   /**
@@ -289,10 +374,19 @@ class ExposureCalculator {
           try {
             const strike = option.strike;
             const openInterest = option.open_interest || 0;
+            const volume = option.volume || 0;
 
+            // Match backtest's universe: include contracts that have OI AND
+            // traded today. The backtest GEX (generate-intraday-gex.py) joins
+            // OPRA OI (yesterday's close) with stat_type-11 close prices,
+            // which are broadcast only for contracts that traded that day.
+            // Without the volume gate, Schwab includes deep-ITM stale OI
+            // (auto-exercising positions) that backtest never sees, which
+            // shifts walls and pulls the gamma flip toward spot.
             if (openInterest === 0) continue;
+            if (volume === 0) continue;
 
-            // Calculate exposures
+            // Calculate exposures using each contract's own bid/ask-derived IV.
             const gex = this.calculateGEX(option, spotPrice);
             const vex = this.calculateVEX(option, spotPrice);
             const cex = this.calculateCEX(option, spotPrice);
@@ -402,38 +496,29 @@ class ExposureCalculator {
   }
 
   /**
-   * Find zero gamma crossing point
-   * Sorts strikes numerically and scans adjacent pairs for sign changes,
-   * then returns the crossing nearest to spot price.
+   * Find the gamma flip strike: the first strike where cumulative GEX
+   * transitions from negative to positive, restricted to strikes within
+   * ±10% of spot. Mirrors backtest generate-intraday-gex.py:256-267.
+   *
+   * Returns null when no crossing exists in the ±10% band — do NOT fall
+   * back to spot. The previous fallback caused live's flip to always
+   * read at spot, masking real gamma structure and diverging from the
+   * backtest by ~64 QQQ points.
    */
   findZeroGammaCrossing(exposuresByStrike, spotPrice) {
-    // Sort strikes numerically so we check truly adjacent pairs
-    const strikes = Array.from(exposuresByStrike.keys()).sort((a, b) => a - b);
+    const lo = spotPrice * 0.9;
+    const hi = spotPrice * 1.1;
+    const nearStrikes = Array.from(exposuresByStrike.keys())
+      .filter(s => s >= lo && s <= hi)
+      .sort((a, b) => a - b);
 
-    let bestCrossing = null;
-    let bestDistance = Infinity;
-
-    for (let i = 0; i < strikes.length - 1; i++) {
-      const strike1 = strikes[i];
-      const strike2 = strikes[i + 1];
-      const gex1 = exposuresByStrike.get(strike1).gex;
-      const gex2 = exposuresByStrike.get(strike2).gex;
-
-      // Check for sign change between adjacent strikes
-      if ((gex1 > 0 && gex2 < 0) || (gex1 < 0 && gex2 > 0)) {
-        // Linear interpolation to find crossing point
-        const ratio = Math.abs(gex1) / (Math.abs(gex1) + Math.abs(gex2));
-        const crossing = strike1 + (strike2 - strike1) * ratio;
-        const distance = Math.abs(crossing - spotPrice);
-
-        if (distance < bestDistance) {
-          bestDistance = distance;
-          bestCrossing = crossing;
-        }
-      }
+    let cumsum = 0;
+    for (const strike of nearStrikes) {
+      const prev = cumsum;
+      cumsum += exposuresByStrike.get(strike).gex;
+      if (prev < 0 && cumsum >= 0) return strike;
     }
-
-    return bestCrossing !== null ? Math.round(bestCrossing) : Math.round(spotPrice);
+    return null;
   }
 
   /**

@@ -177,8 +177,9 @@ const config = {
   TRADIER_SYMBOLS: (process.env.TRADIER_SYMBOLS || 'SPY,QQQ').split(',').map(s => s.trim()),
   // Cache every expiration in [0, CHAIN_MAX_DTE] days. Must cover the longest
   // DTE any consumer needs: iv-skew-gex uses 7-45 DTE, short-dte-iv uses 0-1
-  // DTE, GEX/VEX/CEX use whatever the chain provides.
-  CHAIN_MAX_DTE: parseInt(process.env.CHAIN_MAX_DTE || '50'),
+  // DTE, GEX/VEX/CEX integrate the full chain including LEAPS (matches the
+  // backtest's OPRA-Statistics universe).
+  CHAIN_MAX_DTE: parseInt(process.env.CHAIN_MAX_DTE || '730'),
 
   // Hybrid GEX Configuration
   HYBRID_GEX_ENABLED: process.env.HYBRID_GEX_ENABLED === 'true',

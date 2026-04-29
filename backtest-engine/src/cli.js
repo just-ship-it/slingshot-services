@@ -195,6 +195,21 @@ export class CLI {
         default: 'both',
       })
 
+      .option('skew-entry-filter', {
+        type: 'boolean',
+        description: 'Enable skew-trajectory entry filter (iv-skew-gex). Skips entries when 30m thesis-aligned skew widened too far OR 10m skew was in a dead zone.',
+      })
+
+      .option('fav-skew-30m-max-adverse', {
+        type: 'number',
+        description: 'Threshold for thesis-aligned 30m skew widening (default 0.0215 = 2.15%). Skip entry when fav_skew_chg_30m >= this.',
+      })
+
+      .option('skew-chg-10m-dead-zone', {
+        type: 'number',
+        description: 'Threshold for 10m skew dead zone (default 0.005 = 0.5%). Skip entry when |skew_chg_10m| < this.',
+      })
+
       // Strategy-specific parameters
       .group(['target-points', 'stop-buffer', 'stop-loss-points', 'max-risk', 'max-bars-after-sweep', 'use-liquidity-filter', 'use-structural-stops'], 'Strategy Parameters:')
 
@@ -1584,6 +1599,11 @@ export class CLI {
     if (args.ivDeadZoneMin !== undefined) strategyParams.ivDeadZoneMin = args.ivDeadZoneMin;
     if (args.ivDeadZoneMax !== undefined) strategyParams.ivDeadZoneMax = args.ivDeadZoneMax;
     if (args.ivDeadZoneSide !== undefined) strategyParams.ivDeadZoneSide = args.ivDeadZoneSide;
+
+    // Skew-trajectory entry filter
+    if (args.skewEntryFilter !== undefined) strategyParams.skewEntryFilter = args.skewEntryFilter;
+    if (args.favSkew30mMaxAdverse !== undefined) strategyParams.favSkew30mMaxAdverse = args.favSkew30mMaxAdverse;
+    if (args.skewChg10mDeadZone !== undefined) strategyParams.skewChg10mDeadZone = args.skewChg10mDeadZone;
 
     // Strategy-specific parameters
     if (args.confluenceThreshold !== undefined) strategyParams.confluenceThreshold = args.confluenceThreshold;
