@@ -140,14 +140,32 @@ export class BacktestEngine {
     });
 
     // Initialize GEX loader — use custom directory if provided (e.g., CBBO-based GEX),
-    // otherwise default to statistics-based 15m JSON files under data/gex/
-    const gexPath = config.gexDir
-      ? (path.isAbsolute(config.gexDir) ? config.gexDir : path.join(config.dataDir, config.gexDir))
-      : path.join(config.dataDir, 'gex');
-    this.gexLoader = new GexLoader(gexPath, config.ticker);
+    // otherwise default to statistics-based 15m JSON files under data/gex/.
+    //
+    // Path resolution for --gex-dir tries (in order): absolute, dataDir-relative,
+    // cwd-relative. If none of those resolve to an existing directory, error out
+    // — silently falling back to the legacy daily CSV used to mask which dataset
+    // was actually loaded (caused Phase 5 sweep to run on legacy data thinking
+    // it was cbbo).
+    let gexPath;
     if (config.gexDir) {
+      const candidates = path.isAbsolute(config.gexDir)
+        ? [config.gexDir]
+        : [
+            path.join(config.dataDir, config.gexDir),
+            path.resolve(config.gexDir),
+          ];
+      gexPath = candidates.find((p) => fs.existsSync(p));
+      if (!gexPath) {
+        throw new Error(
+          `--gex-dir="${config.gexDir}" did not resolve to an existing directory. Tried: ${candidates.join(', ')}`
+        );
+      }
       console.log(`📊 Using custom GEX directory: ${gexPath}`);
+    } else {
+      gexPath = path.join(config.dataDir, 'gex');
     }
+    this.gexLoader = new GexLoader(gexPath, config.ticker);
 
     // 1-second data provider for accurate trade execution (initialized in loadData)
     this.secondDataProvider = null;
@@ -324,9 +342,18 @@ export class BacktestEngine {
     // Load GEX data from 15-minute interval JSON files
     const gexLoaded = await this.gexLoader.loadDateRange(this.config.startDate, this.config.endDate);
 
-    // Fall back to CSV if no JSON files found
+    // Fall back to CSV if no JSON files found.
+    // BUT: if the user explicitly set --gex-dir, no fallback — error instead.
+    // The previous silent fallback caused Phase 5 sweep to use legacy daily CSV
+    // (1 EOD snapshot/day) while believing it was using cbbo (56-60 intraday).
     let gexData = [];
     if (!gexLoaded || this.gexLoader.sortedTimestamps.length === 0) {
+      if (this.config.gexDir) {
+        throw new Error(
+          `--gex-dir="${this.config.gexDir}" loaded 0 GEX records for ${this.config.startDate.toISOString().slice(0,10)} → ${this.config.endDate.toISOString().slice(0,10)}. ` +
+          `Refusing to fall back to legacy CSV silently. Check the directory contains nq_gex_YYYY-MM-DD.json files for that range.`
+        );
+      }
       if (!this.config.quiet) {
         console.log('⚠️  No GEX JSON files found, falling back to CSV loader...');
       }

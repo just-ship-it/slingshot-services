@@ -165,12 +165,15 @@ function createIVSkewGexStrategy(config) {
 
   logger.info(`IV-Skew-GEX params: stopLoss=${params.stopLossPoints}, ` +
     `takeProfit=${params.takeProfitPoints}, ` +
+    `maxHoldBars=${params.maxHoldBars}, ` +
     `breakevenStop=${params.breakevenStop}, ` +
     `breakevenTrigger=${params.breakevenTrigger}, ` +
+    `breakevenOffset=${params.breakevenOffset}, ` +
     `levelProximity=${params.levelProximity}, ` +
     `negSkewThreshold=${params.negSkewThreshold}, ` +
     `posSkewThreshold=${params.posSkewThreshold}, ` +
-    `minIV=${params.minIV}`);
+    `minIV=${params.minIV}, ` +
+    `blockedRegimes=${params.blockedRegimes ? params.blockedRegimes.join(',') : 'none'}`);
 
   return new IVSkewGexStrategy(params);
 }

@@ -24,7 +24,9 @@ import {
   blackScholesPrice,
   blackScholesVega,
   calculateIV,
-  calculateIVBisection
+  calculateIVBisection,
+  calculateATMIVFromQuotes,
+  BS_RISK_FREE_RATE,
 } from '../../shared/utils/black-scholes.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -152,11 +154,21 @@ function parseOptionSymbol(symbol) {
   const optionType = match[2]; // C or P
   const strikeStr = match[3];  // 8 digits, divide by 1000
 
-  // Parse date
+  // Parse date.
+  // CRITICAL: options expire at 16:00 ET (the "PM-settled" close time), NOT
+  // at midnight. Using midnight here under-counts DTE by ~half a day for
+  // intraday timestamps in the morning/early-afternoon, which then floors
+  // down by one day. That makes the true 7-DTE front weekly compute as 6
+  // DTE and fail the >=7 filter, while the next weekly (8-DTE actual) is
+  // labeled "7-DTE" — silently shifting every IV computation one expiry
+  // forward and breaking parity with live (which uses 16:00 ET expiration).
+  // 16:00 ET = 21:00 UTC during EST, 20:00 UTC during EDT. Construct via
+  // the Schwab-style date string so the runtime applies the correct DST.
   const year = 2000 + parseInt(dateStr.substring(0, 2));
   const month = parseInt(dateStr.substring(2, 4)) - 1; // 0-indexed
   const day = parseInt(dateStr.substring(4, 6));
-  const expiration = new Date(year, month, day);
+  const isoDate = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+  const expiration = new Date(`${isoDate}T16:00:00-05:00`);
 
   // Parse strike (8 digits, divide by 1000)
   const strike = parseInt(strikeStr) / 1000;
@@ -166,6 +178,44 @@ function parseOptionSymbol(symbol) {
     optionType,
     strike
   };
+}
+
+/**
+ * Estimate spot from a flat option chain via put-call parity at the
+ * closest-to-money 7-DTE strike with both call and put quoted.
+ *
+ * Why parity-derived (not ETF close): the cbbo running map captures the LAST
+ * bid/ask seen per option in the minute window, which can be a few seconds off
+ * the ETF close. Parity at K = strike + cMid - pMid uses the chain itself, so
+ * the spot is internally consistent with the quotes used for ATM selection.
+ * Live signal-generator's calculateATMIVFromQuotes is similarly handed a
+ * coherent chain + spot; using parity-derived here keeps backtest and live
+ * IV byte-identical when fed the same chain.
+ */
+function estimateSpotFromChain(flat, asOfMs, r = BS_RISK_FREE_RATE) {
+  const byKDte = new Map();
+  for (const o of flat) {
+    if (!(o.bid > 0) || !(o.ask > 0) || o.ask < o.bid) continue;
+    const dte = Math.floor((o.expiration.getTime() - asOfMs) / 86400000);
+    if (dte !== 7) continue;
+    const k = o.strike;
+    if (!byKDte.has(k)) byKDte.set(k, {});
+    byKDte.get(k)[o.optionType] = o;
+  }
+  if (byKDte.size === 0) return null;
+  const T = 7 / 365;
+  const dfInv = Math.exp(r * T);
+  let bestSpot = null;
+  let bestD = Infinity;
+  for (const [k, slot] of byKDte) {
+    if (!slot.C || !slot.P) continue;
+    const cMid = (slot.C.bid + slot.C.ask) / 2;
+    const pMid = (slot.P.bid + slot.P.ask) / 2;
+    const s = k + dfInv * (cMid - pMid);
+    const d = Math.abs(s - k);
+    if (d < bestD) { bestD = d; bestSpot = s; }
+  }
+  return bestSpot;
 }
 
 // ============================================================================
@@ -282,16 +332,45 @@ function extractDateFromFilename(filename) {
 }
 
 /**
- * Load CBBO data for a specific date using streaming to handle large files
+ * Load CBBO data for a specific date using streaming to handle large files.
+ *
+ * Bucketing rules (must match generate-intraday-gex.py:load_cbbo_buckets):
+ *   1. Bucket on `ts_recv` (the row's interval-end boundary), NEVER `ts_event`.
+ *      `ts_event` is the matching-engine timestamp of the last *trade* for the
+ *      instrument and can lag `ts_recv` by hours for illiquid contracts.
+ *      Bucketing on it places late-arriving rows into earlier buckets after
+ *      those buckets were finalized, contaminating their final state with
+ *      future-day quotes. `ts_recv` is monotonic (file is sorted by it) and
+ *      causal — bucket "13:45" only sees data published in that 15-min window.
+ *
+ *   2. Forward-fill across intervals. The cbbo file emits a row only when the
+ *      BBO changes, so a stable quote may have no fresh row in later minutes.
+ *      Each bucket's snapshot is the running per-symbol latest-quote map
+ *      through the end of that bucket's interval — stale-but-known quotes
+ *      beat being absent. Without this, every bucket has a different sparse
+ *      subset of the chain, and the ATM-pair selection in calculateATMIV jumps
+ *      between expirations/strikes minute-to-minute, producing 2-3pp IV swings
+ *      that don't reflect actual market IV.
+ *
  * @param {string} filePath - Path to CBBO CSV file
  * @param {number} intervalMinutes - Aggregation interval in minutes (1, 5, 15)
  */
 function loadCBBOForDate(filePath, intervalMinutes = 15) {
   const intervalMs = intervalMinutes * 60 * 1000;
   return new Promise((resolve, reject) => {
-    const intervals = new Map(); // intervalTs -> Map<symbol, {bid, ask}>
+    const intervals = new Map(); // intervalTs -> Map<symbol, {bid, ask}> snapshot
+    const running = new Map();   // symbol -> {bid, ask} latest seen
+    let currentIntervalTs = null;
     let header = null;
     let tsIdx, bidIdx, askIdx, symbolIdx;
+
+    const snapshotInterval = (ts) => {
+      if (ts == null || running.size === 0) return;
+      // Independent snapshot so subsequent updates don't mutate finalized buckets
+      const snap = new Map();
+      for (const [sym, q] of running) snap.set(sym, q);
+      intervals.set(ts, snap);
+    };
 
     const rl = readline.createInterface({
       input: fs.createReadStream(filePath),
@@ -301,7 +380,8 @@ function loadCBBOForDate(filePath, intervalMinutes = 15) {
     rl.on('line', (line) => {
       if (!header) {
         header = line.split(',');
-        tsIdx = header.indexOf('ts_event');
+        // Bucket on ts_recv (causal, monotonic). ts_event is for last-trade timing only.
+        tsIdx = header.indexOf('ts_recv');
         bidIdx = header.indexOf('bid_px_00');
         askIdx = header.indexOf('ask_px_00');
         symbolIdx = header.indexOf('symbol');
@@ -314,8 +394,15 @@ function loadCBBOForDate(filePath, intervalMinutes = 15) {
       const ts = new Date(cols[tsIdx]).getTime();
       if (isNaN(ts)) return;
 
-      // Round to configured interval
+      // Floor to interval boundary
       const intervalTs = Math.floor(ts / intervalMs) * intervalMs;
+
+      // When we cross an interval boundary, snapshot the just-finished one.
+      // The cbbo file is sorted by ts_recv so intervalTs is monotonic.
+      if (currentIntervalTs !== null && intervalTs !== currentIntervalTs) {
+        snapshotInterval(currentIntervalTs);
+      }
+      currentIntervalTs = intervalTs;
 
       const bid = parseFloat(cols[bidIdx]);
       const ask = parseFloat(cols[askIdx]);
@@ -323,18 +410,20 @@ function loadCBBOForDate(filePath, intervalMinutes = 15) {
 
       // Skip invalid quotes
       if (isNaN(bid) || isNaN(ask) || bid <= 0 || ask <= 0) return;
-      if (ask < bid) return; // Invalid spread
-      if ((ask - bid) / bid > 0.5) return; // Too wide spread (>50%)
+      if (ask < bid) return;
+      if ((ask - bid) / bid > 0.5) return;
 
-      if (!intervals.has(intervalTs)) {
-        intervals.set(intervalTs, new Map());
-      }
-
-      // Keep the latest quote for each symbol in the interval
-      intervals.get(intervalTs).set(symbol, { bid, ask });
+      // Update the running map; the next interval-boundary crossing will
+      // snapshot it, including this fresh quote and any stale-but-known
+      // quotes for other symbols.
+      running.set(symbol, { bid, ask });
     });
 
-    rl.on('close', () => resolve(intervals));
+    rl.on('close', () => {
+      // Snapshot the final interval
+      snapshotInterval(currentIntervalTs);
+      resolve(intervals);
+    });
     rl.on('error', reject);
   });
 }
@@ -393,12 +482,23 @@ function calculateATMIV(timestamp, spotPrice, optionQuotes, riskFreeRate = 0.05)
   const calls = atmOptions.filter(o => o.optionType === 'C');
   const puts = atmOptions.filter(o => o.optionType === 'P');
 
-  // Get ATM call and put IV (closest to spot)
-  const sortByMoneyness = (a, b) =>
-    Math.abs(a.strike - spotPrice) - Math.abs(b.strike - spotPrice);
+  // Sort by moneyness ascending, with DTE ascending as the tiebreaker.
+  // The DTE tiebreak is critical: many weeklies list the same round strikes,
+  // so multiple expirations are commonly tied at the closest-to-money strike.
+  // Without a deterministic tiebreaker, the winner depends on insertion order
+  // — which differs between Schwab snapshots (chains in expiration order,
+  // shortest first) and the cbbo running map (in order of first BBO update,
+  // arbitrary). Preferring shorter DTE makes the backtest pick the front-week
+  // option Schwab does, matching the live IV the strategy was tuned on.
+  // Must mirror shared/utils/black-scholes.js:calculateATMIVFromQuotes.
+  const sortAtmCandidate = (a, b) => {
+    const dm = Math.abs(a.strike - spotPrice) - Math.abs(b.strike - spotPrice);
+    if (dm !== 0) return dm;
+    return a.dte - b.dte;
+  };
 
-  calls.sort(sortByMoneyness);
-  puts.sort(sortByMoneyness);
+  calls.sort(sortAtmCandidate);
+  puts.sort(sortAtmCandidate);
 
   const atmCall = calls[0];
   const atmPut = puts[0];
@@ -532,24 +632,69 @@ async function main() {
       for (const [intervalTs, quotes] of intervals) {
         totalIntervals++;
 
-        // Get spot price for this interval
-        const spotPrice = spotPrices.get(intervalTs);
+        // Flatten cbbo running map into the format calculateATMIVFromQuotes expects.
+        const flat = [];
+        for (const [symbol, q] of quotes) {
+          const parsed = parseOptionSymbol(symbol);
+          if (!parsed) continue;
+          flat.push({
+            symbol,
+            strike: parsed.strike,
+            optionType: parsed.optionType,
+            expiration: parsed.expiration,
+            bid: q.bid,
+            ask: q.ask,
+          });
+        }
+
+        // Spot via put-call parity at the closest-to-money 7-DTE pair.
+        // This matches what calculateATMIVFromQuotes effectively assumes and
+        // makes backtest IV byte-identical to the live signal-generator's call
+        // when handed the same chain. Falls back to ETF close if parity fails.
+        let spotPrice = estimateSpotFromChain(flat, intervalTs);
+        if (!spotPrice) spotPrice = spotPrices.get(intervalTs);
         if (!spotPrice) continue;
 
-        // Calculate ATM IV
-        const ivResult = calculateATMIV(intervalTs, spotPrice, quotes);
-        if (!ivResult) continue;
+        // Use the SHARED calculator so backtest CSV and live IV are identical.
+        const sharedResult = calculateATMIVFromQuotes(flat, spotPrice, new Date(intervalTs), {
+          minDTE: 7,
+          maxDTE: 45,
+          maxMoneyness: 0.02,
+          riskFreeRate: BS_RISK_FREE_RATE,
+        });
+        if (!sharedResult) continue;
+
+        // Forward-IV (Black's model) still computed locally from same atm pair.
+        let callIV_fwd = null;
+        let putIV_fwd = null;
+        if (sharedResult.atmCallStrike != null && sharedResult.atmCallStrike === sharedResult.atmPutStrike) {
+          const dteFwd = sharedResult.callDTE;
+          const T = dteFwd / 365;
+          const atmCallQuote = flat.find(o => o.optionType === 'C' && o.strike === sharedResult.atmCallStrike);
+          const atmPutQuote = flat.find(o => o.optionType === 'P' && o.strike === sharedResult.atmPutStrike);
+          if (atmCallQuote && atmPutQuote) {
+            const cMid = (atmCallQuote.bid + atmCallQuote.ask) / 2;
+            const pMid = (atmPutQuote.bid + atmPutQuote.ask) / 2;
+            const F = computeForwardPrice(spotPrice, cMid, pMid, sharedResult.atmCallStrike, T, BS_RISK_FREE_RATE);
+            if (F) {
+              callIV_fwd = impliedVolatilityFwd(cMid, F, sharedResult.atmCallStrike, T, BS_RISK_FREE_RATE, true);
+              putIV_fwd = impliedVolatilityFwd(pMid, F, sharedResult.atmPutStrike, T, BS_RISK_FREE_RATE, false);
+              if (callIV_fwd !== null && (callIV_fwd < 0.05 || callIV_fwd > 2.0)) callIV_fwd = null;
+              if (putIV_fwd !== null && (putIV_fwd < 0.05 || putIV_fwd > 2.0)) putIV_fwd = null;
+            }
+          }
+        }
 
         ivReadings.push({
           timestamp: new Date(intervalTs).toISOString(),
-          iv: ivResult.iv.toFixed(4),
+          iv: sharedResult.iv.toFixed(4),
           spotPrice: spotPrice.toFixed(2),
-          atmStrike: ivResult.atmStrike.toFixed(2),
-          callIV: ivResult.callIV?.toFixed(4) || '',
-          putIV: ivResult.putIV?.toFixed(4) || '',
-          dte: ivResult.dte,
-          callIV_fwd: ivResult.callIV_fwd?.toFixed(4) || '',
-          putIV_fwd: ivResult.putIV_fwd?.toFixed(4) || ''
+          atmStrike: sharedResult.atmStrike.toFixed(2),
+          callIV: sharedResult.callIV?.toFixed(4) || '',
+          putIV: sharedResult.putIV?.toFixed(4) || '',
+          dte: sharedResult.dte,
+          callIV_fwd: callIV_fwd?.toFixed(4) || '',
+          putIV_fwd: putIV_fwd?.toFixed(4) || ''
         });
 
         successfulIV++;
@@ -587,8 +732,12 @@ async function main() {
   // Print sample statistics
   const ivValues = ivReadings.map(r => parseFloat(r.iv));
   const avgIV = ivValues.reduce((a, b) => a + b, 0) / ivValues.length;
-  const minIV = Math.min(...ivValues);
-  const maxIV = Math.max(...ivValues);
+  let minIV = Infinity;
+  let maxIV = -Infinity;
+  for (const v of ivValues) {
+    if (v < minIV) minIV = v;
+    if (v > maxIV) maxIV = v;
+  }
 
   console.log(`\nIV Statistics:`);
   console.log(`  Average: ${(avgIV * 100).toFixed(1)}%`);

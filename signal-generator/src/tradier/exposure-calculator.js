@@ -56,9 +56,15 @@ class ExposureCalculator {
    * Matches backtest generate-intraday-gex.py: T = max(dte/365, 0.001).
    * No 2.5hr floor — backtest has no equivalent floor and we are converging
    * to the backtest's gamma surface for live-backtest parity.
+   *
+   * `asOf` (Date) optional; defaults to `new Date()`. For historical-snapshot
+   * replay (e.g. parity tests that re-run against past Schwab snapshots), pass
+   * the snapshot's timestamp so the TTE matches the backtest's `dte/365` for
+   * the same date. Without this, replaying old snapshots collapses every TTE
+   * to the 0.001-year floor and BS gamma is meaningless.
    */
-  calculateTimeToExpiry(expiryDate) {
-    const now = new Date();
+  calculateTimeToExpiry(expiryDate, asOf = null) {
+    const now = asOf || this.asOf || new Date();
     const yearsToExpiry = (expiryDate - now) / (1000 * 60 * 60 * 24 * 365.25);
     return Math.max(yearsToExpiry, 0.001);
   }
@@ -346,7 +352,13 @@ class ExposureCalculator {
   /**
    * Process options chains to calculate all exposures
    */
-  calculateExposures(chainsData, spotPrices) {
+  calculateExposures(chainsData, spotPrices, opts = {}) {
+    // For historical-snapshot replay: pass `asOf` so TTE = expiry - snapshotTime
+    // (matches backtest dte/365). Without it, replaying old snapshots collapses
+    // every TTE to the 0.001 floor and BS gamma is meaningless.
+    const prevAsOf = this.asOf;
+    if (opts.asOf) this.asOf = opts.asOf instanceof Date ? opts.asOf : new Date(opts.asOf);
+
     const results = {};
 
     for (const [symbol, chains] of Object.entries(chainsData)) {
@@ -439,6 +451,7 @@ class ExposureCalculator {
       logger.info(`Calculated exposures for ${symbol}: GEX=${(totalGEX/1e9).toFixed(2)}B, VEX=${(totalVEX/1e9).toFixed(2)}B, CEX=${(totalCEX/1e9).toFixed(2)}B`);
     }
 
+    this.asOf = prevAsOf;
     return results;
   }
 
@@ -497,15 +510,22 @@ class ExposureCalculator {
 
   /**
    * Find the gamma flip strike: the first strike where cumulative GEX
-   * transitions from negative to positive, restricted to strikes within
-   * ±10% of spot. Mirrors backtest generate-intraday-gex.py:256-267.
+   * transitions from meaningfully negative to meaningfully positive,
+   * restricted to strikes within ±10% of spot. Mirrors backtest
+   * generate-intraday-gex.py.
    *
-   * Returns null when no crossing exists in the ±10% band — do NOT fall
-   * back to spot. The previous fallback caused live's flip to always
-   * read at spot, masking real gamma structure and diverging from the
-   * backtest by ~64 QQQ points.
+   * The FLIP_EPSILON guard prevents floating-point noise at deep-OTM
+   * strikes (where |gex| can be ~1e-9 from near-zero gamma) from
+   * registering as a spurious flip far below spot. Without it, a
+   * sequence like gex=-1e-9 followed by gex=+1e-9 at deep-OTM strikes
+   * would trigger before the real near-spot crossing.
+   *
+   * Returns null when no meaningful crossing exists in the ±10% band —
+   * do NOT fall back to spot. The previous fallback caused live's flip
+   * to always read at spot, masking real gamma structure.
    */
   findZeroGammaCrossing(exposuresByStrike, spotPrice) {
+    const FLIP_EPSILON = 1e6; // 1M GEX — must match backtest generate-intraday-gex.py
     const lo = spotPrice * 0.9;
     const hi = spotPrice * 1.1;
     const nearStrikes = Array.from(exposuresByStrike.keys())
@@ -516,7 +536,7 @@ class ExposureCalculator {
     for (const strike of nearStrikes) {
       const prev = cumsum;
       cumsum += exposuresByStrike.get(strike).gex;
-      if (prev < 0 && cumsum >= 0) return strike;
+      if (prev < -FLIP_EPSILON && cumsum >= FLIP_EPSILON) return strike;
     }
     return null;
   }

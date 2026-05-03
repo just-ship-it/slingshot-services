@@ -148,14 +148,29 @@ export class CLI {
 
       .option('iv-resolution', {
         type: 'string',
-        description: 'IV data resolution for iv-skew-gex strategy (1m matches live 2-min refresh, 15m is original)',
+        description: 'IV data resolution for iv-skew-gex strategy (1m matches live 2-min refresh, 15m is original, 1m_smoothed is 5-min rolling median to remove minute-level noise)',
         default: '15m',
-        choices: ['1m', '5m', '15m']
+        choices: ['1m', '5m', '15m', '1m_smoothed']
       })
 
       .option('gex-dir', {
         type: 'string',
         description: 'Custom GEX data directory (e.g., data/gex-cbbo/nq/ for CBBO-based GEX). Overrides default statistics-based GEX.'
+      })
+
+      .option('level-proximity', {
+        type: 'number',
+        description: 'GEX level proximity in points for iv-skew-gex (default 25)',
+      })
+
+      .option('trade-support-levels', {
+        type: 'string',
+        description: 'Comma-separated list of support level types iv-skew-gex may trade (e.g. "S1,S2,S3,PutWall,GammaFlip"). Default: S1-S5,PutWall,GammaFlip.',
+      })
+
+      .option('trade-resistance-levels', {
+        type: 'string',
+        description: 'Comma-separated list of resistance level types iv-skew-gex may trade (e.g. "R1,R2,R3,CallWall,GammaFlip"). Default: R1-R5,CallWall,GammaFlip.',
       })
 
       .option('max-iv', {
@@ -226,6 +241,16 @@ export class CLI {
       .option('stop-loss-points', {
         type: 'number',
         description: 'Stop loss distance in points (defaults to strategy config)'
+      })
+
+      .option('neg-skew-threshold', {
+        type: 'number',
+        description: 'iv-skew-gex: skew below this triggers LONG (e.g., -0.01 = -1%); negative number expected'
+      })
+
+      .option('pos-skew-threshold', {
+        type: 'number',
+        description: 'iv-skew-gex: skew above this triggers SHORT (e.g., 0.01 = +1%); positive number expected'
       })
 
       .option('max-risk', {
@@ -1490,6 +1515,15 @@ export class CLI {
       strategyParams.stopLossPoints = args.stopBuffer;  // For CBBO-LT and other strategies
     }
     if (args.stopLossPoints !== undefined) strategyParams.stopLossPoints = args.stopLossPoints;
+    if (args.negSkewThreshold !== undefined) strategyParams.negSkewThreshold = args.negSkewThreshold;
+    if (args.posSkewThreshold !== undefined) strategyParams.posSkewThreshold = args.posSkewThreshold;
+    if (args.levelProximity !== undefined) strategyParams.levelProximity = args.levelProximity;
+    if (args.tradeSupportLevels) {
+      strategyParams.tradeSupportLevels = args.tradeSupportLevels.split(',').map((s) => s.trim());
+    }
+    if (args.tradeResistanceLevels) {
+      strategyParams.tradeResistanceLevels = args.tradeResistanceLevels.split(',').map((s) => s.trim());
+    }
     if (args.maxRisk !== undefined) strategyParams.maxRisk = args.maxRisk; // Fix: level monitor expects maxRisk, not maxRiskPoints
     if (args.maxBarsAfterSweep !== undefined) strategyParams.maxBarsAfterSweep = args.maxBarsAfterSweep;
     if (args.useLiquidityFilter !== undefined) strategyParams.useLiquidityFilter = args.useLiquidityFilter;

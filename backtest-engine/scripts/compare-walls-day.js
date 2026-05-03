@@ -19,9 +19,10 @@ const DATA = path.join(__dirname, '..', 'data');
 
 function parseArgs() {
   const args = process.argv.slice(2);
-  const out = {};
+  const out = { gexSubdir: 'nq' };
   for (let i = 0; i < args.length; i++) {
     if (args[i] === '--date' && args[i + 1]) out.date = args[++i];
+    if (args[i] === '--gex-subdir' && args[i + 1]) out.gexSubdir = args[++i];
   }
   return out;
 }
@@ -31,10 +32,10 @@ function rpad(s, n) { return String(s).padStart(n); }
 function fmt(v, d = 2) { return v == null ? rpad('—', 8) : rpad(v.toFixed(d), 8); }
 
 async function main() {
-  const { date } = parseArgs();
-  if (!date) { console.error('Usage: --date YYYY-MM-DD'); process.exit(1); }
+  const { date, gexSubdir } = parseArgs();
+  if (!date) { console.error('Usage: --date YYYY-MM-DD [--gex-subdir nq|nq-cbbo]'); process.exit(1); }
 
-  const btPath = path.join(DATA, 'gex', 'nq', `nq_gex_${date}.json`);
+  const btPath = path.join(DATA, 'gex', gexSubdir, `nq_gex_${date}.json`);
   const swPath = path.join(DATA, 'schwab-walls', `qqq_walls_${date}.json`);
   const bt = JSON.parse(fs.readFileSync(btPath, 'utf8'));
   const sw = JSON.parse(fs.readFileSync(swPath, 'utf8'));

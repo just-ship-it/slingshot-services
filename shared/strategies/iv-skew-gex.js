@@ -87,6 +87,7 @@ export class IVSkewGexStrategy extends BaseStrategy {
     // snapshot-only filter: reject when imbalance deeply negative AND put wall weak.
     this.params.longMinGammaImbalance = params.longMinGammaImbalance ?? null;        // reject long if gamma_imbalance < N (e.g. -0.5) combined with weak put wall
     this.params.longMinPutWallGex = params.longMinPutWallGex ?? null;                // reject long if put_wall_gex below N in bad-imbalance regime
+    this.params.blockedRegimes = params.blockedRegimes ?? null;                      // Array of GEX regimes to reject (e.g. ['strong_negative'])
     this.params.avoidHours = params.avoidHours ?? [12]; // Skip noon for shorts (20% win rate)
     this.params.useSessionFilter = params.useSessionFilter ?? true;
     this.params.allowedSessions = params.allowedSessions ?? ['rth'];
@@ -415,6 +416,14 @@ export class IVSkewGexStrategy extends BaseStrategy {
       if (this.params.debug) console.log(`[IV-SKEW] No GEX levels at ${new Date(timestamp).toISOString()}`);
       this.logEvaluationSummary(candle, iv, gexLevels, null, 'no GEX levels');
       return null;
+    }
+
+    // Regime filter — reject entries in blocked regimes
+    if (this.params.blockedRegimes && this.params.blockedRegimes.length > 0 && gexLevels.regime) {
+      if (this.params.blockedRegimes.includes(gexLevels.regime)) {
+        this.logEvaluationSummary(candle, iv, gexLevels, null, `blocked regime: ${gexLevels.regime}`);
+        return null;
+      }
     }
 
     // Get IV data

@@ -184,11 +184,25 @@ export function calculateATMIVFromQuotes(optionQuotes, spotPrice, now, opts = {}
 
   if (atmOptions.length === 0) return null;
 
-  const sortByMoneyness = (a, b) =>
-    Math.abs(a.strike - spotPrice) - Math.abs(b.strike - spotPrice);
+  // Sort by moneyness ascending, then by DTE ascending. The DTE tiebreak is
+  // critical: when several expirations have the SAME closest-to-money strike
+  // (extremely common at ATM since multiple weeklies typically list the same
+  // round strikes), the moneyness comparator alone returns 0 and falls back
+  // to insertion order — which differs between Schwab snapshots (chains in
+  // expiration order) and cbbo running maps (in order of first BBO update).
+  // That made backtest pick a multi-week DTE while live picked the front-week
+  // DTE for the same minute, producing IV/skew divergence even though both
+  // call the same shared function. Preferring shorter DTE on ties matches
+  // Schwab's incidental behavior and yields the front-month IV the strategy
+  // was tuned on.
+  const sortAtmCandidate = (a, b) => {
+    const dm = Math.abs(a.strike - spotPrice) - Math.abs(b.strike - spotPrice);
+    if (dm !== 0) return dm;
+    return a.dte - b.dte;
+  };
 
-  const calls = atmOptions.filter(o => o.optionType === 'C').sort(sortByMoneyness);
-  const puts = atmOptions.filter(o => o.optionType === 'P').sort(sortByMoneyness);
+  const calls = atmOptions.filter(o => o.optionType === 'C').sort(sortAtmCandidate);
+  const puts = atmOptions.filter(o => o.optionType === 'P').sort(sortAtmCandidate);
 
   const atmCall = calls[0] || null;
   const atmPut = puts[0] || null;

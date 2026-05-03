@@ -107,7 +107,7 @@ async function main() {
 
     let result;
     try {
-      const out = calc.calculateExposures({ [symbol]: chains }, { [symbol]: spot });
+      const out = calc.calculateExposures({ [symbol]: chains }, { [symbol]: spot }, { asOf });
       result = out[symbol];
     } catch (err) {
       console.error(`  ${file}: calc error ${err.message}`);

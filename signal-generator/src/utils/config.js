@@ -98,6 +98,7 @@ const config = {
   // IV Skew GEX Strategy Parameters (backtested optimal values)
   IV_SKEW_STOP_LOSS_POINTS: parseFloat(process.env.IV_SKEW_STOP_LOSS_POINTS || '70'),
   IV_SKEW_TAKE_PROFIT_POINTS: parseFloat(process.env.IV_SKEW_TAKE_PROFIT_POINTS || '70'),
+  IV_SKEW_MAX_HOLD_BARS: parseInt(process.env.IV_SKEW_MAX_HOLD_BARS || '60'),
   IV_SKEW_BREAKEVEN_STOP: process.env.IV_SKEW_BREAKEVEN_STOP?.toLowerCase() === 'true',
   IV_SKEW_BREAKEVEN_TRIGGER: parseFloat(process.env.IV_SKEW_BREAKEVEN_TRIGGER || '25'),
   IV_SKEW_BREAKEVEN_OFFSET: parseFloat(process.env.IV_SKEW_BREAKEVEN_OFFSET || '-45'),
@@ -112,6 +113,9 @@ const config = {
   IV_SKEW_IV_DEAD_ZONE_MAX: parseFloat(process.env.IV_SKEW_IV_DEAD_ZONE_MAX || '0.35'),
   IV_SKEW_IV_DEAD_ZONE_SIDE: process.env.IV_SKEW_IV_DEAD_ZONE_SIDE || 'long',
   IV_SKEW_COOLDOWN_MS: parseInt(process.env.IV_SKEW_COOLDOWN_MS || '1800000'), // 30 minutes
+  IV_SKEW_BLOCKED_REGIMES: process.env.IV_SKEW_BLOCKED_REGIMES
+    ? process.env.IV_SKEW_BLOCKED_REGIMES.split(',').map((s) => s.trim()).filter(Boolean)
+    : null,
 
   // ES Cross-Signal Strategy Parameters
   ES_CROSS_TARGET_POINTS: parseFloat(process.env.ES_CROSS_TARGET_POINTS || '10'),
@@ -222,6 +226,7 @@ const config = {
       // Risk management
       stopLossPoints: this.IV_SKEW_STOP_LOSS_POINTS,
       takeProfitPoints: this.IV_SKEW_TAKE_PROFIT_POINTS,
+      maxHoldBars: this.IV_SKEW_MAX_HOLD_BARS,
 
       // Breakeven stop configuration
       breakevenStop: this.IV_SKEW_BREAKEVEN_STOP,
@@ -244,6 +249,9 @@ const config = {
 
       // Signal cooldown
       signalCooldownMs: this.IV_SKEW_COOLDOWN_MS,
+
+      // GEX regime filter (e.g. ["strong_negative"] for v5/balanced mode)
+      blockedRegimes: this.IV_SKEW_BLOCKED_REGIMES,
 
       // Session filter (reuse from common config)
       useSessionFilter: this.USE_SESSION_FILTER,

@@ -65,11 +65,29 @@ async function importGLBX(csvPath) {
 
   const cutoffMinute = floorToMinute(existingLastTs);
 
-  // Track per-symbol per-minute buckets
-  // Key: "symbol|minuteTs" → { open, high, low, close, volume, rtype, publisher_id, instrument_id, ts }
-  let currentBucketKey = null;
-  let currentBucket = null;
-  const aggregated = []; // { ts, rtype, pub, inst, o, h, l, c, v, sym }
+  // Track per-symbol per-minute buckets.
+  // Key: "minuteTs|symbol" → accumulator
+  //
+  // We can't use a single "current bucket" because Databento delivers rows
+  // sorted by (ts, sym) — when two symbols interleave within the same minute,
+  // a current-bucket scheme flushes prematurely and creates fragmented duplicates.
+  // Solution: hold all open buckets for the current minute in a Map; flush
+  // them once the input ts moves to the next minute.
+  const openBuckets = new Map(); // "minuteTs|sym" → bucket
+  let currentMinute = null;
+  const aggregated = []; // emitted in (minuteTs asc, sym asc) order
+
+  function flushMinute(minute) {
+    const keys = [];
+    for (const k of openBuckets.keys()) {
+      if (k.startsWith(minute + '|')) keys.push(k);
+    }
+    keys.sort();
+    for (const k of keys) {
+      aggregated.push(openBuckets.get(k));
+      openBuckets.delete(k);
+    }
+  }
 
   // Rollover tracking: per-hour volume by symbol
   const hourlyVolume = new Map(); // "YYYY-MM-DDTHH|symbol" → volume
@@ -85,11 +103,6 @@ async function importGLBX(csvPath) {
 
   let header = null;
   let tsIdx, rtypeIdx, pubIdx, instIdx, openIdx, highIdx, lowIdx, closeIdx, volIdx, symIdx;
-
-  function flushBucket() {
-    if (!currentBucket) return;
-    aggregated.push(currentBucket);
-  }
 
   for await (const line of rl) {
     if (!header) {
@@ -122,7 +135,13 @@ async function importGLBX(csvPath) {
     // Skip data that overlaps with existing
     if (minuteTs <= cutoffMinute) { skippedOld++; continue; }
 
-    const bucketKey = `${sym}|${minuteTs}`;
+    // When the minute changes, finalize all open buckets for the previous minute
+    if (currentMinute !== null && minuteTs !== currentMinute) {
+      flushMinute(currentMinute);
+    }
+    currentMinute = minuteTs;
+
+    const bucketKey = `${minuteTs}|${sym}`;
     const high = parseFloat(cols[highIdx]);
     const low = parseFloat(cols[lowIdx]);
     const close = parseFloat(cols[closeIdx]);
@@ -132,10 +151,9 @@ async function importGLBX(csvPath) {
     const hourKey = `${ts.slice(0, 13)}|${sym}`;
     hourlyVolume.set(hourKey, (hourlyVolume.get(hourKey) || 0) + volume);
 
-    if (bucketKey !== currentBucketKey) {
-      flushBucket();
-      currentBucketKey = bucketKey;
-      currentBucket = {
+    let bucket = openBuckets.get(bucketKey);
+    if (!bucket) {
+      bucket = {
         ts: minuteTs,
         rtype: cols[rtypeIdx],
         pub: cols[pubIdx],
@@ -147,15 +165,16 @@ async function importGLBX(csvPath) {
         volume: volume,
         sym: sym
       };
+      openBuckets.set(bucketKey, bucket);
     } else {
-      // Aggregate into current bucket
-      if (high > currentBucket.high) currentBucket.high = high;
-      if (low < currentBucket.low) currentBucket.low = low;
-      currentBucket.close = close;
-      currentBucket.volume += volume;
+      if (high > bucket.high) bucket.high = high;
+      if (low < bucket.low) bucket.low = low;
+      bucket.close = close;
+      bucket.volume += volume;
     }
   }
-  flushBucket();
+  // Flush any remaining buckets at EOF
+  if (currentMinute !== null) flushMinute(currentMinute);
 
   console.log(`\n  Read ${lineCount.toLocaleString()} 1s rows`);
   console.log(`  Skipped ${skippedSpreads.toLocaleString()} calendar spread rows`);

@@ -236,19 +236,68 @@ CLI tool for historical strategy analysis. Located in `/backtest-engine/`.
 
 ### Gold Standard Commands
 
-**IV-SKEW-GEX** (1m IV resolution, raw contracts):
+**IV-SKEW-GEX** (1m IV resolution, raw contracts, cbbo-derived GEX, shared-calc IV):
 ```bash
 cd backtest-engine
 node index.js --ticker NQ --strategy iv-skew-gex --timeframe 1m --raw-contracts \
-  --start 2025-01-13 --end 2026-01-23 \
-  --target-points 120 --stop-loss-points 80 --max-hold-bars 60 \
-  --time-based-trailing --tb-rule-1 "15,50,breakeven" --tb-rule-2 "40,50,trail:10" \
-  --iv-resolution 1m
+  --start 2025-01-13 --end 2026-04-23 \
+  --target-points 200 --stop-loss-points 60 --max-hold-bars 90 \
+  --breakeven-stop --breakeven-trigger 140 --breakeven-offset 10 \
+  --blocked-regimes strong_negative \
+  --level-proximity 100 \
+  --neg-skew-threshold 0.0145 --pos-skew-threshold 0.0250 \
+  --iv-resolution 1m \
+  --gex-dir data/gex/nq-cbbo
 ```
-Gold standard results (v2, 2026-03-22): 385 trades, $418K PnL, 72% WR, PF 7.65, Sharpe 22.7, Max DD 2.1%.
-TB trailing rules: Rule 1 moves to breakeven after 15 bars if MFE >= 50pts. Rule 2 trails 10pts behind peak after 40 bars if MFE >= 50pts.
+Gold standard results (v8 / "balanced", 2026-05-02, **micro-sweep v4 winner**): **244 trades, $136,864 PnL, 51.6% WR, PF 2.03, Sharpe 5.71, Max DD 6.04%** over 16 months. Trades JSON: `data/gold-standard/iv-skew-gex-v8-balanced.json`.
+
+The 5/2 sweeps (93 main + 21 fu + 12 mv3 + 10 mv4 = 136 combos in `/tmp/overnight-sweep/`) compounded four improvements over the 5/1 baseline (291/$116k/PF 1.91/Sharpe 4.71/DD 7.20%):
+1. **Lower negSkewThreshold** (0.0165 → 0.0145): tighter LONG selectivity.
+2. **Wider BE offset** (5 → 10): bigger profit on the rare BE-floor exits.
+3. **Very late BE trigger** (60 → 140): BE arms only on extreme MFE retracements. Most trades exit cleanly via TP=200 or SL=−60 instead of getting clipped at the +10 floor.
+4. **Longer maxHold** (60 → 90 bars): lets the rare big winner run the full 90 minutes instead of timing out at 60.
+
+Combined improvement: +0.12 PF, +1.00 Sharpe, **-1.16pp DD**, +$21k PnL.
+
+The posSkewThreshold is insensitive in the 0.024–0.028 range — once skew exceeds the +0.025 fear-spike level, results barely change.
+
+**MUST include `--level-proximity 100`** — the default of 25 is too tight and reduces trade count to ~94 with mediocre performance. The 100pt window lets price proximity to S1-S5/R1-R5/PutWall/CallWall/GammaFlip levels be the binding signal filter.
+
+**Both skew thresholds are POSITIVE** because the natural ATM put-call structural skew on 7-DTE QQQ sits at +1.74% (puts persistently richer due to crash-hedge demand). LONG fires when skew dips below +1.45% (calls relatively expensive), SHORT fires when skew spikes above +2.50% (puts unusually expensive). Distribution stdev is only 0.35% — the strategy reads deviations from the +1.74% baseline.
+
+Exit logic: at +140pts MFE, stop moves to entry+10 (locks 10pts profit). The +140 trigger is so late that BE rarely arms — most trades exit via TP=200, SL=-60, or maxHold=90 bars. Plus regime filter: rejects entries when `gexLevels.regime === 'strong_negative'`.
+
+### v8 risk modes — all on shared-calc IV (2026-05-02 sweeps)
+
+All variants share `--target-points 200 --level-proximity 100 --neg-skew-threshold 0.0145 --pos-skew-threshold 0.0250 --breakeven-offset 10 --blocked-regimes strong_negative` unless noted.
+
+| Mode | Config | Trades | WR | PF | Sharpe | DD | PnL | When to use |
+|---|---|---:|---:|---:|---:|---:|---:|---|
+| **Balanced** (default) | SL=60, BE=140, mh=90 | 244 | 51.6% | 2.03 | **5.71** | **6.04%** | $137k | Default — best Sharpe & DD |
+| **Aggressive** (PnL) | SL=80, BE=130, mh=90 | 233 | 58.4% | 2.05 | 5.54 | 8.06% | **$141k** | Best PnL; wider DD |
+| **Even-longer hold** | SL=60, BE=130, mh=120 | 234 | 53.0% | 2.07 | 5.70 | 6.83% | $139k | Slightly more PnL; ~same Sharpe |
+| **Earlier BE** | SL=60, BE=120, mh=90 | 244 | 53.3% | 2.05 | 5.54 | 6.98% | $135k | Stale — superseded |
+| **5/1 Baseline** | SL=60, BE=60+5, neg=0.0165, mh=60 | 291 | 60.5% | 1.91 | 4.71 | 7.20% | $116k | Stale — superseded |
+| **Selective Tight** | SL=80, neg=+0.0100 (+TP/SL=120/80) | 63 | 73.0% | 2.48 | 1.93 | 6.16% | $35k | Best WR/PF; only 0.2/day |
+
+**Key insight on the BE × maxHold interaction**: at BE=140 the floor barely ever arms — most trades just run their TP/SL/maxHold course. Lengthening maxHold from 60 → 90 then captures more upside on trades that haven't yet hit TP=200, while DD stays bounded by the -60 SL. The combined effect on the equity curve is much smoother (Sharpe 5.71) and DD drops to 6.04% — exceptional for a 16-month, 0.75-trade-per-day strategy. Avg win is now ~$1900 vs $1380 at the 5/1 baseline.
+
+The fine-grained skew sweep showed neg=0.0145–0.0165 forms a plateau (Sharpe 4.93–5.02), with neg=0.0145 the local optimum. Cliff still exists at neg≥0.0173 — PF crashes from 1.94 → 1.30, trades 3x explode (~900) into noise region, DD blows out to 30%+. Natural trade ceiling is ~300/16mo with quality.
+
+The v6 Tight filter set (level + max-iv) actively HURTS v8: it indiscriminately trims good signals with bad. The threshold sweep already finds the right selectivity — additional filters add nothing. Stick with Balanced or Aggressive.
+
+**Lookahead-bias correction history (2026-04-30 → 2026-05-01)**: Three separate corrections to reach honest baseline:
+1. **cbbo GEX `ts_event` bucketing fix** (4/30): late-arriving rows polluted earlier 15-min buckets with future-day quotes. v6 = v5 config re-run on corrected GEX. Reduced PnL by ~40%, PF by ~32%.
+2. **IV CSV regen #1** (5/1 morning): four bugs in `precompute-iv.js` (ts_event bucketing, no forward-fill, missing DTE tiebreaker, midnight-local expiration time). v7 = v6 with corrected IV. Reduced PnL by ~60%, PF 2.37 → 1.32. **Still buggy.**
+3. **precompute-iv.js → shared calculator** (5/1 evening): replaced precompute's local `calculateATMIV` (used QQQ-ETF-close as spot) with the shared `calculateATMIVFromQuotes` (uses parity-derived spot from chain itself). Eliminated implementation drift between backtest precompute and live signal-generator. v8 = v7 with byte-identical-to-live IV. **Result: same $113k PnL with HALF the trades, +0.58 PF, +1.48 Sharpe, -10pp DD.** v8 thresholds had to flip POSITIVE because skew distribution is concentrated at +1.74% (natural ATM put-call structural skew).
+
+Pre-v8 history: v2 (stats lookahead): PF 7.65. v3-v5 (cbbo with ts_event bug): PF 2.94-3.51. v6 (corrected cbbo, broken IV): PF 2.37. v7 (corrected IV, but precompute drift from live): PF 1.32. **v8 is the first baseline with backtest IV byte-identical to live signal-generator IV.** Trade-by-trade backtest-to-live parity should now hold.
+
+Stale JSONs (DO NOT USE for live deployment): `iv-skew-gex-cbbo-v6-*` (broken IV), `iv-skew-gex-v7-*` (precompute-vs-live drift).
 
 **IMPORTANT**: Must use `--timeframe 1m --raw-contracts` — without `--raw-contracts`, continuous data breaks GEX proximity calculations and produces invalid results.
+
+**IMPORTANT**: Must include `--gex-dir data/gex/nq-cbbo` — without it, the engine falls back to legacy daily CSV (1 EOD snapshot/day) which produces totally different (and lookahead-biased) results.
 
 **Short-DTE-IV** (15m timeframe, production params from default.json):
 ```bash
