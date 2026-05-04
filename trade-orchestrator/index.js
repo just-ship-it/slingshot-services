@@ -300,6 +300,28 @@ function hasOpenOrPending(accountId, strategy, symbol) {
   return { blocked: false };
 }
 
+// Build a compact signal payload for trade.rejected / strategy alerts.
+// Preserves rule metadata (ruleId, ruleDescription, stop/target points) and
+// the bracket levels (stop_loss, take_profit) so the dashboard can display
+// what the trade WOULD have looked like even when trading is disabled.
+function summarizeSignalForAlert(signal, overrides = {}) {
+  if (!signal) return overrides;
+  return {
+    strategy: signal.strategy,
+    symbol: overrides.symbol ?? signal.symbol,
+    side: overrides.side ?? signal.side,
+    action: signal.action,
+    price: signal.price,
+    stop_loss: signal.stop_loss ?? signal.stopLoss,
+    take_profit: signal.take_profit ?? signal.takeProfit,
+    ruleId: signal.ruleId,
+    ruleDescription: signal.ruleDescription,
+    rulePriority: signal.rulePriority,
+    stopPoints: signal.stopPoints,
+    targetPoints: signal.targetPoints,
+  };
+}
+
 // ---------- Signal handling ----------
 
 async function handleTradeSignal(raw) {
@@ -313,7 +335,7 @@ async function handleTradeSignal(raw) {
     logger.warn(`[KILL-SWITCH] trade.signal ${signal.signalId || '(no id)'} [${signal.strategy}] rejected`);
     await messageBus.publish(CHANNELS.TRADE_REJECTED, {
       signalId: signal.signalId,
-      signal: { strategy: signal.strategy, symbol: signal.symbol, side: signal.side, action: signal.action, price: signal.price },
+      signal: summarizeSignalForAlert(signal),
       reason: 'trading_disabled', timestamp: new Date().toISOString()
     });
     return;
@@ -353,7 +375,7 @@ async function handleTradeSignal(raw) {
     logger.warn(`[${signalId}] cross-strategy filter rejected: ${crossResult.reason}`);
     await messageBus.publish(CHANNELS.TRADE_REJECTED, {
       signalId,
-      signal: { strategy: signal.strategy, symbol: originalSymbol, side: direction, action: signal.action, price: signal.price },
+      signal: summarizeSignalForAlert(signal, { symbol: originalSymbol, side: direction }),
       reason: crossResult.reason, rule: crossResult.ruleName, timestamp: new Date().toISOString()
     });
     return;
@@ -402,7 +424,7 @@ async function handleTradeSignal(raw) {
     logger.warn(`[${signalId}] no accounts passed gate chain, dropping`);
     await messageBus.publish(CHANNELS.TRADE_REJECTED, {
       signalId,
-      signal: { strategy: signal.strategy, symbol: tradedSymbol, side: direction, action: signal.action, price: signal.price },
+      signal: summarizeSignalForAlert(signal, { symbol: tradedSymbol, side: direction }),
       reason: 'no_accounts_passed_gates',
       perAccount: rejected, timestamp: new Date().toISOString()
     });

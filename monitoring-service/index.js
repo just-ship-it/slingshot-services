@@ -4151,6 +4151,26 @@ async function handleServiceStopped(message) {
   logActivity('system', `Service ${message.service} stopped: ${message.reason}`, message);
 }
 
+// Preserve rule metadata + bracket levels on the alert payload so the
+// dashboard can show ruleId / SL / TP even on rejected signals.
+function pickAlertSignalFields(sig) {
+  if (!sig) return {};
+  return {
+    strategy: sig.strategy,
+    symbol: sig.symbol,
+    side: sig.side,
+    action: sig.action,
+    price: sig.price,
+    stop_loss: sig.stop_loss ?? sig.stopLoss,
+    take_profit: sig.take_profit ?? sig.takeProfit,
+    ruleId: sig.ruleId,
+    ruleDescription: sig.ruleDescription,
+    rulePriority: sig.rulePriority,
+    stopPoints: sig.stopPoints,
+    targetPoints: sig.targetPoints,
+  };
+}
+
 async function handleTradeValidated(message) {
   const sig = message.signal || {};
   logActivity('trade', `Trade validated: ${sig.action || '?'} ${sig.symbol || '?'}`, message);
@@ -4159,7 +4179,7 @@ async function handleTradeValidated(message) {
     ruleName: 'signal',
     severity: 'signal',
     message: `${(sig.side || '').toUpperCase()} ${sig.symbol || '?'} @ ${sig.price ?? '?'}${sig.stop_loss ? ` SL:${sig.stop_loss}` : ''}${sig.take_profit ? ` TP:${sig.take_profit}` : ''}`,
-    signal: { strategy: sig.strategy, symbol: sig.symbol, side: sig.side, action: sig.action, price: sig.price, stop_loss: sig.stop_loss, take_profit: sig.take_profit },
+    signal: pickAlertSignalFields(sig),
     timestamp: message.timestamp || new Date().toISOString(),
   });
 }
@@ -4171,7 +4191,7 @@ async function handleTradeRejected(message) {
     ruleName: 'rejected',
     severity: 'rejected',
     message: `Rejected: ${message.reason || 'unknown'}`,
-    signal: { strategy: sig.strategy, symbol: sig.symbol, side: sig.side, action: sig.action, price: sig.price },
+    signal: pickAlertSignalFields(sig),
     timestamp: message.timestamp || new Date().toISOString(),
   });
 }
