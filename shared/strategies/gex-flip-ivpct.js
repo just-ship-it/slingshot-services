@@ -364,11 +364,28 @@ export class GexFlipIvpctStrategy extends BaseStrategy {
   }
 
   getInternalState() {
+    // Compute current IV percentile so the dashboard can render it.
+    let ivPercentile = null;
+    try {
+      ivPercentile = this.computeIVPercentile(Date.now());
+    } catch (_) { /* ignore */ }
+
     return {
+      // Config (used by the panel to render rule conditions)
+      wallProximity: this.params.wallProximity,
       ivPctileWindowDays: this.params.ivPctileWindowDays,
       ivPctileLowMax: this.params.ivPctileLowMax,
       ivPctileHighMin: this.params.ivPctileHighMin,
-      entryWindow: `${this.params.entryWindowStartHour}-${this.params.entryWindowEndHour} ET`,
+      skewPositiveMin: this.params.skewPositiveMin,
+      neutralRegime: this.params.neutralRegime,
+      strongNegativeRegime: this.params.strongNegativeRegime,
+      entryWindowStartHour: this.params.entryWindowStartHour,
+      entryWindowEndHour: this.params.entryWindowEndHour,
+      signalCooldownMs: this.params.signalCooldownMs,
+      maxHoldBars: this.params.maxHoldBars,
+
+      // Live state
+      ivPercentile,
       liveIVSamples: this.liveIVHistory.length,
       evaluationLog: this.evaluationLog.slice(-10),
     };
