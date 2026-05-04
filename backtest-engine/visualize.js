@@ -1230,12 +1230,15 @@ async function main() {
   const startDate = new Date(Math.min(...tradeTimes) - bufferMs);
   const endDate = new Date(Math.max(...tradeTimes) + bufferMs);
 
-  // Load candle data — prefer continuous (back-adjusted) file if available
+  // Load candle data — default to RAW contract prices because trade entry/exit
+  // prices in the results JSON are in raw contract space. Using continuous
+  // (back-adjusted) data would offset the chart by accumulated roll spreads
+  // and make trade markers appear on the wrong candles.
   const ticker = options.ticker.toUpperCase();
-  const continuousPath = path.join(__dirname, 'data', 'ohlcv', ticker.toLowerCase(), `${ticker}_ohlcv_1m_continuous.csv`);
   const rawPath = path.join(__dirname, 'data', 'ohlcv', ticker.toLowerCase(), `${ticker}_ohlcv_1m.csv`);
+  const continuousPath = path.join(__dirname, 'data', 'ohlcv', ticker.toLowerCase(), `${ticker}_ohlcv_1m_continuous.csv`);
   const candlePath = options.candles ||
-    (fs.existsSync(continuousPath) ? continuousPath : rawPath);
+    (fs.existsSync(rawPath) ? rawPath : continuousPath);
 
   if (!fs.existsSync(candlePath)) {
     console.error(`Candle data not found: ${candlePath}`);

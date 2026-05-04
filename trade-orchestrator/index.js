@@ -42,6 +42,13 @@ const BIND_HOST = process.env.BIND_HOST || '127.0.0.1';
 const POSITION_SIZING_KEY = 'config:position-sizing';
 const TB_RULES_KEY = 'config:tb-rules';
 
+// EOD force-flat: close all open positions at this ET wall-clock time on
+// weekdays. Default 16:40 ET — 5 min cushion before the broker's 16:45 ET
+// auto-liquidation, so our market-close fills land before they yank the rug.
+// Set EOD_CUTOFF_ET="" (empty) to disable.
+const EOD_CUTOFF_ET = process.env.EOD_CUTOFF_ET ?? '16:40';
+const EOD_FIRED_DATES = new Set();
+
 // ---------- State ----------
 
 const state = {
@@ -655,6 +662,80 @@ function buildApp() {
   return app;
 }
 
+// ---------- EOD force-flat (day-trade-margin liquidation safety) ----------
+
+function getEtParts(timestamp = Date.now()) {
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'America/New_York',
+    weekday: 'short',
+    year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit',
+    hour12: false,
+  }).formatToParts(new Date(timestamp));
+  const o = {};
+  for (const p of parts) o[p.type] = p.value;
+  return {
+    weekday: o.weekday,
+    dateKey: `${o.year}-${o.month}-${o.day}`,
+    hour: parseInt(o.hour, 10),
+    minute: parseInt(o.minute, 10),
+  };
+}
+
+function isPastEodCutoff(timestamp = Date.now()) {
+  if (!EOD_CUTOFF_ET) return false;
+  const [hStr, mStr] = EOD_CUTOFF_ET.split(':');
+  const cutoffH = parseInt(hStr, 10);
+  const cutoffM = parseInt(mStr || '0', 10);
+  const et = getEtParts(timestamp);
+  if (et.weekday === 'Sat' || et.weekday === 'Sun') return false;
+  return et.hour > cutoffH || (et.hour === cutoffH && et.minute >= cutoffM);
+}
+
+async function checkEodForceFlat() {
+  if (!EOD_CUTOFF_ET) return;
+  if (!isPastEodCutoff()) return;
+  const et = getEtParts();
+  if (EOD_FIRED_DATES.has(et.dateKey)) return;
+  EOD_FIRED_DATES.add(et.dateKey);
+
+  const positions = [...state.openPositions.values()].filter(p => p.side !== 'flat' && p.netPos !== 0);
+  if (positions.length === 0) {
+    logger.info(`[EOD-FLAT] ${EOD_CUTOFF_ET} ET cutoff reached for ${et.dateKey} — no open positions`);
+    return;
+  }
+
+  logger.warn(`[EOD-FLAT] ${EOD_CUTOFF_ET} ET cutoff for ${et.dateKey} — closing ${positions.length} open position(s)`);
+  for (const pos of positions) {
+    const signal = {
+      webhook_type: 'trade_signal',
+      action: 'place_market',
+      side: pos.side === 'long' ? 'sell' : 'buy',
+      symbol: pos.symbol,
+      quantity: Math.abs(pos.netPos) || 1,
+      strategy: pos.strategy,
+      signalId: `EOD-FLAT-${pos.accountId}-${pos.strategy}-${et.dateKey}`,
+      reason: 'eod_force_flat',
+      eodForceFlat: true,
+      timestamp: new Date().toISOString(),
+    };
+    logger.warn(`[EOD-FLAT] firing market close: ${pos.accountId} ${pos.strategy} ${pos.symbol} ${pos.side} ${pos.netPos}`);
+    try {
+      await messageBus.publish(CHANNELS.TRADE_SIGNAL, signal);
+    } catch (err) {
+      logger.error(`[EOD-FLAT] publish failed: ${err.message}`);
+    }
+  }
+}
+
+// Reset the fired-dates set every weekday morning so today's cutoff fires.
+// Daily prune at midnight UTC keeps the set bounded.
+function pruneEodFiredDates() {
+  if (EOD_FIRED_DATES.size > 14) {
+    EOD_FIRED_DATES.clear();
+  }
+}
+
 // ---------- Bootstrap ----------
 
 async function main() {
@@ -690,6 +771,19 @@ async function main() {
   app.listen(PORT, BIND_HOST, () => logger.info(`Orchestrator listening on ${BIND_HOST}:${PORT}`));
 
   setInterval(() => checkpointOpenPositions(redis), 30_000).unref();
+
+  // EOD force-flat scheduler: poll every 30s, fire cutoff once per weekday at
+  // EOD_CUTOFF_ET. Bootstrap the fired-dates set with today's date if we're
+  // already past cutoff, so a service restart at 5 PM doesn't re-fire.
+  if (EOD_CUTOFF_ET) {
+    if (isPastEodCutoff()) {
+      EOD_FIRED_DATES.add(getEtParts().dateKey);
+    }
+    setInterval(() => { checkEodForceFlat().catch(err => logger.error(`EOD check failed: ${err.message}`)); pruneEodFiredDates(); }, 30_000).unref();
+    logger.info(`EOD force-flat enabled: cutoff ${EOD_CUTOFF_ET} ET on weekdays`);
+  } else {
+    logger.warn('EOD force-flat DISABLED (EOD_CUTOFF_ET unset). Day-trade-margin accounts will rely on broker auto-liquidation.');
+  }
 
   await messageBus.publish(CHANNELS.SERVICE_STARTED, {
     service: SERVICE_NAME, timestamp: new Date().toISOString()

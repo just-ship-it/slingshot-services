@@ -1127,6 +1127,36 @@
       "tradingSymbol": "NQ",
       "defaultQuantity": 1
     },
+    "gamma-regime-drift": {
+      "enableLong": true,
+      "enableShort": false,
+      "allowedRegimes": ["strong_positive"],
+      "allowedHoursUTC": [11, 12, 13, 14, 15],
+      "enableCrossDown": false,
+      "targetPoints": 500,
+      "stopPoints": 500,
+      "trailingTrigger": 9999,
+      "trailingOffset": 0,
+      "maxHoldBars": 15,
+      "cooldownMs": 840000,
+      "tradingSymbol": "NQ",
+      "defaultQuantity": 1
+    },
+    "grd": {
+      "enableLong": true,
+      "enableShort": false,
+      "allowedRegimes": ["positive", "strong_positive"],
+      "allowedHoursUTC": [10, 11, 12, 15],
+      "enableCrossDown": false,
+      "targetPoints": 12,
+      "stopPoints": 8,
+      "trailingTrigger": 9999,
+      "trailingOffset": 0,
+      "maxHoldBars": 15,
+      "cooldownMs": 840000,
+      "tradingSymbol": "NQ",
+      "defaultQuantity": 1
+    },
     "lt-crossover": {
       "trackLT34": true,
       "trackLT55": true,

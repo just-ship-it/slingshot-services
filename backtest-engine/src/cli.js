@@ -68,7 +68,7 @@ export class CLI {
         type: 'string',
         description: 'Strategy to backtest',
         default: 'gex-recoil',
-        choices: ['gex-recoil', 'gex-recoil-enhanced', 'gex-ldpm-confluence', 'gex-ldpm-confluence-pullback', 'contrarian-bounce', 'gex-scalp', 'gex-scalp-confirmed', 'ict-smc', 'ict-ob', 'ldpm-level-sweep', 'order-flow-momentum', 'ofm', 'contrarian-orderflow', 'cof', 'gex-absorption', 'absorption', 'iv-skew-gex', 'iv-skew', 'cbbo-lt-volatility', 'cbbo-lt', 'gex-mean-reversion', 'gex-mr', 'lt-failed-breakdown', 'lt-fb', 'lt-level-crossing', 'lt-cross', 'lt-level-migration', 'lt-mig', 'regime-scalp', 'rs', 'gex-level-sweep', 'gex-sweep', 'sweep', 'micro-structure-scalper', 'micro-scalper', 'mss', 'trend-scalp', 'ts', 'level-bounce', 'lb', 'overnight-gex-touch', 'overnight-gex', 'ogt', 'overnight-charm-vanna', 'ocv', 'es-cross-signal', 'es-cross', 'ecs', 'es-micro-scalper', 'es-micro', 'esms', 'es-stop-hunt', 'es-hunt', 'esh', 'ohlcv-absorption', 'absorption-detect', 'abs', 'ohlcv-liquidity-sweep', 'liquidity-sweep', 'lsweep', 'ohlcv-vpin', 'vpin', 'ohlcv-mtf-rejection', 'mtf-rejection', 'mtfr', 'momentum-microstructure', 'momentum-micro', 'mm', 'midnight-open-retracement', 'midnight-open', 'mor', 'initial-balance-breakout', 'ib-breakout', 'ibb', 'gap-fill', 'gap', 'daily-level-sweep', 'daily-sweep', 'dls', 'vwap-bounce', 'vwap', 'session-transition', 'session', 'st', 'value-area-80', 'va80', 'swing-reversal', 'sr', 'ict-silver-bullet', 'silver-bullet', 'isb', 'price-action-exhaustion', 'pa-exhaust', 'pae', 'ict-mtf-sweep', 'mtf-sweep', 'jv', 'dc-st1', 'dc1', 'dc-st2', 'dc2', 'dc-st3', 'dc3', 'dc-st4', 'dc4', 'dc-st5', 'dc5', 'dc-st6', 'dc6', 'dc-st7', 'dc7', 'dc-st8', 'dc8', 'dc-mstgam', 'mstgam', 'mnq-adaptive-scalper', 'mnq-scalper', 'mnq', 'sweep-reversal', 'sweep-rev', 'nq-leads-es', 'nq-lead', 'nle', 'gex-support-bounce', 'gex-bounce', 'gsb', 'impulse-fvg', 'impulse', 'ifvg', 'short-dte-iv', 'sdiv', 'overnight-scoring', 'overnight-score', 'ons', 'overnight-composite', 'overnight-comp', 'onc', 'overnight-lt-crossing', 'overnight-ltx', 'oltx', 'lt-crossover', 'ltx', 'lt-structure-confirm', 'ltsc', 'lt-struct', 'lt-candle-regime', 'lt-regime', 'lcr']
+        choices: ['gex-recoil', 'gex-recoil-enhanced', 'gex-ldpm-confluence', 'gex-ldpm-confluence-pullback', 'contrarian-bounce', 'gex-scalp', 'gex-scalp-confirmed', 'ict-smc', 'ict-ob', 'ldpm-level-sweep', 'order-flow-momentum', 'ofm', 'contrarian-orderflow', 'cof', 'gex-absorption', 'absorption', 'iv-skew-gex', 'iv-skew', 'gex-flip-ivpct', 'gfi', 'cbbo-lt-volatility', 'cbbo-lt', 'gex-mean-reversion', 'gex-mr', 'lt-failed-breakdown', 'lt-fb', 'lt-level-crossing', 'lt-cross', 'lt-level-migration', 'lt-mig', 'regime-scalp', 'rs', 'gex-level-sweep', 'gex-sweep', 'sweep', 'micro-structure-scalper', 'micro-scalper', 'mss', 'trend-scalp', 'ts', 'level-bounce', 'lb', 'overnight-gex-touch', 'overnight-gex', 'ogt', 'overnight-charm-vanna', 'ocv', 'es-cross-signal', 'es-cross', 'ecs', 'es-micro-scalper', 'es-micro', 'esms', 'es-stop-hunt', 'es-hunt', 'esh', 'ohlcv-absorption', 'absorption-detect', 'abs', 'ohlcv-liquidity-sweep', 'liquidity-sweep', 'lsweep', 'ohlcv-vpin', 'vpin', 'ohlcv-mtf-rejection', 'mtf-rejection', 'mtfr', 'momentum-microstructure', 'momentum-micro', 'mm', 'midnight-open-retracement', 'midnight-open', 'mor', 'initial-balance-breakout', 'ib-breakout', 'ibb', 'gap-fill', 'gap', 'daily-level-sweep', 'daily-sweep', 'dls', 'vwap-bounce', 'vwap', 'session-transition', 'session', 'st', 'value-area-80', 'va80', 'swing-reversal', 'sr', 'ict-silver-bullet', 'silver-bullet', 'isb', 'price-action-exhaustion', 'pa-exhaust', 'pae', 'ict-mtf-sweep', 'mtf-sweep', 'jv', 'dc-st1', 'dc1', 'dc-st2', 'dc2', 'dc-st3', 'dc3', 'dc-st4', 'dc4', 'dc-st5', 'dc5', 'dc-st6', 'dc6', 'dc-st7', 'dc7', 'dc-st8', 'dc8', 'dc-mstgam', 'mstgam', 'mnq-adaptive-scalper', 'mnq-scalper', 'mnq', 'sweep-reversal', 'sweep-rev', 'nq-leads-es', 'nq-lead', 'nle', 'gex-support-bounce', 'gex-bounce', 'gsb', 'impulse-fvg', 'impulse', 'ifvg', 'short-dte-iv', 'sdiv', 'overnight-scoring', 'overnight-score', 'ons', 'overnight-composite', 'overnight-comp', 'onc', 'overnight-lt-crossing', 'overnight-ltx', 'oltx', 'lt-crossover', 'ltx', 'lt-structure-confirm', 'ltsc', 'lt-struct', 'lt-candle-regime', 'lt-regime', 'lcr', 'gamma-regime-drift', 'grd']
       })
 
       .option('timeframe', {
@@ -156,6 +156,32 @@ export class CLI {
       .option('gex-dir', {
         type: 'string',
         description: 'Custom GEX data directory (e.g., data/gex-cbbo/nq/ for CBBO-based GEX). Overrides default statistics-based GEX.'
+      })
+
+      .option('eod-cutoff-et', {
+        type: 'string',
+        description: 'Force-flat any open position at this ET wall-clock time (HH:MM) on weekdays. Models day-trade-margin liquidation (e.g. "16:45").'
+      })
+
+      .option('grd-hours', {
+        type: 'string',
+        description: 'gamma-regime-drift: comma-separated UTC hours allowed for entries (e.g. "10,11,12,15"). Default: 10,11,12,15.'
+      })
+
+      .option('grd-regimes', {
+        type: 'string',
+        description: 'gamma-regime-drift: comma-separated regime names that allow long entries (e.g. "positive,strong_positive"). Default: positive,strong_positive.'
+      })
+
+      .option('grd-enable-cross-down', {
+        type: 'boolean',
+        description: 'gamma-regime-drift: also fire SHORT signals when spot crosses below gamma_flip.',
+        default: false
+      })
+
+      .option('grd-max-term-ratio', {
+        type: 'number',
+        description: 'gamma-regime-drift: skip entries when 0-DTE/7-DTE IV ratio exceeds this cap (e.g. 1.7).'
       })
 
       .option('level-proximity', {
@@ -1881,6 +1907,19 @@ export class CLI {
     if (args.dcConsecutiveCount !== undefined) strategyParams.consecutiveCount = args.dcConsecutiveCount;
     if (args.mstgamWeights !== undefined) strategyParams.weightsFile = args.mstgamWeights;
 
+    // Gamma Regime Drift Parameters
+    if (args.grdHours !== undefined) {
+      strategyParams.allowedHoursUTC = String(args.grdHours).split(',').map(s => parseInt(s, 10));
+    }
+    if (args.grdRegimes !== undefined) {
+      strategyParams.allowedRegimes = String(args.grdRegimes).split(',').map(s => s.trim());
+    }
+    if (args.grdEnableCrossDown !== undefined) {
+      strategyParams.enableCrossDown = args.grdEnableCrossDown;
+      if (args.grdEnableCrossDown) strategyParams.enableShort = true;
+    }
+    if (args.grdMaxTermRatio !== undefined) strategyParams.maxTermRatio = args.grdMaxTermRatio;
+
     // MNQ Adaptive Scalper Parameters
     if (args.softStopPoints !== undefined) strategyParams.softStopPoints = args.softStopPoints;
     if (args.dailyLossLimit !== undefined) strategyParams.dailyLossLimit = args.dailyLossLimit;
@@ -1949,6 +1988,7 @@ export class CLI {
       noContinuous: args.rawContracts,
       ivResolution: args.ivResolution,
       gexDir: args.gexDir || null, // Custom GEX directory (e.g., data/gex-cbbo/nq/ for CBBO-based GEX)
+      eodCutoffEt: args.eodCutoffEt || null, // ET cutoff (HH:MM) for day-trade-margin liquidation
       useCBBO: args.useCbbo || args.strategy === 'cbbo-lt-volatility' || args.strategy === 'cbbo-lt',
       cbboDataDir: args.cbboDataDir || null, // null means use default: dataDir/cbbo-1m/qqq
       outputFiles: {

@@ -13,6 +13,7 @@ import { EsStopHuntStrategy } from '../../../shared/strategies/es-stop-hunt.js';
 import { MnqAdaptiveScalperStrategy } from '../../../shared/strategies/mnq-adaptive-scalper.js';
 import { ImpulseFVGStrategy } from '../../../shared/strategies/impulse-fvg.js';
 import { ShortDTEIVStrategy } from '../../../shared/strategies/short-dte-iv.js';
+import { GexFlipIvpctStrategy } from '../../../shared/strategies/gex-flip-ivpct.js';
 import { LTCandleRegimeStrategy } from '../../../shared/strategies/lt-candle-regime.js';
 
 const logger = createLogger('strategy-factory');
@@ -28,6 +29,7 @@ export const STRATEGY_TYPES = {
   MNQ_ADAPTIVE_SCALPER: 'mnq-adaptive-scalper',
   IMPULSE_FVG: 'impulse-fvg',
   SHORT_DTE_IV: 'short-dte-iv',
+  GEX_FLIP_IVPCT: 'gex-flip-ivpct',
   LT_CANDLE_REGIME: 'lt-candle-regime',
   AI_TRADER: 'ai-trader'
 };
@@ -79,6 +81,12 @@ export function createStrategy(strategyName, config) {
     case 'ltcandleregime':
     case 'lcr':
       return createLTCandleRegimeStrategy(config);
+
+    case STRATEGY_TYPES.GEX_FLIP_IVPCT:
+    case 'gex_flip_ivpct':
+    case 'gexflipivpct':
+    case 'gfi':
+      return createGexFlipIvpctStrategy(config);
 
     case STRATEGY_TYPES.AI_TRADER:
     case 'ai_trader':
@@ -215,6 +223,12 @@ export function getStrategyConstant(strategyName) {
     case 'sdiv':
       return 'SHORT_DTE_IV';
 
+    case STRATEGY_TYPES.GEX_FLIP_IVPCT:
+    case 'gex_flip_ivpct':
+    case 'gexflipivpct':
+    case 'gfi':
+      return 'GEX_FLIP_IVPCT';
+
     case STRATEGY_TYPES.LT_CANDLE_REGIME:
     case 'lt_candle_regime':
     case 'ltcandleregime':
@@ -284,6 +298,12 @@ export function getDataRequirements(strategyName) {
     case 'ltcandleregime':
     case 'lcr':
       return LTCandleRegimeStrategy.getDataRequirements();
+
+    case STRATEGY_TYPES.GEX_FLIP_IVPCT:
+    case 'gex_flip_ivpct':
+    case 'gexflipivpct':
+    case 'gfi':
+      return GexFlipIvpctStrategy.getDataRequirements();
 
     case STRATEGY_TYPES.AI_TRADER:
     case 'ai_trader':
@@ -376,6 +396,27 @@ function createShortDTEIVStrategy(config) {
     `cooldown=${params.cooldownMs}ms`);
 
   return new ShortDTEIVStrategy(params);
+}
+
+/**
+ * Create GEX-FLIP-IVPCT strategy with proper parameters
+ */
+function createGexFlipIvpctStrategy(config) {
+  const params = config.getGexFlipIvpctParams();
+
+  // Add common params
+  params.tradingSymbol = config.TRADING_SYMBOL;
+  params.defaultQuantity = config.DEFAULT_QUANTITY;
+  params.liveMode = true;
+  params.debug = false;
+
+  logger.info(`GEX-FLIP-IVPCT params: wallProx=${params.wallProximity}, ` +
+    `ivPctile [low<=${params.ivPctileLowMax}, high>=${params.ivPctileHighMin}], ` +
+    `skewMin=${params.skewPositiveMin}, ` +
+    `entry=${params.entryWindowStartHour}-${params.entryWindowEndHour} ET, ` +
+    `cooldown=${params.signalCooldownMs}ms, maxHold=${params.maxHoldBars}min`);
+
+  return new GexFlipIvpctStrategy(params);
 }
 
 function createLTCandleRegimeStrategy(config) {

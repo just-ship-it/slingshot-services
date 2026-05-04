@@ -22,8 +22,21 @@ export class TradeSimulator {
     this.contractSpecs = config.contractSpecs || {};
 
     // Market close configuration
+    // marketCloseTimeET: ET wall-clock cutoff (HH:MM) at which we force-flat
+    // open positions. Default 15:55 ET (RTH close 16:00 minus 5-min buffer).
+    // ET-aware: handles DST automatically.
     this.forceCloseAtMarketClose = config.forceCloseAtMarketClose ?? true;
-    this.marketCloseTimeUTC = config.marketCloseTimeUTC || 21; // 4 PM EST = 21:00 UTC
+    this.marketCloseTimeET = config.marketCloseTimeET || '15:55';
+    // Deprecated: marketCloseTimeUTC is ignored. Used to fire at fixed UTC,
+    // which silently broke across DST (15:55 ET in winter vs 16:55 ET in
+    // summer for the legacy default of 21 UTC). Kept as a no-op for
+    // backward compat with sweep scripts that still pass it.
+
+    // EOD liquidation cutoff (ET, "HH:MM"). When set, force-flat any open
+    // position at the first bar at-or-after this wall-clock time on weekdays.
+    // Used to model day-trade-margin brokers that auto-liquidate before close.
+    // null = disabled.
+    this.eodCutoffEt = config.eodCutoffEt || null;
 
     // Debug mode for detailed trade logging
     this.debugMode = config.debugMode || config.verbose || false;
@@ -462,6 +475,10 @@ export class TradeSimulator {
 
       // Handle active trades - check exits
       if (trade.status === 'active') {
+        // Check EOD ET cutoff (day-trade-margin liquidation)
+        if (this.isPastEODCutoff(bar.timestamp)) {
+          return this.exitTrade(trade, bar, 'eod_liquidation', bar.open);
+        }
         // Check market close
         if (this.forceCloseAtMarketClose && this.isMarketClose(bar.timestamp)) {
           return this.exitTrade(trade, bar, 'market_close', bar.close);
@@ -603,6 +620,10 @@ export class TradeSimulator {
         return this.exitTrade(trade, minuteCandle, 'max_hold_time', minuteCandle.close);
       }
 
+      // Safety: force-exit at EOD ET cutoff
+      if (this.isPastEODCutoff(minuteCandle.timestamp)) {
+        return this.exitTrade(trade, minuteCandle, 'eod_liquidation', minuteCandle.open);
+      }
       // Safety: force-exit at market close (same rationale)
       if (this.forceCloseAtMarketClose && this.isMarketClose(minuteCandle.timestamp)) {
         return this.exitTrade(trade, minuteCandle, 'market_close', minuteCandle.close);
@@ -732,6 +753,14 @@ export class TradeSimulator {
     if (trade.status === 'active') {
       if (debug) {
         console.log(`    🎯 [TRADE ${trade.id}] Active trade exit checks | Current price: ${currentPrice} | Entry: ${trade.actualEntry}`);
+      }
+
+      // Check EOD ET cutoff (highest priority — broker auto-liquidation)
+      if (this.isPastEODCutoff(candle.timestamp)) {
+        if (debug) {
+          console.log(`    🌇 [TRADE ${trade.id}] EOD ET cutoff (${this.eodCutoffEt}) — forcing exit`);
+        }
+        return this.exitTrade(trade, candle, 'eod_liquidation', candle.open ?? currentPrice);
       }
 
       // Check market close first (highest priority)
@@ -2430,16 +2459,55 @@ export class TradeSimulator {
    * @returns {boolean} True if market is closed
    */
   isMarketClose(timestamp) {
+    // ET-aware: fires at marketCloseTimeET (default 15:55 ET) on weekdays.
+    // Handles DST correctly. Replaces the legacy fixed-UTC logic which fired
+    // at 15:55 ET in winter and 16:55 ET in summer.
+    const [hStr, mStr] = this.marketCloseTimeET.split(':');
+    const cutoffH = parseInt(hStr, 10);
+    const cutoffM = parseInt(mStr || '0', 10);
+    const parts = new Intl.DateTimeFormat('en-US', {
+      timeZone: 'America/New_York',
+      weekday: 'short',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false,
+    }).formatToParts(new Date(timestamp));
+    const o = {};
+    for (const p of parts) o[p.type] = p.value;
+    if (o.weekday === 'Sat' || o.weekday === 'Sun') return false;
+    const hour = parseInt(o.hour, 10);
+    const minute = parseInt(o.minute, 10);
+    return hour > cutoffH || (hour === cutoffH && minute >= cutoffM);
+  }
+
+  /**
+   * Check if a timestamp is at or past the EOD ET cutoff on a weekday.
+   * Used to simulate broker auto-liquidation for day-trade-margin accounts.
+   * Cutoff is configured as "HH:MM" in America/New_York time.
+   * @param {number} timestamp - ms since epoch
+   * @returns {boolean}
+   */
+  isPastEODCutoff(timestamp) {
+    if (!this.eodCutoffEt) return false;
+    const [cutoffHourStr, cutoffMinStr] = this.eodCutoffEt.split(':');
+    const cutoffHour = parseInt(cutoffHourStr, 10);
+    const cutoffMin = parseInt(cutoffMinStr || '0', 10);
+
     const date = new Date(timestamp);
-    const utcHour = date.getUTCHours();
-    const utcMinute = date.getUTCMinutes();
-
-    // Market closes at 4:00 PM EST = 21:00 UTC
-    // Allow for some buffer (close at 20:55 UTC to be safe)
-    const closeTimeUTC = this.marketCloseTimeUTC - 0.08; // 5 minute buffer = 20:55 UTC
-    const currentTimeDecimal = utcHour + (utcMinute / 60);
-
-    return currentTimeDecimal >= closeTimeUTC;
+    const parts = new Intl.DateTimeFormat('en-US', {
+      timeZone: 'America/New_York',
+      weekday: 'short',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false,
+    }).formatToParts(date);
+    const m = {};
+    for (const p of parts) m[p.type] = p.value;
+    const wd = m.weekday;
+    if (wd === 'Sat' || wd === 'Sun') return false;
+    const hour = parseInt(m.hour, 10);
+    const minute = parseInt(m.minute, 10);
+    return hour > cutoffHour || (hour === cutoffHour && minute >= cutoffMin);
   }
 
   /**

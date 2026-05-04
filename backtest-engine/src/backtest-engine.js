@@ -27,6 +27,7 @@ import { OrderFlowMomentumStrategy } from '../../shared/strategies/order-flow-mo
 import { ContrarianOrderFlowStrategy } from '../../shared/strategies/contrarian-orderflow.js';
 import { GexAbsorptionStrategy } from '../../shared/strategies/gex-absorption.js';
 import { IVSkewGexStrategy } from '../../shared/strategies/iv-skew-gex.js';
+import { GexFlipIvpctStrategy } from '../../shared/strategies/gex-flip-ivpct.js';
 import { CBBOLTVolatilityStrategy } from '../../shared/strategies/cbbo-lt-volatility.js';
 import { GexMeanReversionStrategy } from '../strategies/gex-mean-reversion/strategy.js';
 import { LTFailedBreakdownStrategy } from '../../shared/strategies/lt-failed-breakdown.js';
@@ -73,6 +74,7 @@ import { OvernightLTCrossingStrategy } from '../../shared/strategies/overnight-l
 import { LTCrossoverStrategy } from '../../shared/strategies/lt-crossover.js';
 import { LTStructureConfirmStrategy } from '../../shared/strategies/lt-structure-confirm.js';
 import { LTCandleRegimeStrategy } from '../../shared/strategies/lt-candle-regime.js';
+import { GammaRegimeDriftStrategy } from '../../shared/strategies/gamma-regime-drift.js';
 import { SqueezeMomentumIndicator } from '../../shared/indicators/squeeze-momentum.js';
 import { GexLoader } from './data-loaders/gex-loader.js';
 import { IVLoader } from './data-loaders/iv-loader.js';
@@ -99,6 +101,7 @@ export class BacktestEngine {
       contractSpecs: this.defaultConfig.contracts,
       forceCloseAtMarketClose: config.strategyParams?.forceCloseAtMarketClose ?? this.defaultConfig.backtesting.forceCloseAtMarketClose,
       marketCloseTimeUTC: config.strategyParams?.marketCloseTimeUTC ?? this.defaultConfig.backtesting.marketCloseTimeUTC,
+      eodCutoffEt: config.eodCutoffEt ?? config.strategyParams?.eodCutoffEt ?? null,
       verbose: config.verbose,
       debugMode: config.debugMode,
       // Hybrid trailing stop configuration
@@ -523,9 +526,10 @@ export class BacktestEngine {
     // Create market data lookup for efficient access (for legacy compatibility)
     const marketDataLookup = this.createMarketDataLookup(gexData, liquidityData);
 
-    // Load IV data for IV Skew GEX strategy
+    // Load IV data for IV-based strategies (iv-skew-gex, gex-flip-ivpct)
     const isIVSkewStrategy = this.config.strategy === 'iv-skew-gex' || this.config.strategy === 'iv-skew';
-    if (isIVSkewStrategy) {
+    const isGexFlipIvpctStrategy = this.config.strategy === 'gex-flip-ivpct' || this.config.strategy === 'gfi';
+    if (isIVSkewStrategy || isGexFlipIvpctStrategy) {
       await this.ivLoader.load(this.config.startDate, this.config.endDate);
       const ivStats = this.ivLoader.getStats();
       if (!this.config.quiet && ivStats.count > 0) {
@@ -1375,6 +1379,9 @@ export class BacktestEngine {
       case 'iv-skew-gex':
       case 'iv-skew':
         return new IVSkewGexStrategy(params);
+      case 'gex-flip-ivpct':
+      case 'gfi':
+        return new GexFlipIvpctStrategy(params);
       case 'cbbo-lt-volatility':
       case 'cbbo-lt':
         return new CBBOLTVolatilityStrategy(params);
@@ -1559,6 +1566,9 @@ export class BacktestEngine {
       case 'lt-regime':
       case 'lcr':
         return new LTCandleRegimeStrategy(params);
+      case 'gamma-regime-drift':
+      case 'grd':
+        return new GammaRegimeDriftStrategy(params);
       default:
         throw new Error(`Unknown strategy: ${strategyName}`);
     }

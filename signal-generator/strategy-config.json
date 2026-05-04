@@ -15,6 +15,12 @@
           "evalTimeframe": "1m"
         },
         {
+          "name": "gex-flip-ivpct",
+          "enabled": false,
+          "priority": 2,
+          "evalTimeframe": "5m"
+        },
+        {
           "name": "lt-candle-regime",
           "enabled": false,
           "priority": 3,

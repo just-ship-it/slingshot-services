@@ -127,6 +127,21 @@ const config = {
   ES_CROSS_FILTER_LT_SPACING_MAX: parseFloat(process.env.ES_CROSS_FILTER_LT_SPACING_MAX || '40'),
   ES_CROSS_COOLDOWN_MS: parseInt(process.env.ES_CROSS_COOLDOWN_MS || '300000'), // 5 minutes
 
+  // GEX-FLIP-IVPCT Strategy Parameters (V7DTSP13 backtest-matched defaults)
+  // 6-rule day-trade strategy. Entries 04:00-13:00 ET. Broker liquidates 4:45 PM ET.
+  // Each rule has its own stop/target — these are gates, not exits.
+  GFI_WALL_PROXIMITY: parseFloat(process.env.GFI_WALL_PROXIMITY || '50'),
+  GFI_IV_PCTILE_WINDOW_DAYS: parseInt(process.env.GFI_IV_PCTILE_WINDOW_DAYS || '20'),
+  GFI_IV_PCTILE_LOW_MAX: parseFloat(process.env.GFI_IV_PCTILE_LOW_MAX || '0.20'),
+  GFI_IV_PCTILE_HIGH_MIN: parseFloat(process.env.GFI_IV_PCTILE_HIGH_MIN || '0.80'),
+  GFI_SKEW_POSITIVE_MIN: parseFloat(process.env.GFI_SKEW_POSITIVE_MIN || '0.015'),
+  GFI_NEUTRAL_REGIME: process.env.GFI_NEUTRAL_REGIME || 'neutral',
+  GFI_STRONG_NEGATIVE_REGIME: process.env.GFI_STRONG_NEGATIVE_REGIME || 'strong_negative',
+  GFI_ENTRY_WINDOW_START_HOUR: parseInt(process.env.GFI_ENTRY_WINDOW_START_HOUR || '4'),
+  GFI_ENTRY_WINDOW_END_HOUR: parseInt(process.env.GFI_ENTRY_WINDOW_END_HOUR || '13'),
+  GFI_COOLDOWN_MS: parseInt(process.env.GFI_COOLDOWN_MS || '1800000'), // 30 minutes
+  GFI_MAX_HOLD_BARS: parseInt(process.env.GFI_MAX_HOLD_BARS || '600'), // 600 minutes (10h)
+
   // Short-DTE IV Strategy Parameters (sweep-optimized: th=0.015, S30/T30)
   SDIV_IV_THRESHOLD: parseFloat(process.env.SDIV_IV_THRESHOLD || '0.015'),
   SDIV_STOP_POINTS: parseFloat(process.env.SDIV_STOP_POINTS || '30'),
@@ -308,6 +323,22 @@ const config = {
       orbCandles: 15,
       ibCandles: 30,
       lastEntryTime: 15.917
+    };
+  },
+
+  getGexFlipIvpctParams() {
+    return {
+      wallProximity: this.GFI_WALL_PROXIMITY,
+      ivPctileWindowDays: this.GFI_IV_PCTILE_WINDOW_DAYS,
+      ivPctileLowMax: this.GFI_IV_PCTILE_LOW_MAX,
+      ivPctileHighMin: this.GFI_IV_PCTILE_HIGH_MIN,
+      skewPositiveMin: this.GFI_SKEW_POSITIVE_MIN,
+      neutralRegime: this.GFI_NEUTRAL_REGIME,
+      strongNegativeRegime: this.GFI_STRONG_NEGATIVE_REGIME,
+      entryWindowStartHour: this.GFI_ENTRY_WINDOW_START_HOUR,
+      entryWindowEndHour: this.GFI_ENTRY_WINDOW_END_HOUR,
+      signalCooldownMs: this.GFI_COOLDOWN_MS,
+      maxHoldBars: this.GFI_MAX_HOLD_BARS,
     };
   },
 
