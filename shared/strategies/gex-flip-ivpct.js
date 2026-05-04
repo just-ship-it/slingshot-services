@@ -472,6 +472,10 @@ export class GexFlipIvpctStrategy extends BaseStrategy {
       // Live state
       ivPercentile,
       liveIVSamples: this.liveIVHistory.length,
+      ivHistoryOldest: this.liveIVHistory.length > 0 ? this.liveIVHistory[0].timestamp : null,
+      ivHistoryNewest: this.liveIVHistory.length > 0 ? this.liveIVHistory[this.liveIVHistory.length - 1].timestamp : null,
+      redisAttached: !!this.redis,
+      redisKey: this.redisKey,
       evaluationLog: this.evaluationLog.slice(-10),
     };
   }
