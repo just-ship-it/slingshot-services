@@ -88,6 +88,12 @@ export class GexFlipIvpctStrategy extends BaseStrategy {
     // service-level safety against the broker auto-liquidating.
     this.params.maxHoldBars = params.maxHoldBars ?? 600;
 
+    // Informational: the trade-orchestrator's EOD force-flat time. The
+    // strategy itself does not act on this — it's plumbed through so the
+    // dashboard panel renders the same value the orchestrator is using.
+    // Empty string means orchestrator-side EOD flat is disabled.
+    this.params.eodCutoffEt = params.eodCutoffEt ?? '16:40';
+
     // Trading symbol
     this.params.tradingSymbol = params.tradingSymbol ?? 'NQ';
     this.params.defaultQuantity = params.defaultQuantity ?? 1;
@@ -101,8 +107,83 @@ export class GexFlipIvpctStrategy extends BaseStrategy {
     this.liveIVData = null;     // live path: most recent IV record
     this.liveIVHistory = [];    // live path: rolling buffer of {timestamp, iv}
 
+    // Redis persistence (optional — populated via attachRedis)
+    this.redis = null;
+    this.redisKey = null;
+    this._redisErrorLoggedAt = 0;
+
     // Evaluation log for dashboard
     this.evaluationLog = [];
+  }
+
+  /**
+   * Attach a node-redis v4 client for persisting the rolling IV history so
+   * it survives service restarts. Call hydrateFromRedis() after attaching to
+   * load whatever samples are already stored.
+   *
+   * Failures here are logged but never thrown — the strategy keeps working
+   * from its in-memory buffer if Redis is unreachable.
+   *
+   * @param {object} redisClient — node-redis v4 connected client
+   * @param {{ key?: string }} opts
+   */
+  attachRedis(redisClient, opts = {}) {
+    this.redis = redisClient;
+    this.redisKey = opts.key || `strategy:${this.getName()}:iv_history`;
+  }
+
+  /**
+   * Load any persisted samples from Redis into liveIVHistory. Idempotent —
+   * call after attachRedis() and once per process start.
+   */
+  async hydrateFromRedis() {
+    if (!this.redis || !this.redisKey) return false;
+    try {
+      const cutoffMs = Date.now() - this.params.ivPctileWindowDays * DAY_MS;
+      // node-redis v4 zRangeByScore returns array of member strings (no scores)
+      const rows = await this.redis.zRangeByScore(this.redisKey, cutoffMs, '+inf');
+      const samples = [];
+      for (const raw of rows) {
+        try {
+          const o = JSON.parse(raw);
+          if (o && o.ts != null && o.iv != null) {
+            samples.push({ timestamp: o.ts, iv: o.iv, skew: o.skew ?? null });
+          }
+        } catch (_) { /* skip malformed */ }
+      }
+      // Merge with anything already in memory and dedupe by timestamp
+      const seen = new Set(this.liveIVHistory.map(s => s.timestamp));
+      for (const s of samples) {
+        if (!seen.has(s.timestamp)) this.liveIVHistory.push(s);
+      }
+      this.liveIVHistory.sort((a, b) => a.timestamp - b.timestamp);
+      console.log(`[${this.getName()}] Rehydrated IV history from Redis: ${samples.length} samples (buffer now ${this.liveIVHistory.length})`);
+      return true;
+    } catch (err) {
+      console.warn(`[${this.getName()}] Redis hydrate failed: ${err.message}`);
+      return false;
+    }
+  }
+
+  /**
+   * Persist a single sample to the Redis sorted set and prune entries older
+   * than the rolling window. Fire-and-forget; logs at most once per minute on
+   * sustained failure to avoid spam.
+   */
+  _persistSampleToRedis(sample) {
+    if (!this.redis || !this.redisKey) return;
+    const member = JSON.stringify({ ts: sample.timestamp, iv: sample.iv, skew: sample.skew });
+    const cutoffMs = Date.now() - this.params.ivPctileWindowDays * DAY_MS;
+    Promise.resolve()
+      .then(() => this.redis.zAdd(this.redisKey, { score: sample.timestamp, value: member }))
+      .then(() => this.redis.zRemRangeByScore(this.redisKey, '-inf', cutoffMs))
+      .catch(err => {
+        const now = Date.now();
+        if (now - this._redisErrorLoggedAt > 60_000) {
+          console.warn(`[${this.getName()}] Redis IV-history persist failed: ${err.message}`);
+          this._redisErrorLoggedAt = now;
+        }
+      });
   }
 
   loadIVData(ivLoader) {
@@ -116,10 +197,13 @@ export class GexFlipIvpctStrategy extends BaseStrategy {
   setLiveIVData(ivData) {
     this.liveIVData = ivData;
     if (ivData && ivData.iv != null) {
-      this.liveIVHistory.push({ timestamp: Date.now(), iv: ivData.iv, skew: ivData.skew });
+      const sample = { timestamp: Date.now(), iv: ivData.iv, skew: ivData.skew ?? null };
+      this.liveIVHistory.push(sample);
       // Keep rolling 20-day window plus a small buffer
       const cutoff = Date.now() - (this.params.ivPctileWindowDays + 1) * DAY_MS;
       this.liveIVHistory = this.liveIVHistory.filter(s => s.timestamp >= cutoff);
+      // Mirror to Redis so the buffer survives service restarts
+      this._persistSampleToRedis(sample);
     }
   }
 
@@ -383,6 +467,7 @@ export class GexFlipIvpctStrategy extends BaseStrategy {
       entryWindowEndHour: this.params.entryWindowEndHour,
       signalCooldownMs: this.params.signalCooldownMs,
       maxHoldBars: this.params.maxHoldBars,
+      eodCutoffEt: this.params.eodCutoffEt,
 
       // Live state
       ivPercentile,

@@ -141,6 +141,10 @@ const config = {
   GFI_ENTRY_WINDOW_END_HOUR: parseInt(process.env.GFI_ENTRY_WINDOW_END_HOUR || '13'),
   GFI_COOLDOWN_MS: parseInt(process.env.GFI_COOLDOWN_MS || '1800000'), // 30 minutes
   GFI_MAX_HOLD_BARS: parseInt(process.env.GFI_MAX_HOLD_BARS || '600'), // 600 minutes (10h)
+  // Mirrors trade-orchestrator's EOD_CUTOFF_ET so the dashboard can show the
+  // same time the orchestrator will actually force-flat at. Set EOD_CUTOFF_ET=""
+  // (empty) to disable the dashboard indicator (matches orchestrator semantics).
+  EOD_CUTOFF_ET: process.env.EOD_CUTOFF_ET ?? '16:40',
 
   // Short-DTE IV Strategy Parameters (sweep-optimized: th=0.015, S30/T30)
   SDIV_IV_THRESHOLD: parseFloat(process.env.SDIV_IV_THRESHOLD || '0.015'),
@@ -339,6 +343,7 @@ const config = {
       entryWindowEndHour: this.GFI_ENTRY_WINDOW_END_HOUR,
       signalCooldownMs: this.GFI_COOLDOWN_MS,
       maxHoldBars: this.GFI_MAX_HOLD_BARS,
+      eodCutoffEt: this.EOD_CUTOFF_ET,
     };
   },
 

@@ -212,6 +212,17 @@ class MultiStrategyEngine {
             logger.info(`  Wired LiveShortDTEIVProvider → ${name}`);
           }
 
+          // Attach Redis for strategies that persist state across restarts
+          // (e.g. gex-flip-ivpct's rolling IV history). Hydrate is async and
+          // fire-and-forget — the strategy fails soft if Redis is unreachable.
+          if (typeof strategy.attachRedis === 'function' && messageBus.publisher) {
+            strategy.attachRedis(messageBus.publisher);
+            strategy.hydrateFromRedis().catch(err => {
+              logger.warn(`Redis hydrate failed for ${name}: ${err.message}`);
+            });
+            logger.info(`  Attached Redis persistence → ${name}`);
+          }
+
           const runner = new StrategyRunner(name, strategy, stratConfig, productConfig);
           state.strategies.set(name, runner);
           logger.info(`  ${product}: ${name} (priority ${runner.priority}, ${runner.evalTimeframe}, ${stratConfig.enabled ? 'enabled' : 'disabled'})`);
