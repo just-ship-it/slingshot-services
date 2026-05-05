@@ -291,11 +291,27 @@ function accountIsEnabled(accountId) {
 }
 
 function hasOpenOrPending(accountId, strategy, symbol) {
-  if (state.pendingOrders.has(pendingKey(accountId, strategy, symbol))) {
-    return { blocked: true, why: 'pending_order' };
+  // Brokers hold one NET position per (account, symbol) — they don't track
+  // strategies. So we gate by (account, symbol) regardless of which strategy
+  // the existing position is attributed to. Two strategies can't legitimately
+  // each hold a short on MNQM6 in the same account; the broker would just
+  // net them. If we keyed only on (account, strategy, symbol), a leftover
+  // position attributed to strategy A would let strategy B stack on top.
+  for (const v of state.pendingOrders.values()) {
+    if (v.accountId === accountId && v.symbol === symbol) {
+      return {
+        blocked: true,
+        why: v.strategy === strategy ? 'pending_order' : `pending_order_other_strategy:${v.strategy}`
+      };
+    }
   }
-  if (state.openPositions.has(posKey(accountId, strategy, symbol))) {
-    return { blocked: true, why: 'open_position' };
+  for (const v of state.openPositions.values()) {
+    if (v.accountId === accountId && v.symbol === symbol) {
+      return {
+        blocked: true,
+        why: v.strategy === strategy ? 'open_position' : `open_position_other_strategy:${v.strategy}`
+      };
+    }
   }
   return { blocked: false };
 }
@@ -401,7 +417,10 @@ async function handleTradeSignal(raw) {
     return;
   }
 
-  // Per-account gates (first-wins semantics on near-simultaneous signals via pending)
+  // Per-account gates (first-wins semantics on near-simultaneous signals via pending).
+  // EOD force-flat signals bypass the open_position gate — they're trying to
+  // CLOSE an open position, so the gate that prevents stacking entries would
+  // otherwise block the very signal that's supposed to flatten.
   const accepted = [];
   const rejected = [];
   for (const accountId of accountIds) {
@@ -409,10 +428,12 @@ async function handleTradeSignal(raw) {
       rejected.push({ accountId, reason: 'account_disabled_or_missing' });
       continue;
     }
-    const gate = hasOpenOrPending(accountId, signal.strategy, tradedSymbol);
-    if (gate.blocked) {
-      rejected.push({ accountId, reason: gate.why });
-      continue;
+    if (!signal.eodForceFlat) {
+      const gate = hasOpenOrPending(accountId, signal.strategy, tradedSymbol);
+      if (gate.blocked) {
+        rejected.push({ accountId, reason: gate.why });
+        continue;
+      }
     }
     accepted.push(accountId);
   }
@@ -739,6 +760,10 @@ async function checkEodForceFlat() {
       signalId: `EOD-FLAT-${pos.accountId}-${pos.strategy}-${et.dateKey}`,
       reason: 'eod_force_flat',
       eodForceFlat: true,
+      // Pin to the specific account that holds the position. Without this,
+      // the signal fans out to all routed accounts and most reject as
+      // "account_disabled_or_missing" or "open_position".
+      targetAccountId: pos.accountId,
       timestamp: new Date().toISOString(),
     };
     logger.warn(`[EOD-FLAT] firing market close: ${pos.accountId} ${pos.strategy} ${pos.symbol} ${pos.side} ${pos.netPos}`);
