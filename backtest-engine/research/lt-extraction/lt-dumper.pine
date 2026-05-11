@@ -1,0 +1,109 @@
+// LT Levels Dumper — Pine v6 strategy
+//
+// Purpose: capture an LT-style indicator's per-bar levels into TradingView's
+// Strategy Tester "List of Trades" so they can be exported to CSV and used
+// for analysis off-platform.
+//
+// HOW IT WORKS
+//   - Every bar close, the strategy closes any open position and re-enters
+//     a fresh long, embedding the current bar's 5 LT levels + sentiment in
+//     the entry's `comment` field.
+//   - Each completed round-trip produces one row in TV's List of Trades.
+//   - Export the trade list as CSV; the entry comment is parseable.
+//
+// SETUP (one-time)
+//   1. Add your LT indicator to the chart.
+//   2. Add this strategy to the chart (Pine editor → Add to chart).
+//   3. Open this strategy's Settings → Inputs.
+//   4. For each "LT Level N" input, click and pick the corresponding plot
+//      from the LT indicator (the indicator must `plot()` its 5 levels for
+//      this to work — closed-source indicators that only draw to canvas
+//      via `line.new()` cannot be referenced).
+//   5. For "LT Sentiment", pick the indicator's sentiment plot if available.
+//      If not (or if it's a string), set it to a placeholder like `close`
+//      and ignore the S=… field downstream.
+//   6. Inputs → Properties → Pyramiding = 0 (default, ensures one trade at a time).
+//   7. Run on the desired timeframe (1m / 3m / 5m / 15m).
+//
+// TRADE-COUNT LIMIT
+// TradingView caps strategies at ~9000 orders during a single backtest run.
+// Each bar generates ~2 orders (close + entry), so plan ~4500 bars/run.
+//   - 1m: ~3 weekdays of 23h sessions (4500 ÷ 1440 ≈ 3 days). Run weekly chunks.
+//   - 3m: ~9 days. Run ~2-week chunks.
+//   - 5m: ~16 days. Run monthly chunks.
+//   - 15m: ~3 months. Run quarterly chunks.
+// Use TradingView's "Date Range" property (Settings → Properties → "From/To Date")
+// to chunk the backtest, export each, then concatenate the CSVs.
+//
+// BACK-ADJUSTMENT WARNING
+// If the chart symbol is `NQ1!` (continuous front-month), prices are back-
+// adjusted at every contract rollover — historical prices are SHIFTED to
+// produce a gapless series. LT levels computed on the back-adjusted chart
+// will be in back-adjusted price space and must be translated back to the
+// raw front-month contract space before comparing to our GEX levels.
+// Use `parse-lt-export.js` to do that translation using the rollover log.
+//
+// Alternatively, run this strategy on the SPECIFIC FRONT-MONTH contract
+// symbol (e.g. `NQM5`) and switch contracts at each rollover boundary —
+// no translation needed but more manual chart-flipping.
+
+//@version=6
+strategy("LT Levels Dumper",
+     overlay=true,
+     pyramiding=0,
+     default_qty_type=strategy.fixed,
+     default_qty_value=1,
+     process_orders_on_close=true,
+     calc_on_every_tick=false,
+     initial_capital=100000,
+     commission_type=strategy.commission.cash_per_contract,
+     commission_value=0,
+     max_bars_back=500)
+
+// ──────────────────────────────────────────────────────────────────────────
+// Inputs — link these to plots from your LT indicator
+// ──────────────────────────────────────────────────────────────────────────
+gLT = "LT Levels (link to indicator plots)"
+lt1 = input.source(close, "LT Level 1", group=gLT)
+lt2 = input.source(close, "LT Level 2", group=gLT)
+lt3 = input.source(close, "LT Level 3", group=gLT)
+lt4 = input.source(close, "LT Level 4", group=gLT)
+lt5 = input.source(close, "LT Level 5", group=gLT)
+ltSentiment = input.source(close, "LT Sentiment (numeric, optional)", group=gLT,
+     tooltip="Pick a numeric plot if your indicator exposes sentiment as a number. Otherwise leave as `close` and ignore the S= field downstream.")
+
+gOpts = "Options"
+includeBarTime = input.bool(true, "Include bar time UTC in comment", group=gOpts,
+     tooltip="Adds T=YYYYMMDDTHHMM to the comment so each trade is timestamp-anchored even if the export date format is ambiguous.")
+priceDecimals = input.int(2, "Price decimals", minval=0, maxval=4, group=gOpts)
+
+// ──────────────────────────────────────────────────────────────────────────
+// Build the comment string
+//   Format:  1=PRICE|2=PRICE|3=PRICE|4=PRICE|5=PRICE|S=SENTIMENT[|T=YYYYMMDDTHHMM]
+//   Pipe-separated key=value pairs so the parser is robust to commas
+//   that TV's CSV exporter might inject.
+// ──────────────────────────────────────────────────────────────────────────
+fmt = "#." + str.repeat("#", priceDecimals)
+ltStr = "1=" + str.tostring(lt1, fmt) + "|" +
+        "2=" + str.tostring(lt2, fmt) + "|" +
+        "3=" + str.tostring(lt3, fmt) + "|" +
+        "4=" + str.tostring(lt4, fmt) + "|" +
+        "5=" + str.tostring(lt5, fmt) + "|" +
+        "S=" + str.tostring(ltSentiment, fmt)
+
+if includeBarTime
+    // YYYYMMDDTHHMM in UTC
+    ts = str.tostring(year(time, "UTC"), "0000") +
+         str.tostring(month(time, "UTC"), "00") +
+         str.tostring(dayofmonth(time, "UTC"), "00") + "T" +
+         str.tostring(hour(time, "UTC"), "00") +
+         str.tostring(minute(time, "UTC"), "00")
+    ltStr := ltStr + "|T=" + ts
+
+// ──────────────────────────────────────────────────────────────────────────
+// On every confirmed bar, flatten and re-enter so each round-trip carries
+// the bar's LT snapshot in its entry comment.
+// ──────────────────────────────────────────────────────────────────────────
+if barstate.isconfirmed
+    strategy.close("LT", comment="X")
+    strategy.entry("LT", strategy.long, qty=1, comment=ltStr)

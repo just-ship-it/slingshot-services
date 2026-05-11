@@ -1,0 +1,23 @@
+{
+  "config": {
+    "START": "2025-01-13",
+    "END": "2025-01-17",
+    "PRODUCT": "NQ",
+    "GEX_DIR": "nq-cbbo",
+    "CONFLUENCE_TOL": 15,
+    "TOUCH_DISTANCE": 5,
+    "COOLDOWN_MIN": 30,
+    "FORWARD_HORIZONS": [
+      5,
+      15,
+      30,
+      60
+    ]
+  },
+  "counts": {
+    "touch_events": 34,
+    "confluence": 8,
+    "gex_only": 26,
+    "crossover_events": 717
+  }
+}

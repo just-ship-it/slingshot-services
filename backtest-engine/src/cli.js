@@ -68,7 +68,7 @@ export class CLI {
         type: 'string',
         description: 'Strategy to backtest',
         default: 'gex-recoil',
-        choices: ['gex-recoil', 'gex-recoil-enhanced', 'gex-ldpm-confluence', 'gex-ldpm-confluence-pullback', 'contrarian-bounce', 'gex-scalp', 'gex-scalp-confirmed', 'ict-smc', 'ict-ob', 'ldpm-level-sweep', 'order-flow-momentum', 'ofm', 'contrarian-orderflow', 'cof', 'gex-absorption', 'absorption', 'iv-skew-gex', 'iv-skew', 'gex-flip-ivpct', 'gfi', 'cbbo-lt-volatility', 'cbbo-lt', 'gex-mean-reversion', 'gex-mr', 'lt-failed-breakdown', 'lt-fb', 'lt-level-crossing', 'lt-cross', 'lt-level-migration', 'lt-mig', 'regime-scalp', 'rs', 'gex-level-sweep', 'gex-sweep', 'sweep', 'micro-structure-scalper', 'micro-scalper', 'mss', 'trend-scalp', 'ts', 'level-bounce', 'lb', 'overnight-gex-touch', 'overnight-gex', 'ogt', 'overnight-charm-vanna', 'ocv', 'es-cross-signal', 'es-cross', 'ecs', 'es-micro-scalper', 'es-micro', 'esms', 'es-stop-hunt', 'es-hunt', 'esh', 'ohlcv-absorption', 'absorption-detect', 'abs', 'ohlcv-liquidity-sweep', 'liquidity-sweep', 'lsweep', 'ohlcv-vpin', 'vpin', 'ohlcv-mtf-rejection', 'mtf-rejection', 'mtfr', 'momentum-microstructure', 'momentum-micro', 'mm', 'midnight-open-retracement', 'midnight-open', 'mor', 'initial-balance-breakout', 'ib-breakout', 'ibb', 'gap-fill', 'gap', 'daily-level-sweep', 'daily-sweep', 'dls', 'vwap-bounce', 'vwap', 'session-transition', 'session', 'st', 'value-area-80', 'va80', 'swing-reversal', 'sr', 'ict-silver-bullet', 'silver-bullet', 'isb', 'price-action-exhaustion', 'pa-exhaust', 'pae', 'ict-mtf-sweep', 'mtf-sweep', 'jv', 'dc-st1', 'dc1', 'dc-st2', 'dc2', 'dc-st3', 'dc3', 'dc-st4', 'dc4', 'dc-st5', 'dc5', 'dc-st6', 'dc6', 'dc-st7', 'dc7', 'dc-st8', 'dc8', 'dc-mstgam', 'mstgam', 'mnq-adaptive-scalper', 'mnq-scalper', 'mnq', 'sweep-reversal', 'sweep-rev', 'nq-leads-es', 'nq-lead', 'nle', 'gex-support-bounce', 'gex-bounce', 'gsb', 'impulse-fvg', 'impulse', 'ifvg', 'short-dte-iv', 'sdiv', 'overnight-scoring', 'overnight-score', 'ons', 'overnight-composite', 'overnight-comp', 'onc', 'overnight-lt-crossing', 'overnight-ltx', 'oltx', 'lt-crossover', 'ltx', 'lt-structure-confirm', 'ltsc', 'lt-struct', 'lt-candle-regime', 'lt-regime', 'lcr', 'gamma-regime-drift', 'grd']
+        choices: ['gex-recoil', 'gex-recoil-enhanced', 'gex-ldpm-confluence', 'gex-ldpm-confluence-pullback', 'contrarian-bounce', 'gex-scalp', 'gex-scalp-confirmed', 'ict-smc', 'ict-ob', 'ldpm-level-sweep', 'order-flow-momentum', 'ofm', 'contrarian-orderflow', 'cof', 'gex-absorption', 'absorption', 'iv-skew-gex', 'iv-skew', 'gex-flip-ivpct', 'gfi', 'gex-lt-3m-crossover', 'gex-lt-cross', 'glx', 'cbbo-lt-volatility', 'cbbo-lt', 'gex-mean-reversion', 'gex-mr', 'lt-failed-breakdown', 'lt-fb', 'lt-level-crossing', 'lt-cross', 'lt-level-migration', 'lt-mig', 'regime-scalp', 'rs', 'gex-level-sweep', 'gex-sweep', 'sweep', 'micro-structure-scalper', 'micro-scalper', 'mss', 'trend-scalp', 'ts', 'level-bounce', 'lb', 'overnight-gex-touch', 'overnight-gex', 'ogt', 'overnight-charm-vanna', 'ocv', 'es-cross-signal', 'es-cross', 'ecs', 'es-micro-scalper', 'es-micro', 'esms', 'es-stop-hunt', 'es-hunt', 'esh', 'ohlcv-absorption', 'absorption-detect', 'abs', 'ohlcv-liquidity-sweep', 'liquidity-sweep', 'lsweep', 'ohlcv-vpin', 'vpin', 'ohlcv-mtf-rejection', 'mtf-rejection', 'mtfr', 'momentum-microstructure', 'momentum-micro', 'mm', 'midnight-open-retracement', 'midnight-open', 'mor', 'initial-balance-breakout', 'ib-breakout', 'ibb', 'gap-fill', 'gap', 'daily-level-sweep', 'daily-sweep', 'dls', 'vwap-bounce', 'vwap', 'session-transition', 'session', 'st', 'value-area-80', 'va80', 'swing-reversal', 'sr', 'ict-silver-bullet', 'silver-bullet', 'isb', 'price-action-exhaustion', 'pa-exhaust', 'pae', 'ict-mtf-sweep', 'mtf-sweep', 'jv', 'dc-st1', 'dc1', 'dc-st2', 'dc2', 'dc-st3', 'dc3', 'dc-st4', 'dc4', 'dc-st5', 'dc5', 'dc-st6', 'dc6', 'dc-st7', 'dc7', 'dc-st8', 'dc8', 'dc-mstgam', 'mstgam', 'mnq-adaptive-scalper', 'mnq-scalper', 'mnq', 'sweep-reversal', 'sweep-rev', 'nq-leads-es', 'nq-lead', 'nle', 'gex-support-bounce', 'gex-bounce', 'gsb', 'impulse-fvg', 'impulse', 'ifvg', 'short-dte-iv', 'sdiv', 'overnight-scoring', 'overnight-score', 'ons', 'overnight-composite', 'overnight-comp', 'onc', 'overnight-lt-crossing', 'overnight-ltx', 'oltx', 'lt-crossover', 'ltx', 'lt-structure-confirm', 'ltsc', 'lt-struct', 'lt-candle-regime', 'lt-regime', 'lcr', 'gamma-regime-drift', 'grd']
       })
 
       .option('timeframe', {
@@ -158,9 +158,81 @@ export class CLI {
         description: 'Custom GEX data directory (e.g., data/gex-cbbo/nq/ for CBBO-based GEX). Overrides default statistics-based GEX.'
       })
 
+      .option('lt-1m-file', {
+        type: 'string',
+        description: 'Path to a 1m LT levels CSV (gex-lt-3m-crossover strategy). Schema: timestamp_iso, unix_ms, sentiment_raw, level_1..5. Use research/lt-extraction/output/nq_lt_1m_raw.csv.'
+      })
+
       .option('eod-cutoff-et', {
         type: 'string',
         description: 'Force-flat any open position at this ET wall-clock time (HH:MM) on weekdays. Models day-trade-margin liquidation (e.g. "16:45").'
+      })
+
+      .option('glx-disable-rules', {
+        type: 'string',
+        description: 'Comma-separated rule IDs to disable in gex-lt-3m-crossover (e.g. "L_PW,S_S2_SOLO").'
+      })
+
+      .option('glx-force-any', {
+        type: 'boolean',
+        default: false,
+        description: 'Bypass solo/confirmed filter for all rules in gex-lt-3m-crossover (test core 3m crossover signal).'
+      })
+
+      .option('glx-rule-overrides', {
+        type: 'string',
+        description: 'JSON map of per-rule overrides for gex-lt-3m-crossover, e.g. \'{"L_PW":{"stopPts":20}}\''
+      })
+
+      .option('glx-cooldown-ms', {
+        type: 'number',
+        description: 'Override signalCooldownMs for gex-lt-3m-crossover (default 1800000 = 30 min).'
+      })
+
+      .option('glx-max-hold', {
+        type: 'number',
+        description: 'Override maxHoldBars (in MINUTES) for gex-lt-3m-crossover (default 60).'
+      })
+
+      .option('glx-limit-timeout', {
+        type: 'number',
+        description: 'How many 1m candles to wait for limit fill before cancelling for gex-lt-3m-crossover (default 5).'
+      })
+
+      .option('glx-no-entry-window', {
+        type: 'boolean',
+        default: false,
+        description: 'Disable the RTH (9:30-16:00 ET) entry window for gex-lt-3m-crossover.'
+      })
+
+      .option('glx-entry-window', {
+        type: 'string',
+        description: 'Custom entry window for gex-lt-3m-crossover, format "HH:MM-HH:MM" (ET, half-open). E.g. "08:00-16:00". Overrides default 9:30-16:00.'
+      })
+
+      .option('glx-blocked-hours', {
+        type: 'string',
+        description: 'Comma-separated list of blocked ET hours (0-23) for gex-lt-3m-crossover. E.g. "13" to skip the lunch hour.'
+      })
+
+      .option('glx-trailing-trigger', {
+        type: 'number',
+        description: 'Universal trailing stop trigger (points of MFE) for gex-lt-3m-crossover. Pair with --glx-trailing-offset.'
+      })
+
+      .option('glx-trailing-offset', {
+        type: 'number',
+        description: 'Universal trailing stop offset (points back from MFE) for gex-lt-3m-crossover.'
+      })
+
+      .option('glx-breakeven-trigger', {
+        type: 'number',
+        description: 'Universal breakeven stop trigger (points of MFE) for gex-lt-3m-crossover.'
+      })
+
+      .option('glx-breakeven-offset', {
+        type: 'number',
+        description: 'Universal breakeven stop offset (points of profit locked at entry) for gex-lt-3m-crossover.'
       })
 
       .option('grd-hours', {
@@ -1524,6 +1596,62 @@ export class CLI {
       tradingSymbol: args.ticker.toUpperCase()
     };
 
+    // gex-lt-3m-crossover knobs
+    if (args['glx-disable-rules']) {
+      strategyParams.disabledRules = args['glx-disable-rules']
+        .split(',').map(s => s.trim()).filter(Boolean);
+    }
+    if (args['glx-force-any']) {
+      strategyParams.forceFilterAny = true;
+    }
+    if (args['glx-rule-overrides']) {
+      try {
+        strategyParams.ruleOverrides = JSON.parse(args['glx-rule-overrides']);
+      } catch (e) {
+        console.error('❌ --glx-rule-overrides must be valid JSON:', e.message);
+        process.exit(1);
+      }
+    }
+    if (args['glx-cooldown-ms'] !== undefined) {
+      strategyParams.signalCooldownMs = args['glx-cooldown-ms'];
+    }
+    if (args['glx-max-hold'] !== undefined) {
+      strategyParams.maxHoldBars = args['glx-max-hold'];
+    }
+    if (args['glx-limit-timeout'] !== undefined) {
+      strategyParams.limitTimeoutCandles = args['glx-limit-timeout'];
+    }
+    if (args['glx-no-entry-window']) {
+      strategyParams.disableEntryWindow = true;
+    }
+    if (args['glx-blocked-hours']) {
+      strategyParams.blockedHoursEt = args['glx-blocked-hours']
+        .split(',').map(s => parseInt(s.trim(), 10)).filter(n => !isNaN(n));
+    }
+    if (args['glx-trailing-trigger'] !== undefined) {
+      strategyParams.trailingTrigger = args['glx-trailing-trigger'];
+    }
+    if (args['glx-trailing-offset'] !== undefined) {
+      strategyParams.trailingOffset = args['glx-trailing-offset'];
+    }
+    if (args['glx-breakeven-trigger'] !== undefined) {
+      strategyParams.breakevenTrigger = args['glx-breakeven-trigger'];
+    }
+    if (args['glx-breakeven-offset'] !== undefined) {
+      strategyParams.breakevenOffset = args['glx-breakeven-offset'];
+    }
+    if (args['glx-entry-window']) {
+      const m = args['glx-entry-window'].match(/^(\d{1,2}):(\d{2})-(\d{1,2}):(\d{2})$/);
+      if (!m) {
+        console.error('❌ --glx-entry-window must be HH:MM-HH:MM (ET).');
+        process.exit(1);
+      }
+      strategyParams.entryWindowStartHour = parseInt(m[1], 10);
+      strategyParams.entryWindowStartMinute = parseInt(m[2], 10);
+      strategyParams.entryWindowEndHour = parseInt(m[3], 10);
+      // endMinute not currently honored — engine treats end as :00 of endHour.
+    }
+
     // If strategy config specifies a timeframe and user didn't explicitly override, use it
     const rawArgs = process.argv.slice(2);
     const userSetTimeframe = rawArgs.some(a => a.startsWith('--timeframe') || a.startsWith('--tf'));
@@ -1988,6 +2116,7 @@ export class CLI {
       noContinuous: args.rawContracts,
       ivResolution: args.ivResolution,
       gexDir: args.gexDir || null, // Custom GEX directory (e.g., data/gex-cbbo/nq/ for CBBO-based GEX)
+      lt1mFile: args['lt-1m-file'] || args.lt1mFile || null, // 1m LT CSV path for gex-lt-3m-crossover
       eodCutoffEt: args.eodCutoffEt || null, // ET cutoff (HH:MM) for day-trade-margin liquidation
       useCBBO: args.useCbbo || args.strategy === 'cbbo-lt-volatility' || args.strategy === 'cbbo-lt',
       cbboDataDir: args.cbboDataDir || null, // null means use default: dataDir/cbbo-1m/qqq

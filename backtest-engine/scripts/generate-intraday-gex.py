@@ -206,8 +206,17 @@ def load_cbbo_buckets(cbbo_dir, date_str, interval_minutes=15):
                 minute = int(ts_str[14:16])
             except ValueError:
                 continue
-            bucket_minute = (minute // interval_minutes) * interval_minutes
-            bucket_key = f'{date_part}T{hour}:{bucket_minute:02d}:00+00:00'
+            # Bucket label is the AS-OF time (bucket-end), not bucket-start.
+            # A snapshot for "13:45" contains quotes received in [13:30, 13:45),
+            # so a strategy at 13:42 reading "most recent ≤ 13:42" gets the
+            # "13:30" snapshot (data through 13:30) — clean past.
+            # Use datetime arithmetic to handle hour/day boundaries cleanly.
+            bucket_start_minute = (minute // interval_minutes) * interval_minutes
+            bucket_start = datetime.fromisoformat(
+                f'{date_part}T{hour}:{bucket_start_minute:02d}:00+00:00'
+            )
+            bucket_end = bucket_start + timedelta(minutes=interval_minutes)
+            bucket_key = bucket_end.isoformat()
 
             if current_bucket_key is None:
                 current_bucket_key = bucket_key
@@ -260,12 +269,18 @@ def load_ohlcv_for_date(ohlcv_path, date_str):
             close = float(parts[7])
 
             ts = pd.to_datetime(ts_str)
-            # Round to 15-minute boundary
-            minute = (ts.minute // 15) * 15
-            bucket = ts.replace(minute=minute, second=0, microsecond=0)
+            # Bucket label is the AS-OF time, not the bucket-start time. A
+            # candle at minute T closes at T+1 (it represents [T, T+1)). The
+            # snapshot whose data is "as of" boundary B should contain candles
+            # whose close time <= B. So bucket label = ceil(close_time / 15min)
+            # — i.e., the next 15-min boundary at or after this candle's close.
+            # This makes label 09:15 contain closes from 09:00..09:14, so the
+            # snapshot at 09:15 is genuinely "data through 09:15" (no lookahead).
+            close_ts = ts + pd.Timedelta(minutes=1)
+            bucket = close_ts.ceil('15min')
             bucket_key = bucket.isoformat()
 
-            # Keep last price in bucket
+            # Keep last price in bucket (the last close before the boundary)
             prices[bucket_key] = close
         except:
             continue

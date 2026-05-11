@@ -15,6 +15,7 @@ import { ImpulseFVGStrategy } from '../../../shared/strategies/impulse-fvg.js';
 import { ShortDTEIVStrategy } from '../../../shared/strategies/short-dte-iv.js';
 import { GexFlipIvpctStrategy } from '../../../shared/strategies/gex-flip-ivpct.js';
 import { LTCandleRegimeStrategy } from '../../../shared/strategies/lt-candle-regime.js';
+import { GexLt3mCrossoverStrategy } from '../../../shared/strategies/gex-lt-3m-crossover.js';
 
 const logger = createLogger('strategy-factory');
 
@@ -31,6 +32,7 @@ export const STRATEGY_TYPES = {
   SHORT_DTE_IV: 'short-dte-iv',
   GEX_FLIP_IVPCT: 'gex-flip-ivpct',
   LT_CANDLE_REGIME: 'lt-candle-regime',
+  GEX_LT_3M_CROSSOVER: 'gex-lt-3m-crossover',
   AI_TRADER: 'ai-trader'
 };
 
@@ -87,6 +89,12 @@ export function createStrategy(strategyName, config) {
     case 'gexflipivpct':
     case 'gfi':
       return createGexFlipIvpctStrategy(config);
+
+    case STRATEGY_TYPES.GEX_LT_3M_CROSSOVER:
+    case 'gex_lt_3m_crossover':
+    case 'gexlt3mcrossover':
+    case 'glx':
+      return createGexLt3mCrossoverStrategy(config);
 
     case STRATEGY_TYPES.AI_TRADER:
     case 'ai_trader':
@@ -235,6 +243,12 @@ export function getStrategyConstant(strategyName) {
     case 'lcr':
       return 'LT_CANDLE_REGIME';
 
+    case STRATEGY_TYPES.GEX_LT_3M_CROSSOVER:
+    case 'gex_lt_3m_crossover':
+    case 'gexlt3mcrossover':
+    case 'glx':
+      return 'GEX_LT_3M_CROSSOVER';
+
     case STRATEGY_TYPES.AI_TRADER:
     case 'ai_trader':
     case 'aitrader':
@@ -304,6 +318,12 @@ export function getDataRequirements(strategyName) {
     case 'gexflipivpct':
     case 'gfi':
       return GexFlipIvpctStrategy.getDataRequirements();
+
+    case STRATEGY_TYPES.GEX_LT_3M_CROSSOVER:
+    case 'gex_lt_3m_crossover':
+    case 'gexlt3mcrossover':
+    case 'glx':
+      return GexLt3mCrossoverStrategy.getDataRequirements();
 
     case STRATEGY_TYPES.AI_TRADER:
     case 'ai_trader':
@@ -417,6 +437,38 @@ function createGexFlipIvpctStrategy(config) {
     `cooldown=${params.signalCooldownMs}ms, maxHold=${params.maxHoldBars}min`);
 
   return new GexFlipIvpctStrategy(params);
+}
+
+/**
+ * Create GEX-LT-3M-Crossover strategy.
+ *
+ * The strategy class bakes the W12 gold-standard config in as defaults
+ * (4 active rules, force-any filter, no cooldown, 7am-16:00 ET window with
+ * 13:00 blocked, 5min limit timeout, 16:40 ET EOD cutoff). Override via
+ * config.getGexLt3mCrossoverParams() when present.
+ */
+function createGexLt3mCrossoverStrategy(config) {
+  const overrides = typeof config.getGexLt3mCrossoverParams === 'function'
+    ? config.getGexLt3mCrossoverParams()
+    : {};
+  const params = {
+    ...overrides,
+    tradingSymbol: config.TRADING_SYMBOL,
+    defaultQuantity: config.DEFAULT_QUANTITY,
+    // Mirror trade-orchestrator's EOD_CUTOFF_ET so the dashboard panel can
+    // render the same cutoff time the orchestrator enforces.
+    eodCutoffEt: overrides.eodCutoffEt ?? process.env.EOD_CUTOFF_ET ?? '16:40',
+    debug: true,
+  };
+
+  logger.info(`GEX-LT-3M-Crossover params: ` +
+    `disabledRules=${params.disabledRules ? Array.from(params.disabledRules).join(',') : 'W12-default'}, ` +
+    `forceFilterAny=${params.forceFilterAny ?? true}, ` +
+    `entry=${params.entryWindowStartHour ?? 7}-${params.entryWindowEndHour ?? 16} ET, ` +
+    `blockedHours=${params.blockedHoursEt ?? '[13]'}, ` +
+    `limitTimeoutCandles=${params.limitTimeoutCandles ?? 5}`);
+
+  return new GexLt3mCrossoverStrategy(params);
 }
 
 function createLTCandleRegimeStrategy(config) {

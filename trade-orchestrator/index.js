@@ -483,9 +483,15 @@ async function handleTradeSignal(raw) {
     };
 
     // Mark pending BEFORE publishing so a second signal in flight is blocked.
+    // Carry maxHoldBars / timeoutCandles forward so the polling loop can
+    // enforce time-based exits (max hold) and stale-limit cancellation
+    // for strategies that supply them (e.g. gex-lt-3m-crossover).
     state.pendingOrders.set(pendingKey(accountId, signal.strategy, tradedSymbol), {
       accountId, strategy: signal.strategy, symbol: tradedSymbol,
-      direction, signalId, requestedAt: now
+      direction, signalId, requestedAt: now,
+      action: signal.action,
+      maxHoldBars: signal.maxHoldBars ?? null,
+      timeoutCandles: signal.timeoutCandles ?? null
     });
 
     await messageBus.publish(CHANNELS.ORDER_REQUEST, orderRequest);
@@ -554,10 +560,16 @@ async function handleOrderCancelled(msg) {
 async function handlePositionOpened(msg) {
   const { signalId, accountId, strategy, symbol, side, netPos, entryPrice } = msg || {};
   if (!accountId || !strategy || !symbol) return;
+  // Carry maxHoldBars from the matching pending order onto the open position
+  // so checkMaxHold() can enforce a forced market close after that many
+  // minutes (interpreting bars-since-entry as 1-minute bars, matching the
+  // backtest engine convention).
+  const pending = state.pendingOrders.get(pendingKey(accountId, strategy, symbol));
   state.openPositions.set(posKey(accountId, strategy, symbol), {
     accountId, strategy, symbol, side, netPos,
     entryPrice, signalId: signalId || null,
-    openedAt: new Date().toISOString()
+    openedAt: new Date().toISOString(),
+    maxHoldBars: pending?.maxHoldBars ?? null
   });
   state.pendingOrders.delete(pendingKey(accountId, strategy, symbol));
   logger.info(`[${signalId || '?'}] position.opened ${accountId} ${strategy} ${symbol} ${side} @ ${entryPrice}`);
@@ -783,6 +795,88 @@ function pruneEodFiredDates() {
   }
 }
 
+// ---------- Max-hold force-flat ----------
+
+// Fire a market close for any open position whose elapsed time since
+// `openedAt` exceeds its `maxHoldBars` (interpreted as minutes, matching
+// the backtest engine convention of 1 bar = 1 minute on a 1m timeframe).
+// `closeRequested` is set on the entry to suppress repeat firings during
+// the brief window between signal publish and position.closed event.
+async function checkMaxHold() {
+  const now = Date.now();
+  for (const pos of state.openPositions.values()) {
+    if (pos.closeRequested) continue;
+    if (!pos.maxHoldBars || pos.maxHoldBars <= 0) continue;
+    if (pos.side === 'flat' || pos.netPos === 0) continue;
+    const openedMs = Date.parse(pos.openedAt);
+    if (!openedMs) continue;
+    const elapsedMin = (now - openedMs) / 60_000;
+    if (elapsedMin < pos.maxHoldBars) continue;
+
+    pos.closeRequested = true;
+    const signalId = `MAX-HOLD-${pos.accountId}-${pos.strategy}-${pos.signalId || 'unknown'}`;
+    const signal = {
+      webhook_type: 'trade_signal',
+      action: 'place_market',
+      side: pos.side === 'long' ? 'sell' : 'buy',
+      symbol: pos.symbol,
+      quantity: Math.abs(pos.netPos) || 1,
+      strategy: pos.strategy,
+      signalId,
+      reason: 'max_hold_exceeded',
+      eodForceFlat: true, // bypass open_position gate (same exemption EOD uses)
+      targetAccountId: pos.accountId,
+      timestamp: new Date().toISOString(),
+    };
+    logger.warn(`[MAX-HOLD] ${pos.accountId} ${pos.strategy} ${pos.symbol} ${pos.side} ${pos.netPos} held ${elapsedMin.toFixed(1)}min >= ${pos.maxHoldBars}min — firing market close`);
+    try {
+      await messageBus.publish(CHANNELS.TRADE_SIGNAL, signal);
+    } catch (err) {
+      logger.error(`[MAX-HOLD] publish failed: ${err.message}`);
+      pos.closeRequested = false; // allow retry on next poll
+    }
+  }
+}
+
+// ---------- Stale-limit cancellation ----------
+
+const TRADOVATE_SERVICE_URL = process.env.TRADOVATE_SERVICE_URL || 'http://localhost:3011';
+
+// Cancel any pending limit order whose elapsed time since `requestedAt`
+// exceeds its `timeoutCandles` (interpreted as minutes — the backtest engine
+// uses 1m candles, so timeoutCandles=5 means cancel after 5 minutes).
+//
+// We call the tradovate-service's POST /accounts/:id/cancel/:signalId endpoint
+// directly. The trade.signal action `cancel_limit` is not currently routable
+// through handleTradeSignal (normalizeOrderType only maps place_market/place_limit),
+// so going through the HTTP endpoint is the minimal change that gets the
+// cancellation reliably to the broker.
+async function checkStaleLimits() {
+  const now = Date.now();
+  for (const pending of state.pendingOrders.values()) {
+    if (pending.cancelRequested) continue;
+    if (!pending.timeoutCandles || pending.timeoutCandles <= 0) continue;
+    if (pending.action !== 'place_limit') continue;
+    if (!pending.signalId) continue; // can't cancel without an ID hint
+    const elapsedMin = (now - pending.requestedAt) / 60_000;
+    if (elapsedMin < pending.timeoutCandles) continue;
+
+    pending.cancelRequested = true;
+    logger.warn(`[STALE-LIMIT] ${pending.accountId} ${pending.strategy} ${pending.symbol} pending ${elapsedMin.toFixed(1)}min >= ${pending.timeoutCandles}min — cancelling`);
+    try {
+      const url = `${TRADOVATE_SERVICE_URL}/accounts/${encodeURIComponent(pending.accountId)}/cancel/${encodeURIComponent(pending.signalId)}?symbol=${encodeURIComponent(pending.symbol)}`;
+      const res = await fetch(url, { method: 'POST' });
+      if (!res.ok) {
+        logger.error(`[STALE-LIMIT] cancel HTTP ${res.status}: ${await res.text().catch(() => '')}`);
+        pending.cancelRequested = false; // allow retry on next poll
+      }
+    } catch (err) {
+      logger.error(`[STALE-LIMIT] cancel failed: ${err.message}`);
+      pending.cancelRequested = false; // allow retry on next poll
+    }
+  }
+}
+
 // ---------- Bootstrap ----------
 
 async function main() {
@@ -831,6 +925,14 @@ async function main() {
   } else {
     logger.warn('EOD force-flat DISABLED (EOD_CUTOFF_ET unset). Day-trade-margin accounts will rely on broker auto-liquidation.');
   }
+
+  // Max-hold and stale-limit polling: same 30s cadence as EOD. Strategies
+  // that don't set maxHoldBars/timeoutCandles are unaffected.
+  setInterval(() => {
+    checkMaxHold().catch(err => logger.error(`Max-hold check failed: ${err.message}`));
+    checkStaleLimits().catch(err => logger.error(`Stale-limit check failed: ${err.message}`));
+  }, 30_000).unref();
+  logger.info('Max-hold and stale-limit enforcement enabled (30s polling)');
 
   await messageBus.publish(CHANNELS.SERVICE_STARTED, {
     service: SERVICE_NAME, timestamp: new Date().toISOString()

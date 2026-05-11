@@ -236,6 +236,8 @@ CLI tool for historical strategy analysis. Located in `/backtest-engine/`.
 
 ### Gold Standard Commands
 
+> **2026-05-06 lookahead fix applied.** A 14-min spot lookahead was found in `generate-intraday-gex.py` and `generate-cbbo-gex.js` (snapshots labeled `T:00` actually contained data through `T:14:59`). All three GEX directories were one-shot relabeled with `scripts/relabel-gex-timestamps.js`; both generators now bucket on `(ts + 1min).ceil('15min')` so future runs are correct. Backups at `*.lookahead-bak`. **All gold-standard numbers below are the post-fix re-runs and supersede prior figures.**
+
 **IV-SKEW-GEX** (1m IV resolution, raw contracts, cbbo-derived GEX, shared-calc IV):
 ```bash
 cd backtest-engine
@@ -249,7 +251,9 @@ node index.js --ticker NQ --strategy iv-skew-gex --timeframe 1m --raw-contracts 
   --iv-resolution 1m \
   --gex-dir data/gex/nq-cbbo
 ```
-Gold standard results (v8 / "balanced", 2026-05-02, **micro-sweep v4 winner**): **244 trades, $136,864 PnL, 51.6% WR, PF 2.03, Sharpe 5.71, Max DD 6.04%** over 16 months. Trades JSON: `data/gold-standard/iv-skew-gex-v8-balanced.json`.
+**Post-fix baseline (2026-05-06):** 244 trades, **$92,164** PnL, 49.6% WR, **PF 1.64**, Sharpe 3.97, **Max DD 9.23%** over 16 months. Same trade count as the pre-fix gold standard (signals fire on the same conditions) but materially worse fills/exits. **The current SL/TP/BE params (60 / 200 / 140-10) and skew thresholds (0.0145 / 0.0250) were sweep-tuned against the lookahead-biased data and are no longer optimal — re-tune via `research/PROMPT-reoptimize-stops-targets-post-lookahead-fix.md`.**
+
+Pre-fix v8 gold standard for historical reference: 244 trades, $136,864 PnL, 51.6% WR, PF 2.03, Sharpe 5.71, Max DD 6.04%. Trades JSON: `data/gold-standard/iv-skew-gex-v8-balanced.json` (do NOT use for live deployment — generated under lookahead-biased GEX).
 
 The 5/2 sweeps (93 main + 21 fu + 12 mv3 + 10 mv4 = 136 combos in `/tmp/overnight-sweep/`) compounded four improvements over the 5/1 baseline (291/$116k/PF 1.91/Sharpe 4.71/DD 7.20%):
 1. **Lower negSkewThreshold** (0.0165 → 0.0145): tighter LONG selectivity.
@@ -267,18 +271,20 @@ The posSkewThreshold is insensitive in the 0.024–0.028 range — once skew exc
 
 Exit logic: at +140pts MFE, stop moves to entry+10 (locks 10pts profit). The +140 trigger is so late that BE rarely arms — most trades exit via TP=200, SL=-60, or maxHold=90 bars. Plus regime filter: rejects entries when `gexLevels.regime === 'strong_negative'`.
 
-### v8 risk modes — all on shared-calc IV (2026-05-02 sweeps)
+### v8 risk modes — pre-fix sweeps (STALE post 2026-05-06 lookahead fix)
+
+> The table below was sweep-tuned against the lookahead-biased GEX. It's preserved as historical context but **none of these modes are valid baselines anymore**. The "Balanced" config is the current code default; its post-fix performance is in the headline command above. The other modes have not been re-measured under fixed data — assume similar 17–33% PnL/PF degradation pending re-sweep.
 
 All variants share `--target-points 200 --level-proximity 100 --neg-skew-threshold 0.0145 --pos-skew-threshold 0.0250 --breakeven-offset 10 --blocked-regimes strong_negative` unless noted.
 
-| Mode | Config | Trades | WR | PF | Sharpe | DD | PnL | When to use |
+| Mode | Config | Trades | WR | PF | Sharpe | DD | PnL | Status |
 |---|---|---:|---:|---:|---:|---:|---:|---|
-| **Balanced** (default) | SL=60, BE=140, mh=90 | 244 | 51.6% | 2.03 | **5.71** | **6.04%** | $137k | Default — best Sharpe & DD |
-| **Aggressive** (PnL) | SL=80, BE=130, mh=90 | 233 | 58.4% | 2.05 | 5.54 | 8.06% | **$141k** | Best PnL; wider DD |
-| **Even-longer hold** | SL=60, BE=130, mh=120 | 234 | 53.0% | 2.07 | 5.70 | 6.83% | $139k | Slightly more PnL; ~same Sharpe |
-| **Earlier BE** | SL=60, BE=120, mh=90 | 244 | 53.3% | 2.05 | 5.54 | 6.98% | $135k | Stale — superseded |
-| **5/1 Baseline** | SL=60, BE=60+5, neg=0.0165, mh=60 | 291 | 60.5% | 1.91 | 4.71 | 7.20% | $116k | Stale — superseded |
-| **Selective Tight** | SL=80, neg=+0.0100 (+TP/SL=120/80) | 63 | 73.0% | 2.48 | 1.93 | 6.16% | $35k | Best WR/PF; only 0.2/day |
+| **Balanced** (default) | SL=60, BE=140, mh=90 | 244 | 51.6% | 2.03 | 5.71 | 6.04% | $137k | Pre-fix; see headline cmd for post-fix numbers |
+| **Aggressive** (PnL) | SL=80, BE=130, mh=90 | 233 | 58.4% | 2.05 | 5.54 | 8.06% | $141k | Pre-fix; needs re-measurement |
+| **Even-longer hold** | SL=60, BE=130, mh=120 | 234 | 53.0% | 2.07 | 5.70 | 6.83% | $139k | Pre-fix; needs re-measurement |
+| **Earlier BE** | SL=60, BE=120, mh=90 | 244 | 53.3% | 2.05 | 5.54 | 6.98% | $135k | Pre-fix; needs re-measurement |
+| **5/1 Baseline** | SL=60, BE=60+5, neg=0.0165, mh=60 | 291 | 60.5% | 1.91 | 4.71 | 7.20% | $116k | Pre-fix |
+| **Selective Tight** | SL=80, neg=+0.0100 (+TP/SL=120/80) | 63 | 73.0% | 2.48 | 1.93 | 6.16% | $35k | Pre-fix |
 
 **Key insight on the BE × maxHold interaction**: at BE=140 the floor barely ever arms — most trades just run their TP/SL/maxHold course. Lengthening maxHold from 60 → 90 then captures more upside on trades that haven't yet hit TP=200, while DD stays bounded by the -60 SL. The combined effect on the equity curve is much smoother (Sharpe 5.71) and DD drops to 6.04% — exceptional for a 16-month, 0.75-trade-per-day strategy. Avg win is now ~$1900 vs $1380 at the 5/1 baseline.
 
@@ -286,18 +292,33 @@ The fine-grained skew sweep showed neg=0.0145–0.0165 forms a plateau (Sharpe 4
 
 The v6 Tight filter set (level + max-iv) actively HURTS v8: it indiscriminately trims good signals with bad. The threshold sweep already finds the right selectivity — additional filters add nothing. Stick with Balanced or Aggressive.
 
-**Lookahead-bias correction history (2026-04-30 → 2026-05-01)**: Three separate corrections to reach honest baseline:
+**Lookahead-bias correction history (2026-04-30 → 2026-05-06)**: Four separate corrections to reach honest baseline:
 1. **cbbo GEX `ts_event` bucketing fix** (4/30): late-arriving rows polluted earlier 15-min buckets with future-day quotes. v6 = v5 config re-run on corrected GEX. Reduced PnL by ~40%, PF by ~32%.
 2. **IV CSV regen #1** (5/1 morning): four bugs in `precompute-iv.js` (ts_event bucketing, no forward-fill, missing DTE tiebreaker, midnight-local expiration time). v7 = v6 with corrected IV. Reduced PnL by ~60%, PF 2.37 → 1.32. **Still buggy.**
 3. **precompute-iv.js → shared calculator** (5/1 evening): replaced precompute's local `calculateATMIV` (used QQQ-ETF-close as spot) with the shared `calculateATMIVFromQuotes` (uses parity-derived spot from chain itself). Eliminated implementation drift between backtest precompute and live signal-generator. v8 = v7 with byte-identical-to-live IV. **Result: same $113k PnL with HALF the trades, +0.58 PF, +1.48 Sharpe, -10pp DD.** v8 thresholds had to flip POSITIVE because skew distribution is concentrated at +1.74% (natural ATM put-call structural skew).
+4. **GEX snapshot bucket-label fix** (5/6): both generator scripts (`generate-intraday-gex.py:load_ohlcv_for_date` and `generate-cbbo-gex.js:loadSpotPrices`/`loadCBBO`) floored OHLCV bucketing to interval-start and kept the LAST close — so a snapshot labeled `T:00` actually contained spot at `~T:14:59`. Every NQ-space field (multiplier, walls, gamma_flip, regime, gamma_imbalance) inherited the 14-min spot lookahead. Both generators now bucket on `(ts + 1min).ceil('15min')`. All existing JSONs in `data/gex/nq/`, `data/gex/nq-cbbo/`, and `data/gex-cbbo/nq/` were one-shot relabeled (each timestamp shifted +15min). **Result: v8 balanced same 244 trades but $137k → $92k PnL, PF 2.03 → 1.64, Sharpe 5.71 → 3.97, DD 6.04% → 9.23%.** Discovered while investigating a candidate `gex-imbalance-shift` strategy whose Pearson r=0.67 vs forward returns dropped to −0.03 with honest timing.
 
-Pre-v8 history: v2 (stats lookahead): PF 7.65. v3-v5 (cbbo with ts_event bug): PF 2.94-3.51. v6 (corrected cbbo, broken IV): PF 2.37. v7 (corrected IV, but precompute drift from live): PF 1.32. **v8 is the first baseline with backtest IV byte-identical to live signal-generator IV.** Trade-by-trade backtest-to-live parity should now hold.
+Pre-v8 history: v2 (stats lookahead): PF 7.65. v3-v5 (cbbo with ts_event bug): PF 2.94-3.51. v6 (corrected cbbo, broken IV): PF 2.37. v7 (corrected IV, but precompute drift from live): PF 1.32. v8 pre-bucket-fix: PF 2.03. **v8 post-bucket-fix (5/6) is the current honest baseline at PF 1.64.** Trade-by-trade backtest-to-live parity should now hold.
 
 Stale JSONs (DO NOT USE for live deployment): `iv-skew-gex-cbbo-v6-*` (broken IV), `iv-skew-gex-v7-*` (precompute-vs-live drift).
 
 **IMPORTANT**: Must use `--timeframe 1m --raw-contracts` — without `--raw-contracts`, continuous data breaks GEX proximity calculations and produces invalid results.
 
 **IMPORTANT**: Must include `--gex-dir data/gex/nq-cbbo` — without it, the engine falls back to legacy daily CSV (1 EOD snapshot/day) which produces totally different (and lookahead-biased) results.
+
+**GEX-FLIP-IVPCT** (5m timeframe, 1m IV resolution, day-trade-margin friendly):
+```bash
+cd backtest-engine
+node index.js --ticker NQ --strategy gex-flip-ivpct --timeframe 5m --raw-contracts \
+  --start 2025-01-13 --end 2026-04-20 \
+  --iv-resolution 1m \
+  --eod-cutoff-et 16:40
+```
+**Post-fix baseline (2026-05-06):** 143 trades, **$275,400** PnL, 74.13% WR, **PF 4.29**, Sharpe 10.60, **Max DD 4.16%**. GEX dir defaults to `data/gex/nq/` (already relabeled). Six rules (L1/L4/L3/S3/S1/S2) with per-rule stops & targets in `shared/strategies/gex-flip-ivpct.js`. Entries 04:00-13:00 ET; broker auto-liquidates at 16:45 PM ET so cutoff is set to 16:40 for a 5-min cushion.
+
+Pre-fix gold standard for historical reference: 141 trades, $330,901 PnL, 78.9% WR, PF 5.87, Max DD 3.66%. Trades JSON: `data/gold-standard/gex-flip-ivpct.json` (do NOT use for live deployment — generated under lookahead-biased GEX). The per-rule stops/targets in the strategy code were derived from MFE/MAE distributions on the biased data and are likely no longer optimal — re-tune via `research/PROMPT-reoptimize-stops-targets-post-lookahead-fix.md`.
+
+**IMPORTANT** for parity: `--iv-resolution 1m`, `--timeframe 5m`, and `--eod-cutoff-et 16:40` are all REQUIRED. With 15m IV, skew can be up to 14 min stale at non-15m-boundary bars and trip the +0.015 threshold, causing L1↔L4 / S1↔S2 rule swaps. With `--timeframe 1m` the engine puts evaluations on a different bar grid and only ~1/142 trades line up exactly (aggregate stats stay close, but bar-level audit fails).
 
 **Short-DTE-IV** (15m timeframe, production params from default.json):
 ```bash
@@ -306,6 +327,24 @@ node index.js --ticker NQ --strategy short-dte-iv --timeframe 15m \
   --start 2025-01-13 --end 2026-01-23
 ```
 Production defaults baked into `src/config/default.json`. Does NOT require `--raw-contracts`.
+
+**GEX-LT-3M-Crossover** (1m timeframe, 1m LT × GEX 3-min sign-flip detector):
+```bash
+cd backtest-engine
+node index.js --ticker NQ --strategy gex-lt-3m-crossover --timeframe 1m --raw-contracts \
+  --start 2025-01-13 --end 2026-04-23 \
+  --gex-dir data/gex/nq-cbbo \
+  --lt-1m-file research/lt-extraction/output/nq_lt_1m_raw.csv \
+  --glx-force-any \
+  --eod-cutoff-et 16:40 \
+  --glx-entry-window 07:00-16:00 \
+  --glx-blocked-hours 13 \
+  --glx-disable-rules "S_R5,S_R3,S_S2_SOLO,L_S5_SOLO,S_PW_SOLO,L_PW,L_S3" \
+  --glx-rule-overrides '{"L_S4":{"targetPts":120,"maxHoldBars":90},"S_GF_SOLO":{"maxHoldBars":90},"S_CW":{"targetPts":120,"maxHoldBars":90}}'
+```
+**W12 baseline (2026-05-08):** 909 trades, **$164,847** PnL, ~46% WR, **PF 1.39**, **Sharpe 5.62**, **MaxDD 8.30%** over 16 months. Result of wide-net rebuild: started with all 11 rules / no constraints, then added one filter at a time and kept only those that improved Sharpe/DD/PnL. Active rules (4): L_S4 (LONG @ S4 support, TP=120/SL=50/mh=90), S_GF_SOLO (SHORT @ gamma_flip, TP=60/SL=50/mh=90), S_CW (SHORT @ call_wall, TP=120/SL=50/mh=90), S_R4 (SHORT @ R4 resistance, TP=80/SL=50/mh=60). 7 rules dropped for PF<1.0. Trades JSON: `data/gold-standard/gex-lt-3m-crossover.json`. Strategy uses `place_limit` at signal close with 5-min timeout (zero entry slippage). Full implementation write-up: `research/GEX-LT-3M-IMPLEMENTATION-RESULTS.md`.
+
+Earlier "v14" config (139 trades, $40k, only 2 rules) was an overfit driven by stacking unjustified constraints copied from gex-flip-ivpct (30-min cooldown, 9:30 entry start, default TP/SL from research's biased grid). Wide-net rebuild revealed L_S4 has real edge ($80k by itself with TP=120/mh=90) that the constraints had been hiding, and that 8am pre-market and the 7am hour add meaningful profit beyond the default 9:30 RTH start. **Methodology lesson: cast a wide net first, then filter one constraint at a time and keep only those proven to help.**
 
 Run `node index.js --help` for all available strategies and options.
 

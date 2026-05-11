@@ -176,7 +176,10 @@ async function loadCBBO(dateStr, intervalMinutes) {
       if (!(bid > 0) || !(ask > 0) || ask < bid) return;
       if ((ask - bid) / bid > 0.5) return; // Skip wide spreads
 
-      const bucket = Math.floor(ts / intervalMs) * intervalMs;
+      // Bucket label = AS-OF time (bucket-end). Snapshot at "13:45" contains
+      // quotes received in [13:30, 13:45), so strategy at 13:42 reading
+      // "most recent ≤ 13:42" gets the "13:30" snapshot — clean past.
+      const bucket = (Math.floor(ts / intervalMs) + 1) * intervalMs;
       if (!intervals.has(bucket)) intervals.set(bucket, new Map());
       intervals.get(bucket).set(sym, { bid, ask });
     });
@@ -209,7 +212,14 @@ function loadSpotPrices(dateStr, intervalMinutes) {
       if (isNaN(ts)) continue;
       const close = parseFloat(cols[7]); // close column
       if (isNaN(close)) continue;
-      const bucket = Math.floor(ts / intervalMs) * intervalMs;
+      // Bucket label = AS-OF (bucket-end). Candle at minute T closes at T+1;
+      // it belongs to the snapshot whose label is the next 15-min boundary
+      // ≥ T+1. Equivalent: floor((ts+1min) / intervalMs) * intervalMs, but
+      // (floor(ts/interval)+1)*interval works because all OHLCV timestamps
+      // sit at minute boundaries (sub-interval) — never at a 15-min boundary
+      // exactly except when ts is itself a boundary, in which case the
+      // candle is the FIRST of the next bucket, so +1 is correct.
+      const bucket = (Math.floor(ts / intervalMs) + 1) * intervalMs;
       if (!spots.has(bucket)) spots.set(bucket, {});
       spots.get(bucket).qqq = close;
     }
@@ -243,7 +253,8 @@ function loadSpotPrices(dateStr, intervalMinutes) {
 
     if (primarySym && nqCandles.has(primarySym)) {
       for (const c of nqCandles.get(primarySym)) {
-        const bucket = Math.floor(c.ts / intervalMs) * intervalMs;
+        // Bucket label = AS-OF (bucket-end). See QQQ block above.
+        const bucket = (Math.floor(c.ts / intervalMs) + 1) * intervalMs;
         if (!spots.has(bucket)) spots.set(bucket, {});
         spots.get(bucket).nq = c.close;
         spots.get(bucket).nqSymbol = primarySym;

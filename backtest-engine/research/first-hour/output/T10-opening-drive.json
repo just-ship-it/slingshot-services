@@ -1,0 +1,8203 @@
+{
+  "meta": {
+    "script": "T10-opening-drive.js",
+    "generatedAt": "2026-05-10T04:05:40.069Z",
+    "startDate": "2025-01-13",
+    "endDate": "2026-04-23",
+    "oosStart": "2026-02-23",
+    "trailingDays": 20,
+    "rangePctileThresh": 70,
+    "volMultThresh": 1.3,
+    "nDaysInWindow": 325,
+    "n5mDrives": 31,
+    "n15mDrives": 34
+  },
+  "driveCounts": {
+    "first5": {
+      "total": 31,
+      "long": 11,
+      "short": 20
+    },
+    "first15": {
+      "total": 34,
+      "long": 10,
+      "short": 24
+    }
+  },
+  "conditional": {
+    "first5": {
+      "n": 31,
+      "pSameDirAtEnd": 0.4839,
+      "pTPbeforeSL30": 0.4839,
+      "pSLbeforeTP30": 0.5161,
+      "pNoTouch30": 0,
+      "endPnl": {
+        "n": 31,
+        "min": -751.25,
+        "p25": -174.5,
+        "median": -14,
+        "mean": -82.65,
+        "p75": 34.88,
+        "p90": 83.25,
+        "max": 170.5
+      },
+      "horizons": {
+        "h30": {
+          "mfe": {
+            "n": 31,
+            "min": 0.75,
+            "p25": 22.5,
+            "median": 56.5,
+            "mean": 67.15,
+            "p75": 84.63,
+            "p90": 147.75,
+            "max": 233.75
+          },
+          "mae": {
+            "n": 31,
+            "min": 12.75,
+            "p25": 29.13,
+            "median": 102.25,
+            "mean": 118.16,
+            "p75": 166.13,
+            "p90": 249.25,
+            "max": 451
+          }
+        },
+        "h60": {
+          "mfe": {
+            "n": 31,
+            "min": 0.75,
+            "p25": 24.25,
+            "median": 69.25,
+            "mean": 78.65,
+            "p75": 125.5,
+            "p90": 170.75,
+            "max": 233.75
+          },
+          "mae": {
+            "n": 31,
+            "min": 17.25,
+            "p25": 34,
+            "median": 102.25,
+            "mean": 170.03,
+            "p75": 217.5,
+            "p90": 312.75,
+            "max": 1454.25
+          }
+        },
+        "h90": {
+          "mfe": {
+            "n": 31,
+            "min": 0.75,
+            "p25": 29.25,
+            "median": 70,
+            "mean": 87.05,
+            "p75": 140.38,
+            "p90": 213,
+            "max": 237
+          },
+          "mae": {
+            "n": 31,
+            "min": 17.25,
+            "p25": 35.75,
+            "median": 102.25,
+            "mean": 183.07,
+            "p75": 248.5,
+            "p90": 312.75,
+            "max": 1454.25
+          }
+        }
+      },
+      "fracEndPnlGE": {
+        "20": 0.3871,
+        "30": 0.3226,
+        "50": 0.1935,
+        "75": 0.129
+      }
+    },
+    "first15": {
+      "n": 34,
+      "pSameDirAtEnd": 0.5294,
+      "pTPbeforeSL30": 0.4118,
+      "pSLbeforeTP30": 0.5882,
+      "pNoTouch30": 0,
+      "endPnl": {
+        "n": 34,
+        "min": -903,
+        "p25": -90.12,
+        "median": 9.38,
+        "mean": -18.71,
+        "p75": 127.31,
+        "p90": 168.65,
+        "max": 308.5
+      },
+      "horizons": {
+        "h30": {
+          "mfe": {
+            "n": 34,
+            "min": 3.25,
+            "p25": 32.19,
+            "median": 53,
+            "mean": 73.43,
+            "p75": 91.56,
+            "p90": 163.5,
+            "max": 295.25
+          },
+          "mae": {
+            "n": 34,
+            "min": 0.25,
+            "p25": 30.56,
+            "median": 69.25,
+            "mean": 126.26,
+            "p75": 137.81,
+            "p90": 199.87,
+            "max": 1366.75
+          }
+        },
+        "h60": {
+          "mfe": {
+            "n": 34,
+            "min": 3.25,
+            "p25": 42.44,
+            "median": 58.5,
+            "mean": 97.04,
+            "p75": 142.13,
+            "p90": 216.37,
+            "max": 295.25
+          },
+          "mae": {
+            "n": 34,
+            "min": 0.75,
+            "p25": 62.75,
+            "median": 85.5,
+            "mean": 154.53,
+            "p75": 162.5,
+            "p90": 217.23,
+            "max": 1606
+          }
+        },
+        "h90": {
+          "mfe": {
+            "n": 34,
+            "min": 3.25,
+            "p25": 48.5,
+            "median": 67.88,
+            "mean": 113.94,
+            "p75": 167.75,
+            "p90": 246.4,
+            "max": 372.5
+          },
+          "mae": {
+            "n": 34,
+            "min": 0.75,
+            "p25": 63.06,
+            "median": 85.5,
+            "mean": 158.76,
+            "p75": 178.94,
+            "p90": 228.8,
+            "max": 1606
+          }
+        }
+      },
+      "fracEndPnlGE": {
+        "20": 0.4706,
+        "30": 0.4412,
+        "50": 0.4118,
+        "75": 0.3235
+      }
+    }
+  },
+  "topByPF": {
+    "first5": [
+      {
+        "variant": {
+          "kind": "first5",
+          "entryMode": "breakStop",
+          "stopMode": "fixedPts",
+          "stopPts": 40,
+          "targetPts": 30
+        },
+        "all": {
+          "n": 24,
+          "winRate": 0.75,
+          "pnl$": 5364,
+          "grossWin$": 10218,
+          "grossLoss$": 4854,
+          "pf": 2.105,
+          "sharpe": 5.74,
+          "avgWin$": 567.67,
+          "avgLoss$": 809,
+          "expectancy$": 223.5,
+          "maxDD$": 1831,
+          "exitReasons": {
+            "target": 17,
+            "stop_amb": 1,
+            "stop": 5,
+            "time_stop": 1
+          }
+        },
+        "is": {
+          "n": 23,
+          "winRate": 0.7391,
+          "pnl$": 4768,
+          "grossWin$": 9622,
+          "grossLoss$": 4854,
+          "pf": 1.982,
+          "sharpe": 5.25,
+          "avgWin$": 566,
+          "avgLoss$": 809,
+          "expectancy$": 207.3,
+          "maxDD$": 1831,
+          "exitReasons": {
+            "target": 16,
+            "stop_amb": 1,
+            "stop": 5,
+            "time_stop": 1
+          }
+        },
+        "oos": {
+          "n": 1,
+          "winRate": 1,
+          "pnl$": 596,
+          "grossWin$": 596,
+          "grossLoss$": 0,
+          "pf": null,
+          "sharpe": 0,
+          "avgWin$": 596,
+          "avgLoss$": 0,
+          "expectancy$": 596,
+          "maxDD$": 0,
+          "exitReasons": {
+            "target": 1
+          }
+        }
+      },
+      {
+        "variant": {
+          "kind": "first5",
+          "entryMode": "breakStop",
+          "stopMode": "oppExtreme",
+          "targetPts": 30
+        },
+        "all": {
+          "n": 24,
+          "winRate": 0.875,
+          "pnl$": 4224,
+          "grossWin$": 12006,
+          "grossLoss$": 7782,
+          "pf": 1.543,
+          "sharpe": 2.59,
+          "avgWin$": 571.71,
+          "avgLoss$": 2594,
+          "expectancy$": 176,
+          "maxDD$": 3661,
+          "exitReasons": {
+            "target": 20,
+            "stop": 3,
+            "time_stop": 1
+          }
+        },
+        "is": {
+          "n": 23,
+          "winRate": 0.8696,
+          "pnl$": 3628,
+          "grossWin$": 11410,
+          "grossLoss$": 7782,
+          "pf": 1.466,
+          "sharpe": 2.28,
+          "avgWin$": 570.5,
+          "avgLoss$": 2594,
+          "expectancy$": 157.74,
+          "maxDD$": 3661,
+          "exitReasons": {
+            "target": 19,
+            "stop": 3,
+            "time_stop": 1
+          }
+        },
+        "oos": {
+          "n": 1,
+          "winRate": 1,
+          "pnl$": 596,
+          "grossWin$": 596,
+          "grossLoss$": 0,
+          "pf": null,
+          "sharpe": 0,
+          "avgWin$": 596,
+          "avgLoss$": 0,
+          "expectancy$": 596,
+          "maxDD$": 0,
+          "exitReasons": {
+            "target": 1
+          }
+        }
+      },
+      {
+        "variant": {
+          "kind": "first5",
+          "entryMode": "breakStop",
+          "stopMode": "oppExtreme",
+          "targetPts": 100
+        },
+        "all": {
+          "n": 24,
+          "winRate": 0.625,
+          "pnl$": 6999,
+          "grossWin$": 22390,
+          "grossLoss$": 15391,
+          "pf": 1.455,
+          "sharpe": 2.58,
+          "avgWin$": 1492.67,
+          "avgLoss$": 1710.11,
+          "expectancy$": 291.63,
+          "maxDD$": 5473,
+          "exitReasons": {
+            "time_stop": 9,
+            "target": 10,
+            "stop": 5
+          }
+        },
+        "is": {
+          "n": 23,
+          "winRate": 0.6087,
+          "pnl$": 5003,
+          "grossWin$": 20394,
+          "grossLoss$": 15391,
+          "pf": 1.325,
+          "sharpe": 1.92,
+          "avgWin$": 1456.71,
+          "avgLoss$": 1710.11,
+          "expectancy$": 217.52,
+          "maxDD$": 5473,
+          "exitReasons": {
+            "time_stop": 9,
+            "target": 9,
+            "stop": 5
+          }
+        },
+        "oos": {
+          "n": 1,
+          "winRate": 1,
+          "pnl$": 1996,
+          "grossWin$": 1996,
+          "grossLoss$": 0,
+          "pf": null,
+          "sharpe": 0,
+          "avgWin$": 1996,
+          "avgLoss$": 0,
+          "expectancy$": 1996,
+          "maxDD$": 0,
+          "exitReasons": {
+            "target": 1
+          }
+        }
+      }
+    ],
+    "first15": [
+      {
+        "variant": {
+          "kind": "first15",
+          "entryMode": "breakStop",
+          "stopMode": "oppExtreme",
+          "targetPts": 100
+        },
+        "all": {
+          "n": 27,
+          "winRate": 0.6296,
+          "pnl$": 7117,
+          "grossWin$": 30027,
+          "grossLoss$": 22910,
+          "pf": 1.311,
+          "sharpe": 1.86,
+          "avgWin$": 1766.29,
+          "avgLoss$": 2291,
+          "expectancy$": 263.59,
+          "maxDD$": 7135,
+          "exitReasons": {
+            "time_stop": 10,
+            "target": 13,
+            "stop": 4
+          }
+        },
+        "is": {
+          "n": 26,
+          "winRate": 0.6154,
+          "pnl$": 5121,
+          "grossWin$": 28031,
+          "grossLoss$": 22910,
+          "pf": 1.224,
+          "sharpe": 1.38,
+          "avgWin$": 1751.94,
+          "avgLoss$": 2291,
+          "expectancy$": 196.96,
+          "maxDD$": 7135,
+          "exitReasons": {
+            "time_stop": 10,
+            "target": 12,
+            "stop": 4
+          }
+        },
+        "oos": {
+          "n": 1,
+          "winRate": 1,
+          "pnl$": 1996,
+          "grossWin$": 1996,
+          "grossLoss$": 0,
+          "pf": null,
+          "sharpe": 0,
+          "avgWin$": 1996,
+          "avgLoss$": 0,
+          "expectancy$": 1996,
+          "maxDD$": 0,
+          "exitReasons": {
+            "target": 1
+          }
+        }
+      },
+      {
+        "variant": {
+          "kind": "first15",
+          "entryMode": "close",
+          "stopMode": "oppExtreme",
+          "targetPts": 30
+        },
+        "all": {
+          "n": 34,
+          "winRate": 0.8235,
+          "pnl$": 1984,
+          "grossWin$": 16688,
+          "grossLoss$": 14704,
+          "pf": 1.135,
+          "sharpe": 0.77,
+          "avgWin$": 596,
+          "avgLoss$": 2450.67,
+          "expectancy$": 58.35,
+          "maxDD$": 4906,
+          "exitReasons": {
+            "target": 28,
+            "stop": 5,
+            "time_stop": 1
+          }
+        },
+        "is": {
+          "n": 33,
+          "winRate": 0.8182,
+          "pnl$": 1388,
+          "grossWin$": 16092,
+          "grossLoss$": 14704,
+          "pf": 1.094,
+          "sharpe": 0.55,
+          "avgWin$": 596,
+          "avgLoss$": 2450.67,
+          "expectancy$": 42.06,
+          "maxDD$": 4906,
+          "exitReasons": {
+            "target": 27,
+            "stop": 5,
+            "time_stop": 1
+          }
+        },
+        "oos": {
+          "n": 1,
+          "winRate": 1,
+          "pnl$": 596,
+          "grossWin$": 596,
+          "grossLoss$": 0,
+          "pf": null,
+          "sharpe": 0,
+          "avgWin$": 596,
+          "avgLoss$": 0,
+          "expectancy$": 596,
+          "maxDD$": 0,
+          "exitReasons": {
+            "target": 1
+          }
+        }
+      },
+      {
+        "variant": {
+          "kind": "first15",
+          "entryMode": "breakStop",
+          "stopMode": "oppExtreme",
+          "targetPts": 20
+        },
+        "all": {
+          "n": 27,
+          "winRate": 0.8889,
+          "pnl$": 692,
+          "grossWin$": 9504,
+          "grossLoss$": 8812,
+          "pf": 1.079,
+          "sharpe": 0.37,
+          "avgWin$": 396,
+          "avgLoss$": 2937.33,
+          "expectancy$": 25.63,
+          "maxDD$": 4392,
+          "exitReasons": {
+            "time_stop": 1,
+            "target": 24,
+            "stop": 2
+          }
+        },
+        "is": {
+          "n": 26,
+          "winRate": 0.8846,
+          "pnl$": 296,
+          "grossWin$": 9108,
+          "grossLoss$": 8812,
+          "pf": 1.034,
+          "sharpe": 0.16,
+          "avgWin$": 396,
+          "avgLoss$": 2937.33,
+          "expectancy$": 11.38,
+          "maxDD$": 4392,
+          "exitReasons": {
+            "time_stop": 1,
+            "target": 23,
+            "stop": 2
+          }
+        },
+        "oos": {
+          "n": 1,
+          "winRate": 1,
+          "pnl$": 396,
+          "grossWin$": 396,
+          "grossLoss$": 0,
+          "pf": null,
+          "sharpe": 0,
+          "avgWin$": 396,
+          "avgLoss$": 0,
+          "expectancy$": 396,
+          "maxDD$": 0,
+          "exitReasons": {
+            "target": 1
+          }
+        }
+      }
+    ]
+  },
+  "topBySharpe": {
+    "first5": [],
+    "first15": []
+  },
+  "overallBestVariant": {
+    "variant": {
+      "kind": "first5",
+      "entryMode": "breakStop",
+      "stopMode": "fixedPts",
+      "stopPts": 40,
+      "targetPts": 30
+    },
+    "all": {
+      "n": 24,
+      "winRate": 0.75,
+      "pnl$": 5364,
+      "grossWin$": 10218,
+      "grossLoss$": 4854,
+      "pf": 2.105,
+      "sharpe": 5.74,
+      "avgWin$": 567.67,
+      "avgLoss$": 809,
+      "expectancy$": 223.5,
+      "maxDD$": 1831,
+      "exitReasons": {
+        "target": 17,
+        "stop_amb": 1,
+        "stop": 5,
+        "time_stop": 1
+      }
+    },
+    "is": {
+      "n": 23,
+      "winRate": 0.7391,
+      "pnl$": 4768,
+      "grossWin$": 9622,
+      "grossLoss$": 4854,
+      "pf": 1.982,
+      "sharpe": 5.25,
+      "avgWin$": 566,
+      "avgLoss$": 809,
+      "expectancy$": 207.3,
+      "maxDD$": 1831,
+      "exitReasons": {
+        "target": 16,
+        "stop_amb": 1,
+        "stop": 5,
+        "time_stop": 1
+      }
+    },
+    "oos": {
+      "n": 1,
+      "winRate": 1,
+      "pnl$": 596,
+      "grossWin$": 596,
+      "grossLoss$": 0,
+      "pf": null,
+      "sharpe": 0,
+      "avgWin$": 596,
+      "avgLoss$": 0,
+      "expectancy$": 596,
+      "maxDD$": 0,
+      "exitReasons": {
+        "target": 1
+      }
+    }
+  },
+  "overallBestTradesSample": [
+    {
+      "date": "2025-01-17",
+      "sign": -1,
+      "entryEt": 7,
+      "exitEt": 9,
+      "entryPrice": 21547.75,
+      "exitPrice": 21517.75,
+      "stopPrice": 21587.75,
+      "targetPrice": 21517.75,
+      "exitReason": "target",
+      "pts": 30,
+      "pnl$": 596
+    },
+    {
+      "date": "2025-01-22",
+      "sign": 1,
+      "entryEt": 19,
+      "exitEt": 25,
+      "entryPrice": 21982,
+      "exitPrice": 22012,
+      "stopPrice": 21942,
+      "targetPrice": 22012,
+      "exitReason": "target",
+      "pts": 30,
+      "pnl$": 596
+    },
+    {
+      "date": "2025-01-27",
+      "sign": 1,
+      "entryEt": 8,
+      "exitEt": 14,
+      "entryPrice": 21270.75,
+      "exitPrice": 21300.75,
+      "stopPrice": 21230.75,
+      "targetPrice": 21300.75,
+      "exitReason": "target",
+      "pts": 30,
+      "pnl$": 596
+    },
+    {
+      "date": "2025-03-04",
+      "sign": -1,
+      "entryEt": 29,
+      "exitEt": 29,
+      "entryPrice": 20259.75,
+      "exitPrice": 20300,
+      "stopPrice": 20299.75,
+      "targetPrice": 20229.75,
+      "exitReason": "stop_amb",
+      "pts": -40.25,
+      "pnl$": -809
+    },
+    {
+      "date": "2025-03-31",
+      "sign": -1,
+      "entryEt": 14,
+      "exitEt": 15,
+      "entryPrice": 19012.75,
+      "exitPrice": 18982.75,
+      "stopPrice": 19052.75,
+      "targetPrice": 18982.75,
+      "exitReason": "target",
+      "pts": 30,
+      "pnl$": 596
+    },
+    {
+      "date": "2025-04-03",
+      "sign": 1,
+      "entryEt": 9,
+      "exitEt": 10,
+      "entryPrice": 19057.25,
+      "exitPrice": 19017,
+      "stopPrice": 19017.25,
+      "targetPrice": 19087.25,
+      "exitReason": "stop",
+      "pts": -40.25,
+      "pnl$": -809
+    },
+    {
+      "date": "2025-04-07",
+      "sign": -1,
+      "entryEt": 5,
+      "exitEt": 5,
+      "entryPrice": 16852.5,
+      "exitPrice": 16892.75,
+      "stopPrice": 16892.5,
+      "targetPrice": 16822.5,
+      "exitReason": "stop",
+      "pts": -40.25,
+      "pnl$": -809
+    },
+    {
+      "date": "2025-05-12",
+      "sign": -1,
+      "entryEt": 5,
+      "exitEt": 8,
+      "entryPrice": 20802,
+      "exitPrice": 20772,
+      "stopPrice": 20842,
+      "targetPrice": 20772,
+      "exitReason": "target",
+      "pts": 30,
+      "pnl$": 596
+    },
+    {
+      "date": "2025-05-23",
+      "sign": 1,
+      "entryEt": 5,
+      "exitEt": 7,
+      "entryPrice": 20923.75,
+      "exitPrice": 20953.75,
+      "stopPrice": 20883.75,
+      "targetPrice": 20953.75,
+      "exitReason": "target",
+      "pts": 30,
+      "pnl$": 596
+    },
+    {
+      "date": "2025-07-07",
+      "sign": -1,
+      "entryEt": 83,
+      "exitEt": 89,
+      "entryPrice": 22900.25,
+      "exitPrice": 22895.75,
+      "stopPrice": 22940.25,
+      "targetPrice": 22870.25,
+      "exitReason": "time_stop",
+      "pts": 4.5,
+      "pnl$": 86
+    },
+    {
+      "date": "2025-07-15",
+      "sign": -1,
+      "entryEt": 5,
+      "exitEt": 10,
+      "entryPrice": 23161,
+      "exitPrice": 23131,
+      "stopPrice": 23201,
+      "targetPrice": 23131,
+      "exitReason": "target",
+      "pts": 30,
+      "pnl$": 596
+    },
+    {
+      "date": "2025-07-16",
+      "sign": -1,
+      "entryEt": 5,
+      "exitEt": 20,
+      "entryPrice": 23019.75,
+      "exitPrice": 22989.75,
+      "stopPrice": 23059.75,
+      "targetPrice": 22989.75,
+      "exitReason": "target",
+      "pts": 30,
+      "pnl$": 596
+    },
+    {
+      "date": "2025-07-23",
+      "sign": -1,
+      "entryEt": 15,
+      "exitEt": 38,
+      "entryPrice": 23182.75,
+      "exitPrice": 23152.75,
+      "stopPrice": 23222.75,
+      "targetPrice": 23152.75,
+      "exitReason": "target",
+      "pts": 30,
+      "pnl$": 596
+    },
+    {
+      "date": "2025-07-31",
+      "sign": -1,
+      "entryEt": 5,
+      "exitEt": 14,
+      "entryPrice": 23653.5,
+      "exitPrice": 23623.5,
+      "stopPrice": 23693.5,
+      "targetPrice": 23623.5,
+      "exitReason": "target",
+      "pts": 30,
+      "pnl$": 596
+    },
+    {
+      "date": "2025-08-01",
+      "sign": -1,
+      "entryEt": 6,
+      "exitEt": 10,
+      "entryPrice": 23000,
+      "exitPrice": 22970,
+      "stopPrice": 23040,
+      "targetPrice": 22970,
+      "exitReason": "target",
+      "pts": 30,
+      "pnl$": 596
+    },
+    {
+      "date": "2025-10-13",
+      "sign": -1,
+      "entryEt": 5,
+      "exitEt": 5,
+      "entryPrice": 24758,
+      "exitPrice": 24728,
+      "stopPrice": 24798,
+      "targetPrice": 24728,
+      "exitReason": "target",
+      "pts": 30,
+      "pnl$": 596
+    },
+    {
+      "date": "2025-11-17",
+      "sign": 1,
+      "entryEt": 5,
+      "exitEt": 6,
+      "entryPrice": 25098.75,
+      "exitPrice": 25128.75,
+      "stopPrice": 25058.75,
+      "targetPrice": 25128.75,
+      "exitReason": "target",
+      "pts": 30,
+      "pnl$": 596
+    },
+    {
+      "date": "2025-11-21",
+      "sign": 1,
+      "entryEt": 24,
+      "exitEt": 24,
+      "entryPrice": 24279.5,
+      "exitPrice": 24239.25,
+      "stopPrice": 24239.5,
+      "targetPrice": 24309.5,
+      "exitReason": "stop",
+      "pts": -40.25,
+      "pnl$": -809
+    },
+    {
+      "date": "2026-01-05",
+      "sign": -1,
+      "entryEt": 5,
+      "exitEt": 6,
+      "entryPrice": 25581.5,
+      "exitPrice": 25551.5,
+      "stopPrice": 25621.5,
+      "targetPrice": 25551.5,
+      "exitReason": "target",
+      "pts": 30,
+      "pnl$": 596
+    },
+    {
+      "date": "2026-01-08",
+      "sign": -1,
+      "entryEt": 8,
+      "exitEt": 12,
+      "entryPrice": 25692.25,
+      "exitPrice": 25662.25,
+      "stopPrice": 25732.25,
+      "targetPrice": 25662.25,
+      "exitReason": "target",
+      "pts": 30,
+      "pnl$": 596
+    },
+    {
+      "date": "2026-01-14",
+      "sign": 1,
+      "entryEt": 5,
+      "exitEt": 5,
+      "entryPrice": 25788.75,
+      "exitPrice": 25748.5,
+      "stopPrice": 25748.75,
+      "targetPrice": 25818.75,
+      "exitReason": "stop",
+      "pts": -40.25,
+      "pnl$": -809
+    },
+    {
+      "date": "2026-01-20",
+      "sign": 1,
+      "entryEt": 5,
+      "exitEt": 6,
+      "entryPrice": 25347.75,
+      "exitPrice": 25307.5,
+      "stopPrice": 25307.75,
+      "targetPrice": 25377.75,
+      "exitReason": "stop",
+      "pts": -40.25,
+      "pnl$": -809
+    },
+    {
+      "date": "2026-02-05",
+      "sign": 1,
+      "entryEt": 5,
+      "exitEt": 5,
+      "entryPrice": 24815,
+      "exitPrice": 24845,
+      "stopPrice": 24775,
+      "targetPrice": 24845,
+      "exitReason": "target",
+      "pts": 30,
+      "pnl$": 596
+    },
+    {
+      "date": "2026-04-08",
+      "sign": -1,
+      "entryEt": 8,
+      "exitEt": 11,
+      "entryPrice": 25132.25,
+      "exitPrice": 25102.25,
+      "stopPrice": 25172.25,
+      "targetPrice": 25102.25,
+      "exitReason": "target",
+      "pts": 30,
+      "pnl$": 596
+    }
+  ],
+  "allResults": [
+    {
+      "variant": {
+        "kind": "first5",
+        "entryMode": "close",
+        "stopMode": "fixedPts",
+        "stopPts": 15,
+        "targetPts": 20
+      },
+      "all": {
+        "n": 31,
+        "winRate": 0.1613,
+        "pnl$": -6054,
+        "grossWin$": 1980,
+        "grossLoss$": 8034,
+        "pf": 0.246,
+        "sharpe": -11.76,
+        "avgWin$": 396,
+        "avgLoss$": 309,
+        "expectancy$": -195.29,
+        "maxDD$": 6054,
+        "exitReasons": {
+          "stop": 23,
+          "target": 5,
+          "stop_amb": 3
+        }
+      },
+      "is": {
+        "n": 30,
+        "winRate": 0.1667,
+        "pnl$": -5745,
+        "grossWin$": 1980,
+        "grossLoss$": 7725,
+        "pf": 0.256,
+        "sharpe": -11.38,
+        "avgWin$": 396,
+        "avgLoss$": 309,
+        "expectancy$": -191.5,
+        "maxDD$": 5745,
+        "exitReasons": {
+          "stop": 22,
+          "target": 5,
+          "stop_amb": 3
+        }
+      },
+      "oos": {
+        "n": 1,
+        "winRate": 0,
+        "pnl$": -309,
+        "grossWin$": 0,
+        "grossLoss$": 309,
+        "pf": 0,
+        "sharpe": 0,
+        "avgWin$": 0,
+        "avgLoss$": 309,
+        "expectancy$": -309,
+        "maxDD$": 309,
+        "exitReasons": {
+          "stop": 1
+        }
+      }
+    },
+    {
+      "variant": {
+        "kind": "first5",
+        "entryMode": "close",
+        "stopMode": "fixedPts",
+        "stopPts": 15,
+        "targetPts": 30
+      },
+      "all": {
+        "n": 31,
+        "winRate": 0.1613,
+        "pnl$": -5054,
+        "grossWin$": 2980,
+        "grossLoss$": 8034,
+        "pf": 0.371,
+        "sharpe": -7.65,
+        "avgWin$": 596,
+        "avgLoss$": 309,
+        "expectancy$": -163.03,
+        "maxDD$": 5054,
+        "exitReasons": {
+          "stop": 24,
+          "target": 5,
+          "stop_amb": 2
+        }
+      },
+      "is": {
+        "n": 30,
+        "winRate": 0.1667,
+        "pnl$": -4745,
+        "grossWin$": 2980,
+        "grossLoss$": 7725,
+        "pf": 0.386,
+        "sharpe": -7.32,
+        "avgWin$": 596,
+        "avgLoss$": 309,
+        "expectancy$": -158.17,
+        "maxDD$": 4745,
+        "exitReasons": {
+          "stop": 23,
+          "target": 5,
+          "stop_amb": 2
+        }
+      },
+      "oos": {
+        "n": 1,
+        "winRate": 0,
+        "pnl$": -309,
+        "grossWin$": 0,
+        "grossLoss$": 309,
+        "pf": 0,
+        "sharpe": 0,
+        "avgWin$": 0,
+        "avgLoss$": 309,
+        "expectancy$": -309,
+        "maxDD$": 309,
+        "exitReasons": {
+          "stop": 1
+        }
+      }
+    },
+    {
+      "variant": {
+        "kind": "first5",
+        "entryMode": "close",
+        "stopMode": "fixedPts",
+        "stopPts": 15,
+        "targetPts": 50
+      },
+      "all": {
+        "n": 31,
+        "winRate": 0.0968,
+        "pnl$": -5664,
+        "grossWin$": 2988,
+        "grossLoss$": 8652,
+        "pf": 0.345,
+        "sharpe": -7.4,
+        "avgWin$": 996,
+        "avgLoss$": 309,
+        "expectancy$": -182.71,
+        "maxDD$": 5664,
+        "exitReasons": {
+          "stop": 28,
+          "target": 3
+        }
+      },
+      "is": {
+        "n": 30,
+        "winRate": 0.1,
+        "pnl$": -5355,
+        "grossWin$": 2988,
+        "grossLoss$": 8343,
+        "pf": 0.358,
+        "sharpe": -7.12,
+        "avgWin$": 996,
+        "avgLoss$": 309,
+        "expectancy$": -178.5,
+        "maxDD$": 5355,
+        "exitReasons": {
+          "stop": 27,
+          "target": 3
+        }
+      },
+      "oos": {
+        "n": 1,
+        "winRate": 0,
+        "pnl$": -309,
+        "grossWin$": 0,
+        "grossLoss$": 309,
+        "pf": 0,
+        "sharpe": 0,
+        "avgWin$": 0,
+        "avgLoss$": 309,
+        "expectancy$": -309,
+        "maxDD$": 309,
+        "exitReasons": {
+          "stop": 1
+        }
+      }
+    },
+    {
+      "variant": {
+        "kind": "first5",
+        "entryMode": "close",
+        "stopMode": "fixedPts",
+        "stopPts": 15,
+        "targetPts": 75
+      },
+      "all": {
+        "n": 31,
+        "winRate": 0.0645,
+        "pnl$": -5969,
+        "grossWin$": 2992,
+        "grossLoss$": 8961,
+        "pf": 0.334,
+        "sharpe": -6.78,
+        "avgWin$": 1496,
+        "avgLoss$": 309,
+        "expectancy$": -192.55,
+        "maxDD$": 5969,
+        "exitReasons": {
+          "stop": 29,
+          "target": 2
+        }
+      },
+      "is": {
+        "n": 30,
+        "winRate": 0.0667,
+        "pnl$": -5660,
+        "grossWin$": 2992,
+        "grossLoss$": 8652,
+        "pf": 0.346,
+        "sharpe": -6.54,
+        "avgWin$": 1496,
+        "avgLoss$": 309,
+        "expectancy$": -188.67,
+        "maxDD$": 5660,
+        "exitReasons": {
+          "stop": 28,
+          "target": 2
+        }
+      },
+      "oos": {
+        "n": 1,
+        "winRate": 0,
+        "pnl$": -309,
+        "grossWin$": 0,
+        "grossLoss$": 309,
+        "pf": 0,
+        "sharpe": 0,
+        "avgWin$": 0,
+        "avgLoss$": 309,
+        "expectancy$": -309,
+        "maxDD$": 309,
+        "exitReasons": {
+          "stop": 1
+        }
+      }
+    },
+    {
+      "variant": {
+        "kind": "first5",
+        "entryMode": "close",
+        "stopMode": "fixedPts",
+        "stopPts": 15,
+        "targetPts": 100
+      },
+      "all": {
+        "n": 31,
+        "winRate": 0.0645,
+        "pnl$": -4969,
+        "grossWin$": 3992,
+        "grossLoss$": 8961,
+        "pf": 0.445,
+        "sharpe": -4.42,
+        "avgWin$": 1996,
+        "avgLoss$": 309,
+        "expectancy$": -160.29,
+        "maxDD$": 4969,
+        "exitReasons": {
+          "stop": 29,
+          "target": 2
+        }
+      },
+      "is": {
+        "n": 30,
+        "winRate": 0.0667,
+        "pnl$": -4660,
+        "grossWin$": 3992,
+        "grossLoss$": 8652,
+        "pf": 0.461,
+        "sharpe": -4.22,
+        "avgWin$": 1996,
+        "avgLoss$": 309,
+        "expectancy$": -155.33,
+        "maxDD$": 4660,
+        "exitReasons": {
+          "stop": 28,
+          "target": 2
+        }
+      },
+      "oos": {
+        "n": 1,
+        "winRate": 0,
+        "pnl$": -309,
+        "grossWin$": 0,
+        "grossLoss$": 309,
+        "pf": 0,
+        "sharpe": 0,
+        "avgWin$": 0,
+        "avgLoss$": 309,
+        "expectancy$": -309,
+        "maxDD$": 309,
+        "exitReasons": {
+          "stop": 1
+        }
+      }
+    },
+    {
+      "variant": {
+        "kind": "first5",
+        "entryMode": "close",
+        "stopMode": "fixedPts",
+        "stopPts": 20,
+        "targetPts": 20
+      },
+      "all": {
+        "n": 31,
+        "winRate": 0.2903,
+        "pnl$": -5434,
+        "grossWin$": 3564,
+        "grossLoss$": 8998,
+        "pf": 0.396,
+        "sharpe": -7.49,
+        "avgWin$": 396,
+        "avgLoss$": 409,
+        "expectancy$": -175.29,
+        "maxDD$": 5830,
+        "exitReasons": {
+          "stop": 19,
+          "stop_amb": 3,
+          "target": 9
+        }
+      },
+      "is": {
+        "n": 30,
+        "winRate": 0.2667,
+        "pnl$": -5830,
+        "grossWin$": 3168,
+        "grossLoss$": 8998,
+        "pf": 0.352,
+        "sharpe": -8.52,
+        "avgWin$": 396,
+        "avgLoss$": 409,
+        "expectancy$": -194.33,
+        "maxDD$": 5830,
+        "exitReasons": {
+          "stop": 19,
+          "stop_amb": 3,
+          "target": 8
+        }
+      },
+      "oos": {
+        "n": 1,
+        "winRate": 1,
+        "pnl$": 396,
+        "grossWin$": 396,
+        "grossLoss$": 0,
+        "pf": null,
+        "sharpe": 0,
+        "avgWin$": 396,
+        "avgLoss$": 0,
+        "expectancy$": 396,
+        "maxDD$": 0,
+        "exitReasons": {
+          "target": 1
+        }
+      }
+    },
+    {
+      "variant": {
+        "kind": "first5",
+        "entryMode": "close",
+        "stopMode": "fixedPts",
+        "stopPts": 20,
+        "targetPts": 30
+      },
+      "all": {
+        "n": 31,
+        "winRate": 0.2903,
+        "pnl$": -3634,
+        "grossWin$": 5364,
+        "grossLoss$": 8998,
+        "pf": 0.596,
+        "sharpe": -4.01,
+        "avgWin$": 596,
+        "avgLoss$": 409,
+        "expectancy$": -117.23,
+        "maxDD$": 4230,
+        "exitReasons": {
+          "stop": 21,
+          "target": 9,
+          "stop_amb": 1
+        }
+      },
+      "is": {
+        "n": 30,
+        "winRate": 0.2667,
+        "pnl$": -4230,
+        "grossWin$": 4768,
+        "grossLoss$": 8998,
+        "pf": 0.53,
+        "sharpe": -4.95,
+        "avgWin$": 596,
+        "avgLoss$": 409,
+        "expectancy$": -141,
+        "maxDD$": 4230,
+        "exitReasons": {
+          "stop": 21,
+          "target": 8,
+          "stop_amb": 1
+        }
+      },
+      "oos": {
+        "n": 1,
+        "winRate": 1,
+        "pnl$": 596,
+        "grossWin$": 596,
+        "grossLoss$": 0,
+        "pf": null,
+        "sharpe": 0,
+        "avgWin$": 596,
+        "avgLoss$": 0,
+        "expectancy$": 596,
+        "maxDD$": 0,
+        "exitReasons": {
+          "target": 1
+        }
+      }
+    },
+    {
+      "variant": {
+        "kind": "first5",
+        "entryMode": "close",
+        "stopMode": "fixedPts",
+        "stopPts": 20,
+        "targetPts": 50
+      },
+      "all": {
+        "n": 31,
+        "winRate": 0.1935,
+        "pnl$": -4249,
+        "grossWin$": 5976,
+        "grossLoss$": 10225,
+        "pf": 0.584,
+        "sharpe": -3.86,
+        "avgWin$": 996,
+        "avgLoss$": 409,
+        "expectancy$": -137.06,
+        "maxDD$": 5245,
+        "exitReasons": {
+          "stop": 25,
+          "target": 6
+        }
+      },
+      "is": {
+        "n": 30,
+        "winRate": 0.1667,
+        "pnl$": -5245,
+        "grossWin$": 4980,
+        "grossLoss$": 10225,
+        "pf": 0.487,
+        "sharpe": -5.21,
+        "avgWin$": 996,
+        "avgLoss$": 409,
+        "expectancy$": -174.83,
+        "maxDD$": 5245,
+        "exitReasons": {
+          "stop": 25,
+          "target": 5
+        }
+      },
+      "oos": {
+        "n": 1,
+        "winRate": 1,
+        "pnl$": 996,
+        "grossWin$": 996,
+        "grossLoss$": 0,
+        "pf": null,
+        "sharpe": 0,
+        "avgWin$": 996,
+        "avgLoss$": 0,
+        "expectancy$": 996,
+        "maxDD$": 0,
+        "exitReasons": {
+          "target": 1
+        }
+      }
+    },
+    {
+      "variant": {
+        "kind": "first5",
+        "entryMode": "close",
+        "stopMode": "fixedPts",
+        "stopPts": 20,
+        "targetPts": 75
+      },
+      "all": {
+        "n": 31,
+        "winRate": 0.129,
+        "pnl$": -6149,
+        "grossWin$": 4894,
+        "grossLoss$": 11043,
+        "pf": 0.443,
+        "sharpe": -5.41,
+        "avgWin$": 1223.5,
+        "avgLoss$": 409,
+        "expectancy$": -198.35,
+        "maxDD$": 7645,
+        "exitReasons": {
+          "stop": 27,
+          "target": 3,
+          "time_stop": 1
+        }
+      },
+      "is": {
+        "n": 30,
+        "winRate": 0.1,
+        "pnl$": -7645,
+        "grossWin$": 3398,
+        "grossLoss$": 11043,
+        "pf": 0.308,
+        "sharpe": -8.11,
+        "avgWin$": 1132.67,
+        "avgLoss$": 409,
+        "expectancy$": -254.83,
+        "maxDD$": 7645,
+        "exitReasons": {
+          "stop": 27,
+          "target": 2,
+          "time_stop": 1
+        }
+      },
+      "oos": {
+        "n": 1,
+        "winRate": 1,
+        "pnl$": 1496,
+        "grossWin$": 1496,
+        "grossLoss$": 0,
+        "pf": null,
+        "sharpe": 0,
+        "avgWin$": 1496,
+        "avgLoss$": 0,
+        "expectancy$": 1496,
+        "maxDD$": 0,
+        "exitReasons": {
+          "target": 1
+        }
+      }
+    },
+    {
+      "variant": {
+        "kind": "first5",
+        "entryMode": "close",
+        "stopMode": "fixedPts",
+        "stopPts": 20,
+        "targetPts": 100
+      },
+      "all": {
+        "n": 31,
+        "winRate": 0.129,
+        "pnl$": -4649,
+        "grossWin$": 6394,
+        "grossLoss$": 11043,
+        "pf": 0.579,
+        "sharpe": -3.27,
+        "avgWin$": 1598.5,
+        "avgLoss$": 409,
+        "expectancy$": -149.97,
+        "maxDD$": 6645,
+        "exitReasons": {
+          "stop": 27,
+          "target": 3,
+          "time_stop": 1
+        }
+      },
+      "is": {
+        "n": 30,
+        "winRate": 0.1,
+        "pnl$": -6645,
+        "grossWin$": 4398,
+        "grossLoss$": 11043,
+        "pf": 0.398,
+        "sharpe": -5.66,
+        "avgWin$": 1466,
+        "avgLoss$": 409,
+        "expectancy$": -221.5,
+        "maxDD$": 6645,
+        "exitReasons": {
+          "stop": 27,
+          "target": 2,
+          "time_stop": 1
+        }
+      },
+      "oos": {
+        "n": 1,
+        "winRate": 1,
+        "pnl$": 1996,
+        "grossWin$": 1996,
+        "grossLoss$": 0,
+        "pf": null,
+        "sharpe": 0,
+        "avgWin$": 1996,
+        "avgLoss$": 0,
+        "expectancy$": 1996,
+        "maxDD$": 0,
+        "exitReasons": {
+          "target": 1
+        }
+      }
+    },
+    {
+      "variant": {
+        "kind": "first5",
+        "entryMode": "close",
+        "stopMode": "fixedPts",
+        "stopPts": 25,
+        "targetPts": 20
+      },
+      "all": {
+        "n": 31,
+        "winRate": 0.4194,
+        "pnl$": -4014,
+        "grossWin$": 5148,
+        "grossLoss$": 9162,
+        "pf": 0.562,
+        "sharpe": -4.53,
+        "avgWin$": 396,
+        "avgLoss$": 509,
+        "expectancy$": -129.48,
+        "maxDD$": 4410,
+        "exitReasons": {
+          "stop": 15,
+          "stop_amb": 3,
+          "target": 13
+        }
+      },
+      "is": {
+        "n": 30,
+        "winRate": 0.4,
+        "pnl$": -4410,
+        "grossWin$": 4752,
+        "grossLoss$": 9162,
+        "pf": 0.519,
+        "sharpe": -5.17,
+        "avgWin$": 396,
+        "avgLoss$": 509,
+        "expectancy$": -147,
+        "maxDD$": 4410,
+        "exitReasons": {
+          "stop": 15,
+          "stop_amb": 3,
+          "target": 12
+        }
+      },
+      "oos": {
+        "n": 1,
+        "winRate": 1,
+        "pnl$": 396,
+        "grossWin$": 396,
+        "grossLoss$": 0,
+        "pf": null,
+        "sharpe": 0,
+        "avgWin$": 396,
+        "avgLoss$": 0,
+        "expectancy$": 396,
+        "maxDD$": 0,
+        "exitReasons": {
+          "target": 1
+        }
+      }
+    },
+    {
+      "variant": {
+        "kind": "first5",
+        "entryMode": "close",
+        "stopMode": "fixedPts",
+        "stopPts": 25,
+        "targetPts": 30
+      },
+      "all": {
+        "n": 31,
+        "winRate": 0.4194,
+        "pnl$": -1414,
+        "grossWin$": 7748,
+        "grossLoss$": 9162,
+        "pf": 0.846,
+        "sharpe": -1.31,
+        "avgWin$": 596,
+        "avgLoss$": 509,
+        "expectancy$": -45.61,
+        "maxDD$": 3563,
+        "exitReasons": {
+          "stop": 17,
+          "target": 13,
+          "stop_amb": 1
+        }
+      },
+      "is": {
+        "n": 30,
+        "winRate": 0.4,
+        "pnl$": -2010,
+        "grossWin$": 7152,
+        "grossLoss$": 9162,
+        "pf": 0.781,
+        "sharpe": -1.93,
+        "avgWin$": 596,
+        "avgLoss$": 509,
+        "expectancy$": -67,
+        "maxDD$": 3563,
+        "exitReasons": {
+          "stop": 17,
+          "target": 12,
+          "stop_amb": 1
+        }
+      },
+      "oos": {
+        "n": 1,
+        "winRate": 1,
+        "pnl$": 596,
+        "grossWin$": 596,
+        "grossLoss$": 0,
+        "pf": null,
+        "sharpe": 0,
+        "avgWin$": 596,
+        "avgLoss$": 0,
+        "expectancy$": 596,
+        "maxDD$": 0,
+        "exitReasons": {
+          "target": 1
+        }
+      }
+    },
+    {
+      "variant": {
+        "kind": "first5",
+        "entryMode": "close",
+        "stopMode": "fixedPts",
+        "stopPts": 25,
+        "targetPts": 50
+      },
+      "all": {
+        "n": 31,
+        "winRate": 0.3226,
+        "pnl$": -729,
+        "grossWin$": 9960,
+        "grossLoss$": 10689,
+        "pf": 0.932,
+        "sharpe": -0.52,
+        "avgWin$": 996,
+        "avgLoss$": 509,
+        "expectancy$": -23.52,
+        "maxDD$": 3607,
+        "exitReasons": {
+          "stop": 21,
+          "target": 10
+        }
+      },
+      "is": {
+        "n": 30,
+        "winRate": 0.3,
+        "pnl$": -1725,
+        "grossWin$": 8964,
+        "grossLoss$": 10689,
+        "pf": 0.839,
+        "sharpe": -1.3,
+        "avgWin$": 996,
+        "avgLoss$": 509,
+        "expectancy$": -57.5,
+        "maxDD$": 3607,
+        "exitReasons": {
+          "stop": 21,
+          "target": 9
+        }
+      },
+      "oos": {
+        "n": 1,
+        "winRate": 1,
+        "pnl$": 996,
+        "grossWin$": 996,
+        "grossLoss$": 0,
+        "pf": null,
+        "sharpe": 0,
+        "avgWin$": 996,
+        "avgLoss$": 0,
+        "expectancy$": 996,
+        "maxDD$": 0,
+        "exitReasons": {
+          "target": 1
+        }
+      }
+    },
+    {
+      "variant": {
+        "kind": "first5",
+        "entryMode": "close",
+        "stopMode": "fixedPts",
+        "stopPts": 25,
+        "targetPts": 75
+      },
+      "all": {
+        "n": 31,
+        "winRate": 0.2258,
+        "pnl$": -2834,
+        "grossWin$": 9382,
+        "grossLoss$": 12216,
+        "pf": 0.768,
+        "sharpe": -1.8,
+        "avgWin$": 1340.29,
+        "avgLoss$": 509,
+        "expectancy$": -91.42,
+        "maxDD$": 4612,
+        "exitReasons": {
+          "stop": 24,
+          "target": 6,
+          "time_stop": 1
+        }
+      },
+      "is": {
+        "n": 30,
+        "winRate": 0.2,
+        "pnl$": -4330,
+        "grossWin$": 7886,
+        "grossLoss$": 12216,
+        "pf": 0.646,
+        "sharpe": -3,
+        "avgWin$": 1314.33,
+        "avgLoss$": 509,
+        "expectancy$": -144.33,
+        "maxDD$": 4612,
+        "exitReasons": {
+          "stop": 24,
+          "target": 5,
+          "time_stop": 1
+        }
+      },
+      "oos": {
+        "n": 1,
+        "winRate": 1,
+        "pnl$": 1496,
+        "grossWin$": 1496,
+        "grossLoss$": 0,
+        "pf": null,
+        "sharpe": 0,
+        "avgWin$": 1496,
+        "avgLoss$": 0,
+        "expectancy$": 1496,
+        "maxDD$": 0,
+        "exitReasons": {
+          "target": 1
+        }
+      }
+    },
+    {
+      "variant": {
+        "kind": "first5",
+        "entryMode": "close",
+        "stopMode": "fixedPts",
+        "stopPts": 25,
+        "targetPts": 100
+      },
+      "all": {
+        "n": 31,
+        "winRate": 0.2258,
+        "pnl$": -1099,
+        "grossWin$": 11117,
+        "grossLoss$": 12216,
+        "pf": 0.91,
+        "sharpe": -0.6,
+        "avgWin$": 1588.14,
+        "avgLoss$": 509,
+        "expectancy$": -35.45,
+        "maxDD$": 4112,
+        "exitReasons": {
+          "stop": 24,
+          "target": 5,
+          "time_stop": 2
+        }
+      },
+      "is": {
+        "n": 30,
+        "winRate": 0.2,
+        "pnl$": -3095,
+        "grossWin$": 9121,
+        "grossLoss$": 12216,
+        "pf": 0.747,
+        "sharpe": -1.86,
+        "avgWin$": 1520.17,
+        "avgLoss$": 509,
+        "expectancy$": -103.17,
+        "maxDD$": 4112,
+        "exitReasons": {
+          "stop": 24,
+          "target": 4,
+          "time_stop": 2
+        }
+      },
+      "oos": {
+        "n": 1,
+        "winRate": 1,
+        "pnl$": 1996,
+        "grossWin$": 1996,
+        "grossLoss$": 0,
+        "pf": null,
+        "sharpe": 0,
+        "avgWin$": 1996,
+        "avgLoss$": 0,
+        "expectancy$": 1996,
+        "maxDD$": 0,
+        "exitReasons": {
+          "target": 1
+        }
+      }
+    },
+    {
+      "variant": {
+        "kind": "first5",
+        "entryMode": "close",
+        "stopMode": "fixedPts",
+        "stopPts": 30,
+        "targetPts": 20
+      },
+      "all": {
+        "n": 31,
+        "winRate": 0.4839,
+        "pnl$": -3804,
+        "grossWin$": 5940,
+        "grossLoss$": 9744,
+        "pf": 0.61,
+        "sharpe": -3.82,
+        "avgWin$": 396,
+        "avgLoss$": 609,
+        "expectancy$": -122.71,
+        "maxDD$": 4596,
+        "exitReasons": {
+          "stop": 15,
+          "stop_amb": 1,
+          "target": 15
+        }
+      },
+      "is": {
+        "n": 30,
+        "winRate": 0.4667,
+        "pnl$": -4200,
+        "grossWin$": 5544,
+        "grossLoss$": 9744,
+        "pf": 0.569,
+        "sharpe": -4.36,
+        "avgWin$": 396,
+        "avgLoss$": 609,
+        "expectancy$": -140,
+        "maxDD$": 4596,
+        "exitReasons": {
+          "stop": 15,
+          "stop_amb": 1,
+          "target": 14
+        }
+      },
+      "oos": {
+        "n": 1,
+        "winRate": 1,
+        "pnl$": 396,
+        "grossWin$": 396,
+        "grossLoss$": 0,
+        "pf": null,
+        "sharpe": 0,
+        "avgWin$": 396,
+        "avgLoss$": 0,
+        "expectancy$": 396,
+        "maxDD$": 0,
+        "exitReasons": {
+          "target": 1
+        }
+      }
+    },
+    {
+      "variant": {
+        "kind": "first5",
+        "entryMode": "close",
+        "stopMode": "fixedPts",
+        "stopPts": 30,
+        "targetPts": 30
+      },
+      "all": {
+        "n": 31,
+        "winRate": 0.4839,
+        "pnl$": -804,
+        "grossWin$": 8940,
+        "grossLoss$": 9744,
+        "pf": 0.917,
+        "sharpe": -0.67,
+        "avgWin$": 596,
+        "avgLoss$": 609,
+        "expectancy$": -25.94,
+        "maxDD$": 4263,
+        "exitReasons": {
+          "stop": 16,
+          "target": 15
+        }
+      },
+      "is": {
+        "n": 30,
+        "winRate": 0.4667,
+        "pnl$": -1400,
+        "grossWin$": 8344,
+        "grossLoss$": 9744,
+        "pf": 0.856,
+        "sharpe": -1.21,
+        "avgWin$": 596,
+        "avgLoss$": 609,
+        "expectancy$": -46.67,
+        "maxDD$": 4263,
+        "exitReasons": {
+          "stop": 16,
+          "target": 14
+        }
+      },
+      "oos": {
+        "n": 1,
+        "winRate": 1,
+        "pnl$": 596,
+        "grossWin$": 596,
+        "grossLoss$": 0,
+        "pf": null,
+        "sharpe": 0,
+        "avgWin$": 596,
+        "avgLoss$": 0,
+        "expectancy$": 596,
+        "maxDD$": 0,
+        "exitReasons": {
+          "target": 1
+        }
+      }
+    },
+    {
+      "variant": {
+        "kind": "first5",
+        "entryMode": "close",
+        "stopMode": "fixedPts",
+        "stopPts": 30,
+        "targetPts": 50
+      },
+      "all": {
+        "n": 31,
+        "winRate": 0.3226,
+        "pnl$": -2829,
+        "grossWin$": 9960,
+        "grossLoss$": 12789,
+        "pf": 0.779,
+        "sharpe": -1.9,
+        "avgWin$": 996,
+        "avgLoss$": 609,
+        "expectancy$": -91.26,
+        "maxDD$": 4707,
+        "exitReasons": {
+          "stop": 21,
+          "target": 10
+        }
+      },
+      "is": {
+        "n": 30,
+        "winRate": 0.3,
+        "pnl$": -3825,
+        "grossWin$": 8964,
+        "grossLoss$": 12789,
+        "pf": 0.701,
+        "sharpe": -2.71,
+        "avgWin$": 996,
+        "avgLoss$": 609,
+        "expectancy$": -127.5,
+        "maxDD$": 4707,
+        "exitReasons": {
+          "stop": 21,
+          "target": 9
+        }
+      },
+      "oos": {
+        "n": 1,
+        "winRate": 1,
+        "pnl$": 996,
+        "grossWin$": 996,
+        "grossLoss$": 0,
+        "pf": null,
+        "sharpe": 0,
+        "avgWin$": 996,
+        "avgLoss$": 0,
+        "expectancy$": 996,
+        "maxDD$": 0,
+        "exitReasons": {
+          "target": 1
+        }
+      }
+    },
+    {
+      "variant": {
+        "kind": "first5",
+        "entryMode": "close",
+        "stopMode": "fixedPts",
+        "stopPts": 30,
+        "targetPts": 75
+      },
+      "all": {
+        "n": 31,
+        "winRate": 0.2581,
+        "pnl$": -3129,
+        "grossWin$": 10878,
+        "grossLoss$": 14007,
+        "pf": 0.777,
+        "sharpe": -1.79,
+        "avgWin$": 1359.75,
+        "avgLoss$": 609,
+        "expectancy$": -100.94,
+        "maxDD$": 5812,
+        "exitReasons": {
+          "stop": 23,
+          "target": 7,
+          "time_stop": 1
+        }
+      },
+      "is": {
+        "n": 30,
+        "winRate": 0.2333,
+        "pnl$": -4625,
+        "grossWin$": 9382,
+        "grossLoss$": 14007,
+        "pf": 0.67,
+        "sharpe": -2.85,
+        "avgWin$": 1340.29,
+        "avgLoss$": 609,
+        "expectancy$": -154.17,
+        "maxDD$": 5812,
+        "exitReasons": {
+          "stop": 23,
+          "target": 6,
+          "time_stop": 1
+        }
+      },
+      "oos": {
+        "n": 1,
+        "winRate": 1,
+        "pnl$": 1496,
+        "grossWin$": 1496,
+        "grossLoss$": 0,
+        "pf": null,
+        "sharpe": 0,
+        "avgWin$": 1496,
+        "avgLoss$": 0,
+        "expectancy$": 1496,
+        "maxDD$": 0,
+        "exitReasons": {
+          "target": 1
+        }
+      }
+    },
+    {
+      "variant": {
+        "kind": "first5",
+        "entryMode": "close",
+        "stopMode": "fixedPts",
+        "stopPts": 30,
+        "targetPts": 100
+      },
+      "all": {
+        "n": 31,
+        "winRate": 0.2581,
+        "pnl$": -894,
+        "grossWin$": 13113,
+        "grossLoss$": 14007,
+        "pf": 0.936,
+        "sharpe": -0.44,
+        "avgWin$": 1639.13,
+        "avgLoss$": 609,
+        "expectancy$": -28.84,
+        "maxDD$": 5312,
+        "exitReasons": {
+          "stop": 23,
+          "target": 6,
+          "time_stop": 2
+        }
+      },
+      "is": {
+        "n": 30,
+        "winRate": 0.2333,
+        "pnl$": -2890,
+        "grossWin$": 11117,
+        "grossLoss$": 14007,
+        "pf": 0.794,
+        "sharpe": -1.53,
+        "avgWin$": 1588.14,
+        "avgLoss$": 609,
+        "expectancy$": -96.33,
+        "maxDD$": 5312,
+        "exitReasons": {
+          "stop": 23,
+          "target": 5,
+          "time_stop": 2
+        }
+      },
+      "oos": {
+        "n": 1,
+        "winRate": 1,
+        "pnl$": 1996,
+        "grossWin$": 1996,
+        "grossLoss$": 0,
+        "pf": null,
+        "sharpe": 0,
+        "avgWin$": 1996,
+        "avgLoss$": 0,
+        "expectancy$": 1996,
+        "maxDD$": 0,
+        "exitReasons": {
+          "target": 1
+        }
+      }
+    },
+    {
+      "variant": {
+        "kind": "first5",
+        "entryMode": "close",
+        "stopMode": "fixedPts",
+        "stopPts": 40,
+        "targetPts": 20
+      },
+      "all": {
+        "n": 31,
+        "winRate": 0.5806,
+        "pnl$": -3389,
+        "grossWin$": 7128,
+        "grossLoss$": 10517,
+        "pf": 0.678,
+        "sharpe": -2.87,
+        "avgWin$": 396,
+        "avgLoss$": 809,
+        "expectancy$": -109.32,
+        "maxDD$": 5369,
+        "exitReasons": {
+          "target": 18,
+          "stop": 13
+        }
+      },
+      "is": {
+        "n": 30,
+        "winRate": 0.5667,
+        "pnl$": -3785,
+        "grossWin$": 6732,
+        "grossLoss$": 10517,
+        "pf": 0.64,
+        "sharpe": -3.3,
+        "avgWin$": 396,
+        "avgLoss$": 809,
+        "expectancy$": -126.17,
+        "maxDD$": 5369,
+        "exitReasons": {
+          "target": 17,
+          "stop": 13
+        }
+      },
+      "oos": {
+        "n": 1,
+        "winRate": 1,
+        "pnl$": 396,
+        "grossWin$": 396,
+        "grossLoss$": 0,
+        "pf": null,
+        "sharpe": 0,
+        "avgWin$": 396,
+        "avgLoss$": 0,
+        "expectancy$": 396,
+        "maxDD$": 0,
+        "exitReasons": {
+          "target": 1
+        }
+      }
+    },
+    {
+      "variant": {
+        "kind": "first5",
+        "entryMode": "close",
+        "stopMode": "fixedPts",
+        "stopPts": 40,
+        "targetPts": 30
+      },
+      "all": {
+        "n": 31,
+        "winRate": 0.5806,
+        "pnl$": 211,
+        "grossWin$": 10728,
+        "grossLoss$": 10517,
+        "pf": 1.02,
+        "sharpe": 0.15,
+        "avgWin$": 596,
+        "avgLoss$": 809,
+        "expectancy$": 6.81,
+        "maxDD$": 3236,
+        "exitReasons": {
+          "target": 18,
+          "stop": 13
+        }
+      },
+      "is": {
+        "n": 30,
+        "winRate": 0.5667,
+        "pnl$": -385,
+        "grossWin$": 10132,
+        "grossLoss$": 10517,
+        "pf": 0.963,
+        "sharpe": -0.29,
+        "avgWin$": 596,
+        "avgLoss$": 809,
+        "expectancy$": -12.83,
+        "maxDD$": 3236,
+        "exitReasons": {
+          "target": 17,
+          "stop": 13
+        }
+      },
+      "oos": {
+        "n": 1,
+        "winRate": 1,
+        "pnl$": 596,
+        "grossWin$": 596,
+        "grossLoss$": 0,
+        "pf": null,
+        "sharpe": 0,
+        "avgWin$": 596,
+        "avgLoss$": 0,
+        "expectancy$": 596,
+        "maxDD$": 0,
+        "exitReasons": {
+          "target": 1
+        }
+      }
+    },
+    {
+      "variant": {
+        "kind": "first5",
+        "entryMode": "close",
+        "stopMode": "fixedPts",
+        "stopPts": 40,
+        "targetPts": 50
+      },
+      "all": {
+        "n": 31,
+        "winRate": 0.4516,
+        "pnl$": 191,
+        "grossWin$": 13944,
+        "grossLoss$": 13753,
+        "pf": 1.014,
+        "sharpe": 0.11,
+        "avgWin$": 996,
+        "avgLoss$": 809,
+        "expectancy$": 6.16,
+        "maxDD$": 5102,
+        "exitReasons": {
+          "target": 14,
+          "stop": 17
+        }
+      },
+      "is": {
+        "n": 30,
+        "winRate": 0.4333,
+        "pnl$": -805,
+        "grossWin$": 12948,
+        "grossLoss$": 13753,
+        "pf": 0.941,
+        "sharpe": -0.47,
+        "avgWin$": 996,
+        "avgLoss$": 809,
+        "expectancy$": -26.83,
+        "maxDD$": 5102,
+        "exitReasons": {
+          "target": 13,
+          "stop": 17
+        }
+      },
+      "oos": {
+        "n": 1,
+        "winRate": 1,
+        "pnl$": 996,
+        "grossWin$": 996,
+        "grossLoss$": 0,
+        "pf": null,
+        "sharpe": 0,
+        "avgWin$": 996,
+        "avgLoss$": 0,
+        "expectancy$": 996,
+        "maxDD$": 0,
+        "exitReasons": {
+          "target": 1
+        }
+      }
+    },
+    {
+      "variant": {
+        "kind": "first5",
+        "entryMode": "close",
+        "stopMode": "fixedPts",
+        "stopPts": 40,
+        "targetPts": 75
+      },
+      "all": {
+        "n": 31,
+        "winRate": 0.3548,
+        "pnl$": -1079,
+        "grossWin$": 15101,
+        "grossLoss$": 16180,
+        "pf": 0.933,
+        "sharpe": -0.51,
+        "avgWin$": 1372.82,
+        "avgLoss$": 809,
+        "expectancy$": -34.81,
+        "maxDD$": 5907,
+        "exitReasons": {
+          "stop": 20,
+          "target": 9,
+          "time_stop": 2
+        }
+      },
+      "is": {
+        "n": 30,
+        "winRate": 0.3333,
+        "pnl$": -2575,
+        "grossWin$": 13605,
+        "grossLoss$": 16180,
+        "pf": 0.841,
+        "sharpe": -1.29,
+        "avgWin$": 1360.5,
+        "avgLoss$": 809,
+        "expectancy$": -85.83,
+        "maxDD$": 5907,
+        "exitReasons": {
+          "stop": 20,
+          "target": 8,
+          "time_stop": 2
+        }
+      },
+      "oos": {
+        "n": 1,
+        "winRate": 1,
+        "pnl$": 1496,
+        "grossWin$": 1496,
+        "grossLoss$": 0,
+        "pf": null,
+        "sharpe": 0,
+        "avgWin$": 1496,
+        "avgLoss$": 0,
+        "expectancy$": 1496,
+        "maxDD$": 0,
+        "exitReasons": {
+          "target": 1
+        }
+      }
+    },
+    {
+      "variant": {
+        "kind": "first5",
+        "entryMode": "close",
+        "stopMode": "fixedPts",
+        "stopPts": 40,
+        "targetPts": 100
+      },
+      "all": {
+        "n": 31,
+        "winRate": 0.3548,
+        "pnl$": 836,
+        "grossWin$": 17016,
+        "grossLoss$": 16180,
+        "pf": 1.052,
+        "sharpe": 0.36,
+        "avgWin$": 1546.91,
+        "avgLoss$": 809,
+        "expectancy$": 26.97,
+        "maxDD$": 4907,
+        "exitReasons": {
+          "stop": 20,
+          "time_stop": 4,
+          "target": 7
+        }
+      },
+      "is": {
+        "n": 30,
+        "winRate": 0.3333,
+        "pnl$": -1160,
+        "grossWin$": 15020,
+        "grossLoss$": 16180,
+        "pf": 0.928,
+        "sharpe": -0.53,
+        "avgWin$": 1502,
+        "avgLoss$": 809,
+        "expectancy$": -38.67,
+        "maxDD$": 4907,
+        "exitReasons": {
+          "stop": 20,
+          "time_stop": 4,
+          "target": 6
+        }
+      },
+      "oos": {
+        "n": 1,
+        "winRate": 1,
+        "pnl$": 1996,
+        "grossWin$": 1996,
+        "grossLoss$": 0,
+        "pf": null,
+        "sharpe": 0,
+        "avgWin$": 1996,
+        "avgLoss$": 0,
+        "expectancy$": 1996,
+        "maxDD$": 0,
+        "exitReasons": {
+          "target": 1
+        }
+      }
+    },
+    {
+      "variant": {
+        "kind": "first5",
+        "entryMode": "close",
+        "stopMode": "oppExtreme",
+        "targetPts": 20
+      },
+      "all": {
+        "n": 31,
+        "winRate": 0.7097,
+        "pnl$": -6354,
+        "grossWin$": 8712,
+        "grossLoss$": 15066,
+        "pf": 0.578,
+        "sharpe": -3.18,
+        "avgWin$": 396,
+        "avgLoss$": 1674,
+        "expectancy$": -204.97,
+        "maxDD$": 8730,
+        "exitReasons": {
+          "target": 22,
+          "stop": 9
+        }
+      },
+      "is": {
+        "n": 30,
+        "winRate": 0.7,
+        "pnl$": -6750,
+        "grossWin$": 8316,
+        "grossLoss$": 15066,
+        "pf": 0.552,
+        "sharpe": -3.45,
+        "avgWin$": 396,
+        "avgLoss$": 1674,
+        "expectancy$": -225,
+        "maxDD$": 8730,
+        "exitReasons": {
+          "target": 21,
+          "stop": 9
+        }
+      },
+      "oos": {
+        "n": 1,
+        "winRate": 1,
+        "pnl$": 396,
+        "grossWin$": 396,
+        "grossLoss$": 0,
+        "pf": null,
+        "sharpe": 0,
+        "avgWin$": 396,
+        "avgLoss$": 0,
+        "expectancy$": 396,
+        "maxDD$": 0,
+        "exitReasons": {
+          "target": 1
+        }
+      }
+    },
+    {
+      "variant": {
+        "kind": "first5",
+        "entryMode": "close",
+        "stopMode": "oppExtreme",
+        "targetPts": 30
+      },
+      "all": {
+        "n": 31,
+        "winRate": 0.6774,
+        "pnl$": -5349,
+        "grossWin$": 12516,
+        "grossLoss$": 17865,
+        "pf": 0.701,
+        "sharpe": -2.27,
+        "avgWin$": 596,
+        "avgLoss$": 1786.5,
+        "expectancy$": -172.55,
+        "maxDD$": 9666,
+        "exitReasons": {
+          "target": 21,
+          "stop": 10
+        }
+      },
+      "is": {
+        "n": 30,
+        "winRate": 0.6667,
+        "pnl$": -5945,
+        "grossWin$": 11920,
+        "grossLoss$": 17865,
+        "pf": 0.667,
+        "sharpe": -2.58,
+        "avgWin$": 596,
+        "avgLoss$": 1786.5,
+        "expectancy$": -198.17,
+        "maxDD$": 9666,
+        "exitReasons": {
+          "target": 20,
+          "stop": 10
+        }
+      },
+      "oos": {
+        "n": 1,
+        "winRate": 1,
+        "pnl$": 596,
+        "grossWin$": 596,
+        "grossLoss$": 0,
+        "pf": null,
+        "sharpe": 0,
+        "avgWin$": 596,
+        "avgLoss$": 0,
+        "expectancy$": 596,
+        "maxDD$": 0,
+        "exitReasons": {
+          "target": 1
+        }
+      }
+    },
+    {
+      "variant": {
+        "kind": "first5",
+        "entryMode": "close",
+        "stopMode": "oppExtreme",
+        "targetPts": 50
+      },
+      "all": {
+        "n": 31,
+        "winRate": 0.5806,
+        "pnl$": -4604,
+        "grossWin$": 17928,
+        "grossLoss$": 22532,
+        "pf": 0.796,
+        "sharpe": -1.65,
+        "avgWin$": 996,
+        "avgLoss$": 1733.23,
+        "expectancy$": -148.52,
+        "maxDD$": 10580,
+        "exitReasons": {
+          "target": 18,
+          "stop": 13
+        }
+      },
+      "is": {
+        "n": 30,
+        "winRate": 0.5667,
+        "pnl$": -5600,
+        "grossWin$": 16932,
+        "grossLoss$": 22532,
+        "pf": 0.751,
+        "sharpe": -2.06,
+        "avgWin$": 996,
+        "avgLoss$": 1733.23,
+        "expectancy$": -186.67,
+        "maxDD$": 10580,
+        "exitReasons": {
+          "target": 17,
+          "stop": 13
+        }
+      },
+      "oos": {
+        "n": 1,
+        "winRate": 1,
+        "pnl$": 996,
+        "grossWin$": 996,
+        "grossLoss$": 0,
+        "pf": null,
+        "sharpe": 0,
+        "avgWin$": 996,
+        "avgLoss$": 0,
+        "expectancy$": 996,
+        "maxDD$": 0,
+        "exitReasons": {
+          "target": 1
+        }
+      }
+    },
+    {
+      "variant": {
+        "kind": "first5",
+        "entryMode": "close",
+        "stopMode": "oppExtreme",
+        "targetPts": 75
+      },
+      "all": {
+        "n": 31,
+        "winRate": 0.4839,
+        "pnl$": -7239,
+        "grossWin$": 19895,
+        "grossLoss$": 27134,
+        "pf": 0.733,
+        "sharpe": -2.28,
+        "avgWin$": 1326.33,
+        "avgLoss$": 1695.88,
+        "expectancy$": -233.52,
+        "maxDD$": 12750,
+        "exitReasons": {
+          "time_stop": 5,
+          "target": 12,
+          "stop": 14
+        }
+      },
+      "is": {
+        "n": 30,
+        "winRate": 0.4667,
+        "pnl$": -8735,
+        "grossWin$": 18399,
+        "grossLoss$": 27134,
+        "pf": 0.678,
+        "sharpe": -2.85,
+        "avgWin$": 1314.21,
+        "avgLoss$": 1695.88,
+        "expectancy$": -291.17,
+        "maxDD$": 12750,
+        "exitReasons": {
+          "time_stop": 5,
+          "target": 11,
+          "stop": 14
+        }
+      },
+      "oos": {
+        "n": 1,
+        "winRate": 1,
+        "pnl$": 1496,
+        "grossWin$": 1496,
+        "grossLoss$": 0,
+        "pf": null,
+        "sharpe": 0,
+        "avgWin$": 1496,
+        "avgLoss$": 0,
+        "expectancy$": 1496,
+        "maxDD$": 0,
+        "exitReasons": {
+          "target": 1
+        }
+      }
+    },
+    {
+      "variant": {
+        "kind": "first5",
+        "entryMode": "close",
+        "stopMode": "oppExtreme",
+        "targetPts": 100
+      },
+      "all": {
+        "n": 31,
+        "winRate": 0.4839,
+        "pnl$": -5784,
+        "grossWin$": 21350,
+        "grossLoss$": 27134,
+        "pf": 0.787,
+        "sharpe": -1.71,
+        "avgWin$": 1423.33,
+        "avgLoss$": 1695.88,
+        "expectancy$": -186.58,
+        "maxDD$": 11975,
+        "exitReasons": {
+          "time_stop": 8,
+          "target": 9,
+          "stop": 14
+        }
+      },
+      "is": {
+        "n": 30,
+        "winRate": 0.4667,
+        "pnl$": -7780,
+        "grossWin$": 19354,
+        "grossLoss$": 27134,
+        "pf": 0.713,
+        "sharpe": -2.4,
+        "avgWin$": 1382.43,
+        "avgLoss$": 1695.88,
+        "expectancy$": -259.33,
+        "maxDD$": 11975,
+        "exitReasons": {
+          "time_stop": 8,
+          "target": 8,
+          "stop": 14
+        }
+      },
+      "oos": {
+        "n": 1,
+        "winRate": 1,
+        "pnl$": 1996,
+        "grossWin$": 1996,
+        "grossLoss$": 0,
+        "pf": null,
+        "sharpe": 0,
+        "avgWin$": 1996,
+        "avgLoss$": 0,
+        "expectancy$": 1996,
+        "maxDD$": 0,
+        "exitReasons": {
+          "target": 1
+        }
+      }
+    },
+    {
+      "variant": {
+        "kind": "first5",
+        "entryMode": "breakStop",
+        "stopMode": "fixedPts",
+        "stopPts": 15,
+        "targetPts": 20
+      },
+      "all": {
+        "n": 24,
+        "winRate": 0.0833,
+        "pnl$": -6316,
+        "grossWin$": 482,
+        "grossLoss$": 6798,
+        "pf": 0.071,
+        "sharpe": -25.81,
+        "avgWin$": 241,
+        "avgLoss$": 309,
+        "expectancy$": -263.17,
+        "maxDD$": 6403,
+        "exitReasons": {
+          "stop": 18,
+          "target": 1,
+          "stop_amb": 4,
+          "time_stop": 1
+        }
+      },
+      "is": {
+        "n": 23,
+        "winRate": 0.087,
+        "pnl$": -6007,
+        "grossWin$": 482,
+        "grossLoss$": 6489,
+        "pf": 0.074,
+        "sharpe": -25.1,
+        "avgWin$": 241,
+        "avgLoss$": 309,
+        "expectancy$": -261.17,
+        "maxDD$": 6094,
+        "exitReasons": {
+          "stop": 17,
+          "target": 1,
+          "stop_amb": 4,
+          "time_stop": 1
+        }
+      },
+      "oos": {
+        "n": 1,
+        "winRate": 0,
+        "pnl$": -309,
+        "grossWin$": 0,
+        "grossLoss$": 309,
+        "pf": 0,
+        "sharpe": 0,
+        "avgWin$": 0,
+        "avgLoss$": 309,
+        "expectancy$": -309,
+        "maxDD$": 309,
+        "exitReasons": {
+          "stop": 1
+        }
+      }
+    },
+    {
+      "variant": {
+        "kind": "first5",
+        "entryMode": "breakStop",
+        "stopMode": "fixedPts",
+        "stopPts": 15,
+        "targetPts": 30
+      },
+      "all": {
+        "n": 24,
+        "winRate": 0.0833,
+        "pnl$": -6116,
+        "grossWin$": 682,
+        "grossLoss$": 6798,
+        "pf": 0.1,
+        "sharpe": -20.4,
+        "avgWin$": 341,
+        "avgLoss$": 309,
+        "expectancy$": -254.83,
+        "maxDD$": 6403,
+        "exitReasons": {
+          "stop": 19,
+          "target": 1,
+          "stop_amb": 3,
+          "time_stop": 1
+        }
+      },
+      "is": {
+        "n": 23,
+        "winRate": 0.087,
+        "pnl$": -5807,
+        "grossWin$": 682,
+        "grossLoss$": 6489,
+        "pf": 0.105,
+        "sharpe": -19.8,
+        "avgWin$": 341,
+        "avgLoss$": 309,
+        "expectancy$": -252.48,
+        "maxDD$": 6094,
+        "exitReasons": {
+          "stop": 18,
+          "target": 1,
+          "stop_amb": 3,
+          "time_stop": 1
+        }
+      },
+      "oos": {
+        "n": 1,
+        "winRate": 0,
+        "pnl$": -309,
+        "grossWin$": 0,
+        "grossLoss$": 309,
+        "pf": 0,
+        "sharpe": 0,
+        "avgWin$": 0,
+        "avgLoss$": 309,
+        "expectancy$": -309,
+        "maxDD$": 309,
+        "exitReasons": {
+          "stop": 1
+        }
+      }
+    },
+    {
+      "variant": {
+        "kind": "first5",
+        "entryMode": "breakStop",
+        "stopMode": "fixedPts",
+        "stopPts": 15,
+        "targetPts": 50
+      },
+      "all": {
+        "n": 24,
+        "winRate": 0.0833,
+        "pnl$": -5716,
+        "grossWin$": 1082,
+        "grossLoss$": 6798,
+        "pf": 0.159,
+        "sharpe": -13.75,
+        "avgWin$": 541,
+        "avgLoss$": 309,
+        "expectancy$": -238.17,
+        "maxDD$": 6403,
+        "exitReasons": {
+          "stop": 22,
+          "target": 1,
+          "time_stop": 1
+        }
+      },
+      "is": {
+        "n": 23,
+        "winRate": 0.087,
+        "pnl$": -5407,
+        "grossWin$": 1082,
+        "grossLoss$": 6489,
+        "pf": 0.167,
+        "sharpe": -13.3,
+        "avgWin$": 541,
+        "avgLoss$": 309,
+        "expectancy$": -235.09,
+        "maxDD$": 6094,
+        "exitReasons": {
+          "stop": 21,
+          "target": 1,
+          "time_stop": 1
+        }
+      },
+      "oos": {
+        "n": 1,
+        "winRate": 0,
+        "pnl$": -309,
+        "grossWin$": 0,
+        "grossLoss$": 309,
+        "pf": 0,
+        "sharpe": 0,
+        "avgWin$": 0,
+        "avgLoss$": 309,
+        "expectancy$": -309,
+        "maxDD$": 309,
+        "exitReasons": {
+          "stop": 1
+        }
+      }
+    },
+    {
+      "variant": {
+        "kind": "first5",
+        "entryMode": "breakStop",
+        "stopMode": "fixedPts",
+        "stopPts": 15,
+        "targetPts": 75
+      },
+      "all": {
+        "n": 24,
+        "winRate": 0.0833,
+        "pnl$": -6466,
+        "grossWin$": 332,
+        "grossLoss$": 6798,
+        "pf": 0.049,
+        "sharpe": -31.41,
+        "avgWin$": 166,
+        "avgLoss$": 309,
+        "expectancy$": -269.42,
+        "maxDD$": 6466,
+        "exitReasons": {
+          "stop": 22,
+          "time_stop": 2
+        }
+      },
+      "is": {
+        "n": 23,
+        "winRate": 0.087,
+        "pnl$": -6157,
+        "grossWin$": 332,
+        "grossLoss$": 6489,
+        "pf": 0.051,
+        "sharpe": -30.58,
+        "avgWin$": 166,
+        "avgLoss$": 309,
+        "expectancy$": -267.7,
+        "maxDD$": 6157,
+        "exitReasons": {
+          "stop": 21,
+          "time_stop": 2
+        }
+      },
+      "oos": {
+        "n": 1,
+        "winRate": 0,
+        "pnl$": -309,
+        "grossWin$": 0,
+        "grossLoss$": 309,
+        "pf": 0,
+        "sharpe": 0,
+        "avgWin$": 0,
+        "avgLoss$": 309,
+        "expectancy$": -309,
+        "maxDD$": 309,
+        "exitReasons": {
+          "stop": 1
+        }
+      }
+    },
+    {
+      "variant": {
+        "kind": "first5",
+        "entryMode": "breakStop",
+        "stopMode": "fixedPts",
+        "stopPts": 15,
+        "targetPts": 100
+      },
+      "all": {
+        "n": 24,
+        "winRate": 0.0833,
+        "pnl$": -6466,
+        "grossWin$": 332,
+        "grossLoss$": 6798,
+        "pf": 0.049,
+        "sharpe": -31.41,
+        "avgWin$": 166,
+        "avgLoss$": 309,
+        "expectancy$": -269.42,
+        "maxDD$": 6466,
+        "exitReasons": {
+          "stop": 22,
+          "time_stop": 2
+        }
+      },
+      "is": {
+        "n": 23,
+        "winRate": 0.087,
+        "pnl$": -6157,
+        "grossWin$": 332,
+        "grossLoss$": 6489,
+        "pf": 0.051,
+        "sharpe": -30.58,
+        "avgWin$": 166,
+        "avgLoss$": 309,
+        "expectancy$": -267.7,
+        "maxDD$": 6157,
+        "exitReasons": {
+          "stop": 21,
+          "time_stop": 2
+        }
+      },
+      "oos": {
+        "n": 1,
+        "winRate": 0,
+        "pnl$": -309,
+        "grossWin$": 0,
+        "grossLoss$": 309,
+        "pf": 0,
+        "sharpe": 0,
+        "avgWin$": 0,
+        "avgLoss$": 309,
+        "expectancy$": -309,
+        "maxDD$": 309,
+        "exitReasons": {
+          "stop": 1
+        }
+      }
+    },
+    {
+      "variant": {
+        "kind": "first5",
+        "entryMode": "breakStop",
+        "stopMode": "fixedPts",
+        "stopPts": 20,
+        "targetPts": 20
+      },
+      "all": {
+        "n": 24,
+        "winRate": 0.25,
+        "pnl$": -5296,
+        "grossWin$": 2066,
+        "grossLoss$": 7362,
+        "pf": 0.281,
+        "sharpe": -10.35,
+        "avgWin$": 344.33,
+        "avgLoss$": 409,
+        "expectancy$": -220.67,
+        "maxDD$": 5296,
+        "exitReasons": {
+          "stop": 15,
+          "target": 5,
+          "stop_amb": 3,
+          "time_stop": 1
+        }
+      },
+      "is": {
+        "n": 23,
+        "winRate": 0.2609,
+        "pnl$": -4887,
+        "grossWin$": 2066,
+        "grossLoss$": 6953,
+        "pf": 0.297,
+        "sharpe": -9.82,
+        "avgWin$": 344.33,
+        "avgLoss$": 409,
+        "expectancy$": -212.48,
+        "maxDD$": 4887,
+        "exitReasons": {
+          "stop": 14,
+          "target": 5,
+          "stop_amb": 3,
+          "time_stop": 1
+        }
+      },
+      "oos": {
+        "n": 1,
+        "winRate": 0,
+        "pnl$": -409,
+        "grossWin$": 0,
+        "grossLoss$": 409,
+        "pf": 0,
+        "sharpe": 0,
+        "avgWin$": 0,
+        "avgLoss$": 409,
+        "expectancy$": -409,
+        "maxDD$": 409,
+        "exitReasons": {
+          "stop": 1
+        }
+      }
+    },
+    {
+      "variant": {
+        "kind": "first5",
+        "entryMode": "breakStop",
+        "stopMode": "fixedPts",
+        "stopPts": 20,
+        "targetPts": 30
+      },
+      "all": {
+        "n": 24,
+        "winRate": 0.2083,
+        "pnl$": -5301,
+        "grossWin$": 2470,
+        "grossLoss$": 7771,
+        "pf": 0.318,
+        "sharpe": -9.07,
+        "avgWin$": 494,
+        "avgLoss$": 409,
+        "expectancy$": -220.87,
+        "maxDD$": 5488,
+        "exitReasons": {
+          "stop": 17,
+          "target": 4,
+          "stop_amb": 2,
+          "time_stop": 1
+        }
+      },
+      "is": {
+        "n": 23,
+        "winRate": 0.2174,
+        "pnl$": -4892,
+        "grossWin$": 2470,
+        "grossLoss$": 7362,
+        "pf": 0.336,
+        "sharpe": -8.59,
+        "avgWin$": 494,
+        "avgLoss$": 409,
+        "expectancy$": -212.7,
+        "maxDD$": 5079,
+        "exitReasons": {
+          "stop": 16,
+          "target": 4,
+          "stop_amb": 2,
+          "time_stop": 1
+        }
+      },
+      "oos": {
+        "n": 1,
+        "winRate": 0,
+        "pnl$": -409,
+        "grossWin$": 0,
+        "grossLoss$": 409,
+        "pf": 0,
+        "sharpe": 0,
+        "avgWin$": 0,
+        "avgLoss$": 409,
+        "expectancy$": -409,
+        "maxDD$": 409,
+        "exitReasons": {
+          "stop": 1
+        }
+      }
+    },
+    {
+      "variant": {
+        "kind": "first5",
+        "entryMode": "breakStop",
+        "stopMode": "fixedPts",
+        "stopPts": 20,
+        "targetPts": 50
+      },
+      "all": {
+        "n": 24,
+        "winRate": 0.125,
+        "pnl$": -6511,
+        "grossWin$": 2078,
+        "grossLoss$": 8589,
+        "pf": 0.242,
+        "sharpe": -10.68,
+        "avgWin$": 692.67,
+        "avgLoss$": 409,
+        "expectancy$": -271.29,
+        "maxDD$": 7098,
+        "exitReasons": {
+          "stop": 21,
+          "target": 2,
+          "time_stop": 1
+        }
+      },
+      "is": {
+        "n": 23,
+        "winRate": 0.1304,
+        "pnl$": -6102,
+        "grossWin$": 2078,
+        "grossLoss$": 8180,
+        "pf": 0.254,
+        "sharpe": -10.24,
+        "avgWin$": 692.67,
+        "avgLoss$": 409,
+        "expectancy$": -265.3,
+        "maxDD$": 6689,
+        "exitReasons": {
+          "stop": 20,
+          "target": 2,
+          "time_stop": 1
+        }
+      },
+      "oos": {
+        "n": 1,
+        "winRate": 0,
+        "pnl$": -409,
+        "grossWin$": 0,
+        "grossLoss$": 409,
+        "pf": 0,
+        "sharpe": 0,
+        "avgWin$": 0,
+        "avgLoss$": 409,
+        "expectancy$": -409,
+        "maxDD$": 409,
+        "exitReasons": {
+          "stop": 1
+        }
+      }
+    },
+    {
+      "variant": {
+        "kind": "first5",
+        "entryMode": "breakStop",
+        "stopMode": "fixedPts",
+        "stopPts": 20,
+        "targetPts": 75
+      },
+      "all": {
+        "n": 24,
+        "winRate": 0.125,
+        "pnl$": -6761,
+        "grossWin$": 1828,
+        "grossLoss$": 8589,
+        "pf": 0.213,
+        "sharpe": -10.84,
+        "avgWin$": 609.33,
+        "avgLoss$": 409,
+        "expectancy$": -281.71,
+        "maxDD$": 6761,
+        "exitReasons": {
+          "stop": 21,
+          "time_stop": 2,
+          "target": 1
+        }
+      },
+      "is": {
+        "n": 23,
+        "winRate": 0.1304,
+        "pnl$": -6352,
+        "grossWin$": 1828,
+        "grossLoss$": 8180,
+        "pf": 0.223,
+        "sharpe": -10.42,
+        "avgWin$": 609.33,
+        "avgLoss$": 409,
+        "expectancy$": -276.17,
+        "maxDD$": 6352,
+        "exitReasons": {
+          "stop": 20,
+          "time_stop": 2,
+          "target": 1
+        }
+      },
+      "oos": {
+        "n": 1,
+        "winRate": 0,
+        "pnl$": -409,
+        "grossWin$": 0,
+        "grossLoss$": 409,
+        "pf": 0,
+        "sharpe": 0,
+        "avgWin$": 0,
+        "avgLoss$": 409,
+        "expectancy$": -409,
+        "maxDD$": 409,
+        "exitReasons": {
+          "stop": 1
+        }
+      }
+    },
+    {
+      "variant": {
+        "kind": "first5",
+        "entryMode": "breakStop",
+        "stopMode": "fixedPts",
+        "stopPts": 20,
+        "targetPts": 100
+      },
+      "all": {
+        "n": 24,
+        "winRate": 0.125,
+        "pnl$": -6261,
+        "grossWin$": 2328,
+        "grossLoss$": 8589,
+        "pf": 0.271,
+        "sharpe": -8.15,
+        "avgWin$": 776,
+        "avgLoss$": 409,
+        "expectancy$": -260.87,
+        "maxDD$": 6261,
+        "exitReasons": {
+          "stop": 21,
+          "time_stop": 2,
+          "target": 1
+        }
+      },
+      "is": {
+        "n": 23,
+        "winRate": 0.1304,
+        "pnl$": -5852,
+        "grossWin$": 2328,
+        "grossLoss$": 8180,
+        "pf": 0.285,
+        "sharpe": -7.79,
+        "avgWin$": 776,
+        "avgLoss$": 409,
+        "expectancy$": -254.43,
+        "maxDD$": 5852,
+        "exitReasons": {
+          "stop": 20,
+          "time_stop": 2,
+          "target": 1
+        }
+      },
+      "oos": {
+        "n": 1,
+        "winRate": 0,
+        "pnl$": -409,
+        "grossWin$": 0,
+        "grossLoss$": 409,
+        "pf": 0,
+        "sharpe": 0,
+        "avgWin$": 0,
+        "avgLoss$": 409,
+        "expectancy$": -409,
+        "maxDD$": 409,
+        "exitReasons": {
+          "stop": 1
+        }
+      }
+    },
+    {
+      "variant": {
+        "kind": "first5",
+        "entryMode": "breakStop",
+        "stopMode": "fixedPts",
+        "stopPts": 25,
+        "targetPts": 20
+      },
+      "all": {
+        "n": 24,
+        "winRate": 0.5,
+        "pnl$": -1666,
+        "grossWin$": 4442,
+        "grossLoss$": 6108,
+        "pf": 0.727,
+        "sharpe": -2.43,
+        "avgWin$": 370.17,
+        "avgLoss$": 509,
+        "expectancy$": -69.42,
+        "maxDD$": 2854,
+        "exitReasons": {
+          "target": 11,
+          "stop": 9,
+          "stop_amb": 3,
+          "time_stop": 1
+        }
+      },
+      "is": {
+        "n": 23,
+        "winRate": 0.4783,
+        "pnl$": -2062,
+        "grossWin$": 4046,
+        "grossLoss$": 6108,
+        "pf": 0.662,
+        "sharpe": -3.15,
+        "avgWin$": 367.82,
+        "avgLoss$": 509,
+        "expectancy$": -89.65,
+        "maxDD$": 2854,
+        "exitReasons": {
+          "target": 10,
+          "stop": 9,
+          "stop_amb": 3,
+          "time_stop": 1
+        }
+      },
+      "oos": {
+        "n": 1,
+        "winRate": 1,
+        "pnl$": 396,
+        "grossWin$": 396,
+        "grossLoss$": 0,
+        "pf": null,
+        "sharpe": 0,
+        "avgWin$": 396,
+        "avgLoss$": 0,
+        "expectancy$": 396,
+        "maxDD$": 0,
+        "exitReasons": {
+          "target": 1
+        }
+      }
+    },
+    {
+      "variant": {
+        "kind": "first5",
+        "entryMode": "breakStop",
+        "stopMode": "fixedPts",
+        "stopPts": 25,
+        "targetPts": 30
+      },
+      "all": {
+        "n": 24,
+        "winRate": 0.4583,
+        "pnl$": -571,
+        "grossWin$": 6046,
+        "grossLoss$": 6617,
+        "pf": 0.914,
+        "sharpe": -0.69,
+        "avgWin$": 549.64,
+        "avgLoss$": 509,
+        "expectancy$": -23.79,
+        "maxDD$": 2707,
+        "exitReasons": {
+          "target": 10,
+          "stop": 11,
+          "stop_amb": 2,
+          "time_stop": 1
+        }
+      },
+      "is": {
+        "n": 23,
+        "winRate": 0.4348,
+        "pnl$": -1167,
+        "grossWin$": 5450,
+        "grossLoss$": 6617,
+        "pf": 0.824,
+        "sharpe": -1.48,
+        "avgWin$": 545,
+        "avgLoss$": 509,
+        "expectancy$": -50.74,
+        "maxDD$": 2707,
+        "exitReasons": {
+          "target": 9,
+          "stop": 11,
+          "stop_amb": 2,
+          "time_stop": 1
+        }
+      },
+      "oos": {
+        "n": 1,
+        "winRate": 1,
+        "pnl$": 596,
+        "grossWin$": 596,
+        "grossLoss$": 0,
+        "pf": null,
+        "sharpe": 0,
+        "avgWin$": 596,
+        "avgLoss$": 0,
+        "expectancy$": 596,
+        "maxDD$": 0,
+        "exitReasons": {
+          "target": 1
+        }
+      }
+    },
+    {
+      "variant": {
+        "kind": "first5",
+        "entryMode": "breakStop",
+        "stopMode": "fixedPts",
+        "stopPts": 25,
+        "targetPts": 50
+      },
+      "all": {
+        "n": 24,
+        "winRate": 0.25,
+        "pnl$": -4096,
+        "grossWin$": 5066,
+        "grossLoss$": 9162,
+        "pf": 0.553,
+        "sharpe": -4.35,
+        "avgWin$": 844.33,
+        "avgLoss$": 509,
+        "expectancy$": -170.67,
+        "maxDD$": 6088,
+        "exitReasons": {
+          "target": 5,
+          "stop": 18,
+          "time_stop": 1
+        }
+      },
+      "is": {
+        "n": 23,
+        "winRate": 0.2609,
+        "pnl$": -3587,
+        "grossWin$": 5066,
+        "grossLoss$": 8653,
+        "pf": 0.585,
+        "sharpe": -3.91,
+        "avgWin$": 844.33,
+        "avgLoss$": 509,
+        "expectancy$": -155.96,
+        "maxDD$": 5579,
+        "exitReasons": {
+          "target": 5,
+          "stop": 17,
+          "time_stop": 1
+        }
+      },
+      "oos": {
+        "n": 1,
+        "winRate": 0,
+        "pnl$": -509,
+        "grossWin$": 0,
+        "grossLoss$": 509,
+        "pf": 0,
+        "sharpe": 0,
+        "avgWin$": 0,
+        "avgLoss$": 509,
+        "expectancy$": -509,
+        "maxDD$": 509,
+        "exitReasons": {
+          "stop": 1
+        }
+      }
+    },
+    {
+      "variant": {
+        "kind": "first5",
+        "entryMode": "breakStop",
+        "stopMode": "fixedPts",
+        "stopPts": 25,
+        "targetPts": 75
+      },
+      "all": {
+        "n": 24,
+        "winRate": 0.1667,
+        "pnl$": -6856,
+        "grossWin$": 3324,
+        "grossLoss$": 10180,
+        "pf": 0.327,
+        "sharpe": -7.8,
+        "avgWin$": 831,
+        "avgLoss$": 509,
+        "expectancy$": -285.67,
+        "maxDD$": 6856,
+        "exitReasons": {
+          "stop": 20,
+          "time_stop": 2,
+          "target": 2
+        }
+      },
+      "is": {
+        "n": 23,
+        "winRate": 0.1739,
+        "pnl$": -6347,
+        "grossWin$": 3324,
+        "grossLoss$": 9671,
+        "pf": 0.344,
+        "sharpe": -7.4,
+        "avgWin$": 831,
+        "avgLoss$": 509,
+        "expectancy$": -275.96,
+        "maxDD$": 6794,
+        "exitReasons": {
+          "stop": 19,
+          "time_stop": 2,
+          "target": 2
+        }
+      },
+      "oos": {
+        "n": 1,
+        "winRate": 0,
+        "pnl$": -509,
+        "grossWin$": 0,
+        "grossLoss$": 509,
+        "pf": 0,
+        "sharpe": 0,
+        "avgWin$": 0,
+        "avgLoss$": 509,
+        "expectancy$": -509,
+        "maxDD$": 509,
+        "exitReasons": {
+          "stop": 1
+        }
+      }
+    },
+    {
+      "variant": {
+        "kind": "first5",
+        "entryMode": "breakStop",
+        "stopMode": "fixedPts",
+        "stopPts": 25,
+        "targetPts": 100
+      },
+      "all": {
+        "n": 24,
+        "winRate": 0.1667,
+        "pnl$": -5856,
+        "grossWin$": 4324,
+        "grossLoss$": 10180,
+        "pf": 0.425,
+        "sharpe": -5.41,
+        "avgWin$": 1081,
+        "avgLoss$": 509,
+        "expectancy$": -244,
+        "maxDD$": 6794,
+        "exitReasons": {
+          "stop": 20,
+          "time_stop": 2,
+          "target": 2
+        }
+      },
+      "is": {
+        "n": 23,
+        "winRate": 0.1739,
+        "pnl$": -5347,
+        "grossWin$": 4324,
+        "grossLoss$": 9671,
+        "pf": 0.447,
+        "sharpe": -5.06,
+        "avgWin$": 1081,
+        "avgLoss$": 509,
+        "expectancy$": -232.48,
+        "maxDD$": 6794,
+        "exitReasons": {
+          "stop": 19,
+          "time_stop": 2,
+          "target": 2
+        }
+      },
+      "oos": {
+        "n": 1,
+        "winRate": 0,
+        "pnl$": -509,
+        "grossWin$": 0,
+        "grossLoss$": 509,
+        "pf": 0,
+        "sharpe": 0,
+        "avgWin$": 0,
+        "avgLoss$": 509,
+        "expectancy$": -509,
+        "maxDD$": 509,
+        "exitReasons": {
+          "stop": 1
+        }
+      }
+    },
+    {
+      "variant": {
+        "kind": "first5",
+        "entryMode": "breakStop",
+        "stopMode": "fixedPts",
+        "stopPts": 30,
+        "targetPts": 20
+      },
+      "all": {
+        "n": 24,
+        "winRate": 0.5833,
+        "pnl$": -856,
+        "grossWin$": 5234,
+        "grossLoss$": 6090,
+        "pf": 0.859,
+        "sharpe": -1.13,
+        "avgWin$": 373.86,
+        "avgLoss$": 609,
+        "expectancy$": -35.67,
+        "maxDD$": 3045,
+        "exitReasons": {
+          "target": 13,
+          "stop": 8,
+          "stop_amb": 2,
+          "time_stop": 1
+        }
+      },
+      "is": {
+        "n": 23,
+        "winRate": 0.5652,
+        "pnl$": -1252,
+        "grossWin$": 4838,
+        "grossLoss$": 6090,
+        "pf": 0.794,
+        "sharpe": -1.72,
+        "avgWin$": 372.15,
+        "avgLoss$": 609,
+        "expectancy$": -54.43,
+        "maxDD$": 3045,
+        "exitReasons": {
+          "target": 12,
+          "stop": 8,
+          "stop_amb": 2,
+          "time_stop": 1
+        }
+      },
+      "oos": {
+        "n": 1,
+        "winRate": 1,
+        "pnl$": 396,
+        "grossWin$": 396,
+        "grossLoss$": 0,
+        "pf": null,
+        "sharpe": 0,
+        "avgWin$": 396,
+        "avgLoss$": 0,
+        "expectancy$": 396,
+        "maxDD$": 0,
+        "exitReasons": {
+          "target": 1
+        }
+      }
+    },
+    {
+      "variant": {
+        "kind": "first5",
+        "entryMode": "breakStop",
+        "stopMode": "fixedPts",
+        "stopPts": 30,
+        "targetPts": 30
+      },
+      "all": {
+        "n": 24,
+        "winRate": 0.5833,
+        "pnl$": 1744,
+        "grossWin$": 7834,
+        "grossLoss$": 6090,
+        "pf": 1.286,
+        "sharpe": 1.93,
+        "avgWin$": 559.57,
+        "avgLoss$": 609,
+        "expectancy$": 72.67,
+        "maxDD$": 3045,
+        "exitReasons": {
+          "target": 13,
+          "stop": 9,
+          "stop_amb": 1,
+          "time_stop": 1
+        }
+      },
+      "is": {
+        "n": 23,
+        "winRate": 0.5652,
+        "pnl$": 1148,
+        "grossWin$": 7238,
+        "grossLoss$": 6090,
+        "pf": 1.189,
+        "sharpe": 1.32,
+        "avgWin$": 556.77,
+        "avgLoss$": 609,
+        "expectancy$": 49.91,
+        "maxDD$": 3045,
+        "exitReasons": {
+          "target": 12,
+          "stop": 9,
+          "stop_amb": 1,
+          "time_stop": 1
+        }
+      },
+      "oos": {
+        "n": 1,
+        "winRate": 1,
+        "pnl$": 596,
+        "grossWin$": 596,
+        "grossLoss$": 0,
+        "pf": null,
+        "sharpe": 0,
+        "avgWin$": 596,
+        "avgLoss$": 0,
+        "expectancy$": 596,
+        "maxDD$": 0,
+        "exitReasons": {
+          "target": 1
+        }
+      }
+    },
+    {
+      "variant": {
+        "kind": "first5",
+        "entryMode": "breakStop",
+        "stopMode": "fixedPts",
+        "stopPts": 30,
+        "targetPts": 50
+      },
+      "all": {
+        "n": 24,
+        "winRate": 0.2917,
+        "pnl$": -4026,
+        "grossWin$": 6062,
+        "grossLoss$": 10088,
+        "pf": 0.601,
+        "sharpe": -3.79,
+        "avgWin$": 866,
+        "avgLoss$": 593.41,
+        "expectancy$": -167.75,
+        "maxDD$": 7014,
+        "exitReasons": {
+          "target": 6,
+          "stop": 16,
+          "time_stop": 2
+        }
+      },
+      "is": {
+        "n": 23,
+        "winRate": 0.2609,
+        "pnl$": -5022,
+        "grossWin$": 5066,
+        "grossLoss$": 10088,
+        "pf": 0.502,
+        "sharpe": -5.16,
+        "avgWin$": 844.33,
+        "avgLoss$": 593.41,
+        "expectancy$": -218.35,
+        "maxDD$": 7014,
+        "exitReasons": {
+          "target": 5,
+          "stop": 16,
+          "time_stop": 2
+        }
+      },
+      "oos": {
+        "n": 1,
+        "winRate": 1,
+        "pnl$": 996,
+        "grossWin$": 996,
+        "grossLoss$": 0,
+        "pf": null,
+        "sharpe": 0,
+        "avgWin$": 996,
+        "avgLoss$": 0,
+        "expectancy$": 996,
+        "maxDD$": 0,
+        "exitReasons": {
+          "target": 1
+        }
+      }
+    },
+    {
+      "variant": {
+        "kind": "first5",
+        "entryMode": "breakStop",
+        "stopMode": "fixedPts",
+        "stopPts": 30,
+        "targetPts": 75
+      },
+      "all": {
+        "n": 24,
+        "winRate": 0.2083,
+        "pnl$": -6486,
+        "grossWin$": 4820,
+        "grossLoss$": 11306,
+        "pf": 0.426,
+        "sharpe": -5.98,
+        "avgWin$": 964,
+        "avgLoss$": 595.05,
+        "expectancy$": -270.25,
+        "maxDD$": 7982,
+        "exitReasons": {
+          "stop": 18,
+          "time_stop": 3,
+          "target": 3
+        }
+      },
+      "is": {
+        "n": 23,
+        "winRate": 0.1739,
+        "pnl$": -7982,
+        "grossWin$": 3324,
+        "grossLoss$": 11306,
+        "pf": 0.294,
+        "sharpe": -8.83,
+        "avgWin$": 831,
+        "avgLoss$": 595.05,
+        "expectancy$": -347.04,
+        "maxDD$": 7982,
+        "exitReasons": {
+          "stop": 18,
+          "time_stop": 3,
+          "target": 2
+        }
+      },
+      "oos": {
+        "n": 1,
+        "winRate": 1,
+        "pnl$": 1496,
+        "grossWin$": 1496,
+        "grossLoss$": 0,
+        "pf": null,
+        "sharpe": 0,
+        "avgWin$": 1496,
+        "avgLoss$": 0,
+        "expectancy$": 1496,
+        "maxDD$": 0,
+        "exitReasons": {
+          "target": 1
+        }
+      }
+    },
+    {
+      "variant": {
+        "kind": "first5",
+        "entryMode": "breakStop",
+        "stopMode": "fixedPts",
+        "stopPts": 30,
+        "targetPts": 100
+      },
+      "all": {
+        "n": 24,
+        "winRate": 0.2083,
+        "pnl$": -4986,
+        "grossWin$": 6320,
+        "grossLoss$": 11306,
+        "pf": 0.559,
+        "sharpe": -3.75,
+        "avgWin$": 1264,
+        "avgLoss$": 595.05,
+        "expectancy$": -207.75,
+        "maxDD$": 7929,
+        "exitReasons": {
+          "stop": 18,
+          "time_stop": 3,
+          "target": 3
+        }
+      },
+      "is": {
+        "n": 23,
+        "winRate": 0.1739,
+        "pnl$": -6982,
+        "grossWin$": 4324,
+        "grossLoss$": 11306,
+        "pf": 0.382,
+        "sharpe": -6.34,
+        "avgWin$": 1081,
+        "avgLoss$": 595.05,
+        "expectancy$": -303.57,
+        "maxDD$": 7929,
+        "exitReasons": {
+          "stop": 18,
+          "time_stop": 3,
+          "target": 2
+        }
+      },
+      "oos": {
+        "n": 1,
+        "winRate": 1,
+        "pnl$": 1996,
+        "grossWin$": 1996,
+        "grossLoss$": 0,
+        "pf": null,
+        "sharpe": 0,
+        "avgWin$": 1996,
+        "avgLoss$": 0,
+        "expectancy$": 1996,
+        "maxDD$": 0,
+        "exitReasons": {
+          "target": 1
+        }
+      }
+    },
+    {
+      "variant": {
+        "kind": "first5",
+        "entryMode": "breakStop",
+        "stopMode": "fixedPts",
+        "stopPts": 40,
+        "targetPts": 20
+      },
+      "all": {
+        "n": 24,
+        "winRate": 0.75,
+        "pnl$": 1964,
+        "grossWin$": 6818,
+        "grossLoss$": 4854,
+        "pf": 1.405,
+        "sharpe": 2.46,
+        "avgWin$": 378.78,
+        "avgLoss$": 809,
+        "expectancy$": 81.83,
+        "maxDD$": 2031,
+        "exitReasons": {
+          "target": 17,
+          "stop_amb": 1,
+          "stop": 5,
+          "time_stop": 1
+        }
+      },
+      "is": {
+        "n": 23,
+        "winRate": 0.7391,
+        "pnl$": 1568,
+        "grossWin$": 6422,
+        "grossLoss$": 4854,
+        "pf": 1.323,
+        "sharpe": 2.02,
+        "avgWin$": 377.76,
+        "avgLoss$": 809,
+        "expectancy$": 68.17,
+        "maxDD$": 2031,
+        "exitReasons": {
+          "target": 16,
+          "stop_amb": 1,
+          "stop": 5,
+          "time_stop": 1
+        }
+      },
+      "oos": {
+        "n": 1,
+        "winRate": 1,
+        "pnl$": 396,
+        "grossWin$": 396,
+        "grossLoss$": 0,
+        "pf": null,
+        "sharpe": 0,
+        "avgWin$": 396,
+        "avgLoss$": 0,
+        "expectancy$": 396,
+        "maxDD$": 0,
+        "exitReasons": {
+          "target": 1
+        }
+      }
+    },
+    {
+      "variant": {
+        "kind": "first5",
+        "entryMode": "breakStop",
+        "stopMode": "fixedPts",
+        "stopPts": 40,
+        "targetPts": 30
+      },
+      "all": {
+        "n": 24,
+        "winRate": 0.75,
+        "pnl$": 5364,
+        "grossWin$": 10218,
+        "grossLoss$": 4854,
+        "pf": 2.105,
+        "sharpe": 5.74,
+        "avgWin$": 567.67,
+        "avgLoss$": 809,
+        "expectancy$": 223.5,
+        "maxDD$": 1831,
+        "exitReasons": {
+          "target": 17,
+          "stop_amb": 1,
+          "stop": 5,
+          "time_stop": 1
+        }
+      },
+      "is": {
+        "n": 23,
+        "winRate": 0.7391,
+        "pnl$": 4768,
+        "grossWin$": 9622,
+        "grossLoss$": 4854,
+        "pf": 1.982,
+        "sharpe": 5.25,
+        "avgWin$": 566,
+        "avgLoss$": 809,
+        "expectancy$": 207.3,
+        "maxDD$": 1831,
+        "exitReasons": {
+          "target": 16,
+          "stop_amb": 1,
+          "stop": 5,
+          "time_stop": 1
+        }
+      },
+      "oos": {
+        "n": 1,
+        "winRate": 1,
+        "pnl$": 596,
+        "grossWin$": 596,
+        "grossLoss$": 0,
+        "pf": null,
+        "sharpe": 0,
+        "avgWin$": 596,
+        "avgLoss$": 0,
+        "expectancy$": 596,
+        "maxDD$": 0,
+        "exitReasons": {
+          "target": 1
+        }
+      }
+    },
+    {
+      "variant": {
+        "kind": "first5",
+        "entryMode": "breakStop",
+        "stopMode": "fixedPts",
+        "stopPts": 40,
+        "targetPts": 50
+      },
+      "all": {
+        "n": 24,
+        "winRate": 0.4583,
+        "pnl$": -6,
+        "grossWin$": 10046,
+        "grossLoss$": 10052,
+        "pf": 0.999,
+        "sharpe": 0,
+        "avgWin$": 913.27,
+        "avgLoss$": 773.23,
+        "expectancy$": -0.25,
+        "maxDD$": 3990,
+        "exitReasons": {
+          "target": 10,
+          "stop": 12,
+          "time_stop": 2
+        }
+      },
+      "is": {
+        "n": 23,
+        "winRate": 0.4348,
+        "pnl$": -1002,
+        "grossWin$": 9050,
+        "grossLoss$": 10052,
+        "pf": 0.9,
+        "sharpe": -0.79,
+        "avgWin$": 905,
+        "avgLoss$": 773.23,
+        "expectancy$": -43.57,
+        "maxDD$": 3990,
+        "exitReasons": {
+          "target": 9,
+          "stop": 12,
+          "time_stop": 2
+        }
+      },
+      "oos": {
+        "n": 1,
+        "winRate": 1,
+        "pnl$": 996,
+        "grossWin$": 996,
+        "grossLoss$": 0,
+        "pf": null,
+        "sharpe": 0,
+        "avgWin$": 996,
+        "avgLoss$": 0,
+        "expectancy$": 996,
+        "maxDD$": 0,
+        "exitReasons": {
+          "target": 1
+        }
+      }
+    },
+    {
+      "variant": {
+        "kind": "first5",
+        "entryMode": "breakStop",
+        "stopMode": "fixedPts",
+        "stopPts": 40,
+        "targetPts": 75
+      },
+      "all": {
+        "n": 24,
+        "winRate": 0.3333,
+        "pnl$": -4356,
+        "grossWin$": 8123,
+        "grossLoss$": 12479,
+        "pf": 0.651,
+        "sharpe": -3.09,
+        "avgWin$": 1015.38,
+        "avgLoss$": 779.94,
+        "expectancy$": -181.5,
+        "maxDD$": 6226,
+        "exitReasons": {
+          "stop": 15,
+          "time_stop": 5,
+          "target": 4
+        }
+      },
+      "is": {
+        "n": 23,
+        "winRate": 0.3043,
+        "pnl$": -5852,
+        "grossWin$": 6627,
+        "grossLoss$": 12479,
+        "pf": 0.531,
+        "sharpe": -4.59,
+        "avgWin$": 946.71,
+        "avgLoss$": 779.94,
+        "expectancy$": -254.43,
+        "maxDD$": 6226,
+        "exitReasons": {
+          "stop": 15,
+          "time_stop": 5,
+          "target": 3
+        }
+      },
+      "oos": {
+        "n": 1,
+        "winRate": 1,
+        "pnl$": 1496,
+        "grossWin$": 1496,
+        "grossLoss$": 0,
+        "pf": null,
+        "sharpe": 0,
+        "avgWin$": 1496,
+        "avgLoss$": 0,
+        "expectancy$": 1496,
+        "maxDD$": 0,
+        "exitReasons": {
+          "target": 1
+        }
+      }
+    },
+    {
+      "variant": {
+        "kind": "first5",
+        "entryMode": "breakStop",
+        "stopMode": "fixedPts",
+        "stopPts": 40,
+        "targetPts": 100
+      },
+      "all": {
+        "n": 24,
+        "winRate": 0.3333,
+        "pnl$": -2356,
+        "grossWin$": 10123,
+        "grossLoss$": 12479,
+        "pf": 0.811,
+        "sharpe": -1.42,
+        "avgWin$": 1265.38,
+        "avgLoss$": 779.94,
+        "expectancy$": -98.17,
+        "maxDD$": 6226,
+        "exitReasons": {
+          "stop": 15,
+          "time_stop": 5,
+          "target": 4
+        }
+      },
+      "is": {
+        "n": 23,
+        "winRate": 0.3043,
+        "pnl$": -4352,
+        "grossWin$": 8127,
+        "grossLoss$": 12479,
+        "pf": 0.651,
+        "sharpe": -2.94,
+        "avgWin$": 1161,
+        "avgLoss$": 779.94,
+        "expectancy$": -189.22,
+        "maxDD$": 6226,
+        "exitReasons": {
+          "stop": 15,
+          "time_stop": 5,
+          "target": 3
+        }
+      },
+      "oos": {
+        "n": 1,
+        "winRate": 1,
+        "pnl$": 1996,
+        "grossWin$": 1996,
+        "grossLoss$": 0,
+        "pf": null,
+        "sharpe": 0,
+        "avgWin$": 1996,
+        "avgLoss$": 0,
+        "expectancy$": 1996,
+        "maxDD$": 0,
+        "exitReasons": {
+          "target": 1
+        }
+      }
+    },
+    {
+      "variant": {
+        "kind": "first5",
+        "entryMode": "breakStop",
+        "stopMode": "oppExtreme",
+        "targetPts": 20
+      },
+      "all": {
+        "n": 24,
+        "winRate": 0.875,
+        "pnl$": 224,
+        "grossWin$": 8006,
+        "grossLoss$": 7782,
+        "pf": 1.029,
+        "sharpe": 0.15,
+        "avgWin$": 381.24,
+        "avgLoss$": 2594,
+        "expectancy$": 9.33,
+        "maxDD$": 4061,
+        "exitReasons": {
+          "target": 20,
+          "stop": 3,
+          "time_stop": 1
+        }
+      },
+      "is": {
+        "n": 23,
+        "winRate": 0.8696,
+        "pnl$": -172,
+        "grossWin$": 7610,
+        "grossLoss$": 7782,
+        "pf": 0.978,
+        "sharpe": -0.12,
+        "avgWin$": 380.5,
+        "avgLoss$": 2594,
+        "expectancy$": -7.48,
+        "maxDD$": 4061,
+        "exitReasons": {
+          "target": 19,
+          "stop": 3,
+          "time_stop": 1
+        }
+      },
+      "oos": {
+        "n": 1,
+        "winRate": 1,
+        "pnl$": 396,
+        "grossWin$": 396,
+        "grossLoss$": 0,
+        "pf": null,
+        "sharpe": 0,
+        "avgWin$": 396,
+        "avgLoss$": 0,
+        "expectancy$": 396,
+        "maxDD$": 0,
+        "exitReasons": {
+          "target": 1
+        }
+      }
+    },
+    {
+      "variant": {
+        "kind": "first5",
+        "entryMode": "breakStop",
+        "stopMode": "oppExtreme",
+        "targetPts": 30
+      },
+      "all": {
+        "n": 24,
+        "winRate": 0.875,
+        "pnl$": 4224,
+        "grossWin$": 12006,
+        "grossLoss$": 7782,
+        "pf": 1.543,
+        "sharpe": 2.59,
+        "avgWin$": 571.71,
+        "avgLoss$": 2594,
+        "expectancy$": 176,
+        "maxDD$": 3661,
+        "exitReasons": {
+          "target": 20,
+          "stop": 3,
+          "time_stop": 1
+        }
+      },
+      "is": {
+        "n": 23,
+        "winRate": 0.8696,
+        "pnl$": 3628,
+        "grossWin$": 11410,
+        "grossLoss$": 7782,
+        "pf": 1.466,
+        "sharpe": 2.28,
+        "avgWin$": 570.5,
+        "avgLoss$": 2594,
+        "expectancy$": 157.74,
+        "maxDD$": 3661,
+        "exitReasons": {
+          "target": 19,
+          "stop": 3,
+          "time_stop": 1
+        }
+      },
+      "oos": {
+        "n": 1,
+        "winRate": 1,
+        "pnl$": 596,
+        "grossWin$": 596,
+        "grossLoss$": 0,
+        "pf": null,
+        "sharpe": 0,
+        "avgWin$": 596,
+        "avgLoss$": 0,
+        "expectancy$": 596,
+        "maxDD$": 0,
+        "exitReasons": {
+          "target": 1
+        }
+      }
+    },
+    {
+      "variant": {
+        "kind": "first5",
+        "entryMode": "breakStop",
+        "stopMode": "oppExtreme",
+        "targetPts": 50
+      },
+      "all": {
+        "n": 24,
+        "winRate": 0.7083,
+        "pnl$": 1819,
+        "grossWin$": 16022,
+        "grossLoss$": 14203,
+        "pf": 1.128,
+        "sharpe": 0.82,
+        "avgWin$": 942.47,
+        "avgLoss$": 2029,
+        "expectancy$": 75.79,
+        "maxDD$": 6394,
+        "exitReasons": {
+          "target": 16,
+          "time_stop": 3,
+          "stop": 5
+        }
+      },
+      "is": {
+        "n": 23,
+        "winRate": 0.6957,
+        "pnl$": 823,
+        "grossWin$": 15026,
+        "grossLoss$": 14203,
+        "pf": 1.058,
+        "sharpe": 0.38,
+        "avgWin$": 939.13,
+        "avgLoss$": 2029,
+        "expectancy$": 35.78,
+        "maxDD$": 6394,
+        "exitReasons": {
+          "target": 15,
+          "time_stop": 3,
+          "stop": 5
+        }
+      },
+      "oos": {
+        "n": 1,
+        "winRate": 1,
+        "pnl$": 996,
+        "grossWin$": 996,
+        "grossLoss$": 0,
+        "pf": null,
+        "sharpe": 0,
+        "avgWin$": 996,
+        "avgLoss$": 0,
+        "expectancy$": 996,
+        "maxDD$": 0,
+        "exitReasons": {
+          "target": 1
+        }
+      }
+    },
+    {
+      "variant": {
+        "kind": "first5",
+        "entryMode": "breakStop",
+        "stopMode": "oppExtreme",
+        "targetPts": 75
+      },
+      "all": {
+        "n": 24,
+        "winRate": 0.625,
+        "pnl$": 1999,
+        "grossWin$": 17390,
+        "grossLoss$": 15391,
+        "pf": 1.13,
+        "sharpe": 0.83,
+        "avgWin$": 1159.33,
+        "avgLoss$": 1710.11,
+        "expectancy$": 83.29,
+        "maxDD$": 5473,
+        "exitReasons": {
+          "time_stop": 9,
+          "target": 10,
+          "stop": 5
+        }
+      },
+      "is": {
+        "n": 23,
+        "winRate": 0.6087,
+        "pnl$": 503,
+        "grossWin$": 15894,
+        "grossLoss$": 15391,
+        "pf": 1.033,
+        "sharpe": 0.22,
+        "avgWin$": 1135.29,
+        "avgLoss$": 1710.11,
+        "expectancy$": 21.87,
+        "maxDD$": 5473,
+        "exitReasons": {
+          "time_stop": 9,
+          "target": 9,
+          "stop": 5
+        }
+      },
+      "oos": {
+        "n": 1,
+        "winRate": 1,
+        "pnl$": 1496,
+        "grossWin$": 1496,
+        "grossLoss$": 0,
+        "pf": null,
+        "sharpe": 0,
+        "avgWin$": 1496,
+        "avgLoss$": 0,
+        "expectancy$": 1496,
+        "maxDD$": 0,
+        "exitReasons": {
+          "target": 1
+        }
+      }
+    },
+    {
+      "variant": {
+        "kind": "first5",
+        "entryMode": "breakStop",
+        "stopMode": "oppExtreme",
+        "targetPts": 100
+      },
+      "all": {
+        "n": 24,
+        "winRate": 0.625,
+        "pnl$": 6999,
+        "grossWin$": 22390,
+        "grossLoss$": 15391,
+        "pf": 1.455,
+        "sharpe": 2.58,
+        "avgWin$": 1492.67,
+        "avgLoss$": 1710.11,
+        "expectancy$": 291.63,
+        "maxDD$": 5473,
+        "exitReasons": {
+          "time_stop": 9,
+          "target": 10,
+          "stop": 5
+        }
+      },
+      "is": {
+        "n": 23,
+        "winRate": 0.6087,
+        "pnl$": 5003,
+        "grossWin$": 20394,
+        "grossLoss$": 15391,
+        "pf": 1.325,
+        "sharpe": 1.92,
+        "avgWin$": 1456.71,
+        "avgLoss$": 1710.11,
+        "expectancy$": 217.52,
+        "maxDD$": 5473,
+        "exitReasons": {
+          "time_stop": 9,
+          "target": 9,
+          "stop": 5
+        }
+      },
+      "oos": {
+        "n": 1,
+        "winRate": 1,
+        "pnl$": 1996,
+        "grossWin$": 1996,
+        "grossLoss$": 0,
+        "pf": null,
+        "sharpe": 0,
+        "avgWin$": 1996,
+        "avgLoss$": 0,
+        "expectancy$": 1996,
+        "maxDD$": 0,
+        "exitReasons": {
+          "target": 1
+        }
+      }
+    },
+    {
+      "variant": {
+        "kind": "first15",
+        "entryMode": "close",
+        "stopMode": "fixedPts",
+        "stopPts": 15,
+        "targetPts": 20
+      },
+      "all": {
+        "n": 34,
+        "winRate": 0.3529,
+        "pnl$": -2046,
+        "grossWin$": 4752,
+        "grossLoss$": 6798,
+        "pf": 0.699,
+        "sharpe": -2.79,
+        "avgWin$": 396,
+        "avgLoss$": 309,
+        "expectancy$": -60.18,
+        "maxDD$": 2607,
+        "exitReasons": {
+          "stop": 18,
+          "target": 12,
+          "stop_amb": 4
+        }
+      },
+      "is": {
+        "n": 33,
+        "winRate": 0.3636,
+        "pnl$": -1737,
+        "grossWin$": 4752,
+        "grossLoss$": 6489,
+        "pf": 0.732,
+        "sharpe": -2.43,
+        "avgWin$": 396,
+        "avgLoss$": 309,
+        "expectancy$": -52.64,
+        "maxDD$": 2298,
+        "exitReasons": {
+          "stop": 17,
+          "target": 12,
+          "stop_amb": 4
+        }
+      },
+      "oos": {
+        "n": 1,
+        "winRate": 0,
+        "pnl$": -309,
+        "grossWin$": 0,
+        "grossLoss$": 309,
+        "pf": 0,
+        "sharpe": 0,
+        "avgWin$": 0,
+        "avgLoss$": 309,
+        "expectancy$": -309,
+        "maxDD$": 309,
+        "exitReasons": {
+          "stop": 1
+        }
+      }
+    },
+    {
+      "variant": {
+        "kind": "first15",
+        "entryMode": "close",
+        "stopMode": "fixedPts",
+        "stopPts": 15,
+        "targetPts": 30
+      },
+      "all": {
+        "n": 34,
+        "winRate": 0.2059,
+        "pnl$": -4171,
+        "grossWin$": 4172,
+        "grossLoss$": 8343,
+        "pf": 0.5,
+        "sharpe": -5.24,
+        "avgWin$": 596,
+        "avgLoss$": 309,
+        "expectancy$": -122.68,
+        "maxDD$": 4458,
+        "exitReasons": {
+          "stop": 26,
+          "target": 7,
+          "stop_amb": 1
+        }
+      },
+      "is": {
+        "n": 33,
+        "winRate": 0.2121,
+        "pnl$": -3862,
+        "grossWin$": 4172,
+        "grossLoss$": 8034,
+        "pf": 0.519,
+        "sharpe": -4.94,
+        "avgWin$": 596,
+        "avgLoss$": 309,
+        "expectancy$": -117.03,
+        "maxDD$": 4149,
+        "exitReasons": {
+          "stop": 25,
+          "target": 7,
+          "stop_amb": 1
+        }
+      },
+      "oos": {
+        "n": 1,
+        "winRate": 0,
+        "pnl$": -309,
+        "grossWin$": 0,
+        "grossLoss$": 309,
+        "pf": 0,
+        "sharpe": 0,
+        "avgWin$": 0,
+        "avgLoss$": 309,
+        "expectancy$": -309,
+        "maxDD$": 309,
+        "exitReasons": {
+          "stop": 1
+        }
+      }
+    },
+    {
+      "variant": {
+        "kind": "first15",
+        "entryMode": "close",
+        "stopMode": "fixedPts",
+        "stopPts": 15,
+        "targetPts": 50
+      },
+      "all": {
+        "n": 34,
+        "winRate": 0.1765,
+        "pnl$": -2676,
+        "grossWin$": 5976,
+        "grossLoss$": 8652,
+        "pf": 0.691,
+        "sharpe": -2.47,
+        "avgWin$": 996,
+        "avgLoss$": 309,
+        "expectancy$": -78.71,
+        "maxDD$": 4635,
+        "exitReasons": {
+          "stop": 28,
+          "target": 6
+        }
+      },
+      "is": {
+        "n": 33,
+        "winRate": 0.1818,
+        "pnl$": -2367,
+        "grossWin$": 5976,
+        "grossLoss$": 8343,
+        "pf": 0.716,
+        "sharpe": -2.23,
+        "avgWin$": 996,
+        "avgLoss$": 309,
+        "expectancy$": -71.73,
+        "maxDD$": 4326,
+        "exitReasons": {
+          "stop": 27,
+          "target": 6
+        }
+      },
+      "oos": {
+        "n": 1,
+        "winRate": 0,
+        "pnl$": -309,
+        "grossWin$": 0,
+        "grossLoss$": 309,
+        "pf": 0,
+        "sharpe": 0,
+        "avgWin$": 0,
+        "avgLoss$": 309,
+        "expectancy$": -309,
+        "maxDD$": 309,
+        "exitReasons": {
+          "stop": 1
+        }
+      }
+    },
+    {
+      "variant": {
+        "kind": "first15",
+        "entryMode": "close",
+        "stopMode": "fixedPts",
+        "stopPts": 15,
+        "targetPts": 75
+      },
+      "all": {
+        "n": 34,
+        "winRate": 0.0882,
+        "pnl$": -5091,
+        "grossWin$": 4488,
+        "grossLoss$": 9579,
+        "pf": 0.469,
+        "sharpe": -4.57,
+        "avgWin$": 1496,
+        "avgLoss$": 309,
+        "expectancy$": -149.74,
+        "maxDD$": 5091,
+        "exitReasons": {
+          "stop": 31,
+          "target": 3
+        }
+      },
+      "is": {
+        "n": 33,
+        "winRate": 0.0909,
+        "pnl$": -4782,
+        "grossWin$": 4488,
+        "grossLoss$": 9270,
+        "pf": 0.484,
+        "sharpe": -4.37,
+        "avgWin$": 1496,
+        "avgLoss$": 309,
+        "expectancy$": -144.91,
+        "maxDD$": 4782,
+        "exitReasons": {
+          "stop": 30,
+          "target": 3
+        }
+      },
+      "oos": {
+        "n": 1,
+        "winRate": 0,
+        "pnl$": -309,
+        "grossWin$": 0,
+        "grossLoss$": 309,
+        "pf": 0,
+        "sharpe": 0,
+        "avgWin$": 0,
+        "avgLoss$": 309,
+        "expectancy$": -309,
+        "maxDD$": 309,
+        "exitReasons": {
+          "stop": 1
+        }
+      }
+    },
+    {
+      "variant": {
+        "kind": "first15",
+        "entryMode": "close",
+        "stopMode": "fixedPts",
+        "stopPts": 15,
+        "targetPts": 100
+      },
+      "all": {
+        "n": 34,
+        "winRate": 0.0882,
+        "pnl$": -3591,
+        "grossWin$": 5988,
+        "grossLoss$": 9579,
+        "pf": 0.625,
+        "sharpe": -2.53,
+        "avgWin$": 1996,
+        "avgLoss$": 309,
+        "expectancy$": -105.62,
+        "maxDD$": 4635,
+        "exitReasons": {
+          "stop": 31,
+          "target": 3
+        }
+      },
+      "is": {
+        "n": 33,
+        "winRate": 0.0909,
+        "pnl$": -3282,
+        "grossWin$": 5988,
+        "grossLoss$": 9270,
+        "pf": 0.646,
+        "sharpe": -2.35,
+        "avgWin$": 1996,
+        "avgLoss$": 309,
+        "expectancy$": -99.45,
+        "maxDD$": 4635,
+        "exitReasons": {
+          "stop": 30,
+          "target": 3
+        }
+      },
+      "oos": {
+        "n": 1,
+        "winRate": 0,
+        "pnl$": -309,
+        "grossWin$": 0,
+        "grossLoss$": 309,
+        "pf": 0,
+        "sharpe": 0,
+        "avgWin$": 0,
+        "avgLoss$": 309,
+        "expectancy$": -309,
+        "maxDD$": 309,
+        "exitReasons": {
+          "stop": 1
+        }
+      }
+    },
+    {
+      "variant": {
+        "kind": "first15",
+        "entryMode": "close",
+        "stopMode": "fixedPts",
+        "stopPts": 20,
+        "targetPts": 20
+      },
+      "all": {
+        "n": 34,
+        "winRate": 0.4412,
+        "pnl$": -1831,
+        "grossWin$": 5940,
+        "grossLoss$": 7771,
+        "pf": 0.764,
+        "sharpe": -2.11,
+        "avgWin$": 396,
+        "avgLoss$": 409,
+        "expectancy$": -53.85,
+        "maxDD$": 2915,
+        "exitReasons": {
+          "stop": 15,
+          "target": 15,
+          "stop_amb": 4
+        }
+      },
+      "is": {
+        "n": 33,
+        "winRate": 0.4545,
+        "pnl$": -1422,
+        "grossWin$": 5940,
+        "grossLoss$": 7362,
+        "pf": 0.807,
+        "sharpe": -1.68,
+        "avgWin$": 396,
+        "avgLoss$": 409,
+        "expectancy$": -43.09,
+        "maxDD$": 2506,
+        "exitReasons": {
+          "stop": 14,
+          "target": 15,
+          "stop_amb": 4
+        }
+      },
+      "oos": {
+        "n": 1,
+        "winRate": 0,
+        "pnl$": -409,
+        "grossWin$": 0,
+        "grossLoss$": 409,
+        "pf": 0,
+        "sharpe": 0,
+        "avgWin$": 0,
+        "avgLoss$": 409,
+        "expectancy$": -409,
+        "maxDD$": 409,
+        "exitReasons": {
+          "stop": 1
+        }
+      }
+    },
+    {
+      "variant": {
+        "kind": "first15",
+        "entryMode": "close",
+        "stopMode": "fixedPts",
+        "stopPts": 20,
+        "targetPts": 30
+      },
+      "all": {
+        "n": 34,
+        "winRate": 0.2647,
+        "pnl$": -4861,
+        "grossWin$": 5364,
+        "grossLoss$": 10225,
+        "pf": 0.525,
+        "sharpe": -5.04,
+        "avgWin$": 596,
+        "avgLoss$": 409,
+        "expectancy$": -142.97,
+        "maxDD$": 5048,
+        "exitReasons": {
+          "stop": 23,
+          "target": 9,
+          "stop_amb": 2
+        }
+      },
+      "is": {
+        "n": 33,
+        "winRate": 0.2727,
+        "pnl$": -4452,
+        "grossWin$": 5364,
+        "grossLoss$": 9816,
+        "pf": 0.546,
+        "sharpe": -4.71,
+        "avgWin$": 596,
+        "avgLoss$": 409,
+        "expectancy$": -134.91,
+        "maxDD$": 4639,
+        "exitReasons": {
+          "stop": 22,
+          "target": 9,
+          "stop_amb": 2
+        }
+      },
+      "oos": {
+        "n": 1,
+        "winRate": 0,
+        "pnl$": -409,
+        "grossWin$": 0,
+        "grossLoss$": 409,
+        "pf": 0,
+        "sharpe": 0,
+        "avgWin$": 0,
+        "avgLoss$": 409,
+        "expectancy$": -409,
+        "maxDD$": 409,
+        "exitReasons": {
+          "stop": 1
+        }
+      }
+    },
+    {
+      "variant": {
+        "kind": "first15",
+        "entryMode": "close",
+        "stopMode": "fixedPts",
+        "stopPts": 20,
+        "targetPts": 50
+      },
+      "all": {
+        "n": 34,
+        "winRate": 0.2353,
+        "pnl$": -2666,
+        "grossWin$": 7968,
+        "grossLoss$": 10634,
+        "pf": 0.749,
+        "sharpe": -2.06,
+        "avgWin$": 996,
+        "avgLoss$": 409,
+        "expectancy$": -78.41,
+        "maxDD$": 4730,
+        "exitReasons": {
+          "stop": 26,
+          "target": 8
+        }
+      },
+      "is": {
+        "n": 33,
+        "winRate": 0.2424,
+        "pnl$": -2257,
+        "grossWin$": 7968,
+        "grossLoss$": 10225,
+        "pf": 0.779,
+        "sharpe": -1.78,
+        "avgWin$": 996,
+        "avgLoss$": 409,
+        "expectancy$": -68.39,
+        "maxDD$": 4321,
+        "exitReasons": {
+          "stop": 25,
+          "target": 8
+        }
+      },
+      "oos": {
+        "n": 1,
+        "winRate": 0,
+        "pnl$": -409,
+        "grossWin$": 0,
+        "grossLoss$": 409,
+        "pf": 0,
+        "sharpe": 0,
+        "avgWin$": 0,
+        "avgLoss$": 409,
+        "expectancy$": -409,
+        "maxDD$": 409,
+        "exitReasons": {
+          "stop": 1
+        }
+      }
+    },
+    {
+      "variant": {
+        "kind": "first15",
+        "entryMode": "close",
+        "stopMode": "fixedPts",
+        "stopPts": 20,
+        "targetPts": 75
+      },
+      "all": {
+        "n": 34,
+        "winRate": 0.1176,
+        "pnl$": -6286,
+        "grossWin$": 5984,
+        "grossLoss$": 12270,
+        "pf": 0.488,
+        "sharpe": -4.71,
+        "avgWin$": 1496,
+        "avgLoss$": 409,
+        "expectancy$": -184.88,
+        "maxDD$": 6286,
+        "exitReasons": {
+          "stop": 30,
+          "target": 4
+        }
+      },
+      "is": {
+        "n": 33,
+        "winRate": 0.1212,
+        "pnl$": -5877,
+        "grossWin$": 5984,
+        "grossLoss$": 11861,
+        "pf": 0.505,
+        "sharpe": -4.48,
+        "avgWin$": 1496,
+        "avgLoss$": 409,
+        "expectancy$": -178.09,
+        "maxDD$": 6135,
+        "exitReasons": {
+          "stop": 29,
+          "target": 4
+        }
+      },
+      "oos": {
+        "n": 1,
+        "winRate": 0,
+        "pnl$": -409,
+        "grossWin$": 0,
+        "grossLoss$": 409,
+        "pf": 0,
+        "sharpe": 0,
+        "avgWin$": 0,
+        "avgLoss$": 409,
+        "expectancy$": -409,
+        "maxDD$": 409,
+        "exitReasons": {
+          "stop": 1
+        }
+      }
+    },
+    {
+      "variant": {
+        "kind": "first15",
+        "entryMode": "close",
+        "stopMode": "fixedPts",
+        "stopPts": 20,
+        "targetPts": 100
+      },
+      "all": {
+        "n": 34,
+        "winRate": 0.1176,
+        "pnl$": -4286,
+        "grossWin$": 7984,
+        "grossLoss$": 12270,
+        "pf": 0.651,
+        "sharpe": -2.54,
+        "avgWin$": 1996,
+        "avgLoss$": 409,
+        "expectancy$": -126.06,
+        "maxDD$": 6135,
+        "exitReasons": {
+          "stop": 30,
+          "target": 4
+        }
+      },
+      "is": {
+        "n": 33,
+        "winRate": 0.1212,
+        "pnl$": -3877,
+        "grossWin$": 7984,
+        "grossLoss$": 11861,
+        "pf": 0.673,
+        "sharpe": -2.34,
+        "avgWin$": 1996,
+        "avgLoss$": 409,
+        "expectancy$": -117.48,
+        "maxDD$": 6135,
+        "exitReasons": {
+          "stop": 29,
+          "target": 4
+        }
+      },
+      "oos": {
+        "n": 1,
+        "winRate": 0,
+        "pnl$": -409,
+        "grossWin$": 0,
+        "grossLoss$": 409,
+        "pf": 0,
+        "sharpe": 0,
+        "avgWin$": 0,
+        "avgLoss$": 409,
+        "expectancy$": -409,
+        "maxDD$": 409,
+        "exitReasons": {
+          "stop": 1
+        }
+      }
+    },
+    {
+      "variant": {
+        "kind": "first15",
+        "entryMode": "close",
+        "stopMode": "fixedPts",
+        "stopPts": 25,
+        "targetPts": 20
+      },
+      "all": {
+        "n": 34,
+        "winRate": 0.5,
+        "pnl$": -1921,
+        "grossWin$": 6732,
+        "grossLoss$": 8653,
+        "pf": 0.778,
+        "sharpe": -1.95,
+        "avgWin$": 396,
+        "avgLoss$": 509,
+        "expectancy$": -56.5,
+        "maxDD$": 3110,
+        "exitReasons": {
+          "stop": 14,
+          "target": 17,
+          "stop_amb": 3
+        }
+      },
+      "is": {
+        "n": 33,
+        "winRate": 0.5152,
+        "pnl$": -1412,
+        "grossWin$": 6732,
+        "grossLoss$": 8144,
+        "pf": 0.827,
+        "sharpe": -1.48,
+        "avgWin$": 396,
+        "avgLoss$": 509,
+        "expectancy$": -42.79,
+        "maxDD$": 2601,
+        "exitReasons": {
+          "stop": 13,
+          "target": 17,
+          "stop_amb": 3
+        }
+      },
+      "oos": {
+        "n": 1,
+        "winRate": 0,
+        "pnl$": -509,
+        "grossWin$": 0,
+        "grossLoss$": 509,
+        "pf": 0,
+        "sharpe": 0,
+        "avgWin$": 0,
+        "avgLoss$": 509,
+        "expectancy$": -509,
+        "maxDD$": 509,
+        "exitReasons": {
+          "stop": 1
+        }
+      }
+    },
+    {
+      "variant": {
+        "kind": "first15",
+        "entryMode": "close",
+        "stopMode": "fixedPts",
+        "stopPts": 25,
+        "targetPts": 30
+      },
+      "all": {
+        "n": 34,
+        "winRate": 0.3529,
+        "pnl$": -4046,
+        "grossWin$": 7152,
+        "grossLoss$": 11198,
+        "pf": 0.639,
+        "sharpe": -3.52,
+        "avgWin$": 596,
+        "avgLoss$": 509,
+        "expectancy$": -119,
+        "maxDD$": 4133,
+        "exitReasons": {
+          "stop": 21,
+          "target": 12,
+          "stop_amb": 1
+        }
+      },
+      "is": {
+        "n": 33,
+        "winRate": 0.3636,
+        "pnl$": -3537,
+        "grossWin$": 7152,
+        "grossLoss$": 10689,
+        "pf": 0.669,
+        "sharpe": -3.15,
+        "avgWin$": 596,
+        "avgLoss$": 509,
+        "expectancy$": -107.18,
+        "maxDD$": 3624,
+        "exitReasons": {
+          "stop": 20,
+          "target": 12,
+          "stop_amb": 1
+        }
+      },
+      "oos": {
+        "n": 1,
+        "winRate": 0,
+        "pnl$": -509,
+        "grossWin$": 0,
+        "grossLoss$": 509,
+        "pf": 0,
+        "sharpe": 0,
+        "avgWin$": 0,
+        "avgLoss$": 509,
+        "expectancy$": -509,
+        "maxDD$": 509,
+        "exitReasons": {
+          "stop": 1
+        }
+      }
+    },
+    {
+      "variant": {
+        "kind": "first15",
+        "entryMode": "close",
+        "stopMode": "fixedPts",
+        "stopPts": 25,
+        "targetPts": 50
+      },
+      "all": {
+        "n": 34,
+        "winRate": 0.2647,
+        "pnl$": -3761,
+        "grossWin$": 8964,
+        "grossLoss$": 12725,
+        "pf": 0.704,
+        "sharpe": -2.61,
+        "avgWin$": 996,
+        "avgLoss$": 509,
+        "expectancy$": -110.62,
+        "maxDD$": 4625,
+        "exitReasons": {
+          "stop": 25,
+          "target": 9
+        }
+      },
+      "is": {
+        "n": 33,
+        "winRate": 0.2727,
+        "pnl$": -3252,
+        "grossWin$": 8964,
+        "grossLoss$": 12216,
+        "pf": 0.734,
+        "sharpe": -2.3,
+        "avgWin$": 996,
+        "avgLoss$": 509,
+        "expectancy$": -98.55,
+        "maxDD$": 4116,
+        "exitReasons": {
+          "stop": 24,
+          "target": 9
+        }
+      },
+      "oos": {
+        "n": 1,
+        "winRate": 0,
+        "pnl$": -509,
+        "grossWin$": 0,
+        "grossLoss$": 509,
+        "pf": 0,
+        "sharpe": 0,
+        "avgWin$": 0,
+        "avgLoss$": 509,
+        "expectancy$": -509,
+        "maxDD$": 509,
+        "exitReasons": {
+          "stop": 1
+        }
+      }
+    },
+    {
+      "variant": {
+        "kind": "first15",
+        "entryMode": "close",
+        "stopMode": "fixedPts",
+        "stopPts": 25,
+        "targetPts": 75
+      },
+      "all": {
+        "n": 34,
+        "winRate": 0.1471,
+        "pnl$": -8331,
+        "grossWin$": 6430,
+        "grossLoss$": 14761,
+        "pf": 0.436,
+        "sharpe": -5.84,
+        "avgWin$": 1286,
+        "avgLoss$": 509,
+        "expectancy$": -245.03,
+        "maxDD$": 8331,
+        "exitReasons": {
+          "stop": 29,
+          "time_stop": 1,
+          "target": 4
+        }
+      },
+      "is": {
+        "n": 33,
+        "winRate": 0.1515,
+        "pnl$": -7822,
+        "grossWin$": 6430,
+        "grossLoss$": 14252,
+        "pf": 0.451,
+        "sharpe": -5.58,
+        "avgWin$": 1286,
+        "avgLoss$": 509,
+        "expectancy$": -237.03,
+        "maxDD$": 7822,
+        "exitReasons": {
+          "stop": 28,
+          "time_stop": 1,
+          "target": 4
+        }
+      },
+      "oos": {
+        "n": 1,
+        "winRate": 0,
+        "pnl$": -509,
+        "grossWin$": 0,
+        "grossLoss$": 509,
+        "pf": 0,
+        "sharpe": 0,
+        "avgWin$": 0,
+        "avgLoss$": 509,
+        "expectancy$": -509,
+        "maxDD$": 509,
+        "exitReasons": {
+          "stop": 1
+        }
+      }
+    },
+    {
+      "variant": {
+        "kind": "first15",
+        "entryMode": "close",
+        "stopMode": "fixedPts",
+        "stopPts": 25,
+        "targetPts": 100
+      },
+      "all": {
+        "n": 34,
+        "winRate": 0.1471,
+        "pnl$": -6331,
+        "grossWin$": 8430,
+        "grossLoss$": 14761,
+        "pf": 0.571,
+        "sharpe": -3.58,
+        "avgWin$": 1686,
+        "avgLoss$": 509,
+        "expectancy$": -186.21,
+        "maxDD$": 7126,
+        "exitReasons": {
+          "stop": 29,
+          "time_stop": 1,
+          "target": 4
+        }
+      },
+      "is": {
+        "n": 33,
+        "winRate": 0.1515,
+        "pnl$": -5822,
+        "grossWin$": 8430,
+        "grossLoss$": 14252,
+        "pf": 0.591,
+        "sharpe": -3.35,
+        "avgWin$": 1686,
+        "avgLoss$": 509,
+        "expectancy$": -176.42,
+        "maxDD$": 7126,
+        "exitReasons": {
+          "stop": 28,
+          "time_stop": 1,
+          "target": 4
+        }
+      },
+      "oos": {
+        "n": 1,
+        "winRate": 0,
+        "pnl$": -509,
+        "grossWin$": 0,
+        "grossLoss$": 509,
+        "pf": 0,
+        "sharpe": 0,
+        "avgWin$": 0,
+        "avgLoss$": 509,
+        "expectancy$": -509,
+        "maxDD$": 509,
+        "exitReasons": {
+          "stop": 1
+        }
+      }
+    },
+    {
+      "variant": {
+        "kind": "first15",
+        "entryMode": "close",
+        "stopMode": "fixedPts",
+        "stopPts": 30,
+        "targetPts": 20
+      },
+      "all": {
+        "n": 34,
+        "winRate": 0.5882,
+        "pnl$": -606,
+        "grossWin$": 7920,
+        "grossLoss$": 8526,
+        "pf": 0.929,
+        "sharpe": -0.56,
+        "avgWin$": 396,
+        "avgLoss$": 609,
+        "expectancy$": -17.82,
+        "maxDD$": 2466,
+        "exitReasons": {
+          "stop": 13,
+          "target": 20,
+          "stop_amb": 1
+        }
+      },
+      "is": {
+        "n": 33,
+        "winRate": 0.6061,
+        "pnl$": 3,
+        "grossWin$": 7920,
+        "grossLoss$": 7917,
+        "pf": 1,
+        "sharpe": 0,
+        "avgWin$": 396,
+        "avgLoss$": 609,
+        "expectancy$": 0.09,
+        "maxDD$": 2466,
+        "exitReasons": {
+          "stop": 12,
+          "target": 20,
+          "stop_amb": 1
+        }
+      },
+      "oos": {
+        "n": 1,
+        "winRate": 0,
+        "pnl$": -609,
+        "grossWin$": 0,
+        "grossLoss$": 609,
+        "pf": 0,
+        "sharpe": 0,
+        "avgWin$": 0,
+        "avgLoss$": 609,
+        "expectancy$": -609,
+        "maxDD$": 609,
+        "exitReasons": {
+          "stop": 1
+        }
+      }
+    },
+    {
+      "variant": {
+        "kind": "first15",
+        "entryMode": "close",
+        "stopMode": "fixedPts",
+        "stopPts": 30,
+        "targetPts": 30
+      },
+      "all": {
+        "n": 34,
+        "winRate": 0.4118,
+        "pnl$": -3836,
+        "grossWin$": 8344,
+        "grossLoss$": 12180,
+        "pf": 0.685,
+        "sharpe": -2.98,
+        "avgWin$": 596,
+        "avgLoss$": 609,
+        "expectancy$": -112.82,
+        "maxDD$": 4302,
+        "exitReasons": {
+          "stop": 20,
+          "target": 14
+        }
+      },
+      "is": {
+        "n": 33,
+        "winRate": 0.4242,
+        "pnl$": -3227,
+        "grossWin$": 8344,
+        "grossLoss$": 11571,
+        "pf": 0.721,
+        "sharpe": -2.57,
+        "avgWin$": 596,
+        "avgLoss$": 609,
+        "expectancy$": -97.79,
+        "maxDD$": 4302,
+        "exitReasons": {
+          "stop": 19,
+          "target": 14
+        }
+      },
+      "oos": {
+        "n": 1,
+        "winRate": 0,
+        "pnl$": -609,
+        "grossWin$": 0,
+        "grossLoss$": 609,
+        "pf": 0,
+        "sharpe": 0,
+        "avgWin$": 0,
+        "avgLoss$": 609,
+        "expectancy$": -609,
+        "maxDD$": 609,
+        "exitReasons": {
+          "stop": 1
+        }
+      }
+    },
+    {
+      "variant": {
+        "kind": "first15",
+        "entryMode": "close",
+        "stopMode": "fixedPts",
+        "stopPts": 30,
+        "targetPts": 50
+      },
+      "all": {
+        "n": 34,
+        "winRate": 0.2941,
+        "pnl$": -4656,
+        "grossWin$": 9960,
+        "grossLoss$": 14616,
+        "pf": 0.681,
+        "sharpe": -2.93,
+        "avgWin$": 996,
+        "avgLoss$": 609,
+        "expectancy$": -136.94,
+        "maxDD$": 5043,
+        "exitReasons": {
+          "stop": 24,
+          "target": 10
+        }
+      },
+      "is": {
+        "n": 33,
+        "winRate": 0.303,
+        "pnl$": -4047,
+        "grossWin$": 9960,
+        "grossLoss$": 14007,
+        "pf": 0.711,
+        "sharpe": -2.6,
+        "avgWin$": 996,
+        "avgLoss$": 609,
+        "expectancy$": -122.64,
+        "maxDD$": 4821,
+        "exitReasons": {
+          "stop": 23,
+          "target": 10
+        }
+      },
+      "oos": {
+        "n": 1,
+        "winRate": 0,
+        "pnl$": -609,
+        "grossWin$": 0,
+        "grossLoss$": 609,
+        "pf": 0,
+        "sharpe": 0,
+        "avgWin$": 0,
+        "avgLoss$": 609,
+        "expectancy$": -609,
+        "maxDD$": 609,
+        "exitReasons": {
+          "stop": 1
+        }
+      }
+    },
+    {
+      "variant": {
+        "kind": "first15",
+        "entryMode": "close",
+        "stopMode": "fixedPts",
+        "stopPts": 30,
+        "targetPts": 75
+      },
+      "all": {
+        "n": 34,
+        "winRate": 0.1471,
+        "pnl$": -11231,
+        "grossWin$": 6430,
+        "grossLoss$": 17661,
+        "pf": 0.364,
+        "sharpe": -7.48,
+        "avgWin$": 1286,
+        "avgLoss$": 609,
+        "expectancy$": -330.32,
+        "maxDD$": 11231,
+        "exitReasons": {
+          "stop": 29,
+          "time_stop": 1,
+          "target": 4
+        }
+      },
+      "is": {
+        "n": 33,
+        "winRate": 0.1515,
+        "pnl$": -10622,
+        "grossWin$": 6430,
+        "grossLoss$": 17052,
+        "pf": 0.377,
+        "sharpe": -7.2,
+        "avgWin$": 1286,
+        "avgLoss$": 609,
+        "expectancy$": -321.88,
+        "maxDD$": 10622,
+        "exitReasons": {
+          "stop": 28,
+          "time_stop": 1,
+          "target": 4
+        }
+      },
+      "oos": {
+        "n": 1,
+        "winRate": 0,
+        "pnl$": -609,
+        "grossWin$": 0,
+        "grossLoss$": 609,
+        "pf": 0,
+        "sharpe": 0,
+        "avgWin$": 0,
+        "avgLoss$": 609,
+        "expectancy$": -609,
+        "maxDD$": 609,
+        "exitReasons": {
+          "stop": 1
+        }
+      }
+    },
+    {
+      "variant": {
+        "kind": "first15",
+        "entryMode": "close",
+        "stopMode": "fixedPts",
+        "stopPts": 30,
+        "targetPts": 100
+      },
+      "all": {
+        "n": 34,
+        "winRate": 0.1471,
+        "pnl$": -9231,
+        "grossWin$": 8430,
+        "grossLoss$": 17661,
+        "pf": 0.477,
+        "sharpe": -5.01,
+        "avgWin$": 1686,
+        "avgLoss$": 609,
+        "expectancy$": -271.5,
+        "maxDD$": 9231,
+        "exitReasons": {
+          "stop": 29,
+          "time_stop": 1,
+          "target": 4
+        }
+      },
+      "is": {
+        "n": 33,
+        "winRate": 0.1515,
+        "pnl$": -8622,
+        "grossWin$": 8430,
+        "grossLoss$": 17052,
+        "pf": 0.494,
+        "sharpe": -4.76,
+        "avgWin$": 1686,
+        "avgLoss$": 609,
+        "expectancy$": -261.27,
+        "maxDD$": 8622,
+        "exitReasons": {
+          "stop": 28,
+          "time_stop": 1,
+          "target": 4
+        }
+      },
+      "oos": {
+        "n": 1,
+        "winRate": 0,
+        "pnl$": -609,
+        "grossWin$": 0,
+        "grossLoss$": 609,
+        "pf": 0,
+        "sharpe": 0,
+        "avgWin$": 0,
+        "avgLoss$": 609,
+        "expectancy$": -609,
+        "maxDD$": 609,
+        "exitReasons": {
+          "stop": 1
+        }
+      }
+    },
+    {
+      "variant": {
+        "kind": "first15",
+        "entryMode": "close",
+        "stopMode": "fixedPts",
+        "stopPts": 40,
+        "targetPts": 20
+      },
+      "all": {
+        "n": 34,
+        "winRate": 0.6471,
+        "pnl$": -996,
+        "grossWin$": 8712,
+        "grossLoss$": 9708,
+        "pf": 0.897,
+        "sharpe": -0.8,
+        "avgWin$": 396,
+        "avgLoss$": 809,
+        "expectancy$": -29.29,
+        "maxDD$": 2461,
+        "exitReasons": {
+          "stop": 11,
+          "target": 22,
+          "stop_amb": 1
+        }
+      },
+      "is": {
+        "n": 33,
+        "winRate": 0.6667,
+        "pnl$": -187,
+        "grossWin$": 8712,
+        "grossLoss$": 8899,
+        "pf": 0.979,
+        "sharpe": -0.16,
+        "avgWin$": 396,
+        "avgLoss$": 809,
+        "expectancy$": -5.67,
+        "maxDD$": 2461,
+        "exitReasons": {
+          "stop": 10,
+          "target": 22,
+          "stop_amb": 1
+        }
+      },
+      "oos": {
+        "n": 1,
+        "winRate": 0,
+        "pnl$": -809,
+        "grossWin$": 0,
+        "grossLoss$": 809,
+        "pf": 0,
+        "sharpe": 0,
+        "avgWin$": 0,
+        "avgLoss$": 809,
+        "expectancy$": -809,
+        "maxDD$": 809,
+        "exitReasons": {
+          "stop": 1
+        }
+      }
+    },
+    {
+      "variant": {
+        "kind": "first15",
+        "entryMode": "close",
+        "stopMode": "fixedPts",
+        "stopPts": 40,
+        "targetPts": 30
+      },
+      "all": {
+        "n": 34,
+        "winRate": 0.4412,
+        "pnl$": -6431,
+        "grossWin$": 8940,
+        "grossLoss$": 15371,
+        "pf": 0.582,
+        "sharpe": -4.24,
+        "avgWin$": 596,
+        "avgLoss$": 809,
+        "expectancy$": -189.15,
+        "maxDD$": 6431,
+        "exitReasons": {
+          "stop": 19,
+          "target": 15
+        }
+      },
+      "is": {
+        "n": 33,
+        "winRate": 0.4545,
+        "pnl$": -5622,
+        "grossWin$": 8940,
+        "grossLoss$": 14562,
+        "pf": 0.614,
+        "sharpe": -3.81,
+        "avgWin$": 596,
+        "avgLoss$": 809,
+        "expectancy$": -170.36,
+        "maxDD$": 6302,
+        "exitReasons": {
+          "stop": 18,
+          "target": 15
+        }
+      },
+      "oos": {
+        "n": 1,
+        "winRate": 0,
+        "pnl$": -809,
+        "grossWin$": 0,
+        "grossLoss$": 809,
+        "pf": 0,
+        "sharpe": 0,
+        "avgWin$": 0,
+        "avgLoss$": 809,
+        "expectancy$": -809,
+        "maxDD$": 809,
+        "exitReasons": {
+          "stop": 1
+        }
+      }
+    },
+    {
+      "variant": {
+        "kind": "first15",
+        "entryMode": "close",
+        "stopMode": "fixedPts",
+        "stopPts": 40,
+        "targetPts": 50
+      },
+      "all": {
+        "n": 34,
+        "winRate": 0.3235,
+        "pnl$": -7651,
+        "grossWin$": 10956,
+        "grossLoss$": 18607,
+        "pf": 0.589,
+        "sharpe": -4.17,
+        "avgWin$": 996,
+        "avgLoss$": 809,
+        "expectancy$": -225.03,
+        "maxDD$": 7838,
+        "exitReasons": {
+          "stop": 23,
+          "target": 11
+        }
+      },
+      "is": {
+        "n": 33,
+        "winRate": 0.3333,
+        "pnl$": -6842,
+        "grossWin$": 10956,
+        "grossLoss$": 17798,
+        "pf": 0.616,
+        "sharpe": -3.81,
+        "avgWin$": 996,
+        "avgLoss$": 809,
+        "expectancy$": -207.33,
+        "maxDD$": 7216,
+        "exitReasons": {
+          "stop": 22,
+          "target": 11
+        }
+      },
+      "oos": {
+        "n": 1,
+        "winRate": 0,
+        "pnl$": -809,
+        "grossWin$": 0,
+        "grossLoss$": 809,
+        "pf": 0,
+        "sharpe": 0,
+        "avgWin$": 0,
+        "avgLoss$": 809,
+        "expectancy$": -809,
+        "maxDD$": 809,
+        "exitReasons": {
+          "stop": 1
+        }
+      }
+    },
+    {
+      "variant": {
+        "kind": "first15",
+        "entryMode": "close",
+        "stopMode": "fixedPts",
+        "stopPts": 40,
+        "targetPts": 75
+      },
+      "all": {
+        "n": 34,
+        "winRate": 0.1765,
+        "pnl$": -14936,
+        "grossWin$": 7716,
+        "grossLoss$": 22652,
+        "pf": 0.341,
+        "sharpe": -8.43,
+        "avgWin$": 1286,
+        "avgLoss$": 809,
+        "expectancy$": -439.29,
+        "maxDD$": 14936,
+        "exitReasons": {
+          "stop": 28,
+          "time_stop": 2,
+          "target": 4
+        }
+      },
+      "is": {
+        "n": 33,
+        "winRate": 0.1818,
+        "pnl$": -14127,
+        "grossWin$": 7716,
+        "grossLoss$": 21843,
+        "pf": 0.353,
+        "sharpe": -8.12,
+        "avgWin$": 1286,
+        "avgLoss$": 809,
+        "expectancy$": -428.09,
+        "maxDD$": 14127,
+        "exitReasons": {
+          "stop": 27,
+          "time_stop": 2,
+          "target": 4
+        }
+      },
+      "oos": {
+        "n": 1,
+        "winRate": 0,
+        "pnl$": -809,
+        "grossWin$": 0,
+        "grossLoss$": 809,
+        "pf": 0,
+        "sharpe": 0,
+        "avgWin$": 0,
+        "avgLoss$": 809,
+        "expectancy$": -809,
+        "maxDD$": 809,
+        "exitReasons": {
+          "stop": 1
+        }
+      }
+    },
+    {
+      "variant": {
+        "kind": "first15",
+        "entryMode": "close",
+        "stopMode": "fixedPts",
+        "stopPts": 40,
+        "targetPts": 100
+      },
+      "all": {
+        "n": 34,
+        "winRate": 0.1765,
+        "pnl$": -12936,
+        "grossWin$": 9716,
+        "grossLoss$": 22652,
+        "pf": 0.429,
+        "sharpe": -6.21,
+        "avgWin$": 1619.33,
+        "avgLoss$": 809,
+        "expectancy$": -380.47,
+        "maxDD$": 12936,
+        "exitReasons": {
+          "stop": 28,
+          "time_stop": 2,
+          "target": 4
+        }
+      },
+      "is": {
+        "n": 33,
+        "winRate": 0.1818,
+        "pnl$": -12127,
+        "grossWin$": 9716,
+        "grossLoss$": 21843,
+        "pf": 0.445,
+        "sharpe": -5.93,
+        "avgWin$": 1619.33,
+        "avgLoss$": 809,
+        "expectancy$": -367.48,
+        "maxDD$": 12127,
+        "exitReasons": {
+          "stop": 27,
+          "time_stop": 2,
+          "target": 4
+        }
+      },
+      "oos": {
+        "n": 1,
+        "winRate": 0,
+        "pnl$": -809,
+        "grossWin$": 0,
+        "grossLoss$": 809,
+        "pf": 0,
+        "sharpe": 0,
+        "avgWin$": 0,
+        "avgLoss$": 809,
+        "expectancy$": -809,
+        "maxDD$": 809,
+        "exitReasons": {
+          "stop": 1
+        }
+      }
+    },
+    {
+      "variant": {
+        "kind": "first15",
+        "entryMode": "close",
+        "stopMode": "oppExtreme",
+        "targetPts": 20
+      },
+      "all": {
+        "n": 34,
+        "winRate": 0.8529,
+        "pnl$": -506,
+        "grossWin$": 11484,
+        "grossLoss$": 11990,
+        "pf": 0.958,
+        "sharpe": -0.23,
+        "avgWin$": 396,
+        "avgLoss$": 2398,
+        "expectancy$": -14.88,
+        "maxDD$": 5449,
+        "exitReasons": {
+          "target": 29,
+          "stop": 5
+        }
+      },
+      "is": {
+        "n": 33,
+        "winRate": 0.8485,
+        "pnl$": -902,
+        "grossWin$": 11088,
+        "grossLoss$": 11990,
+        "pf": 0.925,
+        "sharpe": -0.41,
+        "avgWin$": 396,
+        "avgLoss$": 2398,
+        "expectancy$": -27.33,
+        "maxDD$": 5449,
+        "exitReasons": {
+          "target": 28,
+          "stop": 5
+        }
+      },
+      "oos": {
+        "n": 1,
+        "winRate": 1,
+        "pnl$": 396,
+        "grossWin$": 396,
+        "grossLoss$": 0,
+        "pf": null,
+        "sharpe": 0,
+        "avgWin$": 396,
+        "avgLoss$": 0,
+        "expectancy$": 396,
+        "maxDD$": 0,
+        "exitReasons": {
+          "target": 1
+        }
+      }
+    },
+    {
+      "variant": {
+        "kind": "first15",
+        "entryMode": "close",
+        "stopMode": "oppExtreme",
+        "targetPts": 30
+      },
+      "all": {
+        "n": 34,
+        "winRate": 0.8235,
+        "pnl$": 1984,
+        "grossWin$": 16688,
+        "grossLoss$": 14704,
+        "pf": 1.135,
+        "sharpe": 0.77,
+        "avgWin$": 596,
+        "avgLoss$": 2450.67,
+        "expectancy$": 58.35,
+        "maxDD$": 4906,
+        "exitReasons": {
+          "target": 28,
+          "stop": 5,
+          "time_stop": 1
+        }
+      },
+      "is": {
+        "n": 33,
+        "winRate": 0.8182,
+        "pnl$": 1388,
+        "grossWin$": 16092,
+        "grossLoss$": 14704,
+        "pf": 1.094,
+        "sharpe": 0.55,
+        "avgWin$": 596,
+        "avgLoss$": 2450.67,
+        "expectancy$": 42.06,
+        "maxDD$": 4906,
+        "exitReasons": {
+          "target": 27,
+          "stop": 5,
+          "time_stop": 1
+        }
+      },
+      "oos": {
+        "n": 1,
+        "winRate": 1,
+        "pnl$": 596,
+        "grossWin$": 596,
+        "grossLoss$": 0,
+        "pf": null,
+        "sharpe": 0,
+        "avgWin$": 596,
+        "avgLoss$": 0,
+        "expectancy$": 596,
+        "maxDD$": 0,
+        "exitReasons": {
+          "target": 1
+        }
+      }
+    },
+    {
+      "variant": {
+        "kind": "first15",
+        "entryMode": "close",
+        "stopMode": "oppExtreme",
+        "targetPts": 50
+      },
+      "all": {
+        "n": 34,
+        "winRate": 0.6765,
+        "pnl$": -4446,
+        "grossWin$": 22908,
+        "grossLoss$": 27354,
+        "pf": 0.837,
+        "sharpe": -1.15,
+        "avgWin$": 996,
+        "avgLoss$": 2486.73,
+        "expectancy$": -130.76,
+        "maxDD$": 11896,
+        "exitReasons": {
+          "time_stop": 2,
+          "target": 23,
+          "stop": 9
+        }
+      },
+      "is": {
+        "n": 33,
+        "winRate": 0.6667,
+        "pnl$": -5442,
+        "grossWin$": 21912,
+        "grossLoss$": 27354,
+        "pf": 0.801,
+        "sharpe": -1.44,
+        "avgWin$": 996,
+        "avgLoss$": 2486.73,
+        "expectancy$": -164.91,
+        "maxDD$": 11896,
+        "exitReasons": {
+          "time_stop": 2,
+          "target": 22,
+          "stop": 9
+        }
+      },
+      "oos": {
+        "n": 1,
+        "winRate": 1,
+        "pnl$": 996,
+        "grossWin$": 996,
+        "grossLoss$": 0,
+        "pf": null,
+        "sharpe": 0,
+        "avgWin$": 996,
+        "avgLoss$": 0,
+        "expectancy$": 996,
+        "maxDD$": 0,
+        "exitReasons": {
+          "target": 1
+        }
+      }
+    },
+    {
+      "variant": {
+        "kind": "first15",
+        "entryMode": "close",
+        "stopMode": "oppExtreme",
+        "targetPts": 75
+      },
+      "all": {
+        "n": 34,
+        "winRate": 0.5,
+        "pnl$": -14021,
+        "grossWin$": 24172,
+        "grossLoss$": 38193,
+        "pf": 0.633,
+        "sharpe": -3.14,
+        "avgWin$": 1421.88,
+        "avgLoss$": 2246.65,
+        "expectancy$": -412.38,
+        "maxDD$": 18248,
+        "exitReasons": {
+          "time_stop": 7,
+          "target": 15,
+          "stop": 12
+        }
+      },
+      "is": {
+        "n": 33,
+        "winRate": 0.4848,
+        "pnl$": -15517,
+        "grossWin$": 22676,
+        "grossLoss$": 38193,
+        "pf": 0.594,
+        "sharpe": -3.58,
+        "avgWin$": 1417.25,
+        "avgLoss$": 2246.65,
+        "expectancy$": -470.21,
+        "maxDD$": 18248,
+        "exitReasons": {
+          "time_stop": 7,
+          "target": 14,
+          "stop": 12
+        }
+      },
+      "oos": {
+        "n": 1,
+        "winRate": 1,
+        "pnl$": 1496,
+        "grossWin$": 1496,
+        "grossLoss$": 0,
+        "pf": null,
+        "sharpe": 0,
+        "avgWin$": 1496,
+        "avgLoss$": 0,
+        "expectancy$": 1496,
+        "maxDD$": 0,
+        "exitReasons": {
+          "target": 1
+        }
+      }
+    },
+    {
+      "variant": {
+        "kind": "first15",
+        "entryMode": "close",
+        "stopMode": "oppExtreme",
+        "targetPts": 100
+      },
+      "all": {
+        "n": 34,
+        "winRate": 0.5,
+        "pnl$": -8376,
+        "grossWin$": 29817,
+        "grossLoss$": 38193,
+        "pf": 0.781,
+        "sharpe": -1.73,
+        "avgWin$": 1753.94,
+        "avgLoss$": 2246.65,
+        "expectancy$": -246.35,
+        "maxDD$": 15103,
+        "exitReasons": {
+          "time_stop": 8,
+          "target": 14,
+          "stop": 12
+        }
+      },
+      "is": {
+        "n": 33,
+        "winRate": 0.4848,
+        "pnl$": -10372,
+        "grossWin$": 27821,
+        "grossLoss$": 38193,
+        "pf": 0.728,
+        "sharpe": -2.2,
+        "avgWin$": 1738.81,
+        "avgLoss$": 2246.65,
+        "expectancy$": -314.3,
+        "maxDD$": 15103,
+        "exitReasons": {
+          "time_stop": 8,
+          "target": 13,
+          "stop": 12
+        }
+      },
+      "oos": {
+        "n": 1,
+        "winRate": 1,
+        "pnl$": 1996,
+        "grossWin$": 1996,
+        "grossLoss$": 0,
+        "pf": null,
+        "sharpe": 0,
+        "avgWin$": 1996,
+        "avgLoss$": 0,
+        "expectancy$": 1996,
+        "maxDD$": 0,
+        "exitReasons": {
+          "target": 1
+        }
+      }
+    },
+    {
+      "variant": {
+        "kind": "first15",
+        "entryMode": "breakStop",
+        "stopMode": "fixedPts",
+        "stopPts": 15,
+        "targetPts": 20
+      },
+      "all": {
+        "n": 27,
+        "winRate": 0.2222,
+        "pnl$": -4113,
+        "grossWin$": 2376,
+        "grossLoss$": 6489,
+        "pf": 0.366,
+        "sharpe": -8.1,
+        "avgWin$": 396,
+        "avgLoss$": 309,
+        "expectancy$": -152.33,
+        "maxDD$": 4200,
+        "exitReasons": {
+          "stop": 19,
+          "target": 6,
+          "stop_amb": 2
+        }
+      },
+      "is": {
+        "n": 26,
+        "winRate": 0.2308,
+        "pnl$": -3804,
+        "grossWin$": 2376,
+        "grossLoss$": 6180,
+        "pf": 0.384,
+        "sharpe": -7.67,
+        "avgWin$": 396,
+        "avgLoss$": 309,
+        "expectancy$": -146.31,
+        "maxDD$": 3891,
+        "exitReasons": {
+          "stop": 18,
+          "target": 6,
+          "stop_amb": 2
+        }
+      },
+      "oos": {
+        "n": 1,
+        "winRate": 0,
+        "pnl$": -309,
+        "grossWin$": 0,
+        "grossLoss$": 309,
+        "pf": 0,
+        "sharpe": 0,
+        "avgWin$": 0,
+        "avgLoss$": 309,
+        "expectancy$": -309,
+        "maxDD$": 309,
+        "exitReasons": {
+          "stop": 1
+        }
+      }
+    },
+    {
+      "variant": {
+        "kind": "first15",
+        "entryMode": "breakStop",
+        "stopMode": "fixedPts",
+        "stopPts": 15,
+        "targetPts": 30
+      },
+      "all": {
+        "n": 27,
+        "winRate": 0.1111,
+        "pnl$": -5628,
+        "grossWin$": 1788,
+        "grossLoss$": 7416,
+        "pf": 0.241,
+        "sharpe": -11.42,
+        "avgWin$": 596,
+        "avgLoss$": 309,
+        "expectancy$": -208.44,
+        "maxDD$": 5628,
+        "exitReasons": {
+          "stop": 23,
+          "stop_amb": 1,
+          "target": 3
+        }
+      },
+      "is": {
+        "n": 26,
+        "winRate": 0.1154,
+        "pnl$": -5319,
+        "grossWin$": 1788,
+        "grossLoss$": 7107,
+        "pf": 0.252,
+        "sharpe": -11.01,
+        "avgWin$": 596,
+        "avgLoss$": 309,
+        "expectancy$": -204.58,
+        "maxDD$": 5319,
+        "exitReasons": {
+          "stop": 22,
+          "stop_amb": 1,
+          "target": 3
+        }
+      },
+      "oos": {
+        "n": 1,
+        "winRate": 0,
+        "pnl$": -309,
+        "grossWin$": 0,
+        "grossLoss$": 309,
+        "pf": 0,
+        "sharpe": 0,
+        "avgWin$": 0,
+        "avgLoss$": 309,
+        "expectancy$": -309,
+        "maxDD$": 309,
+        "exitReasons": {
+          "stop": 1
+        }
+      }
+    },
+    {
+      "variant": {
+        "kind": "first15",
+        "entryMode": "breakStop",
+        "stopMode": "fixedPts",
+        "stopPts": 15,
+        "targetPts": 50
+      },
+      "all": {
+        "n": 27,
+        "winRate": 0.0741,
+        "pnl$": -5733,
+        "grossWin$": 1992,
+        "grossLoss$": 7725,
+        "pf": 0.258,
+        "sharpe": -9.68,
+        "avgWin$": 996,
+        "avgLoss$": 309,
+        "expectancy$": -212.33,
+        "maxDD$": 5733,
+        "exitReasons": {
+          "stop": 25,
+          "target": 2
+        }
+      },
+      "is": {
+        "n": 26,
+        "winRate": 0.0769,
+        "pnl$": -5424,
+        "grossWin$": 1992,
+        "grossLoss$": 7416,
+        "pf": 0.269,
+        "sharpe": -9.34,
+        "avgWin$": 996,
+        "avgLoss$": 309,
+        "expectancy$": -208.62,
+        "maxDD$": 5424,
+        "exitReasons": {
+          "stop": 24,
+          "target": 2
+        }
+      },
+      "oos": {
+        "n": 1,
+        "winRate": 0,
+        "pnl$": -309,
+        "grossWin$": 0,
+        "grossLoss$": 309,
+        "pf": 0,
+        "sharpe": 0,
+        "avgWin$": 0,
+        "avgLoss$": 309,
+        "expectancy$": -309,
+        "maxDD$": 309,
+        "exitReasons": {
+          "stop": 1
+        }
+      }
+    },
+    {
+      "variant": {
+        "kind": "first15",
+        "entryMode": "breakStop",
+        "stopMode": "fixedPts",
+        "stopPts": 15,
+        "targetPts": 75
+      },
+      "all": {
+        "n": 27,
+        "winRate": 0.037,
+        "pnl$": -6538,
+        "grossWin$": 1496,
+        "grossLoss$": 8034,
+        "pf": 0.186,
+        "sharpe": -11.07,
+        "avgWin$": 1496,
+        "avgLoss$": 309,
+        "expectancy$": -242.15,
+        "maxDD$": 6538,
+        "exitReasons": {
+          "stop": 26,
+          "target": 1
+        }
+      },
+      "is": {
+        "n": 26,
+        "winRate": 0.0385,
+        "pnl$": -6229,
+        "grossWin$": 1496,
+        "grossLoss$": 7725,
+        "pf": 0.194,
+        "sharpe": -10.74,
+        "avgWin$": 1496,
+        "avgLoss$": 309,
+        "expectancy$": -239.58,
+        "maxDD$": 6229,
+        "exitReasons": {
+          "stop": 25,
+          "target": 1
+        }
+      },
+      "oos": {
+        "n": 1,
+        "winRate": 0,
+        "pnl$": -309,
+        "grossWin$": 0,
+        "grossLoss$": 309,
+        "pf": 0,
+        "sharpe": 0,
+        "avgWin$": 0,
+        "avgLoss$": 309,
+        "expectancy$": -309,
+        "maxDD$": 309,
+        "exitReasons": {
+          "stop": 1
+        }
+      }
+    },
+    {
+      "variant": {
+        "kind": "first15",
+        "entryMode": "breakStop",
+        "stopMode": "fixedPts",
+        "stopPts": 15,
+        "targetPts": 100
+      },
+      "all": {
+        "n": 27,
+        "winRate": 0.037,
+        "pnl$": -6038,
+        "grossWin$": 1996,
+        "grossLoss$": 8034,
+        "pf": 0.248,
+        "sharpe": -8,
+        "avgWin$": 1996,
+        "avgLoss$": 309,
+        "expectancy$": -223.63,
+        "maxDD$": 6038,
+        "exitReasons": {
+          "stop": 26,
+          "target": 1
+        }
+      },
+      "is": {
+        "n": 26,
+        "winRate": 0.0385,
+        "pnl$": -5729,
+        "grossWin$": 1996,
+        "grossLoss$": 7725,
+        "pf": 0.258,
+        "sharpe": -7.74,
+        "avgWin$": 1996,
+        "avgLoss$": 309,
+        "expectancy$": -220.35,
+        "maxDD$": 5729,
+        "exitReasons": {
+          "stop": 25,
+          "target": 1
+        }
+      },
+      "oos": {
+        "n": 1,
+        "winRate": 0,
+        "pnl$": -309,
+        "grossWin$": 0,
+        "grossLoss$": 309,
+        "pf": 0,
+        "sharpe": 0,
+        "avgWin$": 0,
+        "avgLoss$": 309,
+        "expectancy$": -309,
+        "maxDD$": 309,
+        "exitReasons": {
+          "stop": 1
+        }
+      }
+    },
+    {
+      "variant": {
+        "kind": "first15",
+        "entryMode": "breakStop",
+        "stopMode": "fixedPts",
+        "stopPts": 20,
+        "targetPts": 20
+      },
+      "all": {
+        "n": 27,
+        "winRate": 0.2593,
+        "pnl$": -5408,
+        "grossWin$": 2772,
+        "grossLoss$": 8180,
+        "pf": 0.339,
+        "sharpe": -8.84,
+        "avgWin$": 396,
+        "avgLoss$": 409,
+        "expectancy$": -200.3,
+        "maxDD$": 5408,
+        "exitReasons": {
+          "stop": 18,
+          "target": 7,
+          "stop_amb": 2
+        }
+      },
+      "is": {
+        "n": 26,
+        "winRate": 0.2692,
+        "pnl$": -4999,
+        "grossWin$": 2772,
+        "grossLoss$": 7771,
+        "pf": 0.357,
+        "sharpe": -8.38,
+        "avgWin$": 396,
+        "avgLoss$": 409,
+        "expectancy$": -192.27,
+        "maxDD$": 4999,
+        "exitReasons": {
+          "stop": 17,
+          "target": 7,
+          "stop_amb": 2
+        }
+      },
+      "oos": {
+        "n": 1,
+        "winRate": 0,
+        "pnl$": -409,
+        "grossWin$": 0,
+        "grossLoss$": 409,
+        "pf": 0,
+        "sharpe": 0,
+        "avgWin$": 0,
+        "avgLoss$": 409,
+        "expectancy$": -409,
+        "maxDD$": 409,
+        "exitReasons": {
+          "stop": 1
+        }
+      }
+    },
+    {
+      "variant": {
+        "kind": "first15",
+        "entryMode": "breakStop",
+        "stopMode": "fixedPts",
+        "stopPts": 20,
+        "targetPts": 30
+      },
+      "all": {
+        "n": 27,
+        "winRate": 0.1481,
+        "pnl$": -7023,
+        "grossWin$": 2384,
+        "grossLoss$": 9407,
+        "pf": 0.253,
+        "sharpe": -11.35,
+        "avgWin$": 596,
+        "avgLoss$": 409,
+        "expectancy$": -260.11,
+        "maxDD$": 7023,
+        "exitReasons": {
+          "stop": 22,
+          "stop_amb": 1,
+          "target": 4
+        }
+      },
+      "is": {
+        "n": 26,
+        "winRate": 0.1538,
+        "pnl$": -6614,
+        "grossWin$": 2384,
+        "grossLoss$": 8998,
+        "pf": 0.265,
+        "sharpe": -10.92,
+        "avgWin$": 596,
+        "avgLoss$": 409,
+        "expectancy$": -254.38,
+        "maxDD$": 6614,
+        "exitReasons": {
+          "stop": 21,
+          "stop_amb": 1,
+          "target": 4
+        }
+      },
+      "oos": {
+        "n": 1,
+        "winRate": 0,
+        "pnl$": -409,
+        "grossWin$": 0,
+        "grossLoss$": 409,
+        "pf": 0,
+        "sharpe": 0,
+        "avgWin$": 0,
+        "avgLoss$": 409,
+        "expectancy$": -409,
+        "maxDD$": 409,
+        "exitReasons": {
+          "stop": 1
+        }
+      }
+    },
+    {
+      "variant": {
+        "kind": "first15",
+        "entryMode": "breakStop",
+        "stopMode": "fixedPts",
+        "stopPts": 20,
+        "targetPts": 50
+      },
+      "all": {
+        "n": 27,
+        "winRate": 0.1111,
+        "pnl$": -6828,
+        "grossWin$": 2988,
+        "grossLoss$": 9816,
+        "pf": 0.304,
+        "sharpe": -8.92,
+        "avgWin$": 996,
+        "avgLoss$": 409,
+        "expectancy$": -252.89,
+        "maxDD$": 6828,
+        "exitReasons": {
+          "stop": 24,
+          "target": 3
+        }
+      },
+      "is": {
+        "n": 26,
+        "winRate": 0.1154,
+        "pnl$": -6419,
+        "grossWin$": 2988,
+        "grossLoss$": 9407,
+        "pf": 0.318,
+        "sharpe": -8.56,
+        "avgWin$": 996,
+        "avgLoss$": 409,
+        "expectancy$": -246.88,
+        "maxDD$": 6419,
+        "exitReasons": {
+          "stop": 23,
+          "target": 3
+        }
+      },
+      "oos": {
+        "n": 1,
+        "winRate": 0,
+        "pnl$": -409,
+        "grossWin$": 0,
+        "grossLoss$": 409,
+        "pf": 0,
+        "sharpe": 0,
+        "avgWin$": 0,
+        "avgLoss$": 409,
+        "expectancy$": -409,
+        "maxDD$": 409,
+        "exitReasons": {
+          "stop": 1
+        }
+      }
+    },
+    {
+      "variant": {
+        "kind": "first15",
+        "entryMode": "breakStop",
+        "stopMode": "fixedPts",
+        "stopPts": 20,
+        "targetPts": 75
+      },
+      "all": {
+        "n": 27,
+        "winRate": 0.037,
+        "pnl$": -9138,
+        "grossWin$": 1496,
+        "grossLoss$": 10634,
+        "pf": 0.141,
+        "sharpe": -14.65,
+        "avgWin$": 1496,
+        "avgLoss$": 409,
+        "expectancy$": -338.44,
+        "maxDD$": 9138,
+        "exitReasons": {
+          "stop": 26,
+          "target": 1
+        }
+      },
+      "is": {
+        "n": 26,
+        "winRate": 0.0385,
+        "pnl$": -8729,
+        "grossWin$": 1496,
+        "grossLoss$": 10225,
+        "pf": 0.146,
+        "sharpe": -14.27,
+        "avgWin$": 1496,
+        "avgLoss$": 409,
+        "expectancy$": -335.73,
+        "maxDD$": 8729,
+        "exitReasons": {
+          "stop": 25,
+          "target": 1
+        }
+      },
+      "oos": {
+        "n": 1,
+        "winRate": 0,
+        "pnl$": -409,
+        "grossWin$": 0,
+        "grossLoss$": 409,
+        "pf": 0,
+        "sharpe": 0,
+        "avgWin$": 0,
+        "avgLoss$": 409,
+        "expectancy$": -409,
+        "maxDD$": 409,
+        "exitReasons": {
+          "stop": 1
+        }
+      }
+    },
+    {
+      "variant": {
+        "kind": "first15",
+        "entryMode": "breakStop",
+        "stopMode": "fixedPts",
+        "stopPts": 20,
+        "targetPts": 100
+      },
+      "all": {
+        "n": 27,
+        "winRate": 0.037,
+        "pnl$": -8638,
+        "grossWin$": 1996,
+        "grossLoss$": 10634,
+        "pf": 0.188,
+        "sharpe": -10.97,
+        "avgWin$": 1996,
+        "avgLoss$": 409,
+        "expectancy$": -319.93,
+        "maxDD$": 8638,
+        "exitReasons": {
+          "stop": 26,
+          "target": 1
+        }
+      },
+      "is": {
+        "n": 26,
+        "winRate": 0.0385,
+        "pnl$": -8229,
+        "grossWin$": 1996,
+        "grossLoss$": 10225,
+        "pf": 0.195,
+        "sharpe": -10.65,
+        "avgWin$": 1996,
+        "avgLoss$": 409,
+        "expectancy$": -316.5,
+        "maxDD$": 8229,
+        "exitReasons": {
+          "stop": 25,
+          "target": 1
+        }
+      },
+      "oos": {
+        "n": 1,
+        "winRate": 0,
+        "pnl$": -409,
+        "grossWin$": 0,
+        "grossLoss$": 409,
+        "pf": 0,
+        "sharpe": 0,
+        "avgWin$": 0,
+        "avgLoss$": 409,
+        "expectancy$": -409,
+        "maxDD$": 409,
+        "exitReasons": {
+          "stop": 1
+        }
+      }
+    },
+    {
+      "variant": {
+        "kind": "first15",
+        "entryMode": "breakStop",
+        "stopMode": "fixedPts",
+        "stopPts": 25,
+        "targetPts": 20
+      },
+      "all": {
+        "n": 27,
+        "winRate": 0.2963,
+        "pnl$": -6503,
+        "grossWin$": 3168,
+        "grossLoss$": 9671,
+        "pf": 0.328,
+        "sharpe": -9.08,
+        "avgWin$": 396,
+        "avgLoss$": 509,
+        "expectancy$": -240.85,
+        "maxDD$": 6503,
+        "exitReasons": {
+          "stop": 17,
+          "target": 8,
+          "stop_amb": 2
+        }
+      },
+      "is": {
+        "n": 26,
+        "winRate": 0.3077,
+        "pnl$": -5994,
+        "grossWin$": 3168,
+        "grossLoss$": 9162,
+        "pf": 0.346,
+        "sharpe": -8.59,
+        "avgWin$": 396,
+        "avgLoss$": 509,
+        "expectancy$": -230.54,
+        "maxDD$": 5994,
+        "exitReasons": {
+          "stop": 16,
+          "target": 8,
+          "stop_amb": 2
+        }
+      },
+      "oos": {
+        "n": 1,
+        "winRate": 0,
+        "pnl$": -509,
+        "grossWin$": 0,
+        "grossLoss$": 509,
+        "pf": 0,
+        "sharpe": 0,
+        "avgWin$": 0,
+        "avgLoss$": 509,
+        "expectancy$": -509,
+        "maxDD$": 509,
+        "exitReasons": {
+          "stop": 1
+        }
+      }
+    },
+    {
+      "variant": {
+        "kind": "first15",
+        "entryMode": "breakStop",
+        "stopMode": "fixedPts",
+        "stopPts": 25,
+        "targetPts": 30
+      },
+      "all": {
+        "n": 27,
+        "winRate": 0.2222,
+        "pnl$": -7113,
+        "grossWin$": 3576,
+        "grossLoss$": 10689,
+        "pf": 0.335,
+        "sharpe": -8.93,
+        "avgWin$": 596,
+        "avgLoss$": 509,
+        "expectancy$": -263.44,
+        "maxDD$": 7113,
+        "exitReasons": {
+          "stop": 20,
+          "stop_amb": 1,
+          "target": 6
+        }
+      },
+      "is": {
+        "n": 26,
+        "winRate": 0.2308,
+        "pnl$": -6604,
+        "grossWin$": 3576,
+        "grossLoss$": 10180,
+        "pf": 0.351,
+        "sharpe": -8.49,
+        "avgWin$": 596,
+        "avgLoss$": 509,
+        "expectancy$": -254,
+        "maxDD$": 6604,
+        "exitReasons": {
+          "stop": 19,
+          "stop_amb": 1,
+          "target": 6
+        }
+      },
+      "oos": {
+        "n": 1,
+        "winRate": 0,
+        "pnl$": -509,
+        "grossWin$": 0,
+        "grossLoss$": 509,
+        "pf": 0,
+        "sharpe": 0,
+        "avgWin$": 0,
+        "avgLoss$": 509,
+        "expectancy$": -509,
+        "maxDD$": 509,
+        "exitReasons": {
+          "stop": 1
+        }
+      }
+    },
+    {
+      "variant": {
+        "kind": "first15",
+        "entryMode": "breakStop",
+        "stopMode": "fixedPts",
+        "stopPts": 25,
+        "targetPts": 50
+      },
+      "all": {
+        "n": 27,
+        "winRate": 0.1852,
+        "pnl$": -6218,
+        "grossWin$": 4980,
+        "grossLoss$": 11198,
+        "pf": 0.445,
+        "sharpe": -6.14,
+        "avgWin$": 996,
+        "avgLoss$": 509,
+        "expectancy$": -230.3,
+        "maxDD$": 6218,
+        "exitReasons": {
+          "stop": 22,
+          "target": 5
+        }
+      },
+      "is": {
+        "n": 26,
+        "winRate": 0.1923,
+        "pnl$": -5709,
+        "grossWin$": 4980,
+        "grossLoss$": 10689,
+        "pf": 0.466,
+        "sharpe": -5.76,
+        "avgWin$": 996,
+        "avgLoss$": 509,
+        "expectancy$": -219.58,
+        "maxDD$": 5709,
+        "exitReasons": {
+          "stop": 21,
+          "target": 5
+        }
+      },
+      "oos": {
+        "n": 1,
+        "winRate": 0,
+        "pnl$": -509,
+        "grossWin$": 0,
+        "grossLoss$": 509,
+        "pf": 0,
+        "sharpe": 0,
+        "avgWin$": 0,
+        "avgLoss$": 509,
+        "expectancy$": -509,
+        "maxDD$": 509,
+        "exitReasons": {
+          "stop": 1
+        }
+      }
+    },
+    {
+      "variant": {
+        "kind": "first15",
+        "entryMode": "breakStop",
+        "stopMode": "fixedPts",
+        "stopPts": 25,
+        "targetPts": 75
+      },
+      "all": {
+        "n": 27,
+        "winRate": 0.0741,
+        "pnl$": -9733,
+        "grossWin$": 2992,
+        "grossLoss$": 12725,
+        "pf": 0.235,
+        "sharpe": -10.69,
+        "avgWin$": 1496,
+        "avgLoss$": 509,
+        "expectancy$": -360.48,
+        "maxDD$": 9733,
+        "exitReasons": {
+          "stop": 25,
+          "target": 2
+        }
+      },
+      "is": {
+        "n": 26,
+        "winRate": 0.0769,
+        "pnl$": -9224,
+        "grossWin$": 2992,
+        "grossLoss$": 12216,
+        "pf": 0.245,
+        "sharpe": -10.34,
+        "avgWin$": 1496,
+        "avgLoss$": 509,
+        "expectancy$": -354.77,
+        "maxDD$": 9224,
+        "exitReasons": {
+          "stop": 24,
+          "target": 2
+        }
+      },
+      "oos": {
+        "n": 1,
+        "winRate": 0,
+        "pnl$": -509,
+        "grossWin$": 0,
+        "grossLoss$": 509,
+        "pf": 0,
+        "sharpe": 0,
+        "avgWin$": 0,
+        "avgLoss$": 509,
+        "expectancy$": -509,
+        "maxDD$": 509,
+        "exitReasons": {
+          "stop": 1
+        }
+      }
+    },
+    {
+      "variant": {
+        "kind": "first15",
+        "entryMode": "breakStop",
+        "stopMode": "fixedPts",
+        "stopPts": 25,
+        "targetPts": 100
+      },
+      "all": {
+        "n": 27,
+        "winRate": 0.0741,
+        "pnl$": -8733,
+        "grossWin$": 3992,
+        "grossLoss$": 12725,
+        "pf": 0.314,
+        "sharpe": -7.68,
+        "avgWin$": 1996,
+        "avgLoss$": 509,
+        "expectancy$": -323.44,
+        "maxDD$": 8733,
+        "exitReasons": {
+          "stop": 25,
+          "target": 2
+        }
+      },
+      "is": {
+        "n": 26,
+        "winRate": 0.0769,
+        "pnl$": -8224,
+        "grossWin$": 3992,
+        "grossLoss$": 12216,
+        "pf": 0.327,
+        "sharpe": -7.38,
+        "avgWin$": 1996,
+        "avgLoss$": 509,
+        "expectancy$": -316.31,
+        "maxDD$": 8224,
+        "exitReasons": {
+          "stop": 24,
+          "target": 2
+        }
+      },
+      "oos": {
+        "n": 1,
+        "winRate": 0,
+        "pnl$": -509,
+        "grossWin$": 0,
+        "grossLoss$": 509,
+        "pf": 0,
+        "sharpe": 0,
+        "avgWin$": 0,
+        "avgLoss$": 509,
+        "expectancy$": -509,
+        "maxDD$": 509,
+        "exitReasons": {
+          "stop": 1
+        }
+      }
+    },
+    {
+      "variant": {
+        "kind": "first15",
+        "entryMode": "breakStop",
+        "stopMode": "fixedPts",
+        "stopPts": 30,
+        "targetPts": 20
+      },
+      "all": {
+        "n": 27,
+        "winRate": 0.3704,
+        "pnl$": -6393,
+        "grossWin$": 3960,
+        "grossLoss$": 10353,
+        "pf": 0.382,
+        "sharpe": -7.6,
+        "avgWin$": 396,
+        "avgLoss$": 609,
+        "expectancy$": -236.78,
+        "maxDD$": 6393,
+        "exitReasons": {
+          "stop": 16,
+          "target": 10,
+          "stop_amb": 1
+        }
+      },
+      "is": {
+        "n": 26,
+        "winRate": 0.3846,
+        "pnl$": -5784,
+        "grossWin$": 3960,
+        "grossLoss$": 9744,
+        "pf": 0.406,
+        "sharpe": -7.08,
+        "avgWin$": 396,
+        "avgLoss$": 609,
+        "expectancy$": -222.46,
+        "maxDD$": 5784,
+        "exitReasons": {
+          "stop": 15,
+          "target": 10,
+          "stop_amb": 1
+        }
+      },
+      "oos": {
+        "n": 1,
+        "winRate": 0,
+        "pnl$": -609,
+        "grossWin$": 0,
+        "grossLoss$": 609,
+        "pf": 0,
+        "sharpe": 0,
+        "avgWin$": 0,
+        "avgLoss$": 609,
+        "expectancy$": -609,
+        "maxDD$": 609,
+        "exitReasons": {
+          "stop": 1
+        }
+      }
+    },
+    {
+      "variant": {
+        "kind": "first15",
+        "entryMode": "breakStop",
+        "stopMode": "fixedPts",
+        "stopPts": 30,
+        "targetPts": 30
+      },
+      "all": {
+        "n": 27,
+        "winRate": 0.3333,
+        "pnl$": -5598,
+        "grossWin$": 5364,
+        "grossLoss$": 10962,
+        "pf": 0.489,
+        "sharpe": -5.69,
+        "avgWin$": 596,
+        "avgLoss$": 609,
+        "expectancy$": -207.33,
+        "maxDD$": 5598,
+        "exitReasons": {
+          "stop": 17,
+          "target": 9,
+          "stop_amb": 1
+        }
+      },
+      "is": {
+        "n": 26,
+        "winRate": 0.3462,
+        "pnl$": -4989,
+        "grossWin$": 5364,
+        "grossLoss$": 10353,
+        "pf": 0.518,
+        "sharpe": -5.21,
+        "avgWin$": 596,
+        "avgLoss$": 609,
+        "expectancy$": -191.88,
+        "maxDD$": 4989,
+        "exitReasons": {
+          "stop": 16,
+          "target": 9,
+          "stop_amb": 1
+        }
+      },
+      "oos": {
+        "n": 1,
+        "winRate": 0,
+        "pnl$": -609,
+        "grossWin$": 0,
+        "grossLoss$": 609,
+        "pf": 0,
+        "sharpe": 0,
+        "avgWin$": 0,
+        "avgLoss$": 609,
+        "expectancy$": -609,
+        "maxDD$": 609,
+        "exitReasons": {
+          "stop": 1
+        }
+      }
+    },
+    {
+      "variant": {
+        "kind": "first15",
+        "entryMode": "breakStop",
+        "stopMode": "fixedPts",
+        "stopPts": 30,
+        "targetPts": 50
+      },
+      "all": {
+        "n": 27,
+        "winRate": 0.2222,
+        "pnl$": -6813,
+        "grossWin$": 5976,
+        "grossLoss$": 12789,
+        "pf": 0.467,
+        "sharpe": -5.89,
+        "avgWin$": 996,
+        "avgLoss$": 609,
+        "expectancy$": -252.33,
+        "maxDD$": 6813,
+        "exitReasons": {
+          "stop": 21,
+          "target": 6
+        }
+      },
+      "is": {
+        "n": 26,
+        "winRate": 0.2308,
+        "pnl$": -6204,
+        "grossWin$": 5976,
+        "grossLoss$": 12180,
+        "pf": 0.491,
+        "sharpe": -5.49,
+        "avgWin$": 996,
+        "avgLoss$": 609,
+        "expectancy$": -238.62,
+        "maxDD$": 6204,
+        "exitReasons": {
+          "stop": 20,
+          "target": 6
+        }
+      },
+      "oos": {
+        "n": 1,
+        "winRate": 0,
+        "pnl$": -609,
+        "grossWin$": 0,
+        "grossLoss$": 609,
+        "pf": 0,
+        "sharpe": 0,
+        "avgWin$": 0,
+        "avgLoss$": 609,
+        "expectancy$": -609,
+        "maxDD$": 609,
+        "exitReasons": {
+          "stop": 1
+        }
+      }
+    },
+    {
+      "variant": {
+        "kind": "first15",
+        "entryMode": "breakStop",
+        "stopMode": "fixedPts",
+        "stopPts": 30,
+        "targetPts": 75
+      },
+      "all": {
+        "n": 27,
+        "winRate": 0.1111,
+        "pnl$": -10128,
+        "grossWin$": 4488,
+        "grossLoss$": 14616,
+        "pf": 0.307,
+        "sharpe": -8.83,
+        "avgWin$": 1496,
+        "avgLoss$": 609,
+        "expectancy$": -375.11,
+        "maxDD$": 10128,
+        "exitReasons": {
+          "stop": 24,
+          "target": 3
+        }
+      },
+      "is": {
+        "n": 26,
+        "winRate": 0.1154,
+        "pnl$": -9519,
+        "grossWin$": 4488,
+        "grossLoss$": 14007,
+        "pf": 0.32,
+        "sharpe": -8.47,
+        "avgWin$": 1496,
+        "avgLoss$": 609,
+        "expectancy$": -366.12,
+        "maxDD$": 9519,
+        "exitReasons": {
+          "stop": 23,
+          "target": 3
+        }
+      },
+      "oos": {
+        "n": 1,
+        "winRate": 0,
+        "pnl$": -609,
+        "grossWin$": 0,
+        "grossLoss$": 609,
+        "pf": 0,
+        "sharpe": 0,
+        "avgWin$": 0,
+        "avgLoss$": 609,
+        "expectancy$": -609,
+        "maxDD$": 609,
+        "exitReasons": {
+          "stop": 1
+        }
+      }
+    },
+    {
+      "variant": {
+        "kind": "first15",
+        "entryMode": "breakStop",
+        "stopMode": "fixedPts",
+        "stopPts": 30,
+        "targetPts": 100
+      },
+      "all": {
+        "n": 27,
+        "winRate": 0.1111,
+        "pnl$": -8628,
+        "grossWin$": 5988,
+        "grossLoss$": 14616,
+        "pf": 0.41,
+        "sharpe": -6.08,
+        "avgWin$": 1996,
+        "avgLoss$": 609,
+        "expectancy$": -319.56,
+        "maxDD$": 8628,
+        "exitReasons": {
+          "stop": 24,
+          "target": 3
+        }
+      },
+      "is": {
+        "n": 26,
+        "winRate": 0.1154,
+        "pnl$": -8019,
+        "grossWin$": 5988,
+        "grossLoss$": 14007,
+        "pf": 0.428,
+        "sharpe": -5.77,
+        "avgWin$": 1996,
+        "avgLoss$": 609,
+        "expectancy$": -308.42,
+        "maxDD$": 8019,
+        "exitReasons": {
+          "stop": 23,
+          "target": 3
+        }
+      },
+      "oos": {
+        "n": 1,
+        "winRate": 0,
+        "pnl$": -609,
+        "grossWin$": 0,
+        "grossLoss$": 609,
+        "pf": 0,
+        "sharpe": 0,
+        "avgWin$": 0,
+        "avgLoss$": 609,
+        "expectancy$": -609,
+        "maxDD$": 609,
+        "exitReasons": {
+          "stop": 1
+        }
+      }
+    },
+    {
+      "variant": {
+        "kind": "first15",
+        "entryMode": "breakStop",
+        "stopMode": "fixedPts",
+        "stopPts": 40,
+        "targetPts": 20
+      },
+      "all": {
+        "n": 27,
+        "winRate": 0.5185,
+        "pnl$": -4973,
+        "grossWin$": 5544,
+        "grossLoss$": 10517,
+        "pf": 0.527,
+        "sharpe": -4.77,
+        "avgWin$": 396,
+        "avgLoss$": 809,
+        "expectancy$": -184.19,
+        "maxDD$": 5765,
+        "exitReasons": {
+          "stop": 12,
+          "target": 14,
+          "stop_amb": 1
+        }
+      },
+      "is": {
+        "n": 26,
+        "winRate": 0.5,
+        "pnl$": -5369,
+        "grossWin$": 5148,
+        "grossLoss$": 10517,
+        "pf": 0.489,
+        "sharpe": -5.34,
+        "avgWin$": 396,
+        "avgLoss$": 809,
+        "expectancy$": -206.5,
+        "maxDD$": 5765,
+        "exitReasons": {
+          "stop": 12,
+          "target": 13,
+          "stop_amb": 1
+        }
+      },
+      "oos": {
+        "n": 1,
+        "winRate": 1,
+        "pnl$": 396,
+        "grossWin$": 396,
+        "grossLoss$": 0,
+        "pf": null,
+        "sharpe": 0,
+        "avgWin$": 396,
+        "avgLoss$": 0,
+        "expectancy$": 396,
+        "maxDD$": 0,
+        "exitReasons": {
+          "target": 1
+        }
+      }
+    },
+    {
+      "variant": {
+        "kind": "first15",
+        "entryMode": "breakStop",
+        "stopMode": "fixedPts",
+        "stopPts": 40,
+        "targetPts": 30
+      },
+      "all": {
+        "n": 27,
+        "winRate": 0.4815,
+        "pnl$": -3578,
+        "grossWin$": 7748,
+        "grossLoss$": 11326,
+        "pf": 0.684,
+        "sharpe": -2.94,
+        "avgWin$": 596,
+        "avgLoss$": 809,
+        "expectancy$": -132.52,
+        "maxDD$": 4770,
+        "exitReasons": {
+          "stop": 13,
+          "target": 13,
+          "stop_amb": 1
+        }
+      },
+      "is": {
+        "n": 26,
+        "winRate": 0.4615,
+        "pnl$": -4174,
+        "grossWin$": 7152,
+        "grossLoss$": 11326,
+        "pf": 0.631,
+        "sharpe": -3.57,
+        "avgWin$": 596,
+        "avgLoss$": 809,
+        "expectancy$": -160.54,
+        "maxDD$": 4770,
+        "exitReasons": {
+          "stop": 13,
+          "target": 12,
+          "stop_amb": 1
+        }
+      },
+      "oos": {
+        "n": 1,
+        "winRate": 1,
+        "pnl$": 596,
+        "grossWin$": 596,
+        "grossLoss$": 0,
+        "pf": null,
+        "sharpe": 0,
+        "avgWin$": 596,
+        "avgLoss$": 0,
+        "expectancy$": 596,
+        "maxDD$": 0,
+        "exitReasons": {
+          "target": 1
+        }
+      }
+    },
+    {
+      "variant": {
+        "kind": "first15",
+        "entryMode": "breakStop",
+        "stopMode": "fixedPts",
+        "stopPts": 40,
+        "targetPts": 50
+      },
+      "all": {
+        "n": 27,
+        "winRate": 0.3704,
+        "pnl$": -3793,
+        "grossWin$": 9960,
+        "grossLoss$": 13753,
+        "pf": 0.724,
+        "sharpe": -2.51,
+        "avgWin$": 996,
+        "avgLoss$": 809,
+        "expectancy$": -140.48,
+        "maxDD$": 6098,
+        "exitReasons": {
+          "stop": 17,
+          "target": 10
+        }
+      },
+      "is": {
+        "n": 26,
+        "winRate": 0.3462,
+        "pnl$": -4789,
+        "grossWin$": 8964,
+        "grossLoss$": 13753,
+        "pf": 0.652,
+        "sharpe": -3.34,
+        "avgWin$": 996,
+        "avgLoss$": 809,
+        "expectancy$": -184.19,
+        "maxDD$": 6098,
+        "exitReasons": {
+          "stop": 17,
+          "target": 9
+        }
+      },
+      "oos": {
+        "n": 1,
+        "winRate": 1,
+        "pnl$": 996,
+        "grossWin$": 996,
+        "grossLoss$": 0,
+        "pf": null,
+        "sharpe": 0,
+        "avgWin$": 996,
+        "avgLoss$": 0,
+        "expectancy$": 996,
+        "maxDD$": 0,
+        "exitReasons": {
+          "target": 1
+        }
+      }
+    },
+    {
+      "variant": {
+        "kind": "first15",
+        "entryMode": "breakStop",
+        "stopMode": "fixedPts",
+        "stopPts": 40,
+        "targetPts": 75
+      },
+      "all": {
+        "n": 27,
+        "winRate": 0.2593,
+        "pnl$": -7003,
+        "grossWin$": 9177,
+        "grossLoss$": 16180,
+        "pf": 0.567,
+        "sharpe": -4.22,
+        "avgWin$": 1311,
+        "avgLoss$": 809,
+        "expectancy$": -259.37,
+        "maxDD$": 8499,
+        "exitReasons": {
+          "stop": 20,
+          "target": 6,
+          "time_stop": 1
+        }
+      },
+      "is": {
+        "n": 26,
+        "winRate": 0.2308,
+        "pnl$": -8499,
+        "grossWin$": 7681,
+        "grossLoss$": 16180,
+        "pf": 0.475,
+        "sharpe": -5.59,
+        "avgWin$": 1280.17,
+        "avgLoss$": 809,
+        "expectancy$": -326.88,
+        "maxDD$": 8499,
+        "exitReasons": {
+          "stop": 20,
+          "target": 5,
+          "time_stop": 1
+        }
+      },
+      "oos": {
+        "n": 1,
+        "winRate": 1,
+        "pnl$": 1496,
+        "grossWin$": 1496,
+        "grossLoss$": 0,
+        "pf": null,
+        "sharpe": 0,
+        "avgWin$": 1496,
+        "avgLoss$": 0,
+        "expectancy$": 1496,
+        "maxDD$": 0,
+        "exitReasons": {
+          "target": 1
+        }
+      }
+    },
+    {
+      "variant": {
+        "kind": "first15",
+        "entryMode": "breakStop",
+        "stopMode": "fixedPts",
+        "stopPts": 40,
+        "targetPts": 100
+      },
+      "all": {
+        "n": 27,
+        "winRate": 0.2593,
+        "pnl$": -4003,
+        "grossWin$": 12177,
+        "grossLoss$": 16180,
+        "pf": 0.753,
+        "sharpe": -1.99,
+        "avgWin$": 1739.57,
+        "avgLoss$": 809,
+        "expectancy$": -148.26,
+        "maxDD$": 6903,
+        "exitReasons": {
+          "stop": 20,
+          "target": 6,
+          "time_stop": 1
+        }
+      },
+      "is": {
+        "n": 26,
+        "winRate": 0.2308,
+        "pnl$": -5999,
+        "grossWin$": 10181,
+        "grossLoss$": 16180,
+        "pf": 0.629,
+        "sharpe": -3.25,
+        "avgWin$": 1696.83,
+        "avgLoss$": 809,
+        "expectancy$": -230.73,
+        "maxDD$": 6903,
+        "exitReasons": {
+          "stop": 20,
+          "target": 5,
+          "time_stop": 1
+        }
+      },
+      "oos": {
+        "n": 1,
+        "winRate": 1,
+        "pnl$": 1996,
+        "grossWin$": 1996,
+        "grossLoss$": 0,
+        "pf": null,
+        "sharpe": 0,
+        "avgWin$": 1996,
+        "avgLoss$": 0,
+        "expectancy$": 1996,
+        "maxDD$": 0,
+        "exitReasons": {
+          "target": 1
+        }
+      }
+    },
+    {
+      "variant": {
+        "kind": "first15",
+        "entryMode": "breakStop",
+        "stopMode": "oppExtreme",
+        "targetPts": 20
+      },
+      "all": {
+        "n": 27,
+        "winRate": 0.8889,
+        "pnl$": 692,
+        "grossWin$": 9504,
+        "grossLoss$": 8812,
+        "pf": 1.079,
+        "sharpe": 0.37,
+        "avgWin$": 396,
+        "avgLoss$": 2937.33,
+        "expectancy$": 25.63,
+        "maxDD$": 4392,
+        "exitReasons": {
+          "time_stop": 1,
+          "target": 24,
+          "stop": 2
+        }
+      },
+      "is": {
+        "n": 26,
+        "winRate": 0.8846,
+        "pnl$": 296,
+        "grossWin$": 9108,
+        "grossLoss$": 8812,
+        "pf": 1.034,
+        "sharpe": 0.16,
+        "avgWin$": 396,
+        "avgLoss$": 2937.33,
+        "expectancy$": 11.38,
+        "maxDD$": 4392,
+        "exitReasons": {
+          "time_stop": 1,
+          "target": 23,
+          "stop": 2
+        }
+      },
+      "oos": {
+        "n": 1,
+        "winRate": 1,
+        "pnl$": 396,
+        "grossWin$": 396,
+        "grossLoss$": 0,
+        "pf": null,
+        "sharpe": 0,
+        "avgWin$": 396,
+        "avgLoss$": 0,
+        "expectancy$": 396,
+        "maxDD$": 0,
+        "exitReasons": {
+          "target": 1
+        }
+      }
+    },
+    {
+      "variant": {
+        "kind": "first15",
+        "entryMode": "breakStop",
+        "stopMode": "oppExtreme",
+        "targetPts": 30
+      },
+      "all": {
+        "n": 27,
+        "winRate": 0.8148,
+        "pnl$": -4263,
+        "grossWin$": 12972,
+        "grossLoss$": 17235,
+        "pf": 0.753,
+        "sharpe": -1.47,
+        "avgWin$": 589.64,
+        "avgLoss$": 3447,
+        "expectancy$": -157.89,
+        "maxDD$": 6391,
+        "exitReasons": {
+          "time_stop": 3,
+          "target": 21,
+          "stop": 3
+        }
+      },
+      "is": {
+        "n": 26,
+        "winRate": 0.8077,
+        "pnl$": -4859,
+        "grossWin$": 12376,
+        "grossLoss$": 17235,
+        "pf": 0.718,
+        "sharpe": -1.72,
+        "avgWin$": 589.33,
+        "avgLoss$": 3447,
+        "expectancy$": -186.88,
+        "maxDD$": 6391,
+        "exitReasons": {
+          "time_stop": 3,
+          "target": 20,
+          "stop": 3
+        }
+      },
+      "oos": {
+        "n": 1,
+        "winRate": 1,
+        "pnl$": 596,
+        "grossWin$": 596,
+        "grossLoss$": 0,
+        "pf": null,
+        "sharpe": 0,
+        "avgWin$": 596,
+        "avgLoss$": 0,
+        "expectancy$": 596,
+        "maxDD$": 0,
+        "exitReasons": {
+          "target": 1
+        }
+      }
+    },
+    {
+      "variant": {
+        "kind": "first15",
+        "entryMode": "breakStop",
+        "stopMode": "oppExtreme",
+        "targetPts": 50
+      },
+      "all": {
+        "n": 27,
+        "winRate": 0.7407,
+        "pnl$": -1013,
+        "grossWin$": 19380,
+        "grossLoss$": 20393,
+        "pf": 0.95,
+        "sharpe": -0.32,
+        "avgWin$": 969,
+        "avgLoss$": 2913.29,
+        "expectancy$": -37.52,
+        "maxDD$": 6357,
+        "exitReasons": {
+          "time_stop": 4,
+          "target": 19,
+          "stop": 4
+        }
+      },
+      "is": {
+        "n": 26,
+        "winRate": 0.7308,
+        "pnl$": -2009,
+        "grossWin$": 18384,
+        "grossLoss$": 20393,
+        "pf": 0.901,
+        "sharpe": -0.64,
+        "avgWin$": 967.58,
+        "avgLoss$": 2913.29,
+        "expectancy$": -77.27,
+        "maxDD$": 6357,
+        "exitReasons": {
+          "time_stop": 4,
+          "target": 18,
+          "stop": 4
+        }
+      },
+      "oos": {
+        "n": 1,
+        "winRate": 1,
+        "pnl$": 996,
+        "grossWin$": 996,
+        "grossLoss$": 0,
+        "pf": null,
+        "sharpe": 0,
+        "avgWin$": 996,
+        "avgLoss$": 0,
+        "expectancy$": 996,
+        "maxDD$": 0,
+        "exitReasons": {
+          "target": 1
+        }
+      }
+    },
+    {
+      "variant": {
+        "kind": "first15",
+        "entryMode": "breakStop",
+        "stopMode": "oppExtreme",
+        "targetPts": 75
+      },
+      "all": {
+        "n": 27,
+        "winRate": 0.6296,
+        "pnl$": 187,
+        "grossWin$": 23097,
+        "grossLoss$": 22910,
+        "pf": 1.008,
+        "sharpe": 0.05,
+        "avgWin$": 1358.65,
+        "avgLoss$": 2291,
+        "expectancy$": 6.93,
+        "maxDD$": 7635,
+        "exitReasons": {
+          "time_stop": 8,
+          "target": 15,
+          "stop": 4
+        }
+      },
+      "is": {
+        "n": 26,
+        "winRate": 0.6154,
+        "pnl$": -1309,
+        "grossWin$": 21601,
+        "grossLoss$": 22910,
+        "pf": 0.943,
+        "sharpe": -0.39,
+        "avgWin$": 1350.06,
+        "avgLoss$": 2291,
+        "expectancy$": -50.35,
+        "maxDD$": 7635,
+        "exitReasons": {
+          "time_stop": 8,
+          "target": 14,
+          "stop": 4
+        }
+      },
+      "oos": {
+        "n": 1,
+        "winRate": 1,
+        "pnl$": 1496,
+        "grossWin$": 1496,
+        "grossLoss$": 0,
+        "pf": null,
+        "sharpe": 0,
+        "avgWin$": 1496,
+        "avgLoss$": 0,
+        "expectancy$": 1496,
+        "maxDD$": 0,
+        "exitReasons": {
+          "target": 1
+        }
+      }
+    },
+    {
+      "variant": {
+        "kind": "first15",
+        "entryMode": "breakStop",
+        "stopMode": "oppExtreme",
+        "targetPts": 100
+      },
+      "all": {
+        "n": 27,
+        "winRate": 0.6296,
+        "pnl$": 7117,
+        "grossWin$": 30027,
+        "grossLoss$": 22910,
+        "pf": 1.311,
+        "sharpe": 1.86,
+        "avgWin$": 1766.29,
+        "avgLoss$": 2291,
+        "expectancy$": 263.59,
+        "maxDD$": 7135,
+        "exitReasons": {
+          "time_stop": 10,
+          "target": 13,
+          "stop": 4
+        }
+      },
+      "is": {
+        "n": 26,
+        "winRate": 0.6154,
+        "pnl$": 5121,
+        "grossWin$": 28031,
+        "grossLoss$": 22910,
+        "pf": 1.224,
+        "sharpe": 1.38,
+        "avgWin$": 1751.94,
+        "avgLoss$": 2291,
+        "expectancy$": 196.96,
+        "maxDD$": 7135,
+        "exitReasons": {
+          "time_stop": 10,
+          "target": 12,
+          "stop": 4
+        }
+      },
+      "oos": {
+        "n": 1,
+        "winRate": 1,
+        "pnl$": 1996,
+        "grossWin$": 1996,
+        "grossLoss$": 0,
+        "pf": null,
+        "sharpe": 0,
+        "avgWin$": 1996,
+        "avgLoss$": 0,
+        "expectancy$": 1996,
+        "maxDD$": 0,
+        "exitReasons": {
+          "target": 1
+        }
+      }
+    }
+  ]
+}

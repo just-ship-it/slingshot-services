@@ -53,9 +53,9 @@ const config = {
 
   // LT Monitor Configuration (per product) — derived from contract env vars
   LT_NQ_SYMBOL: process.env.LT_NQ_SYMBOL || `CME_MINI:${tvNQ}`,
-  LT_NQ_TIMEFRAME: process.env.LT_NQ_TIMEFRAME || '15',
+  LT_NQ_TIMEFRAME: process.env.LT_NQ_TIMEFRAME || '1',
   LT_ES_SYMBOL: process.env.LT_ES_SYMBOL || `CME_MINI:${tvES}`,
-  LT_ES_TIMEFRAME: process.env.LT_ES_TIMEFRAME || '15',
+  LT_ES_TIMEFRAME: process.env.LT_ES_TIMEFRAME || '1',
 
   // NQ GEX Configuration (from QQQ)
   NQ_GEX_SYMBOL: process.env.NQ_GEX_SYMBOL || 'QQQ',

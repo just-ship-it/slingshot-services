@@ -27,6 +27,12 @@
           "evalTimeframe": "1m"
         },
         {
+          "name": "gex-lt-3m-crossover",
+          "enabled": false,
+          "priority": 3,
+          "evalTimeframe": "1m"
+        },
+        {
           "name": "impulse-fvg",
           "enabled": false,
           "priority": 3,

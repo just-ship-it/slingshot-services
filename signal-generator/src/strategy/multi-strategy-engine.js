@@ -556,9 +556,13 @@ class MultiStrategyEngine {
     }
 
     // Prepare market data
+    // Note: live LT feed is now 1m (timeframe='1' in data-service config). Same
+    // payload is exposed as both ltLevels and ltLevels1m so strategies that
+    // expect either field name resolve to the same source.
     const marketData = {
       gexLevels: gexLevels,
-      ltLevels: state.ltLevels
+      ltLevels: state.ltLevels,
+      ltLevels1m: state.ltLevels
     };
 
     // Add IV data for strategies that need it

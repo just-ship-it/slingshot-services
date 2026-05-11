@@ -7,6 +7,7 @@
 
 import fs from 'fs';
 import path from 'path';
+import csv from 'csv-parser';
 import { CSVLoader, SecondDataProvider } from './data/csv-loader.js';
 import { CandleAggregator } from '../../shared/utils/candle-aggregator.js';
 import { TradeSimulator } from './execution/trade-simulator.js';
@@ -28,6 +29,7 @@ import { ContrarianOrderFlowStrategy } from '../../shared/strategies/contrarian-
 import { GexAbsorptionStrategy } from '../../shared/strategies/gex-absorption.js';
 import { IVSkewGexStrategy } from '../../shared/strategies/iv-skew-gex.js';
 import { GexFlipIvpctStrategy } from '../../shared/strategies/gex-flip-ivpct.js';
+import { GexLt3mCrossoverStrategy } from '../../shared/strategies/gex-lt-3m-crossover.js';
 import { CBBOLTVolatilityStrategy } from '../../shared/strategies/cbbo-lt-volatility.js';
 import { GexMeanReversionStrategy } from '../strategies/gex-mean-reversion/strategy.js';
 import { LTFailedBreakdownStrategy } from '../../shared/strategies/lt-failed-breakdown.js';
@@ -342,6 +344,17 @@ export class BacktestEngine {
       this.csvLoader.loadLiquidityData(this.config.ticker, this.config.startDate, this.config.endDate)
     ]);
 
+    // Optional 1m LT data (--lt-1m-file). Schema: timestamp_iso, unix_ms,
+    // sentiment_raw, level_1..5, source_symbol, was_backadjusted, raw_contract.
+    let liquidityData1m = [];
+    if (this.config.lt1mFile) {
+      liquidityData1m = await this._loadLt1mFile(this.config.lt1mFile,
+        this.config.startDate, this.config.endDate);
+      if (!this.config.quiet) {
+        console.log(`✅ Loaded ${liquidityData1m.length} 1m LT records from ${this.config.lt1mFile}`);
+      }
+    }
+
     // Load GEX data from 15-minute interval JSON files
     const gexLoaded = await this.gexLoader.loadDateRange(this.config.startDate, this.config.endDate);
 
@@ -524,7 +537,7 @@ export class BacktestEngine {
     }
 
     // Create market data lookup for efficient access (for legacy compatibility)
-    const marketDataLookup = this.createMarketDataLookup(gexData, liquidityData);
+    const marketDataLookup = this.createMarketDataLookup(gexData, liquidityData, liquidityData1m);
 
     // Load IV data for IV-based strategies (iv-skew-gex, gex-flip-ivpct)
     const isIVSkewStrategy = this.config.strategy === 'iv-skew-gex' || this.config.strategy === 'iv-skew';
@@ -616,6 +629,7 @@ export class BacktestEngine {
       gexLevels: gexData,
       gexLoader: this.gexLoader,         // Pass loader for 15-min timestamp lookups
       liquidityLevels: liquidityData,
+      liquidityLevels1m: liquidityData1m,
       calendarSpreads: calendarSpreads,  // For contract transition tracking
       marketDataLookup: marketDataLookup,
       cvdMap: this.cvdMap,               // CVD data aligned to candle timestamps (Phase 3)
@@ -635,6 +649,46 @@ export class BacktestEngine {
    * @param {Object} data - Processed data
    * @returns {Object} Simulation results
    */
+  async _loadLt1mFile(filePath, startDate, endDate) {
+    const absPath = path.isAbsolute(filePath) ? filePath : path.resolve(filePath);
+    if (!fs.existsSync(absPath)) {
+      // Also try data dir relative
+      const dataRelative = path.join(this.config.dataDir, filePath);
+      if (fs.existsSync(dataRelative)) return this._loadLt1mFile(dataRelative, startDate, endDate);
+      throw new Error(`--lt-1m-file path not found: ${filePath}`);
+    }
+    const startMs = startDate.getTime();
+    const endMs = endDate.getTime() + 24 * 3600000;
+    const records = [];
+    await new Promise((resolve, reject) => {
+      fs.createReadStream(absPath).pipe(csv())
+        .on('data', (row) => {
+          // Schema produced by research/lt-extraction/parse-lt-export.js
+          let ts = parseInt(row.unix_ms, 10);
+          if (isNaN(ts) && row.timestamp_iso) ts = new Date(row.timestamp_iso).getTime();
+          if (isNaN(ts) || ts < startMs || ts > endMs) return;
+          const levels = [
+            parseFloat(row.level_1),
+            parseFloat(row.level_2),
+            parseFloat(row.level_3),
+            parseFloat(row.level_4),
+            parseFloat(row.level_5),
+          ];
+          // Drop warmup rows where any level is NaN
+          if (levels.some(v => isNaN(v))) return;
+          records.push({
+            timestamp: ts,
+            level_1: levels[0], level_2: levels[1], level_3: levels[2],
+            level_4: levels[3], level_5: levels[4],
+            sentiment: row.sentiment_raw || null,
+          });
+        })
+        .on('end', resolve).on('error', reject);
+    });
+    records.sort((a, b) => a.timestamp - b.timestamp);
+    return records;
+  }
+
   async runSimulation(data) {
     if (!this.config.quiet) {
       const exitResolution = this.secondDataProvider ? '1-second' : '1-minute';
@@ -1193,10 +1247,12 @@ export class BacktestEngine {
    * @param {Object[]} liquidityData - Liquidity levels data
    * @returns {Object} Market data lookup
    */
-  createMarketDataLookup(gexData, liquidityData) {
+  createMarketDataLookup(gexData, liquidityData, liquidityData1m = null) {
     const lookup = {
       gex: new Map(),
-      liquidity: new Map()
+      liquidity: new Map(),
+      liquidity1m: null,        // direct ts → record (exact-match fast path)
+      liquidity1mSorted: null,  // sorted ts array for at-or-before fallback
     };
 
     // Index GEX data by date
@@ -1210,6 +1266,19 @@ export class BacktestEngine {
       const timestamp = new Date(lt.timestamp).getTime();
       lookup.liquidity.set(timestamp, lt);
     });
+
+    // Index 1m LT data: hashmap for direct lookup + sorted array for fallback
+    if (liquidityData1m && liquidityData1m.length) {
+      lookup.liquidity1m = new Map();
+      const sortedTs = [];
+      for (const lt of liquidityData1m) {
+        const t = lt.timestamp;
+        lookup.liquidity1m.set(t, lt);
+        sortedTs.push(t);
+      }
+      sortedTs.sort((a, b) => a - b);
+      lookup.liquidity1mSorted = sortedTs;
+    }
 
     return lookup;
   }
@@ -1299,9 +1368,33 @@ export class BacktestEngine {
       );
     }
 
+    // 1m LT lookup: direct hashmap + binary-search fallback for nearest
+    // at-or-before record within a small window. Used by strategies that
+    // need 1m-cadence LT (e.g. gex-lt-3m-crossover).
+    let liquidityLevels1m = null;
+    if (lookup && lookup.liquidity1m) {
+      liquidityLevels1m = lookup.liquidity1m.get(timestamp);
+      if (!liquidityLevels1m && lookup.liquidity1mSorted) {
+        const arr = lookup.liquidity1mSorted;
+        // Binary search for largest ts <= timestamp
+        let lo = 0, hi = arr.length - 1, idx = -1;
+        while (lo <= hi) {
+          const mid = (lo + hi) >>> 1;
+          if (arr[mid] <= timestamp) { idx = mid; lo = mid + 1; } else hi = mid - 1;
+        }
+        if (idx >= 0) {
+          // Only accept if within 5 min (avoids stale fills near gaps)
+          if (timestamp - arr[idx] <= 5 * 60 * 1000) {
+            liquidityLevels1m = lookup.liquidity1m.get(arr[idx]);
+          }
+        }
+      }
+    }
+
     return {
       gexLevels: gexLevels,
       ltLevels: liquidityLevels,
+      ltLevels1m: liquidityLevels1m,       // 1m LT for gex-lt-3m-crossover
       gexLoader: data?.gexLoader || null,  // Pass loader for strategy use
       cbbo: cbboMetrics,                   // CBBO metrics for current timestamp
       cbboSpreadChange: cbboSpreadChange   // Spread change over lookback window
@@ -1382,6 +1475,10 @@ export class BacktestEngine {
       case 'gex-flip-ivpct':
       case 'gfi':
         return new GexFlipIvpctStrategy(params);
+      case 'gex-lt-3m-crossover':
+      case 'gex-lt-cross':
+      case 'glx':
+        return new GexLt3mCrossoverStrategy(params);
       case 'cbbo-lt-volatility':
       case 'cbbo-lt':
         return new CBBOLTVolatilityStrategy(params);
