@@ -4,7 +4,7 @@
       "strategies": [
         {
           "name": "short-dte-iv",
-          "enabled": true,
+          "enabled": false,
           "priority": 1,
           "evalTimeframe": "15m"
         },
@@ -16,7 +16,7 @@
         },
         {
           "name": "gex-flip-ivpct",
-          "enabled": false,
+          "enabled": true,
           "priority": 2,
           "evalTimeframe": "5m"
         },
@@ -28,7 +28,7 @@
         },
         {
           "name": "gex-lt-3m-crossover",
-          "enabled": false,
+          "enabled": true,
           "priority": 3,
           "evalTimeframe": "1m"
         },
