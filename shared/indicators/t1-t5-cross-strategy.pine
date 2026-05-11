@@ -1,0 +1,41 @@
+//@version=6
+strategy("T1/T5 Cross Strategy", overlay=true)
+
+// === Inputs ===
+t1Src         = input.source(close, "T1 Source")
+t5Src         = input.source(close, "T5 Source")
+allowLong     = input.bool(true,  "Allow Long")
+allowShort    = input.bool(true,  "Allow Short")
+useFixedStop  = input.bool(false, "Use Fixed-Point Stop (else bar high/low ± buffer)")
+stopPts       = input.float(20.0, "Fixed Stop (points)",        minval=0.0, step=1.0)
+stopBufferPts = input.float(2.0,  "Bar Stop Buffer (points)",   minval=0.0, step=1.0)
+targetPts     = input.float(30.0, "Target (points)",            minval=0.0, step=1.0)
+
+// === Signals ===
+longSignal  = open < t1Src and open < t5Src and close > t1Src and close > t5Src
+shortSignal = open > t1Src and open > t5Src and close < t1Src and close < t5Src
+
+// === Capture trigger bar H/L at entry ===
+var float triggerHigh = na
+var float triggerLow  = na
+
+if longSignal and allowLong and strategy.position_size == 0
+    strategy.entry("Long", strategy.long)
+    triggerHigh := high
+    triggerLow  := low
+
+if shortSignal and allowShort and strategy.position_size == 0
+    strategy.entry("Short", strategy.short)
+    triggerHigh := high
+    triggerLow  := low
+
+// === Exits ===
+if strategy.position_size > 0
+    stopPrice   = useFixedStop ? strategy.position_avg_price - stopPts : triggerLow - stopBufferPts
+    targetPrice = strategy.position_avg_price + targetPts
+    strategy.exit("Long Exit", from_entry="Long", stop=stopPrice, limit=targetPrice)
+
+if strategy.position_size < 0
+    stopPrice   = useFixedStop ? strategy.position_avg_price + stopPts : triggerHigh + stopBufferPts
+    targetPrice = strategy.position_avg_price - targetPts
+    strategy.exit("Short Exit", from_entry="Short", stop=stopPrice, limit=targetPrice)

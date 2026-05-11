@@ -472,6 +472,7 @@ export class GexLt3mCrossoverStrategy extends BaseStrategy {
       timestamp: ts,
       side: rule.side,
       price: entryPrice,
+      strategy: 'GEX_LT_3M_CROSSOVER',
       // Limit at signal candle's close — fills at exactly that price (zero
       // slippage) when price retraces. If price runs away from the limit
       // for `limitTimeoutCandles` 1m candles without ever retracing, the
