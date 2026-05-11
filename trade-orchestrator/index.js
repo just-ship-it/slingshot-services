@@ -761,6 +761,41 @@ async function checkEodForceFlat() {
   }
 
   logger.warn(`[EOD-FLAT] ${EOD_CUTOFF_ET} ET cutoff for ${et.dateKey} — closing ${positions.length} open position(s)`);
+
+  // Cancel orphan stop/target orders BEFORE firing market closes. The bracket
+  // orders attached to the position would otherwise remain working after the
+  // position closes, ready to fire as fresh entries on the next price tick.
+  // We accept the brief unprotected-position window (~50-100ms between cancel
+  // and close) because we're flattening imminently anyway. Cancellations are
+  // de-duped per (accountId, symbol) so multi-position-same-account cases
+  // only hit the broker once.
+  const cancelKeys = new Set();
+  await Promise.all(positions.map(async (pos) => {
+    const key = `${pos.accountId}|${pos.symbol}`;
+    if (cancelKeys.has(key)) return;
+    cancelKeys.add(key);
+    try {
+      const url = `${TRADOVATE_SERVICE_URL}/accounts/${encodeURIComponent(pos.accountId)}/cancel-all/${encodeURIComponent(pos.symbol)}`;
+      const res = await fetch(url, { method: 'POST' });
+      if (!res.ok) {
+        const body = await res.text().catch(() => '');
+        // 501 = connector doesn't support symbol-level cancel-all (e.g. PMT).
+        // That's fine; we still fire the market close below.
+        if (res.status !== 501) {
+          logger.error(`[EOD-FLAT] cancel-all HTTP ${res.status} for ${pos.accountId} ${pos.symbol}: ${body.slice(0, 200)}`);
+        } else {
+          logger.info(`[EOD-FLAT] cancel-all skipped for ${pos.accountId} (connector does not support symbol-level cancel-all)`);
+        }
+      } else {
+        const result = await res.json().catch(() => ({}));
+        const n = result.cancelledCount ?? 0;
+        logger.warn(`[EOD-FLAT] cancelled ${n} working order(s) for ${pos.accountId} ${pos.symbol}`);
+      }
+    } catch (err) {
+      logger.error(`[EOD-FLAT] cancel-all failed for ${pos.accountId} ${pos.symbol}: ${err.message}`);
+    }
+  }));
+
   for (const pos of positions) {
     const signal = {
       webhook_type: 'trade_signal',

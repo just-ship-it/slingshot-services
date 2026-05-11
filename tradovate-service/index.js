@@ -307,6 +307,23 @@ function buildApp() {
     }
   });
 
+  // Cancel every working order for the given symbol on this account.
+  // Used by EOD force-flat to clean up orphan stop/target orders left
+  // behind after the position is closed via market order.
+  app.post('/accounts/:accountId/cancel-all/:symbol', async (req, res) => {
+    const conn = findConnector(req.params.accountId);
+    if (!conn) return res.status(404).json({ error: 'connector not found' });
+    if (typeof conn.cancelAllOrdersForSymbol !== 'function') {
+      return res.status(501).json({ error: 'connector does not support cancelAllOrdersForSymbol' });
+    }
+    try {
+      const result = await conn.cancelAllOrdersForSymbol(req.params.symbol);
+      res.json(result);
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
   app.post('/accounts/:accountId/snapshot', async (req, res) => {
     const conn = findConnector(req.params.accountId);
     if (!conn) return res.status(404).json({ error: 'connector not found' });

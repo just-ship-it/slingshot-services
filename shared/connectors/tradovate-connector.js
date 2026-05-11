@@ -424,6 +424,25 @@ export class TradovateConnector extends BaseConnector {
     }
   }
 
+  /**
+   * Cancel every working order tied to a given symbol or contract on this
+   * account. Used by EOD force-flat to remove orphan stops/targets after
+   * the position itself has been closed via market order. Returns the
+   * raw result from cancelAllOrdersForContract: { success, cancelledCount, failedOrders }.
+   */
+  async cancelAllOrdersForSymbol(symbolOrContractId) {
+    if (!this.client) throw new Error(`${this._label()} not initialized`);
+    let contractId = symbolOrContractId;
+    if (typeof symbolOrContractId !== 'number') {
+      const contract = await this.client.findContract(symbolOrContractId);
+      if (!contract?.id) {
+        return { success: false, error: `contract not found for ${symbolOrContractId}`, cancelledCount: 0 };
+      }
+      contractId = contract.id;
+    }
+    return this.client.cancelAllOrdersForContract(this.brokerAccountId, contractId);
+  }
+
   async closePosition(symbolOrContractId) {
     if (!this.client) throw new Error(`${this._label()} not initialized`);
     if (typeof symbolOrContractId === 'number') {
