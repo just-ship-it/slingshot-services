@@ -30,6 +30,7 @@ import { GexAbsorptionStrategy } from '../../shared/strategies/gex-absorption.js
 import { IVSkewGexStrategy } from '../../shared/strategies/iv-skew-gex.js';
 import { GexFlipIvpctStrategy } from '../../shared/strategies/gex-flip-ivpct.js';
 import { GexLt3mCrossoverStrategy } from '../../shared/strategies/gex-lt-3m-crossover.js';
+import { GexTouchConfirmStrategy } from '../../shared/strategies/gex-touch-confirm.js';
 import { CBBOLTVolatilityStrategy } from '../../shared/strategies/cbbo-lt-volatility.js';
 import { GexMeanReversionStrategy } from '../strategies/gex-mean-reversion/strategy.js';
 import { LTFailedBreakdownStrategy } from '../../shared/strategies/lt-failed-breakdown.js';
@@ -355,6 +356,17 @@ export class BacktestEngine {
       }
     }
 
+    // Optional s1 VWAP feature data (--s1-vwap-file) for gex-touch-confirm.
+    // Schema: timestamp,vwap_close_diff,vwap,close,n_bars
+    let s1VwapData = [];
+    if (this.config.s1VwapFile) {
+      s1VwapData = await this._loadS1VwapFile(this.config.s1VwapFile,
+        this.config.startDate, this.config.endDate);
+      if (!this.config.quiet) {
+        console.log(`✅ Loaded ${s1VwapData.length.toLocaleString()} s1 VWAP records from ${this.config.s1VwapFile}`);
+      }
+    }
+
     // Load GEX data from 15-minute interval JSON files
     const gexLoaded = await this.gexLoader.loadDateRange(this.config.startDate, this.config.endDate);
 
@@ -537,12 +549,13 @@ export class BacktestEngine {
     }
 
     // Create market data lookup for efficient access (for legacy compatibility)
-    const marketDataLookup = this.createMarketDataLookup(gexData, liquidityData, liquidityData1m);
+    const marketDataLookup = this.createMarketDataLookup(gexData, liquidityData, liquidityData1m, s1VwapData);
 
-    // Load IV data for IV-based strategies (iv-skew-gex, gex-flip-ivpct)
+    // Load IV data for IV-based strategies (iv-skew-gex, gex-flip-ivpct, gex-touch-confirm)
     const isIVSkewStrategy = this.config.strategy === 'iv-skew-gex' || this.config.strategy === 'iv-skew';
     const isGexFlipIvpctStrategy = this.config.strategy === 'gex-flip-ivpct' || this.config.strategy === 'gfi';
-    if (isIVSkewStrategy || isGexFlipIvpctStrategy) {
+    const isGexTouchConfirm = this.config.strategy === 'gex-touch-confirm' || this.config.strategy === 'gex-touch' || this.config.strategy === 'gtc';
+    if (isIVSkewStrategy || isGexFlipIvpctStrategy || isGexTouchConfirm) {
       await this.ivLoader.load(this.config.startDate, this.config.endDate);
       const ivStats = this.ivLoader.getStats();
       if (!this.config.quiet && ivStats.count > 0) {
@@ -681,6 +694,42 @@ export class BacktestEngine {
             level_1: levels[0], level_2: levels[1], level_3: levels[2],
             level_4: levels[3], level_5: levels[4],
             sentiment: row.sentiment_raw || null,
+          });
+        })
+        .on('end', resolve).on('error', reject);
+    });
+    records.sort((a, b) => a.timestamp - b.timestamp);
+    return records;
+  }
+
+  /**
+   * Load s1 VWAP feature CSV (--s1-vwap-file). Schema:
+   *   timestamp,vwap_close_diff,vwap,close,n_bars
+   * Returns [{ timestamp_ms, vwap_close_diff, vwap, close, n_bars }] in range.
+   */
+  async _loadS1VwapFile(filePath, startDate, endDate) {
+    const absPath = path.isAbsolute(filePath) ? filePath : path.resolve(filePath);
+    if (!fs.existsSync(absPath)) {
+      const dataRelative = path.join(this.config.dataDir, filePath);
+      if (fs.existsSync(dataRelative)) return this._loadS1VwapFile(dataRelative, startDate, endDate);
+      throw new Error(`--s1-vwap-file path not found: ${filePath}`);
+    }
+    const startMs = startDate.getTime();
+    const endMs = endDate.getTime() + 24 * 3600000;
+    const records = [];
+    await new Promise((resolve, reject) => {
+      fs.createReadStream(absPath).pipe(csv())
+        .on('data', (row) => {
+          const ts = new Date(row.timestamp).getTime();
+          if (isNaN(ts) || ts < startMs || ts > endMs) return;
+          const diff = parseFloat(row.vwap_close_diff);
+          if (isNaN(diff)) return;
+          records.push({
+            timestamp: ts,
+            vwap_close_diff: diff,
+            vwap: parseFloat(row.vwap),
+            close: parseFloat(row.close),
+            n_bars: parseInt(row.n_bars, 10) || 0,
           });
         })
         .on('end', resolve).on('error', reject);
@@ -1247,12 +1296,13 @@ export class BacktestEngine {
    * @param {Object[]} liquidityData - Liquidity levels data
    * @returns {Object} Market data lookup
    */
-  createMarketDataLookup(gexData, liquidityData, liquidityData1m = null) {
+  createMarketDataLookup(gexData, liquidityData, liquidityData1m = null, s1VwapData = null) {
     const lookup = {
       gex: new Map(),
       liquidity: new Map(),
       liquidity1m: null,        // direct ts → record (exact-match fast path)
       liquidity1mSorted: null,  // sorted ts array for at-or-before fallback
+      s1Vwap: null,             // ts → vwap_close_diff (gex-touch-confirm)
     };
 
     // Index GEX data by date
@@ -1278,6 +1328,14 @@ export class BacktestEngine {
       }
       sortedTs.sort((a, b) => a - b);
       lookup.liquidity1mSorted = sortedTs;
+    }
+
+    // Index s1 VWAP feature data: hashmap for direct lookup by minute timestamp
+    if (s1VwapData && s1VwapData.length) {
+      lookup.s1Vwap = new Map();
+      for (const r of s1VwapData) {
+        lookup.s1Vwap.set(r.timestamp, r.vwap_close_diff);
+      }
     }
 
     return lookup;
@@ -1391,10 +1449,19 @@ export class BacktestEngine {
       }
     }
 
+    // s1 VWAP feature lookup (gex-touch-confirm strategy). Keyed by 1m timestamp.
+    let s1Features = null;
+    if (lookup && lookup.s1Vwap) {
+      const minuteTs = Math.floor(timestamp / 60000) * 60000;
+      const diff = lookup.s1Vwap.get(minuteTs);
+      if (diff != null) s1Features = { vwap_close_diff: diff };
+    }
+
     return {
       gexLevels: gexLevels,
       ltLevels: liquidityLevels,
       ltLevels1m: liquidityLevels1m,       // 1m LT for gex-lt-3m-crossover
+      s1Features: s1Features,              // s1 VWAP features for gex-touch-confirm
       gexLoader: data?.gexLoader || null,  // Pass loader for strategy use
       cbbo: cbboMetrics,                   // CBBO metrics for current timestamp
       cbboSpreadChange: cbboSpreadChange   // Spread change over lookback window
@@ -1479,6 +1546,10 @@ export class BacktestEngine {
       case 'gex-lt-cross':
       case 'glx':
         return new GexLt3mCrossoverStrategy(params);
+      case 'gex-touch-confirm':
+      case 'gex-touch':
+      case 'gtc':
+        return new GexTouchConfirmStrategy(params);
       case 'cbbo-lt-volatility':
       case 'cbbo-lt':
         return new CBBOLTVolatilityStrategy(params);

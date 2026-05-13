@@ -3,6 +3,7 @@ node_modules/
 
 # Results and output files
 results/
+research/output/
 *.log
 
 # Environment files

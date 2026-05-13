@@ -113,6 +113,32 @@ The system accepts trade signals via webhook at `http://localhost:3014/webhook`:
 
 ## Order Execution and Backtesting
 
+### CRITICAL: Strategy research MUST use 1s OHLCV from the fill instant onward
+
+**This rule supersedes any earlier "ambiguity resolution" pattern in this repo.** It exists because the same bug has bitten us repeatedly: research builds a strategy on optimistic 1m-bar logic, the strategy looks great on paper, the backtest engine (which simulates 1s honestly) runs it, and the live performance collapses. Drew has been burned by this in live trading multiple times.
+
+**MANDATORY for any research script that produces WR / PF / Sharpe / drawdown numbers used to design a strategy:**
+
+1. **Fills must be simulated on 1s OHLCV.** Detect the fill instant exactly:
+   - For limit orders: the first 1s bar (after order placement) where `low <= limit_price` (BUY) or `high >= limit_price` (SELL). Fill ts = that 1s bar's timestamp.
+   - For market orders: the next 1s bar's open after the signal candle closes. Fill ts = that 1s bar's timestamp.
+
+2. **Stop/target evaluation runs forward in 1s ORDER from the fill instant.** Walk 1s bars chronologically starting at fill_ts. First side to hit (stop or target) wins. Do NOT use any 1s bar with `ts < fill_ts` to evaluate exits — that data describes a trade that didn't exist yet.
+
+3. **The 1m bar containing the fill is NOT a unit of analysis.** Do not check `bar.high >= target` or `bar.low <= stop` on the full 1m fill bar. Use only the 1s subset from fill_ts onward.
+
+4. **Same-bar "ambiguous → retroactive 1s resolve" is the SAME bug.** A resolver that walks 1s from the MINUTE START still includes pre-fill 1s ticks. Don't do this.
+
+5. **MFE/MAE for events must be measured from the fill instant**, walking 1s bars forward to a max-hold ceiling, contract rollover, or EOD cutoff (whichever comes first).
+
+6. **Verification check before trusting research numbers:** before writing a strategy file based on a research output, run a small 1s-honest replication of the top filter on the same date range. If trade count, WR, and PF don't match the research within ~10%, the research has the fill-bar bug. Fix the research, not the strategy.
+
+7. **Suspect this bug first** when research produces PF / Sharpe that materially exceed already-validated 1s strategies (e.g., gex-flip-ivpct post-fix PF 4.29, Sharpe 10.60).
+
+The 1s file (`backtest-engine/data/ohlcv/nq/NQ_ohlcv_1s.csv`) is 7.6GB and sorted by `ts_event`. Stream it with readline + lex-compare on the ISO timestamp for fast date-range filtering. Use the same per-hour primary-contract filter as the 1m loader; the per-hour primary map can be precomputed from 1m data once. See `research/gex-touch-confirm/06-precompute-s1-vwap.js` for the streaming pattern (it also demonstrates the per-hour primary gate).
+
+Strategies in `shared/strategies/*` already operate on 1s data via the engine's `SecondDataProvider` — that path is honest. The risk is purely in offline research scripts that aggregate to 1m for speed and then "fix it" with a retroactive 1s pass.
+
 ### Order Fill Logic (Critical for Backtesting Accuracy)
 
 **IMPORTANT**: The backtest engine simulates order execution with specific logic that must be followed to ensure accurate results.
@@ -307,16 +333,27 @@ Stale JSONs (DO NOT USE for live deployment): `iv-skew-gex-cbbo-v6-*` (broken IV
 **IMPORTANT**: Must include `--gex-dir data/gex/nq-cbbo` — without it, the engine falls back to legacy daily CSV (1 EOD snapshot/day) which produces totally different (and lookahead-biased) results.
 
 **GEX-FLIP-IVPCT** (5m timeframe, 1m IV resolution, day-trade-margin friendly):
+
+> **2026-05-12 tight-stop refit.** The original per-rule stops (106-184pt) capped single-trade losses at $3,720 and produced 10.5% trades with catastrophic giveback (best example: +153pt MFE → -186pt = $6,780 round trip). Untradable on a small account. A 20-combo sweep produced a tight-stop config that **caps single-trade loss at $1,240** while preserving most of the strategy edge.
+
 ```bash
 cd backtest-engine
 node index.js --ticker NQ --strategy gex-flip-ivpct --timeframe 5m --raw-contracts \
   --start 2025-01-13 --end 2026-04-20 \
   --iv-resolution 1m \
-  --eod-cutoff-et 16:40
+  --eod-cutoff-et 16:40 \
+  --gfi-stop-pts 60 --gfi-target-pts 200 \
+  --gfi-breakeven-stop --gfi-breakeven-trigger 70 --gfi-breakeven-offset 5 \
+  --gfi-blocked-hours 6,7,8
 ```
-**Post-fix baseline (2026-05-06):** 143 trades, **$275,400** PnL, 74.13% WR, **PF 4.29**, Sharpe 10.60, **Max DD 4.16%**. GEX dir defaults to `data/gex/nq/` (already relabeled). Six rules (L1/L4/L3/S3/S1/S2) with per-rule stops & targets in `shared/strategies/gex-flip-ivpct.js`. Entries 04:00-13:00 ET; broker auto-liquidates at 16:45 PM ET so cutoff is set to 16:40 for a 5-min cushion.
 
-Pre-fix gold standard for historical reference: 141 trades, $330,901 PnL, 78.9% WR, PF 5.87, Max DD 3.66%. Trades JSON: `data/gold-standard/gex-flip-ivpct.json` (do NOT use for live deployment — generated under lookahead-biased GEX). The per-rule stops/targets in the strategy code were derived from MFE/MAE distributions on the biased data and are likely no longer optimal — re-tune via `research/PROMPT-reoptimize-stops-targets-post-lookahead-fix.md`.
+**Tight-stop gold standard (2026-05-12):** 172 trades, **$157,329** PnL, 61.6% WR, **PF 2.99**, **Sharpe 6.41**, **Max DD 11.3%**. Max single loss capped at **-$1,240**, max giveback **-$2,520**, 10 painful losers (vs 15 baseline). Trades JSON: `data/gold-standard/gex-flip-ivpct-tight-s60t200be70.json`. These flag defaults are also baked into the live signal-generator via `config.js` (env vars `GFI_STOP_POINTS`, `GFI_TARGET_POINTS`, `GFI_BREAKEVEN_STOP`, `GFI_BREAKEVEN_TRIGGER`, `GFI_BREAKEVEN_OFFSET`, `GFI_BLOCKED_HOURS_ET` — all optional, sensible defaults applied). Full research writeup in `research/gfi-mae-analysis/SUMMARY.md`.
+
+Pareto alternatives (each caps loss at $1,240, just trades PnL for fewer painful events):
+- **Zero-giveback**: `--gfi-stop-pts 60 --gfi-target-pts 150 --gfi-breakeven-trigger 50 --gfi-breakeven-offset 5 --gfi-blocked-hours 6,7,8` → 168 trades, $92k, PF 2.38, **0 painful**.
+- **Balanced**: `--gfi-stop-pts 60 --gfi-target-pts 180 --gfi-breakeven-trigger 60 --gfi-breakeven-offset 5 --gfi-blocked-hours 6,7,8` → 161 trades, $115k, PF 2.64, 4 painful.
+
+Reference: pre-refit wide-stop baseline (per-rule stops 106-184pt) was 143 trades, $275k PnL, PF 4.29, Sharpe 10.60, Max DD 4.16% — higher headline numbers but max single-trade loss $3,720 and 15 painful givebacks. Trades JSON: `data/gold-standard/gex-flip-ivpct-postfix-baseline.json` (preserved for historical reference; do NOT use for live deployment on a small account).
 
 **IMPORTANT** for parity: `--iv-resolution 1m`, `--timeframe 5m`, and `--eod-cutoff-et 16:40` are all REQUIRED. With 15m IV, skew can be up to 14 min stale at non-15m-boundary bars and trip the +0.015 threshold, causing L1↔L4 / S1↔S2 rule swaps. With `--timeframe 1m` the engine puts evaluations on a different bar grid and only ~1/142 trades line up exactly (aggregate stats stay close, but bar-level audit fails).
 

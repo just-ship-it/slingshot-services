@@ -78,8 +78,30 @@ export class GexFlipIvpctStrategy extends BaseStrategy {
     this.params.entryWindowStartHour = params.entryWindowStartHour ?? 4;
     this.params.entryWindowEndHour = params.entryWindowEndHour ?? 13;
 
+    // Additional hour blacklist within the window. e.g. [6,7,8] to skip ET 06-08.
+    this.params.blockedHoursEt = new Set(params.blockedHoursEt ?? []);
+
     // Cooldown between trades — V7DTSP13 production run used 6 5m bars = 30 minutes
     this.params.signalCooldownMs = params.signalCooldownMs ?? 30 * 60 * 1000;
+
+    // Per-rule overrides: { [ruleId]: { stopPts?, targetPts?, priority? } }
+    // and a blacklist of rule IDs to disable entirely.
+    this.params.ruleOverrides = params.ruleOverrides ?? {};
+    this.params.disabledRules = new Set(params.disabledRules ?? []);
+
+    // Global stop/target overrides apply to ALL rules when set.
+    // Per-rule overrides in ruleOverrides take precedence over these.
+    this.params.globalStopPts = params.globalStopPts ?? null;
+    this.params.globalTargetPts = params.globalTargetPts ?? null;
+
+    // Breakeven stop (forwarded to trade-simulator on each signal)
+    this.params.breakevenStop = params.breakevenStop ?? false;
+    this.params.breakevenTrigger = params.breakevenTrigger ?? null;
+    this.params.breakevenOffset = params.breakevenOffset ?? 0;
+
+    // Trailing stop (forwarded to trade-simulator on each signal)
+    this.params.trailingTrigger = params.trailingTrigger ?? null;
+    this.params.trailingOffset = params.trailingOffset ?? null;
 
     // Default max hold. The slingshot trade simulator increments barsSinceEntry
     // per-1m candle regardless of strategy timeframe, so this value is in MINUTES.
@@ -267,21 +289,38 @@ export class GexFlipIvpctStrategy extends BaseStrategy {
   }
 
   /**
-   * Half-open entry window check: entryWindowStartHour <= hour < entryWindowEndHour
+   * Half-open entry window check: entryWindowStartHour <= hour < entryWindowEndHour,
+   * with optional hour blacklist via blockedHoursEt.
    */
   isInEntryWindow(timestamp) {
     const h = this.getETHour(timestamp);
+    if (this.params.blockedHoursEt.has(h)) return false;
     return h >= this.params.entryWindowStartHour && h < this.params.entryWindowEndHour;
   }
 
   /**
+   * Resolve a rule's effective stop/target/priority after applying global
+   * overrides and per-rule overrides. Per-rule overrides win.
+   */
+  _resolvedRule(rule) {
+    const o = this.params.ruleOverrides[rule.id] || {};
+    const stopPts = o.stopPts ?? this.params.globalStopPts ?? rule.stopPts;
+    const targetPts = o.targetPts ?? this.params.globalTargetPts ?? rule.targetPts;
+    const priority = o.priority ?? rule.priority;
+    return { ...rule, stopPts, targetPts, priority };
+  }
+
+  /**
    * Evaluate every rule and return the highest-priority one whose conditions fire.
+   * Returns the rule with overrides applied (stop/target/priority).
    */
   findFiringRule(features) {
     let best = null;
     for (const rule of RULES) {
+      if (this.params.disabledRules.has(rule.id)) continue;
       if (!this._ruleFires(rule, features)) continue;
-      if (!best || rule.priority > best.priority) best = rule;
+      const resolved = this._resolvedRule(rule);
+      if (!best || resolved.priority > best.priority) best = resolved;
     }
     return best;
   }
@@ -390,7 +429,7 @@ export class GexFlipIvpctStrategy extends BaseStrategy {
         `ivPct=${features.ivPctile?.toFixed(2)} regime=${features.regime}`);
     }
 
-    return {
+    const signal = {
       timestamp,
       side: rule.side,
       price: entryPrice,
@@ -422,6 +461,25 @@ export class GexFlipIvpctStrategy extends BaseStrategy {
       stop_loss: stopLoss,
       take_profit: takeProfit,
     };
+
+    if (this.params.breakevenStop) {
+      const trig = this.params.breakevenTrigger ?? Math.max(20, Math.round(rule.targetPts * 0.25));
+      signal.breakeven_stop = true;
+      signal.breakevenStop = true;
+      signal.breakeven_trigger = trig;
+      signal.breakevenTrigger = trig;
+      signal.breakeven_offset = this.params.breakevenOffset;
+      signal.breakevenOffset = this.params.breakevenOffset;
+    }
+
+    if (this.params.trailingTrigger != null && this.params.trailingOffset != null) {
+      signal.trailing_trigger = this.params.trailingTrigger;
+      signal.trailingTrigger = this.params.trailingTrigger;
+      signal.trailing_offset = this.params.trailingOffset;
+      signal.trailingOffset = this.params.trailingOffset;
+    }
+
+    return signal;
   }
 
   reset() {
@@ -465,9 +523,28 @@ export class GexFlipIvpctStrategy extends BaseStrategy {
       strongNegativeRegime: this.params.strongNegativeRegime,
       entryWindowStartHour: this.params.entryWindowStartHour,
       entryWindowEndHour: this.params.entryWindowEndHour,
+      blockedHoursEt: Array.from(this.params.blockedHoursEt).sort((a, b) => a - b),
       signalCooldownMs: this.params.signalCooldownMs,
       maxHoldBars: this.params.maxHoldBars,
       eodCutoffEt: this.params.eodCutoffEt,
+      // Tight-stop refit settings (active overrides)
+      globalStopPts: this.params.globalStopPts,
+      globalTargetPts: this.params.globalTargetPts,
+      breakevenStop: this.params.breakevenStop,
+      breakevenTrigger: this.params.breakevenTrigger,
+      breakevenOffset: this.params.breakevenOffset,
+      trailingTrigger: this.params.trailingTrigger,
+      trailingOffset: this.params.trailingOffset,
+      // Active rule set (after disabledRules filter)
+      activeRules: RULES.filter(r => !this.params.disabledRules.has(r.id)).map(r => ({
+        id: r.id,
+        side: r.side,
+        priority: r.priority,
+        stopPts: this.params.ruleOverrides[r.id]?.stopPts ?? this.params.globalStopPts ?? r.stopPts,
+        targetPts: this.params.ruleOverrides[r.id]?.targetPts ?? this.params.globalTargetPts ?? r.targetPts,
+        description: r.description,
+      })),
+      disabledRules: Array.from(this.params.disabledRules),
 
       // Live state
       ivPercentile,

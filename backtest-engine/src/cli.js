@@ -68,7 +68,7 @@ export class CLI {
         type: 'string',
         description: 'Strategy to backtest',
         default: 'gex-recoil',
-        choices: ['gex-recoil', 'gex-recoil-enhanced', 'gex-ldpm-confluence', 'gex-ldpm-confluence-pullback', 'contrarian-bounce', 'gex-scalp', 'gex-scalp-confirmed', 'ict-smc', 'ict-ob', 'ldpm-level-sweep', 'order-flow-momentum', 'ofm', 'contrarian-orderflow', 'cof', 'gex-absorption', 'absorption', 'iv-skew-gex', 'iv-skew', 'gex-flip-ivpct', 'gfi', 'gex-lt-3m-crossover', 'gex-lt-cross', 'glx', 'cbbo-lt-volatility', 'cbbo-lt', 'gex-mean-reversion', 'gex-mr', 'lt-failed-breakdown', 'lt-fb', 'lt-level-crossing', 'lt-cross', 'lt-level-migration', 'lt-mig', 'regime-scalp', 'rs', 'gex-level-sweep', 'gex-sweep', 'sweep', 'micro-structure-scalper', 'micro-scalper', 'mss', 'trend-scalp', 'ts', 'level-bounce', 'lb', 'overnight-gex-touch', 'overnight-gex', 'ogt', 'overnight-charm-vanna', 'ocv', 'es-cross-signal', 'es-cross', 'ecs', 'es-micro-scalper', 'es-micro', 'esms', 'es-stop-hunt', 'es-hunt', 'esh', 'ohlcv-absorption', 'absorption-detect', 'abs', 'ohlcv-liquidity-sweep', 'liquidity-sweep', 'lsweep', 'ohlcv-vpin', 'vpin', 'ohlcv-mtf-rejection', 'mtf-rejection', 'mtfr', 'momentum-microstructure', 'momentum-micro', 'mm', 'midnight-open-retracement', 'midnight-open', 'mor', 'initial-balance-breakout', 'ib-breakout', 'ibb', 'gap-fill', 'gap', 'daily-level-sweep', 'daily-sweep', 'dls', 'vwap-bounce', 'vwap', 'session-transition', 'session', 'st', 'value-area-80', 'va80', 'swing-reversal', 'sr', 'ict-silver-bullet', 'silver-bullet', 'isb', 'price-action-exhaustion', 'pa-exhaust', 'pae', 'ict-mtf-sweep', 'mtf-sweep', 'jv', 'dc-st1', 'dc1', 'dc-st2', 'dc2', 'dc-st3', 'dc3', 'dc-st4', 'dc4', 'dc-st5', 'dc5', 'dc-st6', 'dc6', 'dc-st7', 'dc7', 'dc-st8', 'dc8', 'dc-mstgam', 'mstgam', 'mnq-adaptive-scalper', 'mnq-scalper', 'mnq', 'sweep-reversal', 'sweep-rev', 'nq-leads-es', 'nq-lead', 'nle', 'gex-support-bounce', 'gex-bounce', 'gsb', 'impulse-fvg', 'impulse', 'ifvg', 'short-dte-iv', 'sdiv', 'overnight-scoring', 'overnight-score', 'ons', 'overnight-composite', 'overnight-comp', 'onc', 'overnight-lt-crossing', 'overnight-ltx', 'oltx', 'lt-crossover', 'ltx', 'lt-structure-confirm', 'ltsc', 'lt-struct', 'lt-candle-regime', 'lt-regime', 'lcr', 'gamma-regime-drift', 'grd']
+        choices: ['gex-recoil', 'gex-recoil-enhanced', 'gex-ldpm-confluence', 'gex-ldpm-confluence-pullback', 'contrarian-bounce', 'gex-scalp', 'gex-scalp-confirmed', 'ict-smc', 'ict-ob', 'ldpm-level-sweep', 'order-flow-momentum', 'ofm', 'contrarian-orderflow', 'cof', 'gex-absorption', 'absorption', 'iv-skew-gex', 'iv-skew', 'gex-flip-ivpct', 'gfi', 'gex-lt-3m-crossover', 'gex-lt-cross', 'glx', 'gex-touch-confirm', 'gex-touch', 'gtc', 'cbbo-lt-volatility', 'cbbo-lt', 'gex-mean-reversion', 'gex-mr', 'lt-failed-breakdown', 'lt-fb', 'lt-level-crossing', 'lt-cross', 'lt-level-migration', 'lt-mig', 'regime-scalp', 'rs', 'gex-level-sweep', 'gex-sweep', 'sweep', 'micro-structure-scalper', 'micro-scalper', 'mss', 'trend-scalp', 'ts', 'level-bounce', 'lb', 'overnight-gex-touch', 'overnight-gex', 'ogt', 'overnight-charm-vanna', 'ocv', 'es-cross-signal', 'es-cross', 'ecs', 'es-micro-scalper', 'es-micro', 'esms', 'es-stop-hunt', 'es-hunt', 'esh', 'ohlcv-absorption', 'absorption-detect', 'abs', 'ohlcv-liquidity-sweep', 'liquidity-sweep', 'lsweep', 'ohlcv-vpin', 'vpin', 'ohlcv-mtf-rejection', 'mtf-rejection', 'mtfr', 'momentum-microstructure', 'momentum-micro', 'mm', 'midnight-open-retracement', 'midnight-open', 'mor', 'initial-balance-breakout', 'ib-breakout', 'ibb', 'gap-fill', 'gap', 'daily-level-sweep', 'daily-sweep', 'dls', 'vwap-bounce', 'vwap', 'session-transition', 'session', 'st', 'value-area-80', 'va80', 'swing-reversal', 'sr', 'ict-silver-bullet', 'silver-bullet', 'isb', 'price-action-exhaustion', 'pa-exhaust', 'pae', 'ict-mtf-sweep', 'mtf-sweep', 'jv', 'dc-st1', 'dc1', 'dc-st2', 'dc2', 'dc-st3', 'dc3', 'dc-st4', 'dc4', 'dc-st5', 'dc5', 'dc-st6', 'dc6', 'dc-st7', 'dc7', 'dc-st8', 'dc8', 'dc-mstgam', 'mstgam', 'mnq-adaptive-scalper', 'mnq-scalper', 'mnq', 'sweep-reversal', 'sweep-rev', 'nq-leads-es', 'nq-lead', 'nle', 'gex-support-bounce', 'gex-bounce', 'gsb', 'impulse-fvg', 'impulse', 'ifvg', 'short-dte-iv', 'sdiv', 'overnight-scoring', 'overnight-score', 'ons', 'overnight-composite', 'overnight-comp', 'onc', 'overnight-lt-crossing', 'overnight-ltx', 'oltx', 'lt-crossover', 'ltx', 'lt-structure-confirm', 'ltsc', 'lt-struct', 'lt-candle-regime', 'lt-regime', 'lcr', 'gamma-regime-drift', 'grd']
       })
 
       .option('timeframe', {
@@ -163,6 +163,11 @@ export class CLI {
         description: 'Path to a 1m LT levels CSV (gex-lt-3m-crossover strategy). Schema: timestamp_iso, unix_ms, sentiment_raw, level_1..5. Use research/lt-extraction/output/nq_lt_1m_raw.csv.'
       })
 
+      .option('s1-vwap-file', {
+        type: 'string',
+        description: 'Path to per-minute s1 VWAP feature CSV (gex-touch-confirm strategy). Schema: timestamp,vwap_close_diff,vwap,close,n_bars. Use data/features/nq_s1_vwap_1m.csv (built by research/gex-touch-confirm/06-precompute-s1-vwap.js).'
+      })
+
       .option('eod-cutoff-et', {
         type: 'string',
         description: 'Force-flat any open position at this ET wall-clock time (HH:MM) on weekdays. Models day-trade-margin liquidation (e.g. "16:45").'
@@ -233,6 +238,116 @@ export class CLI {
       .option('glx-breakeven-offset', {
         type: 'number',
         description: 'Universal breakeven stop offset (points of profit locked at entry) for gex-lt-3m-crossover.'
+      })
+
+      .option('gtc-iv-skew-threshold', {
+        type: 'number',
+        description: 'gex-touch-confirm: qqq put_iv − call_iv max. Default 0.0173 (p10 of population — calm options skew).'
+      })
+      .option('gtc-no-pinbar', {
+        type: 'boolean',
+        default: false,
+        description: 'gex-touch-confirm: disable the pinbar requirement.'
+      })
+      .option('gtc-no-positive-regime', {
+        type: 'boolean',
+        default: false,
+        description: 'gex-touch-confirm: disable the positive-regime requirement.'
+      })
+      .option('gtc-min-dist-threshold', {
+        type: 'number',
+        description: 'gex-touch-confirm: optional min_dist_to_level threshold (pts). Default null (off).'
+      })
+      .option('gtc-atr-threshold', {
+        type: 'number',
+        description: 'gex-touch-confirm: ATR(14) threshold. Default 28.95 (p90 of population).'
+      })
+      .option('gtc-s1-threshold', {
+        type: 'number',
+        description: 'gex-touch-confirm: s1_vwap_close_diff threshold (signed by approach). Default null. Pair with --gtc-use-s1-filter.'
+      })
+      .option('gtc-use-s1-filter', {
+        type: 'boolean',
+        default: false,
+        description: 'gex-touch-confirm: enable secondary s1 VWAP filter (requires --s1-vwap-file).'
+      })
+      .option('gtc-touch-distance', {
+        type: 'number',
+        description: 'gex-touch-confirm: pts within level to count as a touch. Default 10.'
+      })
+      .option('gtc-stop-distance', {
+        type: 'number',
+        description: 'gex-touch-confirm: stop distance past level in pts. Default 15. (20 = higher WR; 8/10/12 = tighter R:R)'
+      })
+      .option('gtc-target-points', {
+        type: 'number',
+        description: 'gex-touch-confirm: target distance past level in pts. Default 20.'
+      })
+      .option('gtc-limit-timeout', {
+        type: 'number',
+        description: 'gex-touch-confirm: 1m candles to wait for limit fill. Default 5.'
+      })
+      .option('gtc-max-hold', {
+        type: 'number',
+        description: 'gex-touch-confirm: max hold in MINUTES after signal. Default 120.'
+      })
+      .option('gtc-cooldown-ms', {
+        type: 'number',
+        description: 'gex-touch-confirm: signal cooldown in ms. Default 0.'
+      })
+      .option('gtc-entry-window', {
+        type: 'string',
+        description: 'gex-touch-confirm: entry window "HH:MM-HH:MM" ET. Default "09:30-16:00".'
+      })
+      .option('gtc-no-entry-window', {
+        type: 'boolean',
+        default: false,
+        description: 'gex-touch-confirm: disable entry-window gating.'
+      })
+      .option('gtc-snap-lag-min', {
+        type: 'number',
+        description: 'gex-touch-confirm: minutes to lag the GEX snapshot lookup. Default 16 (matches research). 0 = use freshest available.'
+      })
+
+      .option('gfi-stop-pts', {
+        type: 'number',
+        description: 'gex-flip-ivpct: override stop in points for ALL rules.'
+      })
+      .option('gfi-target-pts', {
+        type: 'number',
+        description: 'gex-flip-ivpct: override target in points for ALL rules.'
+      })
+      .option('gfi-rule-overrides', {
+        type: 'string',
+        description: 'gex-flip-ivpct: JSON map of per-rule overrides, e.g. \'{"L3":{"stopPts":50,"targetPts":100}}\''
+      })
+      .option('gfi-disable-rules', {
+        type: 'string',
+        description: 'gex-flip-ivpct: comma-separated list of rules to disable, e.g. "L3,S1".'
+      })
+      .option('gfi-blocked-hours', {
+        type: 'string',
+        description: 'gex-flip-ivpct: comma-separated ET hours to block, e.g. "6,7,8".'
+      })
+      .option('gfi-breakeven-stop', {
+        type: 'boolean',
+        description: 'gex-flip-ivpct: enable breakeven stop (move stop to entry once trigger is hit).'
+      })
+      .option('gfi-breakeven-trigger', {
+        type: 'number',
+        description: 'gex-flip-ivpct: MFE points at which to move stop to BE.'
+      })
+      .option('gfi-breakeven-offset', {
+        type: 'number',
+        description: 'gex-flip-ivpct: where to move stop when BE triggers. 0=entry, negative=allow some loss.'
+      })
+      .option('gfi-trailing-trigger', {
+        type: 'number',
+        description: 'gex-flip-ivpct: MFE points at which trailing stop activates.'
+      })
+      .option('gfi-trailing-offset', {
+        type: 'number',
+        description: 'gex-flip-ivpct: trailing stop offset in points back from current MFE.'
       })
 
       .option('grd-hours', {
@@ -1652,6 +1767,55 @@ export class CLI {
       // endMinute not currently honored — engine treats end as :00 of endHour.
     }
 
+    // gex-touch-confirm knobs
+    if (args['gtc-iv-skew-threshold'] !== undefined) strategyParams.ivSkewThreshold = args['gtc-iv-skew-threshold'];
+    if (args['gtc-no-pinbar']) strategyParams.requirePinbar = false;
+    if (args['gtc-no-positive-regime']) strategyParams.requirePositiveRegime = false;
+    if (args['gtc-min-dist-threshold'] !== undefined) strategyParams.minDistThreshold = args['gtc-min-dist-threshold'];
+    if (args['gtc-s1-threshold'] !== undefined) strategyParams.s1VwapThreshold = args['gtc-s1-threshold'];
+    if (args['gtc-atr-threshold'] !== undefined) strategyParams.atrThreshold = args['gtc-atr-threshold'];
+    if (args['gtc-use-s1-filter']) strategyParams.useS1VwapFilter = true;
+    if (args['gtc-touch-distance'] !== undefined) strategyParams.touchDistance = args['gtc-touch-distance'];
+    if (args['gtc-stop-distance'] !== undefined) strategyParams.stopDistance = args['gtc-stop-distance'];
+    if (args['gtc-target-points'] !== undefined) strategyParams.targetPoints = args['gtc-target-points'];
+    if (args['gtc-limit-timeout'] !== undefined) strategyParams.limitTimeoutCandles = args['gtc-limit-timeout'];
+    if (args['gtc-max-hold'] !== undefined) strategyParams.maxHoldBars = args['gtc-max-hold'];
+    if (args['gtc-cooldown-ms'] !== undefined) strategyParams.signalCooldownMs = args['gtc-cooldown-ms'];
+    if (args['gtc-no-entry-window']) strategyParams.disableEntryWindow = true;
+    if (args['gtc-snap-lag-min'] !== undefined) strategyParams.snapLagMin = args['gtc-snap-lag-min'];
+    if (args['gtc-entry-window']) {
+      const m = args['gtc-entry-window'].match(/^(\d{1,2}):(\d{2})-(\d{1,2}):(\d{2})$/);
+      if (!m) {
+        console.error('❌ --gtc-entry-window must be HH:MM-HH:MM (ET).');
+        process.exit(1);
+      }
+      strategyParams.entryWindowStartHour = parseInt(m[1], 10);
+      strategyParams.entryWindowStartMinute = parseInt(m[2], 10);
+      strategyParams.entryWindowEndHour = parseInt(m[3], 10);
+      strategyParams.entryWindowEndMinute = parseInt(m[4], 10);
+    }
+
+    // gex-flip-ivpct: non-BE/trailing overrides (keep these before the engine-wide
+    // BE/trailing block so they don't get clobbered)
+    if (args['gfi-stop-pts'] !== undefined) strategyParams.globalStopPts = args['gfi-stop-pts'];
+    if (args['gfi-target-pts'] !== undefined) strategyParams.globalTargetPts = args['gfi-target-pts'];
+    if (args['gfi-rule-overrides']) {
+      try {
+        strategyParams.ruleOverrides = JSON.parse(args['gfi-rule-overrides']);
+      } catch (e) {
+        console.error('❌ --gfi-rule-overrides must be valid JSON:', e.message);
+        process.exit(1);
+      }
+    }
+    if (args['gfi-disable-rules']) {
+      strategyParams.disabledRules = args['gfi-disable-rules']
+        .split(',').map(s => s.trim()).filter(Boolean);
+    }
+    if (args['gfi-blocked-hours']) {
+      strategyParams.blockedHoursEt = args['gfi-blocked-hours']
+        .split(',').map(s => parseInt(s.trim(), 10)).filter(n => !isNaN(n));
+    }
+
     // If strategy config specifies a timeframe and user didn't explicitly override, use it
     const rawArgs = process.argv.slice(2);
     const userSetTimeframe = rawArgs.some(a => a.startsWith('--timeframe') || a.startsWith('--tf'));
@@ -1692,6 +1856,15 @@ export class CLI {
     if (args.breakevenStop !== undefined) strategyParams.breakevenStop = args.breakevenStop;
     if (args.breakevenTrigger !== undefined) strategyParams.breakevenTrigger = args.breakevenTrigger;
     if (args.breakevenOffset !== undefined) strategyParams.breakevenOffset = args.breakevenOffset;
+
+    // gex-flip-ivpct BE/trailing overrides — MUST come after the engine-wide
+    // breakevenStop block above, because that block writes default:false and
+    // would clobber strategyParams.breakevenStop if our flag ran first.
+    if (args['gfi-breakeven-stop']) strategyParams.breakevenStop = true;
+    if (args['gfi-breakeven-trigger'] !== undefined) strategyParams.breakevenTrigger = args['gfi-breakeven-trigger'];
+    if (args['gfi-breakeven-offset'] !== undefined) strategyParams.breakevenOffset = args['gfi-breakeven-offset'];
+    if (args['gfi-trailing-trigger'] !== undefined) strategyParams.trailingTrigger = args['gfi-trailing-trigger'];
+    if (args['gfi-trailing-offset'] !== undefined) strategyParams.trailingOffset = args['gfi-trailing-offset'];
 
     // Zero Gamma early exit parameters
     if (args.gfEarlyExit !== undefined) strategyParams.gfEarlyExit = args.gfEarlyExit;
@@ -2117,6 +2290,7 @@ export class CLI {
       ivResolution: args.ivResolution,
       gexDir: args.gexDir || null, // Custom GEX directory (e.g., data/gex-cbbo/nq/ for CBBO-based GEX)
       lt1mFile: args['lt-1m-file'] || args.lt1mFile || null, // 1m LT CSV path for gex-lt-3m-crossover
+      s1VwapFile: args['s1-vwap-file'] || args.s1VwapFile || null, // s1 VWAP feature CSV for gex-touch-confirm
       eodCutoffEt: args.eodCutoffEt || null, // ET cutoff (HH:MM) for day-trade-margin liquidation
       useCBBO: args.useCbbo || args.strategy === 'cbbo-lt-volatility' || args.strategy === 'cbbo-lt',
       cbboDataDir: args.cbboDataDir || null, // null means use default: dataDir/cbbo-1m/qqq

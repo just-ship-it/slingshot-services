@@ -141,6 +141,15 @@ const config = {
   GFI_ENTRY_WINDOW_END_HOUR: parseInt(process.env.GFI_ENTRY_WINDOW_END_HOUR || '13'),
   GFI_COOLDOWN_MS: parseInt(process.env.GFI_COOLDOWN_MS || '1800000'), // 30 minutes
   GFI_MAX_HOLD_BARS: parseInt(process.env.GFI_MAX_HOLD_BARS || '600'), // 600 minutes (10h)
+  // Tight-stop refit (2026-05-12): caps single loss at $1,240. Override the
+  // per-rule stops/targets baked into the strategy with safer globals.
+  GFI_STOP_POINTS: parseFloat(process.env.GFI_STOP_POINTS || '60'),
+  GFI_TARGET_POINTS: parseFloat(process.env.GFI_TARGET_POINTS || '200'),
+  GFI_BREAKEVEN_STOP: process.env.GFI_BREAKEVEN_STOP?.toLowerCase() !== 'false', // default true
+  GFI_BREAKEVEN_TRIGGER: parseFloat(process.env.GFI_BREAKEVEN_TRIGGER || '70'),
+  GFI_BREAKEVEN_OFFSET: parseFloat(process.env.GFI_BREAKEVEN_OFFSET || '5'),
+  // Pre-RTH hours where 100% of trades had MAE > 10pt in the baseline study.
+  GFI_BLOCKED_HOURS_ET: process.env.GFI_BLOCKED_HOURS_ET ?? '6,7,8',
   // Mirrors trade-orchestrator's EOD_CUTOFF_ET so the dashboard can show the
   // same time the orchestrator will actually force-flat at. Set EOD_CUTOFF_ET=""
   // (empty) to disable the dashboard indicator (matches orchestrator semantics).
@@ -331,6 +340,8 @@ const config = {
   },
 
   getGexFlipIvpctParams() {
+    const blockedHoursEt = (this.GFI_BLOCKED_HOURS_ET || '')
+      .split(',').map(s => parseInt(s.trim(), 10)).filter(n => !isNaN(n));
     return {
       wallProximity: this.GFI_WALL_PROXIMITY,
       ivPctileWindowDays: this.GFI_IV_PCTILE_WINDOW_DAYS,
@@ -344,6 +355,13 @@ const config = {
       signalCooldownMs: this.GFI_COOLDOWN_MS,
       maxHoldBars: this.GFI_MAX_HOLD_BARS,
       eodCutoffEt: this.EOD_CUTOFF_ET,
+      // Tight-stop refit (2026-05-12)
+      globalStopPts: this.GFI_STOP_POINTS,
+      globalTargetPts: this.GFI_TARGET_POINTS,
+      breakevenStop: this.GFI_BREAKEVEN_STOP,
+      breakevenTrigger: this.GFI_BREAKEVEN_TRIGGER,
+      breakevenOffset: this.GFI_BREAKEVEN_OFFSET,
+      blockedHoursEt,
     };
   },
 
