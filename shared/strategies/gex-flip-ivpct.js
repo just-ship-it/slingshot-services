@@ -110,6 +110,48 @@ export class GexFlipIvpctStrategy extends BaseStrategy {
     // service-level safety against the broker auto-liquidating.
     this.params.maxHoldBars = params.maxHoldBars ?? 600;
 
+    // Structural-magnet ratchet: when enabled, the strategy computes 1m
+    // 9/9 swing pivots in the trade's profit region at signal time and
+    // emits per-signal mfeRatchetConfig.tiers anchored at those swings.
+    // Each magnet becomes a tier with the same lockPct. The engine's
+    // existing MFE ratchet code (trade-simulator.js:1138) consumes the
+    // tiers unchanged.
+    this.params.magnetRatchet = params.magnetRatchet ?? false;
+    this.params.magnetLockPct = params.magnetLockPct ?? 0.75;
+    this.params.magnetRecencyMs = params.magnetRecencyMs ?? 4 * 60 * 60 * 1000;
+    // When true, each tier's stop is fixed at (tier.minMFE × lockPct) and
+    // does NOT track running MFE between tiers. Lets trades breathe to
+    // reach the next magnet. Matches the user's intuition: "lock at the
+    // magnet, hold until the next magnet."
+    this.params.magnetFixedPerTier = params.magnetFixedPerTier ?? false;
+    // When set, trades with no magnets in profit region fall back to this
+    // pure-MFE ratchet tier set. Format: same as mfeRatchetConfig.tiers.
+    // Example: `[{ minMFE: 70, lockPct: 0.40 }]` matches the s1-m70l40 pure
+    // ratchet config from Wave 1's sweep.
+    this.params.magnetFallbackTiers = params.magnetFallbackTiers ?? null;
+
+    // Fibonacci-retracement bar-close exit (additive to hard SL):
+    //   - Tracks favorable extreme since fill.
+    //   - Once MFE >= fibActivationMFE, exit on a 1m bar CLOSE through the
+    //     entry ± mfe × (1 − fibRetracePct) level.
+    //   - Hard SL at fill ± stopPts stays in place.
+    this.params.fibRetrace = params.fibRetrace ?? false;
+    this.params.fibRetracePct = params.fibRetracePct ?? 0.786;
+    this.params.fibActivationMFE = params.fibActivationMFE ?? 40;
+
+    // Regime-conditional fib config: when enabled, per-signal fib params
+    // are chosen based on the entry-time regime classification derived from
+    // the 172-trade baseline separation analysis (research/mfe-ratchet-gfi/
+    // regime-analysis.md). Trades that already capture well (mid IV, S2 rule)
+    // get fib disabled. Wave-prone trades (negative GEX, L4, S1) get tighter
+    // fib. Everything else uses the baseline 0.618/40 config.
+    this.params.fibConditional = params.fibConditional ?? false;
+    // 'full' (default): disable fib for S2 + mid-IV, tighten for wave-prone.
+    // 's2-only': disable fib for S2 only; everything else uses default.
+    // 'tighten-only': no disables, just tighten wave-prone (L4/S1/neg-GEX).
+    // 'mild-tighten': like tighten-only but with a softer tighten (0.58/40).
+    this.params.fibConditionalMode = params.fibConditionalMode ?? 'full';
+
     // Informational: the trade-orchestrator's EOD force-flat time. The
     // strategy itself does not act on this — it's plumbed through so the
     // dashboard panel renders the same value the orchestrator is using.
@@ -123,6 +165,10 @@ export class GexFlipIvpctStrategy extends BaseStrategy {
     // Debug / live mode
     this.params.debug = params.debug ?? false;
     this.params.liveMode = params.liveMode ?? false;
+
+    // Swing pivot loader (for magnet ratchet)
+    this.swingLoader = null;    // backtest path
+    this.liveSwingProvider = null; // live path: pluggable (not yet wired)
 
     // IV data sources
     this.ivLoader = null;       // backtest path
@@ -214,6 +260,106 @@ export class GexFlipIvpctStrategy extends BaseStrategy {
       const stats = ivLoader.getStats();
       console.log(`[GEX-FLIP-IVPCT] IV data loaded: ${stats.count} records, ${stats.startDate} → ${stats.endDate}`);
     }
+  }
+
+  loadSwingPivots(swingLoader) {
+    this.swingLoader = swingLoader;
+    if (this.params.debug || true) {
+      const stats = swingLoader.getStats?.() ?? { count: '?' };
+      console.log(`[GEX-FLIP-IVPCT] Swing pivots loaded: ${stats.count} records (${stats.highs}H/${stats.lows}L)`);
+    }
+  }
+
+  /**
+   * Build per-signal MFE ratchet tiers from active swing magnets in the
+   * trade's profit region. Returns null if magnet ratchet is disabled, no
+   * loader is attached, or no magnets are within the profit region.
+   *
+   * For a SHORT at entryPrice with targetPts TP distance: profit region is
+   * (entryPrice − targetPts, entryPrice), so we look at swing LOWS in that
+   * band. Symmetric for LONGs (swing HIGHs above entry).
+   */
+  buildMagnetTiers(timestamp, side, entryPrice, targetPts) {
+    if (!this.params.magnetRatchet) return null;
+    if (!this.swingLoader) return null;
+
+    const isShort = side === 'short';
+    const swingType = isShort ? 'low' : 'high';
+    const swings = this.swingLoader.getActiveSwings(timestamp, swingType, this.params.magnetRecencyMs);
+    if (!swings || swings.length === 0) return null;
+
+    // Filter to profit region. Exclude swings at or beyond TP — TP already
+    // closes the trade there, so an additional tier is redundant.
+    const lo = isShort ? entryPrice - targetPts : entryPrice;
+    const hi = isShort ? entryPrice : entryPrice + targetPts;
+    const magnets = swings.filter(s => s.price > lo && s.price < hi);
+    if (magnets.length === 0) return null;
+
+    // Build tiers: each magnet → { minMFE, lockPct }. Highest minMFE first.
+    const tiers = magnets.map(m => {
+      const mfeAtMagnet = Math.abs(entryPrice - m.price);
+      return { minMFE: mfeAtMagnet, lockPct: this.params.magnetLockPct, label: `magnet@${m.price.toFixed(2)}` };
+    }).sort((a, b) => b.minMFE - a.minMFE);
+
+    // Deduplicate: identical minMFE collapses to one tier
+    const seen = new Set();
+    const unique = [];
+    for (const t of tiers) {
+      const key = `${t.minMFE.toFixed(2)}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      unique.push(t);
+    }
+    return unique;
+  }
+
+  /**
+   * Per-signal fib config selector, used when --gfi-fib-conditional is on.
+   * Returns null to DISABLE fib for trades whose baseline capture is already
+   * strong (mid-IV, S2 rule). Returns a tight config for wave-prone trades
+   * (negative-GEX or L4/S1 rule). Defaults to the user-configured fib
+   * params for everything else.
+   *
+   * Rules derived from research/mfe-ratchet-gfi/regime-analysis.md (172
+   * baseline trades, BE 70/+5).
+   */
+  resolveConditionalFibConfig(rule, features, iv) {
+    const mode = this.params.fibConditionalMode || 'full';
+    const ivPct = features?.ivPctile;
+    const isWaveProne =
+      features?.regime === 'negative' ||
+      rule.id === 'L4' ||
+      rule.id === 'S1';
+
+    const defaultCfg = {
+      retracePct: this.params.fibRetracePct,
+      activationMFE: this.params.fibActivationMFE,
+      label: 'default',
+    };
+
+    if (mode === 's2-only') {
+      // Disable only S2 (n=7, 92.7% capture). Everything else default.
+      if (rule.id === 'S2') return null;
+      return defaultCfg;
+    }
+
+    if (mode === 'tighten-only') {
+      // No disables. Tighten wave-prone trades only.
+      if (isWaveProne) return { retracePct: 0.55, activationMFE: 35, label: 'tight' };
+      return defaultCfg;
+    }
+
+    if (mode === 'mild-tighten') {
+      // No disables. Soft tighten wave-prone.
+      if (isWaveProne) return { retracePct: 0.58, activationMFE: 40, label: 'mild-tight' };
+      return defaultCfg;
+    }
+
+    // mode === 'full' (default): disable for S2 + mid-IV, tighten for wave-prone
+    if (rule.id === 'S2') return null;
+    if (ivPct != null && ivPct >= 0.33 && ivPct < 0.67) return null;
+    if (isWaveProne) return { retracePct: 0.55, activationMFE: 35, label: 'tight' };
+    return defaultCfg;
   }
 
   setLiveIVData(ivData) {
@@ -477,6 +623,68 @@ export class GexFlipIvpctStrategy extends BaseStrategy {
       signal.trailingTrigger = this.params.trailingTrigger;
       signal.trailing_offset = this.params.trailingOffset;
       signal.trailingOffset = this.params.trailingOffset;
+    }
+
+    // Structural-magnet MFE ratchet: each in-profit-region swing low/high
+    // becomes a tier in the engine's mfeRatchet code path. Locks magnetLockPct
+    // of current MFE once MFE crosses the shallowest magnet's distance.
+    // Fibonacci-retracement bar-close exit
+    if (this.params.fibRetrace) {
+      const fibCfg = this.params.fibConditional
+        ? this.resolveConditionalFibConfig(rule, features, iv)
+        : { retracePct: this.params.fibRetracePct, activationMFE: this.params.fibActivationMFE, label: 'static' };
+
+      if (fibCfg) {
+        signal.fibRetrace = true;
+        signal.fibRetraceConfig = {
+          retracePct: fibCfg.retracePct,
+          activationMFE: fibCfg.activationMFE,
+        };
+        signal.fibConditionalLabel = fibCfg.label;
+        if (this.params.debug) {
+          console.log(`[GEX-FLIP-IVPCT] Fib retrace ${rule.side} @${entryPrice.toFixed(2)} ` +
+            `[${fibCfg.label}]: retrace=${fibCfg.retracePct} activation=${fibCfg.activationMFE}`);
+        }
+      } else {
+        // Conditional rules said "no fib for this trade" (e.g., S2 or mid-IV).
+        // Must set fibRetrace = false explicitly so the engine's CLI-flag
+        // passthrough doesn't re-enable it.
+        signal.fibRetrace = false;
+        signal.fibConditionalLabel = 'disabled';
+        if (this.params.debug) {
+          console.log(`[GEX-FLIP-IVPCT] Fib retrace SKIPPED for ${rule.id} ${rule.side} — ` +
+            `regime says capture is already strong`);
+        }
+      }
+    }
+
+    if (this.params.magnetRatchet) {
+      let tiers = this.buildMagnetTiers(timestamp, rule.side, entryPrice, rule.targetPts);
+      let usedFallback = false;
+      if ((!tiers || tiers.length === 0) && this.params.magnetFallbackTiers) {
+        // No magnets in profit region — apply the configured pure-MFE fallback
+        // so the trade still gets some ratchet protection rather than riding
+        // only the original SL.
+        tiers = this.params.magnetFallbackTiers
+          .map(t => ({ minMFE: t.minMFE, lockPct: t.lockPct, label: `fallback-lock-${Math.round(t.lockPct * 100)}%-mfe${t.minMFE}` }))
+          .sort((a, b) => b.minMFE - a.minMFE);
+        usedFallback = true;
+      }
+      if (tiers && tiers.length > 0) {
+        signal.mfeRatchet = true;
+        // Fallback uses running-mode (continuous tightening) regardless of
+        // the per-tier magnet semantic — there are no actual magnets to be
+        // anchored to.
+        signal.mfeRatchetConfig = {
+          tiers,
+          fixedPerTier: usedFallback ? false : this.params.magnetFixedPerTier,
+        };
+        if (this.params.debug) {
+          console.log(`[GEX-FLIP-IVPCT] ${usedFallback ? 'Fallback' : 'Magnet'} ratchet ${rule.side} @${entryPrice.toFixed(2)}` +
+            `${this.params.magnetFixedPerTier && !usedFallback ? ' [fixed]' : ''}: ` +
+            tiers.map(t => `${t.label}(MFE>=${t.minMFE.toFixed(1)})`).join(', '));
+        }
+      }
     }
 
     return signal;

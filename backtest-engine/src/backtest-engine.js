@@ -31,6 +31,9 @@ import { IVSkewGexStrategy } from '../../shared/strategies/iv-skew-gex.js';
 import { GexFlipIvpctStrategy } from '../../shared/strategies/gex-flip-ivpct.js';
 import { GexLt3mCrossoverStrategy } from '../../shared/strategies/gex-lt-3m-crossover.js';
 import { GexTouchConfirmStrategy } from '../../shared/strategies/gex-touch-confirm.js';
+import { GexTouchPatternsStrategy } from '../../shared/strategies/gex-touch-patterns.js';
+import { GexStructuralResistStrategy } from '../../shared/strategies/gex-structural-resist.js';
+import { GexLevelFadeStrategy } from '../../shared/strategies/gex-level-fade.js';
 import { CBBOLTVolatilityStrategy } from '../../shared/strategies/cbbo-lt-volatility.js';
 import { GexMeanReversionStrategy } from '../strategies/gex-mean-reversion/strategy.js';
 import { LTFailedBreakdownStrategy } from '../../shared/strategies/lt-failed-breakdown.js';
@@ -84,6 +87,7 @@ import { IVLoader } from './data-loaders/iv-loader.js';
 import { ShortDTEIVLoader } from './data-loaders/short-dte-iv-loader.js';
 import { CBBOLoader } from './data-loaders/cbbo-loader.js';
 import { CharmVannaLoader } from './data-loaders/charm-vanna-loader.js';
+import { SwingPivotLoader } from './data-loaders/swing-pivot-loader.js';
 import { DatabentoTradeLoader } from './data/databento-loader.js';
 import { MBPLoader } from './data/mbp-loader.js';
 
@@ -119,6 +123,12 @@ export class BacktestEngine {
       mfeRatchet: config.strategyParams?.mfeRatchet ? {
         enabled: true,
         tiers: config.strategyParams.mfeRatchetTiers || undefined  // Falls back to defaults in TradeSimulator
+      } : { enabled: false },
+      // Fibonacci-retrace bar-close exit (additive — does NOT replace hard SL).
+      fibRetrace: config.strategyParams?.fibRetrace ? {
+        enabled: true,
+        retracePct: config.strategyParams.fibRetracePct ?? 0.786,
+        activationMFE: config.strategyParams.fibActivationMFE ?? 40,
       } : { enabled: false },
       // Time-based trailing stop configuration (progressive profit protection)
       timeBasedTrailing: config.strategyParams?.timeBasedTrailing ? {
@@ -212,6 +222,11 @@ export class BacktestEngine {
     // Initialize Charm/Vanna loader for overnight ES strategy
     this.charmVannaLoader = new CharmVannaLoader(config.dataDir);
     this.charmVannaDataLoaded = false;
+
+    // Initialize swing pivot loader (for magnet-aware MFE ratchet on gex-flip-ivpct).
+    // Lazy: only loads if config.swingPivotFile is provided.
+    this.swingPivotLoader = null;
+    this.swingPivotsLoaded = false;
 
     // Initialize strategy
     this.strategy = this.createStrategy(config.strategy, config.strategyParams);
@@ -620,6 +635,22 @@ export class BacktestEngine {
       }
     }
 
+    // Load swing pivot data for gex-flip-ivpct's magnet-aware MFE ratchet.
+    // Strategy params signal whether to load (set magnetRatchet=true).
+    const wantMagnetRatchet = isGexFlipIvpctStrategy && this.config.strategyParams?.magnetRatchet;
+    if (wantMagnetRatchet) {
+      const swingFile = this.config.swingPivotFile || path.join(this.config.dataDir, '..', 'research', 'swing-pivots', 'NQ_swings_1m_9_9.csv');
+      this.swingPivotLoader = new SwingPivotLoader(swingFile);
+      await this.swingPivotLoader.load(this.config.startDate, this.config.endDate);
+      const stats = this.swingPivotLoader.getStats();
+      if (!this.config.quiet && stats.count > 0) {
+        console.log(`📍 Swing pivots: ${stats.count} (${stats.highs}H/${stats.lows}L) ${stats.startDate?.split('T')[0]} → ${stats.endDate?.split('T')[0]}`);
+      } else if (!this.config.quiet) {
+        console.warn(`⚠️  No swing pivots loaded — magnet ratchet will be inactive`);
+      }
+      this.swingPivotsLoaded = stats.count > 0;
+    }
+
     // Load Charm/Vanna data for overnight ES strategy
     const isCharmVannaStrategy = this.config.strategy === 'overnight-charm-vanna' ||
                                   this.config.strategy === 'ocv';
@@ -650,7 +681,8 @@ export class BacktestEngine {
       ivLoader: this.ivLoader,           // IV data for IV Skew GEX strategy
       shortDTEIVLoader: isShortDTEIVStrategy ? this.shortDTEIVLoader : null,  // Short-DTE IV data
       cbboLoader: this.cbboDataLoaded ? this.cbboLoader : null,  // CBBO data for volatility strategy
-      charmVannaLoader: this.charmVannaDataLoaded ? this.charmVannaLoader : null  // Charm/Vanna data
+      charmVannaLoader: this.charmVannaDataLoaded ? this.charmVannaLoader : null,  // Charm/Vanna data
+      swingPivotLoader: this.swingPivotsLoaded ? this.swingPivotLoader : null,     // Swing pivot data (gex-flip-ivpct magnet ratchet)
     };
   }
 
@@ -779,6 +811,11 @@ export class BacktestEngine {
       if (!this.config.quiet && stats.count > 0) {
         console.log(`📈 IV data loaded into strategy (${stats.count} records)`);
       }
+    }
+
+    // Load swing pivots into strategy (gex-flip-ivpct magnet ratchet)
+    if (data.swingPivotLoader && this.strategy.loadSwingPivots) {
+      this.strategy.loadSwingPivots(data.swingPivotLoader);
     }
 
     // Load Short-DTE IV data into strategy if available
@@ -1074,6 +1111,20 @@ export class BacktestEngine {
             if (this.config.strategyParams.mfeRatchetTiers) {
               signal.mfeRatchetConfig = { tiers: this.config.strategyParams.mfeRatchetTiers };
             }
+          }
+
+          // Add fibRetrace config to signal if enabled (additive bar-close exit).
+          // If the strategy already emitted signal.fibRetrace (e.g. via
+          // resolveConditionalFibConfig), respect what it produced — that path
+          // may also have intentionally OMITTED fib for some signals (e.g. S2
+          // rule under --gfi-fib-conditional). Only overwrite when the strategy
+          // didn't touch the field at all.
+          if (this.config.strategyParams?.fibRetrace && signal.fibRetrace === undefined) {
+            signal.fibRetrace = true;
+            signal.fibRetraceConfig = {
+              retracePct: this.config.strategyParams.fibRetracePct ?? 0.786,
+              activationMFE: this.config.strategyParams.fibActivationMFE ?? 40,
+            };
           }
 
           // Add composite trailing config to signal if enabled via CLI
@@ -1550,6 +1601,15 @@ export class BacktestEngine {
       case 'gex-touch':
       case 'gtc':
         return new GexTouchConfirmStrategy(params);
+      case 'gex-touch-patterns':
+      case 'gtp':
+        return new GexTouchPatternsStrategy(params);
+      case 'gex-structural-resist':
+      case 'gsr':
+        return new GexStructuralResistStrategy(params);
+      case 'gex-level-fade':
+      case 'glf':
+        return new GexLevelFadeStrategy(params);
       case 'cbbo-lt-volatility':
       case 'cbbo-lt':
         return new CBBOLTVolatilityStrategy(params);

@@ -68,7 +68,7 @@ export class CLI {
         type: 'string',
         description: 'Strategy to backtest',
         default: 'gex-recoil',
-        choices: ['gex-recoil', 'gex-recoil-enhanced', 'gex-ldpm-confluence', 'gex-ldpm-confluence-pullback', 'contrarian-bounce', 'gex-scalp', 'gex-scalp-confirmed', 'ict-smc', 'ict-ob', 'ldpm-level-sweep', 'order-flow-momentum', 'ofm', 'contrarian-orderflow', 'cof', 'gex-absorption', 'absorption', 'iv-skew-gex', 'iv-skew', 'gex-flip-ivpct', 'gfi', 'gex-lt-3m-crossover', 'gex-lt-cross', 'glx', 'gex-touch-confirm', 'gex-touch', 'gtc', 'cbbo-lt-volatility', 'cbbo-lt', 'gex-mean-reversion', 'gex-mr', 'lt-failed-breakdown', 'lt-fb', 'lt-level-crossing', 'lt-cross', 'lt-level-migration', 'lt-mig', 'regime-scalp', 'rs', 'gex-level-sweep', 'gex-sweep', 'sweep', 'micro-structure-scalper', 'micro-scalper', 'mss', 'trend-scalp', 'ts', 'level-bounce', 'lb', 'overnight-gex-touch', 'overnight-gex', 'ogt', 'overnight-charm-vanna', 'ocv', 'es-cross-signal', 'es-cross', 'ecs', 'es-micro-scalper', 'es-micro', 'esms', 'es-stop-hunt', 'es-hunt', 'esh', 'ohlcv-absorption', 'absorption-detect', 'abs', 'ohlcv-liquidity-sweep', 'liquidity-sweep', 'lsweep', 'ohlcv-vpin', 'vpin', 'ohlcv-mtf-rejection', 'mtf-rejection', 'mtfr', 'momentum-microstructure', 'momentum-micro', 'mm', 'midnight-open-retracement', 'midnight-open', 'mor', 'initial-balance-breakout', 'ib-breakout', 'ibb', 'gap-fill', 'gap', 'daily-level-sweep', 'daily-sweep', 'dls', 'vwap-bounce', 'vwap', 'session-transition', 'session', 'st', 'value-area-80', 'va80', 'swing-reversal', 'sr', 'ict-silver-bullet', 'silver-bullet', 'isb', 'price-action-exhaustion', 'pa-exhaust', 'pae', 'ict-mtf-sweep', 'mtf-sweep', 'jv', 'dc-st1', 'dc1', 'dc-st2', 'dc2', 'dc-st3', 'dc3', 'dc-st4', 'dc4', 'dc-st5', 'dc5', 'dc-st6', 'dc6', 'dc-st7', 'dc7', 'dc-st8', 'dc8', 'dc-mstgam', 'mstgam', 'mnq-adaptive-scalper', 'mnq-scalper', 'mnq', 'sweep-reversal', 'sweep-rev', 'nq-leads-es', 'nq-lead', 'nle', 'gex-support-bounce', 'gex-bounce', 'gsb', 'impulse-fvg', 'impulse', 'ifvg', 'short-dte-iv', 'sdiv', 'overnight-scoring', 'overnight-score', 'ons', 'overnight-composite', 'overnight-comp', 'onc', 'overnight-lt-crossing', 'overnight-ltx', 'oltx', 'lt-crossover', 'ltx', 'lt-structure-confirm', 'ltsc', 'lt-struct', 'lt-candle-regime', 'lt-regime', 'lcr', 'gamma-regime-drift', 'grd']
+        choices: ['gex-recoil', 'gex-recoil-enhanced', 'gex-ldpm-confluence', 'gex-ldpm-confluence-pullback', 'contrarian-bounce', 'gex-scalp', 'gex-scalp-confirmed', 'ict-smc', 'ict-ob', 'ldpm-level-sweep', 'order-flow-momentum', 'ofm', 'contrarian-orderflow', 'cof', 'gex-absorption', 'absorption', 'iv-skew-gex', 'iv-skew', 'gex-flip-ivpct', 'gfi', 'gex-lt-3m-crossover', 'gex-lt-cross', 'glx', 'gex-touch-confirm', 'gex-touch', 'gtc', 'gex-touch-patterns', 'gtp', 'gex-structural-resist', 'gsr', 'gex-level-fade', 'glf', 'cbbo-lt-volatility', 'cbbo-lt', 'gex-mean-reversion', 'gex-mr', 'lt-failed-breakdown', 'lt-fb', 'lt-level-crossing', 'lt-cross', 'lt-level-migration', 'lt-mig', 'regime-scalp', 'rs', 'gex-level-sweep', 'gex-sweep', 'sweep', 'micro-structure-scalper', 'micro-scalper', 'mss', 'trend-scalp', 'ts', 'level-bounce', 'lb', 'overnight-gex-touch', 'overnight-gex', 'ogt', 'overnight-charm-vanna', 'ocv', 'es-cross-signal', 'es-cross', 'ecs', 'es-micro-scalper', 'es-micro', 'esms', 'es-stop-hunt', 'es-hunt', 'esh', 'ohlcv-absorption', 'absorption-detect', 'abs', 'ohlcv-liquidity-sweep', 'liquidity-sweep', 'lsweep', 'ohlcv-vpin', 'vpin', 'ohlcv-mtf-rejection', 'mtf-rejection', 'mtfr', 'momentum-microstructure', 'momentum-micro', 'mm', 'midnight-open-retracement', 'midnight-open', 'mor', 'initial-balance-breakout', 'ib-breakout', 'ibb', 'gap-fill', 'gap', 'daily-level-sweep', 'daily-sweep', 'dls', 'vwap-bounce', 'vwap', 'session-transition', 'session', 'st', 'value-area-80', 'va80', 'swing-reversal', 'sr', 'ict-silver-bullet', 'silver-bullet', 'isb', 'price-action-exhaustion', 'pa-exhaust', 'pae', 'ict-mtf-sweep', 'mtf-sweep', 'jv', 'dc-st1', 'dc1', 'dc-st2', 'dc2', 'dc-st3', 'dc3', 'dc-st4', 'dc4', 'dc-st5', 'dc5', 'dc-st6', 'dc6', 'dc-st7', 'dc7', 'dc-st8', 'dc8', 'dc-mstgam', 'mstgam', 'mnq-adaptive-scalper', 'mnq-scalper', 'mnq', 'sweep-reversal', 'sweep-rev', 'nq-leads-es', 'nq-lead', 'nle', 'gex-support-bounce', 'gex-bounce', 'gsb', 'impulse-fvg', 'impulse', 'ifvg', 'short-dte-iv', 'sdiv', 'overnight-scoring', 'overnight-score', 'ons', 'overnight-composite', 'overnight-comp', 'onc', 'overnight-lt-crossing', 'overnight-ltx', 'oltx', 'lt-crossover', 'ltx', 'lt-structure-confirm', 'ltsc', 'lt-struct', 'lt-candle-regime', 'lt-regime', 'lcr', 'gamma-regime-drift', 'grd']
       })
 
       .option('timeframe', {
@@ -308,6 +308,23 @@ export class CLI {
         type: 'number',
         description: 'gex-touch-confirm: minutes to lag the GEX snapshot lookup. Default 16 (matches research). 0 = use freshest available.'
       })
+      .option('gtp-rulebook', {
+        type: 'string',
+        description: 'gex-touch-patterns: rulebook name (default | big_targets | w60).'
+      })
+      .option('gtp-trigger-window', {
+        type: 'number',
+        description: 'gex-touch-patterns: monitoring window minutes after touch (default 30, w60 rulebook needs 60).'
+      })
+      .option('gtp-entry-window', {
+        type: 'string',
+        description: 'gex-touch-patterns: entry window "HH:MM-HH:MM" ET. Default "09:30-16:00".'
+      })
+      .option('gtp-no-entry-window', {
+        type: 'boolean',
+        default: false,
+        description: 'gex-touch-patterns: disable entry window — take touches any time of day (CME globex hours).'
+      })
 
       .option('gfi-stop-pts', {
         type: 'number',
@@ -348,6 +365,56 @@ export class CLI {
       .option('gfi-trailing-offset', {
         type: 'number',
         description: 'gex-flip-ivpct: trailing stop offset in points back from current MFE.'
+      })
+      .option('gfi-magnet-ratchet', {
+        type: 'boolean',
+        description: 'gex-flip-ivpct: enable structural-magnet MFE ratchet. Uses 1m 9/9 swing pivots in profit region as MFE tiers. Loads from research/swing-pivots/NQ_swings_1m_9_9.csv.',
+        default: false
+      })
+      .option('gfi-magnet-lock-pct', {
+        type: 'number',
+        description: 'gex-flip-ivpct magnet ratchet: lock percentage at each magnet tier (default 0.75).',
+        default: 0.75
+      })
+      .option('gfi-magnet-recency-hours', {
+        type: 'number',
+        description: 'gex-flip-ivpct magnet ratchet: lookback window for active magnets in hours (default 4).',
+        default: 4
+      })
+      .option('gfi-magnet-fixed-per-tier', {
+        type: 'boolean',
+        description: 'gex-flip-ivpct magnet ratchet: fixed-per-tier lock semantics. Stop = entry − tier.minMFE × lockPct (held constant until next magnet), instead of entry − currentMFE × lockPct (continuous tightening). Lets trades reach deeper magnets.',
+        default: false
+      })
+      .option('gfi-magnet-fallback-tiers', {
+        type: 'string',
+        description: 'gex-flip-ivpct magnet ratchet: pure-MFE tiers to use when a signal has no magnets in its profit region. Same format as --mfe-ratchet-tiers: "minMFE:lockPct,...". e.g. "70:0.4" matches the s1-m70l40 pure ratchet.'
+      })
+      .option('gfi-fib-retrace', {
+        type: 'boolean',
+        description: 'gex-flip-ivpct: enable Fibonacci-retracement bar-close exit. Tracks favorable extreme since fill; once MFE >= activation, exits on a 1m bar CLOSE through entry ± mfe × (1 − retracePct). Hard SL is preserved.',
+        default: false
+      })
+      .option('gfi-fib-retrace-pct', {
+        type: 'number',
+        description: 'gex-flip-ivpct fib retrace: retracement percentage (default 0.786). 0.786 = 78.6% gives back, 0.618 = deeper, 0.886 = shallower.',
+        default: 0.786
+      })
+      .option('gfi-fib-activation-mfe', {
+        type: 'number',
+        description: 'gex-flip-ivpct fib retrace: minimum MFE (pts) before the bar-close check engages (default 40). Below this, only the hard SL is in play.',
+        default: 40
+      })
+      .option('gfi-fib-conditional', {
+        type: 'boolean',
+        description: 'gex-flip-ivpct fib retrace: enable regime-conditional per-signal config. See --gfi-fib-conditional-mode for variants. Requires --gfi-fib-retrace.',
+        default: false
+      })
+      .option('gfi-fib-conditional-mode', {
+        type: 'string',
+        description: 'gex-flip-ivpct conditional fib mode: "full" (disable S2+mid-IV, tighten L4/S1/neg-GEX), "s2-only" (disable S2 only), "tighten-only" (no disables, tighten wave-prone to 0.55/35), "mild-tighten" (no disables, tighten wave-prone to 0.58/40). Default: full.',
+        default: 'full',
+        choices: ['full', 's2-only', 'tighten-only', 'mild-tighten']
       })
 
       .option('grd-hours', {
@@ -1783,6 +1850,18 @@ export class CLI {
     if (args['gtc-cooldown-ms'] !== undefined) strategyParams.signalCooldownMs = args['gtc-cooldown-ms'];
     if (args['gtc-no-entry-window']) strategyParams.disableEntryWindow = true;
     if (args['gtc-snap-lag-min'] !== undefined) strategyParams.snapLagMin = args['gtc-snap-lag-min'];
+    if (args['gtp-rulebook']) strategyParams.rulebookName = args['gtp-rulebook'];
+    if (args['gtp-trigger-window'] !== undefined) strategyParams.triggerWindowMin = args['gtp-trigger-window'];
+    if (args['gtp-no-entry-window']) strategyParams.disableEntryWindow = true;
+    if (args['gtp-entry-window']) {
+      const m = args['gtp-entry-window'].match(/^(\d{1,2}):(\d{2})-(\d{1,2}):(\d{2})$/);
+      if (m) {
+        strategyParams.entryWindowStartHour = parseInt(m[1], 10);
+        strategyParams.entryWindowStartMinute = parseInt(m[2], 10);
+        strategyParams.entryWindowEndHour = parseInt(m[3], 10);
+        strategyParams.entryWindowEndMinute = parseInt(m[4], 10);
+      }
+    }
     if (args['gtc-entry-window']) {
       const m = args['gtc-entry-window'].match(/^(\d{1,2}):(\d{2})-(\d{1,2}):(\d{2})$/);
       if (!m) {
@@ -1794,6 +1873,46 @@ export class CLI {
       strategyParams.entryWindowEndHour = parseInt(m[3], 10);
       strategyParams.entryWindowEndMinute = parseInt(m[4], 10);
     }
+
+    // gex-level-fade knobs
+    if (args['glf-target-pts'] !== undefined) strategyParams.targetPts = args['glf-target-pts'];
+    if (args['glf-stop-pts'] !== undefined) strategyParams.stopPts = args['glf-stop-pts'];
+    if (args['glf-max-hold'] !== undefined) strategyParams.maxHoldBars = args['glf-max-hold'];
+    if (args['glf-levels']) {
+      strategyParams.levels = args['glf-levels'].split(',').map(s => s.trim()).filter(Boolean);
+    }
+    if (args['glf-blocked-regimes']) {
+      strategyParams.blockedRegimes = args['glf-blocked-regimes'].split(',').map(s => s.trim()).filter(Boolean);
+    }
+    if (args['glf-blocked-hours']) {
+      strategyParams.blockedHoursEt = args['glf-blocked-hours']
+        .split(',').map(s => parseInt(s.trim(), 10)).filter(n => !isNaN(n));
+    }
+    if (args['glf-entry-window']) {
+      const m = args['glf-entry-window'].match(/^(\d{1,2}):(\d{2})-(\d{1,2}):(\d{2})$/);
+      if (m) {
+        strategyParams.entryWindowStartHour = parseInt(m[1], 10);
+        strategyParams.entryWindowStartMinute = parseInt(m[2], 10);
+        strategyParams.entryWindowEndHour = parseInt(m[3], 10);
+        strategyParams.entryWindowEndMinute = parseInt(m[4], 10);
+      }
+    }
+    if (args['glf-no-entry-window']) strategyParams.disableEntryWindow = true;
+    if (args['glf-min-ep']) strategyParams.minEpisodeNum = args['glf-min-ep'];
+    if (args['glf-direction']) strategyParams.directionMode = args['glf-direction'];
+    if (args['glf-max-last-pen'] !== undefined) strategyParams.maxLastEpPenetrationPts = args['glf-max-last-pen'];
+    if (args['glf-min-last-bars'] !== undefined) strategyParams.minLastEpBarsInZone = args['glf-min-last-bars'];
+    if (args['glf-min-rej-5m'] !== undefined) strategyParams.minLastEpRej5m = args['glf-min-rej-5m'];
+    if (args['glf-min-rej-15m'] !== undefined) strategyParams.minLastEpRej15m = args['glf-min-rej-15m'];
+    if (args['glf-rej-wick-pts'] !== undefined) strategyParams.rejectionWickMinPts = args['glf-rej-wick-pts'];
+    if (args['glf-min-vol-bursts'] !== undefined) strategyParams.minLastEpVolBursts = args['glf-min-vol-bursts'];
+    if (args['glf-vol-burst-mult'] !== undefined) strategyParams.volBurstMult = args['glf-vol-burst-mult'];
+    if (args['glf-include-gex']) strategyParams.includeGexLevels = true;
+    if (args['glf-gex-types']) strategyParams.gexLevelTypes = args['glf-gex-types'].split(',').map(s => s.trim()).filter(Boolean);
+    if (args['glf-trailing-trigger'] !== undefined) strategyParams.trailingTrigger = args['glf-trailing-trigger'];
+    if (args['glf-trailing-offset'] !== undefined) strategyParams.trailingOffset = args['glf-trailing-offset'];
+    if (args['glf-breakeven-trigger'] !== undefined) strategyParams.breakevenTrigger = args['glf-breakeven-trigger'];
+    if (args['glf-breakeven-offset'] !== undefined) strategyParams.breakevenOffset = args['glf-breakeven-offset'];
 
     // gex-flip-ivpct: non-BE/trailing overrides (keep these before the engine-wide
     // BE/trailing block so they don't get clobbered)
@@ -1865,6 +1984,39 @@ export class CLI {
     if (args['gfi-breakeven-offset'] !== undefined) strategyParams.breakevenOffset = args['gfi-breakeven-offset'];
     if (args['gfi-trailing-trigger'] !== undefined) strategyParams.trailingTrigger = args['gfi-trailing-trigger'];
     if (args['gfi-trailing-offset'] !== undefined) strategyParams.trailingOffset = args['gfi-trailing-offset'];
+
+    // gex-flip-ivpct: structural-magnet MFE ratchet (1m 9/9 swing pivots)
+    if (args['gfi-magnet-ratchet']) {
+      strategyParams.magnetRatchet = true;
+      if (args['gfi-magnet-lock-pct'] !== undefined) strategyParams.magnetLockPct = args['gfi-magnet-lock-pct'];
+      if (args['gfi-magnet-recency-hours'] !== undefined) {
+        strategyParams.magnetRecencyMs = args['gfi-magnet-recency-hours'] * 60 * 60 * 1000;
+      }
+      if (args['gfi-magnet-fixed-per-tier']) strategyParams.magnetFixedPerTier = true;
+      if (args['gfi-magnet-fallback-tiers']) {
+        const tiers = args['gfi-magnet-fallback-tiers']
+          .split(',').map(s => s.trim()).map(tierStr => {
+            const [minMFE, lockPct] = tierStr.split(':').map(Number);
+            return { minMFE, lockPct };
+          }).filter(t => !isNaN(t.minMFE) && !isNaN(t.lockPct));
+        if (tiers.length > 0) strategyParams.magnetFallbackTiers = tiers;
+      }
+    }
+
+    // gex-flip-ivpct: Fibonacci-retrace bar-close exit. Independent of magnet
+    // ratchet — they can co-exist (whichever fires first wins). The hard SL
+    // stays in place either way.
+    if (args['gfi-fib-retrace']) {
+      strategyParams.fibRetrace = true;
+      if (args['gfi-fib-retrace-pct'] !== undefined) strategyParams.fibRetracePct = args['gfi-fib-retrace-pct'];
+      if (args['gfi-fib-activation-mfe'] !== undefined) strategyParams.fibActivationMFE = args['gfi-fib-activation-mfe'];
+      if (args['gfi-fib-conditional']) {
+        strategyParams.fibConditional = true;
+        if (args['gfi-fib-conditional-mode']) {
+          strategyParams.fibConditionalMode = args['gfi-fib-conditional-mode'];
+        }
+      }
+    }
 
     // Zero Gamma early exit parameters
     if (args.gfEarlyExit !== undefined) strategyParams.gfEarlyExit = args.gfEarlyExit;
@@ -2092,6 +2244,7 @@ export class CLI {
     if (args.stopPoints !== undefined) strategyParams.stopPoints = args.stopPoints;
     if (args.includeGexLevels !== undefined) strategyParams.includeGexLevels = args.includeGexLevels;
     if (args.includeSessionLevels !== undefined) strategyParams.includeSessionLevels = args.includeSessionLevels;
+    if (args['glf-include-gex']) strategyParams.includeGexLevels = true;
 
     // Order Flow Momentum Strategy Parameters
     if (args.signalMode !== undefined) strategyParams.signalMode = args.signalMode;

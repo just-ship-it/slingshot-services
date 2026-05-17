@@ -64,6 +64,9 @@ export class TradeSimulator {
     // MFE ratchet trailing stop configuration
     // Locks a percentage of peak profit as the new stop level at tier thresholds
     this.mfeRatchetConfig = config.mfeRatchet || { enabled: false };
+    // Fibonacci-retrace bar-close exit (additive — does NOT replace the hard SL).
+    // Shape: { enabled: bool, retracePct: 0.786, activationMFE: 40 }
+    this.fibRetraceConfig = config.fibRetrace || { enabled: false };
 
     // Time-based trailing stop configuration
     // Progressive stop tightening based on bars held + profit level
@@ -614,6 +617,51 @@ export class TradeSimulator {
         }
       }
 
+      // Fibonacci-retracement bar-close exit (additive to the hard SL/TP).
+      // Track the favorable extreme since fill; once MFE crosses an activation
+      // threshold, exit if a 1m bar CLOSES through `entry ∓ mfe × (1 − retracePct)`.
+      // Intra-bar wicks do NOT fire — close confirmation only.
+      if (trade.signal?.fibRetrace || this.fibRetraceConfig?.enabled) {
+        const entryPrice = trade.actualEntry || trade.entryPrice;
+        const cfg = trade.signal?.fibRetraceConfig || this.fibRetraceConfig || {};
+        const retracePct = Number(cfg.retracePct ?? 0.786);
+        const activationMFE = Number(cfg.activationMFE ?? 40);
+        const isBuy = this.isBuyPosition(trade);
+
+        // Initialize per-trade fib state on first encounter
+        if (!trade._fibState) {
+          trade._fibState = {
+            highWaterMark: entryPrice,
+            lowWaterMark: entryPrice,
+            activated: false,
+          };
+        }
+        const fs = trade._fibState;
+
+        // Update monotonic favorable extreme from this bar's H/L
+        if (minuteCandle.high > fs.highWaterMark) fs.highWaterMark = minuteCandle.high;
+        if (minuteCandle.low < fs.lowWaterMark) fs.lowWaterMark = minuteCandle.low;
+
+        const mfe = isBuy
+          ? fs.highWaterMark - entryPrice
+          : entryPrice - fs.lowWaterMark;
+
+        if (!fs.activated && mfe >= activationMFE) fs.activated = true;
+
+        if (fs.activated && mfe > 0) {
+          const lockPct = 1 - retracePct;
+          const fibLevel = isBuy
+            ? entryPrice + mfe * lockPct
+            : entryPrice - mfe * lockPct;
+          const closeBreached = isBuy
+            ? minuteCandle.close < fibLevel
+            : minuteCandle.close > fibLevel;
+          if (closeBreached) {
+            return this.exitTrade(trade, minuteCandle, 'fib_retrace', minuteCandle.close);
+          }
+        }
+      }
+
       // Safety: force-exit if maxHoldBars exceeded (the in-loop check may not run
       // if all 1s bars were skipped due to conversion failures)
       if (trade.maxHoldBars > 0 && trade.barsSinceEntry >= trade.maxHoldBars) {
@@ -1139,6 +1187,7 @@ export class TradeSimulator {
     const trailing = trade.trailingStop;
     const entryPrice = trade.actualEntry || trade.entryPrice;
     const tiers = trailing.tiers;
+    const fixedPerTier = trailing.fixedPerTier === true;
     const debug = this.debugMode;
 
     if (this.isBuyPosition(trade)) {
@@ -1152,11 +1201,15 @@ export class TradeSimulator {
       // Tiers are sorted highest-first, so first match is the best tier
       for (const tier of tiers) {
         if (currentMFE >= tier.minMFE) {
-          const newStop = entryPrice + (currentMFE * tier.lockPct);
+          // Two semantics:
+          //   running mode  (default): stop = entry + lockPct × currentMFE   (tightens with MFE)
+          //   fixed mode    (per-tier): stop = entry + lockPct × tier.minMFE (stays anchored at tier)
+          const anchorMFE = fixedPerTier ? tier.minMFE : currentMFE;
+          const newStop = entryPrice + (anchorMFE * tier.lockPct);
           const rounded = Math.round(newStop * 4) / 4; // Round to 0.25 tick
           if (rounded > trailing.currentStop) {
             if (debug) {
-              console.log(`    🔒 [MFE-RATCHET] Long ${trade.id}: MFE=${currentMFE.toFixed(1)}pts, ${tier.label} → stop ${trailing.currentStop.toFixed(2)} → ${rounded.toFixed(2)}`);
+              console.log(`    🔒 [MFE-RATCHET] Long ${trade.id}: MFE=${currentMFE.toFixed(1)}pts, ${tier.label}${fixedPerTier ? ' (fixed)' : ''} → stop ${trailing.currentStop.toFixed(2)} → ${rounded.toFixed(2)}`);
             }
             trailing.currentStop = rounded;
             trailing.triggered = true;
@@ -1175,11 +1228,12 @@ export class TradeSimulator {
 
       for (const tier of tiers) {
         if (currentMFE >= tier.minMFE) {
-          const newStop = entryPrice - (currentMFE * tier.lockPct);
+          const anchorMFE = fixedPerTier ? tier.minMFE : currentMFE;
+          const newStop = entryPrice - (anchorMFE * tier.lockPct);
           const rounded = Math.round(newStop * 4) / 4;
           if (rounded < trailing.currentStop) {
             if (debug) {
-              console.log(`    🔒 [MFE-RATCHET] Short ${trade.id}: MFE=${currentMFE.toFixed(1)}pts, ${tier.label} → stop ${trailing.currentStop.toFixed(2)} → ${rounded.toFixed(2)}`);
+              console.log(`    🔒 [MFE-RATCHET] Short ${trade.id}: MFE=${currentMFE.toFixed(1)}pts, ${tier.label}${fixedPerTier ? ' (fixed)' : ''} → stop ${trailing.currentStop.toFixed(2)} → ${rounded.toFixed(2)}`);
             }
             trailing.currentStop = rounded;
             trailing.triggered = true;
@@ -2044,10 +2098,15 @@ export class TradeSimulator {
         { minMFE: 20,  lockPct: 0.25, label: 'lock 25%' },
       ];
       const tradeConfig = trade.signal?.mfeRatchetConfig || {};
+      // Fixed-per-tier mode: stop computed from tier.minMFE × lockPct (not currentMFE).
+      // Lets trades breathe between tiers — useful for structural-magnet ratchets where
+      // each tier is anchored to a real swing level.
+      const fixedPerTier = tradeConfig.fixedPerTier === true;
       return {
         ...baseTrailing,
         mode: 'mfeRatchet',
         tiers: tradeConfig.tiers || this.mfeRatchetConfig?.tiers || defaultTiers,
+        fixedPerTier,
         lastAction: null,
       };
     }
@@ -2244,11 +2303,14 @@ export class TradeSimulator {
     const isBuy = this.isBuyPosition(trade);
     let actualExitPrice;
     if (reason === 'stop_loss') {
-      // Stops typically get worse slippage
+      // Stops convert to market on trigger — apply stop slippage
       const slippage = isBuy ? -this.slippage.stopOrderSlippage : this.slippage.stopOrderSlippage;
       actualExitPrice = roundTo(exitPrice + slippage);
+    } else if (reason === 'take_profit') {
+      // Limit orders fill at the exact limit price — never slip (CLAUDE.md spec)
+      actualExitPrice = roundTo(exitPrice);
     } else {
-      // Take profits and manual exits
+      // eod_liquidation / market_close / time_exit / max_hold_time / trailing_stop / soft_stop — market orders
       const slippage = isBuy ? -this.slippage.limitOrderSlippage : this.slippage.limitOrderSlippage;
       actualExitPrice = roundTo(exitPrice + slippage);
     }

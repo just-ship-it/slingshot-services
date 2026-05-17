@@ -307,6 +307,54 @@ function buildApp() {
     }
   });
 
+  // Modify the stop price on the bracket order associated with the given
+  // signalId. Used by the orchestrator's exit-rule manager when a post-fill
+  // rule fires (breakeven today; magnet/MFE ratchet in the future).
+  // Body: { newStopPrice: number, reason?: string }
+  app.post('/accounts/:accountId/modify-stop/:signalId', async (req, res) => {
+    const conn = findConnector(req.params.accountId);
+    if (!conn) return res.status(404).json({ error: 'connector not found' });
+    if (typeof conn.modifyStopBySignalId !== 'function') {
+      return res.status(501).json({ error: 'connector does not support modifyStopBySignalId' });
+    }
+    const newStopPrice = Number(req.body?.newStopPrice);
+    if (!Number.isFinite(newStopPrice)) {
+      return res.status(400).json({ error: 'newStopPrice (number) required in body' });
+    }
+    const hint = { symbol: req.query.symbol || req.body?.symbol || null, reason: req.body?.reason || null };
+    try {
+      const result = await conn.modifyStopBySignalId(req.params.signalId, newStopPrice, hint);
+      res.json(result);
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  // Flatten the position associated with the given signalId AND cancel any
+  // remaining bracket orders for the same symbol. Used by the orchestrator's
+  // exit-rule manager when a fibRetrace rule fires at bar close — the trade
+  // is over and we want an immediate market exit, not a stop-modify.
+  // Body: { reason?: string }
+  // Query: ?symbol=MNQM6  (REQUIRED — connector cannot infer symbol from signalId alone)
+  app.post('/accounts/:accountId/close-position/:signalId', async (req, res) => {
+    const conn = findConnector(req.params.accountId);
+    if (!conn) return res.status(404).json({ error: 'connector not found' });
+    if (typeof conn.closePositionBySignalId !== 'function') {
+      return res.status(501).json({ error: 'connector does not support closePositionBySignalId' });
+    }
+    const symbol = req.query.symbol || req.body?.symbol || null;
+    if (!symbol) {
+      return res.status(400).json({ error: 'symbol (query or body) required' });
+    }
+    const hint = { symbol, reason: req.body?.reason || null };
+    try {
+      const result = await conn.closePositionBySignalId(req.params.signalId, hint);
+      res.json(result);
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
   // Cancel every working order for the given symbol on this account.
   // Used by EOD force-flat to clean up orphan stop/target orders left
   // behind after the position is closed via market order.

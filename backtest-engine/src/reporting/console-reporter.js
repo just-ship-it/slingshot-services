@@ -273,11 +273,43 @@ export class ConsoleReporter {
     // Trading Statistics
     this.displayTradingStats(performance.basic);
 
+    // MFE / Giveback (only if MFE data is present)
+    if (performance.basic.mfeEfficiency != null) {
+      this.displayMFEStats(performance.basic);
+    }
+
     // Risk Metrics
     this.displayRiskMetrics(performance.risk, performance.drawdown);
 
     // Advanced Metrics
     this.displayAdvancedMetrics(performance.advanced);
+  }
+
+  displayMFEStats(basic) {
+    const table = new Table({
+      head: [chalk.bold('MFE / Giveback'), chalk.bold('Value')],
+      colWidths: [30, 25],
+      style: { head: ['cyan'] }
+    });
+
+    const captureColor = basic.winnerCaptureRatio >= 60 ? 'green' : basic.winnerCaptureRatio >= 40 ? 'yellow' : 'red';
+    const beClipColor = basic.beClipPct <= 5 ? 'green' : basic.beClipPct <= 15 ? 'yellow' : 'red';
+    const mfeToSLColor = basic.mfeToSLPct <= 3 ? 'green' : basic.mfeToSLPct <= 8 ? 'yellow' : 'red';
+
+    table.push(
+      ['Winner Capture Ratio', chalk[captureColor](`${this.formatNumber(basic.winnerCaptureRatio)}%`)],
+      ['Avg MFE', `${this.formatNumber(basic.avgMFE)} pts`],
+      ['Avg Winner MFE', chalk.green(`${this.formatNumber(basic.avgWinnerMFE)} pts`)],
+      ['Avg Loser MFE', chalk.red(`${this.formatNumber(basic.avgLoserMFE)} pts`)],
+      ['Avg Giveback', `${this.formatNumber(basic.avgProfitGiveBack)} pts`],
+      ['BE-Clip Count (MFE≥70, exit<30)', chalk[beClipColor](`${basic.beClipCount} (${this.formatNumber(basic.beClipPct)}%)`)],
+      ['Big-BE-Clip (MFE≥100, exit<50)', `${basic.bigBeClipCount}`],
+      ['MFE→SL Count (MFE≥50, exit≤-59)', chalk[mfeToSLColor](`${basic.mfeToSLCount} (${this.formatNumber(basic.mfeToSLPct)}%)`)],
+      ['Winners Giveback Total', chalk.yellow(`${this.formatNumber(basic.totalGivebackPtsWinners)} pts / $${this.formatNumber(basic.givebackDollarsWinners)}`)]
+    );
+
+    console.log('\n' + chalk.bold('💸 MFE / GIVEBACK'));
+    console.log(table.toString());
   }
 
   /**

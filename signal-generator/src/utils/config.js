@@ -145,9 +145,18 @@ const config = {
   // per-rule stops/targets baked into the strategy with safer globals.
   GFI_STOP_POINTS: parseFloat(process.env.GFI_STOP_POINTS || '60'),
   GFI_TARGET_POINTS: parseFloat(process.env.GFI_TARGET_POINTS || '200'),
+  // Two-layer exit defaults (chosen 2026-05-16, see memory/fib-retrace-sweep-2026-05-15.md).
+  // BE 80/+10 + fib retrace 0.618/40 — PF 2.90 / Sharpe 5.68 / DD 7.11% / $129k over 16mo.
+  // Cuts baseline DD from 11.30% → 7.11% with only a 0.09 PF haircut.
   GFI_BREAKEVEN_STOP: process.env.GFI_BREAKEVEN_STOP?.toLowerCase() !== 'false', // default true
-  GFI_BREAKEVEN_TRIGGER: parseFloat(process.env.GFI_BREAKEVEN_TRIGGER || '70'),
-  GFI_BREAKEVEN_OFFSET: parseFloat(process.env.GFI_BREAKEVEN_OFFSET || '5'),
+  GFI_BREAKEVEN_TRIGGER: parseFloat(process.env.GFI_BREAKEVEN_TRIGGER || '80'),
+  GFI_BREAKEVEN_OFFSET: parseFloat(process.env.GFI_BREAKEVEN_OFFSET || '10'),
+  // Fibonacci-retrace bar-close exit: hard SL stays at 60pts; mechanism only
+  // engages once MFE >= GFI_FIB_ACTIVATION_MFE, then exits on a 1m bar CLOSE
+  // through entry ± mfe × (1 − GFI_FIB_RETRACE_PCT). See research/mfe-ratchet-gfi/.
+  GFI_FIB_RETRACE: process.env.GFI_FIB_RETRACE?.toLowerCase() !== 'false', // default true
+  GFI_FIB_RETRACE_PCT: parseFloat(process.env.GFI_FIB_RETRACE_PCT || '0.618'),
+  GFI_FIB_ACTIVATION_MFE: parseFloat(process.env.GFI_FIB_ACTIVATION_MFE || '40'),
   // Pre-RTH hours where 100% of trades had MAE > 10pt in the baseline study.
   GFI_BLOCKED_HOURS_ET: process.env.GFI_BLOCKED_HOURS_ET ?? '6,7,8',
   // Mirrors trade-orchestrator's EOD_CUTOFF_ET so the dashboard can show the
@@ -361,6 +370,10 @@ const config = {
       breakevenStop: this.GFI_BREAKEVEN_STOP,
       breakevenTrigger: this.GFI_BREAKEVEN_TRIGGER,
       breakevenOffset: this.GFI_BREAKEVEN_OFFSET,
+      // Fibonacci-retrace bar-close exit (additive to BE — they coexist).
+      fibRetrace: this.GFI_FIB_RETRACE,
+      fibRetracePct: this.GFI_FIB_RETRACE_PCT,
+      fibActivationMFE: this.GFI_FIB_ACTIVATION_MFE,
       blockedHoursEt,
     };
   },

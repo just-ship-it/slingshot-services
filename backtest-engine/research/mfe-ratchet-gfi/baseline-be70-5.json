@@ -1,0 +1,35 @@
+{
+  "label": "Baseline: current live config (BE 70 / +5), 16-month gold standard",
+  "source": "data/gold-standard/gex-flip-ivpct-tight-s60t200be70.json",
+  "period": "2025-01-13 to 2026-04-20",
+  "metrics": {
+    "totalTrades": 172,
+    "winRate": 61.63,
+    "profitFactor": 2.99,
+    "sharpeRatio": 6.41,
+    "maxDrawdownPct": 11.3,
+    "totalPnL": 157329,
+    "winners": 106,
+    "totalWinnerPnL_pts": 11846.7,
+    "totalWinnerMFE_pts": 16510.7,
+    "totalGiveback_pts": 4664,
+    "givebackDollars": 93280,
+    "winnerCaptureRatio": 71.75,
+    "beClipCount_MFE70_exit_under30": 38,
+    "beClipPct": 22.09,
+    "bigBeClipCount_MFE100_exit_under50": 20,
+    "bigBeClipPct": 11.63,
+    "mfeToSLCount_MFE50_exit_full_SL": 8,
+    "mfeToSLPct": 4.65
+  },
+  "interpretation": "Baseline aggregate capture (71.75%) looks healthy. But 22% of trades hit MFE>=70 and exited at <+30 (the 'BE clip' pattern that ate two of today's three filled trades). Today's day was not anomalous — it was the modal pattern at scale.",
+  "todays_audit_2026_05_14": {
+    "T1_09_50_S2_short_29665_5": { "mfe_pts": 138.75, "actual_exit": "BE +5", "actual_pnl": 100 },
+    "T2_10_40_S1_short_29677_5": { "mfe_pts": 10, "actual_exit": "SL -60", "actual_pnl": -1200 },
+    "T3_11_15_S2_short_29733":   { "mfe_pts": 138, "actual_exit": "BE +5", "actual_pnl": 100 },
+    "T4_11_55_S2_short_29754_75":{ "blocked_by": "T3 open", "actual_pnl": 0 },
+    "T5_12_50_S2_short_29731_75":{ "blocked_by": "T3 open", "actual_pnl": 0 },
+    "day_total_NQ": -1000,
+    "day_MFE_left_on_table_pts": 271.75
+  }
+}

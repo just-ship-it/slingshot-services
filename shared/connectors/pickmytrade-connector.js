@@ -317,6 +317,23 @@ export class PickMyTradeConnector extends BaseConnector {
     return result;
   }
 
+  /**
+   * PMT does not track per-signal order IDs in a queryable way, so this
+   * just delegates to modifyStop using the symbol hint. Caller must supply
+   * { symbol, side, quantity } in hint for PMT routing to succeed.
+   */
+  async modifyStopBySignalId(signalId, newStopPrice, hint = {}) {
+    if (!hint.symbol) {
+      return { ok: false, reason: 'PMT modifyStopBySignalId requires symbol hint' };
+    }
+    try {
+      const result = await this.modifyStop(null, newStopPrice, hint);
+      return { ok: true, signalId, newStopPrice, source: 'pmt', result };
+    } catch (err) {
+      return { ok: false, reason: err.message, signalId };
+    }
+  }
+
   async closePosition(symbol) {
     const payload = {
       symbol: this._extractRoot(symbol),
@@ -329,6 +346,23 @@ export class PickMyTradeConnector extends BaseConnector {
     const result = await this._send(payload, `CLOSE ${symbol}`);
     await this._mirror('closePosition', symbol);
     return result;
+  }
+
+  /**
+   * Flatten by signalId. PMT cannot reverse-look up signalId → symbol, so
+   * the caller must supply { symbol } in hint. The shadow Tradovate
+   * connector is mirrored so its bookkeeping stays in sync.
+   */
+  async closePositionBySignalId(signalId, hint = {}) {
+    if (!hint.symbol) {
+      return { ok: false, reason: 'PMT closePositionBySignalId requires symbol hint' };
+    }
+    try {
+      const result = await this.closePosition(hint.symbol);
+      return { ok: true, signalId, symbol: hint.symbol, source: 'pmt', result };
+    } catch (err) {
+      return { ok: false, reason: err.message, signalId, symbol: hint.symbol };
+    }
   }
 
   async getPositions() {

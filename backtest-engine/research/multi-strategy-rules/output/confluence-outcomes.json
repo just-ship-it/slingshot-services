@@ -1,0 +1,399 @@
+{
+  "pairs": {
+    "gex-flip-ivpct__gex-level-fade": {
+      "total": 655,
+      "avgPnlA": 237.36,
+      "avgPnlB": 171.65,
+      "avgJoint": 409.01,
+      "totalJoint": 267903.6,
+      "A_winRate": 98.8,
+      "A_baselineWinRate": 68.6,
+      "A_uplift_z": 13.5,
+      "A_uplift_p": 0,
+      "B_winRate": 23.4,
+      "B_baselineWinRate": 21.1,
+      "B_uplift_z": 1.04,
+      "B_uplift_p": 0.3005,
+      "sideSplits": {
+        "both_long": {
+          "n": 637,
+          "joint_pnl": 219356.8,
+          "A_winRate": 99.4,
+          "B_winRate": 22.3
+        },
+        "both_short": {
+          "n": 18,
+          "joint_pnl": 48546.8,
+          "A_winRate": 77.8,
+          "B_winRate": 61.1
+        }
+      },
+      "byMonth": {
+        "2025-01": {
+          "n": 3,
+          "joint_pnl": 5680.8,
+          "A_winRate": 100,
+          "B_winRate": 66.7
+        },
+        "2025-02": {
+          "n": 3,
+          "joint_pnl": -950,
+          "A_winRate": 33.3,
+          "B_winRate": 33.3
+        },
+        "2025-03": {
+          "n": 3,
+          "joint_pnl": 3230,
+          "A_winRate": 66.7,
+          "B_winRate": 33.3
+        },
+        "2025-04": {
+          "n": 17,
+          "joint_pnl": -365,
+          "A_winRate": 94.1,
+          "B_winRate": 11.8
+        },
+        "2025-05": {
+          "n": 71,
+          "joint_pnl": 32305.6,
+          "A_winRate": 100,
+          "B_winRate": 23.9
+        },
+        "2025-06": {
+          "n": 59,
+          "joint_pnl": 55025,
+          "A_winRate": 98.3,
+          "B_winRate": 40.7
+        },
+        "2025-07": {
+          "n": 50,
+          "joint_pnl": 25083.2,
+          "A_winRate": 96,
+          "B_winRate": 26
+        },
+        "2025-08": {
+          "n": 56,
+          "joint_pnl": 7960,
+          "A_winRate": 98.2,
+          "B_winRate": 16.1
+        },
+        "2025-09": {
+          "n": 47,
+          "joint_pnl": 12367,
+          "A_winRate": 100,
+          "B_winRate": 19.1
+        },
+        "2025-10": {
+          "n": 36,
+          "joint_pnl": 17620,
+          "A_winRate": 100,
+          "B_winRate": 25
+        },
+        "2025-11": {
+          "n": 70,
+          "joint_pnl": 32324,
+          "A_winRate": 100,
+          "B_winRate": 25.7
+        },
+        "2025-12": {
+          "n": 55,
+          "joint_pnl": 18935,
+          "A_winRate": 100,
+          "B_winRate": 23.6
+        },
+        "2026-01": {
+          "n": 62,
+          "joint_pnl": 35713,
+          "A_winRate": 100,
+          "B_winRate": 25.8
+        },
+        "2026-02": {
+          "n": 46,
+          "joint_pnl": -825,
+          "A_winRate": 100,
+          "B_winRate": 8.7
+        },
+        "2026-03": {
+          "n": 43,
+          "joint_pnl": 16125,
+          "A_winRate": 100,
+          "B_winRate": 20.9
+        },
+        "2026-04": {
+          "n": 34,
+          "joint_pnl": 7675,
+          "A_winRate": 100,
+          "B_winRate": 17.6
+        }
+      }
+    },
+    "gex-flip-ivpct__gex-lt-3m": {
+      "total": 712,
+      "avgPnlA": 334.21,
+      "avgPnlB": 236.84,
+      "avgJoint": 571.05,
+      "totalJoint": 406588,
+      "A_winRate": 97.3,
+      "A_baselineWinRate": 68.6,
+      "A_uplift_z": 12.48,
+      "A_uplift_p": 0,
+      "B_winRate": 49.3,
+      "B_baselineWinRate": 47.2,
+      "B_uplift_z": 0.84,
+      "B_uplift_p": 0.4003,
+      "sideSplits": {
+        "both_long": {
+          "n": 661,
+          "joint_pnl": 301016,
+          "A_winRate": 99.2,
+          "B_winRate": 48.1
+        },
+        "both_short": {
+          "n": 51,
+          "joint_pnl": 105572,
+          "A_winRate": 72.5,
+          "B_winRate": 64.7
+        }
+      },
+      "byMonth": {
+        "2025-01": {
+          "n": 5,
+          "joint_pnl": 7740,
+          "A_winRate": 100,
+          "B_winRate": 60
+        },
+        "2025-02": {
+          "n": 9,
+          "joint_pnl": 13870,
+          "A_winRate": 66.7,
+          "B_winRate": 55.6
+        },
+        "2025-03": {
+          "n": 3,
+          "joint_pnl": -4880,
+          "A_winRate": 0,
+          "B_winRate": 33.3
+        },
+        "2025-04": {
+          "n": 8,
+          "joint_pnl": 6790,
+          "A_winRate": 100,
+          "B_winRate": 50
+        },
+        "2025-05": {
+          "n": 100,
+          "joint_pnl": 98740,
+          "A_winRate": 99,
+          "B_winRate": 60
+        },
+        "2025-06": {
+          "n": 74,
+          "joint_pnl": 27676,
+          "A_winRate": 98.6,
+          "B_winRate": 52.7
+        },
+        "2025-07": {
+          "n": 60,
+          "joint_pnl": 45835,
+          "A_winRate": 100,
+          "B_winRate": 66.7
+        },
+        "2025-08": {
+          "n": 58,
+          "joint_pnl": -8650,
+          "A_winRate": 96.6,
+          "B_winRate": 32.8
+        },
+        "2025-09": {
+          "n": 29,
+          "joint_pnl": 20557,
+          "A_winRate": 93.1,
+          "B_winRate": 62.1
+        },
+        "2025-10": {
+          "n": 31,
+          "joint_pnl": 32750,
+          "A_winRate": 96.8,
+          "B_winRate": 61.3
+        },
+        "2025-11": {
+          "n": 42,
+          "joint_pnl": 24430,
+          "A_winRate": 100,
+          "B_winRate": 42.9
+        },
+        "2025-12": {
+          "n": 16,
+          "joint_pnl": 14645,
+          "A_winRate": 100,
+          "B_winRate": 68.8
+        },
+        "2026-01": {
+          "n": 61,
+          "joint_pnl": 53415,
+          "A_winRate": 93.4,
+          "B_winRate": 57.4
+        },
+        "2026-02": {
+          "n": 107,
+          "joint_pnl": 46195,
+          "A_winRate": 98.1,
+          "B_winRate": 38.3
+        },
+        "2026-03": {
+          "n": 82,
+          "joint_pnl": 13530,
+          "A_winRate": 100,
+          "B_winRate": 32.9
+        },
+        "2026-04": {
+          "n": 27,
+          "joint_pnl": 13945,
+          "A_winRate": 100,
+          "B_winRate": 40.7
+        }
+      }
+    },
+    "gex-level-fade__gex-lt-3m": {
+      "total": 153,
+      "avgPnlA": 665.46,
+      "avgPnlB": 384.84,
+      "avgJoint": 1050.3,
+      "totalJoint": 160695.8,
+      "A_winRate": 46.4,
+      "A_baselineWinRate": 21.1,
+      "A_uplift_z": 6.68,
+      "A_uplift_p": 0,
+      "B_winRate": 54.9,
+      "B_baselineWinRate": 47.2,
+      "B_uplift_z": 1.76,
+      "B_uplift_p": 0.0776,
+      "sideSplits": {
+        "both_long": {
+          "n": 69,
+          "joint_pnl": 74397,
+          "A_winRate": 44.9,
+          "B_winRate": 52.2
+        },
+        "both_short": {
+          "n": 84,
+          "joint_pnl": 86298.8,
+          "A_winRate": 47.6,
+          "B_winRate": 57.1
+        }
+      },
+      "byMonth": {
+        "2025-01": {
+          "n": 13,
+          "joint_pnl": 25770,
+          "A_winRate": 69.2,
+          "B_winRate": 69.2
+        },
+        "2025-02": {
+          "n": 15,
+          "joint_pnl": 16040.8,
+          "A_winRate": 40,
+          "B_winRate": 66.7
+        },
+        "2025-03": {
+          "n": 4,
+          "joint_pnl": 5897.2,
+          "A_winRate": 75,
+          "B_winRate": 50
+        },
+        "2025-04": {
+          "n": 10,
+          "joint_pnl": 13439.4,
+          "A_winRate": 40,
+          "B_winRate": 50
+        },
+        "2025-05": {
+          "n": 24,
+          "joint_pnl": 14660.6,
+          "A_winRate": 29.2,
+          "B_winRate": 54.2
+        },
+        "2025-06": {
+          "n": 8,
+          "joint_pnl": 6905,
+          "A_winRate": 50,
+          "B_winRate": 37.5
+        },
+        "2025-07": {
+          "n": 21,
+          "joint_pnl": 32925,
+          "A_winRate": 71.4,
+          "B_winRate": 61.9
+        },
+        "2025-08": {
+          "n": 11,
+          "joint_pnl": -275,
+          "A_winRate": 27.3,
+          "B_winRate": 36.4
+        },
+        "2025-09": {
+          "n": 8,
+          "joint_pnl": 10236.4,
+          "A_winRate": 50,
+          "B_winRate": 62.5
+        },
+        "2025-10": {
+          "n": 5,
+          "joint_pnl": 8335,
+          "A_winRate": 80,
+          "B_winRate": 60
+        },
+        "2025-11": {
+          "n": 7,
+          "joint_pnl": 4455,
+          "A_winRate": 28.6,
+          "B_winRate": 57.1
+        },
+        "2025-12": {
+          "n": 12,
+          "joint_pnl": 12070,
+          "A_winRate": 41.7,
+          "B_winRate": 50
+        },
+        "2026-01": {
+          "n": 5,
+          "joint_pnl": 11771.4,
+          "A_winRate": 80,
+          "B_winRate": 80
+        },
+        "2026-02": {
+          "n": 3,
+          "joint_pnl": 5025,
+          "A_winRate": 33.3,
+          "B_winRate": 66.7
+        },
+        "2026-03": {
+          "n": 4,
+          "joint_pnl": -2270,
+          "A_winRate": 0,
+          "B_winRate": 25
+        },
+        "2026-04": {
+          "n": 3,
+          "joint_pnl": -4290,
+          "A_winRate": 0,
+          "B_winRate": 0
+        }
+      }
+    }
+  },
+  "baselines": {
+    "gex-flip-ivpct": {
+      "trades": 191,
+      "winners": 131
+    },
+    "gex-lt-3m": {
+      "trades": 909,
+      "winners": 429
+    },
+    "gex-level-fade": {
+      "trades": 889,
+      "winners": 188
+    }
+  }
+}

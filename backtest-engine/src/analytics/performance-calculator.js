@@ -108,6 +108,25 @@ export class PerformanceCalculator {
       const mfeEfficiency = mfeEfficiencyValues.length > 0
         ? mfeEfficiencyValues.reduce((sum, v) => sum + v, 0) / mfeEfficiencyValues.length : 0;
 
+      // Giveback-aware counters: what % of trades got "BE-clipped" or worse turned-loser
+      // beClipCount: trades that ran +70pt MFE but exited at < +30pt
+      // mfeToSLCount: trades that ran +50pt MFE but ended at full SL (pointsPnL <= -59)
+      const beClipCount = tradesWithMFE.filter(t => t.mfePoints >= 70 && t.pointsPnL < 30).length;
+      const bigBeClipCount = tradesWithMFE.filter(t => t.mfePoints >= 100 && t.pointsPnL < 50).length;
+      const mfeToSLCount = tradesWithMFE.filter(t => t.mfePoints >= 50 && t.pointsPnL <= -59).length;
+
+      // Total giveback (sum of profitGiveBack across winners only — losers' "giveback" is just MFE
+      // which is already counted in MFE→SL; we want the "left money on the table" pool).
+      const totalGivebackPtsWinners = winnersWithMFE.reduce((sum, t) => sum + (t.profitGiveBack ?? 0), 0);
+      const givebackDollarsWinners = totalGivebackPtsWinners * 20; // NQ $20/pt
+
+      // Dollar-weighted capture ratio (more interpretable than the per-trade-ratio average that
+      // mfeEfficiency uses, which can be hugely negative when losers have small MFEs). This is
+      // "of all the favorable price action our winners saw, what fraction did we monetize?"
+      const totalWinnerMFE = winnersWithMFE.reduce((sum, t) => sum + t.mfePoints, 0);
+      const totalWinnerPnL = winnersWithMFE.reduce((sum, t) => sum + t.pointsPnL, 0);
+      const winnerCaptureRatio = totalWinnerMFE > 0 ? (totalWinnerPnL / totalWinnerMFE) : 0;
+
       mfeStats = {
         avgMFE: roundTo(avgMFE),
         avgMAE: roundTo(avgMAE),
@@ -115,6 +134,14 @@ export class PerformanceCalculator {
         avgWinnerMFE: roundTo(avgWinnerMFE),
         avgLoserMFE: roundTo(avgLoserMFE),
         mfeEfficiency: roundTo(mfeEfficiency * 100),
+        beClipCount,
+        bigBeClipCount,
+        mfeToSLCount,
+        beClipPct: trades.length > 0 ? roundTo((beClipCount / trades.length) * 100) : 0,
+        mfeToSLPct: trades.length > 0 ? roundTo((mfeToSLCount / trades.length) * 100) : 0,
+        totalGivebackPtsWinners: roundTo(totalGivebackPtsWinners),
+        givebackDollarsWinners: roundTo(givebackDollarsWinners),
+        winnerCaptureRatio: roundTo(winnerCaptureRatio * 100),  // %
       };
     }
 

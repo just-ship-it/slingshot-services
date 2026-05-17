@@ -26,6 +26,7 @@ import {
 import { createAccountStore, ACCOUNT_CHANNEL } from '../shared/utils/account-store.js';
 import { createRoutesStore, ROUTES_CHANNEL } from '../shared/utils/routes-store.js';
 import { evaluateCrossStrategyRules, evaluateStrategyAlerts } from './cross-strategy-filter.js';
+import { createExitRuleManager, captureRuleFromSignal } from './src/exit-rule-manager.js';
 
 const SERVICE_NAME = 'trade-orchestrator';
 const logger = createLogger(SERVICE_NAME);
@@ -258,8 +259,32 @@ async function restoreOpenPositions(redis) {
     if (!raw) return;
     const data = JSON.parse(raw);
     if (!Array.isArray(data.entries)) return;
-    for (const [k, v] of data.entries) state.openPositions.set(k, v);
-    logger.info(`Restored ${state.openPositions.size} open positions from checkpoint`);
+    let registered = 0;
+    for (const [k, v] of data.entries) {
+      state.openPositions.set(k, v);
+      // Restore exit-rule tracking for positions that carried rules when
+      // they were checkpointed. Positions persisted before this feature
+      // landed have no exit rules and just ride their original SL/TP.
+      // Both legacy `exitRule` (single) and new `exitRules` (array) shapes
+      // are accepted.
+      const restoredRules = v?.exitRules
+        ? v.exitRules
+        : (v?.exitRule ? [v.exitRule] : []);
+      if (restoredRules.length > 0 && Number.isFinite(v?.entryPrice)) {
+        exitRuleManager.register({
+          accountId: v.accountId,
+          strategy: v.strategy,
+          symbol: v.symbol,
+          side: v.side,
+          entryPrice: v.entryPrice,
+          signalId: v.signalId || null,
+          originalStop: v.originalStop ?? null,
+          rules: restoredRules,
+        });
+        registered++;
+      }
+    }
+    logger.info(`Restored ${state.openPositions.size} open positions from checkpoint (${registered} with exit rules)`);
   } catch (err) {
     logger.warn(`Failed to restore open positions checkpoint: ${err.message}`);
   }
@@ -486,12 +511,21 @@ async function handleTradeSignal(raw) {
     // Carry maxHoldBars / timeoutCandles forward so the polling loop can
     // enforce time-based exits (max hold) and stale-limit cancellation
     // for strategies that supply them (e.g. gex-lt-3m-crossover).
+    // Capture any post-fill exit rules emitted by the strategy. Returns an
+    // array — strategies can stack rules (e.g. gex-flip-ivpct's two-layer
+    // BE+fib config). The rules ride on pendingOrders until the fill, then
+    // transfer onto the open position where the exit-rule manager picks
+    // them up on each price.update / candle.close.
+    const exitRules = captureRuleFromSignal(signal);
+
     state.pendingOrders.set(pendingKey(accountId, signal.strategy, tradedSymbol), {
       accountId, strategy: signal.strategy, symbol: tradedSymbol,
       direction, signalId, requestedAt: now,
       action: signal.action,
       maxHoldBars: signal.maxHoldBars ?? null,
-      timeoutCandles: signal.timeoutCandles ?? null
+      timeoutCandles: signal.timeoutCandles ?? null,
+      originalStop: signal.stop_loss ?? null,
+      exitRules,
     });
 
     await messageBus.publish(CHANNELS.ORDER_REQUEST, orderRequest);
@@ -565,14 +599,32 @@ async function handlePositionOpened(msg) {
   // minutes (interpreting bars-since-entry as 1-minute bars, matching the
   // backtest engine convention).
   const pending = state.pendingOrders.get(pendingKey(accountId, strategy, symbol));
+  const exitRules = pending?.exitRules ?? (pending?.exitRule ? [pending.exitRule] : []);
   state.openPositions.set(posKey(accountId, strategy, symbol), {
     accountId, strategy, symbol, side, netPos,
     entryPrice, signalId: signalId || null,
     openedAt: new Date().toISOString(),
-    maxHoldBars: pending?.maxHoldBars ?? null
+    maxHoldBars: pending?.maxHoldBars ?? null,
+    exitRules,
+    originalStop: pending?.originalStop ?? null,
   });
   state.pendingOrders.delete(pendingKey(accountId, strategy, symbol));
   logger.info(`[${signalId || '?'}] position.opened ${accountId} ${strategy} ${symbol} ${side} @ ${entryPrice}`);
+
+  // Hand any rules to the exit-rule manager so MFE/MAE-tracking and rule
+  // firing can begin. The manager stays passive when rules is empty, so
+  // positions with no exit rules (e.g., strategies that don't emit any)
+  // just ride their original SL/TP — no behavior change for them.
+  if (exitRules.length > 0) {
+    exitRuleManager.register({
+      accountId, strategy, symbol, side,
+      entryPrice: Number(entryPrice),
+      signalId: signalId || null,
+      originalStop: pending?.originalStop ?? null,
+      rules: exitRules,
+    });
+  }
+
   await checkpointOpenPositions(stores.redis);
 }
 
@@ -584,6 +636,7 @@ async function handlePositionClosed(msg) {
     logger.info(`[${signalId || '?'}] position.closed ${accountId} ${strategy} ${symbol} pnl=${realizedPnl ?? '?'}`);
   }
   state.pendingOrders.delete(pendingKey(accountId, strategy, symbol));
+  exitRuleManager.unregister({ accountId, strategy, symbol });
   await checkpointOpenPositions(stores.redis);
 }
 
@@ -595,6 +648,7 @@ async function handlePositionUpdate(msg) {
     if (state.openPositions.delete(pk)) {
       logger.info(`position.update → flat: ${accountId} ${strategy} ${symbol}`);
     }
+    exitRuleManager.unregister({ accountId, strategy, symbol });
     return;
   }
   const existing = state.openPositions.get(pk);
@@ -877,6 +931,66 @@ async function checkMaxHold() {
 
 const TRADOVATE_SERVICE_URL = process.env.TRADOVATE_SERVICE_URL || 'http://localhost:3011';
 
+// ---------- Exit-rule manager (BE, fibRetrace, MFE ratchet) ----------
+const exitRuleManager = createExitRuleManager({
+  logger,
+  extractUnderlying,
+  publishModifyStop: async (payload) => {
+    // POST to tradovate-service modify-stop endpoint. Used by BE and ratchet
+    // rules to move the broker SL.
+    const { accountId, signalId, newStopPrice, symbol } = payload;
+    if (!signalId) {
+      logger.warn(`[ExitRule] publishModifyStop ${accountId} ${symbol}: no signalId — cannot identify order; skipping`);
+      return;
+    }
+    const url = `${TRADOVATE_SERVICE_URL}/accounts/${encodeURIComponent(accountId)}`
+              + `/modify-stop/${encodeURIComponent(signalId)}`
+              + `?symbol=${encodeURIComponent(symbol)}`;
+    try {
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ newStopPrice, reason: payload.reason }),
+      });
+      if (!res.ok) {
+        const body = await res.text().catch(() => '');
+        logger.error(`[ExitRule] modify-stop HTTP ${res.status}: ${body.slice(0, 200)}`);
+      } else {
+        logger.info(`[ExitRule] modify-stop posted: ${accountId} ${symbol} → ${newStopPrice} (${payload.reason})`);
+      }
+    } catch (err) {
+      logger.error(`[ExitRule] modify-stop fetch failed: ${err.message}`);
+    }
+  },
+  publishClosePosition: async (payload) => {
+    // POST to tradovate-service close-position endpoint. Used by fibRetrace
+    // when a bar close triggers an immediate market exit (and bracket cleanup).
+    const { accountId, signalId, symbol } = payload;
+    if (!signalId) {
+      logger.warn(`[ExitRule] publishClosePosition ${accountId} ${symbol}: no signalId — skipping`);
+      return;
+    }
+    const url = `${TRADOVATE_SERVICE_URL}/accounts/${encodeURIComponent(accountId)}`
+              + `/close-position/${encodeURIComponent(signalId)}`
+              + `?symbol=${encodeURIComponent(symbol)}`;
+    try {
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ reason: payload.reason }),
+      });
+      if (!res.ok) {
+        const body = await res.text().catch(() => '');
+        logger.error(`[ExitRule] close-position HTTP ${res.status}: ${body.slice(0, 200)}`);
+      } else {
+        logger.info(`[ExitRule] close-position posted: ${accountId} ${symbol} (${payload.reason})`);
+      }
+    } catch (err) {
+      logger.error(`[ExitRule] close-position fetch failed: ${err.message}`);
+    }
+  },
+});
+
 // Cancel any pending limit order whose elapsed time since `requestedAt`
 // exceeds its `timeoutCandles` (interpreted as minutes — the backtest engine
 // uses 1m candles, so timeoutCandles=5 means cancel after 5 minutes).
@@ -933,6 +1047,18 @@ async function main() {
   await messageBus.subscribe(CHANNELS.ORDER_PLACED, handleOrderPlaced);
   await messageBus.subscribe(CHANNELS.ORDER_REJECTED, handleOrderRejected);
   await messageBus.subscribe(CHANNELS.ORDER_CANCELLED, handleOrderCancelled);
+  // Drive the exit-rule manager from real-time ticks (BE, ratchet) and 1m
+  // bar closes (fibRetrace). Handlers return immediately when no positions
+  // are registered, so unconditional subscription costs nothing when the
+  // strategies aren't using exit rules.
+  await messageBus.subscribe(CHANNELS.PRICE_UPDATE, (msg) => {
+    try { exitRuleManager.onPriceTick(msg); }
+    catch (err) { logger.error(`[ExitRule] onPriceTick threw: ${err.message}`); }
+  });
+  await messageBus.subscribe(CHANNELS.CANDLE_CLOSE, (msg) => {
+    try { exitRuleManager.onCandleClose(msg); }
+    catch (err) { logger.error(`[ExitRule] onCandleClose threw: ${err.message}`); }
+  });
   await messageBus.subscribe(CHANNELS.POSITION_OPENED, handlePositionOpened);
   await messageBus.subscribe(CHANNELS.POSITION_CLOSED, handlePositionClosed);
   await messageBus.subscribe(CHANNELS.POSITION_UPDATE, handlePositionUpdate);

@@ -1,0 +1,6 @@
+rule,trades,winRate_pct,profitFactor,sharpe,maxDD_usd,maxDD_pct,totalPnL,avgPnL,avgHoldMin,signalsConsidered,accepted,rejected,acceptedFraction,syntheticExits,syntheticFraction
+first-in-wins,1571,37.5,1.47,5.71,16739,11.19,294060.2,187.18,38.7,1989,1571,418,0.79,0,0
+flip-on-conflict,1766,38.1,1.38,4.89,19264,11.22,251800.2,142.58,34.8,1989,1766,223,0.888,168,0.095
+confluence-only-first-exit,246,50.8,2.08,6.1,5833,3.94,75215.8,305.76,25.4,1989,246,1743,0.124,122,0.496
+confluence-only-last-exit,223,48.9,2.42,7.83,5305,4.24,103719.4,465.11,42.8,1989,223,1766,0.112,0,0
+priority-weighted,1654,39.8,1.45,5.62,20607.6,12.46,288574.6,174.47,39,1989,1654,335,0.832,109,0.066

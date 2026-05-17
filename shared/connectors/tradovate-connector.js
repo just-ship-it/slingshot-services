@@ -457,6 +457,86 @@ export class TradovateConnector extends BaseConnector {
     return this.client.modifyBracketStop(strategyId, newStopPrice);
   }
 
+  /**
+   * Modify the stop on the bracket order associated with the given signalId.
+   * Mirrors cancelBySignalId — reverse-looks-up orderSignalMap to find the
+   * strategyId, then defers to modifyStop().
+   */
+  async modifyStopBySignalId(signalId, newStopPrice, hint = {}) {
+    if (!signalId) return { ok: false, reason: 'missing signalId' };
+    if (!Number.isFinite(Number(newStopPrice))) return { ok: false, reason: 'invalid newStopPrice' };
+
+    let strategyId = null;
+    for (const [sid, sig] of this.orderSignalMap.entries()) {
+      if (sig === signalId) { strategyId = sid; break; }
+    }
+    if (!strategyId) {
+      return { ok: false, reason: `no order found for signalId ${signalId}` };
+    }
+    const strategy = this.orderStrategyMap.get(strategyId) || null;
+    try {
+      await this.modifyStop(strategyId, Number(newStopPrice));
+      this.logger.info(`[${this._label()}] modify-stop ${signalId} → ${newStopPrice} (${hint.reason || 'no reason'})`);
+      return { ok: true, strategyId, signalId, strategy, newStopPrice: Number(newStopPrice) };
+    } catch (err) {
+      this.logger.error(`[${this._label()}] modifyStopBySignalId ${signalId} failed: ${err.message}`);
+      return { ok: false, reason: err.message, strategyId, signalId, strategy };
+    }
+  }
+
+  /**
+   * Flatten the position associated with the given signalId and cancel any
+   * remaining bracket orders (SL/TP) for the same symbol. Used by the
+   * orchestrator's exit-rule manager when a fibRetrace rule fires at bar
+   * close — the trade is over, we want an immediate market exit and the
+   * bracket orders cleaned up so they don't fire later as ghost orders.
+   *
+   * Returns { ok, signalId, strategy, symbol, closeResult, cancelResult }.
+   * `ok` is true if the market liquidation succeeded; bracket-cancel
+   * failures are logged but don't flip ok to false (the position is what
+   * matters; orphan brackets get cleaned by EOD flatten if needed).
+   */
+  async closePositionBySignalId(signalId, hint = {}) {
+    if (!signalId) return { ok: false, reason: 'missing signalId' };
+
+    // Reverse-look up strategyId → symbol from the order map. Multiple
+    // bracket legs share a signalId; we just need one to get the symbol.
+    let strategyId = null;
+    for (const [sid, sig] of this.orderSignalMap.entries()) {
+      if (sig === signalId) { strategyId = sid; break; }
+    }
+    if (!strategyId) {
+      return { ok: false, reason: `no order found for signalId ${signalId}` };
+    }
+    const strategy = this.orderStrategyMap.get(strategyId) || null;
+    const symbol = hint.symbol || null;
+    if (!symbol) {
+      return { ok: false, reason: `symbol hint required to close by signalId`, strategyId, strategy };
+    }
+
+    let closeResult = null;
+    let closeErr = null;
+    try {
+      closeResult = await this.closePosition(symbol);
+      this.logger.info(`[${this._label()}] close-position ${signalId} ${symbol} ok (${hint.reason || 'no reason'})`);
+    } catch (err) {
+      closeErr = err;
+      this.logger.error(`[${this._label()}] closePositionBySignalId ${signalId} ${symbol} liquidate failed: ${err.message}`);
+    }
+
+    let cancelResult = null;
+    try {
+      cancelResult = await this.cancelAllOrdersForSymbol(symbol);
+    } catch (err) {
+      this.logger.warn(`[${this._label()}] cancelAllOrdersForSymbol ${symbol} failed after close: ${err.message}`);
+    }
+
+    if (closeErr) {
+      return { ok: false, reason: closeErr.message, strategyId, signalId, strategy, symbol, cancelResult };
+    }
+    return { ok: true, strategyId, signalId, strategy, symbol, closeResult, cancelResult };
+  }
+
   async getPositions() {
     if (!this.client) return [];
     return this.client.getPositions(this.brokerAccountId);
