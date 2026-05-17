@@ -743,6 +743,10 @@ export class GexFlipIvpctStrategy extends BaseStrategy {
       breakevenOffset: this.params.breakevenOffset,
       trailingTrigger: this.params.trailingTrigger,
       trailingOffset: this.params.trailingOffset,
+      // Fibonacci-retrace bar-close exit (additive to BE)
+      fibRetrace: this.params.fibRetrace,
+      fibRetracePct: this.params.fibRetracePct,
+      fibActivationMFE: this.params.fibActivationMFE,
       // Active rule set (after disabledRules filter)
       activeRules: RULES.filter(r => !this.params.disabledRules.has(r.id)).map(r => ({
         id: r.id,
