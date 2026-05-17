@@ -454,7 +454,10 @@ function createGexFlipIvpctStrategy(config) {
     `ivPctile [low<=${params.ivPctileLowMax}, high>=${params.ivPctileHighMin}], ` +
     `skewMin=${params.skewPositiveMin}, ` +
     `entry=${params.entryWindowStartHour}-${params.entryWindowEndHour} ET, ` +
-    `cooldown=${params.signalCooldownMs}ms, maxHold=${params.maxHoldBars}min`);
+    `cooldown=${params.signalCooldownMs}ms, maxHold=${params.maxHoldBars}min, ` +
+    `stop=${params.globalStopPts}, target=${params.globalTargetPts}, ` +
+    `breakevenStop=${params.breakevenStop}, breakevenTrigger=${params.breakevenTrigger}, breakevenOffset=${params.breakevenOffset}, ` +
+    `fibRetrace=${params.fibRetrace}, fibRetracePct=${params.fibRetracePct}, fibActivationMFE=${params.fibActivationMFE}`);
 
   return new GexFlipIvpctStrategy(params);
 }
