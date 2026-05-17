@@ -348,6 +348,55 @@ const config = {
     };
   },
 
+  getGexLevelFadeParams() {
+    // 100/18 / 09:00-10:30 / all-levels gold standard (2026-05-17) is the
+    // strategy class's own defaults; env overrides only fire when set.
+    const intOrDef = (v, d) => {
+      const n = parseInt(v, 10);
+      return isNaN(n) ? d : n;
+    };
+    const numOrDef = (v, d) => {
+      const n = Number(v);
+      return isNaN(n) ? d : n;
+    };
+    const boolFlag = (v, d) => {
+      if (v === undefined || v === null || v === '') return d;
+      const s = String(v).toLowerCase();
+      return s === 'true' || s === '1' || s === 'yes';
+    };
+    const blockedHoursEt = (this.GLF_BLOCKED_HOURS_ET || '')
+      .split(',').map(s => parseInt(s.trim(), 10)).filter(n => !isNaN(n));
+    const blockedRegimes = (this.GLF_BLOCKED_REGIMES ?? 'strong_negative')
+      .split(',').map(s => s.trim()).filter(Boolean);
+    return {
+      targetPts: intOrDef(this.GLF_TARGET_POINTS, 100),
+      stopPts: intOrDef(this.GLF_STOP_POINTS, 18),
+      maxHoldBars: intOrDef(this.GLF_MAX_HOLD_BARS, 180),
+      limitTimeoutBars: intOrDef(this.GLF_LIMIT_TIMEOUT_BARS, 1),
+      minEpisodeNum: intOrDef(this.GLF_MIN_EPISODE_NUM, 2),
+      includeGexLevels: boolFlag(this.GLF_INCLUDE_GEX, true),
+      entryWindowStartHour: intOrDef(this.GLF_ENTRY_START_HOUR, 9),
+      entryWindowStartMinute: intOrDef(this.GLF_ENTRY_START_MIN, 0),
+      entryWindowEndHour: intOrDef(this.GLF_ENTRY_END_HOUR, 10),
+      entryWindowEndMinute: intOrDef(this.GLF_ENTRY_END_MIN, 30),
+      blockedHoursEt,
+      blockedRegimes,
+      signalCooldownMs: intOrDef(this.GLF_COOLDOWN_MS, 0),
+      directionMode: this.GLF_DIRECTION_MODE || 'fade',
+      // Quality filters (null = disabled). Sweep showed they don't help at 100/18
+      // but the env hooks are here so future variants can enable them.
+      maxLastEpPenetrationPts: this.GLF_MAX_LAST_EP_PEN ? numOrDef(this.GLF_MAX_LAST_EP_PEN, null) : null,
+      minLastEpBarsInZone: this.GLF_MIN_LAST_EP_BARS ? intOrDef(this.GLF_MIN_LAST_EP_BARS, null) : null,
+      minLastEpRej5m: this.GLF_MIN_LAST_EP_REJ_5M ? intOrDef(this.GLF_MIN_LAST_EP_REJ_5M, null) : null,
+      minLastEpRej15m: this.GLF_MIN_LAST_EP_REJ_15M ? intOrDef(this.GLF_MIN_LAST_EP_REJ_15M, null) : null,
+      minLastEpVolBursts: this.GLF_MIN_LAST_EP_VOL_BURSTS ? intOrDef(this.GLF_MIN_LAST_EP_VOL_BURSTS, null) : null,
+      trailingTrigger: intOrDef(this.GLF_TRAILING_TRIGGER, 0),
+      trailingOffset: intOrDef(this.GLF_TRAILING_OFFSET, 0),
+      breakevenTrigger: intOrDef(this.GLF_BREAKEVEN_TRIGGER, 0),
+      breakevenOffset: intOrDef(this.GLF_BREAKEVEN_OFFSET, 0),
+    };
+  },
+
   getGexFlipIvpctParams() {
     const blockedHoursEt = (this.GFI_BLOCKED_HOURS_ET || '')
       .split(',').map(s => parseInt(s.trim(), 10)).filter(n => !isNaN(n));

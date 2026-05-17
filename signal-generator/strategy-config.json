@@ -33,6 +33,12 @@
           "evalTimeframe": "1m"
         },
         {
+          "name": "gex-level-fade",
+          "enabled": false,
+          "priority": 4,
+          "evalTimeframe": "1m"
+        },
+        {
           "name": "impulse-fvg",
           "enabled": false,
           "priority": 3,

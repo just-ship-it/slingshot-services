@@ -16,6 +16,7 @@ import { ShortDTEIVStrategy } from '../../../shared/strategies/short-dte-iv.js';
 import { GexFlipIvpctStrategy } from '../../../shared/strategies/gex-flip-ivpct.js';
 import { LTCandleRegimeStrategy } from '../../../shared/strategies/lt-candle-regime.js';
 import { GexLt3mCrossoverStrategy } from '../../../shared/strategies/gex-lt-3m-crossover.js';
+import { GexLevelFadeStrategy } from '../../../shared/strategies/gex-level-fade.js';
 
 const logger = createLogger('strategy-factory');
 
@@ -33,6 +34,7 @@ export const STRATEGY_TYPES = {
   GEX_FLIP_IVPCT: 'gex-flip-ivpct',
   LT_CANDLE_REGIME: 'lt-candle-regime',
   GEX_LT_3M_CROSSOVER: 'gex-lt-3m-crossover',
+  GEX_LEVEL_FADE: 'gex-level-fade',
   AI_TRADER: 'ai-trader'
 };
 
@@ -95,6 +97,12 @@ export function createStrategy(strategyName, config) {
     case 'gexlt3mcrossover':
     case 'glx':
       return createGexLt3mCrossoverStrategy(config);
+
+    case STRATEGY_TYPES.GEX_LEVEL_FADE:
+    case 'gex_level_fade':
+    case 'gexlevelfade':
+    case 'glf':
+      return createGexLevelFadeStrategy(config);
 
     case STRATEGY_TYPES.AI_TRADER:
     case 'ai_trader':
@@ -249,6 +257,12 @@ export function getStrategyConstant(strategyName) {
     case 'glx':
       return 'GEX_LT_3M_CROSSOVER';
 
+    case STRATEGY_TYPES.GEX_LEVEL_FADE:
+    case 'gex_level_fade':
+    case 'gexlevelfade':
+    case 'glf':
+      return 'GEX_LEVEL_FADE';
+
     case STRATEGY_TYPES.AI_TRADER:
     case 'ai_trader':
     case 'aitrader':
@@ -324,6 +338,12 @@ export function getDataRequirements(strategyName) {
     case 'gexlt3mcrossover':
     case 'glx':
       return GexLt3mCrossoverStrategy.getDataRequirements();
+
+    case STRATEGY_TYPES.GEX_LEVEL_FADE:
+    case 'gex_level_fade':
+    case 'gexlevelfade':
+    case 'glf':
+      return GexLevelFadeStrategy.getDataRequirements();
 
     case STRATEGY_TYPES.AI_TRADER:
     case 'ai_trader':
@@ -469,6 +489,35 @@ function createGexLt3mCrossoverStrategy(config) {
     `limitTimeoutCandles=${params.limitTimeoutCandles ?? 5}`);
 
   return new GexLt3mCrossoverStrategy(params);
+}
+
+/**
+ * Create GEX-LEVEL-FADE strategy.
+ *
+ * Defaults to the 100/18 gold-standard config (2026-05-17 wide-net rebuild).
+ * Overrides come from config.getGexLevelFadeParams() (GLF_* env vars).
+ */
+function createGexLevelFadeStrategy(config) {
+  const overrides = typeof config.getGexLevelFadeParams === 'function'
+    ? config.getGexLevelFadeParams()
+    : {};
+  const params = {
+    ...overrides,
+    tradingSymbol: config.TRADING_SYMBOL,
+    defaultQuantity: config.DEFAULT_QUANTITY,
+    // Mirror trade-orchestrator's EOD_CUTOFF_ET so the dashboard panel can
+    // render the same cutoff time the orchestrator enforces.
+    eodCutoffEt: overrides.eodCutoffEt ?? process.env.EOD_CUTOFF_ET ?? '16:40',
+    debug: false,
+  };
+
+  logger.info(`GEX-LEVEL-FADE params: target=${params.targetPts}pt stop=${params.stopPts}pt mh=${params.maxHoldBars}bars, ` +
+    `entry=${params.entryWindowStartHour ?? 9}:${String(params.entryWindowStartMinute ?? 0).padStart(2,'0')}-${params.entryWindowEndHour ?? 10}:${String(params.entryWindowEndMinute ?? 30).padStart(2,'0')} ET, ` +
+    `minEp=${params.minEpisodeNum ?? 2}, includeGex=${params.includeGexLevels ?? false}, ` +
+    `blockedRegimes=[${(params.blockedRegimes ?? ['strong_negative']).join(',')}], ` +
+    `cooldown=${params.signalCooldownMs ?? 0}ms`);
+
+  return new GexLevelFadeStrategy(params);
 }
 
 function createLTCandleRegimeStrategy(config) {

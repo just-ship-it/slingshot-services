@@ -105,6 +105,14 @@ export class GexLevelFadeStrategy extends BaseStrategy {
     this._lastSymbol = null;
     // 1m bar rolling buffer (for 5m/15m aggregation)
     this._candleBuffer = [];
+    // Panel-facing snapshots captured each evaluateSignal() call
+    this._lastActiveLevels = [];   // [{ type, price, side }]
+    this._lastPrice = null;        // most-recent candle close
+    this._lastRegime = null;       // regime string from last GEX snap consulted
+    this._lastRegimeAllowed = true;
+    this._lastInWindow = false;
+    this._lastEtMinutes = null;    // ET hour*60+minute at last eval
+    this._touchLog = [];           // deque of recent touch events for the panel
   }
 
   reset() {
@@ -317,6 +325,8 @@ export class GexLevelFadeStrategy extends BaseStrategy {
 
     const et = this._toEt(ts);
     this._updateRollingState(candle, et);
+    this._lastPrice = candle.close;
+    this._lastEtMinutes = et.timeInMinutes;
 
     // Maintain 1m bar buffer for 5m/15m aggregation + burst detection.
     // Hold lookback+1 to allow burst check (need lookback prior bars + current).
@@ -326,6 +336,15 @@ export class GexLevelFadeStrategy extends BaseStrategy {
 
     // Build active levels (using PRE-update values for derived; GEX from lookahead-corrected snap)
     const activeLevels = this._getActiveLevels(marketData, ts);
+    this._lastActiveLevels = activeLevels;
+    // Capture regime + regime-allowed for panel
+    {
+      const lagTs = ts - this.params.snapLagMin * 60_000;
+      const snap = marketData?.gexLoader?.getGexLevels?.(new Date(lagTs)) || marketData?.gexLevels;
+      this._lastRegime = snap?.regime || snap?.gex_regime || null;
+      this._lastRegimeAllowed = this._isRegimeAllowed(marketData, ts);
+    }
+    this._lastInWindow = this._isInEntryWindow(et);
 
     // Check if a 5m or 15m bar just completed (using ET minute)
     // A 5m bar covers minutes [floor(T/5)*5, floor(T/5)*5+4]. It completes when T%5 == 4.
@@ -370,11 +389,13 @@ export class GexLevelFadeStrategy extends BaseStrategy {
     // Process touches & advance episode state per level
     let candidateSignal = null;
     const windowOK = this._isInEntryWindow(et);
+    const _touchedThisBar = [];   // for panel log
 
     for (const lvl of activeLevels) {
       const touches = candle.low <= lvl.price && lvl.price <= candle.high;
       const st = this._getLevelState(lvl.type);
       if (touches) {
+        _touchedThisBar.push({ type: lvl.type, side: lvl.side, price: lvl.price, episodesBefore: st.episodes });
         st.noTouchStreak = 0;
         // Update current episode tracking
         let pen = 0;
@@ -449,6 +470,30 @@ export class GexLevelFadeStrategy extends BaseStrategy {
     // Commit bar to rolling state AFTER touch checks
     this._commitBarToRollingState(candle, et);
 
+    // Log this bar for the panel if anything happened (touch or signal)
+    if (_touchedThisBar.length > 0 || candidateSignal) {
+      const fired = !!candidateSignal && this.checkCooldown(ts, this.params.signalCooldownMs);
+      let blockedReason = null;
+      if (candidateSignal && !fired) blockedReason = 'cooldown';
+      else if (_touchedThisBar.length > 0 && !candidateSignal) {
+        if (!windowOK) blockedReason = 'out_of_window';
+        else if (!this._lastRegimeAllowed) blockedReason = `regime_${this._lastRegime || 'unknown'}`;
+        else blockedReason = 'needs_episode_or_filters';
+      }
+      this._touchLog.push({
+        ts,
+        et: `${String(et.hour).padStart(2,'0')}:${String(et.minute).padStart(2,'0')}`,
+        price: candle.close,
+        touched: _touchedThisBar,
+        signalLevel: candidateSignal ? candidateSignal.level.type : null,
+        signalSide: candidateSignal ? candidateSignal.level.side : null,
+        signalEpisode: candidateSignal ? candidateSignal.episodeNum : null,
+        fired,
+        blockedReason,
+      });
+      if (this._touchLog.length > 30) this._touchLog.shift();
+    }
+
     if (!candidateSignal) return null;
     if (!this.checkCooldown(ts, this.params.signalCooldownMs)) return null;
 
@@ -506,7 +551,68 @@ export class GexLevelFadeStrategy extends BaseStrategy {
   getName() { return 'GEX_LEVEL_FADE'; }
 
   getInternalState() {
+    const params = this.params;
+    const price = this._lastPrice;
+
+    // Per-level enriched state for the panel
+    const activeLevels = (this._lastActiveLevels || []).map(lvl => {
+      const st = this._levelState.get(lvl.type) || {};
+      const distancePts = price != null ? Math.abs(lvl.price - price) : null;
+
+      // Filter pass/fail evaluated against the LAST-COMPLETED episode's stats
+      const passPen = params.maxLastEpPenetrationPts == null
+        || st.lastEpMaxPen == null
+        || st.lastEpMaxPen <= params.maxLastEpPenetrationPts;
+      const passBars = params.minLastEpBarsInZone == null
+        || st.lastEpBars == null
+        || st.lastEpBars >= params.minLastEpBarsInZone;
+      const passRej5m = params.minLastEpRej5m == null
+        || st.lastEpRej5m == null
+        || st.lastEpRej5m >= params.minLastEpRej5m;
+      const passRej15m = params.minLastEpRej15m == null
+        || st.lastEpRej15m == null
+        || st.lastEpRej15m >= params.minLastEpRej15m;
+      const passBurst = params.minLastEpVolBursts == null
+        || st.lastEpVolBursts == null
+        || st.lastEpVolBursts >= params.minLastEpVolBursts;
+      const filtersPassed = passPen && passBars && passRej5m && passRej15m && passBurst;
+
+      // "Ready to fire on next touch": already have enough episodes such that the NEXT
+      // new-episode start would satisfy minEpisodeNum, AND last-ep quality filters pass.
+      // A new episode begins on a touch when not currently inEpisode; the resulting
+      // episode count would be (episodes + 1) if !inEpisode, or stays at episodes if inEpisode.
+      const nextEpisodeIfTouched = (st.inEpisode ? st.episodes : (st.episodes ?? 0) + 1);
+      const haveQuorum = nextEpisodeIfTouched >= params.minEpisodeNum;
+      const readyToFire = haveQuorum && filtersPassed;
+
+      return {
+        type: lvl.type,
+        price: lvl.price,
+        side: lvl.side,
+        distancePts,
+        episodes: st.episodes ?? 0,
+        inEpisode: !!st.inEpisode,
+        noTouchStreak: st.noTouchStreak ?? null,
+        curEpBars: st.curEpBars ?? 0,
+        curEpMaxPen: st.curEpMaxPen ?? 0,
+        lastEpMaxPen: st.lastEpMaxPen ?? null,
+        lastEpBars: st.lastEpBars ?? null,
+        lastEpRej5m: st.lastEpRej5m ?? null,
+        lastEpRej15m: st.lastEpRej15m ?? null,
+        lastEpVolBursts: st.lastEpVolBursts ?? null,
+        filters: { passPen, passBars, passRej5m, passRej15m, passBurst, filtersPassed },
+        readyToFire,
+      };
+    }).sort((a, b) => {
+      // Sort: readyToFire first, then by ascending distance
+      if (a.readyToFire !== b.readyToFire) return a.readyToFire ? -1 : 1;
+      const da = a.distancePts ?? Infinity;
+      const db = b.distancePts ?? Infinity;
+      return da - db;
+    });
+
     return {
+      // Existing fields (back-compat)
       sessionDate: this._sessionDate,
       sessionHigh: this._sessionHigh,
       sessionLow: this._sessionLow,
@@ -514,6 +620,41 @@ export class GexLevelFadeStrategy extends BaseStrategy {
       prevHourLow: this._prevHourLow,
       levelStateKeys: this._levelState.size,
       lastUpdateTs: this.lastUpdateTs,
+      // Real-time view for panel
+      lastPrice: price,
+      lastRegime: this._lastRegime,
+      regimeAllowed: this._lastRegimeAllowed,
+      inEntryWindow: this._lastInWindow,
+      activeLevels,
+      touchLog: this._touchLog.slice(-20),
+      // Params snapshot (so panel can render thresholds + cutoffs)
+      params: {
+        targetPts: params.targetPts,
+        stopPts: params.stopPts,
+        maxHoldBars: params.maxHoldBars,
+        limitTimeoutBars: params.limitTimeoutBars,
+        minEpisodeNum: params.minEpisodeNum,
+        eodCutoffEt: params.eodCutoffEt,
+        blockedRegimes: params.blockedRegimes,
+        blockedHoursEt: params.blockedHoursEt,
+        entryWindowStartHour: params.entryWindowStartHour,
+        entryWindowStartMinute: params.entryWindowStartMinute,
+        entryWindowEndHour: params.entryWindowEndHour,
+        entryWindowEndMinute: params.entryWindowEndMinute,
+        disableEntryWindow: params.disableEntryWindow,
+        includeGexLevels: params.includeGexLevels,
+        directionMode: params.directionMode,
+        signalCooldownMs: params.signalCooldownMs,
+        maxLastEpPenetrationPts: params.maxLastEpPenetrationPts,
+        minLastEpBarsInZone: params.minLastEpBarsInZone,
+        minLastEpRej5m: params.minLastEpRej5m,
+        minLastEpRej15m: params.minLastEpRej15m,
+        minLastEpVolBursts: params.minLastEpVolBursts,
+        trailingTrigger: params.trailingTrigger,
+        trailingOffset: params.trailingOffset,
+        breakevenTrigger: params.breakevenTrigger,
+        breakevenOffset: params.breakevenOffset,
+      },
     };
   }
 }
