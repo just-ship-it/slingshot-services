@@ -1012,17 +1012,37 @@ async function checkStaleLimits() {
 
     pending.cancelRequested = true;
     logger.warn(`[STALE-LIMIT] ${pending.accountId} ${pending.strategy} ${pending.symbol} pending ${elapsedMin.toFixed(1)}min >= ${pending.timeoutCandles}min — cancelling`);
+    const url = `${TRADOVATE_SERVICE_URL}/accounts/${encodeURIComponent(pending.accountId)}/cancel/${encodeURIComponent(pending.signalId)}?symbol=${encodeURIComponent(pending.symbol)}`;
     try {
-      const url = `${TRADOVATE_SERVICE_URL}/accounts/${encodeURIComponent(pending.accountId)}/cancel/${encodeURIComponent(pending.signalId)}?symbol=${encodeURIComponent(pending.symbol)}`;
       const res = await fetch(url, { method: 'POST' });
       if (!res.ok) {
-        logger.error(`[STALE-LIMIT] cancel HTTP ${res.status}: ${await res.text().catch(() => '')}`);
+        logger.error(`[STALE-LIMIT] cancel HTTP ${res.status} url=${url}: ${await res.text().catch(() => '')}`);
         pending.cancelRequested = false; // allow retry on next poll
       }
     } catch (err) {
-      logger.error(`[STALE-LIMIT] cancel failed: ${err.message}`);
+      const cause = err.cause ? `cause=${err.cause.code || err.cause.name || ''} ${err.cause.message || err.cause}` : '';
+      logger.error(`[STALE-LIMIT] cancel failed url=${url} msg="${err.message}" ${cause}`);
       pending.cancelRequested = false; // allow retry on next poll
     }
+  }
+}
+
+async function probeTradovateService() {
+  const url = `${TRADOVATE_SERVICE_URL}/health`;
+  const startedAt = Date.now();
+  try {
+    const res = await fetch(url, { method: 'GET' });
+    const body = await res.text().catch(() => '');
+    const elapsedMs = Date.now() - startedAt;
+    if (res.ok) {
+      logger.info(`[PROBE] tradovate-service OK ${res.status} url=${url} elapsed=${elapsedMs}ms body=${body.slice(0, 200)}`);
+    } else {
+      logger.warn(`[PROBE] tradovate-service HTTP ${res.status} url=${url} elapsed=${elapsedMs}ms body=${body.slice(0, 200)}`);
+    }
+  } catch (err) {
+    const cause = err.cause ? `cause=${err.cause.code || err.cause.name || ''} ${err.cause.message || err.cause}` : '';
+    const elapsedMs = Date.now() - startedAt;
+    logger.error(`[PROBE] tradovate-service UNREACHABLE url=${url} elapsed=${elapsedMs}ms msg="${err.message}" ${cause}`);
   }
 }
 
@@ -1094,6 +1114,11 @@ async function main() {
     checkStaleLimits().catch(err => logger.error(`Stale-limit check failed: ${err.message}`));
   }, 30_000).unref();
   logger.info('Max-hold and stale-limit enforcement enabled (30s polling)');
+
+  // One-shot reachability probe: does the orchestrator pod actually have a
+  // network path to TRADOVATE_SERVICE_URL? Logs the DNS/socket-level cause if
+  // not, so we can tell DNS misconfig apart from per-endpoint bugs.
+  probeTradovateService().catch(() => {});
 
   await messageBus.publish(CHANNELS.SERVICE_STARTED, {
     service: SERVICE_NAME, timestamp: new Date().toISOString()
