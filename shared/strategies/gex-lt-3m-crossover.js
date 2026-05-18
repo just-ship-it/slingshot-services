@@ -131,7 +131,11 @@ export class GexLt3mCrossoverStrategy extends BaseStrategy {
     const DEFAULT_RULE_OVERRIDES = {
       L_S4:      { targetPts: 120, maxHoldBars: 90 },
       S_GF_SOLO: {                  maxHoldBars: 90 },
-      S_CW:      { targetPts: 120, maxHoldBars: 90 },
+      // S_CW: huge edge in the morning (PF 2.08, +$48k Jan'25-Apr'26) but
+      // catastrophic in afternoon (PF 0.29, -$10.5k on 25 trades, WR 32%).
+      // Block it 14:00-15:59 ET specifically — the other 3 rules continue
+      // to trade afternoon where they're more efficient than morning.
+      S_CW:      { targetPts: 120, maxHoldBars: 90, blockedHoursEt: [14, 15] },
       // S_R4 keeps research defaults (TP=80, mh=60). TP=120 hurts it
       // (ran $5k vs $10k) — its breakdown plays out faster than longs.
     };
@@ -297,6 +301,10 @@ export class GexLt3mCrossoverStrategy extends BaseStrategy {
       trailingOffset: o.trailingOffset ?? rule.trailingOffset,
       breakevenTrigger: o.breakevenTrigger ?? rule.breakevenTrigger,
       breakevenOffset: o.breakevenOffset ?? rule.breakevenOffset,
+      // Per-rule time-of-day exclusion. Array of ET hours (0-23) during which
+      // the rule will be skipped at the matching step (whole-strategy
+      // `blockedHoursEt` still applies on top). null = no per-rule block.
+      blockedHoursEt: o.blockedHoursEt ?? rule.blockedHoursEt ?? null,
     };
   }
 
@@ -399,6 +407,7 @@ export class GexLt3mCrossoverStrategy extends BaseStrategy {
     // ────────────────────────────────────────────────────────────────
     let best = null;
     let filterFailedRule = null;
+    let perRuleBlockedRule = null;
     for (const f of flips) {
       const fAliases = expandAliases(f.gexType);
       for (const baseRule of RULES) {
@@ -408,6 +417,11 @@ export class GexLt3mCrossoverStrategy extends BaseStrategy {
         const ruleAliases = expandAliases(rule.gexType);
         const match = ruleAliases.some(a => fAliases.includes(a));
         if (!match) continue;
+        // Per-rule time-of-day exclusion (e.g. S_CW blocked 14:00-15:59 ET)
+        if (Array.isArray(rule.blockedHoursEt) && rule.blockedHoursEt.includes(et.hour)) {
+          perRuleBlockedRule = rule.id;
+          continue;
+        }
         if (!this._evaluateFilter(rule.filter, f.gexType, f.direction, ts)) {
           filterFailedRule = rule.id;
           continue;
@@ -419,7 +433,9 @@ export class GexLt3mCrossoverStrategy extends BaseStrategy {
     }
 
     if (!best) {
-      const reason = filterFailedRule ? `filter_failed:${filterFailedRule}` : 'no_rule_match';
+      const reason = perRuleBlockedRule
+        ? `rule_hour_blocked:${perRuleBlockedRule}`
+        : (filterFailedRule ? `filter_failed:${filterFailedRule}` : 'no_rule_match');
       this._logEval(candle, flips, null, reason);
       return null;
     }
@@ -551,6 +567,7 @@ export class GexLt3mCrossoverStrategy extends BaseStrategy {
         targetPts: r.targetPts,
         maxHoldBars: r.maxHoldBars ?? this.params.maxHoldBars,
         priority: r.priority,
+        blockedHoursEt: r.blockedHoursEt ?? null,
       }));
 
     // Per-active-rule pair grid: 5 cells per rule (one per LT level).
