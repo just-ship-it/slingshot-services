@@ -520,7 +520,7 @@ async function handleTradeSignal(raw) {
 
     state.pendingOrders.set(pendingKey(accountId, signal.strategy, tradedSymbol), {
       accountId, strategy: signal.strategy, symbol: tradedSymbol,
-      direction, signalId, requestedAt: now,
+      direction, signalId, requestedAt: Date.now(),
       action: signal.action,
       maxHoldBars: signal.maxHoldBars ?? null,
       timeoutCandles: signal.timeoutCandles ?? null,
@@ -688,7 +688,7 @@ async function handleOrdersSnapshot(msg) {
       direction,
       signalId: o.signalId || null,
       orderId: o.orderId,
-      requestedAt: new Date().toISOString(),
+      requestedAt: Date.now(),
       source: 'broker_snapshot'
     });
     restored++;
