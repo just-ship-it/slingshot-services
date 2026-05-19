@@ -1,0 +1,131 @@
+// LS (Liquidity Status) Dumper — Pine v6 strategy
+//
+// Purpose: capture a per-bar bullish/bearish boolean from any LS-style
+// indicator that exposes a numeric plot, into TradingView's Strategy
+// Tester "List of Trades" so it can be exported to CSV and reconstructed
+// off-platform.
+//
+// HOW IT WORKS
+//   - Reads ONE numeric plot from the LS indicator and compares it to a
+//     threshold to derive a bullish/bearish boolean (1 / 0).
+//   - On every confirmed bar (or only on state transitions — your choice),
+//     it closes any open position and re-enters, embedding `B=0|1` plus
+//     the bar timestamp into the entry comment.
+//   - Each round-trip → one row in TV's "List of Trades".
+//   - Export the trade list as CSV; parse `B=` and `T=` off-platform.
+//
+// SETUP (one-time)
+//   1. Add your LS indicator to the chart.
+//   2. Pine Editor → paste this → "Add to Chart".
+//   3. Settings → Inputs:
+//        - "LS source": pick the numeric plot from your LS indicator
+//          (must be `plot()`-exposed — `line.new()`-only indicators
+//          cannot be referenced via `input.source()`).
+//        - "Bullish if LS >": threshold (default 0).
+//            +1/-1 style indicator → threshold = 0
+//             1/0 style indicator → threshold = 0.5
+//            continuous score    → threshold = midpoint
+//        - "Emit": "Every bar" or "On flip only" (see chunking below).
+//   4. Settings → Properties → Pyramiding = 0.
+//   5. Run on the desired timeframe (1m / 3m / 15m).
+//
+// TRADE-COUNT LIMIT & CHUNKING
+// TV caps strategies at ~9000 orders per backtest. Each emit is 2 orders
+// (close + entry), so plan ~4500 emit events per run.
+//
+//   EVERY BAR mode (deterministic — one emit per confirmed bar):
+//     - 1m  → ~4500 bars  →  ~3 days   per run  →  ~85 runs/yr
+//     - 3m  → ~4500 bars  →  ~9 days   per run  →  ~28 runs/yr
+//     - 15m → ~4500 bars  → ~47 days   per run  →  ~5 runs/yr
+//
+//   ON FLIP ONLY mode (one emit per state change):
+//     Order count scales with flip frequency, not bar count. Empirically,
+//     the LS indicator we're targeting flips ~70/day on 1m NQ:
+//       - 1m  → ~62 days (~2 mo) per run @ ~73 flips/day
+//       - 3m  → ~6-9 mo per run (flip rate drops on higher TFs)
+//       - 15m → 1+ yr per run
+//     Reconstruct full per-bar state in post-processing by forward-
+//     filling between emitted rows.
+//
+// MARGIN-CALL TRAP (lesson learned 2026-05-18)
+// "On flip only" mode holds a 1-contract long for many bars between
+// flips. Over a downtrend that exposure accumulates real losses and
+// will trigger a margin call → backtest terminates early. We work
+// around this by setting `initial_capital` absurdly high ($100M) so
+// the account can absorb any drawdown without being liquidated. The
+// reported P&L numbers in Strategy Tester are meaningless — the only
+// thing we care about is the comment payloads in List of Trades.
+//
+// Use TradingView's "Date Range" property (Settings → Properties →
+// "From/To Date") to chunk the backtest, export each chunk, then
+// concatenate the CSVs.
+//
+// FORWARD-FILL CAVEAT (On flip only mode)
+// Each exported row says "from this bar's open through the next emitted
+// row's bar, state = B". A flip detected at bar N means state CHANGED at
+// N — the prior state held from the previous emission through bar N-1.
+// The parser/forward-fill must treat emissions as left-edge of a state
+// run, not point samples.
+//
+// BACK-ADJUSTMENT NOTE
+// LS is a boolean — its VALUE is back-adjustment-agnostic, no
+// price-space translation needed. BUT if the LS indicator's internal
+// logic uses price (most do), running on NQ1! (back-adjusted) may
+// produce different flips than the raw front-month contract. Match
+// live deployment chart settings here for backtest-to-live parity.
+
+//@version=6
+strategy("LS Dumper",
+     overlay=true,
+     pyramiding=0,
+     default_qty_type=strategy.fixed,
+     default_qty_value=1,
+     process_orders_on_close=true,
+     calc_on_every_tick=false,
+     initial_capital=100000000,
+     commission_type=strategy.commission.cash_per_contract,
+     commission_value=0,
+     max_bars_back=500)
+
+// ──────────────────────────────────────────────────────────────────────────
+// Inputs
+// ──────────────────────────────────────────────────────────────────────────
+gLS = "LS (link to indicator plot)"
+lsSrc = input.source(close, "LS source", group=gLS,
+     tooltip="Pick the numeric plot from your LS indicator. Common patterns: +1/-1 (threshold 0), 1/0 (threshold 0.5), continuous score (threshold = midpoint).")
+threshold = input.float(0.0, "Bullish if LS >", step=0.1, group=gLS,
+     tooltip="Bar is bullish when lsSrc > threshold, else bearish. Adjust per your indicator's plotted units.")
+
+gOpts = "Options"
+emitMode = input.string("On flip only", "Emit",
+     options=["Every bar", "On flip only"], group=gOpts,
+     tooltip="Every bar = one trade per confirmed bar (orders bloat fast, ~3 day chunks at 1m). On flip only = one trade per state change (3-6 month chunks at 1m typical).")
+
+// ──────────────────────────────────────────────────────────────────────────
+// Derive boolean state and build payload
+//   Comment format:  B=0|1|T=YYYYMMDDTHHMM
+//   Pipe-separated key=value so it survives TV's CSV exporter intact.
+// ──────────────────────────────────────────────────────────────────────────
+isBull = lsSrc > threshold
+bVal = isBull ? 1 : 0
+
+ts = str.tostring(year(time, "UTC"), "0000") +
+     str.tostring(month(time, "UTC"), "00") +
+     str.tostring(dayofmonth(time, "UTC"), "00") + "T" +
+     str.tostring(hour(time, "UTC"), "00") +
+     str.tostring(minute(time, "UTC"), "00")
+
+payload = "B=" + str.tostring(bVal) + "|T=" + ts
+
+// ──────────────────────────────────────────────────────────────────────────
+// Emit gating
+//   - Every bar:    fire on every confirmed bar.
+//   - On flip only: fire on the first confirmed bar AND any bar where
+//                   the boolean differs from the prior bar.
+// ──────────────────────────────────────────────────────────────────────────
+flipped = na(bVal[1]) or bVal != bVal[1]
+shouldEmit = barstate.isconfirmed and (emitMode == "Every bar" or flipped)
+
+if shouldEmit
+    strategy.close("LS", comment="X")
+    strategy.entry("LS", strategy.long, qty=1, comment=payload)
