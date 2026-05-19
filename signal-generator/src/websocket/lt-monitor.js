@@ -354,16 +354,16 @@ class LTMonitor extends EventEmitter {
           const sentiment = raw <= 6 ? 'BULLISH' : raw >= 7 ? 'BEARISH' : null;
 
           if (this.lsFormingBarTs === null) {
-            // First bar ever observed. Seed forming-bar state. Do NOT emit:
-            // we haven't seen a confirmed close yet. Seed the confirmed
-            // sentinel as the same value so the first real flip we see
-            // (after the next bar arrives) actually fires.
+            // First bar ever observed. Seed forming-bar cache but leave
+            // lsConfirmedSentiment NULL so the very first confirmed
+            // bar-close (when the next bar arrives) emits. That gives
+            // the dashboard its initial known state. Subsequent emissions
+            // only fire on actual flips (closedBar !== lsConfirmed).
             this.lsFormingBarTs = newTs;
             this.lsFormingBarSentiment = sentiment;
             this.lsFormingBarRaw = raw;
-            this.lsConfirmedSentiment = sentiment; // baseline; first emission only on a true flip
             if (sentiment) {
-              logger.info(`📊 LS seed: ${sentiment} (raw=${raw}) candle=${new Date(newTs * 1000).toISOString()}`);
+              logger.info(`📊 LS seed: ${sentiment} (raw=${raw}) candle=${new Date(newTs * 1000).toISOString()} — waiting for first bar-close confirmation`);
               this.currentLsSentiment = sentiment;
             }
           } else if (newTs === this.lsFormingBarTs) {
