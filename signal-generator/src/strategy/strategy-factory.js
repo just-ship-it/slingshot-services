@@ -457,7 +457,8 @@ function createGexFlipIvpctStrategy(config) {
     `cooldown=${params.signalCooldownMs}ms, maxHold=${params.maxHoldBars}min, ` +
     `stop=${params.globalStopPts}, target=${params.globalTargetPts}, ` +
     `breakevenStop=${params.breakevenStop}, breakevenTrigger=${params.breakevenTrigger}, breakevenOffset=${params.breakevenOffset}, ` +
-    `fibRetrace=${params.fibRetrace}, fibRetracePct=${params.fibRetracePct}, fibActivationMFE=${params.fibActivationMFE}`);
+    `fibRetrace=${params.fibRetrace}, fibRetracePct=${params.fibRetracePct}, fibActivationMFE=${params.fibActivationMFE}, ` +
+    `lsBeOnFlip=${params.lsBeOnFlip === true ? `ON(off=${params.lsBeOffset ?? 0})` : 'off'}`);
 
   return new GexFlipIvpctStrategy(params);
 }
@@ -489,7 +490,8 @@ function createGexLt3mCrossoverStrategy(config) {
     `forceFilterAny=${params.forceFilterAny ?? true}, ` +
     `entry=${params.entryWindowStartHour ?? 7}-${params.entryWindowEndHour ?? 16} ET, ` +
     `blockedHours=${params.blockedHoursEt ?? '[13]'}, ` +
-    `limitTimeoutCandles=${params.limitTimeoutCandles ?? 5}`);
+    `limitTimeoutCandles=${params.limitTimeoutCandles ?? 5}, ` +
+    `lsBeOnFlip=${params.lsBeOnFlip === true ? `ON(off=${params.lsBeOffset ?? 0})` : 'off'}`);
 
   return new GexLt3mCrossoverStrategy(params);
 }
@@ -518,7 +520,8 @@ function createGexLevelFadeStrategy(config) {
     `entry=${params.entryWindowStartHour ?? 9}:${String(params.entryWindowStartMinute ?? 0).padStart(2,'0')}-${params.entryWindowEndHour ?? 10}:${String(params.entryWindowEndMinute ?? 30).padStart(2,'0')} ET, ` +
     `minEp=${params.minEpisodeNum ?? 2}, includeGex=${params.includeGexLevels ?? false}, ` +
     `blockedRegimes=[${(params.blockedRegimes ?? ['strong_negative']).join(',')}], ` +
-    `cooldown=${params.signalCooldownMs ?? 0}ms`);
+    `cooldown=${params.signalCooldownMs ?? 0}ms, ` +
+    `lsBeOnFlip=${params.lsBeOnFlip === true ? `ON(off=${params.lsBeOffset ?? 0})` : 'off'}`);
 
   return new GexLevelFadeStrategy(params);
 }
