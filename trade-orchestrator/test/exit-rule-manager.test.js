@@ -429,7 +429,158 @@ async function run() {
     assert(closePositionCalls.length === 1, 'back-compat single-rule call works');
   }
 
-  console.log('exit-rule-manager: all 19 scenarios pass');
+  // ─── LS-BE-on-flip rule (Phase 4/5 of LS-overlay research) ──────────────
+
+  // --- Scenario 20: lsBeOnFlip rule capture ---
+  {
+    const rules = captureRuleFromSignal({ lsBeOnFlip: true });
+    assert(rules.length === 1, 'lsBeOnFlip captured');
+    assert(rules[0].type === 'lsBeOnFlip', `type=${rules[0].type}`);
+    assert(rules[0].offset === 0, `default offset=0 got ${rules[0].offset}`);
+  }
+
+  // --- Scenario 21: lsBeOnFlip with custom offset (gex-level-fade prefers +10) ---
+  {
+    const rules = captureRuleFromSignal({ lsBeOnFlip: true, lsBeOffset: 10 });
+    assert(rules.length === 1, 'lsBeOnFlip captured');
+    assert(rules[0].offset === 10, `offset=10 got ${rules[0].offset}`);
+  }
+
+  // --- Scenario 22: LONG with adverse BULLISH flip fires BE at entry ---
+  {
+    const { mgr, modifyStopCalls } = makeMgr();
+    mgr.register({
+      accountId: 'a1', strategy: 'GEX_LT_3M_CROSSOVER', symbol: 'MNQM6',
+      side: 'long', entryPrice: 21000, signalId: 'sig-ls-1',
+      rules: [{ type: 'lsBeOnFlip', offset: 0 }],
+    });
+    // Favorable flip first — must NOT fire.
+    mgr.onLsFlip({ product: 'NQ', sentiment: 'BEARISH', timestamp: 1, candleTime: 't1' });
+    await flush();
+    assert(modifyStopCalls.length === 0, 'favorable flip ignored');
+    // Adverse flip — must fire BE at entry.
+    mgr.onLsFlip({ product: 'NQ', sentiment: 'BULLISH', timestamp: 2, candleTime: 't2' });
+    await flush();
+    assert(modifyStopCalls.length === 1, `BE armed: got ${modifyStopCalls.length} calls`);
+    assert(modifyStopCalls[0].newStopPrice === 21000, `BE stop @entry: ${modifyStopCalls[0].newStopPrice}`);
+    assert(modifyStopCalls[0].reason.includes('LS flip'), `reason includes LS flip: ${modifyStopCalls[0].reason}`);
+  }
+
+  // --- Scenario 23: SHORT with adverse BEARISH flip fires BE ---
+  {
+    const { mgr, modifyStopCalls } = makeMgr();
+    mgr.register({
+      accountId: 'a1', strategy: 'X', symbol: 'MNQM6',
+      side: 'short', entryPrice: 21000, signalId: 'sig-ls-2',
+      rules: [{ type: 'lsBeOnFlip', offset: 0 }],
+    });
+    mgr.onLsFlip({ product: 'NQ', sentiment: 'BULLISH', timestamp: 1, candleTime: 't1' });
+    await flush();
+    assert(modifyStopCalls.length === 0, 'favorable (bullish→short) ignored');
+    mgr.onLsFlip({ product: 'NQ', sentiment: 'BEARISH', timestamp: 2, candleTime: 't2' });
+    await flush();
+    assert(modifyStopCalls.length === 1, 'short adverse fires');
+    assert(modifyStopCalls[0].newStopPrice === 21000, 'short BE @entry');
+  }
+
+  // --- Scenario 24: BE with positive offset locks profit ---
+  {
+    const { mgr, modifyStopCalls } = makeMgr();
+    mgr.register({
+      accountId: 'a1', strategy: 'GEX_LEVEL_FADE', symbol: 'MNQM6',
+      side: 'long', entryPrice: 21000, signalId: 'sig-ls-3',
+      rules: [{ type: 'lsBeOnFlip', offset: 10 }],
+    });
+    mgr.onLsFlip({ product: 'NQ', sentiment: 'BULLISH', timestamp: 1, candleTime: 't1' });
+    await flush();
+    assert(modifyStopCalls.length === 1, 'long+offset fires');
+    assert(modifyStopCalls[0].newStopPrice === 21010, `BE long entry+10: ${modifyStopCalls[0].newStopPrice}`);
+
+    const r2 = makeMgr();
+    r2.mgr.register({
+      accountId: 'a1', strategy: 'X', symbol: 'MNQM6',
+      side: 'short', entryPrice: 21000, signalId: 'sig-ls-4',
+      rules: [{ type: 'lsBeOnFlip', offset: 10 }],
+    });
+    r2.mgr.onLsFlip({ product: 'NQ', sentiment: 'BEARISH', timestamp: 1, candleTime: 't1' });
+    await flush();
+    assert(r2.modifyStopCalls.length === 1, 'short+offset fires');
+    assert(r2.modifyStopCalls[0].newStopPrice === 20990, `BE short entry-10: ${r2.modifyStopCalls[0].newStopPrice}`);
+  }
+
+  // --- Scenario 25: only fires once even on multiple adverse flips ---
+  {
+    const { mgr, modifyStopCalls } = makeMgr();
+    mgr.register({
+      accountId: 'a1', strategy: 'X', symbol: 'MNQM6',
+      side: 'long', entryPrice: 21000, signalId: 'sig-ls-5',
+      rules: [{ type: 'lsBeOnFlip', offset: 0 }],
+    });
+    mgr.onLsFlip({ product: 'NQ', sentiment: 'BULLISH', timestamp: 1, candleTime: 't1' });
+    mgr.onLsFlip({ product: 'NQ', sentiment: 'BEARISH', timestamp: 2, candleTime: 't2' });
+    mgr.onLsFlip({ product: 'NQ', sentiment: 'BULLISH', timestamp: 3, candleTime: 't3' });
+    await flush();
+    assert(modifyStopCalls.length === 1, `fires once total, got ${modifyStopCalls.length}`);
+  }
+
+  // --- Scenario 26: flip for wrong product is ignored ---
+  {
+    const { mgr, modifyStopCalls } = makeMgr();
+    mgr.register({
+      accountId: 'a1', strategy: 'X', symbol: 'MNQM6',
+      side: 'long', entryPrice: 21000, signalId: 'sig-ls-6',
+      rules: [{ type: 'lsBeOnFlip', offset: 0 }],
+    });
+    mgr.onLsFlip({ product: 'ES', sentiment: 'BULLISH', timestamp: 1, candleTime: 't1' });
+    await flush();
+    assert(modifyStopCalls.length === 0, 'wrong-product flip ignored');
+    // Confirm the NQ flip still works
+    mgr.onLsFlip({ product: 'NQ', sentiment: 'BULLISH', timestamp: 2, candleTime: 't2' });
+    await flush();
+    assert(modifyStopCalls.length === 1, 'NQ flip fires');
+  }
+
+  // --- Scenario 27: flip after position closed is ignored ---
+  {
+    const { mgr, modifyStopCalls } = makeMgr();
+    mgr.register({
+      accountId: 'a1', strategy: 'X', symbol: 'MNQM6',
+      side: 'long', entryPrice: 21000, signalId: 'sig-ls-7',
+      rules: [{ type: 'lsBeOnFlip', offset: 0 }],
+    });
+    mgr.unregister({ accountId: 'a1', strategy: 'X', symbol: 'MNQM6' });
+    mgr.onLsFlip({ product: 'NQ', sentiment: 'BULLISH', timestamp: 1, candleTime: 't1' });
+    await flush();
+    assert(modifyStopCalls.length === 0, 'closed position ignores flip');
+  }
+
+  // --- Scenario 28: LS-BE coexists with structural BE rule ---
+  {
+    const { mgr, modifyStopCalls } = makeMgr();
+    // Like gex-flip-ivpct's live config: BE 70/+5 AND lsBeOnFlip+0.
+    mgr.register({
+      accountId: 'a1', strategy: 'GEX_FLIP_IVPCT', symbol: 'MNQM6',
+      side: 'long', entryPrice: 21000, signalId: 'sig-ls-8',
+      rules: [
+        { type: 'breakeven', trigger: 70, offset: 5 },
+        { type: 'lsBeOnFlip', offset: 0 },
+      ],
+    });
+    // LS flip arrives BEFORE +70 MFE → LS-BE fires at entry.
+    mgr.onLsFlip({ product: 'NQ', sentiment: 'BULLISH', timestamp: 1, candleTime: 't1' });
+    await flush();
+    assert(modifyStopCalls.length === 1, 'LS-BE fires first');
+    assert(modifyStopCalls[0].newStopPrice === 21000, 'LS-BE @entry');
+    // Later +70 MFE — structural BE would normally fire to lock +5. With
+    // LS-BE already at entry+0, structural BE moving to entry+5 is an
+    // upgrade. Verify it still fires (independent rules).
+    mgr.onPriceTick({ baseSymbol: 'NQ', high: 21070, low: 21000, close: 21070 });
+    await flush();
+    assert(modifyStopCalls.length === 2, 'structural BE still fires independently');
+    assert(modifyStopCalls[1].newStopPrice === 21005, `structural BE @entry+5: ${modifyStopCalls[1].newStopPrice}`);
+  }
+
+  console.log('exit-rule-manager: all 28 scenarios pass');
 }
 
 run().catch(err => { console.error('test error:', err); process.exit(1); });

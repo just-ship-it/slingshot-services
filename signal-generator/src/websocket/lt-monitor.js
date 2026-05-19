@@ -43,6 +43,17 @@ class LTMonitor extends EventEmitter {
     this.lsStudyAdded = false;
     this.lastLsValues = null;
     this.currentLsSentiment = null;
+
+    // LS bar-close gating: the LS indicator's value on the currently-forming
+    // bar can flip intrabar. We only want to fire on a CONFIRMED close. So
+    // we track the timestamp of the bar that's currently forming and the
+    // last-observed (provisional) sentiment for it. When a NEW bar's
+    // timestamp arrives, the previous bar is finalized — that's when we
+    // compare against the last CONFIRMED emission and emit on flip.
+    this.lsFormingBarTs = null;        // ts of the bar currently forming
+    this.lsFormingBarSentiment = null; // latest provisional sentiment seen
+    this.lsFormingBarRaw = null;
+    this.lsConfirmedSentiment = null;  // last emitted (confirmed) sentiment
   }
 
   generateSession(prefix = 'qs') {
@@ -128,6 +139,12 @@ class LTMonitor extends EventEmitter {
     this.studyAdded = false;
     this.lsStudyAdded = false;
     this.lastLsValues = null;
+    // Drop forming-bar cache; the next data update will reseed.
+    // Keep lsConfirmedSentiment so we don't re-fire on the same state
+    // after a reconnect (last confirmed value stays valid).
+    this.lsFormingBarTs = null;
+    this.lsFormingBarSentiment = null;
+    this.lsFormingBarRaw = null;
     this.initializeSessions();
     this.emit('connected');
   }
@@ -318,27 +335,73 @@ class LTMonitor extends EventEmitter {
     const update = payload[1];
 
     // Look for LS indicator data in st10
+    //
+    // BAR-CLOSE GATING (2026-05-19): TV pushes intrabar updates on the
+    // currently-forming bar. The LS indicator can flip BULLISH↔BEARISH
+    // intrabar and revert before close. We only want to act on CONFIRMED
+    // bar closes. Strategy: cache the forming bar's latest sentiment, and
+    // when a new bar's timestamp arrives, the previously-forming bar is
+    // now closed — that's when we compare and emit.
     if (update.st10 && update.st10.st) {
       const lsStudyData = update.st10.st;
       if (lsStudyData.length > 0) {
         const latest = lsStudyData[lsStudyData.length - 1];
         const values = latest.v;
         if (values) {
-          const key = JSON.stringify(values.slice(5)); // skip OHLCV, compare indicator values only
-          if (key !== this.lastLsValues) {
-            this.lastLsValues = key;
-            // Simplified mode: raw 5 = BULLISH, raw 8 = BEARISH (matches backtest CSV)
-            const raw = values[5];
-            const sentiment = raw <= 6 ? 'BULLISH' : raw >= 7 ? 'BEARISH' : null;
-            const ts = new Date(values[0] * 1000).toISOString();
+          const newTs = values[0];
+          // Simplified mode: raw 5 = BULLISH, raw 8 = BEARISH (matches backtest CSV)
+          const raw = values[5];
+          const sentiment = raw <= 6 ? 'BULLISH' : raw >= 7 ? 'BEARISH' : null;
+
+          if (this.lsFormingBarTs === null) {
+            // First bar ever observed. Seed forming-bar state. Do NOT emit:
+            // we haven't seen a confirmed close yet. Seed the confirmed
+            // sentinel as the same value so the first real flip we see
+            // (after the next bar arrives) actually fires.
+            this.lsFormingBarTs = newTs;
+            this.lsFormingBarSentiment = sentiment;
+            this.lsFormingBarRaw = raw;
+            this.lsConfirmedSentiment = sentiment; // baseline; first emission only on a true flip
             if (sentiment) {
-              logger.info(`📊 LS sentiment: ${sentiment} (raw=${raw}) candle=${ts}`);
+              logger.info(`📊 LS seed: ${sentiment} (raw=${raw}) candle=${new Date(newTs * 1000).toISOString()}`);
               this.currentLsSentiment = sentiment;
-              this.emit('ls_status', { sentiment, raw, timestamp: values[0], candleTime: ts });
-            } else {
-              logger.warn(`📊 LS unknown raw value: ${raw} candle=${ts}`);
             }
+          } else if (newTs === this.lsFormingBarTs) {
+            // Same bar — intrabar update. Cache provisional value, do NOT emit.
+            if (sentiment) {
+              this.lsFormingBarSentiment = sentiment;
+              this.lsFormingBarRaw = raw;
+            }
+          } else if (newTs > this.lsFormingBarTs) {
+            // New bar arrived. The previous forming bar is now CONFIRMED CLOSED.
+            // Its final sentiment is whatever we last cached for it.
+            const closedBarTs = this.lsFormingBarTs;
+            const closedBarSentiment = this.lsFormingBarSentiment;
+            const closedBarRaw = this.lsFormingBarRaw;
+            const isoClose = new Date(closedBarTs * 1000).toISOString();
+
+            if (closedBarSentiment && closedBarSentiment !== this.lsConfirmedSentiment) {
+              logger.info(`📊 LS FLIP (bar-close): ${this.lsConfirmedSentiment ?? 'null'} → ${closedBarSentiment} (raw=${closedBarRaw}) candle=${isoClose}`);
+              this.currentLsSentiment = closedBarSentiment;
+              this.emit('ls_status', {
+                sentiment: closedBarSentiment,
+                raw: closedBarRaw,
+                timestamp: closedBarTs,
+                candleTime: isoClose,
+                priorSentiment: this.lsConfirmedSentiment,
+                barClose: true,
+              });
+              this.lsConfirmedSentiment = closedBarSentiment;
+            }
+
+            // Now start tracking the new forming bar.
+            this.lsFormingBarTs = newTs;
+            this.lsFormingBarSentiment = sentiment;
+            this.lsFormingBarRaw = raw;
+            // (Don't update currentLsSentiment from the forming bar — it's
+            // provisional. Last confirmed value remains the public state.)
           }
+          // newTs < lsFormingBarTs: out-of-order update; ignore.
         }
       }
     }

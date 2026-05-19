@@ -1,0 +1,311 @@
+{
+  "gex-flip-ivpct": {
+    "baseline": {
+      "n": 172,
+      "sumPnL": 157329,
+      "avg": 914.7,
+      "wr": 61.63,
+      "pf": 2.99,
+      "maxDD": 14580,
+      "maxDDpct": 5.67
+    },
+    "variants": {
+      "1m/exit_on_flip": {
+        "n": 172,
+        "sumPnL": 38624,
+        "avg": 224.56,
+        "wr": 62.79,
+        "pf": 1.76,
+        "maxDD": 15665,
+        "maxDDpct": 11.3,
+        "replaced": 124
+      },
+      "1m/exit_on_flip_if_profit": {
+        "n": 172,
+        "sumPnL": 54127,
+        "avg": 314.69,
+        "wr": 71.51,
+        "pf": 1.92,
+        "maxDD": 14245,
+        "maxDDpct": 9.24,
+        "replaced": 96
+      },
+      "1m/be_on_flip": {
+        "n": 172,
+        "sumPnL": 177394,
+        "avg": 1031.36,
+        "wr": 61.63,
+        "pf": 4.01,
+        "maxDD": 12130,
+        "maxDDpct": 4.37,
+        "replaced": 17
+      },
+      "3m/exit_on_flip": {
+        "n": 172,
+        "sumPnL": 68469,
+        "avg": 398.08,
+        "wr": 65.7,
+        "pf": 2.24,
+        "maxDD": 10300,
+        "maxDDpct": 6.11,
+        "replaced": 113
+      },
+      "3m/exit_on_flip_if_profit": {
+        "n": 172,
+        "sumPnL": 77732,
+        "avg": 451.93,
+        "wr": 70.93,
+        "pf": 2.27,
+        "maxDD": 11300,
+        "maxDDpct": 6.36,
+        "replaced": 96
+      },
+      "3m/be_on_flip": {
+        "n": 172,
+        "sumPnL": 175014,
+        "avg": 1017.52,
+        "wr": 61.63,
+        "pf": 3.85,
+        "maxDD": 12130,
+        "maxDDpct": 4.41,
+        "replaced": 16
+      },
+      "15m/exit_on_flip": {
+        "n": 172,
+        "sumPnL": 122339,
+        "avg": 711.27,
+        "wr": 64.53,
+        "pf": 2.72,
+        "maxDD": 15260,
+        "maxDDpct": 6.86,
+        "replaced": 53
+      },
+      "15m/exit_on_flip_if_profit": {
+        "n": 172,
+        "sumPnL": 119139,
+        "avg": 692.67,
+        "wr": 64.53,
+        "pf": 2.61,
+        "maxDD": 16235,
+        "maxDDpct": 7.41,
+        "replaced": 49
+      },
+      "15m/be_on_flip": {
+        "n": 172,
+        "sumPnL": 162279,
+        "avg": 943.48,
+        "wr": 61.63,
+        "pf": 3.19,
+        "maxDD": 13360,
+        "maxDDpct": 5.09,
+        "replaced": 5
+      }
+    }
+  },
+  "gex-lt-3m-crossover": {
+    "baseline": {
+      "n": 888,
+      "sumPnL": 179201,
+      "avg": 201.8,
+      "wr": 47.64,
+      "pf": 1.44,
+      "maxDD": 12815,
+      "maxDDpct": 4.55
+    },
+    "variants": {
+      "1m/exit_on_flip": {
+        "n": 888,
+        "sumPnL": 104710,
+        "avg": 117.92,
+        "wr": 54.28,
+        "pf": 1.38,
+        "maxDD": 10965,
+        "maxDDpct": 5.24,
+        "replaced": 528
+      },
+      "1m/exit_on_flip_if_profit": {
+        "n": 888,
+        "sumPnL": 124262,
+        "avg": 139.93,
+        "wr": 61.49,
+        "pf": 1.39,
+        "maxDD": 11685,
+        "maxDDpct": 5.04,
+        "replaced": 374
+      },
+      "1m/be_on_flip": {
+        "n": 888,
+        "sumPnL": 274424,
+        "avg": 309.04,
+        "wr": 47.64,
+        "pf": 1.87,
+        "maxDD": 7785,
+        "maxDDpct": 2.08,
+        "replaced": 123
+      },
+      "3m/exit_on_flip": {
+        "n": 888,
+        "sumPnL": 130813,
+        "avg": 147.31,
+        "wr": 50.9,
+        "pf": 1.37,
+        "maxDD": 13205,
+        "maxDDpct": 5.62,
+        "replaced": 318
+      },
+      "3m/exit_on_flip_if_profit": {
+        "n": 888,
+        "sumPnL": 139047,
+        "avg": 156.58,
+        "wr": 53.6,
+        "pf": 1.37,
+        "maxDD": 11343,
+        "maxDDpct": 4.65,
+        "replaced": 253
+      },
+      "3m/be_on_flip": {
+        "n": 888,
+        "sumPnL": 218379,
+        "avg": 245.92,
+        "wr": 47.64,
+        "pf": 1.59,
+        "maxDD": 9238,
+        "maxDDpct": 2.88,
+        "replaced": 53
+      },
+      "15m/exit_on_flip": {
+        "n": 888,
+        "sumPnL": 183331,
+        "avg": 206.45,
+        "wr": 48.76,
+        "pf": 1.45,
+        "maxDD": 11190,
+        "maxDDpct": 3.89,
+        "replaced": 84
+      },
+      "15m/exit_on_flip_if_profit": {
+        "n": 888,
+        "sumPnL": 183746,
+        "avg": 206.92,
+        "wr": 48.87,
+        "pf": 1.46,
+        "maxDD": 11190,
+        "maxDDpct": 3.89,
+        "replaced": 81
+      },
+      "15m/be_on_flip": {
+        "n": 888,
+        "sumPnL": 186621,
+        "avg": 210.16,
+        "wr": 47.64,
+        "pf": 1.46,
+        "maxDD": 11780,
+        "maxDDpct": 4.07,
+        "replaced": 11
+      }
+    }
+  },
+  "gex-level-fade": {
+    "baseline": {
+      "n": 889,
+      "sumPnL": 104771,
+      "avg": 117.85,
+      "wr": 21.15,
+      "pf": 1.38,
+      "maxDD": 11073.6,
+      "maxDDpct": 5.28
+    },
+    "variants": {
+      "1m/exit_on_flip": {
+        "n": 889,
+        "sumPnL": 55159.6,
+        "avg": 62.05,
+        "wr": 37.46,
+        "pf": 1.26,
+        "maxDD": 11223,
+        "maxDDpct": 6.75,
+        "replaced": 312
+      },
+      "1m/exit_on_flip_if_profit": {
+        "n": 889,
+        "sumPnL": 53404.6,
+        "avg": 60.07,
+        "wr": 37.57,
+        "pf": 1.24,
+        "maxDD": 11223,
+        "maxDDpct": 6.82,
+        "replaced": 300
+      },
+      "1m/be_on_flip": {
+        "n": 889,
+        "sumPnL": 162116,
+        "avg": 182.36,
+        "wr": 21.15,
+        "pf": 1.74,
+        "maxDD": 6320,
+        "maxDDpct": 2.39,
+        "replaced": 146
+      },
+      "3m/exit_on_flip": {
+        "n": 889,
+        "sumPnL": 87164,
+        "avg": 98.05,
+        "wr": 30.03,
+        "pf": 1.36,
+        "maxDD": 10225,
+        "maxDDpct": 5.35,
+        "replaced": 219
+      },
+      "3m/exit_on_flip_if_profit": {
+        "n": 889,
+        "sumPnL": 88624.8,
+        "avg": 99.69,
+        "wr": 30.15,
+        "pf": 1.36,
+        "maxDD": 10225,
+        "maxDDpct": 5.3,
+        "replaced": 216
+      },
+      "3m/be_on_flip": {
+        "n": 889,
+        "sumPnL": 136046,
+        "avg": 153.03,
+        "wr": 21.15,
+        "pf": 1.55,
+        "maxDD": 7171,
+        "maxDDpct": 3,
+        "replaced": 80
+      },
+      "15m/exit_on_flip": {
+        "n": 889,
+        "sumPnL": 111725.2,
+        "avg": 125.68,
+        "wr": 22.27,
+        "pf": 1.41,
+        "maxDD": 12398.6,
+        "maxDDpct": 5.72,
+        "replaced": 60
+      },
+      "15m/exit_on_flip_if_profit": {
+        "n": 889,
+        "sumPnL": 111725.2,
+        "avg": 125.68,
+        "wr": 22.27,
+        "pf": 1.41,
+        "maxDD": 12398.6,
+        "maxDDpct": 5.72,
+        "replaced": 60
+      },
+      "15m/be_on_flip": {
+        "n": 889,
+        "sumPnL": 108721,
+        "avg": 122.3,
+        "wr": 21.15,
+        "pf": 1.4,
+        "maxDD": 10678.6,
+        "maxDDpct": 4.99,
+        "replaced": 10
+      }
+    }
+  }
+}

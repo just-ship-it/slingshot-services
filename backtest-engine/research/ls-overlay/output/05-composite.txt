@@ -1,0 +1,68 @@
+=== Phase 5 — Composite overlay (entry filter + LS-BE exit) ===
+
+# gex-flip-ivpct
+  BASELINE  n=172 PnL=$157329 avg=$914.7 PF=2.99 WR=61.63% DD=5.67%
+  COMBO: BE_1m only
+    n_kept=172/172  be_repl=17  PnL=$177394 (Δ$20065)  PF=4.01 (Δ1.02)  WR=61.63%  DD=4.37% (Δ-1.3pp)
+    H1: n=86 PnL=$56445 PF=2.53   H2: n=86 PnL=$120949 PF=6.46   stable=✓
+  COMBO: BE_3m only
+    n_kept=172/172  be_repl=16  PnL=$175014 (Δ$17685)  PF=3.85 (Δ0.86)  WR=61.63%  DD=4.41% (Δ-1.26pp)
+    H1: n=86 PnL=$56445 PF=2.53   H2: n=86 PnL=$118569 PF=5.83   stable=✓
+  COMBO: KEEP_flips=6-10 + BE_1m
+    n_kept=105/172  be_repl=12  PnL=$140692 (Δ$-16637)  PF=5.58 (Δ2.59)  WR=63.81%  DD=6% (Δ0.33pp)
+    H1: n=52 PnL=$50850 PF=3.59   H2: n=53 PnL=$89842 PF=9.09   stable=✓
+  COMBO: KEEP_flips=6-10 only (filter)
+    n_kept=105/172  be_repl=0  PnL=$126777 (Δ$-30552)  PF=3.84 (Δ0.85)  WR=63.81%  DD=6.91% (Δ1.24pp)
+    H1: n=52 PnL=$45950 PF=2.87   H2: n=53 PnL=$80827 PF=5.02   stable=✓
+
+# gex-lt-3m-crossover
+  BASELINE  n=888 PnL=$179201 avg=$201.8 PF=1.44 WR=47.64% DD=4.55%
+  COMBO: BE_1m only
+    n_kept=888/888  be_repl=123  PnL=$274424 (Δ$95223)  PF=1.87 (Δ0.43)  WR=47.64%  DD=2.08% (Δ-2.47pp)
+    H1: n=444 PnL=$134552 PF=1.83   H2: n=444 PnL=$139872 PF=1.91   stable=✓
+  COMBO: BE_3m only
+    n_kept=888/888  be_repl=53  PnL=$218379 (Δ$39178)  PF=1.59 (Δ0.15)  WR=47.64%  DD=2.88% (Δ-1.67pp)
+    H1: n=444 PnL=$104382 PF=1.54   H2: n=444 PnL=$113997 PF=1.63   stable=✓
+  COMBO: DROP_long_15m_state=0 + BE_1m
+    n_kept=625/888  be_repl=78  PnL=$241218 (Δ$62017)  PF=2.21 (Δ0.77)  WR=51.36%  DD=2.39% (Δ-2.16pp)
+    H1: n=312 PnL=$120346 PF=2.27   H2: n=313 PnL=$120872 PF=2.16   stable=✓
+  COMBO: DROP_long_15m_state=0 + BE_3m
+    n_kept=625/888  be_repl=39  PnL=$211173 (Δ$31972)  PF=1.92 (Δ0.48)  WR=51.36%  DD=2.61% (Δ-1.94pp)
+    H1: n=312 PnL=$103721 PF=1.93   H2: n=313 PnL=$107452 PF=1.91   stable=✓
+  COMBO: DROP_long_15m_state=0 only (filter)
+    n_kept=625/888  be_repl=0  PnL=$185130 (Δ$5929)  PF=1.73 (Δ0.29)  WR=51.36%  DD=2.84% (Δ-1.71pp)
+    H1: n=312 PnL=$92531 PF=1.76   H2: n=313 PnL=$92599 PF=1.7   stable=✓
+  COMBO: TREND_align_15m + BE_1m
+    n_kept=431/888  be_repl=53  PnL=$216044 (Δ$36843)  PF=2.65 (Δ1.21)  WR=53.83%  DD=1.94% (Δ-2.61pp)
+    H1: n=215 PnL=$107396 PF=2.53   H2: n=216 PnL=$108648 PF=2.78   stable=✓
+  COMBO: TREND_align_15m only (filter)
+    n_kept=431/888  be_repl=0  PnL=$175479 (Δ$-3722)  PF=2.02 (Δ0.58)  WR=53.83%  DD=2.79% (Δ-1.76pp)
+    H1: n=215 PnL=$90466 PF=2.04   H2: n=216 PnL=$85013 PF=2   stable=✓
+
+# gex-level-fade
+  BASELINE  n=889 PnL=$104771 avg=$117.85 PF=1.38 WR=21.15% DD=5.28%
+  COMBO: BE_1m only
+    n_kept=889/889  be_repl=146  PnL=$162116 (Δ$57345)  PF=1.74 (Δ0.36)  WR=21.15%  DD=2.39% (Δ-2.89pp)
+    H1: n=444 PnL=$83395.6 PF=1.76   H2: n=445 PnL=$78720.4 PF=1.72   stable=✓
+  COMBO: BE_3m only
+    n_kept=889/889  be_repl=80  PnL=$136046 (Δ$31275)  PF=1.55 (Δ0.17)  WR=21.15%  DD=3% (Δ-2.28pp)
+    H1: n=444 PnL=$67595.6 PF=1.54   H2: n=445 PnL=$68450.4 PF=1.57   stable=✓
+  COMBO: DROP_composite + BE_1m
+    n_kept=781/889  be_repl=130  PnL=$167456 (Δ$62685)  PF=1.89 (Δ0.51)  WR=22.41%  DD=2.2% (Δ-3.08pp)
+    H1: n=390 PnL=$78245.6 PF=1.82   H2: n=391 PnL=$89210.4 PF=1.97   stable=✓
+  COMBO: DROP_composite + BE_3m
+    n_kept=781/889  be_repl=71  PnL=$144151 (Δ$39380)  PF=1.68 (Δ0.3)  WR=22.41%  DD=2.63% (Δ-2.65pp)
+    H1: n=390 PnL=$64025.6 PF=1.58   H2: n=391 PnL=$80125.4 PF=1.79   stable=✓
+  COMBO: DROP_composite only (filter)
+    n_kept=781/889  be_repl=0  PnL=$116431 (Δ$11660)  PF=1.49 (Δ0.11)  WR=22.41%  DD=4.15% (Δ-1.13pp)
+    H1: n=390 PnL=$54545.6 PF=1.46   H2: n=391 PnL=$61885.4 PF=1.52   stable=✓
+  COMBO: DROP_long_3m_bars=6-15 + BE_1m
+    n_kept=808/889  be_repl=136  PnL=$164071 (Δ$59300)  PF=1.84 (Δ0.46)  WR=21.91%  DD=2.22% (Δ-3.06pp)
+    H1: n=404 PnL=$79655.6 PF=1.8   H2: n=404 PnL=$84415.4 PF=1.88   stable=✓
+  COMBO: TREND_align_15m + BE_1m
+    n_kept=253/889  be_repl=47  PnL=$105413.4 (Δ$642)  PF=3.1 (Δ1.72)  WR=31.23%  DD=1.5% (Δ-3.78pp)
+    H1: n=126 PnL=$50249.2 PF=2.93   H2: n=127 PnL=$55164.2 PF=3.29   stable=✓
+  COMBO: TREND_align_15m only (filter)
+    n_kept=253/889  be_repl=0  PnL=$86848.4 (Δ$-17923)  PF=2.26 (Δ0.88)  WR=31.23%  DD=2.49% (Δ-2.79pp)
+    H1: n=126 PnL=$41954.2 PF=2.22   H2: n=127 PnL=$44894.2 PF=2.31   stable=✓
+

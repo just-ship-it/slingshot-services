@@ -1,0 +1,74 @@
+=== Phase 3 — Filter sim with H1/H2 stability + DD ===
+
+# gex-flip-ivpct
+  BASELINE  full: n=172 PnL=$157329 PF=2.99 WR=61.63% DD=$14580 (5.67%)
+            H1:   n=86 PnL=$47840 PF=2.05 WR=56.98%
+            H2:   n=86 PnL=$109489 PF=4.26 WR=66.28%
+  RULE: KEEP all/1m/flips_in_prev_60m=6-10
+        full: n=59 PnL=$81122 (Δ$-76207) PF=4.42 (Δ1.43) WR=66.1% DD=$10865 (6% Δ0.33pp)
+        H1:   n=29 PnL=$21185 PF=2.33 WR=55.17%   H2: n=30 PnL=$59937 PF=8.7 WR=76.67%   stability=✓
+  RULE: KEEP long/1m/flips_in_prev_60m=6-10
+        full: n=105 PnL=$126777 (Δ$-30552) PF=3.84 (Δ0.85) WR=63.81% DD=$15660 (6.91% Δ1.24pp)
+        H1:   n=52 PnL=$45950 PF=2.87 WR=61.54%   H2: n=53 PnL=$80827 PF=5.02 WR=66.04%   stability=✓
+  RULE: KEEP (flips_1m=6-10) OR (short & bars_since_flip_15m=60+)
+        full: n=91 PnL=$120832 (Δ$-36497) PF=4.24 (Δ1.25) WR=64.84% DD=$14425 (6.53% Δ0.86pp)
+        H1:   n=45 PnL=$45385 PF=3.18 WR=62.22%   H2: n=46 PnL=$75447 PF=5.59 WR=67.39%   stability=✓
+  RULE: KEEP all/3m/flips_in_prev_60m=6-10
+        full: n=8 PnL=$12380 (Δ$-144949) PF=4.36 (Δ1.37) WR=62.5% DD=$2445 (2.18% Δ-3.49pp)
+        H1:   n=4 PnL=$5545 PF=3.27 WR=50%   H2: n=4 PnL=$6835 PF=6.53 WR=75%   stability=✓
+  RULE: DROP all/1m/flips_in_prev_60m=11+
+        full: n=159 PnL=$143394 (Δ$-13935) PF=2.97 (Δ-0.02) WR=62.26% DD=$14580 (5.99% Δ0.32pp)
+        H1:   n=79 PnL=$44695 PF=2.1 WR=58.23%   H2: n=80 PnL=$98699 PF=4.05 WR=66.25%   stability=✓
+
+# gex-lt-3m-crossover
+  BASELINE  full: n=888 PnL=$179201 PF=1.44 WR=47.64% DD=$12815 (4.55%)
+            H1:   n=444 PnL=$87332 PF=1.42 WR=46.4%
+            H2:   n=444 PnL=$91869 PF=1.45 WR=48.87%
+  RULE: DROP long/15m/state=0
+        full: n=625 PnL=$185130 (Δ$5929) PF=1.73 (Δ0.29) WR=51.36% DD=$8210 (2.84% Δ-1.71pp)
+        H1:   n=312 PnL=$92531 PF=1.76 WR=50.96%   H2: n=313 PnL=$92599 PF=1.7 WR=51.76%   stability=✓
+  RULE: KEEP long/15m/state=1 (only)
+        full: n=625 PnL=$185130 (Δ$5929) PF=1.73 (Δ0.29) WR=51.36% DD=$8210 (2.84% Δ-1.71pp)
+        H1:   n=312 PnL=$92531 PF=1.76 WR=50.96%   H2: n=313 PnL=$92599 PF=1.7 WR=51.76%   stability=✓
+  RULE: TREND-align both sides on 15m
+        full: n=431 PnL=$175479 (Δ$-3722) PF=2.02 (Δ0.58) WR=53.83% DD=$7715 (2.79% Δ-1.76pp)
+        H1:   n=215 PnL=$90466 PF=2.04 WR=53.49%   H2: n=216 PnL=$85013 PF=2 WR=54.17%   stability=✓
+  RULE: TREND-align both sides on 3m
+        full: n=453 PnL=$101524 (Δ$-77677) PF=1.49 (Δ0.05) WR=47.24% DD=$11000 (5.39% Δ0.84pp)
+        H1:   n=226 PnL=$43768 PF=1.41 WR=46.02%   H2: n=227 PnL=$57756 PF=1.56 WR=48.46%   stability=✓
+  RULE: TREND-align (15m AND 3m)
+        full: n=288 PnL=$117575 (Δ$-61626) PF=2 (Δ0.56) WR=53.13% DD=$6210 (2.82% Δ-1.73pp)
+        H1:   n=144 PnL=$60412 PF=2.06 WR=52.78%   H2: n=144 PnL=$57163 PF=1.95 WR=53.47%   stability=✓
+
+# gex-level-fade
+  BASELINE  full: n=889 PnL=$104771 PF=1.38 WR=21.15% DD=$11073.6 (5.28%)
+            H1:   n=444 PnL=$56535.6 PF=1.41 WR=21.85%
+            H2:   n=445 PnL=$48235.4 PF=1.35 WR=20.45%
+  RULE: KEEP short/15m/state=0 (only)
+        full: n=587 PnL=$107121.8 (Δ$2351) PF=1.61 (Δ0.23) WR=24.19% DD=$7820 (3.72% Δ-1.56pp)
+        H1:   n=293 PnL=$59695.6 PF=1.69 WR=24.91%   H2: n=294 PnL=$47426.2 PF=1.53 WR=23.47%   stability=✓
+  RULE: KEEP long/1m/state=1 + short/15m/state=0
+        full: n=214 PnL=$76675.8 (Δ$-28095) PF=2.35 (Δ0.97) WR=32.71% DD=$4280 (2.4% Δ-2.88pp)
+        H1:   n=107 PnL=$31176.6 PF=2.04 WR=28.97%   H2: n=107 PnL=$45499.2 PF=2.69 WR=36.45%   stability=✓
+  RULE: TREND-align both sides on 15m
+        full: n=253 PnL=$86848.4 (Δ$-17923) PF=2.26 (Δ0.88) WR=31.23% DD=$4675 (2.49% Δ-2.79pp)
+        H1:   n=126 PnL=$41954.2 PF=2.22 WR=30.95%   H2: n=127 PnL=$44894.2 PF=2.31 WR=31.5%   stability=✓
+  RULE: TREND-align both sides on 3m
+        full: n=112 PnL=$35427.6 (Δ$-69343) PF=2.14 (Δ0.76) WR=29.46% DD=$4345 (3.19% Δ-2.09pp)
+        H1:   n=56 PnL=$14808.4 PF=1.91 WR=26.79%   H2: n=56 PnL=$20619.2 PF=2.37 WR=32.14%   stability=✓
+  RULE: TREND-align both sides on 1m
+        full: n=147 PnL=$48257.2 (Δ$-56514) PF=2.19 (Δ0.81) WR=29.93% DD=$3950 (2.64% Δ-2.64pp)
+        H1:   n=73 PnL=$24024.6 PF=2.17 WR=28.77%   H2: n=74 PnL=$24232.6 PF=2.2 WR=31.08%   stability=✓
+  RULE: TREND-align (15m AND 3m)
+        full: n=57 PnL=$27278.6 (Δ$-77492) PF=2.92 (Δ1.54) WR=36.84% DD=$1975 (1.55% Δ-3.73pp)
+        H1:   n=28 PnL=$10614.4 PF=2.41 WR=32.14%   H2: n=29 PnL=$16664.2 PF=3.48 WR=41.38%   stability=✓
+  RULE: DROP long/3m/bars_since_last_flip=6-15
+        full: n=808 PnL=$110676 (Δ$5905) PF=1.44 (Δ0.06) WR=21.91% DD=$9098.6 (4.25% Δ-1.03pp)
+        H1:   n=404 PnL=$54770.6 PF=1.44 WR=22.28%   H2: n=404 PnL=$55905.4 PF=1.45 WR=21.53%   stability=✓
+  RULE: DROP short/1m/flips_in_prev_60m=11+
+        full: n=862 PnL=$110526 (Δ$5755) PF=1.41 (Δ0.03) WR=21.58% DD=$11093.6 (5.15% Δ-0.13pp)
+        H1:   n=431 PnL=$58305.6 PF=1.44 WR=22.04%   H2: n=431 PnL=$52220.4 PF=1.39 WR=21.11%   stability=✓
+  RULE: DROP (long/3m/bars=6-15) + (short/1m/flips=11+)
+        full: n=781 PnL=$116431 (Δ$11660) PF=1.49 (Δ0.11) WR=22.41% DD=$9118.6 (4.15% Δ-1.13pp)
+        H1:   n=390 PnL=$54545.6 PF=1.46 WR=22.31%   H2: n=391 PnL=$61885.4 PF=1.52 WR=22.51%   stability=✓
+

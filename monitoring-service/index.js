@@ -142,7 +142,8 @@ const monitoringState = {
   analyticsData: new Map(), // Analytics data by type
   gexLevels: { cboe: null, tradier: null }, // GEX levels from both sources
   ivSkew: null, // IV skew data from Tradier
-  ltLevels: { NQ: null, ES: null } // LT levels from data-service
+  ltLevels: { NQ: null, ES: null }, // LT levels from data-service
+  lsStatus: { NQ: null, ES: null }  // LS (liquidity status) bull/bear sentiment from data-service
 };
 
 // ============================================
@@ -720,6 +721,8 @@ io.on('connection', async (socket) => {
   // Send cached LT levels if available
   if (monitoringState.ltLevels.NQ) socket.emit('lt_levels', monitoringState.ltLevels.NQ);
   if (monitoringState.ltLevels.ES) socket.emit('lt_levels', monitoringState.ltLevels.ES);
+  if (monitoringState.lsStatus.NQ) socket.emit('ls_status', monitoringState.lsStatus.NQ);
+  if (monitoringState.lsStatus.ES) socket.emit('ls_status', monitoringState.lsStatus.ES);
 
   // Handle ping/pong
   socket.on('ping', (data) => {
@@ -1814,6 +1817,16 @@ app.post('/api/position-sizing/convert', dashboardAuth, (req, res) => {
 });
 
 // GEX levels endpoint - proxy to data-service
+// LS (Liquidity Status) — last confirmed bull/bear sentiment per product.
+// Populated from CHANNELS.LS_STATUS events (bar-close gated upstream).
+// Returns { NQ: {...} | null, ES: {...} | null }.
+app.get('/api/ls', dashboardAuth, (req, res) => {
+  res.json({
+    NQ: monitoringState.lsStatus.NQ,
+    ES: monitoringState.lsStatus.ES,
+  });
+});
+
 app.get('/api/gex/levels', dashboardAuth, async (req, res) => {
   try {
     logger.info('📊 Fetching GEX levels from data-service');
@@ -3603,6 +3616,21 @@ async function handleLtLevels(message) {
   }
 }
 
+// Handler for LS (liquidity status) bull/bear sentiment from data-service.
+// Emission is already bar-close gated upstream (signal-generator/src/websocket/
+// lt-monitor.js); each event represents a confirmed 1m bar-close flip.
+async function handleLsStatus(message) {
+  try {
+    if (!message) return;
+    const product = (message.product || 'NQ').toUpperCase();
+    monitoringState.lsStatus[product] = { ...message, product };
+    broadcast('ls_status', monitoringState.lsStatus[product]);
+    logger.info(`📊 LS ${product}: ${message.priorSentiment ?? 'null'} → ${message.sentiment} (${message.candleTime})`);
+  } catch (error) {
+    logger.error('Error handling LS status:', error);
+  }
+}
+
 // Handler for IV Skew updates from Tradier
 async function handleIVSkew(message) {
   try {
@@ -4304,6 +4332,7 @@ async function startup() {
       [CHANNELS.EXPOSURE_LEVELS, handleExposureLevels],
       [CHANNELS.IV_SKEW, handleIVSkew],
       [CHANNELS.LT_LEVELS, handleLtLevels],
+      [CHANNELS.LS_STATUS, handleLsStatus],
       [CHANNELS.STRATEGY_ALERT, handleStrategyAlert],
       // Discord notification subscriptions
       [CHANNELS.TRADE_VALIDATED, handleTradeSignalDiscord],

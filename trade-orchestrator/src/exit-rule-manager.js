@@ -10,6 +10,11 @@
  *   - `onCandleClose` runs on every candle.close (1m granularity).
  *     Used by `fibRetrace` (bar-close confirmation is essential —
  *     intra-bar wicks must NOT trigger).
+ *   - `onLsFlip` runs on every confirmed bar-close LS flip event.
+ *     Used by `lsBeOnFlip` — arms a BE stop when LS flips against the
+ *     position direction. LS publisher is already bar-close gated
+ *     (signal-generator/src/websocket/lt-monitor.js); intrabar flips
+ *     do not reach this handler.
  *   - `register` / `unregister` manage per-position state.
  *
  * The module does NOT subscribe to the message bus itself — index.js owns
@@ -38,6 +43,7 @@ const RULE_TYPES = Object.freeze({
   BREAKEVEN: 'breakeven',
   FIB_RETRACE: 'fibRetrace',
   MFE_RATCHET: 'mfeRatchet',
+  LS_BE_ON_FLIP: 'lsBeOnFlip',
 });
 
 /**
@@ -77,6 +83,19 @@ export function captureRuleFromSignal(signal) {
         activationMFE,
       });
     }
+  }
+
+  // lsBeOnFlip: arm a breakeven stop when LS flips against the position.
+  // signal.lsBeOnFlip: true to enable. signal.lsBeOffset (optional, default 0)
+  // is points to lock above/below entry on flip (e.g., 10 for gex-level-fade
+  // per Phase 7 of LS-overlay research).
+  if (signal.lsBeOnFlip === true) {
+    const offsetRaw = signal.lsBeOffset ?? signal.lsBeOnFlipOffset ?? 0;
+    const offset = Number(offsetRaw);
+    rules.push({
+      type: RULE_TYPES.LS_BE_ON_FLIP,
+      offset: Number.isFinite(offset) ? offset : 0,
+    });
   }
 
   if (signal.mfeRatchet === true && signal.mfeRatchetConfig?.tiers?.length) {
@@ -174,6 +193,9 @@ export function createExitRuleManager({ logger, publishModifyStop, publishCloseP
     if (rule.type === RULE_TYPES.MFE_RATCHET) {
       return { currentTierIdx: -1, fired: false };  // -1 = no tier engaged yet
     }
+    if (rule.type === RULE_TYPES.LS_BE_ON_FLIP) {
+      return { fired: false };
+    }
     return { fired: false };
   }
 
@@ -241,6 +263,7 @@ export function createExitRuleManager({ logger, publishModifyStop, publishCloseP
     if (r.type === RULE_TYPES.BREAKEVEN) return `BE(trig=${r.trigger}, off=${r.offset})`;
     if (r.type === RULE_TYPES.FIB_RETRACE) return `fib(retr=${r.retracePct}, act=${r.activationMFE})`;
     if (r.type === RULE_TYPES.MFE_RATCHET) return `ratchet(${r.tiers.length}t)`;
+    if (r.type === RULE_TYPES.LS_BE_ON_FLIP) return `lsBeOnFlip(off=${r.offset})`;
     return r.type;
   }
 
@@ -347,6 +370,62 @@ export function createExitRuleManager({ logger, publishModifyStop, publishCloseP
         evaluateFib(rs, rule, rstate, mfe, barClose);
       }
     }
+  }
+
+  /**
+   * ls.status handler. Fires `lsBeOnFlip` rules when the LS state flips
+   * AGAINST the position's direction.
+   *
+   * "Adverse" semantics (from LS-overlay research, Phase 0):
+   *   LONG  + state→BULLISH  → adverse (long-during-bullish wins only ~25%)
+   *   SHORT + state→BEARISH  → adverse
+   *
+   * The LS publisher (lt-monitor.js) is already bar-close gated, so an
+   * event arriving here represents a CONFIRMED flip — no need to re-check.
+   *
+   * @param {object} msg the ls.status payload
+   *                      { product, sentiment ('BULLISH'|'BEARISH'),
+   *                        timestamp, candleTime, priorSentiment, barClose }
+   */
+  function onLsFlip(msg) {
+    if (!msg) return;
+    const product = msg.product;
+    const sentiment = msg.sentiment;
+    if (!product || !sentiment) return;
+    const set = byUnderlying.get(product);
+    if (!set || set.size === 0) return;
+
+    for (const posKey of set) {
+      const rs = state.get(posKey);
+      if (!rs || rs.closed) continue;
+
+      const adverse = (rs.side === 'long'  && sentiment === 'BULLISH') ||
+                      (rs.side === 'short' && sentiment === 'BEARISH');
+      if (!adverse) continue;
+
+      for (let i = 0; i < rs.rules.length; i++) {
+        const rule = rs.rules[i];
+        const rstate = rs.ruleStates[i];
+        if (rule.type !== RULE_TYPES.LS_BE_ON_FLIP) continue;
+        if (rstate.fired) continue;
+        evaluateLsBe(rs, rule, rstate, msg);
+      }
+    }
+  }
+
+  function evaluateLsBe(rs, rule, rstate, msg) {
+    // Move stop to entry ± offset (long: entry+offset; short: entry−offset).
+    // offset=0 → pure breakeven. offset>0 → lock a few points of profit.
+    const newStop = rs.side === 'long'
+      ? rs.entryPrice + rule.offset
+      : rs.entryPrice - rule.offset;
+    rstate.fired = true;
+    rstate.publishedStop = newStop;
+    rstate.firedAt = Date.now();
+    rstate.lsFlipTs = msg.timestamp ?? null;
+    rstate.lsSentiment = msg.sentiment;
+    fireModifyStop(rs, newStop,
+      `LS flip → ${msg.sentiment} (bar=${msg.candleTime || 'n/a'}); arm BE entry${rule.offset >= 0 ? '+' : ''}${rule.offset}`);
   }
 
   function evaluateBE(rs, rule, rstate, mfe) {
@@ -469,7 +548,7 @@ export function createExitRuleManager({ logger, publishModifyStop, publishCloseP
 
   return {
     register, unregister,
-    onPriceTick, onCandleClose,
+    onPriceTick, onCandleClose, onLsFlip,
     getState, size,
     RULE_TYPES,
   };

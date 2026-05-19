@@ -1,0 +1,24 @@
+=== Phase 7 — BE+offset sensitivity (LS_1m flip) ===
+
+strategy               offset replaced     sumPnL     PF    DD%
+gex-flip-ivpct           gold        —     157329   2.99   5.67
+gex-flip-ivpct             +0       17     177394   4.01   4.37
+gex-flip-ivpct             +5       34     175324    3.8   4.33
+gex-flip-ivpct            +10       24     169719   3.42   4.35
+gex-flip-ivpct            +20       13     165334   3.19   5.49
+gex-flip-ivpct            +30        6     163039   3.13   5.54
+
+gex-lt-3m-crossover      gold        —     179201   1.44   4.55
+gex-lt-3m-crossover        +0      123     274424   1.87   2.08
+gex-lt-3m-crossover        +5       90     260164   1.77    2.3
+gex-lt-3m-crossover       +10       71     247504   1.69   2.65
+gex-lt-3m-crossover       +20       47     229661   1.61   2.73
+gex-lt-3m-crossover       +30       23     199597    1.5    3.7
+
+gex-level-fade           gold        —     104771   1.38   5.28
+gex-level-fade             +0      146     162116   1.74   2.39
+gex-level-fade             +5      133     169821   1.76   2.25
+gex-level-fade            +10      116     173006   1.75   2.41
+gex-level-fade            +20       74     162126   1.65   2.51
+gex-level-fade            +30       40     143556   1.55   3.26
+

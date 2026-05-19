@@ -159,6 +159,23 @@ const config = {
   GFI_FIB_ACTIVATION_MFE: parseFloat(process.env.GFI_FIB_ACTIVATION_MFE || '40'),
   // Pre-RTH hours where 100% of trades had MAE > 10pt in the baseline study.
   GFI_BLOCKED_HOURS_ET: process.env.GFI_BLOCKED_HOURS_ET ?? '6,7,8',
+
+  // LS-BE-on-flip overlay (research/ls-overlay, 2026-05-19). When enabled,
+  // arms a breakeven stop on the first adverse LS_1m flip during the trade.
+  // Phase 5 winner for gex-flip-ivpct: BE+0 offset, no entry filter.
+  // Default OFF — flip to true once the data-service LS feed is verified.
+  GFI_LS_BE_ON_FLIP: process.env.GFI_LS_BE_ON_FLIP?.toLowerCase() === 'true',
+  GFI_LS_BE_OFFSET: parseFloat(process.env.GFI_LS_BE_OFFSET || '0'),
+
+  // LS-BE-on-flip for gex-lt-3m-crossover (Phase 5 winner: BE+0 only,
+  // no entry filter, $179k → $274k, PF 1.44 → 1.87, DD 4.55% → 2.08%).
+  GLX_LS_BE_ON_FLIP: process.env.GLX_LS_BE_ON_FLIP?.toLowerCase() === 'true',
+  GLX_LS_BE_OFFSET: parseFloat(process.env.GLX_LS_BE_OFFSET || '0'),
+
+  // LS-BE-on-flip for gex-level-fade. Phase 7 found +10 offset modestly
+  // outperforms +0 ($173k vs $162k); default to +10.
+  GLF_LS_BE_ON_FLIP: process.env.GLF_LS_BE_ON_FLIP?.toLowerCase() === 'true',
+  GLF_LS_BE_OFFSET: parseFloat(process.env.GLF_LS_BE_OFFSET || '10'),
   // Mirrors trade-orchestrator's EOD_CUTOFF_ET so the dashboard can show the
   // same time the orchestrator will actually force-flat at. Set EOD_CUTOFF_ET=""
   // (empty) to disable the dashboard indicator (matches orchestrator semantics).
@@ -348,6 +365,16 @@ const config = {
     };
   },
 
+  getGexLt3mCrossoverParams() {
+    // Strategy class owns rule defaults (W12+SCW-PM-block gold). Env overrides
+    // only fire when explicitly set. This getter exists primarily to thread
+    // the LS-BE-on-flip overlay through; add more overrides here as needed.
+    return {
+      lsBeOnFlip: this.GLX_LS_BE_ON_FLIP,
+      lsBeOffset: this.GLX_LS_BE_OFFSET,
+    };
+  },
+
   getGexLevelFadeParams() {
     // 100/18 / 09:00-10:30 / all-levels gold standard (2026-05-17) is the
     // strategy class's own defaults; env overrides only fire when set.
@@ -394,6 +421,9 @@ const config = {
       trailingOffset: intOrDef(this.GLF_TRAILING_OFFSET, 0),
       breakevenTrigger: intOrDef(this.GLF_BREAKEVEN_TRIGGER, 0),
       breakevenOffset: intOrDef(this.GLF_BREAKEVEN_OFFSET, 0),
+      // LS-BE-on-flip overlay
+      lsBeOnFlip: this.GLF_LS_BE_ON_FLIP,
+      lsBeOffset: this.GLF_LS_BE_OFFSET,
     };
   },
 
@@ -423,6 +453,9 @@ const config = {
       fibRetrace: this.GFI_FIB_RETRACE,
       fibRetracePct: this.GFI_FIB_RETRACE_PCT,
       fibActivationMFE: this.GFI_FIB_ACTIVATION_MFE,
+      // LS-BE-on-flip (orchestrator-side exit rule; independent of structural BE).
+      lsBeOnFlip: this.GFI_LS_BE_ON_FLIP,
+      lsBeOffset: this.GFI_LS_BE_OFFSET,
       blockedHoursEt,
     };
   },

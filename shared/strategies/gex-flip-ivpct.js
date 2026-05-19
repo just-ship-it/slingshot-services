@@ -99,6 +99,16 @@ export class GexFlipIvpctStrategy extends BaseStrategy {
     this.params.breakevenTrigger = params.breakevenTrigger ?? null;
     this.params.breakevenOffset = params.breakevenOffset ?? 0;
 
+    // LS-BE-on-flip overlay (research/ls-overlay, 2026-05-19).
+    // When enabled, the trade-orchestrator arms a breakeven stop on the
+    // first adverse LS flip during the trade (adverse for LONG = state→
+    // BULLISH; for SHORT = state→BEARISH). The offset is points to lock
+    // above/below entry (0 = pure breakeven). Per Phase 5/7, gex-flip-
+    // ivpct prefers BE+0; the structural BE rule above is independent
+    // and coexists (whichever stop is hit first wins).
+    this.params.lsBeOnFlip = params.lsBeOnFlip ?? false;
+    this.params.lsBeOffset = params.lsBeOffset ?? 0;
+
     // Trailing stop (forwarded to trade-simulator on each signal)
     this.params.trailingTrigger = params.trailingTrigger ?? null;
     this.params.trailingOffset = params.trailingOffset ?? null;
@@ -623,6 +633,11 @@ export class GexFlipIvpctStrategy extends BaseStrategy {
       signal.trailingTrigger = this.params.trailingTrigger;
       signal.trailing_offset = this.params.trailingOffset;
       signal.trailingOffset = this.params.trailingOffset;
+    }
+
+    if (this.params.lsBeOnFlip) {
+      signal.lsBeOnFlip = true;
+      signal.lsBeOffset = this.params.lsBeOffset;
     }
 
     // Structural-magnet MFE ratchet: each in-profit-region swing low/high

@@ -159,6 +159,13 @@ export class GexLt3mCrossoverStrategy extends BaseStrategy {
     this.params.breakevenTrigger = params.breakevenTrigger ?? 0;
     this.params.breakevenOffset = params.breakevenOffset ?? 0;
 
+    // LS-BE-on-flip overlay (research/ls-overlay, 2026-05-19). When enabled,
+    // the trade-orchestrator arms a breakeven stop on the first adverse LS
+    // flip during the trade. Phase 5 winner for gex-lt-3m: BE_1m only (no
+    // entry filter) → $179k → $274k, PF 1.44 → 1.87, DD 4.55% → 2.08%.
+    this.params.lsBeOnFlip = params.lsBeOnFlip ?? false;
+    this.params.lsBeOffset = params.lsBeOffset ?? 0;
+
     // Mirror of trade-orchestrator's EOD_CUTOFF_ET — purely for the panel
     // (the strategy doesn't enforce EOD itself).
     this.params.eodCutoffEt = params.eodCutoffEt ?? '16:40';
@@ -532,6 +539,12 @@ export class GexLt3mCrossoverStrategy extends BaseStrategy {
       signal.breakevenStop = true;
       signal.breakevenTrigger = beTrig;
       signal.breakevenOffset = beOff;
+    }
+
+    // LS-BE-on-flip (orchestrator-side; independent of structural BE above).
+    if (this.params.lsBeOnFlip) {
+      signal.lsBeOnFlip = true;
+      signal.lsBeOffset = this.params.lsBeOffset;
     }
 
     return signal;

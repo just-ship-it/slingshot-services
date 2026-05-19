@@ -1,0 +1,38 @@
+=== Phase 4 — LS-aware exit overlay ===
+
+# gex-flip-ivpct
+  BASELINE  n=172 PnL=$157329 PF=2.99 WR=61.63% DD=5.67%
+  EXIT[1m/exit_on_flip          ] replaced=124/172 PnL=$   38624 (Δ$-118705) PF= 1.76 (Δ-1.23) WR=62.79% DD= 11.3% (Δ 5.63pp)
+  EXIT[1m/exit_on_flip_if_profit] replaced= 96/172 PnL=$   54127 (Δ$-103202) PF= 1.92 (Δ-1.07) WR=71.51% DD= 9.24% (Δ 3.57pp)
+  EXIT[1m/be_on_flip            ] replaced= 17/172 PnL=$  177394 (Δ$  20065) PF= 4.01 (Δ 1.02) WR=61.63% DD= 4.37% (Δ -1.3pp)
+  EXIT[3m/exit_on_flip          ] replaced=113/172 PnL=$   68469 (Δ$ -88860) PF= 2.24 (Δ-0.75) WR= 65.7% DD= 6.11% (Δ 0.44pp)
+  EXIT[3m/exit_on_flip_if_profit] replaced= 96/172 PnL=$   77732 (Δ$ -79597) PF= 2.27 (Δ-0.72) WR=70.93% DD= 6.36% (Δ 0.69pp)
+  EXIT[3m/be_on_flip            ] replaced= 16/172 PnL=$  175014 (Δ$  17685) PF= 3.85 (Δ 0.86) WR=61.63% DD= 4.41% (Δ-1.26pp)
+  EXIT[15m/exit_on_flip         ] replaced= 53/172 PnL=$  122339 (Δ$ -34990) PF= 2.72 (Δ-0.27) WR=64.53% DD= 6.86% (Δ 1.19pp)
+  EXIT[15m/exit_on_flip_if_profit] replaced= 49/172 PnL=$  119139 (Δ$ -38190) PF= 2.61 (Δ-0.38) WR=64.53% DD= 7.41% (Δ 1.74pp)
+  EXIT[15m/be_on_flip           ] replaced=  5/172 PnL=$  162279 (Δ$   4950) PF= 3.19 (Δ  0.2) WR=61.63% DD= 5.09% (Δ-0.58pp)
+
+# gex-lt-3m-crossover
+  BASELINE  n=888 PnL=$179201 PF=1.44 WR=47.64% DD=4.55%
+  EXIT[1m/exit_on_flip          ] replaced=528/888 PnL=$  104710 (Δ$ -74491) PF= 1.38 (Δ-0.06) WR=54.28% DD= 5.24% (Δ 0.69pp)
+  EXIT[1m/exit_on_flip_if_profit] replaced=374/888 PnL=$  124262 (Δ$ -54939) PF= 1.39 (Δ-0.05) WR=61.49% DD= 5.04% (Δ 0.49pp)
+  EXIT[1m/be_on_flip            ] replaced=123/888 PnL=$  274424 (Δ$  95223) PF= 1.87 (Δ 0.43) WR=47.64% DD= 2.08% (Δ-2.47pp)
+  EXIT[3m/exit_on_flip          ] replaced=318/888 PnL=$  130813 (Δ$ -48388) PF= 1.37 (Δ-0.07) WR= 50.9% DD= 5.62% (Δ 1.07pp)
+  EXIT[3m/exit_on_flip_if_profit] replaced=253/888 PnL=$  139047 (Δ$ -40154) PF= 1.37 (Δ-0.07) WR= 53.6% DD= 4.65% (Δ  0.1pp)
+  EXIT[3m/be_on_flip            ] replaced= 53/888 PnL=$  218379 (Δ$  39178) PF= 1.59 (Δ 0.15) WR=47.64% DD= 2.88% (Δ-1.67pp)
+  EXIT[15m/exit_on_flip         ] replaced= 84/888 PnL=$  183331 (Δ$   4130) PF= 1.45 (Δ 0.01) WR=48.76% DD= 3.89% (Δ-0.66pp)
+  EXIT[15m/exit_on_flip_if_profit] replaced= 81/888 PnL=$  183746 (Δ$   4545) PF= 1.46 (Δ 0.02) WR=48.87% DD= 3.89% (Δ-0.66pp)
+  EXIT[15m/be_on_flip           ] replaced= 11/888 PnL=$  186621 (Δ$   7420) PF= 1.46 (Δ 0.02) WR=47.64% DD= 4.07% (Δ-0.48pp)
+
+# gex-level-fade
+  BASELINE  n=889 PnL=$104771 PF=1.38 WR=21.15% DD=5.28%
+  EXIT[1m/exit_on_flip          ] replaced=312/889 PnL=$ 55159.6 (Δ$ -49611) PF= 1.26 (Δ-0.12) WR=37.46% DD= 6.75% (Δ 1.47pp)
+  EXIT[1m/exit_on_flip_if_profit] replaced=300/889 PnL=$ 53404.6 (Δ$ -51366) PF= 1.24 (Δ-0.14) WR=37.57% DD= 6.82% (Δ 1.54pp)
+  EXIT[1m/be_on_flip            ] replaced=146/889 PnL=$  162116 (Δ$  57345) PF= 1.74 (Δ 0.36) WR=21.15% DD= 2.39% (Δ-2.89pp)
+  EXIT[3m/exit_on_flip          ] replaced=219/889 PnL=$   87164 (Δ$ -17607) PF= 1.36 (Δ-0.02) WR=30.03% DD= 5.35% (Δ 0.07pp)
+  EXIT[3m/exit_on_flip_if_profit] replaced=216/889 PnL=$ 88624.8 (Δ$ -16146) PF= 1.36 (Δ-0.02) WR=30.15% DD=  5.3% (Δ 0.02pp)
+  EXIT[3m/be_on_flip            ] replaced= 80/889 PnL=$  136046 (Δ$  31275) PF= 1.55 (Δ 0.17) WR=21.15% DD=    3% (Δ-2.28pp)
+  EXIT[15m/exit_on_flip         ] replaced= 60/889 PnL=$111725.2 (Δ$   6954) PF= 1.41 (Δ 0.03) WR=22.27% DD= 5.72% (Δ 0.44pp)
+  EXIT[15m/exit_on_flip_if_profit] replaced= 60/889 PnL=$111725.2 (Δ$   6954) PF= 1.41 (Δ 0.03) WR=22.27% DD= 5.72% (Δ 0.44pp)
+  EXIT[15m/be_on_flip           ] replaced= 10/889 PnL=$  108721 (Δ$   3950) PF=  1.4 (Δ 0.02) WR=21.15% DD= 4.99% (Δ-0.29pp)
+

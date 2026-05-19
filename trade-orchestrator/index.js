@@ -1079,6 +1079,10 @@ async function main() {
     try { exitRuleManager.onCandleClose(msg); }
     catch (err) { logger.error(`[ExitRule] onCandleClose threw: ${err.message}`); }
   });
+  await messageBus.subscribe(CHANNELS.LS_STATUS, (msg) => {
+    try { exitRuleManager.onLsFlip(msg); }
+    catch (err) { logger.error(`[ExitRule] onLsFlip threw: ${err.message}`); }
+  });
   await messageBus.subscribe(CHANNELS.POSITION_OPENED, handlePositionOpened);
   await messageBus.subscribe(CHANNELS.POSITION_CLOSED, handlePositionClosed);
   await messageBus.subscribe(CHANNELS.POSITION_UPDATE, handlePositionUpdate);

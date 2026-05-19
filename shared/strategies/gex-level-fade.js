@@ -72,6 +72,14 @@ export class GexLevelFadeStrategy extends BaseStrategy {
     this.params.trailingOffset = params.trailingOffset ?? 0;     // pts behind MFE to trail
     this.params.breakevenTrigger = params.breakevenTrigger ?? 0; // pts MFE to arm breakeven (0 = disabled)
     this.params.breakevenOffset = params.breakevenOffset ?? 0;   // pts past entry for breakeven stop
+
+    // LS-BE-on-flip overlay (research/ls-overlay, 2026-05-19). Phase 7
+    // showed level-fade prefers +10 offset (vs +0) — gold result $167k →
+    // $173k with PF/DD basically tied. Default offset is set by config.js
+    // (GLF_LS_BE_OFFSET defaults to 10); strategy default is false here so
+    // older callers don't accidentally turn it on.
+    this.params.lsBeOnFlip = params.lsBeOnFlip ?? false;
+    this.params.lsBeOffset = params.lsBeOffset ?? 0;
     this.params.maxLastEpPenetrationPts = params.maxLastEpPenetrationPts ?? null;  // skip if last episode penetrated past level by more than X pts
     this.params.minLastEpBarsInZone = params.minLastEpBarsInZone ?? null;  // skip if last episode lasted fewer than N bars
     this.params.minLastEpRej5m = params.minLastEpRej5m ?? null;   // skip if last episode had fewer than N 5m rejection wicks
@@ -537,6 +545,10 @@ export class GexLevelFadeStrategy extends BaseStrategy {
       signal.breakevenStop = true;
       signal.breakevenTrigger = this.params.breakevenTrigger;
       signal.breakevenOffset = this.params.breakevenOffset;
+    }
+    if (this.params.lsBeOnFlip) {
+      signal.lsBeOnFlip = true;
+      signal.lsBeOffset = this.params.lsBeOffset;
     }
     if (this.params.debug) {
       console.log(`[GLF] ${side.toUpperCase()} @${entryPrice.toFixed(2)} ${lvl.type} ep#${candidateSignal.episodeNum} sl=${stopLoss.toFixed(2)} tp=${takeProfit.toFixed(2)}`);

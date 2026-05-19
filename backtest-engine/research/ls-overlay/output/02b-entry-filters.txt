@@ -1,0 +1,74 @@
+=== Phase 2b — Entry-time-only filter leaderboard ===
+
+Baselines:
+  gex-flip-ivpct         n= 172 sumPnL=$  157329 avg=$  914.7 WR=61.63% PF=2.99
+  gex-lt-3m-crossover    n= 888 sumPnL=$  179201 avg=$  201.8 WR=47.64% PF=1.44
+  gex-level-fade         n= 889 sumPnL=$  104771 avg=$ 117.85 WR=21.15% PF=1.38
+
+-- TOP 15 DROP rules (drop trades matching cell; improvement = $$ loss removed) --
+strategy               rule                                                  n_drop   drop_avg  drop_wr  drop_pf   improve$
+gex-lt-3m-crossover    DROP long/15m/state_at_entry=0                           263     -22.54    38.78     0.96       5929
+gex-lt-3m-crossover    DROP long/15m/favorable_at_entry=true                    263     -22.54    38.78     0.96       5929
+gex-level-fade         DROP long/3m/bars_since_last_flip=6-15                    81      -72.9    13.58     0.79       5905
+gex-level-fade         DROP short/1m/flips_in_prev_60m=11+                       27    -213.15     7.41     0.42       5755
+gex-level-fade         DROP short/15m/bars_since_last_flip=6-15                  31    -163.55     9.68     0.54       5070
+gex-level-fade         DROP all/1m/flips_in_prev_60m=11+                         65     -77.05    13.85     0.77     5008.4
+gex-level-fade         DROP long/1m/bars_since_last_flip=60+                     20    -152.75       10     0.57       3055
+gex-lt-3m-crossover    DROP short/1m/flips_in_prev_60m=11+                       21    -116.43    33.33     0.74       2445
+gex-level-fade         DROP short/15m/state_at_entry=1                          302      -7.78    15.23     0.98     2350.8
+gex-level-fade         DROP short/15m/favorable_at_entry=true                   302      -7.78    15.23     0.98     2350.8
+gex-level-fade         DROP all/1m/bars_since_last_flip=60+                      34     -32.06    14.71      0.9       1090
+gex-level-fade         DROP short/15m/bars_since_last_flip=16-60                 93      -1.34    15.05        1      124.4
+gex-level-fade         DROP short/1m/bars_since_last_flip=0                      26       5.13    15.38     1.02     -133.4
+gex-level-fade         DROP all/3m/bars_since_last_flip=6-15                    147       1.19    16.33        1       -175
+gex-level-fade         DROP all/15m/bars_since_last_flip=6-15                    66       9.22    18.18     1.03     -608.6
+
+-- TOP 15 KEEP rules (filter to only this cell; PF delta vs side/strategy baseline) --
+strategy               rule                                                  n_kept   kept_avg  kept_wr  kept_pf     pf_Δ  kept_sum$
+gex-flip-ivpct         KEEP long/1m/flips_in_prev_60m=6-10                       38    1609.79    73.68     6.33     3.33      61172
+gex-level-fade         KEEP long/1m/bars_since_last_flip=0                       30     471.49    36.67     2.88     1.47    14144.8
+gex-flip-ivpct         KEEP all/1m/flips_in_prev_60m=6-10                        59    1374.95     66.1     4.42     1.43      81122
+gex-level-fade         KEEP short/3m/state_at_entry=0                            38     409.02    34.21     2.57     1.22    15542.6
+gex-level-fade         KEEP short/3m/favorable_at_entry=false                    38     409.02    34.21     2.57     1.22    15542.6
+gex-level-fade         KEEP short/15m/state_at_entry=0                          133     371.85    33.83     2.42     1.07    49456.6
+gex-level-fade         KEEP short/15m/favorable_at_entry=false                  133     371.85    33.83     2.42     1.07    49456.6
+gex-flip-ivpct         KEEP short/15m/bars_since_last_flip=60+                   46    1256.96    63.04     3.94     0.96      57820
+gex-level-fade         KEEP all/15m/bars_since_last_flip=1-5                     50     351.63       30     2.27     0.89    17581.6
+gex-level-fade         KEEP all/15m/favorable_at_entry=false                    253     343.27    31.23     2.26     0.88    86848.4
+gex-level-fade         KEEP long/1m/state_at_entry=1                             81     336.04    30.86     2.23     0.82    27219.2
+gex-level-fade         KEEP long/1m/favorable_at_entry=false                     81     336.04    30.86     2.23     0.82    27219.2
+gex-level-fade         KEEP all/1m/favorable_at_entry=false                     147     328.28    29.93     2.19     0.81    48257.2
+gex-level-fade         KEEP short/1m/state_at_entry=0                            66     318.76    28.79     2.13     0.78      21038
+gex-level-fade         KEEP short/1m/favorable_at_entry=false                    66     318.76    28.79     2.13     0.78      21038
+
+-- Per-strategy top 3 DROP and 3 KEEP --
+# gex-flip-ivpct (base sumPnL=$157329, PF=2.99, n=172)
+  DROP:
+    DROP long/1m/flips_in_prev_60m=3-5                 drop n=37 avg=$67.41 pf=1.11  improvement=$-2494
+    DROP all/15m/bars_since_last_flip=16-60            drop n=30 avg=$166.33 pf=1.25  improvement=$-4990
+    DROP short/3m/bars_since_last_flip=16-60           drop n=24 avg=$328.33 pf=1.58  improvement=$-7880
+  KEEP:
+    KEEP long/1m/flips_in_prev_60m=6-10                keep n=38 avg=$1609.79 pf=6.33  pf_Δ=3.33 sum=$61172
+    KEEP all/1m/flips_in_prev_60m=6-10                 keep n=59 avg=$1374.95 pf=4.42  pf_Δ=1.43 sum=$81122
+    KEEP short/15m/bars_since_last_flip=60+            keep n=46 avg=$1256.96 pf=3.94  pf_Δ=0.96 sum=$57820
+
+# gex-lt-3m-crossover (base sumPnL=$179201, PF=1.44, n=888)
+  DROP:
+    DROP long/15m/state_at_entry=0                     drop n=263 avg=$-22.54 pf=0.96  improvement=$5929
+    DROP long/15m/favorable_at_entry=true              drop n=263 avg=$-22.54 pf=0.96  improvement=$5929
+    DROP short/1m/flips_in_prev_60m=11+                drop n=21 avg=$-116.43 pf=0.74  improvement=$2445
+  KEEP:
+    KEEP long/15m/bars_since_last_flip=1-5             keep n=37 avg=$470.46 pf=1.98  pf_Δ=0.65 sum=$17407
+    KEEP long/15m/state_at_entry=1                     keep n=218 avg=$410.43 pf=1.92  pf_Δ=0.59 sum=$89474
+    KEEP long/15m/favorable_at_entry=false             keep n=218 avg=$410.43 pf=1.92  pf_Δ=0.59 sum=$89474
+
+# gex-level-fade (base sumPnL=$104771, PF=1.38, n=889)
+  DROP:
+    DROP long/3m/bars_since_last_flip=6-15             drop n=81 avg=$-72.9 pf=0.79  improvement=$5905
+    DROP short/1m/flips_in_prev_60m=11+                drop n=27 avg=$-213.15 pf=0.42  improvement=$5755
+    DROP short/15m/bars_since_last_flip=6-15           drop n=31 avg=$-163.55 pf=0.54  improvement=$5070
+  KEEP:
+    KEEP long/1m/bars_since_last_flip=0                keep n=30 avg=$471.49 pf=2.88  pf_Δ=1.47 sum=$14144.8
+    KEEP short/3m/state_at_entry=0                     keep n=38 avg=$409.02 pf=2.57  pf_Δ=1.22 sum=$15542.6
+    KEEP short/3m/favorable_at_entry=false             keep n=38 avg=$409.02 pf=2.57  pf_Δ=1.22 sum=$15542.6
+
