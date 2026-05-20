@@ -302,13 +302,33 @@ class MultiStrategyEngine {
       if (!Number.isFinite(tsSec)) return;
       const sentiment = (message.sentiment || '').toUpperCase();
       if (sentiment !== 'BULLISH' && sentiment !== 'BEARISH') return;
+      const flipTsMs = tsSec * 1000;
       state.lsState1m = {
-        timestamp: tsSec * 1000,         // ms, matches candle.timestamp
+        timestamp: flipTsMs,             // ms, matches candle.timestamp
         state: sentiment === 'BULLISH' ? 1 : 0,
         adverseFlipTs: null,             // unknowable in live until next flip
         sentiment,
       };
-      logger.debug(`LS flip received for ${product}: ${sentiment} @ ${message.candleTime}`);
+      logger.info(`LS flip received for ${product}: ${sentiment} @ ${message.candleTime}`);
+
+      // Race fix: CANDLE_CLOSE and LS_STATUS arrive on separate channels with
+      // no ordering guarantee. If CANDLE_CLOSE for this bar already fired,
+      // the lstb strategy ran with state.lsState1m=null|stale and silently
+      // returned at the exact-match guard. Now that the flip has landed,
+      // look up the matching candle in the buffer and re-evaluate ONLY the
+      // ls-flip-trigger-bar runner. Idempotent: the strategy's _lastFlipTs
+      // guard makes a second eval for the same flip a no-op.
+      const matchCandle = state.candleBuffer?.candles?.find(c => c.timestamp === flipTsMs);
+      if (!matchCandle) {
+        // CANDLE_CLOSE for this bar hasn't arrived yet — normal flow will
+        // pick up the flip when the candle lands.
+        return;
+      }
+      const lstbRunner = state.strategies.get('ls-flip-trigger-bar');
+      if (!lstbRunner || !lstbRunner.enabled) return;
+      const inSession = this.isInTradingSession();
+      this.evaluateStrategyOnCandle(state, lstbRunner, matchCandle, inSession)
+        .catch(err => logger.error(`[lstb LS-driven re-eval] failed: ${err.message}`));
     });
 
     // Subscribe to IV skew

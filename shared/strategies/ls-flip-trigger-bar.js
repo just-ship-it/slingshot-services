@@ -165,13 +165,22 @@ export class LsFlipTriggerBarStrategy extends BaseStrategy {
 
     // Exact timestamp match required. The bar timestamp is bar start;
     // the LS record's unix_ms is also the bar start of the flip bar.
-    if (lsRec.timestamp !== candle.timestamp) return null;
+    if (lsRec.timestamp !== candle.timestamp) {
+      this._lastRejectReason = `LS flip ts (${lsRec.timestamp}) != candle ts (${candle.timestamp}) — race or stale flip`;
+      return null;
+    }
 
     // Defensive: don't fire twice on the same flip.
-    if (lsRec.timestamp === this._lastFlipTs) return null;
+    if (lsRec.timestamp === this._lastFlipTs) {
+      this._lastRejectReason = `duplicate eval for flip @ ${new Date(lsRec.timestamp).toISOString()}`;
+      return null;
+    }
 
     const newState = lsRec.state;
-    if (newState !== 0 && newState !== 1) return null;
+    if (newState !== 0 && newState !== 1) {
+      this._lastRejectReason = `invalid LS state ${newState}`;
+      return null;
+    }
 
     // Direction: state→1 = bullish flip → LONG; state→0 = bearish flip → SHORT
     const side = newState === 1 ? 'buy' : 'sell';
@@ -179,10 +188,16 @@ export class LsFlipTriggerBarStrategy extends BaseStrategy {
 
     // Step 3: trigger bar range. Skip degenerate bars.
     const range = candle.high - candle.low;
-    if (!(range > 0)) return null;
+    if (!(range > 0)) {
+      this._lastRejectReason = `degenerate bar (range=${range})`;
+      return null;
+    }
 
     // Step 4: cb_atr filter — reject big-body momentum flips that don't retrace.
-    if (atr == null || atr <= 0) return null; // ATR not warm yet
+    if (atr == null || atr <= 0) {
+      this._lastRejectReason = `ATR not warm (${this._tr.length}/${this.params.atrPeriod} bars buffered)`;
+      return null;
+    }
     const body = Math.abs(candle.close - candle.open);
     const cbAtr = body / atr;
     if (cbAtr >= this.params.cbAtrMax) {
@@ -202,8 +217,14 @@ export class LsFlipTriggerBarStrategy extends BaseStrategy {
     const takeProfit = direction === 'long' ? candle.high : candle.low;
 
     // Sanity: entry should be strictly between stop and target.
-    if (direction === 'long' && !(entryPrice > stopLoss && entryPrice < takeProfit)) return null;
-    if (direction === 'short' && !(entryPrice < stopLoss && entryPrice > takeProfit)) return null;
+    if (direction === 'long' && !(entryPrice > stopLoss && entryPrice < takeProfit)) {
+      this._lastRejectReason = `sanity fail (long): entry ${entryPrice} not strictly between stop ${stopLoss} and target ${takeProfit}`;
+      return null;
+    }
+    if (direction === 'short' && !(entryPrice < stopLoss && entryPrice > takeProfit)) {
+      this._lastRejectReason = `sanity fail (short): entry ${entryPrice} not strictly between stop ${stopLoss} and target ${takeProfit}`;
+      return null;
+    }
 
     this._lastFlipTs = lsRec.timestamp;
 
