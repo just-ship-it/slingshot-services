@@ -232,6 +232,23 @@ async function handleTradeSignalDiscord(message) {
 const ALERTS_REDIS_KEY = 'alerts:strategy';
 const MAX_PERSISTED_ALERTS = 50;
 
+// Date-keyed historical archives. Uncapped (until we add explicit cleanup) —
+// Redis is at ~36MB / 1GB so we have headroom. Date is the ET calendar date
+// of the event timestamp. Use RPUSH so LRANGE 0 -1 returns chronological order.
+const ALERTS_BY_DAY_PREFIX = 'alerts:by-day:';   // alerts:by-day:2026-05-20
+const CANDLES_BY_DAY_PREFIX = 'candles:by-day:'; // candles:by-day:NQ:2026-05-20
+
+function etDateKey(ts) {
+  const d = ts instanceof Date ? ts : new Date(ts);
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'America/New_York',
+    year: 'numeric', month: '2-digit', day: '2-digit',
+  }).formatToParts(d);
+  const o = {};
+  for (const p of parts) o[p.type] = p.value;
+  return `${o.year}-${o.month}-${o.day}`;
+}
+
 /**
  * Persist an alert to Redis and broadcast to WebSocket clients.
  */
@@ -243,12 +260,21 @@ async function persistAndBroadcastAlert(alert) {
   // Broadcast to connected clients
   broadcast('strategy_alert', alert);
 
-  // Persist to Redis (prepend, trim to max)
+  // Persist to Redis (prepend, trim to max) — dashboard ring buffer.
   try {
     await messageBus.publisher.lPush(ALERTS_REDIS_KEY, JSON.stringify(alert));
     await messageBus.publisher.lTrim(ALERTS_REDIS_KEY, 0, MAX_PERSISTED_ALERTS - 1);
   } catch (err) {
     logger.error('Failed to persist alert to Redis:', err.message);
+  }
+
+  // Also append to the date-keyed historical list (uncapped). Used by
+  // /api/alerts/historical?date=YYYY-MM-DD and the trade-audit tool.
+  try {
+    const dayKey = ALERTS_BY_DAY_PREFIX + etDateKey(alert.timestamp || alert.receivedAt || Date.now());
+    await messageBus.publisher.rPush(dayKey, JSON.stringify(alert));
+  } catch (err) {
+    logger.error('Failed to persist alert to date-keyed list:', err.message);
   }
 }
 
@@ -262,6 +288,22 @@ async function loadAlertsFromRedis() {
   } catch (err) {
     logger.error('Failed to load alerts from Redis:', err.message);
     return [];
+  }
+}
+
+/**
+ * Archive every closed 1m candle to a date-keyed Redis list so the audit
+ * tool can replay any past session. Uncapped (Redis sits at ~36MB / 1GB).
+ * Key shape: candles:by-day:<PRODUCT>:<YYYY-MM-DD ET>. Reads via LRANGE
+ * 0 -1 return chronological order (RPUSH appends to tail).
+ */
+async function handleCandleCloseArchive(message) {
+  if (!message || !message.product || message.timestamp == null) return;
+  try {
+    const dayKey = `${CANDLES_BY_DAY_PREFIX}${message.product}:${etDateKey(message.timestamp)}`;
+    await messageBus.publisher.rPush(dayKey, JSON.stringify(message));
+  } catch (err) {
+    logger.error('Failed to archive candle:', err.message);
   }
 }
 
@@ -945,6 +987,43 @@ app.get('/api/alerts', dashboardAuth, async (req, res) => {
   try {
     const alerts = await loadAlertsFromRedis();
     res.json(alerts);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Historical alerts for a specific ET calendar date. Reads from the
+// uncapped date-keyed list populated by persistAndBroadcastAlert.
+// Returns [] if no alerts archived for that date (service not running
+// that day, or date predates archive deployment).
+app.get('/api/alerts/historical', dashboardAuth, async (req, res) => {
+  const date = String(req.query.date || '').trim();
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+    return res.status(400).json({ error: 'date must be YYYY-MM-DD' });
+  }
+  try {
+    const key = ALERTS_BY_DAY_PREFIX + date;
+    const raw = await messageBus.publisher.lRange(key, 0, -1);
+    const alerts = (raw || []).map(s => { try { return JSON.parse(s); } catch { return null; } }).filter(Boolean);
+    res.json({ date, count: alerts.length, alerts });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Historical 1m candles for a specific ET calendar date + symbol.
+// Returns full session of bars in chronological order.
+app.get('/api/candles/historical', dashboardAuth, async (req, res) => {
+  const date = String(req.query.date || '').trim();
+  const symbol = String(req.query.symbol || 'NQ').toUpperCase();
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+    return res.status(400).json({ error: 'date must be YYYY-MM-DD' });
+  }
+  try {
+    const key = `${CANDLES_BY_DAY_PREFIX}${symbol}:${date}`;
+    const raw = await messageBus.publisher.lRange(key, 0, -1);
+    const candles = (raw || []).map(s => { try { return JSON.parse(s); } catch { return null; } }).filter(Boolean);
+    res.json({ date, symbol, count: candles.length, candles });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -4353,6 +4432,7 @@ async function startup() {
       [CHANNELS.LT_LEVELS, handleLtLevels],
       [CHANNELS.LS_STATUS, handleLsStatus],
       [CHANNELS.STRATEGY_ALERT, handleStrategyAlert],
+      [CHANNELS.CANDLE_CLOSE, handleCandleCloseArchive],
       // Discord notification subscriptions
       [CHANNELS.TRADE_VALIDATED, handleTradeSignalDiscord],
       [CHANNELS.TRADE_REJECTED, handleTradeRejectedDiscord],
