@@ -215,7 +215,7 @@ function parseSignalsJson(alerts, { includeRejected = true, dateFilter } = {}) {
 }
 
 async function fetchAlerts({ prodUrl, token, date, useHistorical }) {
-  if (!prodUrl || !token) throw new Error('--prod-url and --token required to pull alerts');
+  if (!prodUrl || !token) throw new Error('prod URL and credentials required to pull alerts (see --help)');
   const base = prodUrl.replace(/\/$/, '');
   const url = useHistorical
     ? `${base}/api/alerts/historical?date=${date}`
@@ -232,7 +232,7 @@ async function fetchAlerts({ prodUrl, token, date, useHistorical }) {
 
 async function fetchCandles({ prodUrl, token, symbol, count, date, useHistorical }) {
   if (!prodUrl || !token) {
-    throw new Error('--prod-url and --token are required when --candles is not provided');
+    throw new Error('prod URL and credentials are required when --candles is not provided (see --help)');
   }
   const base = prodUrl.replace(/\/$/, '');
   // Use the date-keyed archive when the requested date isn't today (ET).
@@ -490,7 +490,7 @@ async function main() {
   let signals = [];
   if (args['alerts-from-prod']) {
     if (!prodUrl || !token) {
-      console.error('--alerts-from-prod requires --prod-url and --token');
+      console.error('--alerts-from-prod requires prod URL and credentials (see --help)');
       process.exit(1);
     }
     const useHistorical = !isToday;
@@ -536,7 +536,7 @@ async function main() {
     console.log(`Loaded ${candlesPayload.candles?.length || candlesPayload.length} candles from ${args.candles}`);
   } else {
     if (!prodUrl || !token) {
-      console.error('Need --candles <path> OR --prod-url + --token to fetch candles');
+      console.error('Need --candles <path> OR a prod URL with credentials to fetch candles (see --help)');
       process.exit(1);
     }
     const useHistorical = !isToday;
