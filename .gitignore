@@ -80,5 +80,13 @@ data/
 # Backtest sweep output
 backtest-engine/research/output/sweeps/
 
+# Per-research-dir output artifacts (CSVs, .txt logs, candidate JSONs).
+# Regeneratable from the scripts in the same research dir; bloats git and
+# routinely produces >100MB files that GitHub will reject. The scripts and
+# SUMMARY.md stay tracked — only the output/ subdir is ignored. Files
+# already tracked from older research dirs (e.g. first-hour, ls-overlay)
+# stay tracked; this rule only affects new additions.
+backtest-engine/research/*/output/
+
 # Skunkworks projects
 skunkworks/

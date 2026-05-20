@@ -91,6 +91,9 @@ class ProductState {
     this.gexLevelsReceivedAt = 0; // Epoch ms — tracks when GEX data last arrived via Redis
     this.ltLevels = null;
     this.ivData = null;
+    // Latest 1m LS flip (or null). Populated by LS_STATUS subscriber;
+    // overwritten on each new confirmed bar-close flip.
+    this.lsState1m = null;
   }
 }
 
@@ -280,6 +283,32 @@ class MultiStrategyEngine {
         // Re-check data readiness for strategies waiting on LT
         this.recheckDataReadiness(state);
       }
+    });
+
+    // Subscribe to LS (Liquidity Status) flip events from data-service.
+    // lt-monitor emits ls_status ONLY on confirmed 1m bar-close flips
+    // (BULLISH↔BEARISH state change), so each message IS a flip event.
+    // We map sentiment → state (BULLISH=1, BEARISH=0) and convert the
+    // bar timestamp from seconds (TradingView) to ms (engine convention).
+    // The ls-flip-trigger-bar strategy reads marketData.lsState1m and
+    // does an exact timestamp match against the current bar — so only
+    // the bar that produced the flip will trigger an entry. Other
+    // strategies ignore the field.
+    messageBus.subscribe(CHANNELS.LS_STATUS, (message) => {
+      const product = (message.product || 'NQ').toUpperCase();
+      const state = this.products.get(product);
+      if (!state) return;
+      const tsSec = message.timestamp;
+      if (!Number.isFinite(tsSec)) return;
+      const sentiment = (message.sentiment || '').toUpperCase();
+      if (sentiment !== 'BULLISH' && sentiment !== 'BEARISH') return;
+      state.lsState1m = {
+        timestamp: tsSec * 1000,         // ms, matches candle.timestamp
+        state: sentiment === 'BULLISH' ? 1 : 0,
+        adverseFlipTs: null,             // unknowable in live until next flip
+        sentiment,
+      };
+      logger.debug(`LS flip received for ${product}: ${sentiment} @ ${message.candleTime}`);
     });
 
     // Subscribe to IV skew
@@ -562,7 +591,11 @@ class MultiStrategyEngine {
     const marketData = {
       gexLevels: gexLevels,
       ltLevels: state.ltLevels,
-      ltLevels1m: state.ltLevels
+      ltLevels1m: state.ltLevels,
+      // Latest 1m LS flip (or null). Only ls-flip-trigger-bar consumes this;
+      // it does an exact timestamp match so a stale flip from a prior bar
+      // won't fire a new entry. Other strategies ignore the field.
+      lsState1m: state.lsState1m || null,
     };
 
     // Add IV data for strategies that need it

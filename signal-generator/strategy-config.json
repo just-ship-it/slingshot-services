@@ -39,6 +39,12 @@
           "evalTimeframe": "1m"
         },
         {
+          "name": "ls-flip-trigger-bar",
+          "enabled": false,
+          "priority": 4,
+          "evalTimeframe": "1m"
+        },
+        {
           "name": "impulse-fvg",
           "enabled": false,
           "priority": 3,

@@ -30,6 +30,7 @@ import { GexAbsorptionStrategy } from '../../shared/strategies/gex-absorption.js
 import { IVSkewGexStrategy } from '../../shared/strategies/iv-skew-gex.js';
 import { GexFlipIvpctStrategy } from '../../shared/strategies/gex-flip-ivpct.js';
 import { GexLt3mCrossoverStrategy } from '../../shared/strategies/gex-lt-3m-crossover.js';
+import { LsFlipTriggerBarStrategy } from '../../shared/strategies/ls-flip-trigger-bar.js';
 import { GexTouchConfirmStrategy } from '../../shared/strategies/gex-touch-confirm.js';
 import { GexTouchPatternsStrategy } from '../../shared/strategies/gex-touch-patterns.js';
 import { GexStructuralResistStrategy } from '../../shared/strategies/gex-structural-resist.js';
@@ -382,6 +383,18 @@ export class BacktestEngine {
       }
     }
 
+    // Optional 1m LS state data (--ls-1m-file) for ls-flip-trigger-bar.
+    // Schema: timestamp_iso, unix_ms, state (0|1), source_symbol.
+    // Each row is a STATE CHANGE — Pine emits only on flip.
+    let lsData1m = [];
+    if (this.config.ls1mFile) {
+      lsData1m = await this._loadLs1mFile(this.config.ls1mFile,
+        this.config.startDate, this.config.endDate);
+      if (!this.config.quiet) {
+        console.log(`✅ Loaded ${lsData1m.length.toLocaleString()} 1m LS flip records from ${this.config.ls1mFile}`);
+      }
+    }
+
     // Load GEX data from 15-minute interval JSON files
     const gexLoaded = await this.gexLoader.loadDateRange(this.config.startDate, this.config.endDate);
 
@@ -564,7 +577,7 @@ export class BacktestEngine {
     }
 
     // Create market data lookup for efficient access (for legacy compatibility)
-    const marketDataLookup = this.createMarketDataLookup(gexData, liquidityData, liquidityData1m, s1VwapData);
+    const marketDataLookup = this.createMarketDataLookup(gexData, liquidityData, liquidityData1m, s1VwapData, lsData1m);
 
     // Load IV data for IV-based strategies (iv-skew-gex, gex-flip-ivpct, gex-touch-confirm)
     const isIVSkewStrategy = this.config.strategy === 'iv-skew-gex' || this.config.strategy === 'iv-skew';
@@ -674,6 +687,7 @@ export class BacktestEngine {
       gexLoader: this.gexLoader,         // Pass loader for 15-min timestamp lookups
       liquidityLevels: liquidityData,
       liquidityLevels1m: liquidityData1m,
+      lsState1m: lsData1m,
       calendarSpreads: calendarSpreads,  // For contract transition tracking
       marketDataLookup: marketDataLookup,
       cvdMap: this.cvdMap,               // CVD data aligned to candle timestamps (Phase 3)
@@ -731,6 +745,49 @@ export class BacktestEngine {
         .on('end', resolve).on('error', reject);
     });
     records.sort((a, b) => a.timestamp - b.timestamp);
+    return records;
+  }
+
+  /**
+   * Load 1m LS (Liquidity Status) flip CSV (--ls-1m-file). Schema:
+   *   timestamp_iso, unix_ms, state (0|1), source_symbol
+   * Each row is a state-change event (Pine emits only on flip).
+   * Returns [{ timestamp, state, sourceSymbol }] sorted ascending by ts.
+   */
+  async _loadLs1mFile(filePath, startDate, endDate) {
+    const absPath = path.isAbsolute(filePath) ? filePath : path.resolve(filePath);
+    if (!fs.existsSync(absPath)) {
+      const dataRelative = path.join(this.config.dataDir, filePath);
+      if (fs.existsSync(dataRelative)) return this._loadLs1mFile(dataRelative, startDate, endDate);
+      throw new Error(`--ls-1m-file path not found: ${filePath}`);
+    }
+    const startMs = startDate.getTime();
+    const endMs = endDate.getTime() + 24 * 3600000;
+    const records = [];
+    await new Promise((resolve, reject) => {
+      fs.createReadStream(absPath).pipe(csv())
+        .on('data', (row) => {
+          let ts = parseInt(row.unix_ms, 10);
+          if (isNaN(ts) && row.timestamp_iso) ts = new Date(row.timestamp_iso).getTime();
+          if (isNaN(ts) || ts < startMs || ts > endMs) return;
+          const state = parseInt(row.state, 10);
+          if (state !== 0 && state !== 1) return;
+          records.push({
+            timestamp: ts,
+            state,
+            sourceSymbol: row.source_symbol || null,
+          });
+        })
+        .on('end', resolve).on('error', reject);
+    });
+    records.sort((a, b) => a.timestamp - b.timestamp);
+    // Since each record IS a state change, the very next record in the series
+    // is by definition an adverse (opposite-state) flip. Precompute it so the
+    // strategy/engine can cancel pending limits when an adverse flip occurs
+    // before fill. Last record has no adverse flip in-sample → null.
+    for (let i = 0; i < records.length; i++) {
+      records[i].adverseFlipTs = (i + 1 < records.length) ? records[i + 1].timestamp : null;
+    }
     return records;
   }
 
@@ -1347,13 +1404,14 @@ export class BacktestEngine {
    * @param {Object[]} liquidityData - Liquidity levels data
    * @returns {Object} Market data lookup
    */
-  createMarketDataLookup(gexData, liquidityData, liquidityData1m = null, s1VwapData = null) {
+  createMarketDataLookup(gexData, liquidityData, liquidityData1m = null, s1VwapData = null, lsData1m = null) {
     const lookup = {
       gex: new Map(),
       liquidity: new Map(),
       liquidity1m: null,        // direct ts → record (exact-match fast path)
       liquidity1mSorted: null,  // sorted ts array for at-or-before fallback
       s1Vwap: null,             // ts → vwap_close_diff (gex-touch-confirm)
+      lsState1m: null,          // ts → {timestamp, state} (ls-flip-trigger-bar)
     };
 
     // Index GEX data by date
@@ -1386,6 +1444,15 @@ export class BacktestEngine {
       lookup.s1Vwap = new Map();
       for (const r of s1VwapData) {
         lookup.s1Vwap.set(r.timestamp, r.vwap_close_diff);
+      }
+    }
+
+    // Index 1m LS state changes (flips): hashmap by bar-start timestamp.
+    // Each record IS a flip — Pine emits only on state change.
+    if (lsData1m && lsData1m.length) {
+      lookup.lsState1m = new Map();
+      for (const r of lsData1m) {
+        lookup.lsState1m.set(r.timestamp, r);
       }
     }
 
@@ -1508,11 +1575,19 @@ export class BacktestEngine {
       if (diff != null) s1Features = { vwap_close_diff: diff };
     }
 
+    // 1m LS state lookup (ls-flip-trigger-bar). Exact-match only — flips occur
+    // on bar boundaries and stale records do not represent the current bar.
+    let lsState1m = null;
+    if (lookup && lookup.lsState1m) {
+      lsState1m = lookup.lsState1m.get(timestamp) || null;
+    }
+
     return {
       gexLevels: gexLevels,
       ltLevels: liquidityLevels,
       ltLevels1m: liquidityLevels1m,       // 1m LT for gex-lt-3m-crossover
       s1Features: s1Features,              // s1 VWAP features for gex-touch-confirm
+      lsState1m: lsState1m,                // 1m LS flip record for ls-flip-trigger-bar
       gexLoader: data?.gexLoader || null,  // Pass loader for strategy use
       cbbo: cbboMetrics,                   // CBBO metrics for current timestamp
       cbboSpreadChange: cbboSpreadChange   // Spread change over lookback window
@@ -1597,6 +1672,10 @@ export class BacktestEngine {
       case 'gex-lt-cross':
       case 'glx':
         return new GexLt3mCrossoverStrategy(params);
+      case 'ls-flip-trigger-bar':
+      case 'ls-flip':
+      case 'lstb':
+        return new LsFlipTriggerBarStrategy(params);
       case 'gex-touch-confirm':
       case 'gex-touch':
       case 'gtc':

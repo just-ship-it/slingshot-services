@@ -27,6 +27,7 @@ import { createAccountStore, ACCOUNT_CHANNEL } from '../shared/utils/account-sto
 import { createRoutesStore, ROUTES_CHANNEL } from '../shared/utils/routes-store.js';
 import { evaluateCrossStrategyRules, evaluateStrategyAlerts } from './cross-strategy-filter.js';
 import { createExitRuleManager, captureRuleFromSignal } from './src/exit-rule-manager.js';
+import { shouldCancelOnPreFillExtreme } from './src/pre-fill-cancel.js';
 
 const SERVICE_NAME = 'trade-orchestrator';
 const logger = createLogger(SERVICE_NAME);
@@ -526,6 +527,13 @@ async function handleTradeSignal(raw) {
       timeoutCandles: signal.timeoutCandles ?? null,
       originalStop: signal.stop_loss ?? null,
       exitRules,
+      // Pre-fill-extreme cancel: when set, the watcher (checkPreFillExtremes)
+      // cancels this limit if price reaches either stop or target before the
+      // fill confirms. Opt-in via signal.cancelOnPreFillExtreme; lstb sets
+      // this, other strategies leave it undefined → watcher skips them.
+      cancelOnPreFillExtreme: signal.cancelOnPreFillExtreme === true,
+      preFillStopLoss: signal.stop_loss ?? null,
+      preFillTakeProfit: signal.take_profit ?? null,
     });
 
     await messageBus.publish(CHANNELS.ORDER_REQUEST, orderRequest);
@@ -1027,6 +1035,60 @@ async function checkStaleLimits() {
   }
 }
 
+// Pre-fill-extreme cancellation: for limit orders that have opted in via
+// signal.cancelOnPreFillExtreme, cancel the pending limit if price reaches
+// the stop or target BEFORE the limit fills. The trade thesis behind these
+// signals (structural retrace setups, e.g. ls-flip-trigger-bar) requires
+// the market to come back to the limit price; running past the bar's
+// extremes invalidates the setup. Without this watcher, the limit just
+// times out via timeoutCandles minutes later — by which point spot may be
+// at the target with no entry, or already past the stop with no fill.
+//
+// Mirrors the backtest engine's `cancelOnPreFillExtreme` flag in
+// trade-simulator.js. Opt-in per signal, so other strategies (which leave
+// the flag undefined) are unaffected.
+async function checkPreFillExtremes(priceMsg) {
+  if (!priceMsg) return;
+  const baseSymbol = priceMsg.baseSymbol;
+  if (!baseSymbol) return;
+  const high = Number.isFinite(priceMsg.high) ? priceMsg.high : null;
+  const low = Number.isFinite(priceMsg.low) ? priceMsg.low : null;
+  if (high == null && low == null) return;
+
+  for (const pending of state.pendingOrders.values()) {
+    if (!pending.cancelOnPreFillExtreme) continue;
+    if (pending.cancelRequested) continue;
+    if (pending.action !== 'place_limit') continue;
+    if (!pending.signalId) continue;
+    if (pending.preFillStopLoss == null || pending.preFillTakeProfit == null) continue;
+    if (extractUnderlying(pending.symbol) !== baseSymbol) continue;
+
+    const crossed = shouldCancelOnPreFillExtreme(
+      pending.direction,
+      pending.preFillStopLoss,
+      pending.preFillTakeProfit,
+      high,
+      low,
+    );
+    if (!crossed) continue;
+
+    pending.cancelRequested = true;
+    logger.warn(`[PRE-FILL-CANCEL] ${pending.accountId} ${pending.strategy} ${pending.symbol} ${pending.direction} — ${crossed} — cancelling pending limit`);
+    const url = `${TRADOVATE_SERVICE_URL}/accounts/${encodeURIComponent(pending.accountId)}/cancel/${encodeURIComponent(pending.signalId)}?symbol=${encodeURIComponent(pending.symbol)}`;
+    try {
+      const res = await fetch(url, { method: 'POST' });
+      if (!res.ok) {
+        logger.error(`[PRE-FILL-CANCEL] cancel HTTP ${res.status} url=${url}: ${await res.text().catch(() => '')}`);
+        pending.cancelRequested = false; // allow retry on next tick
+      }
+    } catch (err) {
+      const cause = err.cause ? `cause=${err.cause.code || err.cause.name || ''} ${err.cause.message || err.cause}` : '';
+      logger.error(`[PRE-FILL-CANCEL] cancel failed url=${url} msg="${err.message}" ${cause}`);
+      pending.cancelRequested = false;
+    }
+  }
+}
+
 async function probeTradovateService() {
   const url = `${TRADOVATE_SERVICE_URL}/health`;
   const startedAt = Date.now();
@@ -1074,6 +1136,11 @@ async function main() {
   await messageBus.subscribe(CHANNELS.PRICE_UPDATE, (msg) => {
     try { exitRuleManager.onPriceTick(msg); }
     catch (err) { logger.error(`[ExitRule] onPriceTick threw: ${err.message}`); }
+    // Pre-fill-extreme cancel watcher (opt-in per signal via
+    // cancelOnPreFillExtreme). Fires fire-and-forget — errors are logged
+    // inside, won't propagate.
+    checkPreFillExtremes(msg).catch(err =>
+      logger.error(`[PRE-FILL-CANCEL] watcher threw: ${err.message}`));
   });
   await messageBus.subscribe(CHANNELS.CANDLE_CLOSE, (msg) => {
     try { exitRuleManager.onCandleClose(msg); }

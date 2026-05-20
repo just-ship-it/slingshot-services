@@ -15,7 +15,9 @@ export class TradeSimulator {
     this.config = config;
     this.commission = config.commission || 5.0;
     this.slippage = config.slippage || {
-      limitOrderSlippage: 0.25,
+      // Limit orders fill at the limit price or not at all (CLAUDE.md spec).
+      // Only favorable price-improvement is possible; no adverse slippage.
+      limitOrderSlippage: 0,
       marketOrderSlippage: 1.0,
       stopOrderSlippage: 1.5
     };
@@ -417,6 +419,43 @@ export class TradeSimulator {
       if (trade.status === 'pending') {
         // For pending orders, we still need to track candles for timeout
         // But we check fill on each second bar
+        // Adverse-flip cancel: when an opposite-direction signal fires before
+        // fill, the trade thesis is invalidated. ls-flip-trigger-bar passes
+        // the next LS flip timestamp as adverseFlipCancelTs.
+        if (trade.signal?.adverseFlipCancelTs && bar.timestamp >= trade.signal.adverseFlipCancelTs) {
+          trade.status = 'cancelled';
+          if (debug) {
+            console.log(`    🚫 [TRADE ${trade.id}] Adverse flip pre-fill at 1s ${new Date(bar.timestamp).toISOString()}`);
+          }
+          return {
+            ...trade,
+            event: 'order_cancelled',
+            cancelReason: 'pre_fill_adverse_flip',
+          };
+        }
+        // Structural pre-fill invalidation: cancel if stop/target hit BEFORE fill.
+        // Used by ls-flip-trigger-bar — if price runs to either trigger-bar
+        // extreme without retracing to the limit, the structural setup is
+        // invalidated and we never enter.
+        if (trade.signal?.cancelOnPreFillExtreme) {
+          const isBuy = trade.side === 'buy' || trade.side === 'long';
+          const wouldFill = isBuy ? (bar.low <= trade.entryPrice) : (bar.high >= trade.entryPrice);
+          if (!wouldFill) {
+            const targetHit = isBuy ? (bar.high >= trade.takeProfit) : (bar.low <= trade.takeProfit);
+            const stopHit   = isBuy ? (bar.low  <= trade.stopLoss)  : (bar.high >= trade.stopLoss);
+            if (targetHit || stopHit) {
+              trade.status = 'cancelled';
+              if (debug) {
+                console.log(`    🚫 [TRADE ${trade.id}] Pre-fill invalidation (${targetHit ? 'target_first' : 'stop_first'}) at 1s ${new Date(bar.timestamp).toISOString()}`);
+              }
+              return {
+                ...trade,
+                event: 'order_cancelled',
+                cancelReason: targetHit ? 'pre_fill_target_first' : 'pre_fill_stop_first',
+              };
+            }
+          }
+        }
         const fillResult = this.checkOrderFill(trade, bar);
         if (fillResult.filled) {
           trade.status = 'active';
@@ -728,6 +767,39 @@ export class TradeSimulator {
             cancelReason: 'timeout',
             candlesWaited: trade.candlesSinceSignal
           };
+        }
+      }
+
+      // Adverse-flip cancel (1m fallback).
+      if (trade.signal?.adverseFlipCancelTs && candle.timestamp >= trade.signal.adverseFlipCancelTs) {
+        trade.status = 'cancelled';
+        if (debug) {
+          console.log(`    🚫 [TRADE ${trade.id}] Adverse flip pre-fill at 1m ${new Date(candle.timestamp).toISOString()}`);
+        }
+        return {
+          ...trade,
+          event: 'order_cancelled',
+          cancelReason: 'pre_fill_adverse_flip',
+        };
+      }
+      // Structural pre-fill invalidation (1m fallback when no 1s data).
+      if (trade.signal?.cancelOnPreFillExtreme) {
+        const isBuy = trade.side === 'buy' || trade.side === 'long';
+        const wouldFill = isBuy ? (candle.low <= trade.entryPrice) : (candle.high >= trade.entryPrice);
+        if (!wouldFill) {
+          const targetHit = isBuy ? (candle.high >= trade.takeProfit) : (candle.low <= trade.takeProfit);
+          const stopHit   = isBuy ? (candle.low  <= trade.stopLoss)  : (candle.high >= trade.stopLoss);
+          if (targetHit || stopHit) {
+            trade.status = 'cancelled';
+            if (debug) {
+              console.log(`    🚫 [TRADE ${trade.id}] Pre-fill invalidation (${targetHit ? 'target_first' : 'stop_first'}) at 1m ${new Date(candle.timestamp).toISOString()}`);
+            }
+            return {
+              ...trade,
+              event: 'order_cancelled',
+              cancelReason: targetHit ? 'pre_fill_target_first' : 'pre_fill_stop_first',
+            };
+          }
         }
       }
 
@@ -2310,7 +2382,12 @@ export class TradeSimulator {
       // Limit orders fill at the exact limit price — never slip (CLAUDE.md spec)
       actualExitPrice = roundTo(exitPrice);
     } else {
-      // eod_liquidation / market_close / time_exit / max_hold_time / trailing_stop / soft_stop — market orders
+      // eod_liquidation / market_close / time_exit / max_hold_time / trailing_stop / soft_stop.
+      // These are technically market-order exits but historically use
+      // limitOrderSlippage as a "soft slippage" value. With limitOrderSlippage
+      // now zero (CLAUDE.md spec), these exits incur no slippage — slightly
+      // optimistic for trailing/soft stops, fine for time-based exits. Switch
+      // to marketOrderSlippage if a strategy needs realistic exit slippage.
       const slippage = isBuy ? -this.slippage.limitOrderSlippage : this.slippage.limitOrderSlippage;
       actualExitPrice = roundTo(exitPrice + slippage);
     }

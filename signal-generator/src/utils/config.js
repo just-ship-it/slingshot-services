@@ -176,6 +176,15 @@ const config = {
   // outperforms +0 ($173k vs $162k); default to +10.
   GLF_LS_BE_ON_FLIP: process.env.GLF_LS_BE_ON_FLIP?.toLowerCase() === 'true',
   GLF_LS_BE_OFFSET: parseFloat(process.env.GLF_LS_BE_OFFSET || '10'),
+
+  // LS-Flip-Trigger-Bar (lstb) — v2 prod-honest gold defaults baked into
+  // the strategy class. Env vars override only when explicitly set.
+  LSTB_FIB: parseFloat(process.env.LSTB_FIB || '0.5'),
+  LSTB_CB_ATR_MAX: parseFloat(process.env.LSTB_CB_ATR_MAX || '1.81'),
+  LSTB_ATR_PERIOD: parseInt(process.env.LSTB_ATR_PERIOD || '20'),
+  LSTB_FILL_TIMEOUT_CANDLES: parseInt(process.env.LSTB_FILL_TIMEOUT_CANDLES || '10'),
+  LSTB_MAX_HOLD_BARS: parseInt(process.env.LSTB_MAX_HOLD_BARS || '60'),
+  LSTB_BLOCKED_HOURS_ET: process.env.LSTB_BLOCKED_HOURS_ET ?? '5,16,21',
   // Mirrors trade-orchestrator's EOD_CUTOFF_ET so the dashboard can show the
   // same time the orchestrator will actually force-flat at. Set EOD_CUTOFF_ET=""
   // (empty) to disable the dashboard indicator (matches orchestrator semantics).
@@ -362,6 +371,22 @@ const config = {
       orbCandles: 15,
       ibCandles: 30,
       lastEntryTime: 15.917
+    };
+  },
+
+  getLsFlipTriggerBarParams() {
+    // Strategy class owns the v2 gold defaults (fib=0.5, cbAtrMax=1.81,
+    // maxHoldBars=60, blockedHoursEt=[5,16,21]). Env overrides only fire
+    // when LSTB_* vars are set. blockedHoursEt is parsed from the comma list.
+    const blockedHoursEt = (this.LSTB_BLOCKED_HOURS_ET || '')
+      .split(',').map(s => parseInt(s.trim(), 10)).filter(n => !isNaN(n));
+    return {
+      fib: this.LSTB_FIB,
+      cbAtrMax: this.LSTB_CB_ATR_MAX,
+      atrPeriod: this.LSTB_ATR_PERIOD,
+      fillTimeoutCandles: this.LSTB_FILL_TIMEOUT_CANDLES,
+      maxHoldBars: this.LSTB_MAX_HOLD_BARS,
+      blockedHoursEt,
     };
   },
 

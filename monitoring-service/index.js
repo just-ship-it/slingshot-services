@@ -2565,6 +2565,25 @@ app.get('/api/strategy/gex-lt-3m-crossover/status', dashboardAuth, async (req, r
   }
 });
 
+// LS-Flip-Trigger-Bar strategy status - proxied from signal-generator
+app.get('/api/strategy/ls-flip-trigger-bar/status', dashboardAuth, async (req, res) => {
+  try {
+    const response = await axios.get(`${SIGNAL_GENERATOR_URL}/strategy/status/ls-flip-trigger-bar`, { timeout: 5000 });
+    res.json({ success: true, ...response.data });
+  } catch (error) {
+    if (error.code === 'ECONNREFUSED') {
+      res.json({
+        success: false,
+        error: 'signal-generator not running',
+        message: 'Start signal-generator: pm2 start ecosystem.config.cjs --only signal-generator'
+      });
+    } else {
+      logger.error('Failed to fetch ls-flip-trigger-bar status:', error.message);
+      res.status(500).json({ error: 'Failed to fetch ls-flip-trigger-bar status', details: error.message });
+    }
+  }
+});
+
 // GEX-LEVEL-FADE strategy status - proxied from signal-generator
 app.get('/api/strategy/gex-level-fade/status', dashboardAuth, async (req, res) => {
   try {

@@ -3,7 +3,7 @@
     "defaultTimeframe": "15m",
     "commission": 5.0,
     "slippage": {
-      "limitOrderSlippage": 0.25,
+      "limitOrderSlippage": 0,
       "marketOrderSlippage": 1.0,
       "stopOrderSlippage": 1.5
     },

@@ -17,6 +17,7 @@ import { GexFlipIvpctStrategy } from '../../../shared/strategies/gex-flip-ivpct.
 import { LTCandleRegimeStrategy } from '../../../shared/strategies/lt-candle-regime.js';
 import { GexLt3mCrossoverStrategy } from '../../../shared/strategies/gex-lt-3m-crossover.js';
 import { GexLevelFadeStrategy } from '../../../shared/strategies/gex-level-fade.js';
+import { LsFlipTriggerBarStrategy } from '../../../shared/strategies/ls-flip-trigger-bar.js';
 
 const logger = createLogger('strategy-factory');
 
@@ -35,6 +36,7 @@ export const STRATEGY_TYPES = {
   LT_CANDLE_REGIME: 'lt-candle-regime',
   GEX_LT_3M_CROSSOVER: 'gex-lt-3m-crossover',
   GEX_LEVEL_FADE: 'gex-level-fade',
+  LS_FLIP_TRIGGER_BAR: 'ls-flip-trigger-bar',
   AI_TRADER: 'ai-trader'
 };
 
@@ -103,6 +105,13 @@ export function createStrategy(strategyName, config) {
     case 'gexlevelfade':
     case 'glf':
       return createGexLevelFadeStrategy(config);
+
+    case STRATEGY_TYPES.LS_FLIP_TRIGGER_BAR:
+    case 'ls_flip_trigger_bar':
+    case 'lsfliptriggerbar':
+    case 'ls-flip':
+    case 'lstb':
+      return createLsFlipTriggerBarStrategy(config);
 
     case STRATEGY_TYPES.AI_TRADER:
     case 'ai_trader':
@@ -263,6 +272,13 @@ export function getStrategyConstant(strategyName) {
     case 'glf':
       return 'GEX_LEVEL_FADE';
 
+    case STRATEGY_TYPES.LS_FLIP_TRIGGER_BAR:
+    case 'ls_flip_trigger_bar':
+    case 'lsfliptriggerbar':
+    case 'ls-flip':
+    case 'lstb':
+      return 'LS_FLIP_TRIGGER_BAR';
+
     case STRATEGY_TYPES.AI_TRADER:
     case 'ai_trader':
     case 'aitrader':
@@ -344,6 +360,13 @@ export function getDataRequirements(strategyName) {
     case 'gexlevelfade':
     case 'glf':
       return GexLevelFadeStrategy.getDataRequirements();
+
+    case STRATEGY_TYPES.LS_FLIP_TRIGGER_BAR:
+    case 'ls_flip_trigger_bar':
+    case 'lsfliptriggerbar':
+    case 'ls-flip':
+    case 'lstb':
+      return LsFlipTriggerBarStrategy.getDataRequirements();
 
     case STRATEGY_TYPES.AI_TRADER:
     case 'ai_trader':
@@ -524,6 +547,35 @@ function createGexLevelFadeStrategy(config) {
     `lsBeOnFlip=${params.lsBeOnFlip === true ? `ON(off=${params.lsBeOffset ?? 0})` : 'off'}`);
 
   return new GexLevelFadeStrategy(params);
+}
+
+/**
+ * Create LS-Flip-Trigger-Bar strategy.
+ *
+ * v2 prod-honest gold: 6,952 trades / $130,500 / PF 1.48 / Sharpe 10.97 / DD 1.93%
+ * over Jan 2025 → Apr 2026. Default blocked hours [5, 16, 21] ET baked into the
+ * strategy class; env overrides via LSTB_* vars. Trades the 1m LS-flip trigger
+ * bar as a structural setup: limit-entry at fib retrace, opposite-extreme stop,
+ * same-side-extreme target, cb_atr<1.81 filter to drop big-body momentum flips.
+ */
+function createLsFlipTriggerBarStrategy(config) {
+  const overrides = typeof config.getLsFlipTriggerBarParams === 'function'
+    ? config.getLsFlipTriggerBarParams()
+    : {};
+  const params = {
+    ...overrides,
+    tradingSymbol: config.TRADING_SYMBOL,
+    defaultQuantity: config.DEFAULT_QUANTITY,
+    eodCutoffEt: overrides.eodCutoffEt ?? process.env.EOD_CUTOFF_ET ?? '15:45',
+    debug: false,
+  };
+
+  logger.info(`LS-FLIP-TRIGGER-BAR params: fib=${params.fib ?? 0.5}, cbAtrMax=${params.cbAtrMax ?? 1.81}, ` +
+    `atrPeriod=${params.atrPeriod ?? 20}, fillTimeoutCandles=${params.fillTimeoutCandles ?? 10}, ` +
+    `maxHoldBars=${params.maxHoldBars ?? 60}, blockedHours=[${params.blockedHoursEt ?? '5,16,21'}], ` +
+    `eodCutoff=${params.eodCutoffEt}`);
+
+  return new LsFlipTriggerBarStrategy(params);
 }
 
 function createLTCandleRegimeStrategy(config) {
