@@ -469,10 +469,22 @@ class MultiStrategyEngine {
     const state = this.products.get(product);
     if (!state) return;
 
+    // Normalize timestamp to numeric milliseconds. Backtest CSVs deliver
+    // numeric ms; live data-service delivers ISO strings (see candle-manager.js
+    // — it forwards quote.timestamp untouched). Strategies compare timestamps
+    // by strict equality (e.g. ls-flip-trigger-bar checks lsRec.timestamp ===
+    // candle.timestamp) and do arithmetic on them (signal.timestamp =
+    // candle.timestamp + ONE_MIN_MS) so the live string form would produce
+    // both phantom rejects and corrupted signal timestamps.
+    const rawTs = candleData.timestamp;
+    const tsMs = typeof rawTs === 'number'
+      ? rawTs
+      : (typeof rawTs === 'string' ? Date.parse(rawTs) : Number(rawTs));
+
     // Add to product's candle buffer
     const candle = {
       symbol: candleData.symbol,
-      timestamp: candleData.timestamp,
+      timestamp: tsMs,
       open: candleData.open,
       high: candleData.high,
       low: candleData.low,
