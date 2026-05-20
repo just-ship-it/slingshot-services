@@ -186,13 +186,17 @@ class DataService {
         defaultMultiplier: config.NQ_GEX_DEFAULT_MULTIPLIER,
         cacheFile: config.NQ_GEX_CACHE_FILE
       },
-      {
-        key: 'ES',
-        etfSymbol: config.ES_GEX_SYMBOL,
-        futuresSymbol: config.ES_GEX_FUTURES_SYMBOL,
-        defaultMultiplier: config.ES_GEX_DEFAULT_MULTIPLIER,
-        cacheFile: config.ES_GEX_CACHE_FILE
-      }
+      // [2026-05-20] ES GEX calculator disabled — no live strategies trade ES.
+      // The CBOE SPY chain fetch happens on a schedule and was a non-trivial
+      // chunk of data-service startup time + memory. Re-enable alongside ES
+      // LT monitor + ES OHLCV streaming in config.js if reviving ES.
+      // {
+      //   key: 'ES',
+      //   etfSymbol: config.ES_GEX_SYMBOL,
+      //   futuresSymbol: config.ES_GEX_FUTURES_SYMBOL,
+      //   defaultMultiplier: config.ES_GEX_DEFAULT_MULTIPLIER,
+      //   cacheFile: config.ES_GEX_CACHE_FILE
+      // }
     ];
 
     const hasOptionsProvider = (config.SCHWAB_ENABLED && !!config.SCHWAB_APP_KEY) || (config.TRADIER_ENABLED && !!config.TRADIER_ACCESS_TOKEN);
@@ -334,7 +338,12 @@ class DataService {
   async initializeLtMonitors(jwtToken, redisUrl) {
     const ltConfigs = [
       { key: 'NQ', symbol: config.LT_NQ_SYMBOL, timeframe: config.LT_NQ_TIMEFRAME },
-      { key: 'ES', symbol: config.LT_ES_SYMBOL, timeframe: config.LT_ES_TIMEFRAME }
+      // [2026-05-20] ES LT monitor disabled — no live strategies trade ES.
+      // Running a second LT WebSocket roughly doubled TV reconnect rate
+      // (Code 1000 closes ~30-60s) and every reconnect on an expired JWT
+      // caused a phantom bar-close LS flip on the OTHER product. To
+      // re-enable: uncomment + verify token-refresh wiring is healthy first.
+      // { key: 'ES', symbol: config.LT_ES_SYMBOL, timeframe: config.LT_ES_TIMEFRAME }
     ];
 
     for (const ltConfig of ltConfigs) {

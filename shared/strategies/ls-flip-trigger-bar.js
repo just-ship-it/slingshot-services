@@ -154,7 +154,19 @@ export class LsFlipTriggerBarStrategy extends BaseStrategy {
         timestamp: lsRec.timestamp,
         state: lsRec.state,
         sentiment: lsRec.sentiment || (lsRec.state === 1 ? 'BULLISH' : 'BEARISH'),
+        gap: lsRec.gap === true,
       };
+    }
+
+    // Step 2a': gap rejection — the lt-monitor flagged this flip as following
+    // a missing-bars window (TV reconnect or feed blip), which means we
+    // CAN'T be sure THIS is the actual trigger bar. The real flip might
+    // have happened on a bar we never saw. Trading off this would mean
+    // entering at the wrong fib level of the wrong bar. Skip — but keep
+    // _lastSeenLs updated so the dashboard reflects current sentiment.
+    if (lsRec.gap === true) {
+      this._lastRejectReason = `gap-catchup flip (gap=${lsRec.gapSec}s since prior confirmed bar) — actual trigger bar may have been missed`;
+      return null;
     }
 
     // Step 2b: blocked ET hour check — skip entries during negative-expectancy hours.

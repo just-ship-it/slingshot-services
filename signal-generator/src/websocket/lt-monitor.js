@@ -54,6 +54,15 @@ class LTMonitor extends EventEmitter {
     this.lsFormingBarSentiment = null; // latest provisional sentiment seen
     this.lsFormingBarRaw = null;
     this.lsConfirmedSentiment = null;  // last emitted (confirmed) sentiment
+    this.lsConfirmedBarTs = null;      // ts of the bar that produced last confirmed sentiment
+    // Was the currently-forming bar observed from its OPEN tick? If we seeded
+    // mid-bar after a reconnect, we don't know its true close value — the
+    // lsFormingBarSentiment is just the latest intrabar tick we caught, not
+    // a real close. So the "new bar arrived" handler treats this bar's close
+    // as untrustworthy and skips emission.
+    this.lsBarFullyObserved = false;
+    // ~1m bar = 60s; allow some clock drift before classifying as a gap.
+    this.LS_GAP_THRESHOLD_SEC = 90;
   }
 
   generateSession(prefix = 'qs') {
@@ -140,11 +149,16 @@ class LTMonitor extends EventEmitter {
     this.lsStudyAdded = false;
     this.lastLsValues = null;
     // Drop forming-bar cache; the next data update will reseed.
-    // Keep lsConfirmedSentiment so we don't re-fire on the same state
-    // after a reconnect (last confirmed value stays valid).
+    // Keep lsConfirmedSentiment AND lsConfirmedBarTs so we don't re-fire on
+    // the same state after a reconnect (last confirmed values stay valid).
+    // Mark next bar as NOT fully observed — the reseed happens mid-bar at
+    // an arbitrary intrabar moment, so its lsFormingBarSentiment is a
+    // partial observation, not a real close value. The "new bar arrived"
+    // handler will skip emission on the first post-reconnect bar transition.
     this.lsFormingBarTs = null;
     this.lsFormingBarSentiment = null;
     this.lsFormingBarRaw = null;
+    this.lsBarFullyObserved = false;
     this.initializeSessions();
     this.emit('connected');
   }
@@ -354,17 +368,20 @@ class LTMonitor extends EventEmitter {
           const sentiment = raw <= 6 ? 'BULLISH' : raw >= 7 ? 'BEARISH' : null;
 
           if (this.lsFormingBarTs === null) {
-            // First bar ever observed. Seed forming-bar cache but leave
-            // lsConfirmedSentiment NULL so the very first confirmed
-            // bar-close (when the next bar arrives) emits. That gives
-            // the dashboard its initial known state. Subsequent emissions
-            // only fire on actual flips (closedBar !== lsConfirmed).
+            // Seed: either first observation ever OR first post-reconnect tick.
+            // Either way we don't know if we caught the bar from its OPEN — the
+            // sentiment cached here is just whatever intrabar value happened to
+            // arrive first. Mark the bar as NOT fully observed so the "new bar
+            // arrived" branch skips emission for this bar's close.
             this.lsFormingBarTs = newTs;
             this.lsFormingBarSentiment = sentiment;
             this.lsFormingBarRaw = raw;
+            this.lsBarFullyObserved = false;
             if (sentiment) {
-              logger.info(`📊 LS seed: ${sentiment} (raw=${raw}) candle=${new Date(newTs * 1000).toISOString()} — waiting for first bar-close confirmation`);
-              this.currentLsSentiment = sentiment;
+              logger.info(`📊 LS seed (partial): ${sentiment} (raw=${raw}) candle=${new Date(newTs * 1000).toISOString()} — close will be skipped, awaiting next fully-observed bar`);
+              // Don't update currentLsSentiment from a partial seed — keep
+              // the last confirmed value as the public state until the next
+              // fully-observed close confirms something new.
             }
           } else if (newTs === this.lsFormingBarTs) {
             // Same bar — intrabar update. Cache provisional value, do NOT emit.
@@ -380,8 +397,31 @@ class LTMonitor extends EventEmitter {
             const closedBarRaw = this.lsFormingBarRaw;
             const isoClose = new Date(closedBarTs * 1000).toISOString();
 
-            if (closedBarSentiment && closedBarSentiment !== this.lsConfirmedSentiment) {
-              logger.info(`📊 LS FLIP (bar-close): ${this.lsConfirmedSentiment ?? 'null'} → ${closedBarSentiment} (raw=${closedBarRaw}) candle=${isoClose}`);
+            // Gap detection: if the bar that just closed is more than ~1 bar
+            // after the last confirmed close, we missed at least one bar in
+            // between — could have been a real flip on a bar we didn't see.
+            // We can't claim this is THE trigger bar; emit with gap=true so
+            // tradeable strategies (lstb) skip while the dashboard chip can
+            // still catch up its displayed state.
+            const gapSec = this.lsConfirmedBarTs == null
+              ? 0
+              : closedBarTs - this.lsConfirmedBarTs;
+            const isGap = this.lsConfirmedBarTs != null && gapSec > this.LS_GAP_THRESHOLD_SEC;
+
+            if (!this.lsBarFullyObserved) {
+              // First bar after a seed (startup or reconnect). Don't trust
+              // its close value — we may have missed the bar's opening ticks.
+              // Update internal state so we have a baseline going forward,
+              // but do NOT emit (no consumer can act on a partial bar).
+              if (closedBarSentiment) {
+                logger.info(`📊 LS partial-bar skipped (post-seed): ${closedBarSentiment} @ ${isoClose} — establishing baseline only`);
+                this.lsConfirmedSentiment = closedBarSentiment;
+                this.lsConfirmedBarTs = closedBarTs;
+                this.currentLsSentiment = closedBarSentiment;
+              }
+            } else if (closedBarSentiment && closedBarSentiment !== this.lsConfirmedSentiment) {
+              const tag = isGap ? `GAP-CATCHUP (gap=${gapSec}s)` : 'FLIP';
+              logger.info(`📊 LS ${tag} (bar-close): ${this.lsConfirmedSentiment ?? 'null'} → ${closedBarSentiment} (raw=${closedBarRaw}) candle=${isoClose}`);
               this.currentLsSentiment = closedBarSentiment;
               this.emit('ls_status', {
                 sentiment: closedBarSentiment,
@@ -390,14 +430,24 @@ class LTMonitor extends EventEmitter {
                 candleTime: isoClose,
                 priorSentiment: this.lsConfirmedSentiment,
                 barClose: true,
+                gap: isGap,
+                gapSec,
               });
               this.lsConfirmedSentiment = closedBarSentiment;
+              this.lsConfirmedBarTs = closedBarTs;
+            } else if (closedBarSentiment) {
+              // No state change — still update lsConfirmedBarTs so the next
+              // gap check uses the most recent observed close.
+              this.lsConfirmedBarTs = closedBarTs;
             }
 
-            // Now start tracking the new forming bar.
+            // Now start tracking the new forming bar. We observed it from
+            // its opening tick (the boundary we just crossed), so its close
+            // value next round WILL be trustworthy.
             this.lsFormingBarTs = newTs;
             this.lsFormingBarSentiment = sentiment;
             this.lsFormingBarRaw = raw;
+            this.lsBarFullyObserved = true;
             // (Don't update currentLsSentiment from the forming bar — it's
             // provisional. Last confirmed value remains the public state.)
           }

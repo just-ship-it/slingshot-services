@@ -308,8 +308,16 @@ class MultiStrategyEngine {
         state: sentiment === 'BULLISH' ? 1 : 0,
         adverseFlipTs: null,             // unknowable in live until next flip
         sentiment,
+        // gap=true means the lt-monitor detected a missing-bars window
+        // (probably a reconnect or feed blip) and can't guarantee this
+        // bar was THE trigger bar. lstb checks this and skips trading;
+        // the dashboard chip still uses the sentiment for display so the
+        // UI stays current with the actual state.
+        gap: message.gap === true,
+        gapSec: typeof message.gapSec === 'number' ? message.gapSec : 0,
       };
-      logger.info(`LS flip received for ${product}: ${sentiment} @ ${message.candleTime}`);
+      const gapTag = message.gap ? ` [GAP ${message.gapSec}s]` : '';
+      logger.info(`LS flip received for ${product}: ${sentiment} @ ${message.candleTime}${gapTag}`);
 
       // Race fix: CANDLE_CLOSE and LS_STATUS arrive on separate channels with
       // no ordering guarantee. If CANDLE_CLOSE for this bar already fired,

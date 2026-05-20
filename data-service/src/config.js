@@ -19,10 +19,16 @@ if (fs.existsSync(sharedEnvPath)) {
 
 // Derive TradingView symbols from contract env vars (update *_CONTRACT for quarterly rollover)
 const nqContract = process.env.NQ_CONTRACT || 'NQH6';
-const mnqContract = process.env.MNQ_CONTRACT || 'MNQH6';
-const esContract = process.env.ES_CONTRACT || 'ESH6';
-const mesContract = process.env.MES_CONTRACT || 'MESH6';
-const additionalQuoteSymbols = process.env.ADDITIONAL_QUOTE_SYMBOLS || 'NASDAQ:QQQ,AMEX:SPY,BITSTAMP:BTCUSD';
+// const mnqContract = process.env.MNQ_CONTRACT || 'MNQH6';   // [2026-05-20] disabled — micro prices match NQ
+// const esContract = process.env.ES_CONTRACT || 'ESH6';      // [2026-05-20] disabled — no ES strategies
+// const mesContract = process.env.MES_CONTRACT || 'MESH6';   // [2026-05-20] disabled — micro prices match ES (also disabled)
+
+// Quote symbols kept on the feed:
+//   QQQ — required for NQ GEX calculator (live underlying price for options chain)
+// Quote symbols disabled (re-enable by appending to ADDITIONAL_QUOTE_SYMBOLS):
+//   AMEX:SPY (only used for ES GEX which is disabled)
+//   BITSTAMP:BTCUSD (no consumers)
+const additionalQuoteSymbols = process.env.ADDITIONAL_QUOTE_SYMBOLS || 'NASDAQ:QQQ';
 
 // TradingView uses full-year format (e.g., NQM2026) instead of short (NQM6)
 // Expand single-digit year to full year: H6 → H2026, M6 → M2026, etc.
@@ -30,9 +36,9 @@ function toTradingViewSymbol(contract) {
   return contract.replace(/(\d)$/, (_, d) => `202${d}`);
 }
 const tvNQ = toTradingViewSymbol(nqContract);
-const tvMNQ = toTradingViewSymbol(mnqContract);
-const tvES = toTradingViewSymbol(esContract);
-const tvMES = toTradingViewSymbol(mesContract);
+// const tvMNQ = toTradingViewSymbol(mnqContract);   // [2026-05-20] disabled
+// const tvES = toTradingViewSymbol(esContract);     // [2026-05-20] disabled
+// const tvMES = toTradingViewSymbol(mesContract);   // [2026-05-20] disabled
 
 const config = {
   // Redis Configuration
@@ -43,18 +49,24 @@ const config = {
   TRADINGVIEW_CREDENTIALS: process.env.TRADINGVIEW_CREDENTIALS || '',
   TRADINGVIEW_JWT_TOKEN: process.env.TRADINGVIEW_JWT_TOKEN || '',
 
-  // Chart symbols (get full OHLCV chart sessions - needed for candle buffers)
-  // Derived from *_CONTRACT env vars — no need to update separately for rollover
-  OHLCV_SYMBOLS: (process.env.OHLCV_SYMBOLS || `CME_MINI:${tvNQ},CME_MINI:${tvES}`).split(','),
+  // Chart symbols (get full OHLCV chart sessions - needed for candle buffers).
+  // [2026-05-20] ES chart session removed — no live strategies consume it,
+  // and it was contributing to TradingView WebSocket churn (separate LT
+  // monitors disconnect/reconnect cycles caused phantom LS flip emissions).
+  OHLCV_SYMBOLS: (process.env.OHLCV_SYMBOLS || `CME_MINI:${tvNQ}`).split(','),
 
-  // Quote-only symbols (added to quote session only - just last price, no chart session)
-  // Micro contracts derived from env vars; additional symbols (QQQ, SPY, BTC) are static
-  QUOTE_ONLY_SYMBOLS: (process.env.QUOTE_ONLY_SYMBOLS || `CME_MINI:${tvMNQ},CME_MINI:${tvMES},${additionalQuoteSymbols}`).split(','),
+  // Quote-only symbols (just last price, no chart session).
+  // [2026-05-20] MNQ/MES quotes removed — prices match NQ/ES within 0.1%,
+  // tradovate is the authoritative source for traded contract pricing.
+  // QQQ remains (NQ GEX needs live underlying for options chain pricing).
+  QUOTE_ONLY_SYMBOLS: (process.env.QUOTE_ONLY_SYMBOLS || additionalQuoteSymbols).split(','),
 
   // LT Monitor Configuration (per product) — derived from contract env vars
   LT_NQ_SYMBOL: process.env.LT_NQ_SYMBOL || `CME_MINI:${tvNQ}`,
   LT_NQ_TIMEFRAME: process.env.LT_NQ_TIMEFRAME || '1',
-  LT_ES_SYMBOL: process.env.LT_ES_SYMBOL || `CME_MINI:${tvES}`,
+  // [2026-05-20] ES LT monitor disabled — re-enable by uncommenting in main.js
+  // (config kept here in case someone re-enables the ES product later).
+  LT_ES_SYMBOL: process.env.LT_ES_SYMBOL || `CME_MINI:NQM2026`,  // dummy fallback (unused)
   LT_ES_TIMEFRAME: process.env.LT_ES_TIMEFRAME || '1',
 
   // NQ GEX Configuration (from QQQ)
@@ -85,7 +97,10 @@ const config = {
   TRADIER_BASE_URL: process.env.TRADIER_BASE_URL || 'https://api.tradier.com/v1',
   TRADIER_ENABLED: process.env.TRADIER_ENABLED?.toLowerCase() === 'true',
   TRADIER_AUTO_START: process.env.TRADIER_AUTO_START?.toLowerCase() !== 'false',
-  TRADIER_SYMBOLS: (process.env.TRADIER_SYMBOLS || 'SPY,QQQ').split(',').map(s => s.trim()),
+  // [2026-05-20] SPY dropped from Tradier subscribe list — ES strategies
+  // are disabled, so SPY options data has no consumers. Add SPY back to
+  // this list (env: TRADIER_SYMBOLS=SPY,QQQ) if reviving ES.
+  TRADIER_SYMBOLS: (process.env.TRADIER_SYMBOLS || 'QQQ').split(',').map(s => s.trim()),
   TRADIER_MAX_EXPIRATIONS: parseInt(process.env.TRADIER_MAX_EXPIRATIONS || '6'),
 
   // Options Flow Configuration
