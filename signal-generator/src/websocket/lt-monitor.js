@@ -215,11 +215,20 @@ class LTMonitor extends EventEmitter {
     // Study will be added after receiving timescale_update message
     // This ensures the series is fully loaded before adding the indicator
 
-    // Add fast symbols for real-time updates
+    // Add fast symbols for real-time updates. We don't act on the quote
+    // payloads (handleMessage only consumes the st10 indicator data), but
+    // keeping the quote stream FLOWING is what keeps the WebSocket alive.
+    //
+    // [2026-05-20] Investigation showed connections were being dropped by
+    // TradingView at a fixed ~63s after connect — a session-lifetime cap
+    // applied to indicator-only / hibernated sessions. The previous code
+    // called quote_hibernate_all here as a bandwidth optimization, which
+    // killed the quote stream and triggered the cap. Removing hibernate
+    // lets quotes flow continuously and matches the behavior of the main
+    // tradingViewClient (which never hibernates and stays connected for
+    // hours). See memory/ls-bar-close-gating.md for context.
     this.sendMessage('quote_fast_symbols', [this.quoteSession, this.symbol]);
-
-    // Hibernate quote session after setup
-    this.sendMessage('quote_hibernate_all', [this.quoteSession]);
+    // this.sendMessage('quote_hibernate_all', [this.quoteSession]);  // removed
 
     logger.info(`✅ LT indicator added for ${this.symbol}`);
   }
