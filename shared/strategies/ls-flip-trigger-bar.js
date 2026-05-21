@@ -69,6 +69,23 @@ export class LsFlipTriggerBarStrategy extends BaseStrategy {
     // 5 ET (NY pre-EU lull), 16 ET (post-close drift), 21 ET (Asia drift).
     this.params.blockedHoursEt = new Set(params.blockedHoursEt ?? [5, 16, 21]);
 
+    // Optional fixed-point stops/targets. When set, override bar-extreme defaults.
+    //   stopPoints  : stop is entry ∓ stopPoints (signed by direction)
+    //   targetPoints: target is entry ± targetPoints
+    this.params.stopPoints = params.stopPoints ?? null;
+    this.params.targetPoints = params.targetPoints ?? null;
+
+    // Optional break-even / trail forwarded to engine.
+    this.params.breakevenStop = params.breakevenStop ?? false;
+    this.params.breakevenTrigger = params.breakevenTrigger ?? null;
+    this.params.breakevenOffset = params.breakevenOffset ?? 0;
+    this.params.trailingTrigger = params.trailingTrigger ?? null;
+    this.params.trailingOffset = params.trailingOffset ?? null;
+
+    // Optional minimum trigger-bar range filter (in points). Skip flips where
+    // the trigger bar's range is too tight — tiny bars have negative expectancy.
+    this.params.minTriggerRange = params.minTriggerRange ?? null;
+
     // ATR rolling state — true range list on the primary contract series.
     // Reset on contract rollover (symbol change) so TR doesn't span the
     // ~200pt roll spread.
@@ -204,6 +221,10 @@ export class LsFlipTriggerBarStrategy extends BaseStrategy {
       this._lastRejectReason = `degenerate bar (range=${range})`;
       return null;
     }
+    if (this.params.minTriggerRange != null && range < this.params.minTriggerRange) {
+      this._lastRejectReason = `range=${range.toFixed(2)} < minTriggerRange=${this.params.minTriggerRange}`;
+      return null;
+    }
 
     // Step 4: cb_atr filter — reject big-body momentum flips that don't retrace.
     if (atr == null || atr <= 0) {
@@ -225,8 +246,20 @@ export class LsFlipTriggerBarStrategy extends BaseStrategy {
     const entryPrice = direction === 'long'
       ? candle.high - fib * range
       : candle.low + fib * range;
-    const stopLoss = direction === 'long' ? candle.low : candle.high;
-    const takeProfit = direction === 'long' ? candle.high : candle.low;
+    // Stop/target defaults are the bar extremes, optionally overridden by fixed
+    // points from entryPrice when stopPoints / targetPoints params are set.
+    let stopLoss = direction === 'long' ? candle.low : candle.high;
+    let takeProfit = direction === 'long' ? candle.high : candle.low;
+    if (this.params.stopPoints != null) {
+      stopLoss = direction === 'long'
+        ? entryPrice - this.params.stopPoints
+        : entryPrice + this.params.stopPoints;
+    }
+    if (this.params.targetPoints != null) {
+      takeProfit = direction === 'long'
+        ? entryPrice + this.params.targetPoints
+        : entryPrice - this.params.targetPoints;
+    }
 
     // Sanity: entry should be strictly between stop and target.
     if (direction === 'long' && !(entryPrice > stopLoss && entryPrice < takeProfit)) {
@@ -283,6 +316,27 @@ export class LsFlipTriggerBarStrategy extends BaseStrategy {
       stop_loss: stopLoss,
       take_profit: takeProfit,
       max_hold_bars: this.params.maxHoldBars,
+      // When fixed stop/target points are used, tell the engine to re-anchor
+      // them to actualEntry on fill (handles favorable/unfavorable fill slip).
+      // For bar-extreme stops (default), no re-anchoring — the bar levels are
+      // the absolute trigger thresholds independent of fill.
+      ...(this.params.stopPoints != null ? { stopDistance: this.params.stopPoints } : {}),
+      ...(this.params.targetPoints != null ? { targetDistance: this.params.targetPoints } : {}),
+      // Forward BE/trail to the engine — these are no-ops unless params are set.
+      ...(this.params.breakevenStop ? {
+        breakevenStop: true,
+        breakevenTrigger: this.params.breakevenTrigger,
+        breakevenOffset: this.params.breakevenOffset,
+        breakeven_stop: true,
+        breakeven_trigger: this.params.breakevenTrigger,
+        breakeven_offset: this.params.breakevenOffset,
+      } : {}),
+      ...(this.params.trailingTrigger != null && this.params.trailingOffset != null ? {
+        trailingTrigger: this.params.trailingTrigger,
+        trailingOffset: this.params.trailingOffset,
+        trailing_trigger: this.params.trailingTrigger,
+        trailing_offset: this.params.trailingOffset,
+      } : {}),
     };
 
     this.updateLastSignalTime(signal.timestamp);

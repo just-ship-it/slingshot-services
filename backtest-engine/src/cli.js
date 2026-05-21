@@ -202,6 +202,45 @@ export class CLI {
         type: 'string',
         description: 'ls-flip-trigger-bar: comma-separated ET hours (0-23) to skip entries. E.g. "5,16,21" to skip the three negative-expectancy hours.'
       })
+      .option('lstb-preset', {
+        type: 'string',
+        choices: ['v2', 'v3', 'v3-max', 'v3-balanced', 'v3-low-dd'],
+        description: 'ls-flip-trigger-bar: load a named preset of params. v3=candJ recommended ($279k/+114%/Sh21.00/DD1.82%), v3-max=candK ($283k, looser DD), v3-balanced=candH (Sh22.12, $214k), v3-low-dd=candC ($152k, DD1.42%), v2=baseline ($130k). Individual --lstb-* flags below override preset values.'
+      })
+
+      .option('lstb-stop-pts', {
+        type: 'number',
+        description: 'ls-flip-trigger-bar: fixed stop loss in points from entry. Overrides bar-extreme default.'
+      })
+      .option('lstb-target-pts', {
+        type: 'number',
+        description: 'ls-flip-trigger-bar: fixed take-profit target in points from entry. Overrides bar-extreme default.'
+      })
+      .option('lstb-min-range', {
+        type: 'number',
+        description: 'ls-flip-trigger-bar: skip trigger bars whose range < this points. Filters tiny-bar low-expectancy flips.'
+      })
+      .option('lstb-breakeven-stop', {
+        type: 'boolean',
+        default: false,
+        description: 'ls-flip-trigger-bar: enable break-even stop (paired with --lstb-be-trigger / --lstb-be-offset).'
+      })
+      .option('lstb-be-trigger', {
+        type: 'number',
+        description: 'ls-flip-trigger-bar: MFE in points to activate BE stop.'
+      })
+      .option('lstb-be-offset', {
+        type: 'number',
+        description: 'ls-flip-trigger-bar: BE floor offset in points (positive = lock in N pts profit).'
+      })
+      .option('lstb-trail-trigger', {
+        type: 'number',
+        description: 'ls-flip-trigger-bar: MFE in points to activate trailing stop.'
+      })
+      .option('lstb-trail-offset', {
+        type: 'number',
+        description: 'ls-flip-trigger-bar: trailing offset in points behind MFE peak.'
+      })
 
       .option('eod-cutoff-et', {
         type: 'string',
@@ -1870,6 +1909,26 @@ export class CLI {
     }
 
     // ls-flip-trigger-bar knobs
+    // --lstb-preset: named bundle of params. Applied first; individual --lstb-* flags
+    // below override. See cli option `lstb-preset` for the choice list and metrics.
+    // NOTE: BE params from preset are applied AFTER the engine-wide --breakeven-stop
+    // block (search for "ls-flip-trigger-bar BE/trail (post-engine-wide)" below) — the
+    // engine-wide block has `default: false` and would otherwise clobber preset BE.
+    const LSTB_PRESETS = {
+      v2:            { blockedHours: [5, 16, 21],                              minRange: null, target: null, stop: null, be: false, beTrig: null, beOff: 0, trailTrig: null, trailOff: null },
+      v3:            { blockedHours: [5, 16, 17, 18, 19, 20, 21, 22, 23],     minRange: 3,    target: 15,   stop: 12,   be: true,  beTrig: 8,    beOff: 2, trailTrig: null, trailOff: null },
+      'v3-max':      { blockedHours: [5, 16, 17, 18, 19, 20, 21, 22, 23],     minRange: 3,    target: 20,   stop: 12,   be: true,  beTrig: 10,   beOff: 1, trailTrig: null, trailOff: null },
+      'v3-balanced': { blockedHours: [5, 16, 17, 18, 19, 20, 21, 22, 23],     minRange: 3,    target: 10,   stop: 9,    be: true,  beTrig: 6,    beOff: 1, trailTrig: null, trailOff: null },
+      'v3-low-dd':   { blockedHours: [5, 16, 17, 18, 19, 20, 21, 22, 23],     minRange: 3,    target: null, stop: 8,    be: false, beTrig: null, beOff: 0, trailTrig: 12,   trailOff: 5 },
+    };
+    const lstbPreset = args['lstb-preset'] ? LSTB_PRESETS[args['lstb-preset']] : null;
+    if (lstbPreset) {
+      strategyParams.blockedHoursEt = lstbPreset.blockedHours;
+      strategyParams.minTriggerRange = lstbPreset.minRange;
+      strategyParams.targetPoints = lstbPreset.target;
+      strategyParams.stopPoints = lstbPreset.stop;
+      // BE/trail applied in post-engine-wide block below.
+    }
     if (args['lstb-fib'] !== undefined) strategyParams.fib = args['lstb-fib'];
     if (args['lstb-cb-atr-max'] !== undefined) strategyParams.cbAtrMax = args['lstb-cb-atr-max'];
     if (args['lstb-atr-period'] !== undefined) strategyParams.atrPeriod = args['lstb-atr-period'];
@@ -1881,6 +1940,9 @@ export class CLI {
         .map(s => parseInt(s.trim(), 10))
         .filter(n => Number.isFinite(n) && n >= 0 && n <= 23);
     }
+    if (args['lstb-stop-pts'] !== undefined) strategyParams.stopPoints = args['lstb-stop-pts'];
+    if (args['lstb-target-pts'] !== undefined) strategyParams.targetPoints = args['lstb-target-pts'];
+    if (args['lstb-min-range'] !== undefined) strategyParams.minTriggerRange = args['lstb-min-range'];
 
     // gex-touch-confirm knobs
     if (args['gtc-iv-skew-threshold'] !== undefined) strategyParams.ivSkewThreshold = args['gtc-iv-skew-threshold'];
@@ -2032,6 +2094,24 @@ export class CLI {
     if (args['gfi-breakeven-offset'] !== undefined) strategyParams.breakevenOffset = args['gfi-breakeven-offset'];
     if (args['gfi-trailing-trigger'] !== undefined) strategyParams.trailingTrigger = args['gfi-trailing-trigger'];
     if (args['gfi-trailing-offset'] !== undefined) strategyParams.trailingOffset = args['gfi-trailing-offset'];
+
+    // ls-flip-trigger-bar BE/trail (post-engine-wide) — same clobber-fix pattern as gfi.
+    // Preset BE/trail applied first; individual --lstb-* flags below override.
+    // LSTB_PRESETS is defined in the lstb knobs block above (same scope).
+    if (lstbPreset) {
+      strategyParams.breakevenStop = lstbPreset.be;
+      strategyParams.breakevenTrigger = lstbPreset.beTrig;
+      strategyParams.breakevenOffset = lstbPreset.beOff;
+      strategyParams.trailingTrigger = lstbPreset.trailTrig;
+      strategyParams.trailingOffset = lstbPreset.trailOff;
+    }
+    if (args['lstb-breakeven-stop']) {
+      strategyParams.breakevenStop = true;
+      if (args['lstb-be-trigger'] !== undefined) strategyParams.breakevenTrigger = args['lstb-be-trigger'];
+      if (args['lstb-be-offset'] !== undefined) strategyParams.breakevenOffset = args['lstb-be-offset'];
+    }
+    if (args['lstb-trail-trigger'] !== undefined) strategyParams.trailingTrigger = args['lstb-trail-trigger'];
+    if (args['lstb-trail-offset'] !== undefined) strategyParams.trailingOffset = args['lstb-trail-offset'];
 
     // gex-flip-ivpct: structural-magnet MFE ratchet (1m 9/9 swing pivots)
     if (args['gfi-magnet-ratchet']) {

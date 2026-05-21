@@ -384,6 +384,30 @@ Prior W12 baseline (2026-05-08, before S_CW PM block): 909 trades, $164,847 PnL,
 
 Earlier "v14" config (139 trades, $40k, only 2 rules) was an overfit driven by stacking unjustified constraints copied from gex-flip-ivpct (30-min cooldown, 9:30 entry start, default TP/SL from research's biased grid). Wide-net rebuild revealed L_S4 has real edge ($80k by itself with TP=120/mh=90) that the constraints had been hiding, and that 8am pre-market and the 7am hour add meaningful profit beyond the default 9:30 RTH start. **Methodology lesson: cast a wide net first, then filter one constraint at a time and keep only those proven to help.**
 
+**LS-Flip-Trigger-Bar — v3 candJ** (1m timeframe, fixed-point exits + BE + noAsia + min-range filter — current gold):
+```bash
+cd backtest-engine
+node index.js --ticker NQ --strategy ls-flip-trigger-bar --timeframe 1m --raw-contracts \
+  --start 2025-01-13 --end 2026-04-23 \
+  --ls-1m-file research/lt-extraction/output/nq_ls_1m_raw.csv \
+  --eod-cutoff-et 15:45 \
+  --lstb-preset v3
+```
+(The `--lstb-preset v3` shortcut expands to `--lstb-blocked-hours "5,16,17,18,19,20,21,22,23" --lstb-min-range 3 --lstb-target-pts 15 --lstb-stop-pts 12 --lstb-breakeven-stop --lstb-be-trigger 8 --lstb-be-offset 2`.)
+
+**v3 candJ gold standard (2026-05-21):** **6,463 trades / $279,135 PnL / +114% vs v2 / WR 72.2% / PF 1.59 / Sharpe 21.00 / MaxDD 1.82%** over 16 months. Saved as `data/gold-standard/ls-flip-trigger-bar-v3.json`. Doubles v2's $130,500 PnL while preserving the gold standard's exceptional sub-2% DD; per-trade Sharpe nearly doubles (10.97 → 21.00).
+
+Mechanism (four levers compound): (1) fixed 15pt target / 12pt stop replacing bar-extreme equidistant TP/SL; (2) BE @ MFE=8pt locking +2pt profit captures the median +8pt giveback (BE fires on 2,309 trades = 35% of total); (3) block hours 17-23 ET (Asia overnight bled ~$11k cumulative); (4) skip trigger bars with range <3pt (1k unprofitable trades dropped). On 3,783 trades present in BOTH v2 and v3, exit-policy improvement alone is +$69,734 (+61%) — the rest is filter-driven trade flow improvements. Train/test stable: H1 PF 1.56 / H2 PF 1.62, no overfit.
+
+**Alternate v3 presets** (saved as `data/gold-standard/ls-flip-trigger-bar-v3-{max,balanced,low-dd}.json`):
+- `--lstb-preset v3-max` (candK, tgt=20 stp=12 BE 10/+1): $282,580 / Sharpe 18.31 / DD 2.84% / PF 1.49 — +$3.5k more PnL than candJ but materially worse risk-adjusted.
+- `--lstb-preset v3-balanced` (candH, tgt=10 stp=9 BE 6/+1): $214,122 / **Sharpe 22.12** / DD 1.54% / PF 1.65 — highest Sharpe of any candidate; tighter scalp.
+- `--lstb-preset v3-low-dd` (candC, orig tgt + stp=8 + trail 12/5): $151,820 / Sharpe 18.85 / **DD 1.42%** / PF 1.77 — lowest DD; small-account / smooth-equity profile.
+
+v2 preserved at `data/gold-standard/ls-flip-trigger-bar-v2.json` for historical reference; reproduce with `--lstb-preset v2` (blocked-hours 5/16/21, bar-extreme exits). v1 ($129k, no blocks, eod 17:00) at `data/gold-standard/ls-flip-trigger-bar.json`.
+
+Full research log: `backtest-engine/research/ls-flip-improve/SUMMARY.md` — feature buckets, 4,000+ candidate sweep, mechanism analysis, all 16 engine validations.
+
 Run `node index.js --help` for all available strategies and options.
 
 ### Key Architecture

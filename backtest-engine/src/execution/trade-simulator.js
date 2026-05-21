@@ -498,6 +498,13 @@ export class TradeSimulator {
               ? trade.actualEntry - trade.signal.stopDistance
               : trade.actualEntry + trade.signal.stopDistance);
           }
+          // Recalculate target from actual fill price if targetDistance is specified
+          if (trade.signal?.targetDistance) {
+            const isBuy = trade.side === 'buy' || trade.side === 'long';
+            trade.takeProfit = roundTo(isBuy
+              ? trade.actualEntry + trade.signal.targetDistance
+              : trade.actualEntry - trade.signal.targetDistance);
+          }
 
           if (debug) {
             console.log(`    ✅ [TRADE ${trade.id}] Order filled at ${fillResult.fillPrice} (1s: ${new Date(bar.timestamp).toISOString()})`);
@@ -844,6 +851,13 @@ export class TradeSimulator {
           trade.stopLoss = roundTo(isBuy
             ? trade.actualEntry - trade.signal.stopDistance
             : trade.actualEntry + trade.signal.stopDistance);
+        }
+        // Recalculate target from actual fill price if targetDistance is specified
+        if (trade.signal?.targetDistance) {
+          const isBuy = trade.side === 'buy' || trade.side === 'long';
+          trade.takeProfit = roundTo(isBuy
+            ? trade.actualEntry + trade.signal.targetDistance
+            : trade.actualEntry - trade.signal.targetDistance);
         }
 
         if (debug) {

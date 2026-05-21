@@ -177,14 +177,26 @@ const config = {
   GLF_LS_BE_ON_FLIP: process.env.GLF_LS_BE_ON_FLIP?.toLowerCase() === 'true',
   GLF_LS_BE_OFFSET: parseFloat(process.env.GLF_LS_BE_OFFSET || '10'),
 
-  // LS-Flip-Trigger-Bar (lstb) — v2 prod-honest gold defaults baked into
-  // the strategy class. Env vars override only when explicitly set.
+  // LS-Flip-Trigger-Bar (lstb) — v3 candJ defaults (the new recommended gold,
+  // see CLAUDE.md "Gold Standard Commands"). Env vars override only when
+  // explicitly set. Setting LSTB_PRESET to 'v2', 'v3', 'v3-max', 'v3-balanced',
+  // or 'v3-low-dd' below expands to the full bundle; individual env vars then
+  // override preset values.
+  LSTB_PRESET: process.env.LSTB_PRESET || 'v3',
   LSTB_FIB: parseFloat(process.env.LSTB_FIB || '0.5'),
   LSTB_CB_ATR_MAX: parseFloat(process.env.LSTB_CB_ATR_MAX || '1.81'),
   LSTB_ATR_PERIOD: parseInt(process.env.LSTB_ATR_PERIOD || '20'),
   LSTB_FILL_TIMEOUT_CANDLES: parseInt(process.env.LSTB_FILL_TIMEOUT_CANDLES || '10'),
   LSTB_MAX_HOLD_BARS: parseInt(process.env.LSTB_MAX_HOLD_BARS || '60'),
-  LSTB_BLOCKED_HOURS_ET: process.env.LSTB_BLOCKED_HOURS_ET ?? '5,16,21',
+  LSTB_BLOCKED_HOURS_ET: process.env.LSTB_BLOCKED_HOURS_ET ?? null,
+  LSTB_STOP_POINTS: process.env.LSTB_STOP_POINTS !== undefined ? parseFloat(process.env.LSTB_STOP_POINTS) : null,
+  LSTB_TARGET_POINTS: process.env.LSTB_TARGET_POINTS !== undefined ? parseFloat(process.env.LSTB_TARGET_POINTS) : null,
+  LSTB_MIN_RANGE: process.env.LSTB_MIN_RANGE !== undefined ? parseFloat(process.env.LSTB_MIN_RANGE) : null,
+  LSTB_BREAKEVEN_STOP: process.env.LSTB_BREAKEVEN_STOP !== undefined ? (process.env.LSTB_BREAKEVEN_STOP.toLowerCase() === 'true') : null,
+  LSTB_BE_TRIGGER: process.env.LSTB_BE_TRIGGER !== undefined ? parseFloat(process.env.LSTB_BE_TRIGGER) : null,
+  LSTB_BE_OFFSET: process.env.LSTB_BE_OFFSET !== undefined ? parseFloat(process.env.LSTB_BE_OFFSET) : null,
+  LSTB_TRAIL_TRIGGER: process.env.LSTB_TRAIL_TRIGGER !== undefined ? parseFloat(process.env.LSTB_TRAIL_TRIGGER) : null,
+  LSTB_TRAIL_OFFSET: process.env.LSTB_TRAIL_OFFSET !== undefined ? parseFloat(process.env.LSTB_TRAIL_OFFSET) : null,
   // Mirrors trade-orchestrator's EOD_CUTOFF_ET so the dashboard can show the
   // same time the orchestrator will actually force-flat at. Set EOD_CUTOFF_ET=""
   // (empty) to disable the dashboard indicator (matches orchestrator semantics).
@@ -375,11 +387,27 @@ const config = {
   },
 
   getLsFlipTriggerBarParams() {
-    // Strategy class owns the v2 gold defaults (fib=0.5, cbAtrMax=1.81,
-    // maxHoldBars=60, blockedHoursEt=[5,16,21]). Env overrides only fire
-    // when LSTB_* vars are set. blockedHoursEt is parsed from the comma list.
-    const blockedHoursEt = (this.LSTB_BLOCKED_HOURS_ET || '')
-      .split(',').map(s => parseInt(s.trim(), 10)).filter(n => !isNaN(n));
+    // Preset-first param construction. LSTB_PRESET (default 'v3' = candJ
+    // recommended) provides a complete bundle; individual LSTB_* env vars
+    // then override preset values when explicitly set.
+    //
+    // Preset values mirror cli.js LSTB_PRESETS (keep in sync if either changes):
+    const PRESETS = {
+      v2:            { blockedHours: [5, 16, 21],                              minRange: null, target: null, stop: null, be: false, beTrig: null, beOff: 0, trailTrig: null, trailOff: null },
+      v3:            { blockedHours: [5, 16, 17, 18, 19, 20, 21, 22, 23],     minRange: 3,    target: 15,   stop: 12,   be: true,  beTrig: 8,    beOff: 2, trailTrig: null, trailOff: null },
+      'v3-max':      { blockedHours: [5, 16, 17, 18, 19, 20, 21, 22, 23],     minRange: 3,    target: 20,   stop: 12,   be: true,  beTrig: 10,   beOff: 1, trailTrig: null, trailOff: null },
+      'v3-balanced': { blockedHours: [5, 16, 17, 18, 19, 20, 21, 22, 23],     minRange: 3,    target: 10,   stop: 9,    be: true,  beTrig: 6,    beOff: 1, trailTrig: null, trailOff: null },
+      'v3-low-dd':   { blockedHours: [5, 16, 17, 18, 19, 20, 21, 22, 23],     minRange: 3,    target: null, stop: 8,    be: false, beTrig: null, beOff: 0, trailTrig: 12,   trailOff: 5 },
+    };
+    const preset = PRESETS[this.LSTB_PRESET] || PRESETS['v3'];
+
+    // Apply per-field overrides only when env var was explicitly set
+    // (config.js loader returns null for "not set", actual value when set).
+    let blockedHoursEt = preset.blockedHours;
+    if (this.LSTB_BLOCKED_HOURS_ET !== null) {
+      blockedHoursEt = this.LSTB_BLOCKED_HOURS_ET
+        .split(',').map(s => parseInt(s.trim(), 10)).filter(n => !isNaN(n));
+    }
     return {
       fib: this.LSTB_FIB,
       cbAtrMax: this.LSTB_CB_ATR_MAX,
@@ -387,6 +415,14 @@ const config = {
       fillTimeoutCandles: this.LSTB_FILL_TIMEOUT_CANDLES,
       maxHoldBars: this.LSTB_MAX_HOLD_BARS,
       blockedHoursEt,
+      stopPoints:       this.LSTB_STOP_POINTS    ?? preset.stop,
+      targetPoints:     this.LSTB_TARGET_POINTS  ?? preset.target,
+      minTriggerRange:  this.LSTB_MIN_RANGE      ?? preset.minRange,
+      breakevenStop:    this.LSTB_BREAKEVEN_STOP ?? preset.be,
+      breakevenTrigger: this.LSTB_BE_TRIGGER     ?? preset.beTrig,
+      breakevenOffset:  this.LSTB_BE_OFFSET      ?? preset.beOff,
+      trailingTrigger:  this.LSTB_TRAIL_TRIGGER  ?? preset.trailTrig,
+      trailingOffset:   this.LSTB_TRAIL_OFFSET   ?? preset.trailOff,
     };
   },
 
