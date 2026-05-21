@@ -475,10 +475,72 @@ const tvAuthDiscordThrottle = new Map();
 const TV_AUTH_THROTTLE_MS = 4 * 60 * 60 * 1000; // 4 hours — token refresh failures are not urgent
 
 /**
+ * Live TradingView auth health. Tracks the latest tv_auth_* event so the
+ * dashboard can show a banner when the JWT needs to be refreshed (auth
+ * degraded / token refresh failed) and clear it once auth recovers.
+ *
+ * Source of events:
+ *   - tradingview-client.js publishes tv_auth_degraded / tv_auth_restored
+ *     / tv_token_refreshed / tv_token_refresh_failed on the service.error
+ *     channel.
+ *   - lt-monitor.js (2026-05-21) also publishes tv_auth_degraded when a
+ *     study_error from TradingView indicates auth issues (study_not_auth
+ *     or "max studies per chart"), and tv_auth_restored once LS data
+ *     starts flowing again.
+ *
+ * Healthy state ⇒ { status: 'healthy' } and no banner. Degraded state ⇒
+ * { status: 'degraded', message, since, lastError } drives the banner.
+ */
+const tvAuthState = {
+  status: 'healthy',        // 'healthy' | 'degraded'
+  message: null,            // latest human-readable reason
+  source: null,             // 'lt-monitor' | 'tradingview-client'
+  since: null,              // ISO when current state began
+  lastEventAt: null,        // ISO of last tv_* event seen
+  lastEventType: null,      // 'tv_auth_degraded', etc.
+  tokenTTLSec: null,        // most recent JWT TTL reported (negative = expired)
+};
+
+function updateTvAuthState(message) {
+  const type = message.type;
+  if (!type || !type.startsWith('tv_')) return;
+  const nowIso = new Date().toISOString();
+  tvAuthState.lastEventAt = nowIso;
+  tvAuthState.lastEventType = type;
+  if (typeof message.tokenTTL === 'number') tvAuthState.tokenTTLSec = message.tokenTTL;
+
+  const degradedTypes = new Set(['tv_auth_degraded', 'tv_token_refresh_failed']);
+  const recoveredTypes = new Set(['tv_auth_restored', 'tv_token_refreshed']);
+
+  if (degradedTypes.has(type)) {
+    const wasHealthy = tvAuthState.status === 'healthy';
+    tvAuthState.status = 'degraded';
+    tvAuthState.message = message.message || `TradingView ${type}`;
+    tvAuthState.source = message.source || message.service || 'unknown';
+    if (wasHealthy) tvAuthState.since = nowIso;
+  } else if (recoveredTypes.has(type)) {
+    if (tvAuthState.status === 'degraded') {
+      tvAuthState.status = 'healthy';
+      tvAuthState.message = null;
+      tvAuthState.source = null;
+      tvAuthState.since = nowIso;
+    }
+  }
+  // Broadcast to dashboard clients so the banner appears/disappears
+  // without requiring a poll.
+  try { broadcast('tv_auth_state', { ...tvAuthState }); } catch {}
+}
+
+/**
  * Handle TradingView authentication events for Discord notification.
  * Listens on service.error channel, filters for tv_auth_* types.
  */
 async function handleTvAuthDiscord(message) {
+  // Update live state for the dashboard before the Discord throttle. The
+  // dashboard banner should reflect every event; Discord stays throttled
+  // to avoid spam.
+  updateTvAuthState(message);
+
   const type = message.type;
 
   // Only handle TV auth events
@@ -765,6 +827,9 @@ io.on('connection', async (socket) => {
   if (monitoringState.ltLevels.ES) socket.emit('lt_levels', monitoringState.ltLevels.ES);
   if (monitoringState.lsStatus.NQ) socket.emit('ls_status', monitoringState.lsStatus.NQ);
   if (monitoringState.lsStatus.ES) socket.emit('ls_status', monitoringState.lsStatus.ES);
+  // Send current TV auth state so the banner can render on initial load
+  // without waiting for the next tv_* event.
+  socket.emit('tv_auth_state', { ...tvAuthState });
 
   // Handle ping/pong
   socket.on('ping', (data) => {
@@ -892,8 +957,14 @@ app.get('/api/dashboard', dashboardAuth, (req, res) => {
     prices: Object.fromEntries(monitoringState.prices),
     services: Array.from(monitoringState.services.values()),
     activity: monitoringState.activity.slice(-100),
-    signals: monitoringState.signals.slice(0, 50)
+    signals: monitoringState.signals.slice(0, 50),
+    tvAuthState: { ...tvAuthState },
   });
+});
+
+// Dedicated TV auth status endpoint for the banner + ad-hoc checks.
+app.get('/api/tv-auth/status', dashboardAuth, (_req, res) => {
+  res.json({ ...tvAuthState });
 });
 
 app.get('/api/accounts/legacy', dashboardAuth, (req, res) => {

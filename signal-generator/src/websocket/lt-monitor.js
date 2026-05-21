@@ -1,7 +1,7 @@
 // Liquidity Trigger Monitor - Dedicated WebSocket for LT levels
 import WebSocket from 'ws';
 import EventEmitter from 'events';
-import { createLogger } from '../../../shared/index.js';
+import { createLogger, messageBus } from '../../../shared/index.js';
 import { getCachedToken, getTokenTTL } from '../utils/tradingview-auth.js';
 
 const logger = createLogger('lt-monitor');
@@ -275,6 +275,23 @@ class LTMonitor extends EventEmitter {
         this.handleDataUpdate(data);
       } else if (data.m === 'study_error') {
         logger.error('LT study error:', data);
+        // Classify auth-related study errors and publish them so the dashboard
+        // can show a "JWT needs refresh" banner. The two known JWT-degraded
+        // signatures from TV:
+        //   "study_not_auth:Script@tv-scripting-XYZ" — premium script not
+        //       authorized under the current token (token effectively expired).
+        //   "The maximum number of studies per chart has been reached for
+        //       current subscription" — TV applying free-tier study quota,
+        //       which happens when premium auth has degraded.
+        // Both indicate the same root cause: refresh the JWT.
+        const errorParts = Array.isArray(data.p) ? data.p : [];
+        const errorMsg = errorParts.find(p => typeof p === 'string' && (
+          p.includes('study_not_auth') ||
+          p.includes('maximum number of studies')
+        ));
+        if (errorMsg) {
+          this._publishAuthDegraded(errorMsg, data);
+        }
       } else if (data.m === 'symbol_resolved') {
         logger.debug('LT symbol resolved');
       } else if (data.m === 'timescale_update') {
@@ -444,6 +461,11 @@ class LTMonitor extends EventEmitter {
               });
               this.lsConfirmedSentiment = closedBarSentiment;
               this.lsConfirmedBarTs = closedBarTs;
+              // A real bar-close flip means studies are subscribed AND
+              // authenticated AND emitting — auth is healthy. If we had
+              // previously published a degraded event, clear it now so the
+              // dashboard banner disappears.
+              this._publishAuthRestoredIfNeeded();
             } else if (closedBarSentiment) {
               // No state change — still update lsConfirmedBarTs so the next
               // gap check uses the most recent observed close.
@@ -559,6 +581,58 @@ class LTMonitor extends EventEmitter {
    * Update JWT token and reconnect. Called when the main TradingView client
    * refreshes its token.
    */
+  /**
+   * Publish a TV-auth-degraded event to the service.error channel so the
+   * monitoring-service can track current health and the dashboard can show
+   * an actionable banner ("JWT needs refresh"). Throttles to avoid spamming
+   * — same error within 5 min is suppressed.
+   */
+  _publishAuthDegraded(errorMsg, raw) {
+    const now = Date.now();
+    if (this._lastAuthErrorAt && (now - this._lastAuthErrorAt) < 5 * 60_000) return;
+    this._lastAuthErrorAt = now;
+    this._authDegraded = true;
+    const truncated = String(errorMsg).slice(0, 200);
+    try {
+      messageBus.publish('service.error', {
+        service: 'data-service',
+        type: 'tv_auth_degraded',
+        source: 'lt-monitor',
+        symbol: this.symbol,
+        message: `LT study rejected by TradingView: "${truncated}" — JWT likely needs manual refresh`,
+        tokenTTL: getTokenTTL(this.jwtToken),
+        timestamp: new Date().toISOString(),
+        raw: raw ? JSON.stringify(raw).slice(0, 400) : null,
+      }).catch(err => logger.error('Failed to publish tv_auth_degraded:', err.message));
+    } catch (err) {
+      logger.error('Failed to publish tv_auth_degraded:', err.message);
+    }
+  }
+
+  /**
+   * Publish a TV-auth-restored event when LS data starts flowing again
+   * after a degraded period. Called from the LS bar-close emit path
+   * (the existence of a confirmed flip means studies are subscribed and
+   * authenticated). One-shot per recovery cycle.
+   */
+  _publishAuthRestoredIfNeeded() {
+    if (!this._authDegraded) return;
+    this._authDegraded = false;
+    try {
+      messageBus.publish('service.error', {
+        service: 'data-service',
+        type: 'tv_auth_restored',
+        source: 'lt-monitor',
+        symbol: this.symbol,
+        message: 'LT study data flowing again — JWT auth healthy',
+        tokenTTL: getTokenTTL(this.jwtToken),
+        timestamp: new Date().toISOString(),
+      }).catch(err => logger.error('Failed to publish tv_auth_restored:', err.message));
+    } catch (err) {
+      logger.error('Failed to publish tv_auth_restored:', err.message);
+    }
+  }
+
   async updateToken(newToken) {
     logger.info('LT monitor received new JWT token - reconnecting...');
     this.jwtToken = newToken;

@@ -50,6 +50,15 @@ class TradingViewClient extends EventEmitter {
     // Timeframe tracking per chart session (sessionId -> timeframe string)
     this.sessionTimeframe = new Map();
 
+    // [2026-05-21] One-shot history-loader sessions. Created via
+    // createHistorySession() (e.g. 60m + 1D for AI trader context), used
+    // exclusively to receive an initial batch of historical bars, then
+    // torn down. Leaving them open consumed TV's per-account studies/
+    // session quota and contributed to "max studies per chart" errors
+    // when the JWT degraded. Each entry is a chartSessionId; deleted
+    // after the first history_loaded emit for that session.
+    this.historyLoaderSessions = new Set();
+
     // Configurable candle history bars (default 10 for standard, 500 for AI trader)
     this.candleHistoryBars = parseInt(options.candleHistoryBars || process.env.CANDLE_HISTORY_BARS || '10');
 
@@ -457,6 +466,31 @@ class TradingViewClient extends EventEmitter {
               timeframe: seriesTimeframe,
               candles: allCandles
             });
+
+            // [2026-05-21] Tear down one-shot history-loader sessions after
+            // the bars are delivered. Leaving them open consumed TV's
+            // per-account studies/session quota and contributed to "max
+            // studies per chart" errors when the JWT degraded. The main
+            // 1m streaming session is NOT marked as a history-loader, so
+            // it stays open for live data.
+            if (this.historyLoaderSessions.has(sessionId)) {
+              try {
+                this.sendMessage('chart_delete_session', [sessionId]);
+                logger.info(`🧹 History session torn down: ${sessionId} (${seriesTimeframe}m for ${baseSymbol})`);
+              } catch (err) {
+                logger.warn(`Failed to tear down history session ${sessionId}: ${err.message}`);
+              }
+              this.historyLoaderSessions.delete(sessionId);
+              this.sessionToSymbol.delete(sessionId);
+              this.sessionTimeframe.delete(sessionId);
+              // chartSessions is keyed by ${symbol}_${timeframe}; remove
+              // the entry pointing at this session so reconnect logic
+              // doesn't try to reuse a deleted session.
+              const key = `${symbol}_${seriesTimeframe}`;
+              if (this.chartSessions.get(key) === sessionId) {
+                this.chartSessions.delete(key);
+              }
+            }
           }
         }
 
@@ -803,6 +837,8 @@ class TradingViewClient extends EventEmitter {
       this.chartSessions.set(`${exchangeSymbol}_${timeframe}`, chartSession);
       this.sessionToSymbol.set(chartSession, exchangeSymbol);
       this.sessionTimeframe.set(chartSession, timeframe);
+      // Mark this session as one-shot — tear down after history_loaded fires.
+      this.historyLoaderSessions.add(chartSession);
 
       logger.info(`History session created: ${chartSession} for ${exchangeSymbol} @ ${timeframe}m`);
 
@@ -1072,6 +1108,7 @@ class TradingViewClient extends EventEmitter {
     this.chartSessions.clear();
     this.sessionToSymbol.clear();
     this.sessionTimeframe.clear();
+    this.historyLoaderSessions.clear();
     this.isDisconnecting = wasDisconnecting;
     this.reconnectAttempts = 0;
 
