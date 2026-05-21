@@ -75,6 +75,11 @@ export class LsFlipTriggerBarStrategy extends BaseStrategy {
     this.params.stopPoints = params.stopPoints ?? null;
     this.params.targetPoints = params.targetPoints ?? null;
 
+    // Instrument tick size. Entry = high − fib*range can land off-tick
+    // (e.g. mid of a 24.25-pt bar = .375), which the broker rejects. Round
+    // entry to the tick grid, then derive stop/target from the rounded entry.
+    this.params.tickSize = params.tickSize ?? 0.25;
+
     // Optional break-even / trail forwarded to engine.
     this.params.breakevenStop = params.breakevenStop ?? false;
     this.params.breakevenTrigger = params.breakevenTrigger ?? null;
@@ -243,9 +248,13 @@ export class LsFlipTriggerBarStrategy extends BaseStrategy {
 
     // Step 5: compute entry / stop / target.
     const fib = this.params.fib;
-    const entryPrice = direction === 'long'
+    const rawEntry = direction === 'long'
       ? candle.high - fib * range
       : candle.low + fib * range;
+    // Round entry to tick grid. With fib=0.5 a 24.25-pt bar yields a .125
+    // half-tick midpoint — brokers reject off-tick limit prices.
+    const tick = this.params.tickSize;
+    const entryPrice = Math.round(rawEntry / tick) * tick;
     // Stop/target defaults are the bar extremes, optionally overridden by fixed
     // points from entryPrice when stopPoints / targetPoints params are set.
     let stopLoss = direction === 'long' ? candle.low : candle.high;

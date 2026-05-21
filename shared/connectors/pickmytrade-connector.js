@@ -129,6 +129,41 @@ export class PickMyTradeConnector extends BaseConnector {
 
   _label() { return `PMT:${this.account.id}`; }
 
+  _tickSizeFor(symbol) {
+    const root = String(symbol || '').replace(/[A-Z]\d+$/, '').toUpperCase();
+    switch (root) {
+      case 'NQ': case 'MNQ':
+      case 'ES': case 'MES':
+      case 'RTY': case 'M2K':
+      case 'YM': case 'MYM':
+        return 0.25;
+      default:
+        this.logger.warn?.(`[${this._label()}] unknown tick size for ${symbol}; defaulting to 0.25`);
+        return 0.25;
+    }
+  }
+
+  _roundPricesToTick(message, symbol) {
+    const tick = this._tickSizeFor(symbol);
+    const snap = (v) => {
+      if (v == null) return v;
+      const n = Number(v);
+      if (!Number.isFinite(n)) return v;
+      return Number((Math.round(n / tick) * tick).toFixed(4));
+    };
+    const before = { price: message.price, stopLoss: message.stopLoss, takeProfit: message.takeProfit };
+    if (message.price != null) message.price = snap(message.price);
+    if (message.stopLoss != null) message.stopLoss = snap(message.stopLoss);
+    if (message.takeProfit != null) message.takeProfit = snap(message.takeProfit);
+    if (before.price !== message.price
+        || before.stopLoss !== message.stopLoss
+        || before.takeProfit !== message.takeProfit) {
+      this.logger.warn?.(`[${this._label()}] tick-snapped ${symbol} prices: ` +
+        `price ${before.price}->${message.price}, stop ${before.stopLoss}->${message.stopLoss}, ` +
+        `target ${before.takeProfit}->${message.takeProfit} (tick=${tick})`);
+    }
+  }
+
   async testConnection() {
     if (!this.webhookUrl || !this.token) {
       return { ok: false, error: 'Missing webhookUrl or token' };
@@ -181,6 +216,10 @@ export class PickMyTradeConnector extends BaseConnector {
       await this._publishReject(signalId, strategy, 'missing symbol or action');
       return { dispatched: false, reason: 'invalid payload' };
     }
+
+    // Defense-in-depth: snap limit / stop / target to the tick grid. See
+    // tradovate-connector._roundPricesToTick for context.
+    this._roundPricesToTick(message, symbol);
 
     const pmtOrder = {
       action: message.action === 'Buy' ? 'buy' : 'sell',

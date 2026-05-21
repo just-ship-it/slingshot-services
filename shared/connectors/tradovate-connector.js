@@ -199,6 +199,12 @@ export class TradovateConnector extends BaseConnector {
       return this._rejectLocally(signalId, strategy, `invalid action: ${message.action}`);
     }
 
+    // Defense-in-depth: round limit / stop / target prices to the instrument's
+    // tick grid. Strategies that compute mid-bar fib entries (e.g. ls-flip-
+    // trigger-bar with fib=0.5 on an odd-tick range) can produce .125 / .375
+    // half-ticks that the broker rejects.
+    this._roundPricesToTick(message, symbol);
+
     // Contract resolution
     let contract;
     try {
@@ -296,6 +302,48 @@ export class TradovateConnector extends BaseConnector {
     } finally {
       // TTL cleanup for pendingOrderSignals
       this._sweepExpired(this.pendingOrderSignals, PENDING_ORDER_SIGNAL_TTL_MS, 'timestamp');
+    }
+  }
+
+  /**
+   * Tick size for a given broker symbol. NQ/MNQ/ES/MES all tick at 0.25.
+   * Add more as needed. Falls back to 0.25 with a warn.
+   */
+  _tickSizeFor(symbol) {
+    const root = String(symbol || '').replace(/[A-Z]\d+$/, '').toUpperCase();
+    switch (root) {
+      case 'NQ': case 'MNQ':
+      case 'ES': case 'MES':
+      case 'RTY': case 'M2K':
+      case 'YM': case 'MYM':
+        return 0.25;
+      default:
+        this.logger.warn?.(`[${this._label()}] unknown tick size for ${symbol}; defaulting to 0.25`);
+        return 0.25;
+    }
+  }
+
+  _roundPricesToTick(message, symbol) {
+    const tick = this._tickSizeFor(symbol);
+    const snap = (v) => {
+      if (v == null) return v;
+      const n = Number(v);
+      if (!Number.isFinite(n)) return v;
+      const rounded = Math.round(n / tick) * tick;
+      // Avoid 0.30000000000000004-style float artifacts.
+      return Number(rounded.toFixed(4));
+    };
+    const before = { price: message.price, stopLoss: message.stopLoss, takeProfit: message.takeProfit };
+    if (message.price != null) message.price = snap(message.price);
+    if (message.stopLoss != null) message.stopLoss = snap(message.stopLoss);
+    if (message.takeProfit != null) message.takeProfit = snap(message.takeProfit);
+    const changed = before.price !== message.price
+      || before.stopLoss !== message.stopLoss
+      || before.takeProfit !== message.takeProfit;
+    if (changed) {
+      this.logger.warn?.(`[${this._label()}] tick-snapped ${symbol} prices: ` +
+        `price ${before.price}->${message.price}, stop ${before.stopLoss}->${message.stopLoss}, ` +
+        `target ${before.takeProfit}->${message.takeProfit} (tick=${tick})`);
     }
   }
 
