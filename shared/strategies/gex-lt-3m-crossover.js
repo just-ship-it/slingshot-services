@@ -312,6 +312,14 @@ export class GexLt3mCrossoverStrategy extends BaseStrategy {
       // the rule will be skipped at the matching step (whole-strategy
       // `blockedHoursEt` still applies on top). null = no per-rule block.
       blockedHoursEt: o.blockedHoursEt ?? rule.blockedHoursEt ?? null,
+      // Per-rule day-of-week exclusion. Array of DOW strings ('Sun'..'Sat').
+      // Empirically-driven filter (research/gex-lt-3m-improve): some rules
+      // bleed money on specific days (e.g. S_R4 on Fri, L_S4 on Thu/Fri).
+      blockedDowsEt: o.blockedDowsEt ?? rule.blockedDowsEt ?? null,
+      // Per-rule LT-index exclusion. Array of LT indices (0-4 for L1..L5).
+      // Empirically-driven filter: some (rule, ltIdx) cells are negative-
+      // expectancy (e.g. L_S4 × L5 = -$7k / 25 trades).
+      blockedLtIdx: o.blockedLtIdx ?? rule.blockedLtIdx ?? null,
     };
   }
 
@@ -325,17 +333,18 @@ export class GexLt3mCrossoverStrategy extends BaseStrategy {
   }
 
   _toEt(ts) {
-    // Lightweight ET conversion using Intl. We only need hour/minute.
+    // Lightweight ET conversion using Intl. We only need hour/minute/dow.
     const d = new Date(ts);
     const parts = new Intl.DateTimeFormat('en-US', {
       timeZone: 'America/New_York', hour12: false,
-      hour: '2-digit', minute: '2-digit',
+      hour: '2-digit', minute: '2-digit', weekday: 'short',
     }).formatToParts(d);
     const hh = parts.find(p => p.type === 'hour')?.value || '0';
     const mm = parts.find(p => p.type === 'minute')?.value || '0';
+    const dow = parts.find(p => p.type === 'weekday')?.value || '';
     const hour = parseInt(hh, 10) % 24;  // Intl returns 24 for midnight in some locales
     const minute = parseInt(mm, 10);
-    return { hour, minute, timeInMinutes: hour * 60 + minute };
+    return { hour, minute, dow, timeInMinutes: hour * 60 + minute };
   }
 
   // ────────────────────────────────────────────────────────────────────────
@@ -426,6 +435,16 @@ export class GexLt3mCrossoverStrategy extends BaseStrategy {
         if (!match) continue;
         // Per-rule time-of-day exclusion (e.g. S_CW blocked 14:00-15:59 ET)
         if (Array.isArray(rule.blockedHoursEt) && rule.blockedHoursEt.includes(et.hour)) {
+          perRuleBlockedRule = rule.id;
+          continue;
+        }
+        // Per-rule day-of-week exclusion (research/gex-lt-3m-improve)
+        if (Array.isArray(rule.blockedDowsEt) && rule.blockedDowsEt.includes(et.dow)) {
+          perRuleBlockedRule = rule.id;
+          continue;
+        }
+        // Per-rule LT-index exclusion (research/gex-lt-3m-improve)
+        if (Array.isArray(rule.blockedLtIdx) && rule.blockedLtIdx.includes(f.ltIdx)) {
           perRuleBlockedRule = rule.id;
           continue;
         }

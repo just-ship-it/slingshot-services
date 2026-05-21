@@ -247,6 +247,12 @@ export class CLI {
         description: 'Force-flat any open position at this ET wall-clock time (HH:MM) on weekdays. Models day-trade-margin liquidation (e.g. "16:45").'
       })
 
+      .option('glx-preset', {
+        type: 'string',
+        choices: ['w12', 'v3', 'v3-max', 'v3-balanced', 'v3-low-dd'],
+        description: 'gex-lt-3m-crossover: load a named preset of per-rule exits + filters. w12=current gold ($179k/PF 1.44/DD 8.26%). v3 / v3-max / v3-balanced / v3-low-dd are the post-research presets (see research/gex-lt-3m-improve/SUMMARY.md for metrics). Individual --glx-* flags below override preset values.'
+      })
+
       .option('glx-disable-rules', {
         type: 'string',
         description: 'Comma-separated rule IDs to disable in gex-lt-3m-crossover (e.g. "L_PW,S_S2_SOLO").'
@@ -1853,6 +1859,77 @@ export class CLI {
     };
 
     // gex-lt-3m-crossover knobs
+    // --glx-preset: named bundle of per-rule exit/filter params. Applied first;
+    // individual --glx-* flags below override. See `glx-preset` option above for
+    // the choice list and metrics. Presets bake in disabledRules + ruleOverrides;
+    // they intentionally mirror the strategy's existing w12 defaults so a v3 run
+    // with no other flags is a single-flag invocation.
+    const GLX_PRESETS = {
+      // w12 = current W12+SCW-PM-block gold (in-code defaults; here so users
+      // can explicitly request the "old gold standard" by name).
+      'w12': {
+        disabledRules: ['L_S3', 'L_S5_SOLO', 'L_PW', 'S_S2_SOLO', 'S_R3', 'S_R5', 'S_PW_SOLO'],
+        ruleOverrides: {
+          L_S4:      { targetPts: 120, maxHoldBars: 90 },
+          S_GF_SOLO: {                 maxHoldBars: 90 },
+          S_CW:      { targetPts: 120, maxHoldBars: 90, blockedHoursEt: [14, 15] },
+        },
+      },
+      // v3 = post-research recommended pick (best PnL × Sharpe balance).
+      // Per-rule wider exits (stop=70 across) + per-rule BE + DOW/ltIdx loser-cut filters.
+      // Initial engine validation (S_GF_SOLO @ gold params): $211k / PF 1.98 / 604 trades.
+      // S_GF_SOLO and S_R4 now upgraded to sweep-best (within mh<=120) configs.
+      'v3': {
+        disabledRules: ['L_S3', 'L_S5_SOLO', 'L_PW', 'S_S2_SOLO', 'S_R3', 'S_R5', 'S_PW_SOLO'],
+        ruleOverrides: {
+          L_S4:      { targetPts: 100, stopPts: 70, maxHoldBars: 120, breakevenTrigger: 70, breakevenOffset: 20, blockedLtIdx: [2, 4], blockedDowsEt: ['Thu', 'Fri'] },
+          S_GF_SOLO: { targetPts: 180, stopPts: 70, maxHoldBars: 120, breakevenTrigger: 80, breakevenOffset: 20, blockedHoursEt: [11] },
+          S_CW:      { targetPts: 200, stopPts: 70, maxHoldBars: 120, breakevenTrigger: 80, breakevenOffset: 20, blockedHoursEt: [14, 15] },
+          S_R4:      { targetPts: 80,  stopPts: 40, maxHoldBars: 60,  trailingTrigger: 70, trailingOffset: 25, blockedLtIdx: [2, 4], blockedDowsEt: ['Fri'], blockedHoursEt: [11, 15] },
+        },
+      },
+      // v3-max = max-PnL variant. Wider L_S4 target + longer max-hold; pays in
+      // tied DD vs gold but doubles PnL.
+      // Initial engine (S_GF_SOLO @ gold): $264k / PF 2.18 / 547 trades.
+      // S_GF_SOLO and S_R4 now upgraded; expected engine ~$300k.
+      'v3-max': {
+        disabledRules: ['L_S3', 'L_S5_SOLO', 'L_PW', 'S_S2_SOLO', 'S_R3', 'S_R5', 'S_PW_SOLO'],
+        ruleOverrides: {
+          L_S4:      { targetPts: 140, stopPts: 70, maxHoldBars: 150, blockedLtIdx: [2, 4], blockedDowsEt: ['Thu', 'Fri'] },
+          S_GF_SOLO: { targetPts: 180, stopPts: 70, maxHoldBars: 150, breakevenTrigger: 80, breakevenOffset: 20, blockedHoursEt: [11] },
+          S_CW:      { targetPts: 200, stopPts: 70, maxHoldBars: 150, blockedHoursEt: [14, 15] },
+          S_R4:      { targetPts: 80,  stopPts: 40, maxHoldBars: 60,  trailingTrigger: 70, trailingOffset: 25, blockedLtIdx: [2, 4], blockedDowsEt: ['Fri'], blockedHoursEt: [11, 15] },
+        },
+      },
+      // v3-balanced = high-Sharpe pick with tighter L_S4 target+BE (more wins,
+      // less DD).  Sim: TBD via engine.
+      'v3-balanced': {
+        disabledRules: ['L_S3', 'L_S5_SOLO', 'L_PW', 'S_S2_SOLO', 'S_R3', 'S_R5', 'S_PW_SOLO'],
+        ruleOverrides: {
+          L_S4:      { targetPts: 100, stopPts: 70, maxHoldBars: 120, breakevenTrigger: 70, breakevenOffset: 20, blockedLtIdx: [2, 4], blockedDowsEt: ['Thu', 'Fri'] },
+          S_GF_SOLO: { targetPts: 50,  stopPts: 40, maxHoldBars: 60,  breakevenTrigger: 25, breakevenOffset: 5,  blockedHoursEt: [11] },
+          S_CW:      { targetPts: 140, stopPts: 50, maxHoldBars: 90,  breakevenTrigger: 60, breakevenOffset: 10, blockedHoursEt: [14, 15] },
+          S_R4:      { targetPts: 70,  stopPts: 40, maxHoldBars: 60,  breakevenTrigger: 35, breakevenOffset: 5,  blockedLtIdx: [2, 4], blockedDowsEt: ['Fri'], blockedHoursEt: [11, 15] },
+        },
+      },
+      // v3-low-dd = filter-only at gold exits — smallest DD that still beats gold.
+      // Sim: $210k / +14% / PF 1.98 / Sharpe 6.05 / DD $6.7k.
+      'v3-low-dd': {
+        disabledRules: ['L_S3', 'L_S5_SOLO', 'L_PW', 'S_S2_SOLO', 'S_R3', 'S_R5', 'S_PW_SOLO'],
+        ruleOverrides: {
+          L_S4:      { targetPts: 120, stopPts: 50, maxHoldBars: 90, blockedLtIdx: [2, 4], blockedDowsEt: ['Thu', 'Fri'] },
+          S_GF_SOLO: { targetPts: 60,  stopPts: 50, maxHoldBars: 90, blockedHoursEt: [11] },
+          S_CW:      { targetPts: 120, stopPts: 50, maxHoldBars: 90, blockedHoursEt: [14, 15] },
+          S_R4:      { targetPts: 80,  stopPts: 50, maxHoldBars: 60, blockedLtIdx: [2, 4], blockedDowsEt: ['Fri'], blockedHoursEt: [11, 15] },
+        },
+      },
+    };
+    const glxPreset = args['glx-preset'] ? GLX_PRESETS[args['glx-preset']] : null;
+    if (glxPreset) {
+      strategyParams.disabledRules = glxPreset.disabledRules;
+      strategyParams.ruleOverrides = glxPreset.ruleOverrides;
+    }
+
     if (args['glx-disable-rules']) {
       strategyParams.disabledRules = args['glx-disable-rules']
         .split(',').map(s => s.trim()).filter(Boolean);

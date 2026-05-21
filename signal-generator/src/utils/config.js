@@ -172,6 +172,13 @@ const config = {
   GLX_LS_BE_ON_FLIP: process.env.GLX_LS_BE_ON_FLIP?.toLowerCase() === 'true',
   GLX_LS_BE_OFFSET: parseFloat(process.env.GLX_LS_BE_OFFSET || '0'),
 
+  // gex-lt-3m-crossover preset (research/gex-lt-3m-improve, 2026-05-21).
+  // Default 'v3' — the new gold standard ($217,864 / PF 1.90 / Sharpe 8.73 /
+  // DD 5.56%, +22% PnL vs W12 with -33% DD). Set GLX_PRESET=w12 to revert to
+  // the prior gold for comparison runs. Mirrors cli.js GLX_PRESETS so live and
+  // backtest stay in lockstep.
+  GLX_PRESET: process.env.GLX_PRESET || 'v3',
+
   // LS-BE-on-flip for gex-level-fade. Phase 7 found +10 offset modestly
   // outperforms +0 ($173k vs $162k); default to +10.
   GLF_LS_BE_ON_FLIP: process.env.GLF_LS_BE_ON_FLIP?.toLowerCase() === 'true',
@@ -427,10 +434,62 @@ const config = {
   },
 
   getGexLt3mCrossoverParams() {
-    // Strategy class owns rule defaults (W12+SCW-PM-block gold). Env overrides
-    // only fire when explicitly set. This getter exists primarily to thread
-    // the LS-BE-on-flip overlay through; add more overrides here as needed.
+    // Live preset bundle — mirrors backtest-engine/src/cli.js GLX_PRESETS so
+    // any backtest reproduction with --glx-preset $GLX_PRESET matches live.
+    // Default 'w12' = current production gold; flip to 'v3' for the new
+    // research-validated gold. Disabled rules and ruleOverrides are baked into
+    // the preset; the strategy class W12 defaults are overridden when the
+    // preset is selected. The LS-BE-on-flip overlay layers on top.
+    const GLX_PRESETS = {
+      w12: {
+        disabledRules: ['L_S3', 'L_S5_SOLO', 'L_PW', 'S_S2_SOLO', 'S_R3', 'S_R5', 'S_PW_SOLO'],
+        ruleOverrides: {
+          L_S4:      { targetPts: 120, maxHoldBars: 90 },
+          S_GF_SOLO: {                 maxHoldBars: 90 },
+          S_CW:      { targetPts: 120, maxHoldBars: 90, blockedHoursEt: [14, 15] },
+        },
+      },
+      v3: {
+        disabledRules: ['L_S3', 'L_S5_SOLO', 'L_PW', 'S_S2_SOLO', 'S_R3', 'S_R5', 'S_PW_SOLO'],
+        ruleOverrides: {
+          L_S4:      { targetPts: 100, stopPts: 70, maxHoldBars: 120, breakevenTrigger: 70, breakevenOffset: 20, blockedLtIdx: [2, 4], blockedDowsEt: ['Thu', 'Fri'] },
+          S_GF_SOLO: { targetPts: 180, stopPts: 70, maxHoldBars: 120, breakevenTrigger: 80, breakevenOffset: 20, blockedHoursEt: [11] },
+          S_CW:      { targetPts: 200, stopPts: 70, maxHoldBars: 120, breakevenTrigger: 80, breakevenOffset: 20, blockedHoursEt: [14, 15] },
+          S_R4:      { targetPts: 80,  stopPts: 40, maxHoldBars: 60,  trailingTrigger: 70, trailingOffset: 25, blockedLtIdx: [2, 4], blockedDowsEt: ['Fri'], blockedHoursEt: [11, 15] },
+        },
+      },
+      'v3-max': {
+        disabledRules: ['L_S3', 'L_S5_SOLO', 'L_PW', 'S_S2_SOLO', 'S_R3', 'S_R5', 'S_PW_SOLO'],
+        ruleOverrides: {
+          L_S4:      { targetPts: 140, stopPts: 70, maxHoldBars: 150, blockedLtIdx: [2, 4], blockedDowsEt: ['Thu', 'Fri'] },
+          S_GF_SOLO: { targetPts: 180, stopPts: 70, maxHoldBars: 150, breakevenTrigger: 80, breakevenOffset: 20, blockedHoursEt: [11] },
+          S_CW:      { targetPts: 200, stopPts: 70, maxHoldBars: 150, blockedHoursEt: [14, 15] },
+          S_R4:      { targetPts: 80,  stopPts: 40, maxHoldBars: 60,  trailingTrigger: 70, trailingOffset: 25, blockedLtIdx: [2, 4], blockedDowsEt: ['Fri'], blockedHoursEt: [11, 15] },
+        },
+      },
+      'v3-balanced': {
+        disabledRules: ['L_S3', 'L_S5_SOLO', 'L_PW', 'S_S2_SOLO', 'S_R3', 'S_R5', 'S_PW_SOLO'],
+        ruleOverrides: {
+          L_S4:      { targetPts: 100, stopPts: 70, maxHoldBars: 120, breakevenTrigger: 70, breakevenOffset: 20, blockedLtIdx: [2, 4], blockedDowsEt: ['Thu', 'Fri'] },
+          S_GF_SOLO: { targetPts: 50,  stopPts: 40, maxHoldBars: 60,  breakevenTrigger: 25, breakevenOffset: 5,  blockedHoursEt: [11] },
+          S_CW:      { targetPts: 140, stopPts: 50, maxHoldBars: 90,  breakevenTrigger: 60, breakevenOffset: 10, blockedHoursEt: [14, 15] },
+          S_R4:      { targetPts: 70,  stopPts: 40, maxHoldBars: 60,  breakevenTrigger: 35, breakevenOffset: 5,  blockedLtIdx: [2, 4], blockedDowsEt: ['Fri'], blockedHoursEt: [11, 15] },
+        },
+      },
+      'v3-low-dd': {
+        disabledRules: ['L_S3', 'L_S5_SOLO', 'L_PW', 'S_S2_SOLO', 'S_R3', 'S_R5', 'S_PW_SOLO'],
+        ruleOverrides: {
+          L_S4:      { targetPts: 120, stopPts: 50, maxHoldBars: 90, blockedLtIdx: [2, 4], blockedDowsEt: ['Thu', 'Fri'] },
+          S_GF_SOLO: { targetPts: 60,  stopPts: 50, maxHoldBars: 90, blockedHoursEt: [11] },
+          S_CW:      { targetPts: 120, stopPts: 50, maxHoldBars: 90, blockedHoursEt: [14, 15] },
+          S_R4:      { targetPts: 80,  stopPts: 50, maxHoldBars: 60, blockedLtIdx: [2, 4], blockedDowsEt: ['Fri'], blockedHoursEt: [11, 15] },
+        },
+      },
+    };
+    const preset = GLX_PRESETS[this.GLX_PRESET] || GLX_PRESETS.w12;
     return {
+      disabledRules: preset.disabledRules,
+      ruleOverrides: preset.ruleOverrides,
       lsBeOnFlip: this.GLX_LS_BE_ON_FLIP,
       lsBeOffset: this.GLX_LS_BE_OFFSET,
     };

@@ -365,7 +365,7 @@ node index.js --ticker NQ --strategy short-dte-iv --timeframe 15m \
 ```
 Production defaults baked into `src/config/default.json`. Does NOT require `--raw-contracts`.
 
-**GEX-LT-3M-Crossover** (1m timeframe, 1m LT × GEX 3-min sign-flip detector):
+**GEX-LT-3M-Crossover — v3** (1m timeframe, 1m LT × GEX 3-min sign-flip detector — current gold):
 ```bash
 cd backtest-engine
 node index.js --ticker NQ --strategy gex-lt-3m-crossover --timeframe 1m --raw-contracts \
@@ -376,9 +376,19 @@ node index.js --ticker NQ --strategy gex-lt-3m-crossover --timeframe 1m --raw-co
   --eod-cutoff-et 16:40 \
   --glx-entry-window 07:00-16:00 \
   --glx-blocked-hours 13 \
-  --glx-disable-rules "S_R5,S_R3,S_S2_SOLO,L_S5_SOLO,S_PW_SOLO,L_PW,L_S3"
+  --glx-preset v3
 ```
-**W12+SCW-PM-block baseline (2026-05-18):** 888 trades, **$179,201** PnL, 47.6% WR, **PF 1.44**, **Sharpe 6.12**, **MaxDD 8.26%** over 16 months. Active rules (4) and the strategy's baked-in defaults (no longer need `--glx-rule-overrides`; old gold values are now the class defaults): L_S4 (LONG @ S4 support, TP=120/SL=50/mh=90), S_GF_SOLO (SHORT @ gamma_flip, TP=60/SL=50/mh=90), S_CW (SHORT @ call_wall, TP=120/SL=50/mh=90, **blocked 14:00-15:59 ET**), S_R4 (SHORT @ R4 resistance, TP=80/SL=50/mh=60). 7 rules dropped for PF<1.0. Trades JSON: `data/gold-standard/gex-lt-3m-crossover.json`. Strategy uses `place_limit` at signal close with 5-min timeout (zero entry slippage). Full implementation write-up: `research/GEX-LT-3M-IMPLEMENTATION-RESULTS.md`.
+**v3 gold standard (2026-05-21):** **553 trades, $217,864 PnL, 60% WR, PF 1.90, Sharpe 8.73, MaxDD 5.56%** over 16 months. Trades JSON: `data/gold-standard/gex-lt-3m-crossover-v3.json`. Strategy uses `place_limit` at signal close with 5-min timeout. Full research writeup: `research/gex-lt-3m-improve/SUMMARY.md`.
+
+Per-rule v3 config (baked into `--glx-preset v3`):
+* **L_S4**: TP=100/SL=70/mh=120/BE 70/+20, blocks Thu/Fri + L3/L5
+* **S_GF_SOLO**: TP=180/SL=70/mh=120/BE 80/+20, blocks 11 ET
+* **S_CW**: TP=200/SL=70/mh=120/BE 80/+20, blocks 14-15 ET
+* **S_R4**: TP=80/SL=40/mh=60 + trail 70/25, blocks Fri + L3/L5 + 11/15 ET
+
+Alternate presets: `--glx-preset v3-max` ($256k / PF 2.03 / Sh 8.75 / DD 6.40% — wider L_S4 target + longer holds), `--glx-preset v3-balanced` (TBD), `--glx-preset v3-low-dd` (TBD), `--glx-preset w12` ($179k / PF 1.44 — the prior gold standard, preserved for reproduction).
+
+**W12+SCW-PM-block baseline (2026-05-18) — SUPERSEDED by v3:** 888 trades, $179,201 PnL, 47.6% WR, PF 1.44, Sharpe 6.12, MaxDD 8.26%. Active rules (4): L_S4 (TP=120/SL=50/mh=90), S_GF_SOLO (TP=60/SL=50/mh=90), S_CW (TP=120/SL=50/mh=90, blocked 14:00-15:59 ET), S_R4 (TP=80/SL=50/mh=60). Live now defaults to v3 via `GLX_PRESET=v3` (set in `signal-generator/src/utils/config.js`); flip to `GLX_PRESET=w12` to revert. Backtest CLI defaults to the strategy class's W12 hardcoded values when `--glx-preset` is omitted — pass `--glx-preset w12` explicitly for clean reproduction or just omit. Trades JSON: `data/gold-standard/gex-lt-3m-crossover.json`. Full historical write-up: `research/GEX-LT-3M-IMPLEMENTATION-RESULTS.md`.
 
 Prior W12 baseline (2026-05-08, before S_CW PM block): 909 trades, $164,847 PnL, PF 1.39, Sharpe 5.62, MaxDD 8.30%. S_CW analysis: morning (07-12 ET) PF 2.08 / +$47.7k, but afternoon (14-15 ET) flipped to PF 0.29 / −$10.5k / WR 32% on 25 trades. Other 3 rules are *more* efficient in afternoon than morning (L_S4 afternoon PF 1.73 vs morning 1.23, S_GF_SOLO afternoon PF 1.97 vs morning 1.43) — so the surgical fix was to block S_CW specifically, keep the other 3 active 07:00-16:00 ET. Result: total PnL +$14.4k, PF +0.05, Sharpe +0.50, DD unchanged.
 
