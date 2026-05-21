@@ -81,6 +81,10 @@ export class GexFlipIvpctStrategy extends BaseStrategy {
     // Additional hour blacklist within the window. e.g. [6,7,8] to skip ET 06-08.
     this.params.blockedHoursEt = new Set(params.blockedHoursEt ?? []);
 
+    // Day-of-week blacklist (3-letter ET names: 'Sun','Mon',...,'Sat').
+    // v2 presets use this to drop Friday entries on weak rules (~16% of trades).
+    this.params.blockedDowsEt = new Set(params.blockedDowsEt ?? []);
+
     // Cooldown between trades — V7DTSP13 production run used 6 5m bars = 30 minutes
     this.params.signalCooldownMs = params.signalCooldownMs ?? 30 * 60 * 1000;
 
@@ -445,12 +449,25 @@ export class GexFlipIvpctStrategy extends BaseStrategy {
   }
 
   /**
+   * Get 3-letter ET day-of-week for a timestamp ('Sun'..'Sat').
+   */
+  getETDow(timestamp) {
+    return new Intl.DateTimeFormat('en-US', {
+      timeZone: 'America/New_York', weekday: 'short',
+    }).format(new Date(timestamp));
+  }
+
+  /**
    * Half-open entry window check: entryWindowStartHour <= hour < entryWindowEndHour,
-   * with optional hour blacklist via blockedHoursEt.
+   * with optional hour blacklist via blockedHoursEt and DOW blacklist via blockedDowsEt.
    */
   isInEntryWindow(timestamp) {
     const h = this.getETHour(timestamp);
     if (this.params.blockedHoursEt.has(h)) return false;
+    if (this.params.blockedDowsEt.size > 0) {
+      const dow = this.getETDow(timestamp);
+      if (this.params.blockedDowsEt.has(dow)) return false;
+    }
     return h >= this.params.entryWindowStartHour && h < this.params.entryWindowEndHour;
   }
 
@@ -747,6 +764,7 @@ export class GexFlipIvpctStrategy extends BaseStrategy {
       entryWindowStartHour: this.params.entryWindowStartHour,
       entryWindowEndHour: this.params.entryWindowEndHour,
       blockedHoursEt: Array.from(this.params.blockedHoursEt).sort((a, b) => a - b),
+      blockedDowsEt: Array.from(this.params.blockedDowsEt).sort(),
       signalCooldownMs: this.params.signalCooldownMs,
       maxHoldBars: this.params.maxHoldBars,
       eodCutoffEt: this.params.eodCutoffEt,

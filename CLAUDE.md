@@ -32,10 +32,6 @@ Each service supports the same npm scripts:
 - **Production**: `npm start` (runs `node index.js`)
 - **Development**: `npm run dev` (runs `node --watch index.js` with hot reload)
 
-### Prerequisites Check
-- Redis must be running: `redis-cli ping`
-- Environment file: Copy `shared/.env.example` to `shared/.env` and configure
-
 ## Architecture
 
 ### Service Structure
@@ -56,33 +52,22 @@ Each service supports the same npm scripts:
 - Express servers provide HTTP endpoints for external access and health checks
 
 ### Message Bus Channels
-The system uses predefined Redis channels for communication (defined in `shared/index.js`):
-- Webhook events: `webhook.received`, `webhook.validated`, `webhook.rejected`, `webhook.quote`, `webhook.trade`
-- Trading signals: `trade.signal`, `trade.validated`, `trade.rejected`
-- Order events: `order.request`, `order.placed`, `order.filled`, `order.rejected`, `order.cancelled`
-- Position events: `position.opened`, `position.closed`, `position.update`, `position.realtime_update`
-- Market data: `price.update`, `market.connected`, `market.disconnected`, `quote.request`, `quote.response`
-- Account events: `account.update`, `balance.update`, `margin.update`
-- System events: `service.health`, `service.error`, `service.started`, `service.stopped`
-- Sync events: `tradovate_sync_completed`
-- Data Service events: `lt.levels`, `gex.levels`, `candle.close`, `gex.refresh`, `vex.levels`, `cex.levels`
-- Strategy events: `strategy.status`
+Channels are defined in `shared/index.js` (`CHANNELS` constant). Major groups: webhook.*, trade.*, order.*, position.*, price.*, account.*, service.*, plus data-service events (`lt.levels`, `gex.levels`, `candle.close`, `gex.refresh`, `vex.levels`, `cex.levels`) and `strategy.status`. When adding new channels, register them in `shared/index.js` and import via `import { CHANNELS } from '../shared/index.js'`.
 
 ### Configuration
-- Environment variables are managed through `shared/.env`
-- Each service has its own `package.json` with consistent script structure
-- PM2 configuration in `ecosystem.config.cjs` defines all service startup parameters
-- Default ports are defined but configurable via environment variables
+- Environment variables managed through `shared/.env`
+- PM2 configuration in `ecosystem.config.cjs`
 
-### Service Dependencies
-Services must start in this order (handled by `start-all.sh`):
-1. Tradovate Service (depends on message bus)
-2. Trade Orchestrator (depends on message bus)
-3. Monitoring Service (depends on message bus, handles all webhook ingestion)
-4. Data Service (depends on message bus; sources TradingView data, GEX, LT levels)
-5. Signal Generator Service (depends on data-service publishing market data via Redis)
-6. AI Trader Service (depends on data-service; runs as separate PM2 instance of signal-generator codebase)
+### Service Dependencies (startup order, handled by `start-all.sh`)
+1. Tradovate Service
+2. Trade Orchestrator
+3. Monitoring Service (handles all webhook ingestion)
+4. Data Service (sources TradingView data, GEX, LT levels)
+5. Signal Generator Service (depends on data-service publishing via Redis)
+6. AI Trader Service (separate PM2 instance of signal-generator with `ACTIVE_STRATEGY=ai-trader`)
 7. Macro Briefing Service (independent; cron-scheduled)
+
+When adding a new service, mirror the pattern in `tradovate-service/index.js` and register it in `ecosystem.config.cjs`, `start-all.sh`, and `stop-all.sh`.
 
 ## Webhook Trade Signal Format
 
@@ -115,29 +100,21 @@ The system accepts trade signals via webhook at `http://localhost:3014/webhook`:
 
 ### CRITICAL: Strategy research MUST use 1s OHLCV from the fill instant onward
 
-**This rule supersedes any earlier "ambiguity resolution" pattern in this repo.** It exists because the same bug has bitten us repeatedly: research builds a strategy on optimistic 1m-bar logic, the strategy looks great on paper, the backtest engine (which simulates 1s honestly) runs it, and the live performance collapses. Drew has been burned by this in live trading multiple times.
+This rule supersedes any earlier "ambiguity resolution" pattern in this repo. Drew has been burned by 1m-bar optimism in live trading multiple times — see `memory/feedback_1s_research_mandatory.md` for the why.
 
-**MANDATORY for any research script that produces WR / PF / Sharpe / drawdown numbers used to design a strategy:**
+**MANDATORY for any research producing WR / PF / Sharpe / drawdown numbers:**
 
-1. **Fills must be simulated on 1s OHLCV.** Detect the fill instant exactly:
-   - For limit orders: the first 1s bar (after order placement) where `low <= limit_price` (BUY) or `high >= limit_price` (SELL). Fill ts = that 1s bar's timestamp.
-   - For market orders: the next 1s bar's open after the signal candle closes. Fill ts = that 1s bar's timestamp.
+1. **Fills must be simulated on 1s OHLCV.** Limit orders: first 1s bar (after order placement) where `low <= limit_price` (BUY) or `high >= limit_price` (SELL). Market orders: next 1s bar's open after the signal candle closes. Fill ts = that 1s bar's timestamp.
+2. **Stop/target evaluation walks 1s bars chronologically from fill_ts.** First side to hit wins. Never use any 1s bar with `ts < fill_ts` to evaluate exits.
+3. **The 1m bar containing the fill is NOT a unit of analysis.** Don't check `bar.high >= target` on the full 1m fill bar — only the 1s subset from fill_ts onward.
+4. **Same-bar "ambiguous → retroactive 1s resolve" is the SAME bug.** A resolver that walks 1s from the MINUTE START still includes pre-fill 1s ticks.
+5. **MFE/MAE measured from the fill instant**, walking 1s bars forward to max-hold ceiling, rollover, or EOD cutoff.
+6. **Verification before trusting research numbers:** run a small 1s-honest replication of the top filter on the same date range. If trade count, WR, and PF don't match within ~10%, the research has the fill-bar bug.
+7. **Suspect this bug first** when research produces PF / Sharpe that materially exceed already-validated 1s strategies.
 
-2. **Stop/target evaluation runs forward in 1s ORDER from the fill instant.** Walk 1s bars chronologically starting at fill_ts. First side to hit (stop or target) wins. Do NOT use any 1s bar with `ts < fill_ts` to evaluate exits — that data describes a trade that didn't exist yet.
+The 1s file (`backtest-engine/data/ohlcv/nq/NQ_ohlcv_1s.csv`) is 7.6GB sorted by `ts_event`. Stream with readline + lex-compare on the ISO timestamp. See `research/gex-touch-confirm/06-precompute-s1-vwap.js` for the streaming pattern (also demonstrates per-hour primary gate).
 
-3. **The 1m bar containing the fill is NOT a unit of analysis.** Do not check `bar.high >= target` or `bar.low <= stop` on the full 1m fill bar. Use only the 1s subset from fill_ts onward.
-
-4. **Same-bar "ambiguous → retroactive 1s resolve" is the SAME bug.** A resolver that walks 1s from the MINUTE START still includes pre-fill 1s ticks. Don't do this.
-
-5. **MFE/MAE for events must be measured from the fill instant**, walking 1s bars forward to a max-hold ceiling, contract rollover, or EOD cutoff (whichever comes first).
-
-6. **Verification check before trusting research numbers:** before writing a strategy file based on a research output, run a small 1s-honest replication of the top filter on the same date range. If trade count, WR, and PF don't match the research within ~10%, the research has the fill-bar bug. Fix the research, not the strategy.
-
-7. **Suspect this bug first** when research produces PF / Sharpe that materially exceed already-validated 1s strategies (e.g., gex-flip-ivpct post-fix PF 4.29, Sharpe 10.60).
-
-The 1s file (`backtest-engine/data/ohlcv/nq/NQ_ohlcv_1s.csv`) is 7.6GB and sorted by `ts_event`. Stream it with readline + lex-compare on the ISO timestamp for fast date-range filtering. Use the same per-hour primary-contract filter as the 1m loader; the per-hour primary map can be precomputed from 1m data once. See `research/gex-touch-confirm/06-precompute-s1-vwap.js` for the streaming pattern (it also demonstrates the per-hour primary gate).
-
-Strategies in `shared/strategies/*` already operate on 1s data via the engine's `SecondDataProvider` — that path is honest. The risk is purely in offline research scripts that aggregate to 1m for speed and then "fix it" with a retroactive 1s pass.
+Strategies in `shared/strategies/*` already operate on 1s data via the engine's `SecondDataProvider` — that path is honest. The risk is purely in offline research scripts that aggregate to 1m for speed.
 
 ### Order Fill Logic (Critical for Backtesting Accuracy)
 
@@ -165,41 +142,6 @@ Stop losses convert to market orders when triggered, incurring slippage:
 - **SELL Stop Loss**: When `candle.high >= stop_price`, fill at `stop_price + slippage`
 
 **Key principle**: Limit orders should NEVER have slippage — they either fill at the limit price or not at all. Only market orders and triggered stop losses experience slippage. Implementation: `/backtest-engine/src/execution/trade-simulator.js` `checkOrderFill()`.
-
-## Common Development Tasks
-
-### Adding New Services
-1. Create service directory with standard structure
-2. Use shared utilities: `import { messageBus, createLogger, CHANNELS } from '../shared/index.js'`
-3. Add to `ecosystem.config.cjs` PM2 configuration
-4. Update `start-all.sh` and `stop-all.sh` scripts
-
-### Working with Message Bus
-- Import channels: `import { CHANNELS } from '../shared/index.js'`
-- Publish events: `messageBus.publish(CHANNELS.EVENT_NAME, data)`
-- Subscribe to events: `messageBus.subscribe(CHANNELS.EVENT_NAME, handler)`
-
-### Health Checks
-- All services expose `/health` endpoints
-- Use shared helper: `import { healthCheck } from '../shared/index.js'`
-
-### Logging
-- Use shared logger: `import { createLogger } from '../shared/index.js'`
-- PM2 provides centralized log management: `pm2 logs [service-name]`
-
-## Service Endpoints
-
-### Public Endpoints (Monitoring Service - Port 3014)
-- `POST /webhook` - Receives trade signals and quotes
-- `GET /api/dashboard` - Dashboard data aggregation
-- `GET /api/gex/levels` - Current GEX levels (proxied from data-service)
-- `POST /api/gex/refresh` - Force GEX recalculation
-- `GET /api/strategy/gex-scalp/status` - Real-time strategy monitoring
-- `POST /api/trading/enable|disable` - Trading kill switch
-- `GET /health` - Service health status
-- `ws://localhost:3014` - Real-time WebSocket updates
-
-Note: Internal services bind to 127.0.0.1. Only the monitoring service (3014) binds to 0.0.0.0. See individual service `index.js` files for their specific endpoints.
 
 ## Dashboard (React Frontend)
 
@@ -231,7 +173,7 @@ Pure strategy evaluation engine. Consumes market data from Data Service via Redi
 - **Position State**: Tracks positions per product, syncs with Tradovate at startup, reconciles every 5 minutes
 
 ### Active Strategies
-- **IV-SKEW-GEX** (`iv-skew-gex`): IV skew + GEX confluence strategy (1m timeframe, requires `--raw-contracts` for backtesting)
+- **IV-SKEW-GEX** (`iv-skew-gex`): IV skew + GEX confluence (1m timeframe, requires `--raw-contracts` for backtesting)
 - **Short-DTE-IV** (`short-dte-iv`): 0-DTE QQQ IV change predicts NQ direction (15m timeframe)
 
 ### Environment Configuration
@@ -262,161 +204,7 @@ CLI tool for historical strategy analysis. Located in `/backtest-engine/`.
 
 ### Gold Standard Commands
 
-> **2026-05-06 lookahead fix applied.** A 14-min spot lookahead was found in `generate-intraday-gex.py` and `generate-cbbo-gex.js` (snapshots labeled `T:00` actually contained data through `T:14:59`). All three GEX directories were one-shot relabeled with `scripts/relabel-gex-timestamps.js`; both generators now bucket on `(ts + 1min).ceil('15min')` so future runs are correct. Backups at `*.lookahead-bak`. **All gold-standard numbers below are the post-fix re-runs and supersede prior figures.**
-
-**IV-SKEW-GEX** (1m IV resolution, raw contracts, cbbo-derived GEX, shared-calc IV):
-```bash
-cd backtest-engine
-node index.js --ticker NQ --strategy iv-skew-gex --timeframe 1m --raw-contracts \
-  --start 2025-01-13 --end 2026-04-23 \
-  --target-points 200 --stop-loss-points 60 --max-hold-bars 90 \
-  --breakeven-stop --breakeven-trigger 140 --breakeven-offset 10 \
-  --blocked-regimes strong_negative \
-  --level-proximity 100 \
-  --neg-skew-threshold 0.0145 --pos-skew-threshold 0.0250 \
-  --iv-resolution 1m \
-  --gex-dir data/gex/nq-cbbo
-```
-**Post-fix baseline (2026-05-06):** 244 trades, **$92,164** PnL, 49.6% WR, **PF 1.64**, Sharpe 3.97, **Max DD 9.23%** over 16 months. Same trade count as the pre-fix gold standard (signals fire on the same conditions) but materially worse fills/exits. **The current SL/TP/BE params (60 / 200 / 140-10) and skew thresholds (0.0145 / 0.0250) were sweep-tuned against the lookahead-biased data and are no longer optimal — re-tune via `research/PROMPT-reoptimize-stops-targets-post-lookahead-fix.md`.**
-
-Pre-fix v8 gold standard for historical reference: 244 trades, $136,864 PnL, 51.6% WR, PF 2.03, Sharpe 5.71, Max DD 6.04%. Trades JSON: `data/gold-standard/iv-skew-gex-v8-balanced.json` (do NOT use for live deployment — generated under lookahead-biased GEX).
-
-The 5/2 sweeps (93 main + 21 fu + 12 mv3 + 10 mv4 = 136 combos in `/tmp/overnight-sweep/`) compounded four improvements over the 5/1 baseline (291/$116k/PF 1.91/Sharpe 4.71/DD 7.20%):
-1. **Lower negSkewThreshold** (0.0165 → 0.0145): tighter LONG selectivity.
-2. **Wider BE offset** (5 → 10): bigger profit on the rare BE-floor exits.
-3. **Very late BE trigger** (60 → 140): BE arms only on extreme MFE retracements. Most trades exit cleanly via TP=200 or SL=−60 instead of getting clipped at the +10 floor.
-4. **Longer maxHold** (60 → 90 bars): lets the rare big winner run the full 90 minutes instead of timing out at 60.
-
-Combined improvement: +0.12 PF, +1.00 Sharpe, **-1.16pp DD**, +$21k PnL.
-
-The posSkewThreshold is insensitive in the 0.024–0.028 range — once skew exceeds the +0.025 fear-spike level, results barely change.
-
-**MUST include `--level-proximity 100`** — the default of 25 is too tight and reduces trade count to ~94 with mediocre performance. The 100pt window lets price proximity to S1-S5/R1-R5/PutWall/CallWall/GammaFlip levels be the binding signal filter.
-
-**Both skew thresholds are POSITIVE** because the natural ATM put-call structural skew on 7-DTE QQQ sits at +1.74% (puts persistently richer due to crash-hedge demand). LONG fires when skew dips below +1.45% (calls relatively expensive), SHORT fires when skew spikes above +2.50% (puts unusually expensive). Distribution stdev is only 0.35% — the strategy reads deviations from the +1.74% baseline.
-
-Exit logic: at +140pts MFE, stop moves to entry+10 (locks 10pts profit). The +140 trigger is so late that BE rarely arms — most trades exit via TP=200, SL=-60, or maxHold=90 bars. Plus regime filter: rejects entries when `gexLevels.regime === 'strong_negative'`.
-
-### v8 risk modes — pre-fix sweeps (STALE post 2026-05-06 lookahead fix)
-
-> The table below was sweep-tuned against the lookahead-biased GEX. It's preserved as historical context but **none of these modes are valid baselines anymore**. The "Balanced" config is the current code default; its post-fix performance is in the headline command above. The other modes have not been re-measured under fixed data — assume similar 17–33% PnL/PF degradation pending re-sweep.
-
-All variants share `--target-points 200 --level-proximity 100 --neg-skew-threshold 0.0145 --pos-skew-threshold 0.0250 --breakeven-offset 10 --blocked-regimes strong_negative` unless noted.
-
-| Mode | Config | Trades | WR | PF | Sharpe | DD | PnL | Status |
-|---|---|---:|---:|---:|---:|---:|---:|---|
-| **Balanced** (default) | SL=60, BE=140, mh=90 | 244 | 51.6% | 2.03 | 5.71 | 6.04% | $137k | Pre-fix; see headline cmd for post-fix numbers |
-| **Aggressive** (PnL) | SL=80, BE=130, mh=90 | 233 | 58.4% | 2.05 | 5.54 | 8.06% | $141k | Pre-fix; needs re-measurement |
-| **Even-longer hold** | SL=60, BE=130, mh=120 | 234 | 53.0% | 2.07 | 5.70 | 6.83% | $139k | Pre-fix; needs re-measurement |
-| **Earlier BE** | SL=60, BE=120, mh=90 | 244 | 53.3% | 2.05 | 5.54 | 6.98% | $135k | Pre-fix; needs re-measurement |
-| **5/1 Baseline** | SL=60, BE=60+5, neg=0.0165, mh=60 | 291 | 60.5% | 1.91 | 4.71 | 7.20% | $116k | Pre-fix |
-| **Selective Tight** | SL=80, neg=+0.0100 (+TP/SL=120/80) | 63 | 73.0% | 2.48 | 1.93 | 6.16% | $35k | Pre-fix |
-
-**Key insight on the BE × maxHold interaction**: at BE=140 the floor barely ever arms — most trades just run their TP/SL/maxHold course. Lengthening maxHold from 60 → 90 then captures more upside on trades that haven't yet hit TP=200, while DD stays bounded by the -60 SL. The combined effect on the equity curve is much smoother (Sharpe 5.71) and DD drops to 6.04% — exceptional for a 16-month, 0.75-trade-per-day strategy. Avg win is now ~$1900 vs $1380 at the 5/1 baseline.
-
-The fine-grained skew sweep showed neg=0.0145–0.0165 forms a plateau (Sharpe 4.93–5.02), with neg=0.0145 the local optimum. Cliff still exists at neg≥0.0173 — PF crashes from 1.94 → 1.30, trades 3x explode (~900) into noise region, DD blows out to 30%+. Natural trade ceiling is ~300/16mo with quality.
-
-The v6 Tight filter set (level + max-iv) actively HURTS v8: it indiscriminately trims good signals with bad. The threshold sweep already finds the right selectivity — additional filters add nothing. Stick with Balanced or Aggressive.
-
-**Lookahead-bias correction history (2026-04-30 → 2026-05-06)**: Four separate corrections to reach honest baseline:
-1. **cbbo GEX `ts_event` bucketing fix** (4/30): late-arriving rows polluted earlier 15-min buckets with future-day quotes. v6 = v5 config re-run on corrected GEX. Reduced PnL by ~40%, PF by ~32%.
-2. **IV CSV regen #1** (5/1 morning): four bugs in `precompute-iv.js` (ts_event bucketing, no forward-fill, missing DTE tiebreaker, midnight-local expiration time). v7 = v6 with corrected IV. Reduced PnL by ~60%, PF 2.37 → 1.32. **Still buggy.**
-3. **precompute-iv.js → shared calculator** (5/1 evening): replaced precompute's local `calculateATMIV` (used QQQ-ETF-close as spot) with the shared `calculateATMIVFromQuotes` (uses parity-derived spot from chain itself). Eliminated implementation drift between backtest precompute and live signal-generator. v8 = v7 with byte-identical-to-live IV. **Result: same $113k PnL with HALF the trades, +0.58 PF, +1.48 Sharpe, -10pp DD.** v8 thresholds had to flip POSITIVE because skew distribution is concentrated at +1.74% (natural ATM put-call structural skew).
-4. **GEX snapshot bucket-label fix** (5/6): both generator scripts (`generate-intraday-gex.py:load_ohlcv_for_date` and `generate-cbbo-gex.js:loadSpotPrices`/`loadCBBO`) floored OHLCV bucketing to interval-start and kept the LAST close — so a snapshot labeled `T:00` actually contained spot at `~T:14:59`. Every NQ-space field (multiplier, walls, gamma_flip, regime, gamma_imbalance) inherited the 14-min spot lookahead. Both generators now bucket on `(ts + 1min).ceil('15min')`. All existing JSONs in `data/gex/nq/`, `data/gex/nq-cbbo/`, and `data/gex-cbbo/nq/` were one-shot relabeled (each timestamp shifted +15min). **Result: v8 balanced same 244 trades but $137k → $92k PnL, PF 2.03 → 1.64, Sharpe 5.71 → 3.97, DD 6.04% → 9.23%.** Discovered while investigating a candidate `gex-imbalance-shift` strategy whose Pearson r=0.67 vs forward returns dropped to −0.03 with honest timing.
-
-Pre-v8 history: v2 (stats lookahead): PF 7.65. v3-v5 (cbbo with ts_event bug): PF 2.94-3.51. v6 (corrected cbbo, broken IV): PF 2.37. v7 (corrected IV, but precompute drift from live): PF 1.32. v8 pre-bucket-fix: PF 2.03. **v8 post-bucket-fix (5/6) is the current honest baseline at PF 1.64.** Trade-by-trade backtest-to-live parity should now hold.
-
-Stale JSONs (DO NOT USE for live deployment): `iv-skew-gex-cbbo-v6-*` (broken IV), `iv-skew-gex-v7-*` (precompute-vs-live drift).
-
-**IMPORTANT**: Must use `--timeframe 1m --raw-contracts` — without `--raw-contracts`, continuous data breaks GEX proximity calculations and produces invalid results.
-
-**IMPORTANT**: Must include `--gex-dir data/gex/nq-cbbo` — without it, the engine falls back to legacy daily CSV (1 EOD snapshot/day) which produces totally different (and lookahead-biased) results.
-
-**GEX-FLIP-IVPCT** (5m timeframe, 1m IV resolution, day-trade-margin friendly):
-
-> **2026-05-12 tight-stop refit.** The original per-rule stops (106-184pt) capped single-trade losses at $3,720 and produced 10.5% trades with catastrophic giveback (best example: +153pt MFE → -186pt = $6,780 round trip). Untradable on a small account. A 20-combo sweep produced a tight-stop config that **caps single-trade loss at $1,240** while preserving most of the strategy edge.
-
-```bash
-cd backtest-engine
-node index.js --ticker NQ --strategy gex-flip-ivpct --timeframe 5m --raw-contracts \
-  --start 2025-01-13 --end 2026-04-20 \
-  --iv-resolution 1m \
-  --eod-cutoff-et 16:40 \
-  --gfi-stop-pts 60 --gfi-target-pts 200 \
-  --gfi-breakeven-stop --gfi-breakeven-trigger 70 --gfi-breakeven-offset 5 \
-  --gfi-blocked-hours 6,7,8
-```
-
-**Tight-stop gold standard (2026-05-12):** 172 trades, **$157,329** PnL, 61.6% WR, **PF 2.99**, **Sharpe 6.41**, **Max DD 11.3%**. Max single loss capped at **-$1,240**, max giveback **-$2,520**, 10 painful losers (vs 15 baseline). Trades JSON: `data/gold-standard/gex-flip-ivpct-tight-s60t200be70.json`. These flag defaults are also baked into the live signal-generator via `config.js` (env vars `GFI_STOP_POINTS`, `GFI_TARGET_POINTS`, `GFI_BREAKEVEN_STOP`, `GFI_BREAKEVEN_TRIGGER`, `GFI_BREAKEVEN_OFFSET`, `GFI_BLOCKED_HOURS_ET` — all optional, sensible defaults applied). Full research writeup in `research/gfi-mae-analysis/SUMMARY.md`.
-
-Pareto alternatives (each caps loss at $1,240, just trades PnL for fewer painful events):
-- **Zero-giveback**: `--gfi-stop-pts 60 --gfi-target-pts 150 --gfi-breakeven-trigger 50 --gfi-breakeven-offset 5 --gfi-blocked-hours 6,7,8` → 168 trades, $92k, PF 2.38, **0 painful**.
-- **Balanced**: `--gfi-stop-pts 60 --gfi-target-pts 180 --gfi-breakeven-trigger 60 --gfi-breakeven-offset 5 --gfi-blocked-hours 6,7,8` → 161 trades, $115k, PF 2.64, 4 painful.
-
-Reference: pre-refit wide-stop baseline (per-rule stops 106-184pt) was 143 trades, $275k PnL, PF 4.29, Sharpe 10.60, Max DD 4.16% — higher headline numbers but max single-trade loss $3,720 and 15 painful givebacks. Trades JSON: `data/gold-standard/gex-flip-ivpct-postfix-baseline.json` (preserved for historical reference; do NOT use for live deployment on a small account).
-
-**IMPORTANT** for parity: `--iv-resolution 1m`, `--timeframe 5m`, and `--eod-cutoff-et 16:40` are all REQUIRED. With 15m IV, skew can be up to 14 min stale at non-15m-boundary bars and trip the +0.015 threshold, causing L1↔L4 / S1↔S2 rule swaps. With `--timeframe 1m` the engine puts evaluations on a different bar grid and only ~1/142 trades line up exactly (aggregate stats stay close, but bar-level audit fails).
-
-**Short-DTE-IV** (15m timeframe, production params from default.json):
-```bash
-cd backtest-engine
-node index.js --ticker NQ --strategy short-dte-iv --timeframe 15m \
-  --start 2025-01-13 --end 2026-01-23
-```
-Production defaults baked into `src/config/default.json`. Does NOT require `--raw-contracts`.
-
-**GEX-LT-3M-Crossover — v3** (1m timeframe, 1m LT × GEX 3-min sign-flip detector — current gold):
-```bash
-cd backtest-engine
-node index.js --ticker NQ --strategy gex-lt-3m-crossover --timeframe 1m --raw-contracts \
-  --start 2025-01-13 --end 2026-04-23 \
-  --gex-dir data/gex/nq-cbbo \
-  --lt-1m-file research/lt-extraction/output/nq_lt_1m_raw.csv \
-  --glx-force-any \
-  --eod-cutoff-et 16:40 \
-  --glx-entry-window 07:00-16:00 \
-  --glx-blocked-hours 13 \
-  --glx-preset v3
-```
-**v3 gold standard (2026-05-21):** **553 trades, $217,864 PnL, 60% WR, PF 1.90, Sharpe 8.73, MaxDD 5.56%** over 16 months. Trades JSON: `data/gold-standard/gex-lt-3m-crossover-v3.json`. Strategy uses `place_limit` at signal close with 5-min timeout. Full research writeup: `research/gex-lt-3m-improve/SUMMARY.md`.
-
-Per-rule v3 config (baked into `--glx-preset v3`):
-* **L_S4**: TP=100/SL=70/mh=120/BE 70/+20, blocks Thu/Fri + L3/L5
-* **S_GF_SOLO**: TP=180/SL=70/mh=120/BE 80/+20, blocks 11 ET
-* **S_CW**: TP=200/SL=70/mh=120/BE 80/+20, blocks 14-15 ET
-* **S_R4**: TP=80/SL=40/mh=60 + trail 70/25, blocks Fri + L3/L5 + 11/15 ET
-
-Alternate presets: `--glx-preset v3-max` ($256k / PF 2.03 / Sh 8.75 / DD 6.40% — wider L_S4 target + longer holds), `--glx-preset v3-balanced` (TBD), `--glx-preset v3-low-dd` (TBD), `--glx-preset w12` ($179k / PF 1.44 — the prior gold standard, preserved for reproduction).
-
-**W12+SCW-PM-block baseline (2026-05-18) — SUPERSEDED by v3:** 888 trades, $179,201 PnL, 47.6% WR, PF 1.44, Sharpe 6.12, MaxDD 8.26%. Active rules (4): L_S4 (TP=120/SL=50/mh=90), S_GF_SOLO (TP=60/SL=50/mh=90), S_CW (TP=120/SL=50/mh=90, blocked 14:00-15:59 ET), S_R4 (TP=80/SL=50/mh=60). Live now defaults to v3 via `GLX_PRESET=v3` (set in `signal-generator/src/utils/config.js`); flip to `GLX_PRESET=w12` to revert. Backtest CLI defaults to the strategy class's W12 hardcoded values when `--glx-preset` is omitted — pass `--glx-preset w12` explicitly for clean reproduction or just omit. Trades JSON: `data/gold-standard/gex-lt-3m-crossover.json`. Full historical write-up: `research/GEX-LT-3M-IMPLEMENTATION-RESULTS.md`.
-
-Prior W12 baseline (2026-05-08, before S_CW PM block): 909 trades, $164,847 PnL, PF 1.39, Sharpe 5.62, MaxDD 8.30%. S_CW analysis: morning (07-12 ET) PF 2.08 / +$47.7k, but afternoon (14-15 ET) flipped to PF 0.29 / −$10.5k / WR 32% on 25 trades. Other 3 rules are *more* efficient in afternoon than morning (L_S4 afternoon PF 1.73 vs morning 1.23, S_GF_SOLO afternoon PF 1.97 vs morning 1.43) — so the surgical fix was to block S_CW specifically, keep the other 3 active 07:00-16:00 ET. Result: total PnL +$14.4k, PF +0.05, Sharpe +0.50, DD unchanged.
-
-Earlier "v14" config (139 trades, $40k, only 2 rules) was an overfit driven by stacking unjustified constraints copied from gex-flip-ivpct (30-min cooldown, 9:30 entry start, default TP/SL from research's biased grid). Wide-net rebuild revealed L_S4 has real edge ($80k by itself with TP=120/mh=90) that the constraints had been hiding, and that 8am pre-market and the 7am hour add meaningful profit beyond the default 9:30 RTH start. **Methodology lesson: cast a wide net first, then filter one constraint at a time and keep only those proven to help.**
-
-**LS-Flip-Trigger-Bar — v3 candJ** (1m timeframe, fixed-point exits + BE + noAsia + min-range filter — current gold):
-```bash
-cd backtest-engine
-node index.js --ticker NQ --strategy ls-flip-trigger-bar --timeframe 1m --raw-contracts \
-  --start 2025-01-13 --end 2026-04-23 \
-  --ls-1m-file research/lt-extraction/output/nq_ls_1m_raw.csv \
-  --eod-cutoff-et 15:45 \
-  --lstb-preset v3
-```
-(The `--lstb-preset v3` shortcut expands to `--lstb-blocked-hours "5,16,17,18,19,20,21,22,23" --lstb-min-range 3 --lstb-target-pts 15 --lstb-stop-pts 12 --lstb-breakeven-stop --lstb-be-trigger 8 --lstb-be-offset 2`.)
-
-**v3 candJ gold standard (2026-05-21):** **6,463 trades / $279,135 PnL / +114% vs v2 / WR 72.2% / PF 1.59 / Sharpe 21.00 / MaxDD 1.82%** over 16 months. Saved as `data/gold-standard/ls-flip-trigger-bar-v3.json`. Doubles v2's $130,500 PnL while preserving the gold standard's exceptional sub-2% DD; per-trade Sharpe nearly doubles (10.97 → 21.00).
-
-Mechanism (four levers compound): (1) fixed 15pt target / 12pt stop replacing bar-extreme equidistant TP/SL; (2) BE @ MFE=8pt locking +2pt profit captures the median +8pt giveback (BE fires on 2,309 trades = 35% of total); (3) block hours 17-23 ET (Asia overnight bled ~$11k cumulative); (4) skip trigger bars with range <3pt (1k unprofitable trades dropped). On 3,783 trades present in BOTH v2 and v3, exit-policy improvement alone is +$69,734 (+61%) — the rest is filter-driven trade flow improvements. Train/test stable: H1 PF 1.56 / H2 PF 1.62, no overfit.
-
-**Alternate v3 presets** (saved as `data/gold-standard/ls-flip-trigger-bar-v3-{max,balanced,low-dd}.json`):
-- `--lstb-preset v3-max` (candK, tgt=20 stp=12 BE 10/+1): $282,580 / Sharpe 18.31 / DD 2.84% / PF 1.49 — +$3.5k more PnL than candJ but materially worse risk-adjusted.
-- `--lstb-preset v3-balanced` (candH, tgt=10 stp=9 BE 6/+1): $214,122 / **Sharpe 22.12** / DD 1.54% / PF 1.65 — highest Sharpe of any candidate; tighter scalp.
-- `--lstb-preset v3-low-dd` (candC, orig tgt + stp=8 + trail 12/5): $151,820 / Sharpe 18.85 / **DD 1.42%** / PF 1.77 — lowest DD; small-account / smooth-equity profile.
-
-v2 preserved at `data/gold-standard/ls-flip-trigger-bar-v2.json` for historical reference; reproduce with `--lstb-preset v2` (blocked-hours 5/16/21, bar-extreme exits). v1 ($129k, no blocks, eod 17:00) at `data/gold-standard/ls-flip-trigger-bar.json`.
-
-Full research log: `backtest-engine/research/ls-flip-improve/SUMMARY.md` — feature buckets, 4,000+ candidate sweep, mechanism analysis, all 16 engine validations.
+Per-strategy invocations, current gold-standard numbers, alternate presets, and version histories are in **`backtest-engine/STRATEGY-GOLD-STANDARDS.md`**. Lookahead-bias correction history (2026-04-30 → 2026-05-06) is in `backtest-engine/data/gold-standard/lookahead-fix-history.md`. Auto-memory `MEMORY.md` entries track the latest live-default changes.
 
 Run `node index.js --help` for all available strategies and options.
 
@@ -428,85 +216,46 @@ Run `node index.js --help` for all available strategies and options.
 
 ## CRITICAL: Price Space & Contract Rollover Rules
 
-**THIS SECTION IS MANDATORY READING FOR ANY ANALYSIS, BACKTESTING, OR STRATEGY WORK INVOLVING HISTORICAL DATA.**
+**MANDATORY READING for any analysis, backtesting, or strategy work involving historical data.** Failure here has produced wrong results repeatedly (e.g., 84% WR when actual is 30%).
 
-Failure to follow these rules has caused incorrect results repeatedly. Do NOT skip this section.
-
-### The Two Price Spaces
-
-There are TWO versions of OHLCV data. They are NOT interchangeable:
+### Two price spaces — NOT interchangeable
 
 | File | Price Space | Example (Dec 2020 NQH1) |
 |------|-------------|--------------------------|
 | `NQ_ohlcv_1m.csv` | **Raw contract** — actual traded prices | 12,676 |
-| `NQ_ohlcv_1m_continuous.csv` | **Back-adjusted** — prices shifted to form a continuous series | 15,643 (shifted +2,967) |
+| `NQ_ohlcv_1m_continuous.csv` | **Back-adjusted** — shifted to form a continuous series | 15,643 (shifted +2,967) |
 
-### LT Levels Are ALWAYS Raw Contract Prices
+### LT and GEX levels are ALWAYS raw contract prices
 
-Liquidity Trigger (LT) levels in `backtest-engine/data/liquidity/` are in **raw contract price space**. They reflect actual market prices at the time they were generated.
+LT levels in `backtest-engine/data/liquidity/` and GEX levels are in raw contract price space. They MUST be compared against raw OHLCV (`NQ_ohlcv_1m.csv` + `filterPrimaryContract()`), NEVER continuous data. Comparing against continuous data produces phantom 200+ point gaps.
 
-**LT levels MUST be compared against raw contract OHLCV data (`NQ_ohlcv_1m.csv` with `filterPrimaryContract()`), NEVER against continuous/back-adjusted data.** Comparing LT levels against continuous data produces phantom 200+ point gaps that do not exist in reality.
+### When to use raw vs continuous
 
-GEX levels have the same constraint — they are in raw price space.
+- **Raw contracts (`--raw-contracts`)**: REQUIRED for any analysis involving LT levels, GEX levels, or GEX proximity. **When in doubt, use raw.**
+- **Continuous**: Only for pure price-action analysis with no external level data.
 
-### When To Use Raw vs Continuous
+### `filterPrimaryContract()` is mandatory for raw data
 
-- **Raw contracts (`--raw-contracts`)**: REQUIRED for any analysis involving LT levels, GEX levels, or GEX proximity calculations. Use `NQ_ohlcv_1m.csv` + `filterPrimaryContract()`.
-- **Continuous**: Only appropriate for pure price-action analysis where no external level data (LT, GEX) is involved and you need a gap-free price series.
-- **When in doubt, use raw contracts.** It is always correct. Continuous is a convenience that breaks level comparisons.
+Raw OHLCV files contain multiple contract months simultaneously (e.g., NQH5 at 21200 and NQM5 at 21425 at the same timestamps) plus calendar spread rows (symbol contains `-`, e.g. `NQH1-NQM1` — these are price *differences*, not quotes). Loading unfiltered causes artificial price swings, false signals, invalid results.
 
-### Contract Rollover in Raw Data (CRITICAL)
+`filterPrimaryContract()` (in `csv-loader.js`) groups by hour, picks the highest-volume contract per hour, and drops calendar spreads. **Always use it when loading raw OHLCV for analysis or backtesting.**
 
-Raw OHLCV data contains **multiple contract months simultaneously** (e.g., NQH5 and NQM5 trading at the same time). `filterPrimaryContract()` selects the highest-volume contract per hour, which means at rollover the primary contract **switches** and prices **jump by the roll spread**.
+### Contract rollover (CRITICAL)
 
-**This is NOT a gap in the market — it is a contract change.** The rollover spread for NQ is typically 200-300 points (see `backtest-engine/data/ohlcv/nq/NQ_rollover_log.csv` for exact values per roll date).
+When `filterPrimaryContract()` switches to a new front month, prices appear to "jump" by the roll spread (NQ typically 200-300 points). **This is a contract change, not a market move.** Exact spreads per roll date in `backtest-engine/data/ohlcv/nq/NQ_rollover_log.csv`.
 
-#### What happens at rollover:
-1. `filterPrimaryContract()` switches from e.g. NQH5 (~19,683) to NQM5 (~19,899)
-2. Price appears to "jump" ~208 points — this is the contract spread, not a market move
-3. Any LT/GEX levels from before the roll are still valid — LT data transitions naturally because the LT provider tracks the front contract
-4. **Stale LT levels from the old contract era will be ~200pts off from new contract prices** — they must be flushed or shifted by the roll spread at the boundary
+When writing code that spans rollovers:
+1. Track the `symbol` column — it's the source of truth for which contract a row belongs to.
+2. Detect symbol changes — that's the rollover.
+3. Force-close any open position at the last price of the old contract (or translate via roll-log spread).
+4. Flush/shift cached levels (LT, GEX, S/R) by the roll spread.
+5. Never assume prices are continuous across the boundary.
 
-#### The rollover log:
-`backtest-engine/data/ohlcv/nq/NQ_rollover_log.csv` contains every roll date with the exact spread:
-```
-date,from_symbol,to_symbol,spread
-2025-03-18,NQH5,NQM5,208.5
-2024-12-17,NQZ4,NQH5,297.5
-```
-
-#### Handling open trades at rollover:
-The trade simulator (`trade-simulator.js`) attempts to convert prices between contracts using calendar spread bars. This works when spread data exists but **fails silently when it doesn't**, causing trades to get "stuck" — the old contract stops emitting candles and the trade never closes. When writing analysis or strategy code that spans rollovers:
-
-1. **Track the current contract symbol** from the `symbol` column in raw OHLCV data
-2. **Detect when it changes** — that's the rollover
-3. **Force-close any open position** at the last price of the old contract (or use the rollover log spread to translate)
-4. **Flush/shift all cached levels** (LT, GEX, support/resistance) by the roll spread
-5. **Never assume prices are continuous** — a 200pt jump between bars is normal at rollover
-
-### The `symbol` Column Is Your Source of Truth
-
-Every row in the raw OHLCV data has a `symbol` column (e.g., `NQH5`, `NQM5`, `NQH5-NQM5`). This tells you:
-- Which contract the price belongs to
-- Whether it's a calendar spread (contains `-`) — **filter these out, they are NOT price quotes**
-- When the rollover happened (symbol changes from one contract month to the next)
-
-**Always check and use the `symbol` column.** Never assume all rows are the same contract.
-
-## Backtest Data: Additional Filtering Rules
-
-Historical data is stored in `/backtest-engine/data/`. Column schemas and date ranges can be discovered by reading CSV headers and listing directories.
-
-### Calendar Spread Filtering (IMPORTANT)
-The NQ and ES OHLCV files contain calendar spread entries that must be filtered out. These are NOT actual price quotes — they represent price differences between contracts. Filter by checking if the `symbol` column contains a dash (e.g., `NQH1-NQM1`).
-
-### Primary Contract Filtering (IMPORTANT)
-The NQ and ES OHLCV files contain multiple contract months at the same timestamps (e.g., NQH5 at 21200 and NQM5 at 21425 simultaneously). Loading all candles without filtering causes artificial price swings, FALSE signals, and INVALID results.
-
-**You MUST use `filterPrimaryContract()` when loading OHLCV data for any analysis or backtesting.** This function groups candles by hour, finds the highest-volume contract per hour, and only includes candles from that primary contract. Implemented in `csv-loader.js`. Failure to filter produces dramatically wrong results (e.g., 84% win rate when actual is 30%).
+The trade simulator attempts cross-contract conversion via calendar spread bars, but fails silently when spread data is missing — trades get "stuck" on a contract that stopped emitting candles. Handle rollovers explicitly in research code.
 
 ### GEX Data Generation
-Intraday GEX data (15-min snapshots) generated via `backtest-engine/scripts/generate-intraday-gex.py`. Supports both NQ (from QQQ options) and ES (from SPY options). Uses Brenner-Subrahmanyam IV approximation from OPRA statistics.
+
+Intraday GEX data (15-min snapshots) generated via `backtest-engine/scripts/generate-intraday-gex.py`. Supports NQ (from QQQ options) and ES (from SPY options). Uses Brenner-Subrahmanyam IV approximation from OPRA statistics.
 
 ## Shared Utilities
 
@@ -517,71 +266,27 @@ The `/shared/` directory contains reusable components:
 
 ## Symbol Conventions
 
-### TradingView Symbols
-- `NQ1!` / `ES1!` - Continuous front-month contracts
-- Format: `{ROOT}{MONTH_CODE}!` or `{ROOT}1!` for continuous
-
-### Broker Symbols (Tradovate)
-- Format: `{ROOT}{MONTH}{YEAR}` (e.g., `MNQM6` = Micro Nasdaq June 2026)
-- Month codes: F=Jan, G=Feb, H=Mar, J=Apr, K=May, M=Jun, N=Jul, Q=Aug, U=Sep, V=Oct, X=Nov, Z=Dec
-
-### GEX/Options Symbols
-- `QQQ` → Nasdaq GEX, `SPY` → S&P GEX (translated from ETF to futures prices using live ratios)
+- **TradingView**: `NQ1!` / `ES1!` continuous front-month; format `{ROOT}{MONTH_CODE}!` or `{ROOT}1!`
+- **Broker (Tradovate)**: `{ROOT}{MONTH}{YEAR}` e.g. `MNQM6` = Micro Nasdaq June 2026. Month codes: F=Jan, G=Feb, H=Mar, J=Apr, K=May, M=Jun, N=Jul, Q=Aug, U=Sep, V=Oct, X=Nov, Z=Dec
+- **GEX/Options**: `QQQ` → Nasdaq GEX, `SPY` → S&P GEX (translated from ETF to futures prices using live ratios)
 
 ## Debugging
 
-### Redis
-```bash
-redis-cli ping                          # Check Redis
-redis-cli monitor                       # Monitor all traffic
-redis-cli pubsub channels               # List active channels
-redis-cli subscribe "price.update"      # Subscribe to channel
-redis-cli pubsub numsub "trade.signal"  # Check subscriber count
-```
-
 ### Troubleshooting
 - **Redis connection failures**: `redis-cli ping`, check `shared/.env`, `sudo systemctl restart redis`
-- **TradingView data stops**: Check `pm2 logs data-service`, verify `TRADINGVIEW_CREDENTIALS` in `.env`, `pm2 restart data-service`
-- **No trade signals**: Check GEX levels (`curl localhost:3019/gex/levels?product=NQ`), price streaming (`redis-cli subscribe "price.update"`), `STRATEGY_ENABLED=true`, session filter settings, data service health
-- **Service startup issues**: Use `./start-all.sh` which handles startup order
-- **Backtest data issues**: Verify CSV data exists in `backtest-engine/data/`, check date range, ensure ticker matches file naming
+- **TradingView data stops**: `pm2 logs data-service`, verify `TRADINGVIEW_CREDENTIALS`, `pm2 restart data-service`
+- **No trade signals**: Check GEX levels (`curl localhost:3019/gex/levels?product=NQ`), price streaming (`redis-cli subscribe "price.update"`), `STRATEGY_ENABLED=true`, session filter, data service health
+- **Service startup issues**: Use `./start-all.sh` which handles order
+- **Backtest data issues**: Verify CSV in `backtest-engine/data/`, check date range, confirm ticker matches file naming
 
 ### Production Logs (Sevalla MCP)
 
-The Sevalla MCP server provides direct access to production runtime logs from all services. Use it as the first step when diagnosing production issues.
+First step for diagnosing production issues. Uses `mcp__sevalla__search` (discover endpoints) and `mcp__sevalla__execute` (make API calls via `sevalla.request()`).
 
-**MCP tools:** `mcp__sevalla__search` (discover API endpoints) and `mcp__sevalla__execute` (make API calls via `sevalla.request()`).
+**Gotcha:** the MCP base URL already includes `/v3`. All paths must omit it — `/v3/applications/...` returns 404. Code examples and full query parameter reference in `memory/sevalla-mcp.md`.
 
-**IMPORTANT:** The MCP base URL already includes `/v3`. All paths must omit it:
-```js
-// CORRECT
-sevalla.request({ method: "GET", path: `/applications/${appId}/runtime-logs` })
-// WRONG — doubles the prefix, returns 404
-sevalla.request({ method: "GET", path: `/v3/applications/${appId}/runtime-logs` })
-```
+**Service app IDs** (also in `deploy.config.json`):
 
-**Pull runtime logs:**
-```js
-async () => {
-  const res = await sevalla.request({
-    method: "GET",
-    path: `/applications/${appId}/runtime-logs`,
-    query: { limit: 50 }
-  });
-  return res.body.map(l => ({
-    time: l.timestamp,
-    severity: l.severity,
-    msg: l.message.replace(/\u001b\[\d+m/g, '').substring(0, 200)
-  }));
-}
-```
-
-**Query parameters:**
-- `limit`: 1–5000 (default 1000)
-- `from` / `to`: ISO 8601 time range (default: last hour)
-- `filters`: JSON array, e.g. `[{"key":"severity","operator":"EQUALS","value":"ERROR"}]`
-
-**Service app IDs** are in `deploy.config.json`. Key mappings:
 | Service | App ID |
 |---------|--------|
 | tradovate-service | `70a68761-395c-4773-9bc0-7bdb9dcddc53` |
@@ -592,7 +297,7 @@ async () => {
 | ai-trader | `081d3d7f-f464-4501-964e-34b30ff43a32` |
 | macro-briefing | `a287bf53-0e8f-44e5-a3ae-4bcf03a4637b` |
 
-**Auth:** Requires OAuth via `/mcp` command after each Claude Code restart.
+**Auth:** OAuth via `/mcp` command after each Claude Code restart.
 
 ### Selective Deployment
 

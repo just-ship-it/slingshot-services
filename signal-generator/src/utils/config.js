@@ -130,6 +130,15 @@ const config = {
   // GEX-FLIP-IVPCT Strategy Parameters (V7DTSP13 backtest-matched defaults)
   // 6-rule day-trade strategy. Entries 04:00-13:00 ET. Broker liquidates 4:45 PM ET.
   // Each rule has its own stop/target — these are gates, not exits.
+  //
+  // GFI_PRESET (research/gex-flip-ivpct-improve, 2026-05-21). Default 'v2' —
+  // the new gold standard ($229k / PF 3.92 / Sharpe 5.87 / DD 5.4% / 152tr,
+  // +44% PnL vs tight with -32% DD and +0.93 PF). Set GFI_PRESET=tight to
+  // revert to the prior gold (May 2026 tight-stop refit). Individual GFI_*
+  // env vars below override preset fields when explicitly set, so existing
+  // Sevalla configs continue to work.
+  GFI_PRESET: process.env.GFI_PRESET || 'v2',
+
   GFI_WALL_PROXIMITY: parseFloat(process.env.GFI_WALL_PROXIMITY || '50'),
   GFI_IV_PCTILE_WINDOW_DAYS: parseInt(process.env.GFI_IV_PCTILE_WINDOW_DAYS || '20'),
   GFI_IV_PCTILE_LOW_MAX: parseFloat(process.env.GFI_IV_PCTILE_LOW_MAX || '0.20'),
@@ -140,25 +149,26 @@ const config = {
   GFI_ENTRY_WINDOW_START_HOUR: parseInt(process.env.GFI_ENTRY_WINDOW_START_HOUR || '4'),
   GFI_ENTRY_WINDOW_END_HOUR: parseInt(process.env.GFI_ENTRY_WINDOW_END_HOUR || '13'),
   GFI_COOLDOWN_MS: parseInt(process.env.GFI_COOLDOWN_MS || '1800000'), // 30 minutes
-  GFI_MAX_HOLD_BARS: parseInt(process.env.GFI_MAX_HOLD_BARS || '600'), // 600 minutes (10h)
-  // Tight-stop refit (2026-05-12): caps single loss at $1,240. Override the
-  // per-rule stops/targets baked into the strategy with safer globals.
-  GFI_STOP_POINTS: parseFloat(process.env.GFI_STOP_POINTS || '60'),
-  GFI_TARGET_POINTS: parseFloat(process.env.GFI_TARGET_POINTS || '200'),
-  // Two-layer exit defaults (chosen 2026-05-16, see memory/fib-retrace-sweep-2026-05-15.md).
-  // BE 80/+10 + fib retrace 0.618/40 — PF 2.90 / Sharpe 5.68 / DD 7.11% / $129k over 16mo.
-  // Cuts baseline DD from 11.30% → 7.11% with only a 0.09 PF haircut.
-  GFI_BREAKEVEN_STOP: process.env.GFI_BREAKEVEN_STOP?.toLowerCase() !== 'false', // default true
-  GFI_BREAKEVEN_TRIGGER: parseFloat(process.env.GFI_BREAKEVEN_TRIGGER || '80'),
-  GFI_BREAKEVEN_OFFSET: parseFloat(process.env.GFI_BREAKEVEN_OFFSET || '10'),
-  // Fibonacci-retrace bar-close exit: hard SL stays at 60pts; mechanism only
-  // engages once MFE >= GFI_FIB_ACTIVATION_MFE, then exits on a 1m bar CLOSE
-  // through entry ± mfe × (1 − GFI_FIB_RETRACE_PCT). See research/mfe-ratchet-gfi/.
-  GFI_FIB_RETRACE: process.env.GFI_FIB_RETRACE?.toLowerCase() !== 'false', // default true
+  // GFI_MAX_HOLD_BARS, GFI_STOP_POINTS, GFI_TARGET_POINTS, GFI_BREAKEVEN_*
+  // and GFI_BLOCKED_* are resolved against the preset in getGexFlipIvpctParams().
+  // Stored raw here so the preset resolver can detect "user explicitly set" vs default.
+  _GFI_MAX_HOLD_BARS_RAW: process.env.GFI_MAX_HOLD_BARS,
+  _GFI_STOP_POINTS_RAW: process.env.GFI_STOP_POINTS,
+  _GFI_TARGET_POINTS_RAW: process.env.GFI_TARGET_POINTS,
+  _GFI_BREAKEVEN_STOP_RAW: process.env.GFI_BREAKEVEN_STOP,
+  _GFI_BREAKEVEN_TRIGGER_RAW: process.env.GFI_BREAKEVEN_TRIGGER,
+  _GFI_BREAKEVEN_OFFSET_RAW: process.env.GFI_BREAKEVEN_OFFSET,
+  _GFI_BLOCKED_HOURS_ET_RAW: process.env.GFI_BLOCKED_HOURS_ET,
+  _GFI_BLOCKED_DOWS_ET_RAW: process.env.GFI_BLOCKED_DOWS_ET,
+  _GFI_DISABLED_RULES_RAW: process.env.GFI_DISABLED_RULES,
+  // Fibonacci-retrace bar-close exit: independent of preset (older tuned).
+  // Disabled by default in v2 (research showed fib HURTS the new wider-target
+  // exits — set GFI_FIB_RETRACE=true to re-enable if desired). The tight preset
+  // also disables fib by default because the new research subsumes the prior
+  // two-layer config.
+  GFI_FIB_RETRACE: process.env.GFI_FIB_RETRACE?.toLowerCase() === 'true', // default false now
   GFI_FIB_RETRACE_PCT: parseFloat(process.env.GFI_FIB_RETRACE_PCT || '0.618'),
   GFI_FIB_ACTIVATION_MFE: parseFloat(process.env.GFI_FIB_ACTIVATION_MFE || '40'),
-  // Pre-RTH hours where 100% of trades had MAE > 10pt in the baseline study.
-  GFI_BLOCKED_HOURS_ET: process.env.GFI_BLOCKED_HOURS_ET ?? '6,7,8',
 
   // LS-BE-on-flip overlay (research/ls-overlay, 2026-05-19). When enabled,
   // arms a breakeven stop on the first adverse LS_1m flip during the trade.
@@ -548,8 +558,36 @@ const config = {
   },
 
   getGexFlipIvpctParams() {
-    const blockedHoursEt = (this.GFI_BLOCKED_HOURS_ET || '')
-      .split(',').map(s => parseInt(s.trim(), 10)).filter(n => !isNaN(n));
+    // Resolve preset (research/gex-flip-ivpct-improve, 2026-05-21). Individual
+    // GFI_* env vars override preset fields when explicitly set on the env.
+    const GFI_PRESETS = {
+      tight:         { stop: 60, target: 200, beStop: true, beTrig: 70,  beOff: 5,  mh: 600, blockedHours: '6,7,8',     blockedDows: '',    disabledRules: '', fibDefault: true },
+      v2:            { stop: 60, target: 260, beStop: true, beTrig: 160, beOff: 10, mh: 600, blockedHours: '6,7,8',     blockedDows: '',    disabledRules: '', fibDefault: false },
+      'v2-max':      { stop: 60, target: 320, beStop: true, beTrig: 160, beOff: 10, mh: 480, blockedHours: '6,7,8',     blockedDows: '',    disabledRules: '', fibDefault: false },
+      'v2-low-dd':   { stop: 60, target: 260, beStop: true, beTrig: 160, beOff: 10, mh: 600, blockedHours: '6,7,8,11',  blockedDows: 'Fri', disabledRules: 'S1', fibDefault: false },
+    };
+    const preset = GFI_PRESETS[this.GFI_PRESET] || GFI_PRESETS.v2;
+    // Tied to preset: tight enables fib (prior production "twolayer-be80p10-fib618-a40"
+    // overlay); v2+ disables it (research showed fib hurts new wider-target exits).
+    // GFI_FIB_RETRACE env var, if set, overrides regardless of preset.
+    const fibRetrace = process.env.GFI_FIB_RETRACE !== undefined
+      ? process.env.GFI_FIB_RETRACE.toLowerCase() === 'true'
+      : preset.fibDefault;
+
+    const stopPts     = this._GFI_STOP_POINTS_RAW     !== undefined ? parseFloat(this._GFI_STOP_POINTS_RAW)     : preset.stop;
+    const targetPts   = this._GFI_TARGET_POINTS_RAW   !== undefined ? parseFloat(this._GFI_TARGET_POINTS_RAW)   : preset.target;
+    const beStop      = this._GFI_BREAKEVEN_STOP_RAW  !== undefined ? this._GFI_BREAKEVEN_STOP_RAW.toLowerCase() !== 'false' : preset.beStop;
+    const beTrig      = this._GFI_BREAKEVEN_TRIGGER_RAW !== undefined ? parseFloat(this._GFI_BREAKEVEN_TRIGGER_RAW) : preset.beTrig;
+    const beOff       = this._GFI_BREAKEVEN_OFFSET_RAW  !== undefined ? parseFloat(this._GFI_BREAKEVEN_OFFSET_RAW)  : preset.beOff;
+    const mh          = this._GFI_MAX_HOLD_BARS_RAW     !== undefined ? parseInt(this._GFI_MAX_HOLD_BARS_RAW, 10)    : preset.mh;
+    const blockedHoursStr = this._GFI_BLOCKED_HOURS_ET_RAW ?? preset.blockedHours;
+    const blockedDowsStr  = this._GFI_BLOCKED_DOWS_ET_RAW  ?? preset.blockedDows;
+    const disabledRulesStr = this._GFI_DISABLED_RULES_RAW  ?? preset.disabledRules;
+
+    const blockedHoursEt = (blockedHoursStr || '').split(',').map(s => parseInt(s.trim(), 10)).filter(n => !isNaN(n));
+    const blockedDowsEt  = (blockedDowsStr  || '').split(',').map(s => s.trim()).filter(Boolean);
+    const disabledRules  = (disabledRulesStr || '').split(',').map(s => s.trim()).filter(Boolean);
+
     return {
       wallProximity: this.GFI_WALL_PROXIMITY,
       ivPctileWindowDays: this.GFI_IV_PCTILE_WINDOW_DAYS,
@@ -561,22 +599,25 @@ const config = {
       entryWindowStartHour: this.GFI_ENTRY_WINDOW_START_HOUR,
       entryWindowEndHour: this.GFI_ENTRY_WINDOW_END_HOUR,
       signalCooldownMs: this.GFI_COOLDOWN_MS,
-      maxHoldBars: this.GFI_MAX_HOLD_BARS,
+      maxHoldBars: mh,
       eodCutoffEt: this.EOD_CUTOFF_ET,
-      // Tight-stop refit (2026-05-12)
-      globalStopPts: this.GFI_STOP_POINTS,
-      globalTargetPts: this.GFI_TARGET_POINTS,
-      breakevenStop: this.GFI_BREAKEVEN_STOP,
-      breakevenTrigger: this.GFI_BREAKEVEN_TRIGGER,
-      breakevenOffset: this.GFI_BREAKEVEN_OFFSET,
-      // Fibonacci-retrace bar-close exit (additive to BE — they coexist).
-      fibRetrace: this.GFI_FIB_RETRACE,
+      // Preset-driven exit policy (v2 / v2-max / v2-balanced / v2-low-dd / tight)
+      globalStopPts: stopPts,
+      globalTargetPts: targetPts,
+      breakevenStop: beStop,
+      breakevenTrigger: beTrig,
+      breakevenOffset: beOff,
+      // Fibonacci-retrace bar-close exit. Tied to preset (tight=on, v2+=off);
+      // GFI_FIB_RETRACE env var overrides regardless of preset.
+      fibRetrace,
       fibRetracePct: this.GFI_FIB_RETRACE_PCT,
       fibActivationMFE: this.GFI_FIB_ACTIVATION_MFE,
       // LS-BE-on-flip (orchestrator-side exit rule; independent of structural BE).
       lsBeOnFlip: this.GFI_LS_BE_ON_FLIP,
       lsBeOffset: this.GFI_LS_BE_OFFSET,
       blockedHoursEt,
+      blockedDowsEt,
+      disabledRules,
     };
   },
 

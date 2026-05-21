@@ -406,6 +406,15 @@ export class CLI {
         description: 'gex-touch-patterns: disable entry window — take touches any time of day (CME globex hours).'
       })
 
+      .option('gfi-preset', {
+        type: 'string',
+        choices: ['tight', 'v2', 'v2-max', 'v2-low-dd'],
+        description: 'gex-flip-ivpct: load a named preset of params. tight=2026-05-12 gold ($157k engine/PF 2.99/Sh 4.76/DD $14.6k). v2=2026-05-21 recommended (tgt=260 BE 160/+10: $209k engine/PF 3.39/Sh 5.31/DD $8.6k, +33% PnL with -41% DD). v2-max=widest target (tgt=320 BE 160/+10 mh=480: $218k/PF 3.49/Sh 5.14/DD $8.6k). v2-low-dd=selective filter (h11+Fri+S1 dropped: $168k/PF 3.70/Sh 4.92/DD $11.2k — fewer trades / higher PF). Individual --gfi-* flags below override preset values.'
+      })
+      .option('gfi-blocked-dows', {
+        type: 'string',
+        description: 'gex-flip-ivpct: comma-separated ET DOW abbreviations to block, e.g. "Fri,Mon".'
+      })
       .option('gfi-stop-pts', {
         type: 'number',
         description: 'gex-flip-ivpct: override stop in points for ALL rules.'
@@ -2101,6 +2110,47 @@ export class CLI {
     if (args['glf-breakeven-trigger'] !== undefined) strategyParams.breakevenTrigger = args['glf-breakeven-trigger'];
     if (args['glf-breakeven-offset'] !== undefined) strategyParams.breakevenOffset = args['glf-breakeven-offset'];
 
+    // gex-flip-ivpct: --gfi-preset (named bundle). Applied FIRST; individual --gfi-*
+    // flags below override. BE/maxHold are applied here too (no clobber risk because
+    // the engine-wide --breakeven-stop block defaults to undefined, not false — the
+    // gfi block below it re-applies if --gfi-breakeven-stop is passed).
+    // NOTE: as with lstb, the engine-wide block has `default: false` for breakeven-
+    // stop; we work around by also re-setting breakevenStop=true after that block
+    // when this preset is selected. Search for "gex-flip-ivpct preset BE/dow apply"
+    // below.
+    const GFI_PRESETS = {
+      tight: {
+        globalStopPts: 60, globalTargetPts: 200, maxHoldBars: 600,
+        be: true, beTrig: 70, beOff: 5,
+        blockedHoursEt: [6, 7, 8], blockedDowsEt: [], disabledRules: [],
+      },
+      v2: {
+        globalStopPts: 60, globalTargetPts: 260, maxHoldBars: 600,
+        be: true, beTrig: 160, beOff: 10,
+        blockedHoursEt: [6, 7, 8], blockedDowsEt: [], disabledRules: [],
+      },
+      'v2-max': {
+        globalStopPts: 60, globalTargetPts: 320, maxHoldBars: 480,
+        be: true, beTrig: 160, beOff: 10,
+        blockedHoursEt: [6, 7, 8], blockedDowsEt: [], disabledRules: [],
+      },
+      'v2-low-dd': {
+        globalStopPts: 60, globalTargetPts: 260, maxHoldBars: 600,
+        be: true, beTrig: 160, beOff: 10,
+        blockedHoursEt: [6, 7, 8, 11], blockedDowsEt: ['Fri'], disabledRules: ['S1'],
+      },
+    };
+    const gfiPreset = args['gfi-preset'] ? GFI_PRESETS[args['gfi-preset']] : null;
+    if (gfiPreset) {
+      strategyParams.globalStopPts = gfiPreset.globalStopPts;
+      strategyParams.globalTargetPts = gfiPreset.globalTargetPts;
+      strategyParams.maxHoldBars = gfiPreset.maxHoldBars;
+      strategyParams.blockedHoursEt = gfiPreset.blockedHoursEt;
+      strategyParams.blockedDowsEt = gfiPreset.blockedDowsEt;
+      strategyParams.disabledRules = gfiPreset.disabledRules;
+      // BE applied in post-engine-wide block below to avoid clobber.
+    }
+
     // gex-flip-ivpct: non-BE/trailing overrides (keep these before the engine-wide
     // BE/trailing block so they don't get clobbered)
     if (args['gfi-stop-pts'] !== undefined) strategyParams.globalStopPts = args['gfi-stop-pts'];
@@ -2120,6 +2170,10 @@ export class CLI {
     if (args['gfi-blocked-hours']) {
       strategyParams.blockedHoursEt = args['gfi-blocked-hours']
         .split(',').map(s => parseInt(s.trim(), 10)).filter(n => !isNaN(n));
+    }
+    if (args['gfi-blocked-dows']) {
+      strategyParams.blockedDowsEt = args['gfi-blocked-dows']
+        .split(',').map(s => s.trim()).filter(Boolean);
     }
 
     // If strategy config specifies a timeframe and user didn't explicitly override, use it
@@ -2162,6 +2216,15 @@ export class CLI {
     if (args.breakevenStop !== undefined) strategyParams.breakevenStop = args.breakevenStop;
     if (args.breakevenTrigger !== undefined) strategyParams.breakevenTrigger = args.breakevenTrigger;
     if (args.breakevenOffset !== undefined) strategyParams.breakevenOffset = args.breakevenOffset;
+
+    // gex-flip-ivpct preset BE/dow apply — MUST come after the engine-wide
+    // breakevenStop block above (same trap as lstb). Preset BE applied first;
+    // individual --gfi-* flags below override.
+    if (gfiPreset && gfiPreset.be) {
+      strategyParams.breakevenStop = true;
+      strategyParams.breakevenTrigger = gfiPreset.beTrig;
+      strategyParams.breakevenOffset = gfiPreset.beOff;
+    }
 
     // gex-flip-ivpct BE/trailing overrides — MUST come after the engine-wide
     // breakevenStop block above, because that block writes default:false and
