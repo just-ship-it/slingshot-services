@@ -570,9 +570,14 @@ function createLsFlipTriggerBarStrategy(config) {
     debug: false,
   };
 
-  logger.info(`LS-FLIP-TRIGGER-BAR params: fib=${params.fib ?? 0.5}, cbAtrMax=${params.cbAtrMax ?? 1.81}, ` +
+  logger.info(`LS-FLIP-TRIGGER-BAR params: preset=${config.LSTB_PRESET ?? 'v3'}, ` +
+    `fib=${params.fib ?? 0.5}, cbAtrMax=${params.cbAtrMax ?? 1.81}, ` +
     `atrPeriod=${params.atrPeriod ?? 20}, fillTimeoutCandles=${params.fillTimeoutCandles ?? 10}, ` +
     `maxHoldBars=${params.maxHoldBars ?? 60}, blockedHours=[${params.blockedHoursEt ?? '5,16,21'}], ` +
+    `minTriggerRange=${params.minTriggerRange ?? 'null'}, ` +
+    `stopPoints=${params.stopPoints ?? 'null'}, targetPoints=${params.targetPoints ?? 'null'}, ` +
+    `breakevenStop=${!!params.breakevenStop}, breakevenTrigger=${params.breakevenTrigger ?? 'null'}, breakevenOffset=${params.breakevenOffset ?? 0}, ` +
+    `trailingTrigger=${params.trailingTrigger ?? 'null'}, trailingOffset=${params.trailingOffset ?? 'null'}, ` +
     `eodCutoff=${params.eodCutoffEt}`);
 
   return new LsFlipTriggerBarStrategy(params);
