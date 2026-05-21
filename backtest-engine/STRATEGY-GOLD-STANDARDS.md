@@ -184,3 +184,41 @@ Alternate v3 presets (in `data/gold-standard/ls-flip-trigger-bar-v3-{max,balance
 v2 preserved at `data/gold-standard/ls-flip-trigger-bar-v2.json` (reproduce with `--lstb-preset v2`: blocked-hours 5/16/21, bar-extreme exits). v1 ($129k, no blocks, eod 17:00) at `data/gold-standard/ls-flip-trigger-bar.json`.
 
 Research log: `backtest-engine/research/ls-flip-improve/SUMMARY.md` — feature buckets, 4,000+ candidate sweep, mechanism analysis, all 16 engine validations.
+
+---
+
+## GEX-Level-Fade — v2 (current gold)
+
+1m timeframe, structural-level fade. 09:00-10:30 ET entry, wider exits + structural BE + dropped SH/SL.
+
+```bash
+cd backtest-engine
+node index.js --ticker NQ --strategy gex-level-fade --timeframe 1m --raw-contracts \
+  --start 2025-01-13 --end 2026-04-23 \
+  --glf-preset v2 \
+  --gex-dir data/gex/nq-cbbo \
+  --eod-cutoff-et 16:40
+```
+
+`--glf-preset v2` expands to: `--glf-target-pts 110 --glf-stop-pts 22 --glf-max-hold 180 --glf-breakeven-trigger 100 --glf-breakeven-offset 10 --glf-levels "PRH,PRL" --glf-include-gex --glf-entry-window 09:00-10:30`.
+
+**v2 gold standard (2026-05-21):** **716 trades / $110,730 PnL / WR 25.7% / PF 1.44 / Sharpe 4.44 / Max DD 7.96%** over 16 months. JSON: `data/gold-standard/gex-level-fade-v2.json`. Research writeup: `research/gex-level-fade-improve/SUMMARY.md`.
+
+**vs. baseline (`--glf-preset gold` + same EOD):** 903 trades / $90,475 / Sh 3.66 / DD 8.17% → +22% PnL / Sh +21% / DD -3% / PF +9%. Live now defaults to v2 via `GLF_PRESET=v2` (set in `signal-generator/src/utils/config.js`); flip to `GLF_PRESET=gold` to revert.
+
+Mechanism (three levers compound):
+1. **Stop 18 → 22pt** — escapes the false-stop noise band (286 gold stops in the 0-10pt MFE bucket many of which recovered).
+2. **Target 100 → 110pt** — captures fat-tail winners without breaking PF.
+3. **Structural BE @ MFE=100 / +10pt** — catches the "MFE 80-100 → full SL" pattern. 174 gold trades had MFE ≥30pt yet hit full SL (19.6% of all trades — vs glx v3's 0.2%).
+
+Plus **drop SH/SL levels** (PF 0.96 zone, -$2,000 net at gold exits). PRH/PRL + all GEX levels retained.
+
+Alternate v2 presets (saved JSONs `data/gold-standard/gex-level-fade-v2-{max,low-dd}.json`):
+- `--glf-preset v2-max` (t=140 s=25 BE 100/+20 all-levels): 774 / $106,272 / Sh 3.81 / DD 13.52% / PF 1.35. **Sim predicted $148k but engine -$42k** — wider exits hit concurrent-trade rejection harder + kept SHL adds zero-edge noise. NOT recommended; strictly dominated by v2.
+- `--glf-preset v2-low-dd` (t=110 s=20 BE 80/+10 drop SHL): 745 / $100,020 / Sh 3.95 / DD 8.25% / PF 1.42. Sim said low DD but engine DD essentially tied with v2 — SHL filter is the dominant DD reducer, not the tighter stop. Strictly dominated by v2.
+
+**Saved May-17 gold reference:** `data/gold-standard/gex-level-fade.json` (889 trades / $104,771 / Sh 4.21 / DD 7.04%) — generated WITHOUT `--eod-cutoff-et` so its baseline numbers are slightly inflated vs production-honest EOD. Use the engine-reproduced baseline ($90,475) for honest v2 comparison.
+
+**GEX-only Pareto reference** (separate config, not in v2 family): `--glf-levels NONE --glf-include-gex` → `data/gold-standard/gex-level-fade-gexonly.json` (200 trades / WR 28% / PF 1.97 / Sh 3.26 / DD 3.92% / $55,355). Use when small-account DD ceiling is the priority — trade count is much lower (~12/mo).
+
+Research log: `backtest-engine/research/gex-level-fade-improve/SUMMARY.md` — 1s-honest walks, exit sweeps (1,500+ configs), feature analysis, filter sweep, market-aware exits tested and rejected, train/test stability.

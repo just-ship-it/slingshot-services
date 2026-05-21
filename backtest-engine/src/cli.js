@@ -411,6 +411,12 @@ export class CLI {
         choices: ['tight', 'v2', 'v2-max', 'v2-low-dd'],
         description: 'gex-flip-ivpct: load a named preset of params. tight=2026-05-12 gold ($157k engine/PF 2.99/Sh 4.76/DD $14.6k). v2=2026-05-21 recommended (tgt=260 BE 160/+10: $209k engine/PF 3.39/Sh 5.31/DD $8.6k, +33% PnL with -41% DD). v2-max=widest target (tgt=320 BE 160/+10 mh=480: $218k/PF 3.49/Sh 5.14/DD $8.6k). v2-low-dd=selective filter (h11+Fri+S1 dropped: $168k/PF 3.70/Sh 4.92/DD $11.2k — fewer trades / higher PF). Individual --gfi-* flags below override preset values.'
       })
+
+      .option('glf-preset', {
+        type: 'string',
+        choices: ['gold', 'v2', 'v2-max', 'v2-low-dd'],
+        description: 'gex-level-fade: load a named preset of params (research/gex-level-fade-improve, 2026-05-21). gold=current live ($104k engine/PF 1.38/Sh 4.21/DD 7.04% — t=100 s=18). v2=recommended (t=110 s=22 BE 100/+10 + drop SH/SL: +28% PnL with -14% DD). v2-max=widest target (t=140 s=25 BE 100/+20: max PnL, higher DD). v2-low-dd=most conservative (t=110 s=20 BE 80/+10 + drop SH/SL: lowest DD in family). Individual --glf-* flags below override preset values.'
+      })
       .option('gfi-blocked-dows', {
         type: 'string',
         description: 'gex-flip-ivpct: comma-separated ET DOW abbreviations to block, e.g. "Fri,Mon".'
@@ -2070,6 +2076,34 @@ export class CLI {
       strategyParams.entryWindowEndMinute = parseInt(m[4], 10);
     }
 
+    // gex-level-fade --glf-preset (named bundle). Applied FIRST; individual --glf-*
+    // flags below override. BE settings are applied LAST in the post-engine-wide
+    // block to avoid the same clobber trap as lstb/gfi (engine-wide
+    // --breakeven-offset has default:0 which clobbers strategyParams.breakevenOffset).
+    // See "glf preset/individual BE apply" further down.
+    const GLF_PRESETS = {
+      gold:        { tgt: 100, stop: 18, mh: 180, beTrig: null, beOff: null,  levels: 'PRH,PRL,SH,SL', entryWin: '09:00-10:30', includeGex: true },
+      v2:          { tgt: 110, stop: 22, mh: 180, beTrig: 100,  beOff: 10,    levels: 'PRH,PRL',       entryWin: '09:00-10:30', includeGex: true },
+      'v2-max':    { tgt: 140, stop: 25, mh: 180, beTrig: 100,  beOff: 20,    levels: 'PRH,PRL,SH,SL', entryWin: '09:00-10:30', includeGex: true },
+      'v2-low-dd': { tgt: 110, stop: 20, mh: 180, beTrig: 80,   beOff: 10,    levels: 'PRH,PRL',       entryWin: '09:00-10:30', includeGex: true },
+    };
+    const glfPreset = args['glf-preset'] ? GLF_PRESETS[args['glf-preset']] : null;
+    if (glfPreset) {
+      strategyParams.targetPts = glfPreset.tgt;
+      strategyParams.stopPts = glfPreset.stop;
+      strategyParams.maxHoldBars = glfPreset.mh;
+      strategyParams.levels = glfPreset.levels.split(',').map(s => s.trim()).filter(Boolean);
+      strategyParams.includeGexLevels = glfPreset.includeGex;
+      const m = glfPreset.entryWin.match(/^(\d{1,2}):(\d{2})-(\d{1,2}):(\d{2})$/);
+      if (m) {
+        strategyParams.entryWindowStartHour = parseInt(m[1], 10);
+        strategyParams.entryWindowStartMinute = parseInt(m[2], 10);
+        strategyParams.entryWindowEndHour = parseInt(m[3], 10);
+        strategyParams.entryWindowEndMinute = parseInt(m[4], 10);
+      }
+      // BE applied in post-engine-wide block below to avoid clobber.
+    }
+
     // gex-level-fade knobs
     if (args['glf-target-pts'] !== undefined) strategyParams.targetPts = args['glf-target-pts'];
     if (args['glf-stop-pts'] !== undefined) strategyParams.stopPts = args['glf-stop-pts'];
@@ -2252,6 +2286,24 @@ export class CLI {
     }
     if (args['lstb-trail-trigger'] !== undefined) strategyParams.trailingTrigger = args['lstb-trail-trigger'];
     if (args['lstb-trail-offset'] !== undefined) strategyParams.trailingOffset = args['lstb-trail-offset'];
+
+    // glf preset/individual BE apply — MUST come after the engine-wide
+    // breakevenStop block above (same clobber trap as lstb/gfi). Preset BE applied
+    // first; individual --glf-* flags override.
+    if (glfPreset && glfPreset.beTrig != null) {
+      strategyParams.breakevenStop = true;
+      strategyParams.breakevenTrigger = glfPreset.beTrig;
+      strategyParams.breakevenOffset = glfPreset.beOff;
+    }
+    if (args['glf-breakeven-trigger'] !== undefined) {
+      strategyParams.breakevenTrigger = args['glf-breakeven-trigger'];
+      if (strategyParams.breakevenTrigger > 0) strategyParams.breakevenStop = true;
+    }
+    if (args['glf-breakeven-offset'] !== undefined) {
+      strategyParams.breakevenOffset = args['glf-breakeven-offset'];
+    }
+    if (args['glf-trailing-trigger'] !== undefined) strategyParams.trailingTrigger = args['glf-trailing-trigger'];
+    if (args['glf-trailing-offset'] !== undefined) strategyParams.trailingOffset = args['glf-trailing-offset'];
 
     // gex-flip-ivpct: structural-magnet MFE ratchet (1m 9/9 swing pivots)
     if (args['gfi-magnet-ratchet']) {

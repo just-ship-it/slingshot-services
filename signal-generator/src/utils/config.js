@@ -194,6 +194,21 @@ const config = {
   GLF_LS_BE_ON_FLIP: process.env.GLF_LS_BE_ON_FLIP?.toLowerCase() === 'true',
   GLF_LS_BE_OFFSET: parseFloat(process.env.GLF_LS_BE_OFFSET || '10'),
 
+  // gex-level-fade preset (research/gex-level-fade-improve, 2026-05-21).
+  // Default 'v2' — the new recommended gold (wider exits + structural BE +
+  // drop SH/SL: +28% PnL vs gold-100/18 with PF lift and DD cut). Set
+  // GLF_PRESET=gold to revert to the prior gold (t=100 s=18, all levels).
+  // Mirrors cli.js GLF_PRESETS so live and backtest stay in lockstep.
+  // Individual GLF_* env vars (TARGET_POINTS etc.) override preset values
+  // when explicitly set.
+  GLF_PRESET: process.env.GLF_PRESET || 'v2',
+  _GLF_TARGET_POINTS_RAW: process.env.GLF_TARGET_POINTS,
+  _GLF_STOP_POINTS_RAW: process.env.GLF_STOP_POINTS,
+  _GLF_MAX_HOLD_BARS_RAW: process.env.GLF_MAX_HOLD_BARS,
+  _GLF_BREAKEVEN_TRIGGER_RAW: process.env.GLF_BREAKEVEN_TRIGGER,
+  _GLF_BREAKEVEN_OFFSET_RAW: process.env.GLF_BREAKEVEN_OFFSET,
+  _GLF_LEVELS_RAW: process.env.GLF_LEVELS,
+
   // LS-Flip-Trigger-Bar (lstb) — v3 candJ defaults (the new recommended gold,
   // see CLAUDE.md "Gold Standard Commands"). Env vars override only when
   // explicitly set. Setting LSTB_PRESET to 'v2', 'v3', 'v3-max', 'v3-balanced',
@@ -506,8 +521,18 @@ const config = {
   },
 
   getGexLevelFadeParams() {
-    // 100/18 / 09:00-10:30 / all-levels gold standard (2026-05-17) is the
-    // strategy class's own defaults; env overrides only fire when set.
+    // Preset-first param construction (research/gex-level-fade-improve, 2026-05-21).
+    // GLF_PRESET (default 'v2') provides a complete bundle; individual GLF_* env
+    // vars then override preset values when explicitly set. Mirrors backtest-engine
+    // GLF_PRESETS so live and backtest stay in lockstep.
+    const GLF_PRESETS = {
+      gold:        { tgt: 100, stop: 18, mh: 180, beTrig: 0,   beOff: 0,  levels: 'PRH,PRL,SH,SL' },
+      v2:          { tgt: 110, stop: 22, mh: 180, beTrig: 100, beOff: 10, levels: 'PRH,PRL' },
+      'v2-max':    { tgt: 140, stop: 25, mh: 180, beTrig: 100, beOff: 20, levels: 'PRH,PRL,SH,SL' },
+      'v2-low-dd': { tgt: 110, stop: 20, mh: 180, beTrig: 80,  beOff: 10, levels: 'PRH,PRL' },
+    };
+    const preset = GLF_PRESETS[this.GLF_PRESET] || GLF_PRESETS.v2;
+
     const intOrDef = (v, d) => {
       const n = parseInt(v, 10);
       return isNaN(n) ? d : n;
@@ -525,10 +550,21 @@ const config = {
       .split(',').map(s => parseInt(s.trim(), 10)).filter(n => !isNaN(n));
     const blockedRegimes = (this.GLF_BLOCKED_REGIMES ?? 'strong_negative')
       .split(',').map(s => s.trim()).filter(Boolean);
+
+    // Preset fields, then individual env-var overrides
+    const targetPts = this._GLF_TARGET_POINTS_RAW !== undefined ? parseInt(this._GLF_TARGET_POINTS_RAW, 10) : preset.tgt;
+    const stopPts   = this._GLF_STOP_POINTS_RAW   !== undefined ? parseInt(this._GLF_STOP_POINTS_RAW, 10)   : preset.stop;
+    const maxHoldBars = this._GLF_MAX_HOLD_BARS_RAW !== undefined ? parseInt(this._GLF_MAX_HOLD_BARS_RAW, 10) : preset.mh;
+    const beTrig = this._GLF_BREAKEVEN_TRIGGER_RAW !== undefined ? parseInt(this._GLF_BREAKEVEN_TRIGGER_RAW, 10) : preset.beTrig;
+    const beOff  = this._GLF_BREAKEVEN_OFFSET_RAW  !== undefined ? parseInt(this._GLF_BREAKEVEN_OFFSET_RAW, 10)  : preset.beOff;
+    const levelsStr = this._GLF_LEVELS_RAW !== undefined ? this._GLF_LEVELS_RAW : preset.levels;
+    const levels = levelsStr.split(',').map(s => s.trim()).filter(Boolean);
+
     return {
-      targetPts: intOrDef(this.GLF_TARGET_POINTS, 100),
-      stopPts: intOrDef(this.GLF_STOP_POINTS, 18),
-      maxHoldBars: intOrDef(this.GLF_MAX_HOLD_BARS, 180),
+      targetPts,
+      stopPts,
+      maxHoldBars,
+      levels,
       limitTimeoutBars: intOrDef(this.GLF_LIMIT_TIMEOUT_BARS, 1),
       minEpisodeNum: intOrDef(this.GLF_MIN_EPISODE_NUM, 2),
       includeGexLevels: boolFlag(this.GLF_INCLUDE_GEX, true),
@@ -549,8 +585,8 @@ const config = {
       minLastEpVolBursts: this.GLF_MIN_LAST_EP_VOL_BURSTS ? intOrDef(this.GLF_MIN_LAST_EP_VOL_BURSTS, null) : null,
       trailingTrigger: intOrDef(this.GLF_TRAILING_TRIGGER, 0),
       trailingOffset: intOrDef(this.GLF_TRAILING_OFFSET, 0),
-      breakevenTrigger: intOrDef(this.GLF_BREAKEVEN_TRIGGER, 0),
-      breakevenOffset: intOrDef(this.GLF_BREAKEVEN_OFFSET, 0),
+      breakevenTrigger: beTrig,
+      breakevenOffset: beOff,
       // LS-BE-on-flip overlay
       lsBeOnFlip: this.GLF_LS_BE_ON_FLIP,
       lsBeOffset: this.GLF_LS_BE_OFFSET,
