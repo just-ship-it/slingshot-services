@@ -37,6 +37,12 @@ class LTMonitor extends EventEmitter {
     this.maxReconnectDelay = 60000;
     this.reconnectAttempts = 0;
 
+    // Client-originated keepalive (mirrors tradingview-client.js fix from
+    // 2026-05-22). Without 10s client-pings, TV cuts the WS at ~65-75s as
+    // "polling only" — same fingerprint as the May-21 hibernate incident.
+    this.pingInterval = null;
+    this.pingCounter = 0;
+
     this.currentLevels = null;
     this.lastTimestamp = null;
     this.lastHeartbeat = null;
@@ -160,7 +166,30 @@ class LTMonitor extends EventEmitter {
     this.lsFormingBarRaw = null;
     this.lsBarFullyObserved = false;
     this.initializeSessions();
+    this.startKeepalivePing();
     this.emit('connected');
+  }
+
+  /**
+   * Mirror tradingview-client's client-originated keepalive: send
+   * ~m~<size>~m~~h~<n> every 10s with n incrementing from 1. Required to
+   * prevent TV's ~65-75s "polling only" session cut. See lt-monitor-hibernate
+   * memory for prior incident — server-heartbeat echoes alone are not enough.
+   */
+  startKeepalivePing() {
+    if (this.pingInterval) clearInterval(this.pingInterval);
+    this.pingCounter = 0;
+    this.pingInterval = setInterval(() => {
+      if (!this.ws || this.ws.readyState !== WebSocket.OPEN) return;
+      this.pingCounter += 1;
+      const body = `~h~${this.pingCounter}`;
+      const frame = `~m~${body.length}~m~${body}`;
+      try {
+        this.ws.send(frame);
+      } catch (err) {
+        logger.warn(`LT monitor keepalive ping send failed: ${err.message}`);
+      }
+    }, 10_000);
   }
 
   initializeSessions() {
@@ -543,6 +572,13 @@ class LTMonitor extends EventEmitter {
     logger.warn(`LT monitor disconnected - Code: ${code}, Reason: ${reason || 'No reason'}`);
     this.connected = false;
 
+    // Tear down the client-keepalive timer; startKeepalivePing() will rearm
+    // it on the next handleOpen().
+    if (this.pingInterval) {
+      clearInterval(this.pingInterval);
+      this.pingInterval = null;
+    }
+
     if (!this.isDisconnecting) {
       this.scheduleReconnect();
     }
@@ -664,6 +700,11 @@ class LTMonitor extends EventEmitter {
   async disconnect() {
     logger.info('Disconnecting LT monitor...');
     this.isDisconnecting = true;
+
+    if (this.pingInterval) {
+      clearInterval(this.pingInterval);
+      this.pingInterval = null;
+    }
 
     if (this.ws) {
       this.ws.close();

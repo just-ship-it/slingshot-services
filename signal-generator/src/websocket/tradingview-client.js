@@ -43,6 +43,10 @@ class TradingViewClient extends EventEmitter {
     this.maxReconnectDelay = 60000;
     this.reconnectAttempts = 0;
     this.pingInterval = null;
+    // Client-originated heartbeat counter. The browser sends ~m~<size>~m~~h~<n>
+    // every 10s with n strictly incrementing per-connection; without this TV
+    // cuts the WS at ~65-75s as "polling only". See startKeepalivePing.
+    this.pingCounter = 0;
 
     // Candle tracking for 15-minute detection
     this.lastCandleTimes = new Map();
@@ -208,7 +212,15 @@ class TradingViewClient extends EventEmitter {
     // Start connection health monitoring
     this.startConnectionHealthMonitoring();
 
-    // TradingView handles ping/pong automatically - no need for custom interval
+    // [2026-05-22] Client-originated keepalive heartbeat. The browser sends
+    // ~m~<size>~m~~h~<n> every 10s with n incrementing from 1; without this,
+    // TV cuts the WS at ~65-75s (same fingerprint as the lt-monitor hibernate
+    // incident). Echoing server heartbeats is NOT sufficient — TV's classifier
+    // appears to specifically look for the client originating its own ping
+    // stream. Captured from a live tradingview.com tab in DevTools → Network →
+    // WS → outbound (green) frames.
+    this.startKeepalivePing();
+
     this.emit('connected');
 
     // Token refresh is now reactive-only (triggered by delayed quotes or WS auth errors).
@@ -245,6 +257,30 @@ class TradingViewClient extends EventEmitter {
     ]);
 
     logger.info('Sessions initialized with proper handshake sequence');
+  }
+
+  /**
+   * Client-originated keepalive heartbeat. Sends ~m~<size>~m~~h~<n> every 10s
+   * with n incrementing from 1 per-connection. Mirrors the live tradingview.com
+   * browser's behavior. Without this, TV cuts the WS at ~65-75s.
+   *
+   * Server-side heartbeats (which we already echo in handleMessage) are NOT
+   * sufficient — TV's classifier appears to require client-originated pings.
+   */
+  startKeepalivePing() {
+    if (this.pingInterval) clearInterval(this.pingInterval);
+    this.pingCounter = 0;
+    this.pingInterval = setInterval(() => {
+      if (!this.ws || this.ws.readyState !== WebSocket.OPEN) return;
+      this.pingCounter += 1;
+      const body = `~h~${this.pingCounter}`;
+      const frame = `~m~${body.length}~m~${body}`;
+      try {
+        this.ws.send(frame);
+      } catch (err) {
+        logger.warn(`Keepalive ping send failed: ${err.message}`);
+      }
+    }, 10_000);
   }
 
   startConnectionHealthMonitoring() {
