@@ -6,6 +6,7 @@ import { createLogger, messageBus, CHANNELS } from '../../shared/index.js';
 import config from './config.js';
 import TradingViewClient from '../../signal-generator/src/websocket/tradingview-client.js';
 import LTMonitor from '../../signal-generator/src/websocket/lt-monitor.js';
+import SchwabStreamer from '../../signal-generator/src/schwab/schwab-streamer.js';
 import GexCalculator from '../../signal-generator/src/gex/gex-calculator.js';
 import OptionsExposureService from '../../signal-generator/src/tradier/options-exposure-service.js';
 import HybridGexCalculator from '../../signal-generator/src/gex/hybrid-gex-calculator.js';
@@ -24,9 +25,27 @@ import { ShortDTEIVCalculator } from './short-dte-iv-calculator.js';
 
 const logger = createLogger('data-service');
 
+// [2026-05-22] Symbol mappers for TradingView → Schwab migration.
+// Used by data-service to translate the existing OHLCV_SYMBOLS / QUOTE_ONLY_SYMBOLS
+// (TV-formatted) into the symbol shapes Schwab's streamer expects.
+function tvSymbolToSchwabFuture(tvSym) {
+  // 'CME_MINI:NQM2026' → '/NQM26'   /   'CME_MINI:ESH2026' → '/ESH26'
+  const m = tvSym.match(/^(?:CME_MINI:)?([A-Z]+[A-Z])(\d{2,4})$/);
+  if (!m) return null;
+  let year = m[2];
+  if (year.length === 4) year = year.slice(2);
+  return `/${m[1]}${year}`;
+}
+function tvSymbolToSchwabEquity(tvSym) {
+  // 'NASDAQ:QQQ' → 'QQQ'   /   'AMEX:SPY' → 'SPY'   /   bare 'QQQ' → 'QQQ'
+  const idx = tvSym.indexOf(':');
+  return idx >= 0 ? tvSym.slice(idx + 1) : tvSym;
+}
+
 class DataService {
   constructor() {
     this.tradingViewClient = null;
+    this.schwabStreamer = null;
 
     // Per-product GEX calculators
     this.gexCalculators = new Map();  // 'NQ' -> GexCalculator, 'ES' -> GexCalculator
@@ -86,33 +105,44 @@ class DataService {
         }
       }
 
-      // Initialize TradingView Client
-      // Chart sessions for symbols needing OHLCV candle data (NQ, ES)
-      // Quote-only for symbols needing just last price (MNQ, MES, QQQ, SPY, BTC)
+      // [2026-05-22] TradingViewClient kept instantiated ONLY for JWT-token
+      // plumbing into LT monitors (lt-monitor.js still needs TV WS for the
+      // proprietary LT/LS Pine studies). OHLCV/quote streaming has migrated
+      // to Schwab — TV WS is NOT opened here anymore.
       this.tradingViewClient = new TradingViewClient({
         symbols: config.OHLCV_SYMBOLS,
         quoteOnlySymbols: config.QUOTE_ONLY_SYMBOLS,
-        ltSymbol: null,  // LT handled by separate monitors
+        ltSymbol: null,
         jwtToken: startupJwtToken,
         credentials: config.TRADINGVIEW_CREDENTIALS,
         tokenRefreshEnabled,
         redisUrl,
-        candleHistoryBars: 500  // Load enough history for AI trader daily context
+        candleHistoryBars: 500,
       });
 
-      // Set up quote handler
-      this.tradingViewClient.on('quote', (quote) => this.handleQuoteUpdate(quote));
+      // ─── Schwab streaming (replaces TradingView for OHLCV + quotes) ───
+      const schwabFutureSymbols = config.OHLCV_SYMBOLS.map(tvSymbolToSchwabFuture).filter(Boolean);
+      const schwabEquitySymbols = config.QUOTE_ONLY_SYMBOLS.map(tvSymbolToSchwabEquity).filter(Boolean);
+      logger.info(`Schwab streamer symbols: futures=[${schwabFutureSymbols.join(',')}] equities=[${schwabEquitySymbols.join(',')}]`);
 
-      // Seed candle buffers from TradingView history and publish data readiness
-      this.tradingViewClient.on('history_loaded', ({ symbol, baseSymbol, timeframe, candles }) => {
+      this.schwabStreamer = new SchwabStreamer({
+        appKey: config.SCHWAB_APP_KEY,
+        appSecret: config.SCHWAB_APP_SECRET,
+        redisUrl,
+        futureSymbols: schwabFutureSymbols,
+        equitySymbols: schwabEquitySymbols,
+        historyBarCount: 500,
+      });
+
+      this.schwabStreamer.on('quote', (quote) => this.handleQuoteUpdate(quote));
+
+      this.schwabStreamer.on('history_loaded', ({ symbol, baseSymbol, timeframe, candles }) => {
         const canonical = this.candleManager.resolveBaseSymbol(baseSymbol);
         if (canonical) {
           this.candleManager.seedHistory(canonical, timeframe, candles);
           this.candleManager.markSeeded(canonical, timeframe);
           const tfLabel = timeframe === '1D' ? '1D' : `${timeframe}m`;
           logger.info(`History loaded: ${candles.length} ${tfLabel} candles for ${canonical} (from ${baseSymbol})`);
-
-          // Broadcast data readiness to consumers (signal-generator, ai-trader)
           messageBus.publish(CHANNELS.DATA_READY, {
             product: canonical,
             timeframe,
@@ -122,24 +152,20 @@ class DataService {
         }
       });
 
-      // Connect and start streaming
-      logger.info('Connecting to TradingView WebSocket...');
-      await this.tradingViewClient.connect();
-      logger.info('TradingView WebSocket connected');
-
-      logger.info('Starting TradingView data streaming...');
-      await this.tradingViewClient.startStreaming();
-      logger.info(`TradingView streaming started: ${config.OHLCV_SYMBOLS.length} chart sessions + ${config.QUOTE_ONLY_SYMBOLS.length} quote-only symbols`);
-
-      // Create 1h + 1D history sessions
-      await this.createHistorySessions();
-
-      // Recreate history sessions on TradingView reconnection (JWT refresh, disconnect)
-      this.tradingViewClient.on('reconnected', async () => {
-        logger.info('TradingView reconnected — recreating history sessions...');
+      this.schwabStreamer.on('reconnected', async () => {
+        logger.info('Schwab streamer reconnected — recreating history sessions...');
         this.candleManager.resetReadiness();
         await this.createHistorySessions();
       });
+
+      logger.info('Connecting to Schwab streamer...');
+      await this.schwabStreamer.connect();
+      logger.info('Schwab streamer connected, starting subscriptions...');
+      await this.schwabStreamer.startStreaming();
+      logger.info(`Schwab streaming started: ${schwabFutureSymbols.length} futures + ${schwabEquitySymbols.length} equities`);
+
+      // Create 1h + 1D history sessions
+      await this.createHistorySessions();
 
       // Initialize LT Monitors for both products
       // Use the client's current token (may have been refreshed during connect) rather than the startup token
@@ -393,22 +419,31 @@ class DataService {
   }
 
   /**
-   * Create 1h and 1D history sessions for each OHLCV symbol.
-   * Called on startup and after TradingView reconnection.
+   * Create 1h and 1D history (and seed 1m) for each OHLCV symbol via Schwab's
+   * pricehistory REST endpoint. Called on startup and after Schwab streamer
+   * reconnection.
    */
   async createHistorySessions() {
-    for (const sym of config.OHLCV_SYMBOLS) {
+    if (!this.schwabStreamer) return;
+    const schwabFutureSymbols = config.OHLCV_SYMBOLS.map(tvSymbolToSchwabFuture).filter(Boolean);
+    for (const sym of schwabFutureSymbols) {
       try {
-        await this.tradingViewClient.createHistorySession(sym, '60', 300);
-        logger.info(`Created 1h history session for ${sym}`);
+        await this.schwabStreamer.createHistorySession(sym, '1', 500);
+        logger.info(`Created 1m history session for ${sym}`);
       } catch (error) {
-        logger.error(`Failed to create 1h history session for ${sym}:`, error.message);
+        logger.error(`Failed to create 1m history session for ${sym}: ${error.message}`);
       }
       try {
-        await this.tradingViewClient.createHistorySession(sym, '1D', 10);
+        await this.schwabStreamer.createHistorySession(sym, '60', 300);
+        logger.info(`Created 1h history session for ${sym}`);
+      } catch (error) {
+        logger.error(`Failed to create 1h history session for ${sym}: ${error.message}`);
+      }
+      try {
+        await this.schwabStreamer.createHistorySession(sym, '1D', 10);
         logger.info(`Created 1D history session for ${sym}`);
       } catch (error) {
-        logger.error(`Failed to create 1D history session for ${sym}:`, error.message);
+        logger.error(`Failed to create 1D history session for ${sym}: ${error.message}`);
       }
     }
   }
@@ -774,15 +809,19 @@ class DataService {
     await cacheTokenInRedis(redisUrl, token);
     logger.info('Manual token cached in Redis');
 
+    // [2026-05-22] OHLCV/quotes now flow via Schwab streamer; TradingViewClient's
+    // WS is no longer opened by this service. We still update its `jwtToken`
+    // field so any status reporting that reads from it stays current, but
+    // we do NOT call reconnectWithNewToken() — that would re-open the WS
+    // we explicitly migrated away from.
     if (this.tradingViewClient) {
       this.tradingViewClient.jwtToken = token;
       this.tradingViewClient.tokenRefreshRetryCount = 0;
       this.tradingViewClient.stopTokenRefreshSchedule?.();
-      await this.tradingViewClient.reconnectWithNewToken();
-      logger.info('TradingView client reconnected with new token');
+      // INTENTIONALLY NOT calling reconnectWithNewToken() — see comment above.
     }
 
-    // Update all LT monitors
+    // Update all LT monitors (this is the only path that still needs a TV JWT).
     for (const [product, monitor] of this.ltMonitors) {
       try {
         await monitor.updateToken(token);
@@ -992,6 +1031,10 @@ class DataService {
       status: this.isRunning ? 'running' : 'stopped',
       timestamp: new Date().toISOString(),
       components: {
+        // [2026-05-22] OHLCV/quotes now flow through Schwab streamer.
+        // 'tradingview' status reflects the (now unused) WS client's state
+        // for back-compat with the dashboard; expect 'disconnected'.
+        schwab_streamer: this.schwabStreamer?.isConnected() ? 'connected' : 'disconnected',
         tradingview: this.tradingViewClient?.isConnected() ? 'connected' : 'disconnected',
         gex: gexStatus,
         lt: ltStatus,
@@ -1001,6 +1044,12 @@ class DataService {
         iv_skew: this.ivSkewCalculator ? 'ready' : 'not_available'
       },
       connectionDetails: {
+        schwabStreamer: {
+          connected: this.schwabStreamer?.isConnected() || false,
+          futureSymbols: this.schwabStreamer?.futureSymbols || [],
+          equitySymbols: this.schwabStreamer?.equitySymbols || [],
+          reconnectAttempts: this.schwabStreamer?.reconnectAttempts || 0,
+        },
         tradingview: {
           connected: this.tradingViewClient?.isConnected() || false,
           authState: this.tradingViewClient?.authState || 'unknown',
@@ -1032,6 +1081,10 @@ class DataService {
     try {
       logger.info('Stopping Data Service...');
       this.isRunning = false;
+
+      if (this.schwabStreamer) {
+        await this.schwabStreamer.disconnect();
+      }
 
       if (this.tradingViewClient) {
         this.tradingViewClient.disconnect();
