@@ -14,7 +14,7 @@ const TV_WEBSOCKET_BASE = 'wss://prodata.tradingview.com/socket.io/websocket';
 function buildTvWebsocketUrl() {
   const now = new Date().toISOString().slice(0, 19);
   const params = new URLSearchParams({
-    from: 'chart/VEPYsueI/',
+    from: 'chart/4NTS38Zt/',
     date: now,
     type: 'chart',
     auth: 'sessionid',

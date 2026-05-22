@@ -28,7 +28,10 @@ const TV_WEBSOCKET_BASE = 'wss://prodata.tradingview.com/socket.io/websocket';
 function buildTvWebsocketUrl() {
   const now = new Date().toISOString().slice(0, 19); // 2026-05-22T12:11:12
   const params = new URLSearchParams({
-    from: 'chart/VEPYsueI/',
+    // Real chart slug from Drew's TV account (vs the prior placeholder). TV's
+    // classifier appears to validate that `from=` resolves to a chart the
+    // authenticated session owns; a mismatch may downgrade the connection.
+    from: 'chart/4NTS38Zt/',
     date: now,
     type: 'chart',
     auth: 'sessionid',
