@@ -3,7 +3,7 @@ import WebSocket from 'ws';
 import EventEmitter from 'events';
 import { createLogger, messageBus } from '../../../shared/index.js';
 import Redis from 'ioredis';
-import { refreshToken, refreshJwtFromSession, getTokenTTL, cacheTokenInRedis, getBestAvailableToken } from '../utils/tradingview-auth.js';
+import { refreshToken, refreshJwtFromSession, getTokenTTL, cacheTokenInRedis, getBestAvailableToken, getCachedSessionCookies } from '../utils/tradingview-auth.js';
 
 const logger = createLogger('tradingview-client');
 
@@ -171,24 +171,43 @@ class TradingViewClient extends EventEmitter {
       logger.info(`🌐 Connecting to TradingView WebSocket: ${wsUrl}`);
       logger.info(`📋 Symbols to stream: [${this.symbols.join(', ')}]`);
 
+      // [2026-05-22] Fetch cached session cookies from Redis and inject them
+      // as a Cookie header on the WS handshake. The URL has auth=sessionid
+      // which tells TV's server "I'm a browser auth'd via cookies" — without
+      // an actual Cookie header, TV appears to fall back to the polling-cap
+      // free-tier classification despite the prodata host + JWT.
+      let cookieHeader;
+      try {
+        const cookies = await getCachedSessionCookies(this.redisUrl);
+        if (cookies && Object.keys(cookies).length > 0) {
+          cookieHeader = Object.entries(cookies).map(([k, v]) => `${k}=${v}`).join('; ');
+          logger.info(`🍪 Attaching ${Object.keys(cookies).length} session cookie(s) to WS handshake: ${Object.keys(cookies).join(', ')}`);
+        } else {
+          logger.warn('🍪 No cached session cookies — connecting without Cookie header. Bootstrap via /tv-auth/sessionid for full browser parity.');
+        }
+      } catch (err) {
+        logger.warn(`🍪 Cookie fetch failed (continuing without): ${err.message}`);
+      }
+
       // Headers matched against a live tradingview.com Pro tab HAR (2026-05-22)
       // — extra headers + Chrome 148 UA to mirror the browser fingerprint as
       // closely as we can.
-      this.ws = new WebSocket(wsUrl, {
-        headers: {
-          'Connection': 'upgrade',
-          'Host': 'prodata.tradingview.com',
-          'Origin': TV_ORIGIN,
-          'Cache-Control': 'no-cache',
-          'Sec-WebSocket-Extensions': 'permessage-deflate; client_max_window_bits',
-          'Sec-WebSocket-Version': '13',
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36',
-          'Accept-Language': 'en-US,en;q=0.9',
-          'Accept-Encoding': 'gzip, deflate, br, zstd',
-          'Pragma': 'no-cache',
-          'Upgrade': 'websocket'
-        }
-      });
+      const headers = {
+        'Connection': 'upgrade',
+        'Host': 'prodata.tradingview.com',
+        'Origin': TV_ORIGIN,
+        'Cache-Control': 'no-cache',
+        'Sec-WebSocket-Extensions': 'permessage-deflate; client_max_window_bits',
+        'Sec-WebSocket-Version': '13',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36',
+        'Accept-Language': 'en-US,en;q=0.9',
+        'Accept-Encoding': 'gzip, deflate, br, zstd',
+        'Pragma': 'no-cache',
+        'Upgrade': 'websocket'
+      };
+      if (cookieHeader) headers['Cookie'] = cookieHeader;
+
+      this.ws = new WebSocket(wsUrl, { headers });
 
       // Set up event handlers
       this.ws.on('open', () => this.handleOpen());

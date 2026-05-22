@@ -2,7 +2,7 @@
 import WebSocket from 'ws';
 import EventEmitter from 'events';
 import { createLogger, messageBus } from '../../../shared/index.js';
-import { getCachedToken, getTokenTTL } from '../utils/tradingview-auth.js';
+import { getCachedToken, getTokenTTL, getCachedSessionCookies } from '../utils/tradingview-auth.js';
 
 const logger = createLogger('lt-monitor');
 
@@ -113,21 +113,36 @@ class LTMonitor extends EventEmitter {
       logger.info(`🔌 Connecting LT monitor to TradingView for ${this.symbol} on ${this.timeframe}m...`);
 
       const wsUrl = buildTvWebsocketUrl();
-      this.ws = new WebSocket(wsUrl, {
-        headers: {
-          'Connection': 'upgrade',
-          'Host': 'prodata.tradingview.com',
-          'Origin': TV_ORIGIN,
-          'Cache-Control': 'no-cache',
-          'Sec-WebSocket-Extensions': 'permessage-deflate; client_max_window_bits',
-          'Sec-WebSocket-Version': '13',
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36',
-          'Accept-Language': 'en-US,en;q=0.9',
-          'Accept-Encoding': 'gzip, deflate, br, zstd',
-          'Pragma': 'no-cache',
-          'Upgrade': 'websocket'
+
+      // Inject cached session cookies on the WS handshake — see
+      // tradingview-client.js connect() for the full rationale.
+      let cookieHeader;
+      try {
+        const cookies = await getCachedSessionCookies(this.redisUrl);
+        if (cookies && Object.keys(cookies).length > 0) {
+          cookieHeader = Object.entries(cookies).map(([k, v]) => `${k}=${v}`).join('; ');
+          logger.info(`🍪 LT monitor attaching ${Object.keys(cookies).length} cookie(s): ${Object.keys(cookies).join(', ')}`);
         }
-      });
+      } catch (err) {
+        logger.warn(`🍪 LT monitor cookie fetch failed (continuing without): ${err.message}`);
+      }
+
+      const headers = {
+        'Connection': 'upgrade',
+        'Host': 'prodata.tradingview.com',
+        'Origin': TV_ORIGIN,
+        'Cache-Control': 'no-cache',
+        'Sec-WebSocket-Extensions': 'permessage-deflate; client_max_window_bits',
+        'Sec-WebSocket-Version': '13',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36',
+        'Accept-Language': 'en-US,en;q=0.9',
+        'Accept-Encoding': 'gzip, deflate, br, zstd',
+        'Pragma': 'no-cache',
+        'Upgrade': 'websocket'
+      };
+      if (cookieHeader) headers['Cookie'] = cookieHeader;
+
+      this.ws = new WebSocket(wsUrl, { headers });
 
       this.ws.on('open', () => this.handleOpen());
       this.ws.on('message', (data) => {
