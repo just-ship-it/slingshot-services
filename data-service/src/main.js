@@ -9,7 +9,16 @@ import LTMonitor from '../../signal-generator/src/websocket/lt-monitor.js';
 import GexCalculator from '../../signal-generator/src/gex/gex-calculator.js';
 import OptionsExposureService from '../../signal-generator/src/tradier/options-exposure-service.js';
 import HybridGexCalculator from '../../signal-generator/src/gex/hybrid-gex-calculator.js';
-import { getBestAvailableToken, cacheTokenInRedis, getTokenTTL } from '../../signal-generator/src/utils/tradingview-auth.js';
+import {
+  getBestAvailableToken,
+  cacheTokenInRedis,
+  getTokenTTL,
+  cacheSessionCookies,
+  getCachedSessionCookies,
+  extractJwtFromPage,
+  refreshJwtFromSession,
+  parseCookieString,
+} from '../../signal-generator/src/utils/tradingview-auth.js';
 import { CandleManager } from './candle-manager.js';
 import { ShortDTEIVCalculator } from './short-dte-iv-calculator.js';
 
@@ -140,6 +149,10 @@ class DataService {
       // Set up GEX refresh schedules
       this.scheduleGexRefresh();
       this.scheduleRTHOpenRefresh();
+
+      // Auto-refresh JWT from cached sessionid every ~90 min (Option A).
+      // No-op if no sessionid is cached yet (bootstrap via POST /tv-auth/sessionid).
+      this.scheduleSessionRefresh();
 
       // Publish cached GEX levels to Redis so signal generators pick them up immediately
       for (const [product, calculator] of this.gexCalculators) {
@@ -786,6 +799,96 @@ class DataService {
       tokenTTL: ttl,
       authState: this.tradingViewClient?.authState || 'unknown'
     };
+  }
+
+  /**
+   * Bootstrap TradingView session from a cookie string (Option A).
+   *
+   * Caller (dashboard input) pastes the cookies from a separate TV browser
+   * session — e.g., an incognito window logged in just for this purpose, NOT
+   * the user's daily-driver tab (TV pins one JWT per sessionid, so reusing the
+   * daily tab's sessionid would make the data-service kick that tab off the WS).
+   *
+   * On success: cookies cached in Redis with 7-day TTL, JWT extracted &
+   * propagated through the same updateTradingViewToken flow used by the manual
+   * "Set Token" button. The scheduled refresh (see scheduleSessionRefresh)
+   * will subsequently re-extract a fresh JWT every refreshIntervalMs.
+   */
+  async bootstrapTradingViewSession(cookieStr) {
+    const redisUrl = config.getRedisUrl();
+    const cookies = parseCookieString(cookieStr);
+    if (!cookies.sessionid) {
+      throw new Error('No sessionid found in pasted cookies. Open TV in an incognito window, log in, then copy the sessionid cookie (and ideally sessionid_sign too).');
+    }
+    logger.info(`Bootstrapping TV session from pasted cookies (${Object.keys(cookies).join(', ')})`);
+
+    // Validate cookies by extracting a JWT — also picks up any refreshed cookies
+    const { jwt, cookies: refreshedCookies } = await extractJwtFromPage(cookies);
+    if (!jwt) {
+      throw new Error('Pasted sessionid did not yield a JWT — the session may already be expired or invalid. Re-login in incognito and copy a fresh sessionid.');
+    }
+    const ttl = getTokenTTL(jwt);
+    if (ttl !== null && ttl <= 0) {
+      throw new Error('Pasted sessionid yielded an already-expired JWT.');
+    }
+
+    await cacheSessionCookies(redisUrl, refreshedCookies);
+    logger.info(`TV session cookies cached (sessionid len=${refreshedCookies.sessionid.length}, JWT TTL=${Math.floor(ttl / 60)}m). Routing JWT to clients...`);
+
+    // Push the JWT through the existing manual-update path so the WS reconnects
+    // and LT monitors pick it up. This is exactly what the dashboard "Set Token"
+    // button does, just with a server-extracted JWT.
+    const updateResult = await this.updateTradingViewToken(jwt);
+    return {
+      success: true,
+      message: 'Session bootstrapped — scheduled refresh will keep JWT alive.',
+      tokenTTL: ttl,
+      cookieNames: Object.keys(refreshedCookies),
+      ...updateResult,
+    };
+  }
+
+  /**
+   * Schedule periodic JWT refresh from the cached sessionid (Option A).
+   * Runs every TV_AUTO_REFRESH_INTERVAL_MS (default 90 min). No-op if no
+   * sessionid is cached yet.
+   */
+  scheduleSessionRefresh() {
+    const intervalMs = parseInt(process.env.TV_AUTO_REFRESH_INTERVAL_MS || `${90 * 60 * 1000}`, 10);
+    if (this._sessionRefreshInterval) clearInterval(this._sessionRefreshInterval);
+    logger.info(`Scheduling TV JWT auto-refresh every ${Math.floor(intervalMs / 60000)} min (from cached sessionid)`);
+
+    const tick = async () => {
+      const redisUrl = config.getRedisUrl();
+      try {
+        const cookies = await getCachedSessionCookies(redisUrl);
+        if (!cookies || !cookies.sessionid) {
+          logger.debug('TV auto-refresh: no cached sessionid, skipping');
+          return;
+        }
+        const currentTTL = getTokenTTL(this.tradingViewClient?.jwtToken);
+        // Skip if we already have a healthy JWT (TTL > 4h) — no point refreshing
+        if (currentTTL != null && currentTTL > 4 * 3600) {
+          logger.debug(`TV auto-refresh: JWT still healthy (TTL ${Math.floor(currentTTL / 60)}m), skipping`);
+          return;
+        }
+        logger.info(`TV auto-refresh: attempting JWT refresh from cached session (current TTL: ${currentTTL != null ? Math.floor(currentTTL / 60) + 'm' : 'n/a'})`);
+        const newJwt = await refreshJwtFromSession(redisUrl);
+        if (!newJwt) {
+          logger.warn('TV auto-refresh: no JWT returned — sessionid may have expired. Re-bootstrap via /tv-auth/sessionid.');
+          return;
+        }
+        await this.updateTradingViewToken(newJwt);
+        logger.info(`TV auto-refresh: JWT refreshed, new TTL ${Math.floor(getTokenTTL(newJwt) / 60)}m`);
+      } catch (err) {
+        logger.error('TV auto-refresh failed:', err.message);
+      }
+    };
+
+    this._sessionRefreshInterval = setInterval(tick, intervalMs);
+    // Kick off one immediately on schedule install — common case: service just
+    // started, cached cookies exist but no JWT was extracted yet.
+    setTimeout(tick, 5_000);
   }
 
   /**

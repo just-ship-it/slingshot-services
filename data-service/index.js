@@ -319,6 +319,25 @@ app.post('/tradingview/token', async (req, res) => {
   }
 });
 
+// === TradingView sessionid bootstrap (Option A: server-side scheduled refresh) ===
+//
+// Accept a TradingView cookie string (paste from devtools or document.cookie),
+// validate by extracting a JWT, cache cookies + token in Redis. Once bootstrapped
+// the scheduled refresh in main.js keeps the JWT fresh without ever logging in.
+app.post('/tv-auth/sessionid', async (req, res) => {
+  try {
+    const { cookies } = req.body;
+    if (!cookies || typeof cookies !== 'string') {
+      return res.status(400).json({ error: 'Body must include { cookies: "sessionid=...; sessionid_sign=...; ..." }' });
+    }
+    const result = await service.bootstrapTradingViewSession(cookies);
+    res.json(result);
+  } catch (error) {
+    logger.error('TradingView session bootstrap error:', error);
+    res.status(400).json({ error: error.message });
+  }
+});
+
 // === Schwab Token Endpoint ===
 
 app.post('/schwab/token', async (req, res) => {

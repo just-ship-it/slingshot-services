@@ -73,9 +73,15 @@ async function login(username, password) {
 
 /**
  * GET tradingview.com with session cookies and parse the JWT from the HTML.
- * TradingView embeds the auth_token in inline script tags.
- * @param {Object} cookies - Session cookies from login()
- * @returns {Promise<string|null>} JWT token or null
+ * Also merges any Set-Cookie response cookies on top of the input cookies so
+ * callers can re-cache the latest sessionid (TV uses sliding session expiry —
+ * each GET refreshes the cookie's lifetime). This lets a scheduled refresher
+ * keep a single bootstrap-once session alive indefinitely.
+ *
+ * @param {Object} cookies - Session cookies from login() or cache
+ * @returns {Promise<{jwt: string|null, cookies: Object}>}
+ *   jwt: extracted JWT or null
+ *   cookies: input cookies merged with any Set-Cookie returned by TV
  */
 async function extractJwtFromPage(cookies) {
   const cookieStr = Object.entries(cookies)
@@ -88,6 +94,16 @@ async function extractJwtFromPage(cookies) {
       'Cookie': cookieStr
     }
   });
+
+  // Merge any Set-Cookie response on top of input cookies (sliding-session
+  // maintenance — TV often re-issues sessionid with a refreshed expiry).
+  const merged = { ...cookies };
+  const setCookies = response.headers.getSetCookie?.() || response.headers.raw?.()?.['set-cookie'] || [];
+  for (const c of setCookies) {
+    const [pair] = c.split(';');
+    const [name, ...rest] = pair.split('=');
+    if (name && rest.length) merged[name.trim()] = rest.join('=').trim();
+  }
 
   const html = await response.text();
 
@@ -102,11 +118,11 @@ async function extractJwtFromPage(cookies) {
   for (const pattern of patterns) {
     const match = html.match(pattern);
     if (match) {
-      return match[1];
+      return { jwt: match[1], cookies: merged };
     }
   }
 
-  return null;
+  return { jwt: null, cookies: merged };
 }
 
 /**
@@ -162,13 +178,13 @@ async function refreshToken(credentialsB64, redisUrl) {
   // Step 1: Login
   const cookies = await login(creds.username, creds.password);
 
-  // Step 2: Persist session cookies for future CAPTCHA-free refreshes
-  if (redisUrl) {
-    await cacheSessionCookies(redisUrl, cookies);
-  }
+  // Step 2: Extract JWT from authenticated page (also merges any refreshed cookies)
+  const { jwt, cookies: refreshedCookies } = await extractJwtFromPage(cookies);
 
-  // Step 3: Extract JWT from authenticated page
-  const jwt = await extractJwtFromPage(cookies);
+  // Step 3: Persist (refreshed) session cookies for future CAPTCHA-free refreshes
+  if (redisUrl) {
+    await cacheSessionCookies(redisUrl, refreshedCookies);
+  }
 
   if (!jwt) {
     throw new Error('Login succeeded but could not extract JWT from page HTML');
@@ -237,7 +253,15 @@ async function refreshJwtFromSession(redisUrl) {
 
   logger.info('Attempting JWT extraction from cached session cookies (no login)...');
 
-  const jwt = await extractJwtFromPage(cookies);
+  const { jwt, cookies: refreshedCookies } = await extractJwtFromPage(cookies);
+
+  // Re-cache refreshed cookies so sliding-session expiry keeps the session
+  // alive — without this, the cached cookies would have the original TTL and
+  // eventually expire even if TV keeps issuing fresh ones.
+  if (redisUrl && refreshedCookies && refreshedCookies.sessionid) {
+    await cacheSessionCookies(redisUrl, refreshedCookies);
+  }
+
   if (!jwt) {
     logger.warn('Cached session cookies did not yield a JWT - sessionid may be expired');
     return null;
@@ -327,6 +351,32 @@ async function getBestAvailableToken(envToken, redisUrl) {
   return null;
 }
 
+/**
+ * Parse a cookie string (e.g. "sessionid=abc; sessionid_sign=xyz; device_t=foo")
+ * into a map. Tolerant of devtools / document.cookie / curl -H formats. Also
+ * accepts a single line of "Set-Cookie:" form.
+ * @param {string} cookieStr
+ * @returns {Object} cookie map (lowercase-safe, preserves value casing)
+ */
+function parseCookieString(cookieStr) {
+  if (!cookieStr || typeof cookieStr !== 'string') return {};
+  const out = {};
+  // Strip leading "Cookie:" or "Set-Cookie:" prefixes if pasted from devtools.
+  const cleaned = cookieStr.replace(/^\s*(?:set-)?cookie\s*:\s*/i, '');
+  for (const pair of cleaned.split(/;\s*/)) {
+    if (!pair) continue;
+    const eq = pair.indexOf('=');
+    if (eq <= 0) continue;
+    const name = pair.slice(0, eq).trim();
+    const value = pair.slice(eq + 1).trim();
+    // Skip cookie attribute keywords that sometimes get pasted in alongside
+    // (Path/Domain/Expires/Max-Age/HttpOnly/Secure/SameSite).
+    if (/^(path|domain|expires|max-age|httponly|secure|samesite)$/i.test(name)) continue;
+    if (name) out[name] = value;
+  }
+  return out;
+}
+
 export {
   login,
   extractJwtFromPage,
@@ -339,5 +389,6 @@ export {
   getBestAvailableToken,
   cacheSessionCookies,
   getCachedSessionCookies,
+  parseCookieString,
   REDIS_TOKEN_KEY
 };

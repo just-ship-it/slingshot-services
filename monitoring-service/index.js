@@ -2088,6 +2088,24 @@ app.post('/api/tradingview/token', dashboardAuth, async (req, res) => {
   }
 });
 
+// TradingView session bootstrap (Option A) — proxy to data-service.
+// Accepts a sessionid cookie string from a separate TV browser session (NOT
+// the user's daily-driver tab — TV pins one JWT per sessionid). After
+// bootstrap, the data-service auto-refreshes the JWT every ~90 min without
+// further user action until the session lapses (TV uses sliding session
+// expiry, so this is rare in practice).
+app.post('/api/tv-auth/sessionid', dashboardAuth, async (req, res) => {
+  try {
+    logger.info('🔑 Proxying TV session bootstrap to data-service');
+    const response = await axios.post(`${DATA_SERVICE_URL}/tv-auth/sessionid`, req.body, { timeout: 20000 });
+    res.json(response.data);
+  } catch (error) {
+    const msg = error.response?.data?.error || error.message;
+    logger.error('Failed to bootstrap TV session:', msg);
+    res.status(error.response?.status || 500).json({ error: 'Session bootstrap failed', message: msg });
+  }
+});
+
 // Schwab manual token update - proxy to data-service
 app.post('/api/schwab/token', dashboardAuth, async (req, res) => {
   try {

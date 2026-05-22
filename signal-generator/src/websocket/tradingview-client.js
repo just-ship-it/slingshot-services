@@ -857,8 +857,17 @@ class TradingViewClient extends EventEmitter {
   }
 
   handleClose(code, reason) {
+    // Diagnostic context: capture session uptime, JWT TTL, and last-quote age
+    // at the moment of disconnect. These three numbers tell us why TV closed
+    // the session — JWT expiration vs server-side session-age cap vs idle
+    // timeout — so we can choose the right long-term mitigation rather than
+    // adding speculative reconnect-frequency knobs.
+    const uptimeMs = this.connectionEstablishedAt ? Date.now() - this.connectionEstablishedAt : null;
+    const jwtTtl = getTokenTTL(this.jwtToken);
+    const quoteAgeMs = this.lastQuoteReceived ? Date.now() - new Date(this.lastQuoteReceived).getTime() : null;
+    const heartbeatAgeMs = this.lastHeartbeat ? Date.now() - new Date(this.lastHeartbeat).getTime() : null;
     logger.error(`❌ TradingView WebSocket DISCONNECTED - Code: ${code}, Reason: ${reason || 'No reason provided'}`);
-    logger.error(`📊 Connection lost with ${this.chartSessions.size} chart sessions active`);
+    logger.error(`📊 Diagnostic: uptime=${uptimeMs != null ? Math.floor(uptimeMs/1000) + 's' : 'n/a'}  jwtTTL=${jwtTtl != null ? Math.floor(jwtTtl/60) + 'm' : 'n/a'}  quoteAge=${quoteAgeMs != null ? Math.floor(quoteAgeMs/1000) + 's' : 'n/a'}  heartbeatAge=${heartbeatAgeMs != null ? Math.floor(heartbeatAgeMs/1000) + 's' : 'n/a'}  chartSessions=${this.chartSessions.size}`);
     logger.error(`🔄 This is reconnection attempt #${this.reconnectAttempts}`);
 
     this.connected = false;
