@@ -158,14 +158,29 @@ class DataService {
         await this.createHistorySessions();
       });
 
-      logger.info('Connecting to Schwab streamer...');
-      await this.schwabStreamer.connect();
-      logger.info('Schwab streamer connected, starting subscriptions...');
-      await this.schwabStreamer.startStreaming();
-      logger.info(`Schwab streaming started: ${schwabFutureSymbols.length} futures + ${schwabEquitySymbols.length} equities`);
+      // Connect to Schwab — failures are NON-FATAL. If the Schwab refresh
+      // token is expired/revoked (common after 7+ days without activity),
+      // we log the error and continue startup. Otherwise data-service would
+      // crash-loop and the /schwab/token re-auth endpoint would be unreachable
+      // through the dashboard, leaving the operator wedged.
+      //
+      // Once /schwab/token is hit with a fresh OAuth code, the new tokens
+      // land in Redis and updateSchwabToken() retries the streamer wiring.
+      try {
+        logger.info('Connecting to Schwab streamer...');
+        await this.schwabStreamer.connect();
+        logger.info('Schwab streamer connected, starting subscriptions...');
+        await this.schwabStreamer.startStreaming();
+        logger.info(`Schwab streaming started: ${schwabFutureSymbols.length} futures + ${schwabEquitySymbols.length} equities`);
 
-      // Create 1h + 1D history sessions
-      await this.createHistorySessions();
+        // Create 1h + 1D history sessions
+        await this.createHistorySessions();
+      } catch (err) {
+        logger.error(`Schwab streamer init failed (continuing without quotes): ${err.message}`);
+        logger.error('→ Re-authenticate Schwab via the dashboard "Set Token" button to recover.');
+        // Leave this.schwabStreamer in place so updateSchwabToken() can drive
+        // a retry after fresh tokens land.
+      }
 
       // Initialize LT Monitors for both products
       // Use the client's current token (may have been refreshed during connect) rather than the startup token
@@ -1004,11 +1019,31 @@ class DataService {
       await this.initializeGexCalculators();
     }
 
+    // [2026-05-22] Also (re)start the Schwab streamer for OHLCV/quotes if it
+    // failed at startup due to expired tokens. With fresh tokens in Redis it
+    // should connect cleanly now.
+    let streamerOk = this.schwabStreamer?.isConnected() ?? false;
+    if (this.schwabStreamer && !streamerOk) {
+      try {
+        logger.info('Retrying Schwab streamer with fresh tokens...');
+        await this.schwabStreamer.connect();
+        await this.schwabStreamer.startStreaming();
+        await this.createHistorySessions();
+        streamerOk = true;
+        logger.info('✅ Schwab streamer up after token refresh');
+      } catch (err) {
+        logger.error(`Schwab streamer retry failed: ${err.message}`);
+      }
+    }
+
     const running = this.tradierExposureService?.isRunning || false;
     return {
       success: true,
-      message: running ? 'Schwab authenticated and service restarted' : 'Tokens stored but service failed to start — check logs',
-      running
+      message: running
+        ? `Schwab authenticated and services restarted (streamer: ${streamerOk ? 'up' : 'down'})`
+        : 'Tokens stored but service failed to start — check logs',
+      running,
+      streamerConnected: streamerOk,
     };
   }
 
