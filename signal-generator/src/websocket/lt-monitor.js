@@ -7,9 +7,20 @@ import { getCachedToken, getTokenTTL } from '../utils/tradingview-auth.js';
 const logger = createLogger('lt-monitor');
 
 // TradingView WebSocket endpoint
-// [2026-05-22] Switched data → prodata to match the paying-tier endpoint
-// the browser uses on Pro accounts. See tradingview-client.js for context.
-const TV_WEBSOCKET_URL = 'wss://prodata.tradingview.com/socket.io/websocket?from=chart%2FVEPYsueI%2F&type=chart';
+// [2026-05-22] prodata host + browser-fingerprint matching. See
+// tradingview-client.js for the HAR-derived rationale (auth=sessionid +
+// date=<ISO> query params, Accept-Language, Accept-Encoding headers).
+const TV_WEBSOCKET_BASE = 'wss://prodata.tradingview.com/socket.io/websocket';
+function buildTvWebsocketUrl() {
+  const now = new Date().toISOString().slice(0, 19);
+  const params = new URLSearchParams({
+    from: 'chart/VEPYsueI/',
+    date: now,
+    type: 'chart',
+    auth: 'sessionid',
+  });
+  return `${TV_WEBSOCKET_BASE}?${params.toString()}`;
+}
 const TV_ORIGIN = 'https://www.tradingview.com';
 
 // Liquidity Triggers indicator by DDScript
@@ -101,7 +112,8 @@ class LTMonitor extends EventEmitter {
     try {
       logger.info(`🔌 Connecting LT monitor to TradingView for ${this.symbol} on ${this.timeframe}m...`);
 
-      this.ws = new WebSocket(TV_WEBSOCKET_URL, {
+      const wsUrl = buildTvWebsocketUrl();
+      this.ws = new WebSocket(wsUrl, {
         headers: {
           'Connection': 'upgrade',
           'Host': 'prodata.tradingview.com',
@@ -109,7 +121,9 @@ class LTMonitor extends EventEmitter {
           'Cache-Control': 'no-cache',
           'Sec-WebSocket-Extensions': 'permessage-deflate; client_max_window_bits',
           'Sec-WebSocket-Version': '13',
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36',
+          'Accept-Language': 'en-US,en;q=0.9',
+          'Accept-Encoding': 'gzip, deflate, br, zstd',
           'Pragma': 'no-cache',
           'Upgrade': 'websocket'
         }

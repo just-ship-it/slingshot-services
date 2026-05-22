@@ -17,12 +17,24 @@ const DELAYED_QUOTE_THRESHOLD_S = 10 * 60; // 10 minutes lag = delayed
 const STARTUP_GRACE_PERIOD_MS = 30 * 1000; // Suppress lag-based delayed detection for 30s after connect
 
 // TradingView WebSocket endpoints (match working Python implementation)
-// [2026-05-22] Switched data → prodata. prodata.tradingview.com is the
-// paying-tier endpoint; the free-tier data.tradingview.com appears to apply
-// the ~65-75s "polling only" session cap that was cutting our WS. HAR
-// capture from a live browser tab on a Pro account showed prodata as the
-// active hostname, with the rest of the protocol identical to ours.
-const TV_WEBSOCKET_URL = 'wss://prodata.tradingview.com/socket.io/websocket?from=chart%2FVEPYsueI%2F&type=chart';
+// [2026-05-22] Switched data → prodata + browser-fingerprint matching. The
+// browser HAR showed three differences beyond hostname:
+//   1. URL query includes `auth=sessionid` (literal string "sessionid" as
+//      value — TV's "I'm a real browser using cookie-based auth" marker).
+//   2. URL query includes `date=<ISO>` with the current timestamp.
+//   3. Request headers include Accept-Language + Accept-Encoding.
+// Built lazily because `date` should reflect connect time.
+const TV_WEBSOCKET_BASE = 'wss://prodata.tradingview.com/socket.io/websocket';
+function buildTvWebsocketUrl() {
+  const now = new Date().toISOString().slice(0, 19); // 2026-05-22T12:11:12
+  const params = new URLSearchParams({
+    from: 'chart/VEPYsueI/',
+    date: now,
+    type: 'chart',
+    auth: 'sessionid',
+  });
+  return `${TV_WEBSOCKET_BASE}?${params.toString()}`;
+}
 const TV_ORIGIN = 'https://www.tradingview.com';
 
 // Liquidity Triggers indicator by DeepDiveStocks
@@ -155,11 +167,14 @@ class TradingViewClient extends EventEmitter {
 
   async connect() {
     try {      
-      logger.info(`🌐 Connecting to TradingView WebSocket: ${TV_WEBSOCKET_URL}`);
+      const wsUrl = buildTvWebsocketUrl();
+      logger.info(`🌐 Connecting to TradingView WebSocket: ${wsUrl}`);
       logger.info(`📋 Symbols to stream: [${this.symbols.join(', ')}]`);
 
-      // Create WebSocket connection with proper headers
-      this.ws = new WebSocket(TV_WEBSOCKET_URL, {
+      // Headers matched against a live tradingview.com Pro tab HAR (2026-05-22)
+      // — extra headers + Chrome 148 UA to mirror the browser fingerprint as
+      // closely as we can.
+      this.ws = new WebSocket(wsUrl, {
         headers: {
           'Connection': 'upgrade',
           'Host': 'prodata.tradingview.com',
@@ -167,7 +182,9 @@ class TradingViewClient extends EventEmitter {
           'Cache-Control': 'no-cache',
           'Sec-WebSocket-Extensions': 'permessage-deflate; client_max_window_bits',
           'Sec-WebSocket-Version': '13',
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36',
+          'Accept-Language': 'en-US,en;q=0.9',
+          'Accept-Encoding': 'gzip, deflate, br, zstd',
           'Pragma': 'no-cache',
           'Upgrade': 'websocket'
         }
