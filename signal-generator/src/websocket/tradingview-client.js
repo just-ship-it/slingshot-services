@@ -885,6 +885,16 @@ class TradingViewClient extends EventEmitter {
     if (this.isRefreshingToken) {
       logger.info(`🔄 Not auto-reconnecting - token refresh in progress will handle reconnection`);
     } else if (!this.isDisconnecting) {
+      // Publish a degraded event so the dashboard banner fires immediately —
+      // the banner clears either when transitionAuthState('authenticated') runs
+      // after delayed quotes recover, or via the explicit restored emit in
+      // scheduleReconnect()'s success path below. Code-1000 closes are
+      // typically TV-server-initiated session-lifetime cuts; users want to see
+      // them surfaced, not just hidden behind the auto-reconnect.
+      this.publishAuthEvent(
+        'tv_auth_degraded',
+        `TradingView WebSocket closed (code ${code}${reason ? `, reason: ${String(reason).slice(0, 100)}` : ''}) — reconnecting`
+      );
       this.scheduleReconnect();
     } else {
       logger.info(`✋ Not reconnecting - service is shutting down`);
@@ -906,6 +916,11 @@ class TradingViewClient extends EventEmitter {
         // Critical: Start streaming after reconnection
         await this.startStreaming();
         logger.info(`📊 TradingView streaming restarted after reconnection`);
+        // Clear the degraded banner — WS is back and streaming. Note: if the
+        // root cause was a stale JWT we may flip back to degraded a few
+        // seconds later via the delayed-quotes detector; that's the intended
+        // signal-of-distinct-failure-mode.
+        this.publishAuthEvent('tv_auth_restored', 'TradingView WebSocket reconnected');
         this.emit('reconnected');
       } catch (error) {
         logger.error(`❌ TradingView reconnection failed: ${error.message}`);
