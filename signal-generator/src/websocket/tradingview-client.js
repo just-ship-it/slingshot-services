@@ -17,7 +17,12 @@ const DELAYED_QUOTE_THRESHOLD_S = 10 * 60; // 10 minutes lag = delayed
 const STARTUP_GRACE_PERIOD_MS = 30 * 1000; // Suppress lag-based delayed detection for 30s after connect
 
 // TradingView WebSocket endpoints (match working Python implementation)
-const TV_WEBSOCKET_URL = 'wss://data.tradingview.com/socket.io/websocket?from=chart%2FVEPYsueI%2F&type=chart';
+// [2026-05-22] Switched data → prodata. prodata.tradingview.com is the
+// paying-tier endpoint; the free-tier data.tradingview.com appears to apply
+// the ~65-75s "polling only" session cap that was cutting our WS. HAR
+// capture from a live browser tab on a Pro account showed prodata as the
+// active hostname, with the rest of the protocol identical to ours.
+const TV_WEBSOCKET_URL = 'wss://prodata.tradingview.com/socket.io/websocket?from=chart%2FVEPYsueI%2F&type=chart';
 const TV_ORIGIN = 'https://www.tradingview.com';
 
 // Liquidity Triggers indicator by DeepDiveStocks
@@ -157,12 +162,12 @@ class TradingViewClient extends EventEmitter {
       this.ws = new WebSocket(TV_WEBSOCKET_URL, {
         headers: {
           'Connection': 'upgrade',
-          'Host': 'data.tradingview.com',
+          'Host': 'prodata.tradingview.com',
           'Origin': TV_ORIGIN,
           'Cache-Control': 'no-cache',
           'Sec-WebSocket-Extensions': 'permessage-deflate; client_max_window_bits',
           'Sec-WebSocket-Version': '13',
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.116 Safari/537.36',
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
           'Pragma': 'no-cache',
           'Upgrade': 'websocket'
         }
@@ -271,12 +276,18 @@ class TradingViewClient extends EventEmitter {
     if (this.pingInterval) clearInterval(this.pingInterval);
     this.pingCounter = 0;
     this.pingInterval = setInterval(() => {
-      if (!this.ws || this.ws.readyState !== WebSocket.OPEN) return;
+      if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
+        logger.warn(`Keepalive ping skipped — WS state: ${this.ws?.readyState ?? 'no-ws'}`);
+        return;
+      }
       this.pingCounter += 1;
       const body = `~h~${this.pingCounter}`;
       const frame = `~m~${body.length}~m~${body}`;
       try {
         this.ws.send(frame);
+        // Log every ping while we debug the polling-cap. Drop to every 5th
+        // (this.pingCounter % 5 === 0) or remove once uptime is stable.
+        logger.info(`📤 Keepalive ping #${this.pingCounter} sent (${frame.length} bytes)`);
       } catch (err) {
         logger.warn(`Keepalive ping send failed: ${err.message}`);
       }

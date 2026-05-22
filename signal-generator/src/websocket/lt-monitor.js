@@ -7,7 +7,9 @@ import { getCachedToken, getTokenTTL } from '../utils/tradingview-auth.js';
 const logger = createLogger('lt-monitor');
 
 // TradingView WebSocket endpoint
-const TV_WEBSOCKET_URL = 'wss://data.tradingview.com/socket.io/websocket?from=chart%2FVEPYsueI%2F&type=chart';
+// [2026-05-22] Switched data → prodata to match the paying-tier endpoint
+// the browser uses on Pro accounts. See tradingview-client.js for context.
+const TV_WEBSOCKET_URL = 'wss://prodata.tradingview.com/socket.io/websocket?from=chart%2FVEPYsueI%2F&type=chart';
 const TV_ORIGIN = 'https://www.tradingview.com';
 
 // Liquidity Triggers indicator by DDScript
@@ -102,12 +104,12 @@ class LTMonitor extends EventEmitter {
       this.ws = new WebSocket(TV_WEBSOCKET_URL, {
         headers: {
           'Connection': 'upgrade',
-          'Host': 'data.tradingview.com',
+          'Host': 'prodata.tradingview.com',
           'Origin': TV_ORIGIN,
           'Cache-Control': 'no-cache',
           'Sec-WebSocket-Extensions': 'permessage-deflate; client_max_window_bits',
           'Sec-WebSocket-Version': '13',
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.116 Safari/537.36',
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
           'Pragma': 'no-cache',
           'Upgrade': 'websocket'
         }
@@ -180,12 +182,18 @@ class LTMonitor extends EventEmitter {
     if (this.pingInterval) clearInterval(this.pingInterval);
     this.pingCounter = 0;
     this.pingInterval = setInterval(() => {
-      if (!this.ws || this.ws.readyState !== WebSocket.OPEN) return;
+      if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
+        logger.warn(`LT keepalive ping skipped — WS state: ${this.ws?.readyState ?? 'no-ws'}`);
+        return;
+      }
       this.pingCounter += 1;
       const body = `~h~${this.pingCounter}`;
       const frame = `~m~${body.length}~m~${body}`;
       try {
         this.ws.send(frame);
+        // Log every ping while we debug the polling-cap. Drop or throttle once
+        // uptime is stable.
+        logger.info(`📤 LT keepalive ping #${this.pingCounter} sent (${frame.length} bytes)`);
       } catch (err) {
         logger.warn(`LT monitor keepalive ping send failed: ${err.message}`);
       }
@@ -738,7 +746,7 @@ class LTMonitor extends EventEmitter {
 
       const response = await fetch(url, {
         headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
           'Accept': 'application/json'
         }
       });
