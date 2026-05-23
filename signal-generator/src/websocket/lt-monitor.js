@@ -1,10 +1,51 @@
 // Liquidity Trigger Monitor - Dedicated WebSocket for LT levels
 import WebSocket from 'ws';
 import EventEmitter from 'events';
+import https from 'https';
+import tls from 'tls';
 import { createLogger, messageBus } from '../../../shared/index.js';
 import { getCachedToken, getTokenTTL, getCachedSessionCookies } from '../utils/tradingview-auth.js';
 
 const logger = createLogger('lt-monitor');
+
+// [2026-05-22] TLS-tuned https.Agent for the lt-monitor WebSocket connection.
+// Node's default OpenSSL TLS produces a JA4 (`t13d5911h1_...`) that TV's
+// classifier rejects, applying a ~65-75s "polling only" session lifetime cap.
+// Forcing TLS 1.3 + h2 ALPN + Chrome-aligned cipher list + curve order
+// produces a JA4 (`t13d412h2_...`) that TV's classifier accepts — empirically
+// validated in `scratch/tls-test/test-tier1-node-tls.js` (35-min stable
+// connection through market close with zero disconnects).
+//
+// Gated by `LT_TLS_TUNED` env var; defaults ON. Set `LT_TLS_TUNED=false` to
+// fall back to Node default TLS (which will re-trigger the 75s polling cap).
+const TLS13_CIPHERSUITES = 'TLS_AES_128_GCM_SHA256:TLS_AES_256_GCM_SHA384:TLS_CHACHA20_POLY1305_SHA256';
+const TLS_TUNED_ENABLED = process.env.LT_TLS_TUNED?.toLowerCase() !== 'false';
+
+class ChromeTunedAgent extends https.Agent {
+  constructor() { super({ keepAlive: false }); }
+  createConnection(options, callback) {
+    logger.info(`🔧 ChromeTunedAgent.createConnection called for ${options.host}:${options.port}`);
+    const sock = tls.connect({
+      host: options.host,
+      port: options.port,
+      servername: options.servername || options.host,
+      ALPNProtocols: ['h2', 'http/1.1'],
+      minVersion: 'TLSv1.3',
+      maxVersion: 'TLSv1.3',
+      ciphers: TLS13_CIPHERSUITES,
+      ecdhCurve: 'X25519:P-256:P-384',
+      requestOCSP: true,
+    });
+    sock.once('secureConnect', () => {
+      logger.info(`🔧 TLS handshake done: protocol=${sock.getProtocol()} cipher=${sock.getCipher()?.name} ALPN=${sock.alpnProtocol}`);
+    });
+    if (callback) {
+      sock.once('secureConnect', () => callback(null, sock));
+      sock.once('error', (e) => callback(e));
+    }
+    return sock;
+  }
+}
 
 // TradingView WebSocket endpoint
 // [2026-05-22] prodata host + browser-fingerprint matching. See
@@ -142,7 +183,17 @@ class LTMonitor extends EventEmitter {
       };
       if (cookieHeader) headers['Cookie'] = cookieHeader;
 
-      this.ws = new WebSocket(wsUrl, { headers });
+      // [2026-05-22] Use the TLS-tuned Agent so Node's TLS handshake produces
+      // a Chrome-aligned JA4 that TV's classifier accepts. Without this the
+      // connection gets the ~65-75s polling-cap cut.
+      const wsOptions = { headers };
+      if (TLS_TUNED_ENABLED) {
+        wsOptions.agent = new ChromeTunedAgent();
+        logger.info('🔐 LT monitor using TLS-tuned Agent (LT_TLS_TUNED=true)');
+      } else {
+        logger.warn('⚠️ LT monitor using Node default TLS (LT_TLS_TUNED=false) — expect ~75s disconnects');
+      }
+      this.ws = new WebSocket(wsUrl, wsOptions);
 
       this.ws.on('open', () => this.handleOpen());
       this.ws.on('message', (data) => {
@@ -220,9 +271,6 @@ class LTMonitor extends EventEmitter {
       const frame = `~m~${body.length}~m~${body}`;
       try {
         this.ws.send(frame);
-        // Log every ping while we debug the polling-cap. Drop or throttle once
-        // uptime is stable.
-        logger.info(`📤 LT keepalive ping #${this.pingCounter} sent (${frame.length} bytes)`);
       } catch (err) {
         logger.warn(`LT monitor keepalive ping send failed: ${err.message}`);
       }
@@ -707,23 +755,34 @@ class LTMonitor extends EventEmitter {
   }
 
   async updateToken(newToken) {
-    logger.info('LT monitor received new JWT token - reconnecting...');
     this.jwtToken = newToken;
 
-    // Reconnect with new token
+    // [2026-05-22] Prefer in-place token refresh over reconnect. TV's
+    // protocol accepts a new `set_auth_token` message on the existing
+    // connection — exactly what the browser does. Forcing a close+reconnect
+    // here used to trigger 3 rapid reconnects at data-service startup (the
+    // `scheduleSessionRefresh` 5s-after-startup tick → updateToken cascade),
+    // which TV's classifier appears to flag as "polling client" and apply
+    // the ~75s session-lifetime cap to. Sending set_auth_token on the live
+    // WS avoids the cascade entirely.
+    if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+      try {
+        this.sendMessage('set_auth_token', [newToken]);
+        logger.info('LT monitor JWT updated in-place (set_auth_token on live WS)');
+        return;
+      } catch (err) {
+        logger.warn(`In-place token update failed (${err.message}) — falling back to reconnect`);
+      }
+    }
+
+    // Fallback: full reconnect (only if WS isn't open).
+    logger.info('LT monitor token update requires reconnect (WS not open)');
     const wasDisconnecting = this.isDisconnecting;
     this.isDisconnecting = true;
-
-    if (this.ws) {
-      this.ws.close();
-      this.ws = null;
-    }
+    if (this.ws) { this.ws.close(); this.ws = null; }
     this.connected = false;
-    // studyAdded/lsStudyAdded are now reset in handleOpen()
-
     this.isDisconnecting = wasDisconnecting;
     this.reconnectAttempts = 0;
-
     try {
       await this.connect();
       await this.startMonitoring();

@@ -382,12 +382,19 @@ export class TradovateConnector extends BaseConnector {
       } : undefined
     };
     const res = await this.client.placeBracketOrder(orderData);
+    // Tradovate's /order/placeOSO returns {orderId, oso1Id, oso2Id}; older
+    // wrappers exposed bracket1OrderId/bracket2OrderId. Accept either so the
+    // stop/target child orderIds get linked — without them, snapshot lookups
+    // can't classify bracket legs as role='stop'/'target' and the orchestrator
+    // ends up restoring all 3 legs as separate UNATTRIBUTED pending entries.
+    const stopId   = res.bracket1OrderId ?? res.oso1Id ?? null;
+    const targetId = res.bracket2OrderId ?? res.oso2Id ?? null;
     return {
       orderId: res.orderId,
       strategyId: res.orderId,
       entryOrderId: res.orderId,
-      stopOrderId: res.bracket1OrderId || null,
-      targetOrderId: res.bracket2OrderId || null
+      stopOrderId: stopId,
+      targetOrderId: targetId
     };
   }
 

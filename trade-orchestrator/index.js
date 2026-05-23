@@ -28,6 +28,7 @@ import { createRoutesStore, ROUTES_CHANNEL } from '../shared/utils/routes-store.
 import { evaluateCrossStrategyRules, evaluateStrategyAlerts } from './cross-strategy-filter.js';
 import { createExitRuleManager, captureRuleFromSignal } from './src/exit-rule-manager.js';
 import { shouldCancelOnPreFillExtreme } from './src/pre-fill-cancel.js';
+import { reconcileOrdersSnapshot, reconcilePositionSnapshot } from './src/snapshot-reconciler.js';
 
 const SERVICE_NAME = 'trade-orchestrator';
 const logger = createLogger(SERVICE_NAME);
@@ -673,56 +674,32 @@ async function handleOrdersSnapshot(msg) {
   const { accountId, orders } = msg || {};
   if (!accountId || !Array.isArray(orders)) return;
 
-  // Wipe all known pending entries for this account, then rebuild from snapshot.
-  for (const key of [...state.pendingOrders.keys()]) {
-    if (key.startsWith(`${accountId}|`)) state.pendingOrders.delete(key);
-  }
-
-  let restored = 0;
-  for (const o of orders) {
-    if (!o.symbol) continue;
-    // Only ENTRY orders populate pendingOrders — stop/target are bracket children.
-    if (o.role === 'stop' || o.role === 'target') continue;
-    const strategy = o.strategy || 'UNATTRIBUTED';
-    const direction = o.action === 'Buy' ? 'long' : 'short';
-    // If there's already an open position for this account+symbol, this is
-    // likely a bracket child (stop/target), not a new entry order.
-    const hasPosition = [...state.openPositions.values()].some(
-      p => p.accountId === accountId && p.symbol === o.symbol
-    );
-    if (hasPosition) continue;
-    state.pendingOrders.set(pendingKey(accountId, strategy, o.symbol), {
-      accountId, strategy, symbol: o.symbol,
-      direction,
-      signalId: o.signalId || null,
-      orderId: o.orderId,
-      requestedAt: Date.now(),
-      source: 'broker_snapshot'
-    });
-    restored++;
-  }
-  logger.info(`orders.snapshot from ${accountId}: ingested ${orders.length} orders, ${restored} pending entries restored`);
+  // Reconcile: merge broker reality with local state instead of wipe-and-rebuild.
+  // Preserves strategy attribution, timeoutCandles, maxHoldBars, exitRules, and
+  // requestedAt for known pending entries. See snapshot-reconciler.js.
+  const { restored, preserved, dropped, orphaned } = reconcileOrdersSnapshot(
+    state.pendingOrders, accountId, orders, state.openPositions, pendingKey
+  );
+  logger.info(
+    `orders.snapshot from ${accountId}: ${orders.length} broker orders → ` +
+    `${preserved} preserved, ${orphaned} orphaned, ${dropped} dropped (restored=${restored})`
+  );
 }
 
 async function handlePositionSnapshot(msg) {
   const { accountId, positions } = msg || {};
   if (!accountId || !Array.isArray(positions)) return;
 
-  for (const key of [...state.openPositions.keys()]) {
-    if (key.startsWith(`${accountId}|`)) state.openPositions.delete(key);
-  }
-
-  for (const p of positions) {
-    if (!p.symbol || !p.netPos) continue;
-    const strategy = p.strategy || 'UNATTRIBUTED';
-    const side = p.netPos > 0 ? 'long' : 'short';
-    state.openPositions.set(posKey(accountId, strategy, p.symbol), {
-      accountId, strategy, symbol: p.symbol, side, netPos: p.netPos,
-      entryPrice: p.entryPrice, signalId: null,
-      openedAt: new Date().toISOString()
-    });
-  }
-  logger.info(`position.snapshot from ${accountId}: ingested ${positions.length} positions`);
+  // Reconcile: same merge semantics as orders. Preserves local strategy
+  // attribution + maxHoldBars + exitRules + signalId when broker confirms
+  // the same (account, symbol, side-sign) position.
+  const { preserved, dropped, orphaned } = reconcilePositionSnapshot(
+    state.openPositions, accountId, positions, posKey
+  );
+  logger.info(
+    `position.snapshot from ${accountId}: ${positions.length} broker positions → ` +
+    `${preserved} preserved, ${orphaned} orphaned, ${dropped} dropped`
+  );
   await checkpointOpenPositions(stores.redis);
 }
 

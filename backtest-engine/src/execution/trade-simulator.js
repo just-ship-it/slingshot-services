@@ -40,6 +40,12 @@ export class TradeSimulator {
     // null = disabled.
     this.eodCutoffEt = config.eodCutoffEt || null;
 
+    // FIFO-conservative limit fill mode. When true, require strict trade-through
+    // (low < entry / high > entry) instead of touch=fill — models real queue
+    // position where a wick that exactly tags your level usually means orders
+    // ahead in the book absorbed available liquidity.
+    this.strictLimitFill = config.strictLimitFill ?? false;
+
     // Debug mode for detailed trade logging
     this.debugMode = config.debugMode || config.verbose || false;
 
@@ -439,7 +445,7 @@ export class TradeSimulator {
         // invalidated and we never enter.
         if (trade.signal?.cancelOnPreFillExtreme) {
           const isBuy = trade.side === 'buy' || trade.side === 'long';
-          const wouldFill = isBuy ? (bar.low <= trade.entryPrice) : (bar.high >= trade.entryPrice);
+          const wouldFill = this._limitFillReached(trade, bar, isBuy);
           if (!wouldFill) {
             const targetHit = isBuy ? (bar.high >= trade.takeProfit) : (bar.low <= trade.takeProfit);
             const stopHit   = isBuy ? (bar.low  <= trade.stopLoss)  : (bar.high >= trade.stopLoss);
@@ -792,7 +798,7 @@ export class TradeSimulator {
       // Structural pre-fill invalidation (1m fallback when no 1s data).
       if (trade.signal?.cancelOnPreFillExtreme) {
         const isBuy = trade.side === 'buy' || trade.side === 'long';
-        const wouldFill = isBuy ? (candle.low <= trade.entryPrice) : (candle.high >= trade.entryPrice);
+        const wouldFill = this._limitFillReached(trade, candle, isBuy);
         if (!wouldFill) {
           const targetHit = isBuy ? (candle.high >= trade.takeProfit) : (candle.low <= trade.takeProfit);
           const stopHit   = isBuy ? (candle.low  <= trade.stopLoss)  : (candle.high >= trade.stopLoss);
@@ -1052,45 +1058,34 @@ export class TradeSimulator {
     }
 
     if (trade.signal.action === 'place_limit') {
-      // Limit order - check if price reached our level
-      if (isBuyOrder) {
-        // Buy limit: fill if market went at or below our limit price
-        if (candle.low <= trade.entryPrice) {
-          // Check if price gapped through (opened below our limit)
-          // In this case, we get filled at the open (price improvement)
-          if (candle.open <= trade.entryPrice) {
-            return {
-              filled: true,
-              fillPrice: roundTo(candle.open)  // Price improvement - filled at open
-            };
-          }
-          // Normal fill at limit price
-          return {
-            filled: true,
-            fillPrice: roundTo(trade.entryPrice)
-          };
+      // Limit order - check if price reached our level. In strictLimitFill mode,
+      // require trade-through (low<entry / high>entry); else touch=fill.
+      if (this._limitFillReached(trade, candle, isBuyOrder)) {
+        // Gap-through (open already past the limit) → fill at open (price improvement).
+        // This branch fires regardless of strictLimitFill: an open beyond the level
+        // means a fill is realistic.
+        const gappedThrough = isBuyOrder ? (candle.open <= trade.entryPrice) : (candle.open >= trade.entryPrice);
+        if (gappedThrough) {
+          return { filled: true, fillPrice: roundTo(candle.open) };
         }
-      } else {
-        // Sell limit: fill if market went at or above our limit price
-        if (candle.high >= trade.entryPrice) {
-          // Check if price gapped through (opened above our limit)
-          // In this case, we get filled at the open (price improvement)
-          if (candle.open >= trade.entryPrice) {
-            return {
-              filled: true,
-              fillPrice: roundTo(candle.open)  // Price improvement - filled at open
-            };
-          }
-          // Normal fill at limit price
-          return {
-            filled: true,
-            fillPrice: roundTo(trade.entryPrice)
-          };
-        }
+        return { filled: true, fillPrice: roundTo(trade.entryPrice) };
       }
     }
 
     return { filled: false, fillPrice: null };
+  }
+
+  /**
+   * Shared limit-fill predicate. Used by checkOrderFill AND the pre-fill
+   * invalidation check (which asks "did we NOT yet fill on this bar?").
+   * Both must use the same semantics or the lstb cancel logic disagrees with
+   * the engine's fill logic.
+   */
+  _limitFillReached(trade, candle, isBuyOrder) {
+    if (this.strictLimitFill) {
+      return isBuyOrder ? (candle.low < trade.entryPrice) : (candle.high > trade.entryPrice);
+    }
+    return isBuyOrder ? (candle.low <= trade.entryPrice) : (candle.high >= trade.entryPrice);
   }
 
   /**

@@ -247,6 +247,12 @@ export class CLI {
         description: 'Force-flat any open position at this ET wall-clock time (HH:MM) on weekdays. Models day-trade-margin liquidation (e.g. "16:45").'
       })
 
+      .option('strict-fill', {
+        type: 'boolean',
+        default: false,
+        description: 'Limit orders require strict trade-through (low<entry / high>entry) instead of touch=fill. FIFO-conservative model for queue-position realism.'
+      })
+
       .option('glx-preset', {
         type: 'string',
         choices: ['w12', 'v3', 'v3-max', 'v3-balanced', 'v3-low-dd'],
@@ -2766,6 +2772,7 @@ export class CLI {
       s1VwapFile: args['s1-vwap-file'] || args.s1VwapFile || null, // s1 VWAP feature CSV for gex-touch-confirm
       ls1mFile: args['ls-1m-file'] || args.ls1mFile || null, // 1m LS flip CSV path for ls-flip-trigger-bar
       eodCutoffEt: args.eodCutoffEt || null, // ET cutoff (HH:MM) for day-trade-margin liquidation
+      strictLimitFill: args.strictFill ?? false, // require trade-through (low<entry / high>entry) for limit fills
       useCBBO: args.useCbbo || args.strategy === 'cbbo-lt-volatility' || args.strategy === 'cbbo-lt',
       cbboDataDir: args.cbboDataDir || null, // null means use default: dataDir/cbbo-1m/qqq
       outputFiles: {

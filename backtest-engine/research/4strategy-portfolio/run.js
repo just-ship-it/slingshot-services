@@ -26,11 +26,15 @@ fs.mkdirSync(OUT_DIR, { recursive: true });
 // ── Strategy registry ─────────────────────────────────────────────────────
 // Priority is consulted only when two strategies signal at the SAME ms (rare).
 // Higher live Sharpe → wins ties. Reverse-priority numerically: lower = better.
+// `--strict-fill` swaps the JSON paths to the strict-fill backtest variants
+// (low<entry / high>entry trade-through model — FIFO-conservative).
+const STRICT = process.argv.includes('--strict-fill');
+const suf = STRICT ? '-strict-fill' : '';
 const STRATEGIES = [
-  { key: 'lstb',           label: 'LS_FLIP_TRIGGER_BAR', priority: 1, file: 'data/gold-standard/ls-flip-trigger-bar-v3.json' },
-  { key: 'gex-lt-3m',      label: 'GEX_LT_3M_CROSSOVER', priority: 2, file: 'data/gold-standard/gex-lt-3m-crossover-v3.json' },
-  { key: 'gex-flip-ivpct', label: 'GEX_FLIP_IVPCT',      priority: 3, file: 'data/gold-standard/gex-flip-ivpct-v2.json' },
-  { key: 'gex-level-fade', label: 'GEX_LEVEL_FADE',      priority: 4, file: 'data/gold-standard/gex-level-fade-v2.json' },
+  { key: 'lstb',           label: 'LS_FLIP_TRIGGER_BAR', priority: 1, file: `data/gold-standard/ls-flip-trigger-bar-v3${suf}.json` },
+  { key: 'gex-lt-3m',      label: 'GEX_LT_3M_CROSSOVER', priority: 2, file: `data/gold-standard/gex-lt-3m-crossover-v3${suf}.json` },
+  { key: 'gex-flip-ivpct', label: 'GEX_FLIP_IVPCT',      priority: 3, file: `data/gold-standard/gex-flip-ivpct-v2${suf}.json` },
+  { key: 'gex-level-fade', label: 'GEX_LEVEL_FADE',      priority: 4, file: `data/gold-standard/gex-level-fade-v2${suf}.json` },
 ];
 
 const POINT_VALUE_NQ = 20;

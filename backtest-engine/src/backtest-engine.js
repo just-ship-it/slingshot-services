@@ -110,6 +110,7 @@ export class BacktestEngine {
       forceCloseAtMarketClose: config.strategyParams?.forceCloseAtMarketClose ?? this.defaultConfig.backtesting.forceCloseAtMarketClose,
       marketCloseTimeUTC: config.strategyParams?.marketCloseTimeUTC ?? this.defaultConfig.backtesting.marketCloseTimeUTC,
       eodCutoffEt: config.eodCutoffEt ?? config.strategyParams?.eodCutoffEt ?? null,
+      strictLimitFill: config.strictLimitFill ?? false,
       verbose: config.verbose,
       debugMode: config.debugMode,
       // Hybrid trailing stop configuration

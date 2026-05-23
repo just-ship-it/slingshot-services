@@ -324,9 +324,6 @@ class TradingViewClient extends EventEmitter {
       const frame = `~m~${body.length}~m~${body}`;
       try {
         this.ws.send(frame);
-        // Log every ping while we debug the polling-cap. Drop to every 5th
-        // (this.pingCounter % 5 === 0) or remove once uptime is stable.
-        logger.info(`📤 Keepalive ping #${this.pingCounter} sent (${frame.length} bytes)`);
       } catch (err) {
         logger.warn(`Keepalive ping send failed: ${err.message}`);
       }
