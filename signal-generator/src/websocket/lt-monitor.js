@@ -1,51 +1,10 @@
 // Liquidity Trigger Monitor - Dedicated WebSocket for LT levels
 import WebSocket from 'ws';
 import EventEmitter from 'events';
-import https from 'https';
-import tls from 'tls';
 import { createLogger, messageBus } from '../../../shared/index.js';
 import { getCachedToken, getTokenTTL, getCachedSessionCookies } from '../utils/tradingview-auth.js';
 
 const logger = createLogger('lt-monitor');
-
-// [2026-05-22] TLS-tuned https.Agent for the lt-monitor WebSocket connection.
-// Node's default OpenSSL TLS produces a JA4 (`t13d5911h1_...`) that TV's
-// classifier rejects, applying a ~65-75s "polling only" session lifetime cap.
-// Forcing TLS 1.3 + h2 ALPN + Chrome-aligned cipher list + curve order
-// produces a JA4 (`t13d412h2_...`) that TV's classifier accepts — empirically
-// validated in `scratch/tls-test/test-tier1-node-tls.js` (35-min stable
-// connection through market close with zero disconnects).
-//
-// Gated by `LT_TLS_TUNED` env var; defaults ON. Set `LT_TLS_TUNED=false` to
-// fall back to Node default TLS (which will re-trigger the 75s polling cap).
-const TLS13_CIPHERSUITES = 'TLS_AES_128_GCM_SHA256:TLS_AES_256_GCM_SHA384:TLS_CHACHA20_POLY1305_SHA256';
-const TLS_TUNED_ENABLED = process.env.LT_TLS_TUNED?.toLowerCase() !== 'false';
-
-class ChromeTunedAgent extends https.Agent {
-  constructor() { super({ keepAlive: false }); }
-  createConnection(options, callback) {
-    logger.info(`🔧 ChromeTunedAgent.createConnection called for ${options.host}:${options.port}`);
-    const sock = tls.connect({
-      host: options.host,
-      port: options.port,
-      servername: options.servername || options.host,
-      ALPNProtocols: ['h2', 'http/1.1'],
-      minVersion: 'TLSv1.3',
-      maxVersion: 'TLSv1.3',
-      ciphers: TLS13_CIPHERSUITES,
-      ecdhCurve: 'X25519:P-256:P-384',
-      requestOCSP: true,
-    });
-    sock.once('secureConnect', () => {
-      logger.info(`🔧 TLS handshake done: protocol=${sock.getProtocol()} cipher=${sock.getCipher()?.name} ALPN=${sock.alpnProtocol}`);
-    });
-    if (callback) {
-      sock.once('secureConnect', () => callback(null, sock));
-      sock.once('error', (e) => callback(e));
-    }
-    return sock;
-  }
-}
 
 // TradingView WebSocket endpoint
 // [2026-05-22] prodata host + browser-fingerprint matching. See
@@ -183,17 +142,7 @@ class LTMonitor extends EventEmitter {
       };
       if (cookieHeader) headers['Cookie'] = cookieHeader;
 
-      // [2026-05-22] Use the TLS-tuned Agent so Node's TLS handshake produces
-      // a Chrome-aligned JA4 that TV's classifier accepts. Without this the
-      // connection gets the ~65-75s polling-cap cut.
-      const wsOptions = { headers };
-      if (TLS_TUNED_ENABLED) {
-        wsOptions.agent = new ChromeTunedAgent();
-        logger.info('🔐 LT monitor using TLS-tuned Agent (LT_TLS_TUNED=true)');
-      } else {
-        logger.warn('⚠️ LT monitor using Node default TLS (LT_TLS_TUNED=false) — expect ~75s disconnects');
-      }
-      this.ws = new WebSocket(wsUrl, wsOptions);
+      this.ws = new WebSocket(wsUrl, { headers });
 
       this.ws.on('open', () => this.handleOpen());
       this.ws.on('message', (data) => {
