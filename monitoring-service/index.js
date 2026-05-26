@@ -1639,37 +1639,102 @@ app.get('/api/account-tracker', dashboardAuth, async (req, res) => {
       return res.status(400).json({ error: 'startBalance must be a positive number' });
     }
 
-    // ── Load live data from existing pnl Redis keys ──────────────────────
-    const dailyRaw = await messageBus.publisher.keys('pnl:daily:*');
-    const dailyVals = await Promise.all(dailyRaw.map(k => messageBus.publisher.get(k)));
-    let daily = dailyVals
-      .filter(Boolean)
-      .map(v => JSON.parse(v))
-      .filter(d => d.date >= startDate)
-      .sort((a, b) => a.date.localeCompare(b.date));
-
+    // ── Source live trades. Two paths: ───────────────────────────────────
+    // (1) accountId provided → use trade:metrics:<accountId>:* (per-account,
+    //     includes strategy + MAE, populated by orchestrator on every close)
+    // (2) no accountId → fall back to aggregated pnl:daily / pnl:trades
+    //     (sum across all accounts — current behavior)
+    const accountId = req.query.accountId || null;
+    const startMs = new Date(startDate).getTime();
     let actualTrajectory = [];
-    let runningBalance = startBalance;
-    for (const d of daily) {
-      runningBalance += d.netPnl || 0;
-      actualTrajectory.push({ date: d.date, balance: Math.round(runningBalance * 100) / 100, dailyPnl: d.netPnl });
+    let daily = [];
+    let perAccountTradeRecords = [];   // populated when accountId is set
+    let dataSource = 'aggregated';
+
+    if (accountId) {
+      dataSource = 'per-account (trade.metrics)';
+      // Scan all trade.metrics keys for this account.
+      const accountKeys = [];
+      for await (const k of messageBus.publisher.scanIterator({
+        MATCH: `trade:metrics:${accountId}:*`, COUNT: 200,
+      })) {
+        accountKeys.push(k);
+      }
+      const accountVals = accountKeys.length
+        ? await Promise.all(accountKeys.map(k => messageBus.publisher.get(k)))
+        : [];
+      const records = accountVals
+        .filter(Boolean)
+        .map(v => { try { return JSON.parse(v); } catch { return null; } })
+        .filter(Boolean)
+        .filter(r => Number.isFinite(r.realizedPnl) && r.closedAt)
+        .filter(r => (typeof r.closedAt === 'number' ? r.closedAt : Date.parse(r.closedAt)) >= startMs)
+        .sort((a, b) => {
+          const ax = typeof a.closedAt === 'number' ? a.closedAt : Date.parse(a.closedAt);
+          const bx = typeof b.closedAt === 'number' ? b.closedAt : Date.parse(b.closedAt);
+          return ax - bx;
+        });
+
+      // Bucket by ET date for the trajectory.
+      const dailyMap = new Map();
+      for (const r of records) {
+        const closedMs = typeof r.closedAt === 'number' ? r.closedAt : Date.parse(r.closedAt);
+        const dateKey = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/New_York', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date(closedMs));
+        dailyMap.set(dateKey, (dailyMap.get(dateKey) || 0) + r.realizedPnl);
+      }
+      let running = startBalance;
+      for (const [date, pnl] of [...dailyMap.entries()].sort()) {
+        running += pnl;
+        actualTrajectory.push({ date, balance: Math.round(running * 100) / 100, dailyPnl: pnl });
+        daily.push({ date, netPnl: pnl });
+      }
+      perAccountTradeRecords = records;
+    } else {
+      // Aggregated path (no account filter — sums all accounts).
+      const dailyRaw = await messageBus.publisher.keys('pnl:daily:*');
+      const dailyVals = await Promise.all(dailyRaw.map(k => messageBus.publisher.get(k)));
+      daily = dailyVals
+        .filter(Boolean)
+        .map(v => JSON.parse(v))
+        .filter(d => d.date >= startDate)
+        .sort((a, b) => a.date.localeCompare(b.date));
+      let runningBalance = startBalance;
+      for (const d of daily) {
+        runningBalance += d.netPnl || 0;
+        actualTrajectory.push({ date: d.date, balance: Math.round(runningBalance * 100) / 100, dailyPnl: d.netPnl });
+      }
     }
 
     // ── Live trades (for MAE comparison + strategy attribution) ──────────
-    const tradesRaw = await messageBus.publisher.hGetAll('pnl:trades');
-    const allTrades = Object.values(tradesRaw || {}).map(j => {
-      try { return JSON.parse(j); } catch { return null; }
-    }).filter(Boolean);
-    const liveTradesInWindow = allTrades.filter(t => (t.tradeDate || t.entryTime || '').slice(0, 10) >= startDate);
+    // If accountId was provided, we already have full per-account trade
+    // records (with strategy + MAE) — skip the pnl:trades aggregation path.
+    let liveTradesInWindow = [];
+    if (accountId) {
+      liveTradesInWindow = perAccountTradeRecords.map(r => ({
+        id: r.signalId || `${r.accountId}-${r.openedAt}-${r.symbol}`,
+        strategy: r.strategy,
+        side: r.side,
+        symbol: r.symbol,
+        entryTime: typeof r.openedAt === 'number' ? new Date(r.openedAt).toISOString() : r.openedAtIso || r.openedAt,
+        tradeDate: new Intl.DateTimeFormat('en-CA', { timeZone: 'America/New_York', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date(typeof r.closedAt === 'number' ? r.closedAt : Date.parse(r.closedAt))),
+        netPnl: r.realizedPnl,
+        maePoints: r.maePoints,
+        mfePoints: r.mfePoints,
+        accountId: r.accountId,
+      }));
+    } else {
+      const tradesRaw = await messageBus.publisher.hGetAll('pnl:trades');
+      const allTrades = Object.values(tradesRaw || {}).map(j => {
+        try { return JSON.parse(j); } catch { return null; }
+      }).filter(Boolean);
+      liveTradesInWindow = allTrades.filter(t => (t.tradeDate || t.entryTime || '').slice(0, 10) >= startDate);
+    }
 
     // Enrich each trade with strategy + maePoints + mfePoints from trade.metrics
-    // events (keyed by accountId + openedAt-minute + symbol). Tradovate fills
-    // don't carry these fields; orchestrator publishes them on position close
-    // and we persisted under trade:metrics:<accountId>:<minute>:<symbol>.
-    // Match falls back to looking up by symbol alone within ±2-minute window
-    // if the strict key misses (handles clock-skew between orchestrator and
-    // broker fill timestamps).
-    for (const t of liveTradesInWindow) {
+    // events (keyed by accountId + openedAt-minute + symbol). Skipped when
+    // accountId is set because per-account trade records already carry the
+    // enrichment natively.
+    if (!accountId) for (const t of liveTradesInWindow) {
       if (t.strategy && t.maePoints != null) continue;  // already enriched
       const entryMs = Date.parse(t.entryTime);
       if (!Number.isFinite(entryMs)) continue;
@@ -1750,6 +1815,8 @@ app.get('/api/account-tracker', dashboardAuth, async (req, res) => {
     res.json({
       startDate,
       startBalance,
+      accountId,                             // null = aggregated across all accounts
+      dataSource,                            // 'per-account (trade.metrics)' | 'aggregated'
       asOf: asOf.toISOString(),
       currentWeek: fracWeek,
       currentBalance,
