@@ -1471,7 +1471,11 @@ app.get('/api/pnl/summary', dashboardAuth, async (req, res) => {
 // Regenerate projection via:
 //   cd backtest-engine && python3 research/no-trade-day/precompute-projection.py
 
-const PROJECTION_PATH = path.join(__dirname, 'data', 'account-projection.json');
+// Lives in monitoring-service/projection/ rather than data/ — data/ is in
+// .gitignore (runtime cache dir), and this JSON needs to deploy with the
+// service. Regenerate via:
+//   cd backtest-engine && python3 research/no-trade-day/precompute-projection.py
+const PROJECTION_PATH = path.join(__dirname, 'projection', 'account-projection.json');
 let _projectionCache = null;
 let _projectionMtime = 0;
 
@@ -1485,6 +1489,97 @@ function loadProjection() {
   } catch (err) {
     return null;
   }
+}
+
+// ─── On-demand bootstrap of projection bands ──────────────────────────────
+// Recomputes p10/p25/p50/p75/p90 cumulative-balance bands for any starting
+// balance by resampling the daily-PnL kernel through the scaling ladder.
+// Bootstrap is deterministic (seed=42) so identical inputs yield identical
+// bands across calls.
+//
+// Speed: ~3-15 seconds depending on bootstrap_n + weeks. We don't cache —
+// the user sees a spinner during compute and the freshness is worth it.
+
+// Seedable PRNG (mulberry32) — std deterministic 32-bit RNG.
+function mulberry32(seed) {
+  let s = seed >>> 0;
+  return function() {
+    s = (s + 0x6D2B79F5) >>> 0;
+    let t = s;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function contractsForBalance(ladder, balance) {
+  for (let i = ladder.length - 1; i >= 0; i--) {
+    if (balance >= ladder[i].min_balance) return { mnq: ladder[i].n_mnq, nq: ladder[i].n_nq };
+  }
+  return { mnq: 1, nq: 0 };
+}
+
+function percentile(sortedVals, p) {
+  if (sortedVals.length === 0) return 0;
+  const k = (sortedVals.length - 1) * (p / 100);
+  const f = Math.floor(k);
+  const c = Math.min(f + 1, sortedVals.length - 1);
+  if (f === c) return sortedVals[f];
+  return sortedVals[f] + (sortedVals[c] - sortedVals[f]) * (k - f);
+}
+
+// Runs the bootstrap with the given startBalance. Reuses the kernel + ladder
+// + bootstrap_n + weeks + commission + tick values from the projection JSON.
+function recomputeBands(projection, startBalance, bootstrapN = null) {
+  const kernel = projection.daily_pnl_kernel;
+  if (!kernel || kernel.length === 0) {
+    throw new Error('daily_pnl_kernel missing from projection JSON — regenerate via precompute-projection.py');
+  }
+  const ladder = projection.scaling_ladder;
+  const N = bootstrapN || projection.bootstrap_n || 10000;
+  const weeks = projection.weeks || 26;
+  const daysPerWeek = projection.days_per_week || 5;
+  const commission = projection.commission || 5;
+  const mnqPt = projection.mnq_pt_value || 2;
+  const nqPt = projection.nq_pt_value || 20;
+  const minMargin = 100;
+
+  const rng = mulberry32(Math.floor(startBalance) ^ 0x42);
+  const paths = new Array(N);
+
+  const t0 = Date.now();
+  for (let sim = 0; sim < N; sim++) {
+    let bal = startBalance;
+    const weekly = new Array(weeks);
+    for (let w = 0; w < weeks; w++) {
+      for (let d = 0; d < daysPerWeek; d++) {
+        const k = kernel[Math.floor(rng() * kernel.length)];
+        const c = contractsForBalance(ladder, bal);
+        const gross = k.gross_pts * (mnqPt * c.mnq + nqPt * c.nq);
+        const comm = commission * k.n_trades * (c.mnq + c.nq);
+        bal += gross - comm;
+        if (bal < minMargin) bal = minMargin;
+      }
+      weekly[w] = bal;
+    }
+    paths[sim] = weekly;
+  }
+
+  const bands = new Array(weeks);
+  for (let w = 0; w < weeks; w++) {
+    const vals = new Float64Array(N);
+    for (let i = 0; i < N; i++) vals[i] = paths[i][w];
+    const sorted = Array.from(vals).sort((a, b) => a - b);
+    bands[w] = {
+      week: w + 1,
+      p10: Math.round(percentile(sorted, 10) * 100) / 100,
+      p25: Math.round(percentile(sorted, 25) * 100) / 100,
+      p50: Math.round(percentile(sorted, 50) * 100) / 100,
+      p75: Math.round(percentile(sorted, 75) * 100) / 100,
+      p90: Math.round(percentile(sorted, 90) * 100) / 100,
+    };
+  }
+  return { bands, computeMs: Date.now() - t0 };
 }
 
 // ISO-week index from a start date, counting completed weeks since startDate.
@@ -1624,10 +1719,29 @@ app.get('/api/account-tracker', dashboardAuth, async (req, res) => {
       }
     }
 
+    // ── Recompute bands for user-supplied startBalance ───────────────────
+    // The precomputed weekly_bands assume start_balance=2000. If the user
+    // wants a different starting balance, we rebootstrap on demand. Pure
+    // CPU work — fully deterministic (seeded by startBalance).
+    let weeklyBands = projection.weekly_bands;
+    let bandsComputeMs = 0;
+    let bandsRecomputed = false;
+    if (Math.abs(startBalance - projection.start_balance) > 0.5) {
+      try {
+        const recomputed = recomputeBands(projection, startBalance);
+        weeklyBands = recomputed.bands;
+        bandsComputeMs = recomputed.computeMs;
+        bandsRecomputed = true;
+        logger.info(`account-tracker: rebootstrapped bands for startBalance=$${startBalance} in ${bandsComputeMs}ms`);
+      } catch (err) {
+        logger.warn(`account-tracker: rebootstrap failed (${err.message}) — falling back to default $${projection.start_balance} bands`);
+      }
+    }
+
     // ── Current state vs band ────────────────────────────────────────────
     const asOf = new Date();
     const fracWeek = Math.max(0.001, ((asOf - new Date(startDate)) / 86400000) / 7);
-    const currentBands = bandsAtFractionalWeek(projection.weekly_bands, fracWeek);
+    const currentBands = bandsAtFractionalWeek(weeklyBands, fracWeek);
     const currentBalance = actualTrajectory.length > 0
       ? actualTrajectory[actualTrajectory.length - 1].balance
       : startBalance;
@@ -1644,10 +1758,13 @@ app.get('/api/account-tracker', dashboardAuth, async (req, res) => {
       actualTrajectory,
       projection: {
         version:          projection.version,
-        weeklyBands:      projection.weekly_bands,
+        weeklyBands:      weeklyBands,                 // recomputed if startBalance != default
         maeDistribution:  projection.mae_distribution,
         perStrategyWeekly: projection.per_strategy_weekly,
         scalingLadder:    projection.scaling_ladder,
+        bandsRecomputed:  bandsRecomputed,
+        bandsComputeMs:   bandsComputeMs,
+        defaultStartBalance: projection.start_balance,
       },
       liveMaeStats:      maeStats,
       flaggedTrades:     flaggedTrades.slice(-20),  // most recent 20

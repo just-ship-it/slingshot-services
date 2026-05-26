@@ -25,7 +25,8 @@ from pathlib import Path
 random.seed(42)  # reproducible bootstrap
 
 ROOT = Path(__file__).resolve().parent.parent.parent
-OUT_PATH = ROOT.parent / 'monitoring-service' / 'data' / 'account-projection.json'
+# Lives in monitoring-service/projection/ (not data/, which is gitignored).
+OUT_PATH = ROOT.parent / 'monitoring-service' / 'projection' / 'account-projection.json'
 
 START_BALANCE = 2000.0
 COMMISSION    = 5.0
@@ -191,7 +192,7 @@ out = {
     'weeks':              WEEKS,
     'start_balance':      START_BALANCE,
     'scaling_ladder':     [{'min_balance': t, 'n_mnq': m, 'n_nq': n} for t, m, n in LADDER],
-    'weekly_bands':       weekly_bands,
+    'weekly_bands':       weekly_bands,           # default $2k bands (precomputed)
     'mae_distribution':   mae_dist,
     'per_strategy_weekly': per_strat_weekly,
     'backtest_summary': {
@@ -199,6 +200,18 @@ out = {
         'total_days':   len(kernel),
         'total_weeks':  weeks_in_backtest,
     },
+    # ── Kernel: raw per-day data used to recompute bands on the fly for ──
+    # arbitrary startBalance values in the monitoring-service endpoint.
+    # Each entry: gross signed-pts PnL for that day across all FCFS trades +
+    # the number of trades that day (drives per-contract commission).
+    'daily_pnl_kernel': [
+        {'gross_pts': round(d['gross_pts'], 4), 'n_trades': d['n_trades']}
+        for d in kernel
+    ],
+    'commission':         COMMISSION,
+    'mnq_pt_value':       MNQ_PT_VALUE,
+    'nq_pt_value':        NQ_PT_VALUE,
+    'days_per_week':      DAYS_PER_WEEK,
 }
 
 OUT_PATH.parent.mkdir(parents=True, exist_ok=True)
