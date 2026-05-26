@@ -18,6 +18,12 @@ export const CHANNELS = {
   TRADE_SIGNAL: 'trade.signal',
   TRADE_VALIDATED: 'trade.validated',
   TRADE_REJECTED: 'trade.rejected',
+  // Enrichment published by trade-orchestrator on position close. Carries
+  // strategy attribution + per-trade MFE/MAE that the broker fills (used by
+  // monitoring-service's pnl:trades) don't include. Consumed by
+  // monitoring-service to enrich trade records for the account-tracker
+  // dashboard module's MAE comparison.
+  TRADE_METRICS: 'trade.metrics',
 
   // Order events
   ORDER_REQUEST: 'order.request',

@@ -641,10 +641,43 @@ async function handlePositionClosed(msg) {
   const { signalId, accountId, strategy, symbol, realizedPnl } = msg || {};
   if (!accountId || !strategy || !symbol) return;
   const pk = posKey(accountId, strategy, symbol);
+  const openPos = state.openPositions.get(pk);
   if (state.openPositions.delete(pk)) {
     logger.info(`[${signalId || '?'}] position.closed ${accountId} ${strategy} ${symbol} pnl=${realizedPnl ?? '?'}`);
   }
   state.pendingOrders.delete(pendingKey(accountId, strategy, symbol));
+
+  // Capture per-trade metrics BEFORE unregister tears them down. Publishes
+  // a trade.metrics event with strategy + MFE/MAE + entry/exit so the
+  // monitoring-service can enrich its pnl:trades (which only carry netPnl
+  // and don't know strategy or excursion). Used by the account-tracker
+  // dashboard module's MAE comparison panel.
+  const metrics = exitRuleManager.getMetrics({ accountId, strategy, symbol });
+  if (metrics) {
+    try {
+      await messageBus.publish(CHANNELS.TRADE_METRICS, {
+        signalId: signalId || metrics.signalId || null,
+        accountId,
+        strategy,
+        symbol,
+        side: metrics.side,
+        entryPrice: metrics.entryPrice,
+        exitPrice: msg.exitPrice ?? msg.fillPrice ?? null,
+        mfePoints: metrics.mfePoints,
+        maePoints: metrics.maePoints,
+        highWaterMark: metrics.highWaterMark,
+        lowWaterMark: metrics.lowWaterMark,
+        openedAt: metrics.openedAt,
+        closedAt: Date.now(),
+        realizedPnl: realizedPnl ?? null,
+        openedAtIso: openPos?.openedAt || new Date(metrics.openedAt).toISOString(),
+        timestamp: new Date().toISOString(),
+      });
+    } catch (err) {
+      logger.warn(`[${signalId || '?'}] failed to publish trade.metrics: ${err.message}`);
+    }
+  }
+
   exitRuleManager.unregister({ accountId, strategy, symbol });
   await checkpointOpenPositions(stores.redis);
 }

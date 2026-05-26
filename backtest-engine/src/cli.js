@@ -114,6 +114,11 @@ export class CLI {
         description: 'Output trades CSV file path'
       })
 
+      .option('capture-signals', {
+        type: 'string',
+        description: 'Capture-mode: write every emitted signal to this JSON file. Disables the engine position gate and forces strategy cooldown=0 so the full setup universe is captured. Used by meta-strategy-trader research. No trades are executed/recorded in this mode.'
+      })
+
       .option('verbose', {
         alias: 'v',
         type: 'boolean',
@@ -2773,6 +2778,7 @@ export class CLI {
       ls1mFile: args['ls-1m-file'] || args.ls1mFile || null, // 1m LS flip CSV path for ls-flip-trigger-bar
       eodCutoffEt: args.eodCutoffEt || null, // ET cutoff (HH:MM) for day-trade-margin liquidation
       strictLimitFill: args.strictFill ?? false, // require trade-through (low<entry / high>entry) for limit fills
+      captureSignals: args.captureSignals ? true : false, // capture-mode: emit every signal, skip trade execution
       useCBBO: args.useCbbo || args.strategy === 'cbbo-lt-volatility' || args.strategy === 'cbbo-lt',
       cbboDataDir: args.cbboDataDir || null, // null means use default: dataDir/cbbo-1m/qqq
       outputFiles: {
@@ -2811,6 +2817,10 @@ export class CLI {
       if (!args.quiet) {
         console.log(chalk.green(`📊 Trade log saved to ${args.outputCsv}`));
       }
+    }
+
+    if (args.captureSignals) {
+      engine.exportCapturedSignalsToJSON(args.captureSignals);
     }
 
     return results;

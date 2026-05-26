@@ -230,6 +230,22 @@ export class BacktestEngine {
     this.swingPivotLoader = null;
     this.swingPivotsLoaded = false;
 
+    // Capture mode: when set, every signal emitted by the strategy is recorded
+    // and `tradeSimulator.processSignal()` is BYPASSED. The simulator stays
+    // "always flat" so no internal position gate fires, and the strategy's
+    // own per-strategy cooldown is force-zeroed below so every trigger event
+    // emits a signal. Used by the meta-strategy-trader pipeline to capture
+    // the full setup universe per strategy (see research/meta-strategy-trader/).
+    this.captureSignalsMode = !!config.captureSignals;
+    this.capturedSignals = [];
+    if (this.captureSignalsMode) {
+      // Disable any per-strategy cooldown so we see every trigger, not just
+      // the post-cooldown subset. The meta-engine re-applies cooldown using
+      // its own accept/exit timing.
+      config.strategyParams = config.strategyParams || {};
+      config.strategyParams.signalCooldownMs = 0;
+    }
+
     // Initialize strategy
     this.strategy = this.createStrategy(config.strategy, config.strategyParams);
 
@@ -1220,17 +1236,68 @@ export class BacktestEngine {
             ltAnalyzer.startTradeAnalysis(signal, signalTime);
           }
 
-          // Process signal through trade simulator with correct signal time
-          order = this.tradeSimulator.processSignal(signal, signalTime);
-          if (order && !this.config.quiet && this.config.verbose) {
-            const signalDate = new Date(signalTime).toISOString();
-            console.log(`\n📊 Signal generated: ${signal.side.toUpperCase()} ${signal.symbol} @ ${signal.price || signal.entryPrice} (${signalDate})`);
-          } else if (!order) {
-            // Signal was generated but rejected due to existing position
-            rejectedSignals.push({ ...signal, timestamp: signalTime, reason: 'position_already_active' });
-            if (!this.config.quiet && this.config.verbose) {
+          if (this.captureSignalsMode) {
+            // Capture-only branch: record the signal and SKIP the simulator.
+            // Engine stays always-flat so every trigger fires (no position gate).
+            // We strip the bulky `availableLTLevels` payload — it's the full
+            // session LT history attached for analysis. Sub-rule metadata
+            // (ruleId/Description/Priority, stop/target pts) stays on `metadata`.
+            const { availableLTLevels, ...slim } = signal;
+            this.capturedSignals.push({
+              ts: signalTime,
+              strategy: this.config.strategy,
+              symbol: signal.symbol,
+              signalContract: signal.signalContract,
+              side: signal.side,
+              action: signal.action || (signal.price ? 'place_limit' : 'place_market'),
+              entryPrice: signal.price || signal.entryPrice,
+              stopLoss: signal.stop_loss || signal.stopLoss,
+              takeProfit: signal.take_profit || signal.takeProfit,
+              stopPoints: signal.stopPoints,
+              targetPoints: signal.targetPoints,
+              // CRITICAL for re-anchoring SL/TP from actualEntry. Strategies
+              // like ls-flip-trigger-bar and gex-level-fade set these, and
+              // trade-simulator.checkOrderFill recalculates stopLoss/takeProfit
+              // from actualEntry ± distance whenever present. Without these
+              // fields the meta-engine can't reproduce gold-standard exits
+              // on price-improvement fills.
+              stopDistance: signal.stopDistance,
+              targetDistance: signal.targetDistance,
+              // lstb sets this to the next LS flip's ts so a flip in the
+              // opposite direction cancels the pending limit before fill.
+              // Without this, the meta-engine fills limits that the original
+              // engine would have killed via 'pre_fill_adverse_flip'.
+              adverseFlipCancelTs: signal.adverseFlipCancelTs,
+              maxHoldBars: signal.maxHoldBars || signal.max_hold_bars,
+              timeoutCandles: signal.timeoutCandles,
+              cancelOnPreFillExtreme: signal.cancelOnPreFillExtreme,
+              trailingTrigger: signal.trailingTrigger || signal.trailing_trigger,
+              trailingOffset: signal.trailingOffset || signal.trailing_offset,
+              breakevenStop: signal.breakevenStop || signal.breakeven_stop,
+              breakevenTrigger: signal.breakevenTrigger || signal.breakeven_trigger,
+              breakevenOffset: signal.breakevenOffset || signal.breakeven_offset,
+              fibRetrace: signal.fibRetrace,
+              fibRetraceConfig: signal.fibRetraceConfig,
+              mfeRatchet: signal.mfeRatchet,
+              mfeRatchetConfig: signal.mfeRatchetConfig,
+              ruleId: signal.ruleId ?? slim.metadata?.ruleId ?? null,
+              ruleDescription: signal.ruleDescription ?? slim.metadata?.ruleDescription ?? null,
+              rulePriority: signal.rulePriority ?? slim.metadata?.rulePriority ?? null,
+              metadata: slim.metadata || null,
+            });
+          } else {
+            // Process signal through trade simulator with correct signal time
+            order = this.tradeSimulator.processSignal(signal, signalTime);
+            if (order && !this.config.quiet && this.config.verbose) {
               const signalDate = new Date(signalTime).toISOString();
-              console.log(`\n⏸️  Signal rejected: ${signal.side.toUpperCase()} ${signal.symbol} @ ${signal.price || signal.entryPrice} (${signalDate}) - Position already active`);
+              console.log(`\n📊 Signal generated: ${signal.side.toUpperCase()} ${signal.symbol} @ ${signal.price || signal.entryPrice} (${signalDate})`);
+            } else if (!order) {
+              // Signal was generated but rejected due to existing position
+              rejectedSignals.push({ ...signal, timestamp: signalTime, reason: 'position_already_active' });
+              if (!this.config.quiet && this.config.verbose) {
+                const signalDate = new Date(signalTime).toISOString();
+                console.log(`\n⏸️  Signal rejected: ${signal.side.toUpperCase()} ${signal.symbol} @ ${signal.price || signal.entryPrice} (${signalDate}) - Position already active`);
+              }
             }
           }
         }
@@ -1936,6 +2003,30 @@ export class BacktestEngine {
    *
    * @param {string} filePath - Output file path
    */
+  /**
+   * Export captured signals (capture mode only) to a JSON file.
+   * Output shape: { strategy, startDate, endDate, count, signals: [...] }.
+   * Used by the meta-strategy-trader pipeline to consume the full
+   * per-strategy setup universe (see research/meta-strategy-trader/).
+   */
+  exportCapturedSignalsToJSON(filePath) {
+    if (!this.captureSignalsMode) {
+      console.log('⚠️  exportCapturedSignalsToJSON called outside capture mode — nothing to write');
+      return;
+    }
+    const payload = {
+      strategy: this.config.strategy,
+      startDate: this.config.startDate,
+      endDate: this.config.endDate,
+      timeframe: this.config.timeframe,
+      strategyParams: this.config.strategyParams || {},
+      count: this.capturedSignals.length,
+      signals: this.capturedSignals,
+    };
+    fs.writeFileSync(filePath, JSON.stringify(payload, null, 2));
+    console.log(`📡 Captured ${this.capturedSignals.length} signals → ${filePath}`);
+  }
+
   exportTradesToCSV(filePath) {
     const trades = this.tradeSimulator.getCompletedTrades();
 

@@ -224,7 +224,11 @@ export function createExitRuleManager({ logger, publishModifyStop, publishCloseP
     else if (Array.isArray(rule)) ruleList = rule.filter(Boolean);
     else if (rule) ruleList = [rule];
 
-    if (ruleList.length === 0) return; // passive mode
+    // NOTE: We used to return early when ruleList was empty ("passive mode"),
+    // which meant positions with no exit rules weren't tracked at all. The
+    // account-tracker dashboard module needs per-trade MAE/MFE for EVERY
+    // trade, so we now always register. Tick-rule evaluation safely no-ops
+    // when ruleList is empty — the only ongoing work is HWM/LWM updates.
 
     if (!Number.isFinite(entryPrice)) {
       logger.warn(`[ExitRule] register ${strategy} ${symbol}: invalid entryPrice ${entryPrice} — skipping`);
@@ -546,10 +550,34 @@ export function createExitRuleManager({ logger, publishModifyStop, publishCloseP
 
   function size() { return state.size; }
 
+  // Public accessor: read the current MFE/MAE for a tracked position WITHOUT
+  // unregistering it. Used by trade-orchestrator's position.closed handler
+  // to capture metrics before tearing down the entry. Returns null if no
+  // tracking exists (e.g., position opened before this code shipped, or
+  // signal came in with no entryPrice).
+  function getMetrics({ accountId, strategy, symbol }) {
+    if (!accountId || !strategy || !symbol) return null;
+    const rs = state.get(makePosKey(accountId, strategy, symbol));
+    if (!rs) return null;
+    return {
+      signalId: rs.signalId,
+      strategy: rs.strategy,
+      side: rs.side,
+      entryPrice: rs.entryPrice,
+      highWaterMark: rs.highWaterMark,
+      lowWaterMark: rs.lowWaterMark,
+      mfePoints: currentMFE(rs),
+      maePoints: rs.side === 'long'
+        ? Math.max(0, rs.entryPrice - rs.lowWaterMark)
+        : Math.max(0, rs.highWaterMark - rs.entryPrice),
+      openedAt: rs.openedAt,
+    };
+  }
+
   return {
     register, unregister,
     onPriceTick, onCandleClose, onLsFlip,
-    getState, size,
+    getState, getMetrics, size,
     RULE_TYPES,
   };
 }

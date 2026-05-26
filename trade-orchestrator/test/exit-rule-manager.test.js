@@ -180,7 +180,10 @@ async function run() {
     assert(modifyStopCalls.length === 0, 'no fire after unregister');
   }
 
-  // --- Scenario 10: no rule → no tracking (passive mode) ---
+  // --- Scenario 10: no rule → still tracked for MAE/MFE, but no rules fire ---
+  // Behavior change 2026-05-25: every position is now tracked (for account-tracker
+  // dashboard module's MAE comparison). The position is registered but its
+  // ruleStates list is empty so no rule evaluation runs on ticks.
   {
     const { mgr, modifyStopCalls } = makeMgr();
     mgr.register({
@@ -188,10 +191,15 @@ async function run() {
       side: 'short', entryPrice: 29733, signalId: 'sig-4',
       rules: [],
     });
-    assert(mgr.size() === 0, 'no rules → not registered');
-    mgr.onPriceTick({ baseSymbol: 'NQ', high: 29733, low: 29500, close: 29550 });
+    assert(mgr.size() === 1, 'no rules → still tracked (for MAE/MFE)');
+    // For a short at 29733: high=29800 is ADVERSE (price up), low=29500 is FAVORABLE (price down).
+    mgr.onPriceTick({ baseSymbol: 'NQ', high: 29800, low: 29500, close: 29550 });
     await flush();
     assert(modifyStopCalls.length === 0, 'no rules → no fire');
+    // Verify MAE+MFE captured.
+    const m = mgr.getMetrics({ accountId: 'acct1', strategy: 'GEX_FLIP_IVPCT', symbol: 'MNQM6' });
+    assert(m && m.maePoints === 67, `MAE captured (short, high-entry=67, got ${m && m.maePoints})`);
+    assert(m && m.mfePoints === 233, `MFE captured (short, entry-low=233, got ${m && m.mfePoints})`);
   }
 
   // --- Scenario 11: multiple positions, only matching underlying ticks ---

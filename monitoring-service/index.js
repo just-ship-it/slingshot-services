@@ -4,7 +4,12 @@ import { createServer } from 'http';
 import { Server } from 'socket.io';
 import cron from 'node-cron';
 import axios from 'axios';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import { messageBus, CHANNELS, createLogger, configManager, healthCheck } from '../shared/index.js';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const SERVICE_NAME = 'monitoring-service';
 const logger = createLogger(SERVICE_NAME);
@@ -304,6 +309,29 @@ async function handleCandleCloseArchive(message) {
     await messageBus.publisher.rPush(dayKey, JSON.stringify(message));
   } catch (err) {
     logger.error('Failed to archive candle:', err.message);
+  }
+}
+
+// ─── Trade metrics enrichment ─────────────────────────────────────────
+// Consumes trade.metrics events from trade-orchestrator on position close.
+// Stores per-trade {strategy, mfePoints, maePoints} keyed by a synthetic
+// match key (accountId + openedAt-minute + symbol) so the account-tracker
+// endpoint can merge into pnl:trades (which lacks these fields). TTL 90
+// days — older trades are unlikely to need lookup.
+const TRADE_METRICS_TTL_SEC = 90 * 86400;
+function metricsKey(accountId, openedAtMs, symbol) {
+  const minute = Math.floor(openedAtMs / 60_000) * 60_000;
+  return `trade:metrics:${accountId}:${minute}:${symbol}`;
+}
+async function handleTradeMetrics(message) {
+  if (!message || !message.accountId || !message.symbol) return;
+  const openedMs = typeof message.openedAt === 'number' ? message.openedAt : Date.parse(message.openedAt);
+  if (!Number.isFinite(openedMs)) return;
+  const k = metricsKey(message.accountId, openedMs, message.symbol);
+  try {
+    await messageBus.publisher.set(k, JSON.stringify(message), { EX: TRADE_METRICS_TTL_SEC });
+  } catch (err) {
+    logger.warn(`trade.metrics persist failed (${k}): ${err.message}`);
   }
 }
 
@@ -1429,6 +1457,205 @@ app.get('/api/pnl/summary', dashboardAuth, async (req, res) => {
     const syncedAt = await messageBus.publisher.get('pnl:last_sync');
     res.json({ syncedAt, summary: JSON.parse(data) });
   } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ─── Account Tracker ──────────────────────────────────────────────────
+// Compares live account performance against the precomputed bootstrap
+// projection (account-projection.json). Bands are p10/p25/p50/p75/p90 of
+// 10k-iteration bootstrap of historical daily PnL through the scaling
+// ladder. MAE distribution comes from the gold-standard backtest trades
+// per strategy. Used by the dashboard's AccountTrackerPanel.
+//
+// Regenerate projection via:
+//   cd backtest-engine && python3 research/no-trade-day/precompute-projection.py
+
+const PROJECTION_PATH = path.join(__dirname, 'data', 'account-projection.json');
+let _projectionCache = null;
+let _projectionMtime = 0;
+
+function loadProjection() {
+  try {
+    const stat = fs.statSync(PROJECTION_PATH);
+    if (_projectionCache && stat.mtimeMs === _projectionMtime) return _projectionCache;
+    _projectionCache = JSON.parse(fs.readFileSync(PROJECTION_PATH, 'utf8'));
+    _projectionMtime = stat.mtimeMs;
+    return _projectionCache;
+  } catch (err) {
+    return null;
+  }
+}
+
+// ISO-week index from a start date, counting completed weeks since startDate.
+// Week 1 = the partial week of startDate. Each subsequent ISO week increments.
+function weekIndexBetween(startDate, asOfDate = new Date()) {
+  const start = new Date(startDate);
+  const oneDay = 86400000;
+  const diff = Math.floor((asOfDate.getTime() - start.getTime()) / oneDay);
+  if (diff < 0) return 0;
+  return Math.floor(diff / 7) + 1;  // 1-indexed
+}
+
+// Interpolate the p50 band value (and bands) for a fractional week.
+function bandsAtFractionalWeek(weeklyBands, fracWeek) {
+  if (!weeklyBands || weeklyBands.length === 0) return null;
+  if (fracWeek <= 1) return weeklyBands[0];
+  if (fracWeek >= weeklyBands.length) return weeklyBands[weeklyBands.length - 1];
+  const lo = Math.floor(fracWeek) - 1;
+  const hi = lo + 1;
+  const t = fracWeek - Math.floor(fracWeek);
+  const interp = (a, b) => a + (b - a) * t;
+  return {
+    week: fracWeek,
+    p10: interp(weeklyBands[lo].p10, weeklyBands[hi].p10),
+    p25: interp(weeklyBands[lo].p25, weeklyBands[hi].p25),
+    p50: interp(weeklyBands[lo].p50, weeklyBands[hi].p50),
+    p75: interp(weeklyBands[lo].p75, weeklyBands[hi].p75),
+    p90: interp(weeklyBands[lo].p90, weeklyBands[hi].p90),
+  };
+}
+
+// Empirical percentile of a value within the path distribution at week N.
+// Returns null if bands aren't strict enough to localize.
+function approxPercentile(actualBalance, bands) {
+  if (!bands) return null;
+  if (actualBalance <= bands.p10) return 5;
+  if (actualBalance <= bands.p25) return 17;
+  if (actualBalance <= bands.p50) return 37;
+  if (actualBalance <= bands.p75) return 62;
+  if (actualBalance <= bands.p90) return 82;
+  return 95;
+}
+
+app.get('/api/account-tracker', dashboardAuth, async (req, res) => {
+  try {
+    const projection = loadProjection();
+    if (!projection) {
+      return res.status(503).json({ error: 'account-projection.json not loaded — run precompute-projection.py first' });
+    }
+
+    const startDate = req.query.startDate;
+    if (!startDate || !/^\d{4}-\d{2}-\d{2}$/.test(startDate)) {
+      return res.status(400).json({ error: 'startDate=YYYY-MM-DD is required' });
+    }
+    const startBalance = parseFloat(req.query.startBalance ?? projection.start_balance);
+    if (!Number.isFinite(startBalance) || startBalance <= 0) {
+      return res.status(400).json({ error: 'startBalance must be a positive number' });
+    }
+
+    // ── Load live data from existing pnl Redis keys ──────────────────────
+    const dailyRaw = await messageBus.publisher.keys('pnl:daily:*');
+    const dailyVals = await Promise.all(dailyRaw.map(k => messageBus.publisher.get(k)));
+    let daily = dailyVals
+      .filter(Boolean)
+      .map(v => JSON.parse(v))
+      .filter(d => d.date >= startDate)
+      .sort((a, b) => a.date.localeCompare(b.date));
+
+    let actualTrajectory = [];
+    let runningBalance = startBalance;
+    for (const d of daily) {
+      runningBalance += d.netPnl || 0;
+      actualTrajectory.push({ date: d.date, balance: Math.round(runningBalance * 100) / 100, dailyPnl: d.netPnl });
+    }
+
+    // ── Live trades (for MAE comparison + strategy attribution) ──────────
+    const tradesRaw = await messageBus.publisher.hGetAll('pnl:trades');
+    const allTrades = Object.values(tradesRaw || {}).map(j => {
+      try { return JSON.parse(j); } catch { return null; }
+    }).filter(Boolean);
+    const liveTradesInWindow = allTrades.filter(t => (t.tradeDate || t.entryTime || '').slice(0, 10) >= startDate);
+
+    // Enrich each trade with strategy + maePoints + mfePoints from trade.metrics
+    // events (keyed by accountId + openedAt-minute + symbol). Tradovate fills
+    // don't carry these fields; orchestrator publishes them on position close
+    // and we persisted under trade:metrics:<accountId>:<minute>:<symbol>.
+    // Match falls back to looking up by symbol alone within ±2-minute window
+    // if the strict key misses (handles clock-skew between orchestrator and
+    // broker fill timestamps).
+    for (const t of liveTradesInWindow) {
+      if (t.strategy && t.maePoints != null) continue;  // already enriched
+      const entryMs = Date.parse(t.entryTime);
+      if (!Number.isFinite(entryMs)) continue;
+      const accountId = t.accountId || t.account || null;
+      if (!accountId) continue;
+      // Try exact and ±1-minute neighbors
+      for (const offset of [0, -60_000, 60_000, -120_000, 120_000]) {
+        const k = metricsKey(accountId, entryMs + offset, t.symbol);
+        const v = await messageBus.publisher.get(k);
+        if (v) {
+          try {
+            const m = JSON.parse(v);
+            t.strategy = m.strategy;
+            t.maePoints = m.maePoints;
+            t.mfePoints = m.mfePoints;
+            break;
+          } catch {}
+        }
+      }
+    }
+
+    // Group live trades by strategy (if attributed) and flag those exceeding p95 MAE.
+    // Most existing pnl:trades records DO NOT have strategy or maePoints fields.
+    // The panel surfaces this gap when present.
+    const flaggedTrades = [];
+    const maeStats = {};
+    for (const stratKey of Object.keys(projection.mae_distribution)) {
+      maeStats[stratKey] = { n: 0, exceeded_p95: 0, exceeded_p99: 0, max_observed: 0 };
+    }
+    let hasAttribution = false;
+    for (const t of liveTradesInWindow) {
+      if (!t.strategy || t.maePoints == null) continue;
+      hasAttribution = true;
+      const d = projection.mae_distribution[t.strategy];
+      if (!d) continue;
+      const stats = maeStats[t.strategy];
+      stats.n += 1;
+      if (t.maePoints > d.all.p95) stats.exceeded_p95 += 1;
+      if (t.maePoints > d.all.p99) stats.exceeded_p99 += 1;
+      if (t.maePoints > stats.max_observed) stats.max_observed = t.maePoints;
+      if (t.maePoints > d.all.p95) {
+        flaggedTrades.push({
+          id: t.id, strategy: t.strategy, side: t.side, entryTime: t.entryTime,
+          mae: t.maePoints, p95: d.all.p95, p99: d.all.p99, max: d.all.max,
+          netPnl: t.netPnl,
+        });
+      }
+    }
+
+    // ── Current state vs band ────────────────────────────────────────────
+    const asOf = new Date();
+    const fracWeek = Math.max(0.001, ((asOf - new Date(startDate)) / 86400000) / 7);
+    const currentBands = bandsAtFractionalWeek(projection.weekly_bands, fracWeek);
+    const currentBalance = actualTrajectory.length > 0
+      ? actualTrajectory[actualTrajectory.length - 1].balance
+      : startBalance;
+    const percentileRank = approxPercentile(currentBalance, currentBands);
+
+    res.json({
+      startDate,
+      startBalance,
+      asOf: asOf.toISOString(),
+      currentWeek: fracWeek,
+      currentBalance,
+      percentileRank,                       // ~5/17/37/62/82/95 buckets
+      currentBands,
+      actualTrajectory,
+      projection: {
+        version:          projection.version,
+        weeklyBands:      projection.weekly_bands,
+        maeDistribution:  projection.mae_distribution,
+        perStrategyWeekly: projection.per_strategy_weekly,
+        scalingLadder:    projection.scaling_ladder,
+      },
+      liveMaeStats:      maeStats,
+      flaggedTrades:     flaggedTrades.slice(-20),  // most recent 20
+      hasMaeAttribution: hasAttribution,
+      missingDataNote:   hasAttribution ? null : 'pnl:trades records lack strategy + maePoints fields — MAE comparison requires capturing these during live trading (orchestrator exit-rule-manager or broker tick replay). See research/no-trade-day/README.md.',
+    });
+  } catch (err) {
+    logger.error(`/api/account-tracker failed: ${err.message}`);
     res.status(500).json({ error: err.message });
   }
 });
@@ -4522,6 +4749,7 @@ async function startup() {
       [CHANNELS.LS_STATUS, handleLsStatus],
       [CHANNELS.STRATEGY_ALERT, handleStrategyAlert],
       [CHANNELS.CANDLE_CLOSE, handleCandleCloseArchive],
+      [CHANNELS.TRADE_METRICS, handleTradeMetrics],
       // Discord notification subscriptions
       [CHANNELS.TRADE_VALIDATED, handleTradeSignalDiscord],
       [CHANNELS.TRADE_REJECTED, handleTradeRejectedDiscord],
