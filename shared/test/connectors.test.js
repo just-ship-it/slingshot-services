@@ -13,6 +13,28 @@ function silentLogger() {
   return { info() {}, warn() {}, error() {}, debug() {} };
 }
 
+// Minimal fake messageBus + channels for connector tests that exercise init().
+function fakeBus() {
+  return {
+    publish: async () => {},
+    subscribe: async () => {},
+    unsubscribe: async () => {},
+  };
+}
+function fakeChannels() {
+  return {
+    ORDER_PLACED: 'order.placed',
+    ORDER_FILLED: 'order.filled',
+    ORDER_REJECTED: 'order.rejected',
+    ORDER_CANCELLED: 'order.cancelled',
+    POSITION_OPENED: 'position.opened',
+    POSITION_CLOSED: 'position.closed',
+    POSITION_SNAPSHOT: 'position.snapshot',
+    ORDERS_SNAPSHOT: 'orders.snapshot',
+    PRICE_UPDATE: 'price.update',
+  };
+}
+
 describe('BaseConnector', () => {
   test('cannot be instantiated directly', () => {
     assert.throws(() => new BaseConnector({ id: 'x' }, silentLogger()), /abstract/);
@@ -305,5 +327,173 @@ describe('TradovateConnector', () => {
       silentLogger(),
       {}
     ), /ClientClass/);
+  });
+
+  // ── Strategy-attribution tagging (2026-05-27) ─────────────────────────────
+  // Verified live on demo: text + clOrdId round-trip via OrderVersion + Command.
+  // These tests pin the parser shape and the cache-miss recovery wiring so the
+  // attribution-loss bug from 16:13–16:16 stays fixed.
+
+  test('_buildOrderTag returns signalId when present and short enough', async () => {
+    const { TradovateConnector } = await import('../connectors/tradovate-connector.js');
+    class FakeClient { async connect() {} }
+    const conn = new TradovateConnector(
+      { id: 'tv', broker: 'tradovate', config: { mode: 'demo', accountId: 1 }, credentials: {} },
+      silentLogger(),
+      { ClientClass: FakeClient, messageBus: {}, channels: {} }
+    );
+    assert.equal(conn._buildOrderTag({ signalId: 'GEX_LT_3M_CROSSOVER-short-29990.75-1779898382960' }),
+      'GEX_LT_3M_CROSSOVER-short-29990.75-1779898382960');
+    assert.equal(conn._buildOrderTag({}), null);
+    assert.equal(conn._buildOrderTag({ signalId: '' }), null);
+    // 65 chars — exceeds bracket-child headroom (60 cap so ".sl"/".tp" fit in 64).
+    assert.equal(conn._buildOrderTag({ signalId: 'x'.repeat(65) }), null);
+  });
+
+  test('_parseStrategyFromText decodes orchestrator signalId shape', async () => {
+    const { TradovateConnector } = await import('../connectors/tradovate-connector.js');
+    class FakeClient { async connect() {} }
+    const conn = new TradovateConnector(
+      { id: 'tv', broker: 'tradovate', config: { mode: 'demo', accountId: 1 }, credentials: {} },
+      silentLogger(),
+      { ClientClass: FakeClient, messageBus: {}, channels: {} }
+    );
+    // Canonical shape
+    assert.deepEqual(
+      conn._parseStrategyFromText('GEX_LT_3M_CROSSOVER-short-29990.75-1779898382960'),
+      { strategy: 'GEX_LT_3M_CROSSOVER', signalId: 'GEX_LT_3M_CROSSOVER-short-29990.75-1779898382960' }
+    );
+    // Strategy with hyphens — non-greedy first segment, direction segment anchors
+    assert.deepEqual(
+      conn._parseStrategyFromText('LS-FLIP-TRIGGER-BAR-long-21050.5-1700000000000'),
+      { strategy: 'LS-FLIP-TRIGGER-BAR', signalId: 'LS-FLIP-TRIGGER-BAR-long-21050.5-1700000000000' }
+    );
+    // Bracket child clOrdId suffix is stripped before decoding
+    assert.deepEqual(
+      conn._parseStrategyFromText('GEX_FLIP_IVPCT-long-30000-123.sl'),
+      { strategy: 'GEX_FLIP_IVPCT', signalId: 'GEX_FLIP_IVPCT-long-30000-123' }
+    );
+    assert.deepEqual(
+      conn._parseStrategyFromText('GEX_FLIP_IVPCT-long-30000-123.tp'),
+      { strategy: 'GEX_FLIP_IVPCT', signalId: 'GEX_FLIP_IVPCT-long-30000-123' }
+    );
+    // Non-matching shape — return text as signalId, no strategy. Avoids attributing
+    // manually-placed orders to a real strategy and triggering automated lifecycle.
+    assert.deepEqual(conn._parseStrategyFromText('FILLTEST-1779907636745'),
+      { strategy: null, signalId: 'FILLTEST-1779907636745' });
+    assert.deepEqual(conn._parseStrategyFromText(''), { strategy: null, signalId: null });
+    assert.deepEqual(conn._parseStrategyFromText(null), { strategy: null, signalId: null });
+    assert.deepEqual(conn._parseStrategyFromText(undefined), { strategy: null, signalId: null });
+  });
+
+  test('_recoverFromOrderText pulls OrderVersion.text, decodes, rehydrates maps', async () => {
+    const { TradovateConnector } = await import('../connectors/tradovate-connector.js');
+    let fetchCalls = 0;
+    class FakeClient {
+      async connect() {}
+      async getOrderVersions(orderId) {
+        fetchCalls++;
+        if (orderId === 16061898661) return [{ id: 1, text: 'GEX_LT_3M_CROSSOVER-short-29990.75-1779898382960' }];
+        if (orderId === 9999)        return [{ id: 2, text: null }];
+        return [];
+      }
+    }
+    const conn = new TradovateConnector(
+      { id: 'tv', broker: 'tradovate', config: { mode: 'demo', accountId: 1 }, credentials: {} },
+      silentLogger(),
+      { ClientClass: FakeClient, messageBus: fakeBus(), channels: fakeChannels() }
+    );
+    await conn.init();
+
+    // Miss → fetch → decode → rehydrate
+    const got = await conn._recoverFromOrderText(16061898661);
+    assert.equal(got.strategy, 'GEX_LT_3M_CROSSOVER');
+    assert.equal(got.signalId, 'GEX_LT_3M_CROSSOVER-short-29990.75-1779898382960');
+    assert.equal(conn.orderStrategyMap.get(16061898661), 'GEX_LT_3M_CROSSOVER');
+    assert.equal(conn.orderSignalMap.get(16061898661), 'GEX_LT_3M_CROSSOVER-short-29990.75-1779898382960');
+
+    // Second call on the same orderId should NOT hit the network — fast path.
+    const got2 = await conn._recoverFromOrderText(16061898661);
+    assert.equal(got2.strategy, 'GEX_LT_3M_CROSSOVER');
+    assert.equal(fetchCalls, 1, 'second call should be served from cache');
+
+    // Unknown order with null text → no attribution, no rehydration
+    const miss = await conn._recoverFromOrderText(9999);
+    assert.equal(miss.strategy, null);
+    assert.equal(miss.signalId, null);
+    assert.equal(conn.orderStrategyMap.has(9999), false);
+  });
+
+  test('placeOrder stamps text + clOrdId on simple market order', async () => {
+    const { TradovateConnector } = await import('../connectors/tradovate-connector.js');
+    let captured = null;
+    class FakeClient {
+      async connect() {}
+      async findContract(symbol) { return { id: 4327110, name: symbol, symbol }; }
+      async placeOrder(o) { captured = o; return { orderId: 555 }; }
+    }
+    const conn = new TradovateConnector(
+      { id: 'tv', broker: 'tradovate', config: { mode: 'demo', accountId: 1 }, credentials: {} },
+      silentLogger(),
+      { ClientClass: FakeClient, messageBus: fakeBus(), channels: fakeChannels() }
+    );
+    await conn.init();
+    const SID = 'GEX_LT_3M_CROSSOVER-short-29990.75-1779898382960';
+    await conn.handleOrderRequest({
+      signalId: SID, strategy: 'GEX_LT_3M_CROSSOVER',
+      symbol: 'MNQM6', action: 'Sell', orderType: 'Market', quantity: 1
+    });
+    assert.equal(captured.text, SID);
+    assert.equal(captured.clOrdId, SID);
+  });
+
+  test('placeOrder stamps text + clOrdId on bracket OSO including children', async () => {
+    const { TradovateConnector } = await import('../connectors/tradovate-connector.js');
+    let captured = null;
+    class FakeClient {
+      async connect() {}
+      async findContract(symbol) { return { id: 4327110, name: symbol, symbol }; }
+      async placeBracketOrder(o) { captured = o; return { orderId: 100, oso1Id: 101, oso2Id: 102 }; }
+    }
+    const conn = new TradovateConnector(
+      { id: 'tv', broker: 'tradovate', config: { mode: 'demo', accountId: 1 }, credentials: {} },
+      silentLogger(),
+      { ClientClass: FakeClient, messageBus: fakeBus(), channels: fakeChannels() }
+    );
+    await conn.init();
+    const SID = 'GEX_FLIP_IVPCT-short-30000-1700000000000';
+    await conn.handleOrderRequest({
+      signalId: SID, strategy: 'GEX_FLIP_IVPCT',
+      symbol: 'MNQM6', action: 'Sell', orderType: 'Limit', price: 30000,
+      stopLoss: 30060, takeProfit: 29900, quantity: 1
+    });
+    assert.equal(captured.text, SID);
+    assert.equal(captured.clOrdId, SID);
+    assert.equal(captured.bracket1.text, SID);
+    assert.equal(captured.bracket1.clOrdId, `${SID}.sl`);
+    assert.equal(captured.bracket2.text, SID);
+    assert.equal(captured.bracket2.clOrdId, `${SID}.tp`);
+  });
+
+  test('signalId longer than 60 chars skips tag (avoids 64-char broker cap on children)', async () => {
+    const { TradovateConnector } = await import('../connectors/tradovate-connector.js');
+    let captured = null;
+    class FakeClient {
+      async connect() {}
+      async findContract(symbol) { return { id: 1, name: symbol, symbol }; }
+      async placeOrder(o) { captured = o; return { orderId: 1 }; }
+    }
+    const conn = new TradovateConnector(
+      { id: 'tv', broker: 'tradovate', config: { mode: 'demo', accountId: 1 }, credentials: {} },
+      silentLogger(),
+      { ClientClass: FakeClient, messageBus: fakeBus(), channels: fakeChannels() }
+    );
+    await conn.init();
+    await conn.handleOrderRequest({
+      signalId: 'x'.repeat(61), strategy: 'X',
+      symbol: 'NQM6', action: 'Buy', orderType: 'Market', quantity: 1
+    });
+    assert.equal(captured.text, undefined);
+    assert.equal(captured.clOrdId, undefined);
   });
 });

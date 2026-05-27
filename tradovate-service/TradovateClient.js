@@ -668,6 +668,22 @@ class TradovateClient extends EventEmitter {
     }
   }
 
+  /**
+   * Fetch all OrderVersion rows for a given orderId. The `text` field on
+   * OrderVersion is where the slingshot signalId/strategy tag round-trips
+   * after a placeOrder/placeOSO POST. Used for lazy attribution recovery in
+   * the connector when the in-memory orderStrategyMap misses.
+   */
+  async getOrderVersions(orderId) {
+    try {
+      const response = await this.makeRequest('GET', `/orderVersion/deps?masterid=${Number(orderId)}`);
+      return Array.isArray(response) ? response : [];
+    } catch (err) {
+      this.logger.warn(`getOrderVersions(${orderId}) failed: ${err.message}`);
+      return [];
+    }
+  }
+
   // Get OrderStrategy link dependents
   async getOrderStrategyLinkDependents(strategyId) {
     try {

@@ -348,6 +348,7 @@ export class TradovateConnector extends BaseConnector {
   }
 
   async _placeSimple(message, contract) {
+    const tag = this._buildOrderTag(message);
     const orderData = {
       accountId: this.brokerAccountId,
       contractId: Number(contract.id),
@@ -356,7 +357,10 @@ export class TradovateConnector extends BaseConnector {
       orderQty: Number(message.quantity || 1),
       orderType: message.orderType,
       price: message.orderType === 'Limit' ? Number(message.price) : undefined,
-      isAutomated: true
+      isAutomated: true,
+      // Server-side attribution carriers. `text` lives on OrderVersion forever;
+      // `clOrdId` on Command. Lets reconcile recover strategy without local state.
+      ...(tag ? { text: tag, clOrdId: tag } : {})
     };
     const res = await this.client.placeOrder(orderData);
     return { orderId: res.orderId, strategyId: res.orderId, entryOrderId: res.orderId };
@@ -365,6 +369,7 @@ export class TradovateConnector extends BaseConnector {
   async _placeBracket(message, contract) {
     const action = message.action;
     const oppositeAction = action === 'Buy' ? 'Sell' : 'Buy';
+    const tag = this._buildOrderTag(message);
     const orderData = {
       accountId: this.brokerAccountId,
       contractId: Number(contract.id),
@@ -374,11 +379,16 @@ export class TradovateConnector extends BaseConnector {
       orderType: message.orderType,
       price: message.orderType === 'Limit' ? Number(message.price) : undefined,
       isAutomated: true,
+      // Server-side attribution. customTag50 (FIX 50) is rejected by CME
+      // ("Unregisted Tag50") so we only use text (FIX 58) + clOrdId (FIX 11).
+      ...(tag ? { text: tag, clOrdId: tag } : {}),
       bracket1: message.stopLoss != null ? {
-        action: oppositeAction, orderType: 'Stop', stopPrice: Number(message.stopLoss)
+        action: oppositeAction, orderType: 'Stop', stopPrice: Number(message.stopLoss),
+        ...(tag ? { text: tag, clOrdId: `${tag}.sl` } : {})
       } : undefined,
       bracket2: message.takeProfit != null ? {
-        action: oppositeAction, orderType: 'Limit', price: Number(message.takeProfit)
+        action: oppositeAction, orderType: 'Limit', price: Number(message.takeProfit),
+        ...(tag ? { text: tag, clOrdId: `${tag}.tp` } : {})
       } : undefined
     };
     const res = await this.client.placeBracketOrder(orderData);
@@ -682,8 +692,22 @@ export class TradovateConnector extends BaseConnector {
 
     const orderId = execution.orderId || execution.order?.id;
     const strategyId = execution.orderStrategyId || orderId;
-    const signalId = this.orderSignalMap.get(orderId) || this.orderSignalMap.get(strategyId) || null;
-    const strategy = this.orderStrategyMap.get(strategyId) || this.orderStrategyMap.get(orderId) || 'UNKNOWN';
+    let signalId = this.orderSignalMap.get(orderId) || this.orderSignalMap.get(strategyId) || null;
+    let strategy = this.orderStrategyMap.get(strategyId) || this.orderStrategyMap.get(orderId) || null;
+
+    // Broker-side recovery on in-memory cache miss. ExecutionReport doesn't
+    // carry `text` (verified live 2026-05-27 — see memory/tradovate-order-
+    // tagging-fields.md), so we fetch OrderVersion.text directly. One HTTP
+    // round-trip on miss only; rehydrates the maps for subsequent events.
+    if (!strategy || strategy === 'UNKNOWN') {
+      const recovered = await this._recoverFromOrderText(orderId);
+      if (recovered.strategy) {
+        strategy = recovered.strategy;
+        signalId = signalId || recovered.signalId;
+      }
+    }
+    if (!strategy) strategy = 'UNKNOWN';
+
     const symbol = this._resolveSymbol(execution.contractId);
     const links = this.orderStrategyLinks.get(strategyId);
     const isStopOrder = links && links.stopOrderId === orderId;
@@ -852,50 +876,7 @@ export class TradovateConnector extends BaseConnector {
   async _reconcileAndSnapshot(reason) {
     if (!this.client) return;
 
-    // --- Positions ---
-    let positions = [];
-    try {
-      positions = await this.client.getPositions(this.brokerAccountId);
-    } catch (err) {
-      this.logger.error(`[${this._label()}] reconcile getPositions failed: ${err.message}`);
-    }
-
-    const enrichedPositions = [];
-    for (const p of (positions || [])) {
-      const symbol = this._resolveSymbol(p.contractId) || p.symbol;
-      const netPos = p.netPos ?? 0;
-      if (!symbol) continue;
-
-      // Cache contract symbol for later resolution
-      if (p.contractId && !this.contractCache.has(p.contractId)) {
-        this.contractCache.set(p.contractId, symbol);
-      }
-
-      // Attribute strategy + SL/TP via persisted links
-      let strategy = null;
-      let stopLoss = null;
-      let takeProfit = null;
-      for (const [sid, links] of this.orderStrategyLinks.entries()) {
-        if (this.contractCache.get(p.contractId) === symbol || links.entryOrderId) {
-          strategy = this.orderStrategyMap.get(sid) || strategy;
-          stopLoss = links.stopLoss ?? stopLoss;
-          takeProfit = links.takeProfit ?? takeProfit;
-          if (strategy) break;
-        }
-      }
-
-      enrichedPositions.push({
-        contractId: p.contractId,
-        symbol,
-        netPos,
-        entryPrice: p.netPrice ?? p.avgPrice ?? null,
-        strategy,
-        stopLoss,
-        takeProfit
-      });
-    }
-
-    // --- Working orders ---
+    // --- Working orders FIRST (positions use the side-map we build here) ---
     let workingOrders = [];
     try {
       const all = (await this.client.getOrders(this.brokerAccountId, false)) || [];
@@ -903,6 +884,13 @@ export class TradovateConnector extends BaseConnector {
     } catch (err) {
       this.logger.error(`[${this._label()}] reconcile getOrders failed: ${err.message}`);
     }
+
+    // contractId → { strategy, signalId, stopLoss, takeProfit }
+    // Built from enriched orders so the position loop can attribute by contract
+    // without scanning maps. Survives the "orderStrategyMap is empty after the
+    // process forgot a fill" failure mode that produced UNATTRIBUTED on
+    // 2026-05-27.
+    const strategyByContract = new Map();
 
     const enrichedOrders = [];
     const seenStrategyIds = new Set();
@@ -939,10 +927,44 @@ export class TradovateConnector extends BaseConnector {
         }
       }
 
-      const strategy = strategyId ? this.orderStrategyMap.get(strategyId) || null : null;
-      const signalId = strategyId ? this.orderSignalMap.get(strategyId) || null : null;
+      let strategy = strategyId ? this.orderStrategyMap.get(strategyId) || null : null;
+      let signalId = strategyId ? this.orderSignalMap.get(strategyId) || null : null;
+
+      // Broker-side recovery: when local maps don't know this order, fetch its
+      // `text` from OrderVersion and decode the signalId. Tradovate stores the
+      // tag indefinitely so this works across restarts, redeploys, and snapshot
+      // races. One HTTP per unattributed order, only on the cache-miss path.
+      if (!strategy) {
+        const recovered = await this._recoverFromOrderText(o.id);
+        if (recovered.strategy) {
+          strategy = recovered.strategy;
+          signalId = signalId || recovered.signalId;
+          // Treat this order as entry-like for future links lookups
+          if (!strategyId) {
+            strategyId = String(o.id);
+            role = 'entry';
+            if (!this.orderStrategyLinks.has(strategyId)) {
+              this.orderStrategyLinks.set(strategyId, {
+                entryOrderId: o.id, stopOrderId: null, targetOrderId: null,
+                isTrailing: false, timestamp: Date.now()
+              });
+            }
+          }
+        }
+      }
 
       if (strategyId) seenStrategyIds.add(strategyId);
+
+      // Populate the per-contract side-map for downstream position attribution.
+      if (strategy && o.contractId && !strategyByContract.has(o.contractId)) {
+        const links = strategyId ? this.orderStrategyLinks.get(strategyId) : null;
+        strategyByContract.set(o.contractId, {
+          strategy,
+          signalId,
+          stopLoss: links?.stopLoss ?? null,
+          takeProfit: links?.takeProfit ?? null,
+        });
+      }
 
       enrichedOrders.push({
         orderId: o.id,
@@ -958,6 +980,65 @@ export class TradovateConnector extends BaseConnector {
         stopPrice: o.stopPrice ?? null,
         orderQty: o.orderQty,
         status: o.ordStatus || o.status
+      });
+    }
+
+    // --- Positions (attributed from strategyByContract first, then local maps) ---
+    let positions = [];
+    try {
+      positions = await this.client.getPositions(this.brokerAccountId);
+    } catch (err) {
+      this.logger.error(`[${this._label()}] reconcile getPositions failed: ${err.message}`);
+    }
+
+    const enrichedPositions = [];
+    for (const p of (positions || [])) {
+      const symbol = this._resolveSymbol(p.contractId) || p.symbol;
+      const netPos = p.netPos ?? 0;
+      if (!symbol) continue;
+
+      // Cache contract symbol for later resolution
+      if (p.contractId && !this.contractCache.has(p.contractId)) {
+        this.contractCache.set(p.contractId, symbol);
+      }
+
+      let strategy = null;
+      let signalId = null;
+      let stopLoss = null;
+      let takeProfit = null;
+
+      // Primary: side-map populated from this snapshot's working orders.
+      const side = strategyByContract.get(p.contractId);
+      if (side) {
+        strategy = side.strategy;
+        signalId = side.signalId;
+        stopLoss = side.stopLoss;
+        takeProfit = side.takeProfit;
+      }
+
+      // Fallback: legacy local-links scan (preserves prior behaviour when no
+      // working bracket children exist — e.g. simple non-bracket positions).
+      if (!strategy) {
+        for (const [sid, links] of this.orderStrategyLinks.entries()) {
+          if (this.contractCache.get(p.contractId) === symbol || links.entryOrderId) {
+            strategy = this.orderStrategyMap.get(sid) || strategy;
+            signalId = signalId || this.orderSignalMap.get(sid) || null;
+            stopLoss = links.stopLoss ?? stopLoss;
+            takeProfit = links.takeProfit ?? takeProfit;
+            if (strategy) break;
+          }
+        }
+      }
+
+      enrichedPositions.push({
+        contractId: p.contractId,
+        symbol,
+        netPos,
+        entryPrice: p.netPrice ?? p.avgPrice ?? null,
+        strategy,
+        signalId,
+        stopLoss,
+        takeProfit
       });
     }
 
@@ -1117,6 +1198,79 @@ export class TradovateConnector extends BaseConnector {
       const ts = typeof v?.[tsField] === 'number' ? v[tsField] : (v?.[tsField] ? new Date(v[tsField]).getTime() : 0);
       if (ts && (now - ts) > ttlMs) map.delete(k);
     }
+  }
+
+  /**
+   * Build the broker-side tag string (used for `text` and `clOrdId`) from
+   * the order request. We use `signalId` directly since it already encodes
+   * strategy, direction, price, and timestamp — `${strategy}-${direction}-
+   * ${price}-${ts}` per trade-orchestrator/index.js:138. Returns null when
+   * there's no signalId or it's too long for the 64-char broker field.
+   */
+  _buildOrderTag(message) {
+    const sid = message?.signalId;
+    if (!sid || typeof sid !== 'string') return null;
+    if (sid.length > 60) {
+      // 60 not 64 — bracket children append ".sl"/".tp" (+3 chars). Leave headroom.
+      this.logger.warn?.(`[${this._label()}] signalId too long (${sid.length}>60) for broker text/clOrdId — skipping tag`);
+      return null;
+    }
+    return sid;
+  }
+
+  /**
+   * Decode the orchestrator-generated signalId shape `${strategy}-${direction}
+   * -${price}-${ts}` back into its parts. Returns {strategy, signalId} so a
+   * caller can attribute a position/order without local state.
+   *
+   * Bracket-child clOrdIds are signalId + ".sl" / ".tp" — strip those before
+   * decoding. Anything that doesn't match the pattern still returns the raw
+   * text as signalId so callers can store it; strategy stays null.
+   */
+  _parseStrategyFromText(text) {
+    if (!text || typeof text !== 'string') return { strategy: null, signalId: null };
+    const trimmed = text.replace(/\.(sl|tp|flat)$/, '');
+    const m = trimmed.match(/^(.+?)-(long|short)-([\d.]+)-(\d+)$/);
+    if (m) return { strategy: m[1], signalId: trimmed };
+    return { strategy: null, signalId: trimmed };
+  }
+
+  /**
+   * Lazy attribution recovery. When the in-memory orderStrategyMap misses,
+   * fetch `OrderVersion.text` for the order, decode strategy/signalId, and
+   * rehydrate the in-memory maps so subsequent lookups are free. Returns
+   * {strategy, signalId} or {strategy: null, signalId: null} on failure.
+   *
+   * Cheap on cache hit (no HTTP). One HTTP round-trip on miss; lossless
+   * server-side source of truth.
+   */
+  async _recoverFromOrderText(orderId) {
+    if (!orderId || !this.client?.getOrderVersions) return { strategy: null, signalId: null };
+    // Fast path: already attributed in-memory.
+    const cachedStrategy = this.orderStrategyMap.get(orderId) || this.orderStrategyMap.get(String(orderId));
+    const cachedSignal = this.orderSignalMap.get(orderId) || this.orderSignalMap.get(String(orderId));
+    if (cachedStrategy && cachedStrategy !== 'UNKNOWN') {
+      return { strategy: cachedStrategy, signalId: cachedSignal || null };
+    }
+    try {
+      const versions = await this.client.getOrderVersions(orderId);
+      // Most recent first — text is set at place and immutable on the version row.
+      for (const v of (versions || [])) {
+        if (v?.text) {
+          const parsed = this._parseStrategyFromText(v.text);
+          if (parsed.strategy) {
+            // Rehydrate the in-memory maps so future lookups skip the HTTP fetch.
+            this.orderStrategyMap.set(orderId, parsed.strategy);
+            if (parsed.signalId) this.orderSignalMap.set(orderId, parsed.signalId);
+            this.logger.info(`[${this._label()}] attribution recovered for order ${orderId}: strategy=${parsed.strategy} signalId=${parsed.signalId}`);
+            return parsed;
+          }
+        }
+      }
+    } catch (err) {
+      this.logger.warn?.(`[${this._label()}] _recoverFromOrderText(${orderId}) failed: ${err.message}`);
+    }
+    return { strategy: null, signalId: null };
   }
 
   async _rejectLocally(signalId, strategy, reason, extra = {}) {
