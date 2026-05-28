@@ -158,10 +158,30 @@ function findExistingPending(accountPending, brokerOrder) {
  * (account, symbol) net position. Drop a position only after it's missing
  * from the broker for `MISSING_OBSERVATIONS_BEFORE_DROP` consecutive snapshots.
  *
- * Mutates `openPositions` in place. Returns counters for logging.
+ * When the snapshot reveals an orphan position (broker has it, local doesn't —
+ * usually because the WS execution path dropped the entry fill), the caller's
+ * `resolveDefaults({strategy, signalId})` callback is consulted to recover the
+ * position's lifecycle metadata (maxHoldBars, exitRules, originalStop) from
+ * the orchestrator's known signal registry. Without this, adopted positions
+ * skip max-hold and exit-rule enforcement — a silent safety failure.
+ *
+ * Mutates `openPositions` in place. Returns counters plus an `adopted` array
+ * of newly-restored entries so the caller can register their exit rules with
+ * the exitRuleManager.
+ *
+ * @param {Map} openPositions
+ * @param {string} accountId
+ * @param {Array} brokerPositions
+ * @param {Function} posKey
+ * @param {object} [opts]
+ * @param {Function} [opts.resolveDefaults] - ({strategy, signalId}) => {maxHoldBars, exitRules, originalStop} | null
+ * @returns {{ restored: number, preserved: number, dropped: number, orphaned: number, adopted: Array }}
  */
-export function reconcilePositionSnapshot(openPositions, accountId, brokerPositions, posKey) {
-  if (!Array.isArray(brokerPositions)) return { restored: 0, preserved: 0, dropped: 0, orphaned: 0 };
+export function reconcilePositionSnapshot(openPositions, accountId, brokerPositions, posKey, opts = {}) {
+  if (!Array.isArray(brokerPositions)) {
+    return { restored: 0, preserved: 0, dropped: 0, orphaned: 0, adopted: [] };
+  }
+  const resolveDefaults = typeof opts.resolveDefaults === 'function' ? opts.resolveDefaults : null;
 
   const accountPositions = [];
   for (const [key, value] of openPositions.entries()) {
@@ -173,6 +193,7 @@ export function reconcilePositionSnapshot(openPositions, accountId, brokerPositi
   let restored = 0;
   let preserved = 0;
   let orphaned = 0;
+  const adopted = [];
 
   for (const p of brokerPositions) {
     if (!p.symbol || !p.netPos) continue;
@@ -194,17 +215,24 @@ export function reconcilePositionSnapshot(openPositions, accountId, brokerPositi
       preserved++;
     } else {
       const strategy = p.strategy || 'UNATTRIBUTED';
-      openPositions.set(posKey(accountId, strategy, p.symbol), {
+      const defaults = resolveDefaults
+        ? (resolveDefaults({ strategy, signalId: p.signalId ?? null }) || null)
+        : null;
+      const entry = {
         accountId, strategy, symbol: p.symbol, side, netPos: p.netPos,
-        entryPrice: p.entryPrice, signalId: null,
+        entryPrice: p.entryPrice, signalId: p.signalId ?? null,
         openedAt: new Date().toISOString(),
-        maxHoldBars: null,
-        exitRules: [],
-        originalStop: null,
+        maxHoldBars: defaults?.maxHoldBars ?? null,
+        exitRules: defaults?.exitRules ?? [],
+        originalStop: defaults?.originalStop ?? null,
         source: 'broker_snapshot',
+        defaultsSource: defaults?.source ?? null, // 'signalId' | 'strategy' | null
         missingFromBroker: 0,
         _seenThisSnapshot: true,
-      });
+      };
+      const key = posKey(accountId, strategy, p.symbol);
+      openPositions.set(key, entry);
+      adopted.push({ key, entry });
       orphaned++;
       restored++;
     }
@@ -222,5 +250,5 @@ export function reconcilePositionSnapshot(openPositions, accountId, brokerPositi
     }
   }
 
-  return { restored, preserved, dropped, orphaned };
+  return { restored, preserved, dropped, orphaned, adopted };
 }

@@ -64,10 +64,19 @@ export class CandleManager {
     const baseSymbol = this.resolveBaseSymbol(quote.baseSymbol);
     if (!baseSymbol) return null;
 
+    // candleTimestamp = bar-start (aligned to minute boundary). quote.timestamp
+    // is wall-clock-of-receipt on the Schwab path and would drift a few seconds
+    // past the bar, breaking strict ts-equality checks (e.g. ls-flip-trigger-bar
+    // matching an LS flip ts against the candle ts). TradingView emits it as
+    // epoch seconds; Schwab as ISO. Normalize to ISO.
+    const barStartIso = typeof quote.candleTimestamp === 'number'
+      ? new Date(quote.candleTimestamp * 1000).toISOString()
+      : quote.candleTimestamp;
+
     const buffer = this.getBuffer(baseSymbol);
     const candleData = {
       symbol: quote.symbol,
-      timestamp: quote.timestamp,
+      timestamp: barStartIso,
       open: quote.open,
       high: quote.high,
       low: quote.low,

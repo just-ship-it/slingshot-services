@@ -222,4 +222,97 @@ const posKey     = (acct, strat, sym) => `${acct}|${strat}|${sym}`;
   console.log('  ✓ orderId match works even when strategy/signalId stripped');
 })();
 
+// ── Scenario 8: orphan adoption recovers maxHold/exitRules via signalId ────
+// Regression test for the 2026-05-28 incident: WS executionReport dropped the
+// fill, the 5-min reconciler adopted the broker position as an orphan, but
+// adopted entries had maxHoldBars=null so checkMaxHold silently skipped them.
+(function orphanAdoptionResolvesBySignalId() {
+  const openPositions = new Map();
+  const ACCT = 'tradovate-abc';
+  const SIGNAL_ID = 'GEX_LT_3M_CROSSOVER-short-30284-1779985142202';
+
+  // Broker reports an attributed position the orchestrator never registered
+  // locally (POSITION_OPENED was dropped). signalId comes through via the
+  // connector's clOrdId text recovery.
+  const broker = [{
+    symbol: 'MNQM6', netPos: -1, entryPrice: 30299.5,
+    strategy: 'GEX_LT_3M_CROSSOVER', signalId: SIGNAL_ID,
+  }];
+
+  const registry = new Map([[SIGNAL_ID, {
+    strategy: 'GEX_LT_3M_CROSSOVER',
+    maxHoldBars: 120,
+    exitRules: [{ type: 'breakeven', triggerMFE: 80, offset: 20 }],
+    originalStop: 30354,
+  }]]);
+
+  const resolveDefaults = ({ signalId }) => {
+    const entry = registry.get(signalId);
+    return entry ? { ...entry, source: 'signalId' } : null;
+  };
+
+  const result = reconcilePositionSnapshot(
+    openPositions, ACCT, broker, posKey, { resolveDefaults }
+  );
+
+  assert(result.orphaned === 1, 'orphan must be counted');
+  assert(Array.isArray(result.adopted) && result.adopted.length === 1, 'adopted list returned');
+
+  const pos = openPositions.get(posKey(ACCT, 'GEX_LT_3M_CROSSOVER', 'MNQM6'));
+  assert(pos, 'orphan adopted under GEX_LT_3M_CROSSOVER key');
+  assert(pos.maxHoldBars === 120, `maxHoldBars must be recovered, got ${pos.maxHoldBars}`);
+  assert(pos.exitRules?.length === 1, 'exitRules recovered');
+  assert(pos.exitRules[0].type === 'breakeven', 'exit rule details preserved');
+  assert(pos.originalStop === 30354, 'originalStop recovered');
+  assert(pos.signalId === SIGNAL_ID, 'signalId carried through');
+  assert(pos.defaultsSource === 'signalId', 'defaultsSource tagged for observability');
+  console.log('  ✓ orphan adoption recovers protection metadata via signalId');
+})();
+
+// ── Scenario 9: orphan adoption falls back to per-strategy defaults ────────
+(function orphanAdoptionFallsBackToStrategy() {
+  const openPositions = new Map();
+  const ACCT = 'tradovate-abc';
+  // Broker recovered strategy but signalId is missing (connector cache miss
+  // older than what /orderVersion can return, or a malformed clOrdId).
+  const broker = [{
+    symbol: 'MNQM6', netPos: -1, entryPrice: 30299.5,
+    strategy: 'GEX_LT_3M_CROSSOVER', signalId: null,
+  }];
+
+  const resolveDefaults = ({ strategy, signalId }) => {
+    if (signalId) return null;
+    if (strategy === 'GEX_LT_3M_CROSSOVER') {
+      return { maxHoldBars: 90, exitRules: [], originalStop: null, source: 'strategy' };
+    }
+    return null;
+  };
+
+  const result = reconcilePositionSnapshot(
+    openPositions, ACCT, broker, posKey, { resolveDefaults }
+  );
+  assert(result.orphaned === 1, 'orphan counted');
+  const pos = openPositions.get(posKey(ACCT, 'GEX_LT_3M_CROSSOVER', 'MNQM6'));
+  assert(pos.maxHoldBars === 90, `strategy-fallback maxHold applied, got ${pos.maxHoldBars}`);
+  assert(pos.defaultsSource === 'strategy', 'source tagged strategy');
+  console.log('  ✓ orphan adoption falls back to per-strategy defaults');
+})();
+
+// ── Scenario 10: no resolver / no match → adopted with null protection ─────
+// Verifies the legacy behavior still works (so a deploy with the registry
+// empty doesn't crash) — but the caller is expected to log loudly.
+(function orphanAdoptionWithoutResolver() {
+  const openPositions = new Map();
+  const ACCT = 'tradovate-abc';
+  const broker = [{ symbol: 'MNQM6', netPos: -1, entryPrice: 30299.5, strategy: 'GEX_LT_3M_CROSSOVER', signalId: null }];
+
+  // No opts at all — must not throw, must still adopt.
+  const result = reconcilePositionSnapshot(openPositions, ACCT, broker, posKey);
+  assert(result.orphaned === 1, 'orphan adopted even without resolver');
+  const pos = openPositions.get(posKey(ACCT, 'GEX_LT_3M_CROSSOVER', 'MNQM6'));
+  assert(pos.maxHoldBars === null, 'maxHoldBars left null (caller must surface)');
+  assert(pos.defaultsSource === null, 'source null indicates no recovery');
+  console.log('  ✓ orphan adoption without resolver leaves null + tags source=null');
+})();
+
 console.log('snapshot-reconciler: all scenarios passed');

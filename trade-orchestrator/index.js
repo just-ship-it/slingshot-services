@@ -36,7 +36,10 @@ const logger = createLogger(SERVICE_NAME);
 // Redis keys owned by this service
 const KILL_SWITCH_KEY = 'trading:kill_switch';
 const OPEN_POSITIONS_KEY = 'orchestrator:open_positions';
+const SIGNAL_DEFAULTS_KEY = 'orchestrator:signal_defaults';
 const CONTRACTS_MAPPINGS_KEY = 'contracts:mappings';
+const SIGNAL_DEFAULTS_MAX = 5000; // FIFO cap to bound memory + checkpoint size
+const SIGNAL_DEFAULTS_TTL_MS = 24 * 3600 * 1000; // expire entries older than 24h
 const SIGNAL_DEDUP_PREFIX = 'signal:dedup:';
 const SIGNAL_DEDUP_TTL_SEC = 60;
 
@@ -67,13 +70,90 @@ const state = {
   pendingOrders: new Map(),
 
   // Cached view of account-store — refreshed on account.changed
-  accountsById: new Map()
+  accountsById: new Map(),
+
+  // Per-signal lifecycle metadata registry. Populated at signal routing time
+  // (see recordSignalDefaults), consumed by the snapshot reconciler when it
+  // adopts an orphan broker position whose POSITION_OPENED event was dropped.
+  // Without this, adopted positions get maxHoldBars=null and silently skip
+  // checkMaxHold + exit-rule enforcement. Map<signalId, { strategy, maxHoldBars,
+  // exitRules, originalStop, recordedAt }>. Bounded by SIGNAL_DEFAULTS_MAX +
+  // SIGNAL_DEFAULTS_TTL_MS. Insertion order is preserved by Map for FIFO evict.
+  signalDefaults: new Map(),
+
+  // Per-strategy fallback when adoption can't find a signalId match (e.g.
+  // broker snapshot lost the bracket clOrdId text). Holds the most recently
+  // recorded defaults per strategy. Lossy when a strategy emits different
+  // maxHoldBars per rule (gex-lt-3m-crossover) but strictly safer than null.
+  strategyDefaults: new Map(),
 };
 
 const stores = { routes: null, accounts: null, redis: null };
 
 function posKey(accountId, strategy, symbol) { return `${accountId}|${strategy}|${symbol}`; }
 function pendingKey(accountId, strategy, symbol) { return `${accountId}|${strategy}|${symbol}`; }
+
+// ---------- Signal-defaults registry ----------
+
+// Record the lifecycle metadata for a routed signal so the snapshot reconciler
+// can recover it later if the WS POSITION_OPENED event gets dropped and the
+// 5-min reconciler has to adopt the position from the broker snapshot.
+// Called from handleTradeSignal right after the pendingOrders entry is set.
+function recordSignalDefaults(signalId, signal, exitRules) {
+  if (!signalId || !signal?.strategy) return;
+  const entry = {
+    strategy: signal.strategy,
+    maxHoldBars: signal.maxHoldBars ?? null,
+    exitRules: Array.isArray(exitRules) ? exitRules : [],
+    originalStop: signal.stop_loss ?? null,
+    recordedAt: Date.now(),
+  };
+  // FIFO evict if at cap. Map preserves insertion order so delete-first works.
+  if (state.signalDefaults.size >= SIGNAL_DEFAULTS_MAX) {
+    const oldestKey = state.signalDefaults.keys().next().value;
+    if (oldestKey) state.signalDefaults.delete(oldestKey);
+  }
+  state.signalDefaults.set(signalId, entry);
+  state.strategyDefaults.set(signal.strategy, entry);
+}
+
+function pruneSignalDefaults() {
+  const cutoff = Date.now() - SIGNAL_DEFAULTS_TTL_MS;
+  for (const [k, v] of state.signalDefaults) {
+    if (v.recordedAt < cutoff) state.signalDefaults.delete(k);
+    else break; // Map iteration is insertion-ordered; once we hit a young one, the rest are younger
+  }
+}
+
+// Resolve adoption defaults for a snapshot-discovered orphan position. Tries
+// exact-match by signalId first (precise — same rule, same per-rule params),
+// then falls back to per-strategy last-known (lossy but safer than null).
+// Returns { maxHoldBars, exitRules, originalStop, source } | null.
+function resolveAdoptionDefaults({ strategy, signalId }) {
+  if (signalId) {
+    const exact = state.signalDefaults.get(signalId);
+    if (exact) {
+      return {
+        maxHoldBars: exact.maxHoldBars,
+        exitRules: exact.exitRules,
+        originalStop: exact.originalStop,
+        source: 'signalId',
+      };
+    }
+  }
+  if (strategy && strategy !== 'UNATTRIBUTED') {
+    const fallback = state.strategyDefaults.get(strategy);
+    if (fallback) {
+      return {
+        maxHoldBars: fallback.maxHoldBars,
+        exitRules: fallback.exitRules,
+        originalStop: fallback.originalStop,
+        source: 'strategy',
+      };
+    }
+  }
+  return null;
+}
 
 // ---------- Helpers ----------
 
@@ -197,6 +277,41 @@ async function checkpointOpenPositions(redis) {
     }));
   } catch (err) {
     logger.warn(`Failed to checkpoint open positions: ${err.message}`);
+  }
+}
+
+// Persist the signalDefaults registry so a restart doesn't lose protection
+// metadata for recently-routed signals. Without this, any orphan adopted via
+// snapshot reconciliation after a restart would default to maxHoldBars=null
+// until the next signal for that strategy fires.
+async function checkpointSignalDefaults(redis) {
+  try {
+    pruneSignalDefaults();
+    await redis.set(SIGNAL_DEFAULTS_KEY, JSON.stringify({
+      timestamp: new Date().toISOString(),
+      signalEntries: [...state.signalDefaults.entries()],
+      strategyEntries: [...state.strategyDefaults.entries()],
+    }));
+  } catch (err) {
+    logger.warn(`Failed to checkpoint signal defaults: ${err.message}`);
+  }
+}
+
+async function restoreSignalDefaults(redis) {
+  try {
+    const raw = await redis.get(SIGNAL_DEFAULTS_KEY);
+    if (!raw) return;
+    const data = JSON.parse(raw);
+    if (Array.isArray(data.signalEntries)) {
+      for (const [k, v] of data.signalEntries) state.signalDefaults.set(k, v);
+    }
+    if (Array.isArray(data.strategyEntries)) {
+      for (const [k, v] of data.strategyEntries) state.strategyDefaults.set(k, v);
+    }
+    pruneSignalDefaults();
+    logger.info(`Restored ${state.signalDefaults.size} signal defaults + ${state.strategyDefaults.size} strategy defaults from checkpoint`);
+  } catch (err) {
+    logger.warn(`Failed to restore signal defaults: ${err.message}`);
   }
 }
 
@@ -537,6 +652,12 @@ async function handleTradeSignal(raw) {
       preFillTakeProfit: signal.take_profit ?? null,
     });
 
+    // Persist signal's protection metadata to the signalDefaults registry so
+    // the snapshot reconciler can recover it later if the WS POSITION_OPENED
+    // event for this fill never arrives and the position has to be adopted
+    // from the broker snapshot. See resolveAdoptionDefaults + handlePositionSnapshot.
+    recordSignalDefaults(signalId, signal, exitRules);
+
     await messageBus.publish(CHANNELS.ORDER_REQUEST, orderRequest);
   }
 
@@ -725,14 +846,52 @@ async function handlePositionSnapshot(msg) {
 
   // Reconcile: same merge semantics as orders. Preserves local strategy
   // attribution + maxHoldBars + exitRules + signalId when broker confirms
-  // the same (account, symbol, side-sign) position.
-  const { preserved, dropped, orphaned } = reconcilePositionSnapshot(
-    state.openPositions, accountId, positions, posKey
+  // the same (account, symbol, side-sign) position. The resolveDefaults
+  // callback lets the reconciler recover protection metadata from the
+  // signalDefaults registry when adopting an orphan — without it, adopted
+  // positions skip max-hold and exit-rule enforcement (silent safety hole).
+  const { preserved, dropped, orphaned, adopted } = reconcilePositionSnapshot(
+    state.openPositions, accountId, positions, posKey,
+    { resolveDefaults: resolveAdoptionDefaults }
   );
   logger.info(
     `position.snapshot from ${accountId}: ${positions.length} broker positions → ` +
     `${preserved} preserved, ${orphaned} orphaned, ${dropped} dropped`
   );
+
+  // Register exit rules for each adopted orphan and emit operator-visible
+  // warnings. Missing maxHoldBars is logged at error severity because the
+  // position will not get force-closed on time — operator action may be
+  // required (manual close or tighten broker SL).
+  for (const { entry } of adopted) {
+    const tag = `[ADOPT ${entry.accountId} ${entry.strategy} ${entry.symbol} ${entry.side}]`;
+    const meta = `signalId=${entry.signalId || 'none'} src=${entry.defaultsSource || 'none'} maxHold=${entry.maxHoldBars ?? 'NULL'}min rules=${entry.exitRules?.length || 0}`;
+
+    if (entry.maxHoldBars && entry.maxHoldBars > 0) {
+      logger.warn(`${tag} adopted orphan from broker snapshot — ${meta}. checkMaxHold will force-close at openedAt + ${entry.maxHoldBars}min.`);
+    } else {
+      logger.error(`${tag} adopted orphan WITHOUT max-hold metadata — ${meta}. Position has NO time-based exit; only broker SL/TP + EOD force-flat will close it. Manual action may be required.`);
+    }
+
+    if (Array.isArray(entry.exitRules) && entry.exitRules.length > 0 && Number.isFinite(entry.entryPrice)) {
+      try {
+        exitRuleManager.register({
+          accountId: entry.accountId,
+          strategy: entry.strategy,
+          symbol: entry.symbol,
+          side: entry.side,
+          entryPrice: Number(entry.entryPrice),
+          signalId: entry.signalId || null,
+          originalStop: entry.originalStop ?? null,
+          rules: entry.exitRules,
+        });
+        logger.info(`${tag} registered ${entry.exitRules.length} exit rule(s) on adoption`);
+      } catch (err) {
+        logger.error(`${tag} failed to register exit rules on adoption: ${err.message}`);
+      }
+    }
+  }
+
   await checkpointOpenPositions(stores.redis);
 }
 
@@ -1133,6 +1292,7 @@ async function main() {
   await loadPositionSizing(redis);
   await loadTbRules(redis);
   await restoreOpenPositions(redis);
+  await restoreSignalDefaults(redis);
   await refreshAccountsCache();
 
   await messageBus.subscribe(CHANNELS.TRADE_SIGNAL, handleTradeSignal);
@@ -1174,6 +1334,10 @@ async function main() {
   app.listen(PORT, BIND_HOST, () => logger.info(`Orchestrator listening on ${BIND_HOST}:${PORT}`));
 
   setInterval(() => checkpointOpenPositions(redis), 30_000).unref();
+  // Persist signalDefaults less frequently (it only grows on signal route,
+  // and FIFO eviction + 24h TTL keep it bounded). Independent cadence so a
+  // bursty signal day doesn't amplify Redis writes.
+  setInterval(() => checkpointSignalDefaults(redis), 60_000).unref();
 
   // EOD force-flat scheduler: poll every 30s, fire cutoff once per weekday at
   // EOD_CUTOFF_ET. Bootstrap the fired-dates set with today's date if we're
