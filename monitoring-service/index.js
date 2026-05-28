@@ -1701,6 +1701,13 @@ app.get('/api/account-tracker', dashboardAuth, async (req, res) => {
     let perAccountTradeRecords = [];   // populated when accountId is set; used by MAE attribution below, NOT trajectory
     let dataSource = accountId ? 'per-account (balance snapshots)' : 'aggregated (balance snapshots)';
 
+    // Anchor: always begin the line at (startDate, startBalance) so the chart
+    // has a meaningful starting point even before the first snapshot lands.
+    actualTrajectory.push({
+      date: new Date(startMs).toISOString(),
+      balance: Math.round(startBalance * 100) / 100,
+    });
+
     const setKey = accountId ? `account:balance:${accountId}` : 'account:balance:_all';
     const rawSnaps = await messageBus.publisher.zRangeByScore(setKey, startMs, '+inf');
     const snapshots = rawSnaps
@@ -1708,6 +1715,9 @@ app.get('/api/account-tracker', dashboardAuth, async (req, res) => {
       .filter(Boolean)
       .sort((a, b) => a.ts - b.ts);
     for (const s of snapshots) {
+      // Skip a snapshot taken at or extremely close to startMs to avoid a
+      // duplicate point at the anchor.
+      if (s.ts - startMs < 1000) continue;
       actualTrajectory.push({
         date: new Date(s.ts).toISOString(),
         balance: Math.round((s.netLiq || 0) * 100) / 100,
