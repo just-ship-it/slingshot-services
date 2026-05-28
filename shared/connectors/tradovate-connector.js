@@ -877,9 +877,12 @@ export class TradovateConnector extends BaseConnector {
     if (!this.client) return;
 
     // --- Working orders FIRST (positions use the side-map we build here) ---
+    // Enriched=true so each order carries orderType/price/stopPrice from
+    // /orderVersion/deps — without that, the bracket-child price scan below
+    // can't classify Stop vs Limit children and TP/SL come through null.
     let workingOrders = [];
     try {
-      const all = (await this.client.getOrders(this.brokerAccountId, false)) || [];
+      const all = (await this.client.getOrders(this.brokerAccountId, true)) || [];
       workingOrders = all.filter(o => this._isActive(o.ordStatus || o.status));
     } catch (err) {
       this.logger.error(`[${this._label()}] reconcile getOrders failed: ${err.message}`);
