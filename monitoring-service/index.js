@@ -1405,6 +1405,57 @@ async function syncPnLFromTradovate() {
   return { ...rawResult, ...computeResult };
 }
 
+// Snapshot every enabled account's broker balance into Redis sorted sets.
+// This is the data source for the Account Tracker chart line. Authoritative
+// (uses broker netLiq, which includes fills/fees/unrealized P&L/deposits/withdrawals)
+// and decoupled from per-trade attribution.
+//
+// Storage layout:
+//   account:balance:<accountId>     ZSET   score=unix-ms, value=JSON snapshot
+//   account:balance:_all            ZSET   score=unix-ms, value=JSON aggregated snapshot
+async function snapshotAccountBalances() {
+  try {
+    const { accountStore } = await getStores();
+    const list = await accountStore.list();
+    const enabled = list.filter(a => a.enabled !== false);
+    if (!enabled.length) {
+      logger.info('balance snapshot: no enabled accounts');
+      return;
+    }
+    const tvUrl = process.env.TRADOVATE_SERVICE_URL || 'http://localhost:3011';
+    const ts = Date.now();
+    let aggregateNetLiq = 0;
+    let aggregateOK = true;
+    const redis = messageBus.publisher;
+    for (const acc of enabled) {
+      try {
+        const { data } = await axios.get(`${tvUrl}/accounts/${acc.id}/balance`, { timeout: 5000 });
+        const snap = {
+          ts,
+          netLiq: Number(data.netLiq) || 0,
+          balance: Number(data.balance) || 0,
+          realizedPnL: Number(data.realizedPnL) || 0,
+          unrealizedPnL: Number(data.unrealizedPnL) || 0,
+        };
+        await redis.zAdd(`account:balance:${acc.id}`, [{ score: ts, value: JSON.stringify(snap) }]);
+        aggregateNetLiq += snap.netLiq;
+      } catch (err) {
+        aggregateOK = false;
+        logger.warn(`balance snapshot failed for ${acc.id}: ${err.message}`);
+      }
+    }
+    if (aggregateOK) {
+      await redis.zAdd('account:balance:_all', [{
+        score: ts,
+        value: JSON.stringify({ ts, netLiq: aggregateNetLiq }),
+      }]);
+    }
+    logger.info(`balance snapshot: ${enabled.length} accounts, agg netLiq=$${aggregateNetLiq.toFixed(2)}`);
+  } catch (err) {
+    logger.error(`balance snapshot failed: ${err.message}`);
+  }
+}
+
 app.get('/api/pnl/trades', dashboardAuth, async (req, res) => {
   try {
     const raw = await messageBus.publisher.hGetAll('pnl:trades');
@@ -1639,21 +1690,66 @@ app.get('/api/account-tracker', dashboardAuth, async (req, res) => {
       return res.status(400).json({ error: 'startBalance must be a positive number' });
     }
 
-    // ── Source live trades. Two paths: ───────────────────────────────────
-    // (1) accountId provided → use trade:metrics:<accountId>:* (per-account,
-    //     includes strategy + MAE, populated by orchestrator on every close)
-    // (2) no accountId → fall back to aggregated pnl:daily / pnl:trades
-    //     (sum across all accounts — current behavior)
+    // ── Build trajectory from authoritative broker-balance snapshots ─────
+    // Hourly cron writes account:balance:<accountId> sorted sets (and an
+    // aggregated account:balance:_all). This is decoupled from per-trade
+    // attribution — the broker's reported netLiq is the source of truth and
+    // bakes in fills, fees, deposits, withdrawals, and unrealized P&L.
     const accountId = req.query.accountId || null;
     const startMs = new Date(startDate).getTime();
     let actualTrajectory = [];
-    let daily = [];
-    let perAccountTradeRecords = [];   // populated when accountId is set
-    let dataSource = 'aggregated';
+    let perAccountTradeRecords = [];   // populated when accountId is set; used by MAE attribution below, NOT trajectory
+    let dataSource = accountId ? 'per-account (balance snapshots)' : 'aggregated (balance snapshots)';
 
+    const setKey = accountId ? `account:balance:${accountId}` : 'account:balance:_all';
+    const rawSnaps = await messageBus.publisher.zRangeByScore(setKey, startMs, '+inf');
+    const snapshots = rawSnaps
+      .map(j => { try { return JSON.parse(j); } catch { return null; } })
+      .filter(Boolean)
+      .sort((a, b) => a.ts - b.ts);
+    for (const s of snapshots) {
+      actualTrajectory.push({
+        date: new Date(s.ts).toISOString(),
+        balance: Math.round((s.netLiq || 0) * 100) / 100,
+      });
+    }
+
+    // Append a live "now" point so the line and Current Balance always reflect
+    // the broker's current state, not the last hourly snapshot.
+    const tvUrl = process.env.TRADOVATE_SERVICE_URL || 'http://localhost:3011';
+    let liveNetLiq = null;
+    try {
+      if (accountId) {
+        const { data } = await axios.get(`${tvUrl}/accounts/${accountId}/balance`, { timeout: 5000 });
+        liveNetLiq = Number(data.netLiq) || 0;
+      } else {
+        const { accountStore } = await getStores();
+        const all = await accountStore.list();
+        let sum = 0;
+        for (const acc of all.filter(a => a.enabled !== false)) {
+          try {
+            const { data } = await axios.get(`${tvUrl}/accounts/${acc.id}/balance`, { timeout: 5000 });
+            sum += Number(data.netLiq) || 0;
+          } catch { /* one account failing shouldn't blank out the response */ }
+        }
+        liveNetLiq = sum;
+      }
+    } catch (err) {
+      logger.warn(`live balance fetch failed: ${err.message}`);
+    }
+    if (liveNetLiq != null) {
+      const nowTs = Date.now();
+      const last = actualTrajectory[actualTrajectory.length - 1];
+      if (!last || (nowTs - new Date(last.date).getTime()) > 30_000) {
+        actualTrajectory.push({
+          date: new Date(nowTs).toISOString(),
+          balance: Math.round(liveNetLiq * 100) / 100,
+        });
+      }
+    }
+
+    // ── Per-account trade metrics (for MAE comparison panel only) ────────
     if (accountId) {
-      dataSource = 'per-account (trade.metrics)';
-      // Scan all trade.metrics keys for this account.
       const accountKeys = [];
       for await (const k of messageBus.publisher.scanIterator({
         MATCH: `trade:metrics:${accountId}:*`, COUNT: 200,
@@ -1663,46 +1759,12 @@ app.get('/api/account-tracker', dashboardAuth, async (req, res) => {
       const accountVals = accountKeys.length
         ? await Promise.all(accountKeys.map(k => messageBus.publisher.get(k)))
         : [];
-      const records = accountVals
+      perAccountTradeRecords = accountVals
         .filter(Boolean)
         .map(v => { try { return JSON.parse(v); } catch { return null; } })
         .filter(Boolean)
         .filter(r => Number.isFinite(r.realizedPnl) && r.closedAt)
-        .filter(r => (typeof r.closedAt === 'number' ? r.closedAt : Date.parse(r.closedAt)) >= startMs)
-        .sort((a, b) => {
-          const ax = typeof a.closedAt === 'number' ? a.closedAt : Date.parse(a.closedAt);
-          const bx = typeof b.closedAt === 'number' ? b.closedAt : Date.parse(b.closedAt);
-          return ax - bx;
-        });
-
-      // Bucket by ET date for the trajectory.
-      const dailyMap = new Map();
-      for (const r of records) {
-        const closedMs = typeof r.closedAt === 'number' ? r.closedAt : Date.parse(r.closedAt);
-        const dateKey = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/New_York', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date(closedMs));
-        dailyMap.set(dateKey, (dailyMap.get(dateKey) || 0) + r.realizedPnl);
-      }
-      let running = startBalance;
-      for (const [date, pnl] of [...dailyMap.entries()].sort()) {
-        running += pnl;
-        actualTrajectory.push({ date, balance: Math.round(running * 100) / 100, dailyPnl: pnl });
-        daily.push({ date, netPnl: pnl });
-      }
-      perAccountTradeRecords = records;
-    } else {
-      // Aggregated path (no account filter — sums all accounts).
-      const dailyRaw = await messageBus.publisher.keys('pnl:daily:*');
-      const dailyVals = await Promise.all(dailyRaw.map(k => messageBus.publisher.get(k)));
-      daily = dailyVals
-        .filter(Boolean)
-        .map(v => JSON.parse(v))
-        .filter(d => d.date >= startDate)
-        .sort((a, b) => a.date.localeCompare(b.date));
-      let runningBalance = startBalance;
-      for (const d of daily) {
-        runningBalance += d.netPnl || 0;
-        actualTrajectory.push({ date: d.date, balance: Math.round(runningBalance * 100) / 100, dailyPnl: d.netPnl });
-      }
+        .filter(r => (typeof r.closedAt === 'number' ? r.closedAt : Date.parse(r.closedAt)) >= startMs);
     }
 
     // ── Live trades (for MAE comparison + strategy attribution) ──────────
@@ -4360,6 +4422,10 @@ async function handlePositionUpdate(message) {
       pnl: message.pnl || message.unrealizedPnL || 0,
       realizedPnL: message.realizedPnL || 0,
       unrealizedPnL: message.unrealizedPnL || message.pnl || 0,
+      // Sticky: openedAt locks at first observation so the dashboard can
+      // compute time-in-trade and time-to-EOD countdowns. Don't let
+      // subsequent snapshot updates clobber it.
+      openedAt: existing.openedAt || message.openedAt || message.timestamp || new Date().toISOString(),
       lastUpdate: message.timestamp || new Date().toISOString()
     };
 
@@ -4372,25 +4438,65 @@ async function handlePositionUpdate(message) {
   logActivity('position', `Position updated for ${message.symbol || 'multiple symbols'}`, message);
 }
 
+/**
+ * Stamp openedAt on the first POSITION_OPENED for a (accountId, symbol).
+ * Subsequent snapshots preserve it via stickyOpenedAt in handlePositionSnapshot.
+ * Without this, openedAt would default to "first snapshot timestamp" which
+ * lags the real fill by up to RECONCILE_INTERVAL_MS (5 min in the connector).
+ */
+async function handlePositionOpenedState(message) {
+  if (!message?.accountId || !message?.symbol) return;
+  const key = `${message.accountId}-${message.symbol}`;
+  const existing = monitoringState.positions.get(key) || {};
+  // Don't clobber an existing openedAt — if a prior open is already tracked
+  // (e.g. re-entry on the same symbol without an intervening flat snapshot)
+  // we keep the original. POSITION_CLOSED clears the record cleanly.
+  if (existing.openedAt) return;
+  monitoringState.positions.set(key, {
+    ...existing,
+    accountId: message.accountId,
+    brokerAccountId: message.brokerAccountId,
+    strategy: message.strategy || existing.strategy || null,
+    signalId: message.signalId || existing.signalId || null,
+    symbol: message.symbol,
+    side: message.side || (message.netPos > 0 ? 'long' : 'short'),
+    netPos: message.netPos ?? existing.netPos ?? null,
+    entryPrice: message.entryPrice ?? existing.entryPrice ?? null,
+    stopLoss: message.stopLoss ?? existing.stopLoss ?? null,
+    takeProfit: message.takeProfit ?? existing.takeProfit ?? null,
+    openedAt: message.timestamp || new Date().toISOString(),
+    lastUpdate: message.timestamp || new Date().toISOString(),
+    source: 'position_opened'
+  });
+}
+
 async function handlePositionSnapshot(message) {
   const { accountId, positions } = message || {};
   if (!accountId || !Array.isArray(positions)) return;
 
-  // Wipe all known positions for this account and rebuild from snapshot
+  // Snapshot replaces broker-truth fields, but openedAt (first observation
+  // timestamp used for time-in-trade countdowns) must survive the wipe.
+  // Stash openedAt-per-key before wiping, then restore inside the loop below.
   const prefix = `${accountId}-`;
+  const stickyOpenedAt = new Map();
   for (const key of [...monitoringState.positions.keys()]) {
-    if (key.startsWith(prefix)) monitoringState.positions.delete(key);
+    if (key.startsWith(prefix)) {
+      const prev = monitoringState.positions.get(key);
+      if (prev?.openedAt) stickyOpenedAt.set(key, prev.openedAt);
+      monitoringState.positions.delete(key);
+    }
   }
 
   for (const p of positions) {
     if (!p.symbol || !p.netPos) continue;
     const key = `${accountId}-${p.symbol}`;
-    const existing = monitoringState.positions.get(key) || {};
+    const existing = { openedAt: stickyOpenedAt.get(key) };
     monitoringState.positions.set(key, {
       ...existing,
       accountId,
       brokerAccountId: message.brokerAccountId,
       strategy: p.strategy || existing.strategy || null,
+      signalId: p.signalId || existing.signalId || null,
       symbol: p.symbol,
       side: p.netPos > 0 ? 'long' : 'short',
       netPos: p.netPos,
@@ -4400,6 +4506,10 @@ async function handlePositionSnapshot(message) {
       pnl: existing.pnl || 0,
       realizedPnL: existing.realizedPnL || 0,
       unrealizedPnL: existing.unrealizedPnL || 0,
+      // Sticky openedAt: keep the first observation. Snapshot itself doesn't
+      // know when the position opened, so we default to "now" only when no
+      // prior record exists — POSITION_OPENED gets there first 99% of the time.
+      openedAt: existing.openedAt || message.timestamp || new Date().toISOString(),
       lastUpdate: message.timestamp || new Date().toISOString(),
       source: 'snapshot'
     });
@@ -4906,6 +5016,7 @@ async function startup() {
     // Subscribe to all relevant channels
     const subscriptions = [
       [CHANNELS.ACCOUNT_UPDATE, handleAccountUpdate],
+      [CHANNELS.POSITION_OPENED, handlePositionOpenedState],
       [CHANNELS.POSITION_UPDATE, handlePositionUpdate],
       [CHANNELS.POSITION_CLOSED, handlePositionClosed],
       [CHANNELS.POSITION_SNAPSHOT, handlePositionSnapshot],
@@ -5030,6 +5141,14 @@ async function startup() {
         }
       }, { timezone: 'America/New_York' });
       logger.info(`P&L sync scheduled: "${pnlSchedule}" ET`);
+
+      // Schedule hourly account-balance snapshots (drives Account Tracker chart)
+      const balanceSchedule = process.env.BALANCE_SNAPSHOT_SCHEDULE || '0 * * * *';
+      cron.schedule(balanceSchedule, () => { snapshotAccountBalances(); });
+      logger.info(`Account balance snapshot scheduled: "${balanceSchedule}"`);
+      // Take an initial snapshot ~5s after startup so a fresh deploy doesn't wait
+      // a full hour for the first chart point.
+      setTimeout(() => { snapshotAccountBalances(); }, 5000);
     });
 
     // Graceful shutdown
