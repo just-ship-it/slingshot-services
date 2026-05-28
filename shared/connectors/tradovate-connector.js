@@ -892,6 +892,15 @@ export class TradovateConnector extends BaseConnector {
     // 2026-05-27.
     const strategyByContract = new Map();
 
+    // contractId → { stopPrice, buyLimit, sellLimit }
+    // TP/SL read straight off the live working bracket children. /order/placeOSO
+    // does not return oso1Id/oso2Id synchronously so the in-memory links never
+    // learn the bracket children's orderIds — every subsequent reconcile fails
+    // the id-match and the recovery path creates fresh links with null TP/SL.
+    // Pulling stopPrice/price off the working orders themselves bypasses that
+    // bookkeeping gap and also picks up any later BE / stop modifications.
+    const bracketByContract = new Map();
+
     const enrichedOrders = [];
     const seenStrategyIds = new Set();
     for (const o of workingOrders) {
@@ -966,6 +975,19 @@ export class TradovateConnector extends BaseConnector {
         });
       }
 
+      // Stash live bracket-child prices per contract. The position loop will
+      // pick the correct Limit side based on position direction.
+      if (o.contractId) {
+        const entry = bracketByContract.get(o.contractId) || { stopPrice: null, buyLimit: null, sellLimit: null };
+        if ((o.orderType === 'Stop' || o.orderType === 'StopLimit') && o.stopPrice != null) {
+          entry.stopPrice = Number(o.stopPrice);
+        } else if (o.orderType === 'Limit' && o.price != null) {
+          if (o.action === 'Buy') entry.buyLimit = Number(o.price);
+          else if (o.action === 'Sell') entry.sellLimit = Number(o.price);
+        }
+        bracketByContract.set(o.contractId, entry);
+      }
+
       enrichedOrders.push({
         orderId: o.id,
         strategyId,
@@ -1028,6 +1050,19 @@ export class TradovateConnector extends BaseConnector {
             if (strategy) break;
           }
         }
+      }
+
+      // Authoritative TP/SL from live working bracket children for this contract.
+      // Overrides the link-derived values because the working order reflects any
+      // BE / stop modifications, and because placeOSO doesn't return bracket child
+      // ids so the links values for in-flight bracket positions are routinely null.
+      const live = bracketByContract.get(p.contractId);
+      if (live) {
+        if (live.stopPrice != null) stopLoss = live.stopPrice;
+        // Bracket target is opposite-action to entry. netPos > 0 → long entry
+        // (Buy), so target = Sell Limit. netPos < 0 → short entry, target = Buy Limit.
+        if (netPos > 0 && live.sellLimit != null) takeProfit = live.sellLimit;
+        else if (netPos < 0 && live.buyLimit != null) takeProfit = live.buyLimit;
       }
 
       enrichedPositions.push({

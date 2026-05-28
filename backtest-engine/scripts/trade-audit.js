@@ -79,6 +79,38 @@ const STRATEGY_DEFAULTS = {
 
 const DEFAULT_FALLBACK = { fillTimeoutMin: 5, maxHoldMin: 90 };
 
+// Per-strategy DYNAMIC EXIT presets (BE/trail) reflecting the production-deployed
+// configurations as of 2026-05-21:
+//   GLF=v2, GFI=v2, GLX=v3, LSTB=v3 (candJ).
+// Sources of truth: signal-generator/src/utils/config.js PRESETS maps.
+// Keyed by "STRATEGY:ruleId" with fallback to "STRATEGY".
+// Fields are in POINTS (NQ). Null = disabled.
+//   - beTrigger / beOffset: when MFE >= beTrigger pts, move stop to entry +/- beOffset
+//     (offset is "in profit" direction).
+//   - trailTrigger / trailOffset: when MFE >= trailTrigger pts, start trailing stop at
+//     (current best extreme) - trailOffset for LONG, + for SHORT.
+// NOTE: This script does NOT simulate LS-BE-on-flip overlays or fib-retrace exits
+// (those require LS 1m state data and per-bar MFE-trajectory data not in the audit
+// pipeline). The dominant deployed dynamic is BE, which is captured here.
+const DYNAMIC_EXIT_PRESETS = {
+  'GEX_LEVEL_FADE':                 { beTrigger: 100, beOffset: 10, trailTrigger: null, trailOffset: null },
+  'GEX_FLIP_IVPCT':                 { beTrigger: 160, beOffset: 10, trailTrigger: null, trailOffset: null },
+  'GEX_LT_3M_CROSSOVER:S_CW':       { beTrigger: 80,  beOffset: 20, trailTrigger: null, trailOffset: null },
+  'GEX_LT_3M_CROSSOVER:S_GF_SOLO':  { beTrigger: 80,  beOffset: 20, trailTrigger: null, trailOffset: null },
+  'GEX_LT_3M_CROSSOVER:L_S4':       { beTrigger: 70,  beOffset: 20, trailTrigger: null, trailOffset: null },
+  'GEX_LT_3M_CROSSOVER:S_R4':       { beTrigger: null,beOffset: 0,  trailTrigger: 70,   trailOffset: 25   },
+  'GEX_LT_3M_CROSSOVER':            { beTrigger: 80,  beOffset: 20, trailTrigger: null, trailOffset: null }, // fallback
+  'LS_FLIP_TRIGGER_BAR':            { beTrigger: 8,   beOffset: 2,  trailTrigger: null, trailOffset: null },
+};
+const NO_DYNAMIC = { beTrigger: null, beOffset: 0, trailTrigger: null, trailOffset: 0 };
+
+function resolveDynamicExits(strategy, ruleId) {
+  if (ruleId && DYNAMIC_EXIT_PRESETS[`${strategy}:${ruleId}`]) {
+    return DYNAMIC_EXIT_PRESETS[`${strategy}:${ruleId}`];
+  }
+  return DYNAMIC_EXIT_PRESETS[strategy] || NO_DYNAMIC;
+}
+
 function resolveDefaults(strategy, ruleId) {
   if (ruleId && STRATEGY_DEFAULTS[`${strategy}:${ruleId}`]) {
     return STRATEGY_DEFAULTS[`${strategy}:${ruleId}`];
@@ -129,6 +161,8 @@ function usage() {
   console.error('  --strategy <name>           filter to a single strategy constant');
   console.error('  --allow-parallel            disable the 1-position-at-a-time-per-strategy gate');
   console.error('                              (default: enforce — matches live orchestrator)');
+  console.error('  --static-exits              disable BE/trail dynamic exits (legacy walk)');
+  console.error('                              (default: simulate deployed v2/v3 BE/trail presets)');
   process.exit(2);
 }
 
@@ -327,6 +361,16 @@ function auditOneSignal(signal, bars, dateStr, opts) {
   const fillBar = bars[fillBarIdx];
   const maxHoldEndUtc = Math.min(fillBar.ts + maxHoldMin * 60_000, eodCutoffUtc);
 
+  // Dynamic exit setup. Set opts.staticExits = true to disable (legacy walk).
+  const dyn = opts.staticExits ? NO_DYNAMIC : resolveDynamicExits(signal.strategy, signal.ruleId);
+  const isShort = signal.side === 'SHORT';
+  let currentStop = signal.sl;
+  let beActive = false;
+  let trailActive = false;
+  let bestExtreme = signal.entry; // running max-favorable price reached
+  // MFE in points, always positive when in-profit.
+  const mfeFromPrice = (price) => isShort ? (signal.entry - price) : (price - signal.entry);
+
   // Walk forward starting from the bar AFTER fill — fill bar itself can't
   // be evaluated for stop/target with 1m precision (we don't know if the
   // limit filled before or after the bar's high/low extremes).
@@ -336,31 +380,96 @@ function auditOneSignal(signal, bars, dateStr, opts) {
       // Max-hold / EOD cutoff hit before SL or TP.
       const reason = b.ts >= eodCutoffUtc ? 'eod_cutoff' : 'max_hold';
       const exitPrice = b.open;
-      const pnlPts = signal.side === 'SHORT' ? signal.entry - exitPrice : exitPrice - signal.entry;
+      const pnlPts = isShort ? signal.entry - exitPrice : exitPrice - signal.entry;
       return { ...signal, outcome: reason, signalUtc, exitReason: reason,
         fillTime: fillBar.ts, exitTime: b.ts, exitPrice,
-        pnlPts, pnlDollars: pnlPts * POINT_VALUE, ambiguous: false };
+        pnlPts, pnlDollars: pnlPts * POINT_VALUE, ambiguous: false,
+        finalStop: currentStop, beActivated: beActive, trailActivated: trailActive };
     }
-    const slHit = signal.side === 'SHORT' ? b.high >= signal.sl : b.low <= signal.sl;
-    const tpHit = signal.side === 'SHORT' ? b.low <= signal.tp : b.high >= signal.tp;
+
+    // Intrabar MFE for this bar (favorable extreme).
+    const barFavorableExtreme = isShort ? b.low : b.high;
+    const barMfe = mfeFromPrice(barFavorableExtreme);
+
+    // Will BE / trail activate intrabar on this bar? Compute pre-stop check
+    // so a same-bar MFE-trigger + (old-stop hit) becomes a same-bar BE-protected hit.
+    const beTriggeredThisBar = !beActive && dyn.beTrigger !== null && barMfe >= dyn.beTrigger;
+    const trailTriggeredThisBar = !trailActive && dyn.trailTrigger !== null && barMfe >= dyn.trailTrigger;
+
+    // Compute the effective stop FOR THIS BAR given intrabar BE/trail activation.
+    // Optimistic intrabar model: assumes MFE was reached before the bar's pullback
+    // to stop (matches live tick-level orchestrator behavior). Flag the case where
+    // BOTH the old stop AND BE-triggered-MFE were touched on the same bar.
+    let effectiveStop = currentStop;
+    let intrabarBeAmbiguous = false;
+    if (beTriggeredThisBar) {
+      const beStop = isShort ? signal.entry - dyn.beOffset : signal.entry + dyn.beOffset;
+      // Only TIGHTEN the stop (never widen it).
+      const tighter = isShort ? Math.min(beStop, currentStop) : Math.max(beStop, currentStop);
+      // Ambiguity check: would the OLD stop have hit on this bar?
+      const oldStopHitThisBar = isShort ? b.high >= currentStop : b.low <= currentStop;
+      if (oldStopHitThisBar) intrabarBeAmbiguous = true;
+      effectiveStop = tighter;
+    }
+    if (trailTriggeredThisBar || trailActive) {
+      // Trail anchors to running best extreme INCLUDING this bar's intrabar extreme.
+      const updatedExtreme = isShort
+        ? Math.min(bestExtreme, barFavorableExtreme)
+        : Math.max(bestExtreme, barFavorableExtreme);
+      const trailStop = isShort ? updatedExtreme + dyn.trailOffset : updatedExtreme - dyn.trailOffset;
+      effectiveStop = isShort ? Math.min(trailStop, effectiveStop) : Math.max(trailStop, effectiveStop);
+    }
+
+    // Evaluate hits with the bar-effective stop.
+    const slHit = isShort ? b.high >= effectiveStop : b.low <= effectiveStop;
+    const tpHit = isShort ? b.low <= signal.tp : b.high >= signal.tp;
+
     if (slHit && tpHit) {
-      // Ambiguous — both hit in same 1m bar. Conservative: assume SL first.
-      const pnlPts = -Math.abs(signal.entry - signal.sl);
-      return { ...signal, outcome: 'stop_loss', signalUtc, exitReason: 'stop_loss',
-        fillTime: fillBar.ts, exitTime: b.ts, exitPrice: signal.sl,
-        pnlPts, pnlDollars: pnlPts * POINT_VALUE, ambiguous: true };
+      // Same-bar SL+TP — conservative SL-first.
+      const pnlPts = isShort ? signal.entry - effectiveStop : effectiveStop - signal.entry;
+      const reason = beTriggeredThisBar ? 'breakeven_stop' : (trailActive || trailTriggeredThisBar ? 'trail_stop' : 'stop_loss');
+      return { ...signal, outcome: reason, signalUtc, exitReason: reason,
+        fillTime: fillBar.ts, exitTime: b.ts, exitPrice: effectiveStop,
+        pnlPts, pnlDollars: pnlPts * POINT_VALUE, ambiguous: true,
+        finalStop: effectiveStop, beActivated: beTriggeredThisBar || beActive,
+        trailActivated: trailTriggeredThisBar || trailActive,
+        intrabarBeAmbiguous };
     }
     if (slHit) {
-      const pnlPts = -Math.abs(signal.entry - signal.sl);
-      return { ...signal, outcome: 'stop_loss', signalUtc, exitReason: 'stop_loss',
-        fillTime: fillBar.ts, exitTime: b.ts, exitPrice: signal.sl,
-        pnlPts, pnlDollars: pnlPts * POINT_VALUE, ambiguous: false };
+      const pnlPts = isShort ? signal.entry - effectiveStop : effectiveStop - signal.entry;
+      const reason = (beTriggeredThisBar || beActive) && effectiveStop !== signal.sl
+        ? 'breakeven_stop'
+        : (trailActive || trailTriggeredThisBar) && effectiveStop !== signal.sl
+          ? 'trail_stop'
+          : 'stop_loss';
+      return { ...signal, outcome: reason, signalUtc, exitReason: reason,
+        fillTime: fillBar.ts, exitTime: b.ts, exitPrice: effectiveStop,
+        pnlPts, pnlDollars: pnlPts * POINT_VALUE, ambiguous: false,
+        finalStop: effectiveStop, beActivated: beTriggeredThisBar || beActive,
+        trailActivated: trailTriggeredThisBar || trailActive,
+        intrabarBeAmbiguous };
     }
     if (tpHit) {
       const pnlPts = Math.abs(signal.tp - signal.entry);
       return { ...signal, outcome: 'take_profit', signalUtc, exitReason: 'take_profit',
         fillTime: fillBar.ts, exitTime: b.ts, exitPrice: signal.tp,
-        pnlPts, pnlDollars: pnlPts * POINT_VALUE, ambiguous: false };
+        pnlPts, pnlDollars: pnlPts * POINT_VALUE, ambiguous: false,
+        finalStop: effectiveStop, beActivated: beTriggeredThisBar || beActive,
+        trailActivated: trailTriggeredThisBar || trailActive };
+    }
+
+    // Bar survived. Commit BE/trail activations and update running extreme.
+    if (beTriggeredThisBar) {
+      beActive = true;
+      currentStop = effectiveStop;
+    }
+    if (trailTriggeredThisBar) trailActive = true;
+    if (trailActive) {
+      bestExtreme = isShort
+        ? Math.min(bestExtreme, barFavorableExtreme)
+        : Math.max(bestExtreme, barFavorableExtreme);
+      const trailStop = isShort ? bestExtreme + dyn.trailOffset : bestExtreme - dyn.trailOffset;
+      currentStop = isShort ? Math.min(trailStop, currentStop) : Math.max(trailStop, currentStop);
     }
   }
   // Ran out of bars before a resolution — partial data.
@@ -368,7 +477,8 @@ function auditOneSignal(signal, bars, dateStr, opts) {
   return { ...signal, outcome: 'data_truncated', signalUtc, exitReason: 'data_truncated',
     fillTime: fillBar.ts, exitTime: lastBar.ts, exitPrice: lastBar.close,
     pnlPts: signal.side === 'SHORT' ? signal.entry - lastBar.close : lastBar.close - signal.entry,
-    pnlDollars: 0, ambiguous: false };
+    pnlDollars: 0, ambiguous: false,
+    finalStop: currentStop, beActivated: beActive, trailActivated: trailActive };
 }
 
 // --------------------------- Reporting ---------------------------
@@ -388,10 +498,16 @@ function summarize(results) {
   const total = results.length;
   const skipped = results.filter(r => r.outcome === 'skipped_position_active').length;
   const filled = results.filter(r => r.outcome !== 'no_fill' && r.outcome !== 'skipped_position_active').length;
-  const wins = results.filter(r => r.outcome === 'take_profit').length;
-  const losses = results.filter(r => r.outcome === 'stop_loss').length;
+  // "Wins" = profitable closes (take_profit, plus BE/trail exits that happened
+  // to land in profit). "Losses" = unprofitable closes (stop_loss, plus BE/trail
+  // exits that landed at-or-below entry). Counts trade PnL sign, not exit kind.
+  const wins = results.filter(r => r.pnlDollars > 0).length;
+  const losses = results.filter(r => r.pnlDollars < 0).length;
   const ambiguous = results.filter(r => r.ambiguous).length;
   const noFill = results.filter(r => r.outcome === 'no_fill').length;
+  const beStops = results.filter(r => r.outcome === 'breakeven_stop').length;
+  const trailStops = results.filter(r => r.outcome === 'trail_stop').length;
+  const intrabarBeAmb = results.filter(r => r.intrabarBeAmbiguous).length;
   const sumPnL = results.reduce((s, r) => s + r.pnlDollars, 0);
   const sumPts = results.reduce((s, r) => s + r.pnlPts, 0);
   const gross = results.reduce((acc, r) => {
@@ -401,7 +517,8 @@ function summarize(results) {
   }, { gp: 0, gl: 0 });
   const pf = gross.gl > 0 ? gross.gp / gross.gl : (gross.gp > 0 ? Infinity : 0);
   const wr = (wins + losses) > 0 ? (wins / (wins + losses)) * 100 : 0;
-  return { total, skipped, filled, wins, losses, ambiguous, noFill, sumPts, sumPnL, pf, wr };
+  return { total, skipped, filled, wins, losses, ambiguous, noFill,
+    beStops, trailStops, intrabarBeAmb, sumPts, sumPnL, pf, wr };
 }
 
 function printResults(results, dateStr, candleRange) {
@@ -457,6 +574,13 @@ function printResults(results, dateStr, candleRange) {
   console.log(`  signals: ${t.total}  filled: ${t.filled}  no-fill: ${t.noFill}  skipped (slot busy): ${t.skipped}  ambiguous: ${t.ambiguous}`);
   console.log(`  wins: ${t.wins}  losses: ${t.losses}  WR: ${t.wr.toFixed(1)}%  PF: ${pfStr}`);
   console.log(`  net PnL: ${fmtDollars(t.sumPnL)}  (${t.sumPts.toFixed(1)} pts × $${POINT_VALUE}/pt)`);
+  if (t.beStops > 0 || t.trailStops > 0) {
+    console.log(`  dynamic exits: ${t.beStops} breakeven_stop, ${t.trailStops} trail_stop`);
+    if (t.intrabarBeAmb > 0) {
+      console.log(`    ⚠ ${t.intrabarBeAmb} trade(s) had BE-trigger + old-stop hit on the same 1m bar`);
+      console.log(`      — modeled optimistically (BE saved the trade). Re-run on 1s for precision.`);
+    }
+  }
   if (t.skipped > 0) {
     console.log(`  ${t.skipped} signal(s) skipped — same-strategy slot was still occupied by an earlier`);
     console.log(`    pending/open trade. Matches live orchestrator's 1-position-at-a-time rule per`);
@@ -591,7 +715,13 @@ async function main() {
   const opts = {
     fillTimeoutMin: args['fill-timeout-min'] ? parseInt(args['fill-timeout-min'], 10) : null,
     maxHoldMin: args['max-hold-min'] ? parseInt(args['max-hold-min'], 10) : null,
+    staticExits: args['static-exits'] === true,
   };
+  if (!opts.staticExits) {
+    console.log('Dynamic exits ENABLED (BE/trail per deployed v2/v3 presets). Use --static-exits to disable.');
+  } else {
+    console.log('Static SL/TP walk (no BE/trail dynamics).');
+  }
 
   // Audit each signal in time order, enforcing the live "one trade at a time
   // per strategy" rule. Live orchestrator's pendingOrders is keyed by
