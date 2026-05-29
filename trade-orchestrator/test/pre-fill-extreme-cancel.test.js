@@ -52,6 +52,19 @@ ok(buy(null, 88) !== null && /SL-first/.test(buy(null, 88)), 'BUY: null high but
 ok(buy(112, null) !== null && /TP-first/.test(buy(112, null)), 'BUY: null low but high past TP should still cancel');
 ok(buy(105, null) === null, 'BUY: null low and high inside envelope should not cancel');
 
+// --- 'long'/'short' vocabulary (the value the orchestrator actually stores
+//      on pending.direction via normalizeDirection — must behave like buy/sell).
+//      Regression: passing 'long'/'short' previously matched neither branch and
+//      silently returned null, so the live cancel never fired. ---
+const long = (high, low) => shouldCancelOnPreFillExtreme('long', 90, 110, high, low);
+const short = (high, low) => shouldCancelOnPreFillExtreme('short', 110, 90, high, low);
+ok(long(112, 100) !== null && /TP-first/.test(long(112, 100)), "'long': high past TP should cancel (treated as buy)");
+ok(long(101, 88) !== null && /SL-first/.test(long(101, 88)), "'long': low past SL should cancel (treated as buy)");
+ok(long(105, 95) === null, "'long': bar inside envelope should not cancel");
+ok(short(105, 88) !== null && /TP-first/.test(short(105, 88)), "'short': low past TP should cancel (treated as sell)");
+ok(short(112, 95) !== null && /SL-first/.test(short(112, 95)), "'short': high past SL should cancel (treated as sell)");
+ok(short(105, 95) === null, "'short': bar inside envelope should not cancel");
+
 // --- Unknown direction ---
 ok(shouldCancelOnPreFillExtreme('unknown', 90, 110, 200, 0) === null, 'unknown direction should never cancel');
 
