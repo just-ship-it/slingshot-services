@@ -27,6 +27,7 @@ import { createAccountStore, ACCOUNT_CHANNEL } from '../shared/utils/account-sto
 import { createRoutesStore, ROUTES_CHANNEL } from '../shared/utils/routes-store.js';
 import { evaluateCrossStrategyRules, evaluateStrategyAlerts } from './cross-strategy-filter.js';
 import { createExitRuleManager, captureRuleFromSignal } from './src/exit-rule-manager.js';
+import { applyStrategyRuleProfile } from './src/strategy-rule-profile.js';
 import { shouldCancelOnPreFillExtreme } from './src/pre-fill-cancel.js';
 import { reconcileOrdersSnapshot, reconcilePositionSnapshot } from './src/snapshot-reconciler.js';
 
@@ -86,6 +87,17 @@ const state = {
   // recorded defaults per strategy. Lossy when a strategy emits different
   // maxHoldBars per rule (gex-lt-3m-crossover) but strictly safer than null.
   strategyDefaults: new Map(),
+
+  // Canonical exit policy keyed by (strategy, ruleId). The exit rules
+  // (break-even, max-hold, trailing) belong to the STRATEGY+RULE, not to a
+  // particular inbound payload — so we cache them per rule from any signal that
+  // carries them, and re-apply by attribution to signals that arrive WITHOUT
+  // them. The motivating case: a manual dashboard "Resend" reconstructs the
+  // signal from the alert payload, which omits breakeven_*/maxHoldBars, so the
+  // replayed order would otherwise run with no BE and no max-hold. Unlike
+  // strategyDefaults this is per-rule, so S_GF_SOLO ≠ S_CW for gex-lt-3m.
+  // Map<`${strategy}|${ruleId}`, { maxHoldBars, exitRules, recordedAt }>.
+  strategyRuleDefaults: new Map(),
 };
 
 const stores = { routes: null, accounts: null, redis: null };
@@ -154,6 +166,7 @@ function resolveAdoptionDefaults({ strategy, signalId }) {
   }
   return null;
 }
+
 
 // ---------- Helpers ----------
 
@@ -291,6 +304,7 @@ async function checkpointSignalDefaults(redis) {
       timestamp: new Date().toISOString(),
       signalEntries: [...state.signalDefaults.entries()],
       strategyEntries: [...state.strategyDefaults.entries()],
+      strategyRuleEntries: [...state.strategyRuleDefaults.entries()],
     }));
   } catch (err) {
     logger.warn(`Failed to checkpoint signal defaults: ${err.message}`);
@@ -308,8 +322,11 @@ async function restoreSignalDefaults(redis) {
     if (Array.isArray(data.strategyEntries)) {
       for (const [k, v] of data.strategyEntries) state.strategyDefaults.set(k, v);
     }
+    if (Array.isArray(data.strategyRuleEntries)) {
+      for (const [k, v] of data.strategyRuleEntries) state.strategyRuleDefaults.set(k, v);
+    }
     pruneSignalDefaults();
-    logger.info(`Restored ${state.signalDefaults.size} signal defaults + ${state.strategyDefaults.size} strategy defaults from checkpoint`);
+    logger.info(`Restored ${state.signalDefaults.size} signal defaults + ${state.strategyDefaults.size} strategy defaults + ${state.strategyRuleDefaults.size} rule profiles from checkpoint`);
   } catch (err) {
     logger.warn(`Failed to restore signal defaults: ${err.message}`);
   }
@@ -523,6 +540,16 @@ async function handleTradeSignal(raw) {
   const tradedSymbol = applyContractMapping(originalSymbol);
   const underlying = extractUnderlying(tradedSymbol);
 
+  // Enforce the strategy's exit policy by ATTRIBUTION, independent of origin.
+  // Capture the exit rules this signal carries, then backfill any missing
+  // break-even / max-hold from the cached (strategy, ruleId) profile — so a
+  // manual Resend (whose alert payload omits those fields) still runs the same
+  // exits as a fresh signal. Done before the gate so the profile also stays
+  // warm from signals that end up rejected. `exitRules` is reused below.
+  const exitRules = applyStrategyRuleProfile(
+    state.strategyRuleDefaults, signal, captureRuleFromSignal(signal), { logger, logId: signalId }
+  );
+
   // Cross-strategy filter (underlying-scoped, non-account-aware)
   const crossView = buildUnderlyingPositionView();
   const crossResult = evaluateCrossStrategyRules(
@@ -628,13 +655,9 @@ async function handleTradeSignal(raw) {
     // Carry maxHoldBars / timeoutCandles forward so the polling loop can
     // enforce time-based exits (max hold) and stale-limit cancellation
     // for strategies that supply them (e.g. gex-lt-3m-crossover).
-    // Capture any post-fill exit rules emitted by the strategy. Returns an
-    // array — strategies can stack rules (e.g. gex-flip-ivpct's two-layer
-    // BE+fib config). The rules ride on pendingOrders until the fill, then
-    // transfer onto the open position where the exit-rule manager picks
-    // them up on each price.update / candle.close.
-    const exitRules = captureRuleFromSignal(signal);
-
+    // exitRules (captured + profile-backfilled above) ride on pendingOrders
+    // until the fill, then transfer onto the open position where the exit-rule
+    // manager picks them up on each price.update / candle.close.
     state.pendingOrders.set(pendingKey(accountId, signal.strategy, tradedSymbol), {
       accountId, strategy: signal.strategy, symbol: tradedSymbol,
       direction, signalId, requestedAt: Date.now(),
@@ -978,6 +1001,109 @@ function isPastEodCutoff(timestamp = Date.now()) {
   return et.hour > cutoffH || (et.hour === cutoffH && et.minute >= cutoffM);
 }
 
+// ---------- Hardened broker flatten (shared by max-hold + EOD) ----------
+
+// Time budget for a flatten call. tradovate-service's liquidatePosition polls
+// the broker up to ~30s (3 retries × 5s + slack) before it gives up, so allow
+// headroom beyond that so we read its real verdict rather than aborting early.
+const FLATTEN_FETCH_TIMEOUT_MS = 45_000;
+
+// Flatten a position at the broker and confirm it actually went flat.
+// POSTs to tradovate-service /accounts/:id/flatten/:symbol, which cancels all
+// working orders AND liquidates the net position, polling the broker until it
+// verifies net=0 with no working orders. Because the broker liquidation is
+// direction/quantity-agnostic (it flattens whatever is actually held), this
+// cannot leave an orphan bracket that later reopens the opposite side — the
+// failure mode the old "synthesize a market order from pos.netPos" path had.
+//
+// Returns { flat: boolean, detail }. flat=true ONLY on broker-verified flat.
+async function flattenAtBroker(accountId, symbol, { reason } = {}) {
+  const url = `${TRADOVATE_SERVICE_URL}/accounts/${encodeURIComponent(accountId)}/flatten/${encodeURIComponent(symbol)}`;
+  const ac = new AbortController();
+  const timer = setTimeout(() => ac.abort(), FLATTEN_FETCH_TIMEOUT_MS);
+  try {
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ reason: reason || null }),
+      signal: ac.signal,
+    });
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok || body.ok !== true || body.verified !== true) {
+      return { flat: false, detail: body.error || `HTTP ${res.status}` };
+    }
+    return { flat: true, detail: body.result || null };
+  } catch (err) {
+    return { flat: false, detail: err.name === 'AbortError' ? `timeout after ${FLATTEN_FETCH_TIMEOUT_MS}ms` : err.message };
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+// Direct critical-alert email + SMS via the Resend HTTP API (no SDK dep).
+// Used for kill-switch events. Deliberately INDEPENDENT of the Redis →
+// monitoring-service → Discord path, because trading gets auto-disabled
+// precisely when infra may be degraded — so we don't want the only notification
+// to depend on another service being healthy. Mirrors the Resend setup the
+// tradovate-service already uses for liquidation alerts (same env vars).
+// Sends to ALERT_SMS_EMAIL (carrier email→SMS gateway → text) and ALERT_EMAIL.
+async function sendCriticalAlertEmail(subject, text) {
+  const apiKey = process.env.RESEND_API_KEY;
+  const from = process.env.ALERT_FROM_EMAIL;
+  if (!apiKey || !from) {
+    logger.warn('[ALERT] Resend not configured (RESEND_API_KEY / ALERT_FROM_EMAIL) — email alert skipped');
+    return;
+  }
+  const recipients = [process.env.ALERT_SMS_EMAIL, process.env.ALERT_EMAIL].filter(Boolean);
+  if (recipients.length === 0) {
+    logger.warn('[ALERT] no ALERT_SMS_EMAIL / ALERT_EMAIL configured — email alert skipped');
+    return;
+  }
+  await Promise.all(recipients.map(async (to) => {
+    try {
+      const res = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ from, to, subject, text }),
+      });
+      if (!res.ok) {
+        const body = await res.text().catch(() => '');
+        logger.error(`[ALERT] Resend send to ${to} failed: HTTP ${res.status} ${body.slice(0, 150)}`);
+      } else {
+        logger.info(`[ALERT] critical alert emailed to ${to}`);
+      }
+    } catch (err) {
+      logger.error(`[ALERT] Resend send to ${to} threw: ${err.message}`);
+    }
+  }));
+}
+
+// Escalation when a flatten cannot be verified flat at the broker: trip the
+// kill switch so no new entries pile onto a stuck/naked position, and fire a
+// critical alert for manual intervention via BOTH channels — the STRATEGY_ALERT
+// (→ Discord, via monitoring) and a direct Resend email/SMS. (kind = 'max-hold'
+// | 'eod'.)
+async function haltTradingForFailedFlatten(context, detail) {
+  const { accountId, strategy, symbol, side, netPos, kind } = context;
+  state.tradingEnabled = false;
+  await saveKillSwitch(stores.redis);
+  const msg = `[HALT] Could not verify flat after ${kind} close: ${accountId} ${strategy || '?'} ${symbol} ${side || '?'} ${netPos ?? '?'} — ${detail}. Trading DISABLED; manual flatten required.`;
+  logger.error(msg);
+  try {
+    await messageBus.publish(CHANNELS.STRATEGY_ALERT, {
+      ruleName: `${kind}-flatten-failed`,
+      severity: 'critical',
+      message: msg,
+      signal: { strategy: strategy || null, symbol },
+      accountId,
+      timestamp: new Date().toISOString(),
+    });
+  } catch (err) {
+    logger.error(`[HALT] critical alert publish failed: ${err.message}`);
+  }
+  await sendCriticalAlertEmail(`🚨 TRADING DISABLED — ${kind} flatten failed (${symbol})`, msg);
+}
+
 async function checkEodForceFlat() {
   if (!EOD_CUTOFF_ET) return;
   if (!isPastEodCutoff()) return;
@@ -993,62 +1119,33 @@ async function checkEodForceFlat() {
 
   logger.warn(`[EOD-FLAT] ${EOD_CUTOFF_ET} ET cutoff for ${et.dateKey} — closing ${positions.length} open position(s)`);
 
-  // Cancel orphan stop/target orders BEFORE firing market closes. The bracket
-  // orders attached to the position would otherwise remain working after the
-  // position closes, ready to fire as fresh entries on the next price tick.
-  // We accept the brief unprotected-position window (~50-100ms between cancel
-  // and close) because we're flattening imminently anyway. Cancellations are
-  // de-duped per (accountId, symbol) so multi-position-same-account cases
-  // only hit the broker once.
-  const cancelKeys = new Set();
-  await Promise.all(positions.map(async (pos) => {
-    const key = `${pos.accountId}|${pos.symbol}`;
-    if (cancelKeys.has(key)) return;
-    cancelKeys.add(key);
-    try {
-      const url = `${TRADOVATE_SERVICE_URL}/accounts/${encodeURIComponent(pos.accountId)}/cancel-all/${encodeURIComponent(pos.symbol)}`;
-      const res = await fetch(url, { method: 'POST' });
-      if (!res.ok) {
-        const body = await res.text().catch(() => '');
-        // 501 = connector doesn't support symbol-level cancel-all (e.g. PMT).
-        // That's fine; we still fire the market close below.
-        if (res.status !== 501) {
-          logger.error(`[EOD-FLAT] cancel-all HTTP ${res.status} for ${pos.accountId} ${pos.symbol}: ${body.slice(0, 200)}`);
-        } else {
-          logger.info(`[EOD-FLAT] cancel-all skipped for ${pos.accountId} (connector does not support symbol-level cancel-all)`);
-        }
-      } else {
-        const result = await res.json().catch(() => ({}));
-        const n = result.cancelledCount ?? 0;
-        logger.warn(`[EOD-FLAT] cancelled ${n} working order(s) for ${pos.accountId} ${pos.symbol}`);
-      }
-    } catch (err) {
-      logger.error(`[EOD-FLAT] cancel-all failed for ${pos.accountId} ${pos.symbol}: ${err.message}`);
-    }
-  }));
-
+  // Flatten each distinct (accountId, symbol) at the broker via the hardened
+  // liquidate+verify path. This cancels working orders AND closes the net
+  // position, polling until the broker confirms flat — replacing the old
+  // "cancel-all then synthesize a directional market order" sequence that
+  // could leave an orphan bracket (or, on stale state, open the opposite side).
+  const flattenKeys = new Set();
   for (const pos of positions) {
-    const signal = {
-      webhook_type: 'trade_signal',
-      action: 'place_market',
-      side: pos.side === 'long' ? 'sell' : 'buy',
-      symbol: pos.symbol,
-      quantity: Math.abs(pos.netPos) || 1,
-      strategy: pos.strategy,
-      signalId: `EOD-FLAT-${pos.accountId}-${pos.strategy}-${et.dateKey}`,
-      reason: 'eod_force_flat',
-      eodForceFlat: true,
-      // Pin to the specific account that holds the position. Without this,
-      // the signal fans out to all routed accounts and most reject as
-      // "account_disabled_or_missing" or "open_position".
-      targetAccountId: pos.accountId,
-      timestamp: new Date().toISOString(),
-    };
-    logger.warn(`[EOD-FLAT] firing market close: ${pos.accountId} ${pos.strategy} ${pos.symbol} ${pos.side} ${pos.netPos}`);
-    try {
-      await messageBus.publish(CHANNELS.TRADE_SIGNAL, signal);
-    } catch (err) {
-      logger.error(`[EOD-FLAT] publish failed: ${err.message}`);
+    const fk = `${pos.accountId}|${pos.symbol}`;
+    if (flattenKeys.has(fk)) continue;
+    flattenKeys.add(fk);
+
+    logger.warn(`[EOD-FLAT] flattening at broker: ${pos.accountId} ${pos.symbol}`);
+    const { flat, detail } = await flattenAtBroker(pos.accountId, pos.symbol, { reason: 'eod_force_flat' });
+    if (flat) {
+      // Broker verified flat for the whole contract — clear every local
+      // position on this (accountId, symbol) regardless of strategy, rather
+      // than waiting for position.closed WS events that may be dropped.
+      // handlePositionClosed is idempotent, so a later real event is harmless.
+      for (const p of positions.filter(p => p.accountId === pos.accountId && p.symbol === pos.symbol)) {
+        await handlePositionClosed({
+          accountId: p.accountId, strategy: p.strategy, symbol: p.symbol,
+          signalId: p.signalId, realizedPnl: null,
+        });
+      }
+      logger.warn(`[EOD-FLAT] ${pos.accountId} ${pos.symbol} verified flat`);
+    } else {
+      await haltTradingForFailedFlatten({ ...pos, kind: 'eod' }, detail);
     }
   }
 }
@@ -1063,14 +1160,18 @@ function pruneEodFiredDates() {
 
 // ---------- Max-hold force-flat ----------
 
-// Fire a market close for any open position whose elapsed time since
-// `openedAt` exceeds its `maxHoldBars` (interpreted as minutes, matching
-// the backtest engine convention of 1 bar = 1 minute on a 1m timeframe).
-// `closeRequested` is set on the entry to suppress repeat firings during
-// the brief window between signal publish and position.closed event.
+// Flatten any open position whose elapsed time since `openedAt` exceeds its
+// `maxHoldBars` (interpreted as minutes, matching the backtest engine's 1 bar
+// = 1 minute convention). Uses the hardened broker liquidate+verify path so
+// the close cancels the bracket AND confirms flat — the old path synthesized a
+// directional market order without cancelling the bracket, so the leftover
+// stop could later fire and reopen a naked position on the opposite side.
+// `closeRequested` suppresses repeat firings while a flatten is in flight and
+// after a failure (which trips the kill switch and needs manual recovery).
 async function checkMaxHold() {
   const now = Date.now();
-  for (const pos of state.openPositions.values()) {
+  // Snapshot: handlePositionClosed mutates state.openPositions during the loop.
+  for (const pos of [...state.openPositions.values()]) {
     if (pos.closeRequested) continue;
     if (!pos.maxHoldBars || pos.maxHoldBars <= 0) continue;
     if (pos.side === 'flat' || pos.netPos === 0) continue;
@@ -1080,26 +1181,22 @@ async function checkMaxHold() {
     if (elapsedMin < pos.maxHoldBars) continue;
 
     pos.closeRequested = true;
-    const signalId = `MAX-HOLD-${pos.accountId}-${pos.strategy}-${pos.signalId || 'unknown'}`;
-    const signal = {
-      webhook_type: 'trade_signal',
-      action: 'place_market',
-      side: pos.side === 'long' ? 'sell' : 'buy',
-      symbol: pos.symbol,
-      quantity: Math.abs(pos.netPos) || 1,
-      strategy: pos.strategy,
-      signalId,
-      reason: 'max_hold_exceeded',
-      eodForceFlat: true, // bypass open_position gate (same exemption EOD uses)
-      targetAccountId: pos.accountId,
-      timestamp: new Date().toISOString(),
-    };
-    logger.warn(`[MAX-HOLD] ${pos.accountId} ${pos.strategy} ${pos.symbol} ${pos.side} ${pos.netPos} held ${elapsedMin.toFixed(1)}min >= ${pos.maxHoldBars}min — firing market close`);
-    try {
-      await messageBus.publish(CHANNELS.TRADE_SIGNAL, signal);
-    } catch (err) {
-      logger.error(`[MAX-HOLD] publish failed: ${err.message}`);
-      pos.closeRequested = false; // allow retry on next poll
+    logger.warn(`[MAX-HOLD] ${pos.accountId} ${pos.strategy} ${pos.symbol} ${pos.side} ${pos.netPos} held ${elapsedMin.toFixed(1)}min >= ${pos.maxHoldBars}min — flattening at broker`);
+
+    const { flat, detail } = await flattenAtBroker(pos.accountId, pos.symbol, { reason: 'max_hold_exceeded' });
+    if (flat) {
+      // Broker verified flat + brackets cancelled. Clear local state now rather
+      // than waiting for a position.closed WS event that may be dropped (the
+      // desync that left the slot stuck). handlePositionClosed is idempotent.
+      await handlePositionClosed({
+        accountId: pos.accountId, strategy: pos.strategy, symbol: pos.symbol,
+        signalId: pos.signalId, realizedPnl: null,
+      });
+      logger.warn(`[MAX-HOLD] ${pos.accountId} ${pos.strategy} ${pos.symbol} verified flat — slot released`);
+    } else {
+      // Leave closeRequested set so we don't hammer the broker every tick;
+      // halting requires manual recovery anyway.
+      await haltTradingForFailedFlatten({ ...pos, kind: 'max-hold' }, detail);
     }
   }
 }

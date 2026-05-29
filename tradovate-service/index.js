@@ -372,6 +372,34 @@ function buildApp() {
     }
   });
 
+  // Flatten the net position for a symbol via broker-side liquidation. Unlike
+  // close-position/:signalId, this is keyed by SYMBOL (not signalId), so it
+  // also flattens orphan / UNATTRIBUTED positions that have no order mapping.
+  // conn.closePosition() -> client.liquidatePosition(), which submits Tradovate's
+  // /order/liquidateposition (direction- & quantity-agnostic: it flattens
+  // whatever the broker actually holds) and then POLLS /position/list +
+  // /order/list until net=0 AND no working orders, retrying + force-cancelling
+  // along the way. It resolves only on verified-flat and throws otherwise.
+  // Used by the orchestrator's hardened max-hold + EOD force-flat paths.
+  app.post('/accounts/:accountId/flatten/:symbol', async (req, res) => {
+    const conn = findConnector(req.params.accountId);
+    if (!conn) return res.status(404).json({ error: 'connector not found' });
+    if (typeof conn.closePosition !== 'function') {
+      return res.status(501).json({ error: 'connector does not support closePosition' });
+    }
+    const symbol = req.params.symbol;
+    const reason = req.body?.reason || null;
+    try {
+      const result = await conn.closePosition(symbol);
+      // Reaching here means liquidatePosition verified flat (or was already flat).
+      res.json({ ok: true, verified: true, accountId: req.params.accountId, symbol, reason, result });
+    } catch (err) {
+      // liquidatePosition throws (after internal retries + alert) when it cannot
+      // confirm flat. Surface as 500 so the orchestrator escalates (kill switch).
+      res.status(500).json({ ok: false, verified: false, accountId: req.params.accountId, symbol, reason, error: err.message });
+    }
+  });
+
   app.post('/accounts/:accountId/snapshot', async (req, res) => {
     const conn = findConnector(req.params.accountId);
     if (!conn) return res.status(404).json({ error: 'connector not found' });
