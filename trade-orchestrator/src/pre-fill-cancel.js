@@ -24,6 +24,28 @@
  * @param {number|null} low  - latest bar low  (may be null on quote-only ticks)
  * @returns {string|null} reason string when a cancel should fire, else null
  */
+/**
+ * Pick the high/low to evaluate, using ONLY price action SINCE the order was
+ * placed. price.update carries the rolling 1m bar's high/low; a bar that was
+ * already in progress at placement includes ticks from BEFORE the order existed
+ * — for a tight bracket that pre-placement range straddles both stop and
+ * target, so using it cancels the order on the very first tick. Rule:
+ *   - bar STARTED at/after placement  → fully post-placement, use its high/low.
+ *   - bar in progress at placement (or unknown bar start) → use only the live
+ *     price (close), which is "now" and therefore strictly after placement.
+ *
+ * @param {{barStartMs:number|null, placedAtMs:number|null, high:number|null, low:number|null, close:number|null}} p
+ * @returns {{high:number|null, low:number|null}}
+ */
+export function effectivePreFillExtremes({ barStartMs, placedAtMs, high, low, close }) {
+  const fullyAfterPlacement =
+    barStartMs != null && placedAtMs != null && barStartMs >= placedAtMs;
+  if (fullyAfterPlacement) {
+    return { high: high ?? null, low: low ?? null };
+  }
+  return { high: close ?? null, low: close ?? null };
+}
+
 export function shouldCancelOnPreFillExtreme(direction, stopLoss, takeProfit, high, low) {
   const isBuy = direction === 'buy' || direction === 'long';
   const isSell = direction === 'sell' || direction === 'short';

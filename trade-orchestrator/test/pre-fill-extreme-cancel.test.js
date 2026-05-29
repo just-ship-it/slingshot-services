@@ -12,7 +12,7 @@
  * failing scenario and exits 1.
  */
 
-import { shouldCancelOnPreFillExtreme } from '../src/pre-fill-cancel.js';
+import { shouldCancelOnPreFillExtreme, effectivePreFillExtremes } from '../src/pre-fill-cancel.js';
 
 let passes = 0;
 function ok(cond, msg) {
@@ -72,5 +72,30 @@ ok(shouldCancelOnPreFillExtreme('unknown', 90, 110, 200, 0) === null, 'unknown d
 // A long-only test set must NOT trigger from short logic, and vice versa.
 ok(buy(95, 92) === null, 'BUY: a normal pullback toward entry should NOT cancel');
 ok(sell(108, 105) === null, 'SELL: a normal bounce toward entry should NOT cancel');
+
+// --- effectivePreFillExtremes: only price SINCE placement counts ---
+// A 1m bar that started at 10:05:00 (300000 ms) while the order was placed at
+// 10:05:30 (330000 ms) is the in-progress placement bar — its high/low predate
+// the order, so we must fall back to the live close.
+const placedAt = 330_000;
+const placementBar = { barStartMs: 300_000, placedAtMs: placedAt, high: 110, low: 80, close: 95 };
+const eb1 = effectivePreFillExtremes(placementBar);
+ok(eb1.high === 95 && eb1.low === 95, 'placement-bar (started before placement) → use live close, NOT bar high/low');
+
+// A bar that started at/after placement is fully post-placement → use high/low.
+const cleanBar = { barStartMs: 360_000, placedAtMs: placedAt, high: 112, low: 100, close: 105 };
+const eb2 = effectivePreFillExtremes(cleanBar);
+ok(eb2.high === 112 && eb2.low === 100, 'post-placement bar → use bar high/low');
+
+// Unknown bar start (no candleTimestamp) → safe fallback to close.
+const eb3 = effectivePreFillExtremes({ barStartMs: null, placedAtMs: placedAt, high: 999, low: 0, close: 95 });
+ok(eb3.high === 95 && eb3.low === 95, 'unknown bar start → fall back to live close');
+
+// Regression for the live incident: contaminated placement bar straddles the
+// tight bracket (SL 90 / TP 110), but the live close (95) is inside it → a
+// long limit must NOT be cancelled on arrival.
+const e = effectivePreFillExtremes(placementBar);
+ok(shouldCancelOnPreFillExtreme('long', 90, 110, e.high, e.low) === null,
+   'REGRESSION: lstb long not cancelled on arrival when only the pre-placement bar range straddles the bracket');
 
 console.log(`OK — ${passes} pre-fill-cancel scenarios passed`);

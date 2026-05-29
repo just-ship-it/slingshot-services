@@ -28,7 +28,7 @@ import { createRoutesStore, ROUTES_CHANNEL } from '../shared/utils/routes-store.
 import { evaluateCrossStrategyRules, evaluateStrategyAlerts } from './cross-strategy-filter.js';
 import { createExitRuleManager, captureRuleFromSignal } from './src/exit-rule-manager.js';
 import { applyStrategyRuleProfile } from './src/strategy-rule-profile.js';
-import { shouldCancelOnPreFillExtreme } from './src/pre-fill-cancel.js';
+import { shouldCancelOnPreFillExtreme, effectivePreFillExtremes } from './src/pre-fill-cancel.js';
 import { reconcileOrdersSnapshot, reconcilePositionSnapshot } from './src/snapshot-reconciler.js';
 
 const SERVICE_NAME = 'trade-orchestrator';
@@ -1319,7 +1319,11 @@ async function checkPreFillExtremes(priceMsg) {
   if (!baseSymbol) return;
   const high = Number.isFinite(priceMsg.high) ? priceMsg.high : null;
   const low = Number.isFinite(priceMsg.low) ? priceMsg.low : null;
-  if (high == null && low == null) return;
+  const close = Number.isFinite(priceMsg.close) ? priceMsg.close : null;
+  if (high == null && low == null && close == null) return;
+  // price.update.candleTimestamp is epoch SECONDS (bar start); pending.requestedAt
+  // is ms. Convert so we can tell whether this bar is fully after placement.
+  const barStartMs = Number.isFinite(priceMsg.candleTimestamp) ? priceMsg.candleTimestamp * 1000 : null;
 
   for (const pending of state.pendingOrders.values()) {
     if (!pending.cancelOnPreFillExtreme) continue;
@@ -1329,12 +1333,20 @@ async function checkPreFillExtremes(priceMsg) {
     if (pending.preFillStopLoss == null || pending.preFillTakeProfit == null) continue;
     if (extractUnderlying(pending.symbol) !== baseSymbol) continue;
 
+    // Only evaluate price SINCE this order was placed. Using the rolling bar's
+    // high/low when the bar predates placement cancels every order on the first
+    // tick (its range straddles the tight bracket). See effectivePreFillExtremes.
+    const { high: evalHigh, low: evalLow } = effectivePreFillExtremes({
+      barStartMs, placedAtMs: pending.requestedAt, high, low, close,
+    });
+    if (evalHigh == null && evalLow == null) continue;
+
     const crossed = shouldCancelOnPreFillExtreme(
       pending.direction,
       pending.preFillStopLoss,
       pending.preFillTakeProfit,
-      high,
-      low,
+      evalHigh,
+      evalLow,
     );
     if (!crossed) continue;
 
