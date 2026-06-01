@@ -16,6 +16,23 @@ const TOKEN_REFRESH_MAX_RETRIES = 3; // Stop retrying after 3 consecutive failur
 const DELAYED_QUOTE_THRESHOLD_S = 10 * 60; // 10 minutes lag = delayed
 const STARTUP_GRACE_PERIOD_MS = 30 * 1000; // Suppress lag-based delayed detection for 30s after connect
 
+// Zombie / stuck-socket recovery. TV's server sends frequent heartbeats and the
+// client pings every 10s, so a healthy WS has continuous inbound heartbeats.
+// Two failure modes silently kill the feed with no recovery (observed 2026-06-01:
+// feed died ~14:35, Reconnects stayed 0, never recovered):
+//   A) zombie — half-open socket keeps `connected=true`, never emits 'close', so
+//      the disconnect→reconnect path never fires.
+//   B) stuck-closed — the WS closed while a token refresh was "in progress" (so
+//      handleClose skipped the reconnect) and the refresh then failed/abandoned,
+//      leaving no scheduled reconnect at all.
+// A persistent supervisor (never torn down except on intentional disconnect)
+// watches heartbeat age and forces a reconnect for BOTH modes, re-initialising
+// from the last cached Redis session (cookies + JWT) — no fresh login needed.
+const TV_STALE_HEARTBEAT_S = 90;          // health-check zombie trigger (while connected)
+const TV_SUPERVISOR_INTERVAL_MS = 30_000; // persistent supervisor check cadence
+const TV_SUPERVISOR_STALE_S = 120;        // no heartbeat this long → force reconnect
+const TV_RECONNECT_COOLDOWN_MS = 60_000;  // min spacing between forced reconnects
+
 // TradingView WebSocket endpoints (match working Python implementation)
 // [2026-05-22] Switched data → prodata + browser-fingerprint matching. The
 // browser HAR showed three differences beyond hostname:
@@ -104,6 +121,9 @@ class TradingViewClient extends EventEmitter {
     this.tokenRefreshEnabled = options.tokenRefreshEnabled !== false;
     this.tokenRefreshRetryTimeout = null;
     this.isRefreshingToken = false; // Prevent reconnect loop during token refresh
+    this._reconnectPending = false; // true while a scheduleReconnect backoff loop is active
+    this._lastReconnectKickAt = 0;  // cooldown clock for supervisor-forced reconnects
+    this._supervisorInterval = null; // persistent watchdog; survives WS close/reconnect
     this.tokenRefreshRetryCount = 0; // Track consecutive refresh failures
     this.lastDelayedAlert = null; // Throttle delayed-quote alerts
     this.connectionEstablishedAt = null; // Startup grace period for delayed detection
@@ -169,7 +189,12 @@ class TradingViewClient extends EventEmitter {
   }
 
   async connect() {
-    try {      
+    try {
+      // Start the persistent connection supervisor on first connect. It survives
+      // WS close/reconnect (unlike connectionHealthInterval) so the feed always
+      // self-heals from a cached session even from the stuck-closed mode.
+      this.startSupervisor();
+
       const wsUrl = buildTvWebsocketUrl();
       logger.info(`🌐 Connecting to TradingView WebSocket: ${wsUrl}`);
       logger.info(`📋 Symbols to stream: [${this.symbols.join(', ')}]`);
@@ -249,6 +274,10 @@ class TradingViewClient extends EventEmitter {
     this.reconnectAttempts = 0;
     this.tokenRefreshRetryCount = 0; // Reset on successful connection
     this.connectionEstablishedAt = Date.now();
+    this._reconnectPending = false; // a reconnect (if any) has now succeeded
+    // Reset liveness so the zombie watchdog measures THIS connection, not a
+    // stale heartbeat carried over from the previous (dead) socket.
+    this.lastHeartbeat = null;
 
     // Initialize sessions
     this.initializeSessions();
@@ -358,6 +387,21 @@ class TradingViewClient extends EventEmitter {
       logger.warn(`⚠️ TradingView HEALTH: No heartbeat received yet`);
     } else if (heartbeatAge > 60) {
       logger.error(`❌ TradingView HEALTH: No heartbeat for ${Math.floor(heartbeatAge)}s - connection may be stale`);
+    }
+
+    // Zombie detection: we still believe we're connected but no server heartbeat
+    // has arrived within the stale window — a half-open socket that will never
+    // emit 'close' on its own. Force a reconnect (re-inits from the cached Redis
+    // session) instead of silently logging while quotes stay dead. Use uptime as
+    // the clock when no heartbeat has arrived at all on this connection.
+    const uptimeS = this.connectionEstablishedAt ? (now - this.connectionEstablishedAt) / 1000 : null;
+    const heartbeatStale =
+      (heartbeatAge !== null && heartbeatAge > TV_STALE_HEARTBEAT_S) ||
+      (heartbeatAge === null && uptimeS !== null && uptimeS > TV_STALE_HEARTBEAT_S);
+    if (heartbeatStale) {
+      logger.error(`🧟 TradingView feed STALE — no heartbeat for ${Math.floor(heartbeatAge ?? uptimeS)}s (> ${TV_STALE_HEARTBEAT_S}s). Forcing reconnect from cached session.`);
+      this.maybeForceReconnect('stale_heartbeat');
+      return;
     }
 
     if (quoteAge === null) {
@@ -958,7 +1002,11 @@ class TradingViewClient extends EventEmitter {
     logger.error(`💥 IMPACT: No live quotes will be available until TradingView reconnects!`);
 
     // Attempt reconnection
-    if (this.isRefreshingToken) {
+    if (this._reconnectPending) {
+      // forceReconnect (or a prior close) already kicked a reconnect loop — don't
+      // start a second one off this same close event.
+      logger.info(`🔄 Reconnect already pending - not scheduling another`);
+    } else if (this.isRefreshingToken) {
       logger.info(`🔄 Not auto-reconnecting - token refresh in progress will handle reconnection`);
     } else if (!this.isDisconnecting) {
       // Publish a degraded event so the dashboard banner fires immediately —
@@ -978,6 +1026,7 @@ class TradingViewClient extends EventEmitter {
   }
 
   scheduleReconnect() {
+    this._reconnectPending = true; // an active reconnect loop exists; supervisor stands down
     const delay = Math.min(this.reconnectDelay * Math.pow(2, this.reconnectAttempts), this.maxReconnectDelay);
     this.reconnectAttempts++;
 
@@ -1003,6 +1052,86 @@ class TradingViewClient extends EventEmitter {
         this.scheduleReconnect();
       }
     }, delay);
+  }
+
+  // Cooldown- and state-guarded entry point for ALL forced reconnects (zombie
+  // health-check + persistent supervisor). Prevents reconnect storms and never
+  // fights an already-active scheduleReconnect backoff loop.
+  maybeForceReconnect(reason) {
+    if (this.isDisconnecting) return;
+    if (this._reconnectPending) return; // a reconnect loop is already working
+    const now = Date.now();
+    if (now - (this._lastReconnectKickAt || 0) < TV_RECONNECT_COOLDOWN_MS) return;
+    this._lastReconnectKickAt = now;
+    this.forceReconnect(reason);
+  }
+
+  // Force a reconnect that re-initialises from the last cached Redis session
+  // (cookies + JWT) — no fresh login. Handles BOTH stuck modes:
+  //   - socket still open (zombie): terminate() → 'close' → scheduleReconnect.
+  //   - socket already closed (stuck, no reconnect pending): clear the
+  //     token-refresh suppressor and kick scheduleReconnect directly, since
+  //     'close' won't fire again to drive it.
+  forceReconnect(reason) {
+    logger.error(`🔄 TradingView force-reconnect (${reason}) — re-initialising from cached session`);
+    this.connected = false; // stop the health monitor re-triggering before 'close'
+    if (this.connectionHealthInterval) {
+      clearInterval(this.connectionHealthInterval);
+      this.connectionHealthInterval = null;
+    }
+    const ws = this.ws;
+    const wasOpen = ws && ws.readyState === WebSocket.OPEN;
+    try {
+      if (ws && typeof ws.terminate === 'function') ws.terminate();
+      else if (ws) ws.close();
+    } catch (err) {
+      logger.warn(`TradingView forceReconnect (${reason}) terminate failed: ${err.message}`);
+    }
+    if (!wasOpen) {
+      // Already closed/closing — 'close' won't re-fire. Clear any stuck refresh
+      // flag and drive the reconnect ourselves.
+      this.isRefreshingToken = false;
+      if (!this.isDisconnecting) this.scheduleReconnect();
+    }
+    // If wasOpen, the 'close' handler → scheduleReconnect drives the reconnect.
+  }
+
+  // Persistent supervisor. Unlike connectionHealthInterval (torn down on every
+  // close), this survives across reconnects and is only stopped on intentional
+  // disconnect. It is the backstop that guarantees the feed self-heals from the
+  // stuck-closed mode the health monitor can't see (it isn't running then).
+  startSupervisor() {
+    if (this._supervisorInterval) return; // already running (idempotent)
+    this._supervisorInterval = setInterval(() => {
+      try { this.superviseConnection(); }
+      catch (err) { logger.warn(`TradingView supervisor tick failed: ${err.message}`); }
+    }, TV_SUPERVISOR_INTERVAL_MS);
+    this._supervisorInterval.unref?.();
+    logger.info('🛡️ TradingView connection supervisor started');
+  }
+
+  stopSupervisor() {
+    if (this._supervisorInterval) {
+      clearInterval(this._supervisorInterval);
+      this._supervisorInterval = null;
+    }
+  }
+
+  superviseConnection() {
+    if (this.isDisconnecting) return;
+    if (this._reconnectPending) return; // an active reconnect loop is handling it
+    // Heartbeats flow 24/7 on a healthy socket (independent of market hours), so
+    // heartbeat age is the reliable liveness signal for both open and closed
+    // sockets. Fall back to connection age when no heartbeat has arrived yet.
+    const ref = this.lastHeartbeat
+      ? new Date(this.lastHeartbeat).getTime()
+      : (this.connectionEstablishedAt || null);
+    if (ref == null) return;
+    const ageS = (Date.now() - ref) / 1000;
+    if (ageS > TV_SUPERVISOR_STALE_S) {
+      logger.error(`🛡️ TradingView supervisor: no heartbeat for ${Math.floor(ageS)}s (> ${TV_SUPERVISOR_STALE_S}s), connected=${this.connected} reconnectPending=${this._reconnectPending} — forcing reconnect`);
+      this.maybeForceReconnect('supervisor_no_heartbeat');
+    }
   }
 
   // --- Token Refresh & Delayed Quote Detection ---
@@ -1232,6 +1361,9 @@ class TradingViewClient extends EventEmitter {
   async disconnect() {
     logger.info('Disconnecting from TradingView...');
     this.isDisconnecting = true;
+
+    // Stop the persistent supervisor — this is an intentional shutdown.
+    this.stopSupervisor();
 
     // Stop token refresh schedule
     this.stopTokenRefreshSchedule();
