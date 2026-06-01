@@ -26,7 +26,16 @@
  * between local-place and broker-ack.
  */
 
-export const MISSING_OBSERVATIONS_BEFORE_DROP = 3; // ~90s at 30s polling
+export const MISSING_OBSERVATIONS_BEFORE_DROP = 3; // 3 consecutive snapshots (prod cadence ~5min)
+
+// When the broker snapshot explicitly reports a symbol FLAT (a position row is
+// present for it with netPos === 0), that is positive evidence the position
+// closed — not the mere ABSENCE the missing-counter guards against. We prune
+// the stale local immediately rather than waiting out MISSING_OBSERVATIONS_BEFORE_DROP
+// (which at the ~5min prod snapshot cadence means a ~15min window where every
+// signal is wrongly gated out). The age guard avoids the race where a snapshot
+// computed a moment BEFORE a fresh fill arrives just after we set the local open.
+export const POSITION_PRUNE_AGE_GUARD_MS = 30_000; // 30s
 
 /**
  * Reconcile a single account's slice of pendingOrders against a fresh
@@ -179,9 +188,23 @@ function findExistingPending(accountPending, brokerOrder) {
  */
 export function reconcilePositionSnapshot(openPositions, accountId, brokerPositions, posKey, opts = {}) {
   if (!Array.isArray(brokerPositions)) {
-    return { restored: 0, preserved: 0, dropped: 0, orphaned: 0, adopted: [] };
+    return { restored: 0, preserved: 0, dropped: 0, orphaned: 0, adopted: [], droppedPositions: [] };
   }
   const resolveDefaults = typeof opts.resolveDefaults === 'function' ? opts.resolveDefaults : null;
+  const now = Number.isFinite(opts.now) ? opts.now : Date.now();
+
+  // Classify symbols the broker reports on: "present" = any row exists, even a
+  // flat one; "non-zero" = at least one row with an actual net. A symbol that is
+  // present but never non-zero is an EXPLICIT FLAT — strong proof the position
+  // closed (vs. simply being absent from the snapshot, which is ambiguous).
+  const symbolPresent = new Set();
+  const symbolHasNonZero = new Set();
+  for (const p of brokerPositions) {
+    if (!p.symbol) continue;
+    symbolPresent.add(p.symbol);
+    if (Number(p.netPos)) symbolHasNonZero.add(p.symbol);
+  }
+  const isExplicitFlat = (sym) => symbolPresent.has(sym) && !symbolHasNonZero.has(sym);
 
   const accountPositions = [];
   for (const [key, value] of openPositions.entries()) {
@@ -239,16 +262,40 @@ export function reconcilePositionSnapshot(openPositions, accountId, brokerPositi
   }
 
   let dropped = 0;
+  const droppedPositions = [];
   for (const { key, value } of accountPositions) {
     const seen = value._seenThisSnapshot === true;
     delete value._seenThisSnapshot;
     if (seen) continue;
+
+    // Fast-prune: broker explicitly reports this symbol flat AND the local
+    // position is old enough that this snapshot can't predate its fill.
+    const ageMs = positionAgeMs(value, now);
+    if (isExplicitFlat(value.symbol) && ageMs >= POSITION_PRUNE_AGE_GUARD_MS) {
+      openPositions.delete(key);
+      value._dropReason = 'explicit_flat';
+      droppedPositions.push(value);
+      dropped++;
+      continue;
+    }
+
+    // Otherwise the symbol is merely ABSENT from the snapshot (ambiguous —
+    // could be the place/ack race). Fall back to the slow consecutive-miss counter.
     value.missingFromBroker = (value.missingFromBroker || 0) + 1;
     if (value.missingFromBroker >= MISSING_OBSERVATIONS_BEFORE_DROP) {
       openPositions.delete(key);
+      value._dropReason = 'missing_observations';
+      droppedPositions.push(value);
       dropped++;
     }
   }
 
-  return { restored, preserved, dropped, orphaned, adopted };
+  return { restored, preserved, dropped, orphaned, adopted, droppedPositions };
+}
+
+function positionAgeMs(value, now) {
+  const t = Date.parse(value.openedAt);
+  // No parseable openedAt → not a freshly-opened position, so it's safe to
+  // treat as old (Infinity) and let the explicit-flat prune apply.
+  return Number.isFinite(t) ? (now - t) : Infinity;
 }

@@ -315,4 +315,55 @@ const posKey     = (acct, strat, sym) => `${acct}|${strat}|${sym}`;
   console.log('  ✓ orphan adoption without resolver leaves null + tags source=null');
 })();
 
+// ── Scenario 11: explicit broker-flat row fast-prunes a stale local ────────
+// Reproduces the 2026-06-01 incident: position closed at broker (dropped
+// POSITION_CLOSED WS event), broker snapshot now carries a netPos:0 row for the
+// symbol. The stale local must be pruned on the FIRST such snapshot (not after
+// 3 misses) and returned in droppedPositions for teardown.
+(function explicitFlatFastPrune() {
+  const ACCT = 'tradovate-3c98375b';
+  const openPositions = new Map();
+  openPositions.set(posKey(ACCT, 'GEX_LEVEL_FADE', 'MNQM6'), {
+    accountId: ACCT, strategy: 'GEX_LEVEL_FADE', symbol: 'MNQM6',
+    side: 'long', netPos: 1, entryPrice: 30415,
+    signalId: 'GEX_LEVEL_FADE-long-30415-1780321010920',
+    openedAt: '2026-06-01T13:37:40Z', maxHoldBars: 180,
+  });
+  // Broker reports the symbol present but flat (netPos 0).
+  const broker = [{ symbol: 'MNQM6', netPos: 0 }];
+  const result = reconcilePositionSnapshot(openPositions, ACCT, broker, posKey, {
+    now: Date.parse('2026-06-01T13:57:40Z'), // ~20min later, well past age guard
+  });
+
+  assert(result.dropped === 1, `explicit-flat should drop on first snapshot, got ${result.dropped}`);
+  assert(!openPositions.has(posKey(ACCT, 'GEX_LEVEL_FADE', 'MNQM6')), 'stale local removed');
+  assert(Array.isArray(result.droppedPositions) && result.droppedPositions.length === 1, 'droppedPositions returned for teardown');
+  assert(result.droppedPositions[0]._dropReason === 'explicit_flat', `drop reason tagged, got ${result.droppedPositions[0]._dropReason}`);
+  assert(result.droppedPositions[0].strategy === 'GEX_LEVEL_FADE', 'dropped entry carries strategy for teardown');
+  console.log('  ✓ explicit broker-flat fast-prunes stale local on first snapshot');
+})();
+
+// ── Scenario 12: age guard prevents dropping a just-opened position ─────────
+// A snapshot computed a moment before a fresh fill can show the symbol flat.
+// If the local position is younger than the guard, do NOT fast-prune — fall
+// back to the slow miss counter so a real just-opened position survives.
+(function ageGuardProtectsFreshFill() {
+  const ACCT = 'tradovate-3c98375b';
+  const openPositions = new Map();
+  const openedAt = '2026-06-01T13:37:40Z';
+  openPositions.set(posKey(ACCT, 'GEX_LEVEL_FADE', 'MNQM6'), {
+    accountId: ACCT, strategy: 'GEX_LEVEL_FADE', symbol: 'MNQM6',
+    side: 'long', netPos: 1, entryPrice: 30415, openedAt,
+  });
+  const broker = [{ symbol: 'MNQM6', netPos: 0 }];
+  const result = reconcilePositionSnapshot(openPositions, ACCT, broker, posKey, {
+    now: Date.parse(openedAt) + 5_000, // 5s old — inside the 30s guard
+  });
+
+  assert(result.dropped === 0, 'fresh position must NOT fast-prune inside age guard');
+  const pos = openPositions.get(posKey(ACCT, 'GEX_LEVEL_FADE', 'MNQM6'));
+  assert(pos && pos.missingFromBroker === 1, 'falls back to slow miss counter instead');
+  console.log('  ✓ age guard protects a just-opened position from a stale flat snapshot');
+})();
+
 console.log('snapshot-reconciler: all scenarios passed');

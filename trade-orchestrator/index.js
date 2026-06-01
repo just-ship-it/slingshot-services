@@ -497,6 +497,58 @@ function summarizeSignalForAlert(signal, overrides = {}) {
   };
 }
 
+// Max time to wait on the gate-time broker position check. Kept short so a
+// slow/unreachable tradovate-service degrades to "leave the gate as-is" rather
+// than stalling signal handling (limit orders have a ~1min stale window anyway).
+const GATE_BROKER_CHECK_TIMEOUT_MS = 8_000;
+
+// Gate-time staleness guard. When a signal is about to be rejected because we
+// BELIEVE an open position exists for (accountId, symbol), confirm against the
+// broker before dropping the signal. If the broker is genuinely flat on that
+// symbol, our local openPositions entry is stale (a dropped POSITION_CLOSED WS
+// event) — tear it down and report success so the caller can re-admit the
+// signal in the same pass. Returns true only when a stale local was actually
+// cleared (broker confirmed flat); false if the broker still holds the position
+// (block is legitimate) or the check could not be completed (fail-closed).
+async function confirmFlatAndClearStale(accountId, symbol) {
+  const url = `${TRADOVATE_SERVICE_URL}/accounts/${encodeURIComponent(accountId)}/positions`;
+  let brokerPositions;
+  const ac = new AbortController();
+  const timer = setTimeout(() => ac.abort(), GATE_BROKER_CHECK_TIMEOUT_MS);
+  try {
+    const res = await fetch(url, { method: 'GET', signal: ac.signal });
+    if (!res.ok) {
+      logger.warn(`[GATE-RECHECK] ${accountId} ${symbol}: broker positions HTTP ${res.status} — leaving gate as-is`);
+      return false;
+    }
+    const body = await res.json();
+    brokerPositions = Array.isArray(body?.positions) ? body.positions : [];
+  } catch (err) {
+    logger.warn(`[GATE-RECHECK] ${accountId} ${symbol}: broker check failed (${err.name === 'AbortError' ? `timeout ${GATE_BROKER_CHECK_TIMEOUT_MS}ms` : err.message}) — leaving gate as-is`);
+    return false;
+  } finally {
+    clearTimeout(timer);
+  }
+
+  const net = brokerPositions
+    .filter(p => p.symbol === symbol)
+    .reduce((sum, p) => sum + (Number(p.netPos) || 0), 0);
+  if (net !== 0) return false; // broker really holds it — the block is correct
+
+  // Broker is flat on this symbol → drop any stale local open positions for it.
+  let cleared = 0;
+  for (const pos of [...state.openPositions.values()]) {
+    if (pos.accountId !== accountId || pos.symbol !== symbol) continue;
+    logger.warn(`[GATE-RECHECK] broker FLAT on ${accountId} ${symbol} but local held ${pos.strategy} (netPos=${pos.netPos}) — dropping stale local position`);
+    await handlePositionClosed({
+      accountId, strategy: pos.strategy, symbol,
+      signalId: pos.signalId, realizedPnl: null,
+    });
+    cleared++;
+  }
+  return cleared > 0;
+}
+
 // ---------- Signal handling ----------
 
 async function handleTradeSignal(raw) {
@@ -610,6 +662,27 @@ async function handleTradeSignal(raw) {
   if (rejected.length > 0) {
     logger.info(`[${signalId}] per-account rejects: ${rejected.map(r => `${r.accountId}(${r.reason})`).join(', ')}`);
   }
+
+  // Gate-time staleness guard: if every account was rejected specifically
+  // because we believe an open position exists, confirm against the broker
+  // before dropping the signal. A dropped POSITION_CLOSED WS event leaves a
+  // stale local position that would otherwise block every signal until the
+  // ~5-min snapshot prunes it. We only auto-clear `open_position*` blocks —
+  // `pending_order*` is left to the 1-min stale-limit timer, since confirming
+  // a working limit isn't gone requires broker order state we don't fetch here.
+  if (accepted.length === 0 && !signal.eodForceFlat) {
+    const positionBlocks = rejected.filter(r => r.reason.startsWith('open_position'));
+    for (const r of positionBlocks) {
+      const cleared = await confirmFlatAndClearStale(r.accountId, tradedSymbol);
+      if (!cleared) continue;
+      // Re-run this account's gate now that the stale local state is gone.
+      if (accountIsEnabled(r.accountId) && !hasOpenOrPending(r.accountId, signal.strategy, tradedSymbol).blocked) {
+        accepted.push(r.accountId);
+        logger.warn(`[${signalId}] gate-recheck cleared stale position on ${r.accountId} — admitting signal`);
+      }
+    }
+  }
+
   if (accepted.length === 0) {
     logger.warn(`[${signalId}] no accounts passed gate chain, dropping`);
     await messageBus.publish(CHANNELS.TRADE_REJECTED, {
@@ -873,7 +946,7 @@ async function handlePositionSnapshot(msg) {
   // callback lets the reconciler recover protection metadata from the
   // signalDefaults registry when adopting an orphan — without it, adopted
   // positions skip max-hold and exit-rule enforcement (silent safety hole).
-  const { preserved, dropped, orphaned, adopted } = reconcilePositionSnapshot(
+  const { preserved, dropped, orphaned, adopted, droppedPositions } = reconcilePositionSnapshot(
     state.openPositions, accountId, positions, posKey,
     { resolveDefaults: resolveAdoptionDefaults }
   );
@@ -881,6 +954,22 @@ async function handlePositionSnapshot(msg) {
     `position.snapshot from ${accountId}: ${positions.length} broker positions → ` +
     `${preserved} preserved, ${orphaned} orphaned, ${dropped} dropped`
   );
+
+  // The reconciler removed these from state.openPositions but full teardown
+  // (untrack exit rules, clear pending, recover trade.metrics) lives in
+  // handlePositionClosed. Without this, a pruned position's exit rules keep
+  // firing modify-stops on a broker that no longer holds the position.
+  for (const pos of (droppedPositions || [])) {
+    logger.warn(
+      `[PRUNE] ${accountId} ${pos.strategy} ${pos.symbol} dropped from local state ` +
+      `(reason=${pos._dropReason || 'unknown'}) — broker no longer holds it. ` +
+      `Untracking exit rules + clearing slot.`
+    );
+    await handlePositionClosed({
+      accountId, strategy: pos.strategy, symbol: pos.symbol,
+      signalId: pos.signalId, realizedPnl: null,
+    });
+  }
 
   // Register exit rules for each adopted orphan and emit operator-visible
   // warnings. Missing maxHoldBars is logged at error severity because the
@@ -966,6 +1055,30 @@ function buildApp() {
   app.get('/api/routes', async (_req, res) => {
     try { res.json(await stores.routes.get()); }
     catch (err) { res.status(500).json({ error: err.message }); }
+  });
+
+  // Operator tool: reconcile local open positions against broker truth and drop
+  // any the broker no longer holds (recovers from dropped POSITION_CLOSED WS
+  // events that strand a stale local position and block all subsequent signals).
+  // Optional JSON body { accountId?, symbol? } scopes the resync. Returns what
+  // was dropped vs. kept (confirmed still open at broker) vs. errored.
+  app.post('/positions/resync', async (req, res) => {
+    const { accountId: filterAccount = null, symbol: filterSymbol = null } = req.body || {};
+    // Unique (accountId, symbol) pairs across current local positions.
+    const pairs = new Map();
+    for (const p of state.openPositions.values()) {
+      if (filterAccount && p.accountId !== filterAccount) continue;
+      if (filterSymbol && p.symbol !== filterSymbol) continue;
+      pairs.set(`${p.accountId}|${p.symbol}`, { accountId: p.accountId, symbol: p.symbol });
+    }
+    const dropped = [];
+    const kept = [];
+    for (const { accountId, symbol } of pairs.values()) {
+      const cleared = await confirmFlatAndClearStale(accountId, symbol);
+      (cleared ? dropped : kept).push({ accountId, symbol });
+    }
+    logger.warn(`[RESYNC] complete — dropped=${dropped.length} kept=${kept.length} (scope: account=${filterAccount || 'all'} symbol=${filterSymbol || 'all'})`);
+    res.json({ ok: true, dropped, kept });
   });
 
   return app;
