@@ -624,6 +624,19 @@ export class TradovateConnector extends BaseConnector {
 
     c.on('positionUpdate', (payload) => this._onPositionUpdate(payload).catch(err =>
       this.logger.error(`[${this._label()}] positionUpdate handler: ${err.message}`)));
+
+    // After a WS (re)connect the client completes a user/syncrequest and emits
+    // 'initialSync'. Tradovate does NOT replay executionReports missed while the
+    // socket was down (or zombie), so a fill/close in that gap is lost as an
+    // event. Reconcile immediately on every sync to recover it within seconds
+    // instead of waiting up to RECONCILE_INTERVAL_MS for the periodic sweep.
+    // (The startup sync fires before this listener is attached, so this only
+    // triggers on reconnects — no startup double-reconcile.)
+    c.on('initialSync', () => {
+      if (!this.ready) return;
+      this._reconcileAndSnapshot('ws_resync').catch(err =>
+        this.logger.error(`[${this._label()}] ws_resync reconcile failed: ${err.message}`));
+    });
   }
 
   async _onOrderUpdate(payload) {

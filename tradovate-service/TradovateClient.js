@@ -3,6 +3,15 @@ import { EventEmitter } from 'events';
 import WebSocket from 'ws';
 import { Resend } from 'resend';
 
+// WS liveness watchdog. Tradovate pushes an 'h' heartbeat frame ~every 2.5s, so
+// a healthy user-data socket has continuous inbound traffic. A "zombie" socket
+// (half-open: still reports connected but delivers nothing) drops every
+// executionReport silently until the OS finally emits a 1006 — observed dropping
+// ~20min of fills/closes in prod. We watch the time since the LAST inbound frame
+// and force-reconnect once it exceeds the stale threshold (~5 missed heartbeats).
+const WS_STALE_TIMEOUT_MS = 12_000;     // declare zombie after 12s of silence
+const WS_WATCHDOG_INTERVAL_MS = 4_000;  // check cadence
+
 class TradovateClient extends EventEmitter {
   constructor(config, logger, messageBus, channels) {
     super();
@@ -1544,6 +1553,10 @@ class TradovateClient extends EventEmitter {
 
       this.ws.on('message', (data) => {
         try {
+          // Liveness: any inbound frame (incl. 'h' heartbeats) proves the feed
+          // is alive. The watchdog reconnects if this stops advancing.
+          this.lastInboundTs = Date.now();
+
           const rawMessage = data.toString();
           this.logger.debug(`📥 Raw WebSocket message: "${rawMessage}"`);
 
@@ -1589,6 +1602,9 @@ class TradovateClient extends EventEmitter {
         }
       });
 
+      // Pong is also an inbound liveness signal (response to our ping()).
+      this.ws.on('pong', () => { this.lastInboundTs = Date.now(); });
+
       this.ws.on('error', (error) => {
         this.logger.error('WebSocket error:', error);
         this.wsConnected = false;
@@ -1598,10 +1614,7 @@ class TradovateClient extends EventEmitter {
         this.logger.warn(`WebSocket disconnected: ${code} - ${reason}`);
         this.wsConnected = false;
 
-        if (this.heartbeatInterval) {
-          clearInterval(this.heartbeatInterval);
-          this.heartbeatInterval = null;
-        }
+        this.stopHeartbeat();
 
         // Attempt reconnection
         this.attemptWebSocketReconnection();
@@ -1794,11 +1807,31 @@ class TradovateClient extends EventEmitter {
   }
 
   startHeartbeat() {
+    this.stopHeartbeat();              // clear any timers from a prior socket
+    this.lastInboundTs = Date.now();   // seed liveness at connect time
+
     this.heartbeatInterval = setInterval(() => {
       if (this.ws && this.wsConnected) {
-        this.ws.ping();
+        try { this.ws.ping(); } catch { /* socket mid-teardown */ }
       }
-    }, 30000); // 30 second heartbeat
+    }, 30000); // 30 second WS-protocol ping
+
+    // Zombie-socket watchdog (see WS_STALE_TIMEOUT_MS comment at top of file).
+    this.wsWatchdogInterval = setInterval(() => {
+      if (!this.ws || !this.wsConnected) return;
+      const silentMs = Date.now() - this.lastInboundTs;
+      if (silentMs > WS_STALE_TIMEOUT_MS) {
+        this.logger.warn(`🧟 WebSocket feed stale — no inbound frames for ${Math.round(silentMs / 1000)}s (> ${WS_STALE_TIMEOUT_MS / 1000}s). Terminating to force reconnect.`);
+        this.wsConnected = false;   // prevent re-entry before 'close' fires
+        this.stopHeartbeat();       // stop timers; 'close' handler reconnects
+        try { this.ws.terminate(); } catch (err) { this.logger.error(`WS terminate failed: ${err.message}`); }
+      }
+    }, WS_WATCHDOG_INTERVAL_MS);
+  }
+
+  stopHeartbeat() {
+    if (this.heartbeatInterval) { clearInterval(this.heartbeatInterval); this.heartbeatInterval = null; }
+    if (this.wsWatchdogInterval) { clearInterval(this.wsWatchdogInterval); this.wsWatchdogInterval = null; }
   }
 
   attemptWebSocketReconnection() {
@@ -1818,17 +1851,13 @@ class TradovateClient extends EventEmitter {
   }
 
   disconnectWebSocket() {
-    if (this.heartbeatInterval) {
-      clearInterval(this.heartbeatInterval);
-      this.heartbeatInterval = null;
-    }
+    this.wsConnected = false;   // set first so the watchdog no-ops during teardown
+    this.stopHeartbeat();
 
     if (this.ws) {
       this.ws.close();
       this.ws = null;
     }
-
-    this.wsConnected = false;
   }
 
   // Send email alert for critical liquidation failures using Resend
