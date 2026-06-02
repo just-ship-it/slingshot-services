@@ -35,6 +35,17 @@ const SCHWAB_TOKEN_URL = 'https://api.schwabapi.com/v1/oauth/token';
 const SCHWAB_USER_PREF_URL = 'https://api.schwabapi.com/trader/v1/userPreference';
 const SCHWAB_PRICE_HISTORY_URL = 'https://api.schwabapi.com/marketdata/v1/pricehistory';
 
+// Flap detection. Schwab permits ONE streamer session per account; a second
+// login (duplicate data-service instance or external session) makes the server
+// boot the existing one with a clean code=1000 almost immediately after LOGIN.
+// If we reset the reconnect backoff on every LOGIN ack, two sessions ping-pong
+// forever at the 5s floor and live candles never flow. So: only treat a
+// connection as "real" once it has stayed up for STABLE_CONNECTION_MS, and
+// raise a loud alert when we see repeated short-lived connections.
+const STABLE_CONNECTION_MS = 60_000;    // uptime before backoff/flap state resets
+const FLAP_ALERT_THRESHOLD = 3;         // consecutive short connections before alerting
+const FLAP_ALERT_THROTTLE_MS = 5 * 60_000; // min spacing between conflict alerts
+
 // LEVELONE_FUTURES field map (only fields we surface).
 const FUT_L1 = {
   KEY: 'key',
@@ -118,6 +129,10 @@ class SchwabStreamer extends EventEmitter {
     this.reconnectDelay = 5000;
     this.maxReconnectDelay = 60000;
     this.reconnectAttempts = 0;
+    this._connectedAt = null;        // ms of last LOGIN ack
+    this._consecutiveFlaps = 0;      // short-lived connections in a row
+    this._lastConflictAlertAt = 0;   // throttle session-conflict alerts
+    this._stabilityTimer = null;     // fires once a connection proves stable
 
     // Last-seen day-stats per future, used to compose composite `quote` events
     // when CHART_FUTURES delivers a bar update (chart doesn't carry day high/low/prev_close).
@@ -268,7 +283,18 @@ class SchwabStreamer extends EventEmitter {
         if (r.service === 'ADMIN' && r.command === 'LOGIN') {
           if (ok) {
             this.connected = true;
-            this.reconnectAttempts = 0;
+            this._connectedAt = Date.now();
+            // Do NOT reset reconnectAttempts here — a LOGIN ack alone doesn't
+            // prove a usable session (Schwab boots competing sessions AFTER the
+            // ack). Reset backoff/flap state only once the connection has stayed
+            // up for STABLE_CONNECTION_MS (see timer below + _handleClose).
+            if (this._stabilityTimer) clearTimeout(this._stabilityTimer);
+            this._stabilityTimer = setTimeout(() => {
+              this.reconnectAttempts = 0;
+              this._consecutiveFlaps = 0;
+              logger.info('Schwab streamer connection stable — backoff reset');
+            }, STABLE_CONNECTION_MS);
+            this._stabilityTimer.unref?.();
             this.emit('connected');
           } else {
             this.emit('error', new Error(`Schwab LOGIN failed: ${r.content?.msg}`));
@@ -509,12 +535,44 @@ class SchwabStreamer extends EventEmitter {
   _handleClose(code, reason) {
     logger.warn(`Schwab WS closed code=${code} reason=${reason?.toString() || 'none'}`);
     this.connected = false;
+    if (this._stabilityTimer) { clearTimeout(this._stabilityTimer); this._stabilityTimer = null; }
 
     if (this.isDisconnecting) {
       logger.info('Schwab streamer shutting down — no reconnect');
       return;
     }
+
+    // Flap detection: a connection that closed before it ever proved stable is a
+    // flap. We do NOT reset reconnectAttempts here, so _scheduleReconnect keeps
+    // escalating the backoff (5s→10s→…→60s) instead of hammering at 5s. Repeated
+    // flaps almost always mean a competing Schwab session — surface it loudly.
+    const uptimeMs = this._connectedAt ? Date.now() - this._connectedAt : null;
+    if (uptimeMs != null && uptimeMs < STABLE_CONNECTION_MS) {
+      this._consecutiveFlaps++;
+      if (this._consecutiveFlaps >= FLAP_ALERT_THRESHOLD) {
+        this._raiseSessionConflict(code, uptimeMs);
+      }
+    } else {
+      this._consecutiveFlaps = 0; // a genuinely-stable connection dropped
+    }
+    this._connectedAt = null;
     this._scheduleReconnect();
+  }
+
+  // Emit a throttled, loud alert that the streamer is flapping — almost always a
+  // second streamer session on the same Schwab account (duplicate data-service
+  // instance or an external login). data-service forwards this to STRATEGY_ALERT.
+  _raiseSessionConflict(code, uptimeMs) {
+    const now = Date.now();
+    if (now - this._lastConflictAlertAt < FLAP_ALERT_THROTTLE_MS) return;
+    this._lastConflictAlertAt = now;
+    const message =
+      `Schwab streamer flapping — ${this._consecutiveFlaps} short-lived connections ` +
+      `(last uptime ${Math.round((uptimeMs || 0) / 1000)}s, close code ${code}). ` +
+      `Most likely a SECOND streamer session on the same Schwab account ` +
+      `(duplicate data-service instance or external login). Live candles are NOT flowing.`;
+    logger.error(`🚨 ${message}`);
+    this.emit('session_conflict', { consecutiveFlaps: this._consecutiveFlaps, code, uptimeMs, message });
   }
 
   _scheduleReconnect() {
@@ -540,6 +598,10 @@ class SchwabStreamer extends EventEmitter {
     if (this.tokenRefreshTimer) {
       clearInterval(this.tokenRefreshTimer);
       this.tokenRefreshTimer = null;
+    }
+    if (this._stabilityTimer) {
+      clearTimeout(this._stabilityTimer);
+      this._stabilityTimer = null;
     }
     if (this.ws) {
       try { this.ws.close(); } catch {}

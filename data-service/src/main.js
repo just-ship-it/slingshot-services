@@ -42,6 +42,21 @@ function tvSymbolToSchwabEquity(tvSym) {
   return idx >= 0 ? tvSym.slice(idx + 1) : tvSym;
 }
 
+// Don't full-reload history on every Schwab reconnect — a transient reconnect
+// resumes the live stream where it left off, and re-seeding each time is what
+// turned a Schwab flap into a DATA_READY storm that froze every strategy.
+const RESEED_DEBOUNCE_MS = 120_000; // 2 min between history re-seeds
+
+// Single-instance guard for the Schwab streamer. Schwab permits ONE streamer
+// session per account, so two data-service instances (e.g. a deploy overlap)
+// would boot each other in an endless code=1000 loop. A Redis lock makes exactly
+// one instance run the streamer; the others stand by and take over if it dies.
+const SCHWAB_LOCK_KEY = 'data-service:schwab-streamer:owner';
+const SCHWAB_LOCK_TTL_MS = 30_000;   // ownership lease
+const SCHWAB_LOCK_RENEW_MS = 10_000; // renew well within the lease
+const SCHWAB_LOCK_RETRY_MS = 15_000; // standby re-acquire cadence
+const INSTANCE_ID = process.env.HOSTNAME || `pid-${process.pid}`; // k8s pod name
+
 class DataService {
   constructor() {
     this.tradingViewClient = null;
@@ -153,34 +168,37 @@ class DataService {
       });
 
       this.schwabStreamer.on('reconnected', async () => {
+        // Debounce the history re-seed. The live stream resumes on its own; only
+        // re-seed if we haven't recently, so a brief reconnect (or flap) can't
+        // trigger a DATA_READY storm that freezes the strategy engine.
+        const sinceLast = Date.now() - (this._lastHistoryReseedAt || 0);
+        if (sinceLast < RESEED_DEBOUNCE_MS) {
+          logger.info(`Schwab streamer reconnected — skipping history re-seed (last ${Math.round(sinceLast / 1000)}s ago)`);
+          return;
+        }
         logger.info('Schwab streamer reconnected — recreating history sessions...');
         this.candleManager.resetReadiness();
         await this.createHistorySessions();
       });
 
-      // Connect to Schwab — failures are NON-FATAL. If the Schwab refresh
-      // token is expired/revoked (common after 7+ days without activity),
-      // we log the error and continue startup. Otherwise data-service would
-      // crash-loop and the /schwab/token re-auth endpoint would be unreachable
-      // through the dashboard, leaving the operator wedged.
-      //
-      // Once /schwab/token is hit with a fresh OAuth code, the new tokens
-      // land in Redis and updateSchwabToken() retries the streamer wiring.
-      try {
-        logger.info('Connecting to Schwab streamer...');
-        await this.schwabStreamer.connect();
-        logger.info('Schwab streamer connected, starting subscriptions...');
-        await this.schwabStreamer.startStreaming();
-        logger.info(`Schwab streaming started: ${schwabFutureSymbols.length} futures + ${schwabEquitySymbols.length} equities`);
+      // A flapping streamer (repeated short-lived connections) almost always
+      // means a competing Schwab session — surface it as a critical alert
+      // instead of silently looping for hours.
+      this.schwabStreamer.on('session_conflict', (info) => {
+        messageBus.publish(CHANNELS.STRATEGY_ALERT, {
+          severity: 'critical',
+          source: 'data-service',
+          type: 'schwab_session_conflict',
+          message: info?.message || 'Schwab streamer session conflict (competing session likely)',
+          timestamp: new Date().toISOString(),
+        }).catch(err => logger.warn(`Failed to publish schwab session_conflict alert: ${err.message}`));
+      });
 
-        // Create 1h + 1D history sessions
-        await this.createHistorySessions();
-      } catch (err) {
-        logger.error(`Schwab streamer init failed (continuing without quotes): ${err.message}`);
-        logger.error('→ Re-authenticate Schwab via the dashboard "Set Token" button to recover.');
-        // Leave this.schwabStreamer in place so updateSchwabToken() can drive
-        // a retry after fresh tokens land.
-      }
+      // Connect to Schwab — gated by a single-instance Redis lock so two
+      // data-service instances can't fight over the one-per-account streamer
+      // session. NON-FATAL on failure (expired token, etc.); the instance that
+      // does NOT win the lock stands by and takes over if the owner dies.
+      await this._startSchwabStreamingGuarded(redisUrl);
 
       // Initialize LT Monitors for both products
       // Use the client's current token (may have been refreshed during connect) rather than the startup token
@@ -438,8 +456,134 @@ class DataService {
    * pricehistory REST endpoint. Called on startup and after Schwab streamer
    * reconnection.
    */
+  // ─────────────────────── Schwab single-instance guard ───────────────────────
+
+  async _getLockRedis(redisUrl) {
+    if (this._lockRedis) return this._lockRedis;
+    try {
+      const Redis = (await import('ioredis')).default;
+      const client = new Redis(redisUrl, { lazyConnect: true, maxRetriesPerRequest: 2 });
+      await client.connect();
+      this._lockRedis = client;
+      return client;
+    } catch (err) {
+      logger.warn(`[SCHWAB-LOCK] redis unavailable (${err.message}) — proceeding WITHOUT lock`);
+      return null;
+    }
+  }
+
+  // Try to acquire/hold the streamer lock. Returns true if we own it. Fail-OPEN:
+  // if Redis is unreachable we return true so the (normal) single instance still
+  // streams — the lock only needs to work when Redis is up, which is exactly when
+  // a deploy overlap happens.
+  async _acquireSchwabLock(redisUrl) {
+    const redis = await this._getLockRedis(redisUrl);
+    if (!redis) return true;
+    try {
+      const res = await redis.set(SCHWAB_LOCK_KEY, INSTANCE_ID, 'NX', 'PX', SCHWAB_LOCK_TTL_MS);
+      if (res === 'OK') return true;
+      // Already held — is it us (restart reusing the same pod name)?
+      const owner = await redis.get(SCHWAB_LOCK_KEY);
+      return owner === INSTANCE_ID;
+    } catch (err) {
+      logger.warn(`[SCHWAB-LOCK] acquire failed (${err.message}) — proceeding WITHOUT lock`);
+      return true;
+    }
+  }
+
+  // Decide ownership, then either start streaming (+renew) or stand by.
+  async _startSchwabStreamingGuarded(redisUrl) {
+    const owns = await this._acquireSchwabLock(redisUrl);
+    if (owns) {
+      logger.info(`[SCHWAB-LOCK] ${INSTANCE_ID} owns the Schwab streamer — starting`);
+      await this._startSchwabStreaming();
+      this._startSchwabLockRenew(redisUrl);
+    } else {
+      logger.warn(`[SCHWAB-LOCK] Schwab streamer owned by another data-service instance — standing by (not streaming).`);
+      messageBus.publish(CHANNELS.STRATEGY_ALERT, {
+        severity: 'warning',
+        source: 'data-service',
+        type: 'schwab_standby',
+        message: `A second data-service instance (${INSTANCE_ID}) started and is standing by — the Schwab streamer is owned by another instance. Expected briefly during a deploy; investigate if it persists (two long-lived pods).`,
+        timestamp: new Date().toISOString(),
+      }).catch(() => {});
+      this._startSchwabStandbyLoop(redisUrl);
+    }
+  }
+
+  // The actual connect/subscribe/seed. NON-FATAL — an expired token logs and
+  // leaves the streamer in place so updateSchwabToken() can retry.
+  async _startSchwabStreaming() {
+    try {
+      logger.info('Connecting to Schwab streamer...');
+      await this.schwabStreamer.connect();
+      logger.info('Schwab streamer connected, starting subscriptions...');
+      await this.schwabStreamer.startStreaming();
+      logger.info('Schwab streaming started');
+      await this.createHistorySessions();
+    } catch (err) {
+      logger.error(`Schwab streamer init failed (continuing without quotes): ${err.message}`);
+      logger.error('→ Re-authenticate Schwab via the dashboard "Set Token" button to recover.');
+    }
+  }
+
+  _startSchwabLockRenew(redisUrl) {
+    if (this._lockRenewTimer) clearInterval(this._lockRenewTimer);
+    this._lockRenewTimer = setInterval(async () => {
+      const redis = await this._getLockRedis(redisUrl);
+      if (!redis) return; // no lock backend; nothing to renew
+      try {
+        const owner = await redis.get(SCHWAB_LOCK_KEY);
+        if (owner === INSTANCE_ID || owner === null) {
+          await redis.set(SCHWAB_LOCK_KEY, INSTANCE_ID, 'PX', SCHWAB_LOCK_TTL_MS);
+        } else {
+          // We lost ownership (our lease lapsed and another instance took over).
+          // Stop streaming to avoid two live sessions, and fall back to standby.
+          logger.error(`[SCHWAB-LOCK] lost ownership to ${owner} — stopping streamer, standing by`);
+          clearInterval(this._lockRenewTimer); this._lockRenewTimer = null;
+          try { await this.schwabStreamer.disconnect(); } catch {}
+          this.schwabStreamer.isDisconnecting = false; // allow standby to reconnect later
+          this._startSchwabStandbyLoop(redisUrl);
+        }
+      } catch (err) {
+        logger.warn(`[SCHWAB-LOCK] renew failed (${err.message})`);
+      }
+    }, SCHWAB_LOCK_RENEW_MS);
+    this._lockRenewTimer.unref?.();
+  }
+
+  _startSchwabStandbyLoop(redisUrl) {
+    if (this._lockStandbyTimer) clearInterval(this._lockStandbyTimer);
+    this._lockStandbyTimer = setInterval(async () => {
+      const owns = await this._acquireSchwabLock(redisUrl);
+      if (owns) {
+        clearInterval(this._lockStandbyTimer); this._lockStandbyTimer = null;
+        logger.warn(`[SCHWAB-LOCK] previous owner gone — ${INSTANCE_ID} taking over the Schwab streamer`);
+        await this._startSchwabStreaming();
+        this._startSchwabLockRenew(redisUrl);
+      }
+    }, SCHWAB_LOCK_RETRY_MS);
+    this._lockStandbyTimer.unref?.();
+  }
+
+  async _releaseSchwabLock() {
+    if (this._lockRenewTimer) { clearInterval(this._lockRenewTimer); this._lockRenewTimer = null; }
+    if (this._lockStandbyTimer) { clearInterval(this._lockStandbyTimer); this._lockStandbyTimer = null; }
+    try {
+      if (this._lockRedis) {
+        const owner = await this._lockRedis.get(SCHWAB_LOCK_KEY);
+        if (owner === INSTANCE_ID) await this._lockRedis.del(SCHWAB_LOCK_KEY);
+        this._lockRedis.disconnect();
+        this._lockRedis = null;
+      }
+    } catch (err) {
+      logger.warn(`[SCHWAB-LOCK] release failed (${err.message})`);
+    }
+  }
+
   async createHistorySessions() {
     if (!this.schwabStreamer) return;
+    this._lastHistoryReseedAt = Date.now(); // for the reconnect re-seed debounce
     const schwabFutureSymbols = config.OHLCV_SYMBOLS.map(tvSymbolToSchwabFuture).filter(Boolean);
     for (const sym of schwabFutureSymbols) {
       try {
@@ -1116,6 +1260,10 @@ class DataService {
     try {
       logger.info('Stopping Data Service...');
       this.isRunning = false;
+
+      // Release the streamer lock first so a standby instance can take over
+      // immediately instead of waiting out the lease.
+      await this._releaseSchwabLock();
 
       if (this.schwabStreamer) {
         await this.schwabStreamer.disconnect();
