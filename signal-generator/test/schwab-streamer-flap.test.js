@@ -76,4 +76,73 @@ function makeStreamer() {
   console.log('  ✓ intentional disconnect does not reconnect or count a flap');
 })();
 
-console.log('schwab-streamer-flap: all scenarios passed');
+// ── Scenario 4: single-reconnect guard — no chain multiplication ────────────
+// The bug behind the 80-min prod flap: a pre-ack close double-scheduled
+// reconnects, multiplying into ~7 parallel login loops. The guard ensures only
+// ONE pending reconnect exists no matter how many times it's called.
+(function singleReconnectGuard() {
+  const s = new SchwabStreamer({ appKey: 'x', appSecret: 'y' });
+  s.reconnectAttempts = 0;
+  s._scheduleReconnect();  // first — schedules
+  s._scheduleReconnect();  // second — must be a no-op (timer already pending)
+  s._scheduleReconnect();  // third — no-op
+
+  assert(s.reconnectAttempts === 1, `only the first call should schedule (attempts=${s.reconnectAttempts})`);
+  assert(s._reconnectTimer != null, 'a reconnect timer should be pending');
+  clearTimeout(s._reconnectTimer); s._reconnectTimer = null; // don't let it fire connect()
+  console.log('  ✓ overlapping _scheduleReconnect calls collapse to one pending reconnect');
+})();
+
+// ── Scenario 5: a pre-ack close aborts the in-flight connect() ──────────────
+(function preAckCloseAbortsLogin() {
+  const s = makeStreamer();
+  let aborted = false;
+  s._loginAbort = () => { aborted = true; };
+  s._hardReset = () => {}; // not under test here
+  s._connectedAt = Date.now();
+  s._handleClose(1000, 'pre-ack boot');
+
+  assert(aborted === true, 'a close during LOGIN wait must abort the pending connect()');
+  assert(s._loginAbort === null, '_loginAbort must be cleared after firing');
+  console.log('  ✓ a close before LOGIN ack fails the pending connect() instead of hanging 30s');
+})();
+
+// ── Scenario 6: sustained flapping triggers a hard reset, not endless retries ─
+(function hardResetOnSustainedFlap() {
+  const s = makeStreamer();
+  let hardResets = 0;
+  s._hardReset = () => { hardResets++; };
+
+  for (let i = 0; i < 5; i++) {
+    s._connectedAt = Date.now() - 1000; // flap
+    s._handleClose(1000, 'none');
+  }
+
+  assert(s._consecutiveFlaps === 5, `expected 5 flaps before reset (got ${s._consecutiveFlaps})`);
+  assert(hardResets === 1, `hard reset should fire once at the threshold (got ${hardResets})`);
+  // flaps 1-4 schedule a reconnect; flap 5 hard-resets instead (returns early).
+  assert(s._getScheduled() === 4, `flaps below threshold reconnect; the threshold flap hard-resets (got ${s._getScheduled()})`);
+  console.log('  ✓ sustained flapping triggers an in-process hard reset (no container restart)');
+})();
+
+// ── Scenario 7: disconnect() sends a Schwab LOGOUT before tearing down ──────
+(async function disconnectSendsLogout() {
+  const s = new SchwabStreamer({ appKey: 'x', appSecret: 'y' });
+  s.streamerInfo = { schwabClientCustomerId: 'cust-1' };
+  const sent = [];
+  s.ws = {
+    readyState: 1, // WebSocket.OPEN
+    send: (data) => sent.push(data),
+    removeAllListeners: () => {},
+    terminate: () => {},
+    close: () => {},
+  };
+  await s.disconnect();
+
+  const loggedOut = sent.some(d => /"command":"LOGOUT"/.test(d));
+  assert(loggedOut, 'disconnect() must send an ADMIN/LOGOUT to release the Schwab session');
+  assert(s.ws === null, 'socket must be torn down after disconnect');
+  console.log('  ✓ disconnect() sends LOGOUT (releases the account session — no ghost)');
+
+  console.log('schwab-streamer-flap: all scenarios passed');
+})();

@@ -45,6 +45,11 @@ const SCHWAB_PRICE_HISTORY_URL = 'https://api.schwabapi.com/marketdata/v1/priceh
 const STABLE_CONNECTION_MS = 60_000;    // uptime before backoff/flap state resets
 const FLAP_ALERT_THRESHOLD = 3;         // consecutive short connections before alerting
 const FLAP_ALERT_THROTTLE_MS = 5 * 60_000; // min spacing between conflict alerts
+// When flapping persists, do a full in-process teardown+reconnect (the
+// equivalent of a container restart) instead of leaning on incremental
+// reconnects — clears any leaked sockets/timers and releases a ghost session.
+const FLAP_HARD_RESET_THRESHOLD = 5;    // consecutive flaps before a hard reset
+const HARD_RESET_COOLDOWN_MS = 15_000;  // settle time before the clean reconnect
 
 // LEVELONE_FUTURES field map (only fields we surface).
 const FUT_L1 = {
@@ -133,6 +138,9 @@ class SchwabStreamer extends EventEmitter {
     this._consecutiveFlaps = 0;      // short-lived connections in a row
     this._lastConflictAlertAt = 0;   // throttle session-conflict alerts
     this._stabilityTimer = null;     // fires once a connection proves stable
+    this._reconnectTimer = null;     // single pending reconnect (no chain multiplication)
+    this._loginAbort = null;         // rejects the in-flight connect() if the WS closes pre-ack
+    this._hardResetting = false;     // guards against overlapping hard resets
 
     // Last-seen day-stats per future, used to compose composite `quote` events
     // when CHART_FUTURES delivers a bar update (chart doesn't carry day high/low/prev_close).
@@ -210,6 +218,11 @@ class SchwabStreamer extends EventEmitter {
   async connect() {
     if (this.isDisconnecting) this.isDisconnecting = false;
 
+    // Never leave a previous socket alive — overlapping sockets from the SAME
+    // account boot each other. Detach its listeners first so its close can't
+    // re-enter _handleClose and schedule another reconnect.
+    this._teardownWs();
+
     await this._loadTokensFromRedis();
     if (this._accessTokenStale()) {
       logger.info('Access token stale at connect; refreshing');
@@ -236,11 +249,23 @@ class SchwabStreamer extends EventEmitter {
     });
     this.ws.on('close', (code, reason) => this._handleClose(code, reason));
 
-    // Wait for LOGIN ack before resolving.
+    // Wait for LOGIN ack before resolving. Crucially this also rejects if the
+    // WS CLOSES before the ack (Schwab booting us pre-ack — the 0s-uptime case),
+    // via _loginAbort set below; otherwise the promise would hang the full 30s
+    // while _handleClose already scheduled a reconnect → duplicate chains.
     await new Promise((resolve, reject) => {
-      const timeout = setTimeout(() => reject(new Error('Schwab LOGIN timeout (30s)')), 30000);
-      this.once('connected', () => { clearTimeout(timeout); resolve(); });
-      this.once('error', (e) => { clearTimeout(timeout); reject(e); });
+      const cleanup = () => {
+        clearTimeout(timeout);
+        this.off('connected', onConnected);
+        this.off('error', onError);
+        this._loginAbort = null;
+      };
+      const onConnected = () => { cleanup(); resolve(); };
+      const onError = (e) => { cleanup(); reject(e); };
+      const timeout = setTimeout(() => { cleanup(); reject(new Error('Schwab LOGIN timeout (30s)')); }, 30000);
+      this.once('connected', onConnected);
+      this.once('error', onError);
+      this._loginAbort = () => { cleanup(); reject(new Error('Schwab WS closed before LOGIN ack')); };
     });
 
     this._scheduleTokenRefresh();
@@ -537,6 +562,10 @@ class SchwabStreamer extends EventEmitter {
     this.connected = false;
     if (this._stabilityTimer) { clearTimeout(this._stabilityTimer); this._stabilityTimer = null; }
 
+    // If a connect() is mid-LOGIN, fail it NOW (pre-ack boot) so it doesn't hang
+    // 30s and double-schedule a reconnect on top of the one below.
+    if (this._loginAbort) { const abort = this._loginAbort; this._loginAbort = null; abort(); }
+
     if (this.isDisconnecting) {
       logger.info('Schwab streamer shutting down — no reconnect');
       return;
@@ -544,18 +573,24 @@ class SchwabStreamer extends EventEmitter {
 
     // Flap detection: a connection that closed before it ever proved stable is a
     // flap. We do NOT reset reconnectAttempts here, so _scheduleReconnect keeps
-    // escalating the backoff (5s→10s→…→60s) instead of hammering at 5s. Repeated
-    // flaps almost always mean a competing Schwab session — surface it loudly.
+    // escalating the backoff (5s→10s→…→60s) instead of hammering at 5s.
     const uptimeMs = this._connectedAt ? Date.now() - this._connectedAt : null;
+    this._connectedAt = null;
     if (uptimeMs != null && uptimeMs < STABLE_CONNECTION_MS) {
       this._consecutiveFlaps++;
       if (this._consecutiveFlaps >= FLAP_ALERT_THRESHOLD) {
         this._raiseSessionConflict(code, uptimeMs);
       }
+      // Sustained flapping → full in-process reset (LOGOUT + kill socket + clear
+      // all timers + clean reconnect). Self-heals what previously needed a
+      // container restart, and releases any ghost session holding the account.
+      if (this._consecutiveFlaps >= FLAP_HARD_RESET_THRESHOLD) {
+        this._hardReset();
+        return;
+      }
     } else {
       this._consecutiveFlaps = 0; // a genuinely-stable connection dropped
     }
-    this._connectedAt = null;
     this._scheduleReconnect();
   }
 
@@ -576,10 +611,13 @@ class SchwabStreamer extends EventEmitter {
   }
 
   _scheduleReconnect() {
+    if (this.isDisconnecting || this._hardResetting) return;
+    if (this._reconnectTimer) return; // exactly ONE pending reconnect — no chain multiplication
     const delay = Math.min(this.reconnectDelay * Math.pow(2, this.reconnectAttempts), this.maxReconnectDelay);
     this.reconnectAttempts++;
     logger.warn(`Schwab streamer reconnect attempt #${this.reconnectAttempts} in ${delay/1000}s`);
-    setTimeout(async () => {
+    this._reconnectTimer = setTimeout(async () => {
+      this._reconnectTimer = null;
       try {
         await this.connect();
         await this.startStreaming();
@@ -590,6 +628,61 @@ class SchwabStreamer extends EventEmitter {
         this._scheduleReconnect();
       }
     }, delay);
+    this._reconnectTimer.unref?.();
+  }
+
+  // Detach + kill the current socket so it can't linger as a second live session
+  // or re-enter _handleClose. removeAllListeners() first so its 'close' is silent.
+  _teardownWs() {
+    if (!this.ws) return;
+    try { this.ws.removeAllListeners(); } catch {}
+    try { (this.ws.terminate ? this.ws.terminate() : this.ws.close()); } catch {}
+    this.ws = null;
+  }
+
+  // Cleanly release the Schwab session: send ADMIN/LOGOUT (so Schwab frees the
+  // one-per-account slot immediately instead of leaving a ghost), then tear down.
+  async _logoutAndTeardown() {
+    try {
+      if (this.ws?.readyState === WebSocket.OPEN && this.streamerInfo) {
+        this._send({ service: 'ADMIN', command: 'LOGOUT', parameters: {} });
+        await new Promise(r => setTimeout(r, 300)); // let the frame flush
+      }
+    } catch { /* best effort */ }
+    this._teardownWs();
+  }
+
+  // In-process equivalent of a container restart: full teardown of socket +
+  // every timer + reconnect state, then ONE clean reconnect after a cooldown.
+  async _hardReset() {
+    if (this._hardResetting) return;
+    this._hardResetting = true;
+    logger.error(`🧨 Schwab streamer hard reset after ${this._consecutiveFlaps} flaps — full teardown + clean reconnect (no container restart needed)`);
+    if (this._reconnectTimer) { clearTimeout(this._reconnectTimer); this._reconnectTimer = null; }
+    if (this._stabilityTimer) { clearTimeout(this._stabilityTimer); this._stabilityTimer = null; }
+    if (this.tokenRefreshTimer) { clearInterval(this.tokenRefreshTimer); this.tokenRefreshTimer = null; }
+    if (this._loginAbort) { const a = this._loginAbort; this._loginAbort = null; try { a(); } catch {} }
+    await this._logoutAndTeardown();
+    // Clean slate.
+    this.connected = false;
+    this._connectedAt = null;
+    this.reconnectAttempts = 0;
+    this._consecutiveFlaps = 0;
+    this._hardResetting = false;
+    // One reconnect after a settle window (lets a ghost session time out).
+    this._reconnectTimer = setTimeout(async () => {
+      this._reconnectTimer = null;
+      try {
+        await this.connect();
+        await this.startStreaming();
+        logger.info('Schwab streamer reconnected after hard reset');
+        this.emit('reconnected');
+      } catch (e) {
+        logger.error(`Hard-reset reconnect failed: ${e.message}`);
+        this._scheduleReconnect();
+      }
+    }, HARD_RESET_COOLDOWN_MS);
+    this._reconnectTimer.unref?.();
   }
 
   async disconnect() {
@@ -603,10 +696,12 @@ class SchwabStreamer extends EventEmitter {
       clearTimeout(this._stabilityTimer);
       this._stabilityTimer = null;
     }
-    if (this.ws) {
-      try { this.ws.close(); } catch {}
-      this.ws = null;
+    if (this._reconnectTimer) {
+      clearTimeout(this._reconnectTimer);
+      this._reconnectTimer = null;
     }
+    // Release the Schwab session cleanly so the next pod doesn't fight a ghost.
+    await this._logoutAndTeardown();
     this.connected = false;
   }
 
