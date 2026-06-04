@@ -1654,14 +1654,11 @@ class TradovateClient extends EventEmitter {
     this._syncRequestId = this.wsRequestId;  // Track sync requestId before incrementing
     const requestId = this.wsRequestId++;
 
-    // Tradovate WS frame: endpoint\nid\nquery\nbody. The documented user sync
-    // (openapi.json "User Synchronization") includes a body { users: [userId] }
-    // to start the real-time user-data subscription. Include it when we know
-    // the userId (captured at auth); fall back to bodyless otherwise.
-    const body = this.userId ? `\n\n${JSON.stringify({ users: [this.userId] })}` : '';
-    const syncMessage = `user/syncrequest\n${requestId}${body}`;
+    // Try without any body first, based on WebSocket documentation format
+    const syncMessage = `user/syncrequest\n${requestId}`;
 
-    this.logger.info(`📡 Sending user sync request (users=[${this.userId ?? 'none'}])...`);
+    this.logger.info('📡 Sending user sync request...');
+    this.logger.info('📨 Request message format:', JSON.stringify(syncMessage));
     this.ws.send(syncMessage);
   }
 

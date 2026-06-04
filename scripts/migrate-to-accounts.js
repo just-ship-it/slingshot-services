@@ -76,9 +76,8 @@ function buildTradovateAccount(mode) {
     appVersion: envOr('TRADOVATE_APP_VERSION', '1.0'),
     demoUrl: envOr('TRADOVATE_DEMO_URL', 'https://demo.tradovateapi.com/v1'),
     liveUrl: envOr('TRADOVATE_LIVE_URL', 'https://live.tradovateapi.com/v1'),
-    // Trading/user socket (NOT md) — user/syncrequest + real-time user props live here.
-    wssDemoUrl: envOr('TRADOVATE_WSS_DEMO_URL', 'wss://demo.tradovateapi.com/v1/websocket'),
-    wssLiveUrl: envOr('TRADOVATE_WSS_LIVE_URL', 'wss://live.tradovateapi.com/v1/websocket')
+    wssDemoUrl: envOr('TRADOVATE_WSS_DEMO_URL', 'wss://md-demo.tradovateapi.com/v1/websocket'),
+    wssLiveUrl: envOr('TRADOVATE_WSS_LIVE_URL', 'wss://md.tradovateapi.com/v1/websocket')
   };
 
   return {
