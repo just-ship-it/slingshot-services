@@ -1654,11 +1654,14 @@ class TradovateClient extends EventEmitter {
     this._syncRequestId = this.wsRequestId;  // Track sync requestId before incrementing
     const requestId = this.wsRequestId++;
 
-    // Try without any body first, based on WebSocket documentation format
-    const syncMessage = `user/syncrequest\n${requestId}`;
+    // Tradovate WS frame: endpoint\nid\nquery\nbody. The documented user sync
+    // (openapi.json "User Synchronization") includes a body { users: [userId] }
+    // to start the real-time user-data subscription. Include it when we know
+    // the userId (captured at auth); fall back to bodyless otherwise.
+    const body = this.userId ? `\n\n${JSON.stringify({ users: [this.userId] })}` : '';
+    const syncMessage = `user/syncrequest\n${requestId}${body}`;
 
-    this.logger.info('📡 Sending user sync request...');
-    this.logger.info('📨 Request message format:', JSON.stringify(syncMessage));
+    this.logger.info(`📡 Sending user sync request (users=[${this.userId ?? 'none'}])...`);
     this.ws.send(syncMessage);
   }
 
@@ -1757,9 +1760,12 @@ class TradovateClient extends EventEmitter {
       timestamp: new Date().toISOString()
     });
 
-    // Emit type-specific events
-    switch (entityType) {
-      case 'Order':
+    // Emit type-specific events. Tradovate sends entityType in lowercase
+    // ("order","position","cashBalance","executionReport","orderStrategy");
+    // normalize so the switch matches regardless of casing (capitalized labels
+    // silently dropped position/order/cashBalance updates).
+    switch ((entityType || '').toLowerCase()) {
+      case 'order':
         // Handle order updates efficiently with caching
         this.handleOrderUpdate(entity, eventType).then(enrichedOrder => {
           this.emit('orderUpdate', { entity: enrichedOrder, eventType });
@@ -1769,17 +1775,22 @@ class TradovateClient extends EventEmitter {
           this.emit('orderUpdate', { entity, eventType });
         });
         break;
-      case 'Position':
+      case 'position':
         this.emit('positionUpdate', { entity, eventType });
         break;
-      case 'CashBalance':
+      case 'fill':
+        // The `fill` entity is the only one carrying the fill PRICE (order /
+        // executionReport do not). The connector uses it for ORDER_FILLED + to
+        // attribute/price position transitions.
+        this.emit('fillUpdate', { entity, eventType });
+        break;
+      case 'cashbalance':
         this.emit('balanceUpdate', { entity, eventType });
         break;
-      case 'ExecutionReport':
-      case 'executionReport':
+      case 'executionreport':
         this.emit('executionUpdate', { entity, eventType });
         break;
-      case 'orderStrategy':
+      case 'orderstrategy':
         this.emit('orderStrategyUpdate', { entity, eventType });
         break;
       default:

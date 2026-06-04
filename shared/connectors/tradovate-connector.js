@@ -64,8 +64,11 @@ export class TradovateConnector extends BaseConnector {
       defaultAccountId: this.brokerAccountId,
       demoUrl: config.demoUrl || 'https://demo.tradovateapi.com/v1',
       liveUrl: config.liveUrl || 'https://live.tradovateapi.com/v1',
-      wssDemoUrl: config.wssDemoUrl || 'wss://md-demo.tradovateapi.com/v1/websocket',
-      wssLiveUrl: config.wssLiveUrl || 'wss://md.tradovateapi.com/v1/websocket'
+      // TRADING/user socket — NOT the market-data (md) host. user/syncrequest
+      // and real-time user props (Order/Position/Fill) only exist here; md 404s
+      // on user/syncrequest. (See openapi.json "User Synchronization".)
+      wssDemoUrl: config.wssDemoUrl || 'wss://demo.tradovateapi.com/v1/websocket',
+      wssLiveUrl: config.wssLiveUrl || 'wss://live.tradovateapi.com/v1/websocket'
     };
 
     this.client = null;
@@ -79,6 +82,16 @@ export class TradovateConnector extends BaseConnector {
     this.pendingStructuralStops = new Map();    // strategyId → {stopPrice, targetPrice, action, timestamp}
     // strategyId → { entryPrice, direction, symbol, filledAt, mfe, rules: [{afterMinutes, mfeThreshold, action, trailOffset, triggered}] }
     this.tbTracking = new Map();
+
+    // Real-time position lifecycle tracking. The `position` entity is the
+    // authoritative source for open/close/flip: we track the PRIOR netPos per
+    // contract ourselves (Tradovate's `prevPos` is session-start, not the
+    // immediately-prior value, so it can't be used for transitions). The last
+    // fill per contract supplies the fill price (the `fill` entity carries it;
+    // executionReport/order do NOT) and the attribution for the position event.
+    this.lastNetPos = new Map();         // contractId → last observed netPos
+    this.lastFillByContract = new Map(); // contractId → { orderId, price, action, qty, role, strategyId, signalId, strategy, ts }
+    this.openPositionAttribution = new Map(); // contractId → { strategy, signalId, strategyId } captured at OPEN, inherited by update/close
 
     // Cache of contractId → symbol
     this.contractCache = new Map();
@@ -639,8 +652,11 @@ export class TradovateConnector extends BaseConnector {
     c.on('orderUpdate', (payload) => this._onOrderUpdate(payload).catch(err =>
       this.logger.error(`[${this._label()}] orderUpdate handler: ${err.message}`)));
 
-    c.on('executionUpdate', (payload) => this._onExecutionUpdate(payload).catch(err =>
-      this.logger.error(`[${this._label()}] executionUpdate handler: ${err.message}`)));
+    // Fills drive ORDER_FILLED (the `fill` entity carries the price; the
+    // executionReport does NOT) + structural-stop/TB resolution + per-contract
+    // fill attribution. Position OPEN/CLOSE is owned by _onPositionUpdate.
+    c.on('fillUpdate', (payload) => this._onFill(payload).catch(err =>
+      this.logger.error(`[${this._label()}] fillUpdate handler: ${err.message}`)));
 
     c.on('positionUpdate', (payload) => this._onPositionUpdate(payload).catch(err =>
       this.logger.error(`[${this._label()}] positionUpdate handler: ${err.message}`)));
@@ -691,7 +707,9 @@ export class TradovateConnector extends BaseConnector {
     };
 
     if (status === 'Filled') {
-      await this.messageBus.publish(this.channels.ORDER_FILLED, { ...base, fillPrice: order.avgPx ?? order.price ?? null });
+      // ORDER_FILLED is published by _onFill (the `fill` entity carries the
+      // real price; the order entity's avgPx is null on this feed). Skip here
+      // to avoid a duplicate, price-null fill event.
     } else if (status === 'Rejected') {
       await this.messageBus.publish(this.channels.ORDER_REJECTED, { ...base, reason: order.rejectReason });
       this.orderSignalMap.delete(order.id);
@@ -703,91 +721,89 @@ export class TradovateConnector extends BaseConnector {
     }
   }
 
-  async _onExecutionUpdate(payload) {
-    const execution = payload?.entity || payload;
-    if (!execution) return;
-
-    // Tradovate emits executionReports for every order state change (New,
-    // Working, Canceled, Rejected, Filled...). Only real fills have execType
-    // of 'Fill' or 'Trade' with a lastQty > 0 and a price. Everything else
-    // is an ack we ignore — firing POSITION_OPENED on an ack is a bug.
-    const execType = execution.execType || execution.xAction || null;
-    const fillQty = Number(execution.lastQty || 0);
-    const fillPrice = execution.price ?? execution.lastPrice ?? null;
-    const isActualFill =
-      (execType === 'Fill' || execType === 'Trade') ||
-      (execType == null && fillQty > 0 && fillPrice != null);
-
-    if (!isActualFill) {
-      this.logger.debug?.(`[${this._label()}] executionReport ignored (execType=${execType}, lastQty=${fillQty}, price=${fillPrice})`);
-      return;
+  /**
+   * Classify a fill's orderId to its OSO strategy + leg role using our
+   * correlation maps. For OSO brackets the entry order id IS the strategyId
+   * (primary); stop/target are child legs recorded in orderStrategyLinks.
+   * Returns { strategyId, role } where role ∈ entry|stop|target.
+   */
+  _classifyOrder(orderId) {
+    if (this.orderStrategyLinks.has(orderId)) return { strategyId: orderId, role: 'entry' };
+    for (const [sid, links] of this.orderStrategyLinks.entries()) {
+      if (links.stopOrderId === orderId) return { strategyId: sid, role: 'stop' };
+      if (links.targetOrderId === orderId) return { strategyId: sid, role: 'target' };
+      if (links.entryOrderId === orderId) return { strategyId: sid, role: 'entry' };
     }
+    return { strategyId: orderId, role: 'entry' };
+  }
 
-    const orderId = execution.orderId || execution.order?.id;
-    const strategyId = execution.orderStrategyId || orderId;
-    let signalId = this.orderSignalMap.get(orderId) || this.orderSignalMap.get(strategyId) || null;
+  /**
+   * Fill handler (driven by the `fill` entity, which is the only one that
+   * carries the fill PRICE — order/executionReport do not). Publishes
+   * ORDER_FILLED with the real price + attribution + leg role, records the
+   * fill per contract (for _onPositionUpdate to attribute open/close and source
+   * the exit price), and resolves structural-stop / TB tracking on the entry
+   * leg. Does NOT publish POSITION_OPENED/CLOSED — _onPositionUpdate owns the
+   * position lifecycle (authoritative via netPos transitions).
+   */
+  async _onFill(payload) {
+    const fill = payload?.entity || payload;
+    if (!fill || !fill.orderId) return;
+    const orderId = fill.orderId;
+    const fillPrice = fill.price ?? fill.lastPrice ?? null;
+    const fillQty = Number(fill.qty ?? fill.lastQty ?? 0) || null;
+
+    const symbol = this._resolveSymbol(fill.contractId);
+    const { strategyId, role } = this._classifyOrder(orderId);
+    let signalId = this.orderSignalMap.get(strategyId) || this.orderSignalMap.get(orderId) || null;
     let strategy = this.orderStrategyMap.get(strategyId) || this.orderStrategyMap.get(orderId) || null;
-
-    // Broker-side recovery on in-memory cache miss. ExecutionReport doesn't
-    // carry `text` (verified live 2026-05-27 — see memory/tradovate-order-
-    // tagging-fields.md), so we fetch OrderVersion.text directly. One HTTP
-    // round-trip on miss only; rehydrates the maps for subsequent events.
+    // Fallback: pending signal by symbol, stamped BEFORE the order was placed.
+    // Covers the instant-fill race where the WS fill arrives before the
+    // placeOrder HTTP response populated orderSignalMap (common for market
+    // entries; possible for marketable limits).
+    if (!strategy || strategy === 'UNKNOWN') {
+      const pending = this.pendingOrderSignals.get(symbol);
+      if (pending) { strategy = pending.strategy; signalId = signalId || pending.signalId; }
+    }
+    // Last resort: recover from the broker order text (handles post-restart /
+    // orphan attribution). See memory/tradovate-order-tagging-fields.
     if (!strategy || strategy === 'UNKNOWN') {
       const recovered = await this._recoverFromOrderText(orderId);
-      if (recovered.strategy) {
-        strategy = recovered.strategy;
-        signalId = signalId || recovered.signalId;
-      }
+      if (recovered.strategy) { strategy = recovered.strategy; signalId = signalId || recovered.signalId; }
     }
     if (!strategy) strategy = 'UNKNOWN';
 
-    const symbol = this._resolveSymbol(execution.contractId);
-    const links = this.orderStrategyLinks.get(strategyId);
-    const isStopOrder = links && links.stopOrderId === orderId;
-    const isTargetOrder = links && links.targetOrderId === orderId;
-    const isEntry = links && links.entryOrderId === orderId;
+    // Record the fill so _onPositionUpdate can attribute the resulting position
+    // transition and use this price as the exit price on a close.
+    this.lastFillByContract.set(fill.contractId, {
+      orderId, price: fillPrice, action: fill.action, qty: fillQty,
+      role, strategyId, signalId, strategy, ts: Date.now()
+    });
 
     await this.messageBus.publish(this.channels.ORDER_FILLED, {
       signalId, accountId: this.emittedAccountId, strategy, symbol,
-      orderId,
-      strategyId,
+      orderId, strategyId,
       brokerAccountId: this.brokerAccountId,
-      action: execution.action,
+      action: fill.action,
       fillPrice,
-      quantity: fillQty || execution.cumQty || null,
-      isStopOrder, isTargetOrder, isEntry,
+      quantity: fillQty,
+      isEntry: role === 'entry', isStopOrder: role === 'stop', isTargetOrder: role === 'target',
       timestamp: new Date().toISOString(),
-      source: 'websocket_execution'
+      source: 'websocket_fill'
     });
 
-    // Entry fill → position opened. Structural stop resolution.
-    if (isEntry || (!isStopOrder && !isTargetOrder)) {
-      await this.messageBus.publish(this.channels.POSITION_OPENED, {
-        signalId, accountId: this.emittedAccountId, strategy, symbol,
-        strategyId,
-        brokerAccountId: this.brokerAccountId,
-        side: execution.action === 'Buy' ? 'long' : 'short',
-        netPos: execution.lastQty ?? 1,
-        entryPrice: execution.price ?? execution.lastPrice ?? null,
-        stopLoss: links?.stopLoss ?? null,
-        takeProfit: links?.takeProfit ?? null,
-        timestamp: new Date().toISOString(),
-        source: 'websocket_execution'
-      });
-
-      // Update TB tracking with real fill price and fill time
+    // Entry leg: kick TB tracking + resolve any staged structural stop.
+    if (role === 'entry') {
       if (this.tbTracking.has(strategyId)) {
         const tb = this.tbTracking.get(strategyId);
-        tb.entryPrice = execution.price ?? tb.entryPrice;
+        tb.entryPrice = fillPrice ?? tb.entryPrice;
         tb.filledAt = Date.now();
         this.logger.info(`[${this._label()}] TB tracking started for ${strategyId}: entry=${tb.entryPrice} direction=${tb.direction} rules=${tb.rules.length}`);
       }
-
-      // Resolve structural stop
       const pending = this.pendingStructuralStops.get(strategyId);
       if (pending) {
         try {
-          await this.client.modifyBracketStop(strategyId, pending.stopPrice);
+          await this.modifyStop(strategyId, pending.stopPrice);
           this.logger.info(`[${this._label()}] structural stop resolved ${strategyId} → ${pending.stopPrice}`);
         } catch (err) {
           this.logger.warn(`[${this._label()}] structural stop modify failed for ${strategyId}: ${err.message}`);
@@ -795,52 +811,121 @@ export class TradovateConnector extends BaseConnector {
         this.pendingStructuralStops.delete(strategyId);
       }
     }
-
-    // Stop or target fill → position closed
-    if (isStopOrder || isTargetOrder) {
-      await this.messageBus.publish(this.channels.POSITION_CLOSED, {
-        signalId, accountId: this.emittedAccountId, strategy, symbol,
-        strategyId,
-        brokerAccountId: this.brokerAccountId,
-        exitPrice: execution.price ?? execution.lastPrice ?? null,
-        reason: isStopOrder ? 'stop_hit' : 'target_hit',
-        timestamp: new Date().toISOString(),
-        source: 'websocket_execution'
-      });
-      this._cleanupStrategy(strategyId);
-    }
   }
 
+  /**
+   * Authoritative position lifecycle. The `position` entity's netPos is the
+   * source of truth; we compare it to the PRIOR netPos we tracked ourselves
+   * (Tradovate's `prevPos` is session-start, unusable for transitions):
+   *   0 → non-zero          → POSITION_OPENED   (entry = position.netPrice)
+   *   non-zero → 0          → POSITION_CLOSED   (exit  = last fill price)
+   *   sign flip (≠0 → ≠0)   → CLOSE old then OPEN new
+   *   same sign, new qty    → POSITION_UPDATE   (scale in/out, no re-open)
+   * Attribution (signalId/strategy) + exit price come from the last fill on
+   * this contract, recorded by _onFill. Works for attributed brackets AND
+   * manual/unattributed positions (strategy 'UNKNOWN'), and for closes via
+   * stop, target, OR manual flatten — all just net-to-zero transitions.
+   */
   async _onPositionUpdate(payload) {
     const position = payload?.entity || payload;
-    if (!position) return;
-    const symbol = this._resolveSymbol(position.contractId);
+    if (!position || position.contractId == null) return;
+    const contractId = position.contractId;
+    const symbol = this._resolveSymbol(contractId);
+    const curr = Number(position.netPos ?? 0);
+    const prev = this.lastNetPos.get(contractId) ?? 0;
+    this.lastNetPos.set(contractId, curr);
 
-    if (!position.netPos) {
+    // Attribution: a position's strategy is fixed at OPEN and inherited by
+    // update/close (the closing fill — stop/target/flatten — may itself be
+    // unattributed, so we must NOT re-derive from it). Prefer the stored
+    // open-attribution; otherwise derive from the last fill, then the pending
+    // signal stamped by symbol at placement.
+    let attribution = this.openPositionAttribution.get(contractId);
+    if (!attribution || !attribution.strategy || attribution.strategy === 'UNKNOWN') {
+      const fill = this.lastFillByContract.get(contractId) || {};
+      attribution = { signalId: fill.signalId ?? null, strategy: fill.strategy ?? 'UNKNOWN', strategyId: fill.strategyId ?? null };
+      if (!attribution.strategy || attribution.strategy === 'UNKNOWN') {
+        const pending = this.pendingOrderSignals.get(symbol);
+        if (pending) { attribution.strategy = pending.strategy; attribution.signalId = attribution.signalId || pending.signalId; }
+      }
+    }
+    const fill = this.lastFillByContract.get(contractId) || {};
+
+    const opened = (toQty) => {
+      const side = toQty > 0 ? 'long' : 'short';
+      const links = attribution.strategyId ? this.orderStrategyLinks.get(attribution.strategyId) : null;
+      return this.messageBus.publish(this.channels.POSITION_OPENED, {
+        ...attribution, accountId: this.emittedAccountId, symbol,
+        brokerAccountId: this.brokerAccountId,
+        side, netPos: toQty,
+        entryPrice: position.netPrice ?? position.avgPrice ?? fill.price ?? null,
+        stopLoss: links?.stopLoss ?? null,
+        takeProfit: links?.takeProfit ?? null,
+        timestamp: new Date().toISOString(),
+        source: 'websocket_position'
+      });
+    };
+    const closed = (reason) => this.messageBus.publish(this.channels.POSITION_CLOSED, {
+      ...attribution, accountId: this.emittedAccountId, symbol,
+      brokerAccountId: this.brokerAccountId,
+      exitPrice: fill.price ?? null,
+      reason,
+      timestamp: new Date().toISOString(),
+      source: 'websocket_position'
+    });
+    const closeReason = () => (fill.role === 'stop' ? 'stop_hit' : fill.role === 'target' ? 'target_hit' : 'flatten');
+
+    if (prev === 0 && curr !== 0) {
+      this.openPositionAttribution.set(contractId, { ...attribution }); // fix strategy at open
+      this.logger.info(`[${this._label()}] POSITION OPENED ${symbol} ${curr > 0 ? 'long' : 'short'} ${curr} @ ${position.netPrice} (${attribution.strategy}/${attribution.signalId ?? '—'})`);
+      await opened(curr);
+    } else if (prev !== 0 && curr === 0) {
+      this.logger.info(`[${this._label()}] POSITION CLOSED ${symbol} (was ${prev}) exit=${fill.price} reason=${closeReason()} (${attribution.strategy})`);
+      await closed(closeReason());
+      if (attribution.strategyId) { this._cancelStrategyLegs(attribution.strategyId).catch(() => {}); this._cleanupStrategy(attribution.strategyId); }
+      this.openPositionAttribution.delete(contractId);
+      // Clear the per-contract fill so the NEXT position can't inherit this
+      // position's attribution (stale-leak: a fresh open whose event beats its
+      // own fill would otherwise read the prior trade's strategy).
+      this.lastFillByContract.delete(contractId);
+    } else if (prev !== 0 && curr !== 0 && Math.sign(prev) !== Math.sign(curr)) {
+      // Reversal in one report: close the old side, open the new.
+      this.logger.info(`[${this._label()}] POSITION FLIP ${symbol} ${prev} → ${curr}`);
+      await closed(closeReason());
+      if (attribution.strategyId) this._cleanupStrategy(attribution.strategyId);
+      const newAttr = { signalId: fill.signalId ?? null, strategy: fill.strategy ?? 'UNKNOWN', strategyId: fill.strategyId ?? null };
+      this.openPositionAttribution.set(contractId, newAttr);
+      attribution = newAttr;
+      await opened(curr);
+    } else if (curr !== 0) {
+      // Same-side scale in/out — a live update, NOT a new open.
       await this.messageBus.publish(this.channels.POSITION_UPDATE, {
         accountId: this.emittedAccountId,
         brokerAccountId: this.brokerAccountId,
-        strategy: null, // orchestrator knows from its own map
+        strategy: attribution.strategy, signalId: attribution.signalId,
         symbol,
-        side: 'flat',
-        netPos: 0,
+        side: curr > 0 ? 'long' : 'short',
+        netPos: curr,
+        entryPrice: position.netPrice ?? position.avgPrice ?? null,
         timestamp: new Date().toISOString(),
         source: 'websocket_position_update'
       });
-      return;
     }
+  }
 
-    await this.messageBus.publish(this.channels.POSITION_UPDATE, {
-      accountId: this.emittedAccountId,
-      brokerAccountId: this.brokerAccountId,
-      strategy: null,
-      symbol,
-      side: position.netPos > 0 ? 'long' : 'short',
-      netPos: position.netPos,
-      entryPrice: position.netPrice ?? position.avgPrice ?? null,
-      timestamp: new Date().toISOString(),
-      source: 'websocket_position_update'
-    });
+  /**
+   * Cancel any still-working OSO legs (stop/target) for a strategy after the
+   * position closed by a means OTHER than those legs (manual flatten / reversal)
+   * so they don't linger as ghost orders. Best-effort.
+   */
+  async _cancelStrategyLegs(strategyId) {
+    const links = this.orderStrategyLinks.get(strategyId);
+    if (!links) return;
+    for (const legId of [links.stopOrderId, links.targetOrderId]) {
+      if (!legId) continue;
+      try { await this.client.cancelOrder(legId); }
+      catch (err) { this.logger.debug?.(`[${this._label()}] leg cancel ${legId}: ${err.message}`); }
+    }
   }
 
   // -------------------- Time-based trailing stop management --------------------
