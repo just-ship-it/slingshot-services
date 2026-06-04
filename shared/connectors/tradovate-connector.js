@@ -794,6 +794,12 @@ export class TradovateConnector extends BaseConnector {
 
     // Entry leg: kick TB tracking + resolve any staged structural stop.
     if (role === 'entry') {
+      // Consume the per-symbol pending-signal bridge once an entry fill is
+      // processed, so a LATER unrelated fill on this symbol (e.g. a manual
+      // order, or a different strategy after this one closes) can't inherit
+      // this strategy's stale attribution. The real mapping (orderSignalMap /
+      // order text) covers any further fills for this order.
+      this.pendingOrderSignals.delete(symbol);
       if (this.tbTracking.has(strategyId)) {
         const tb = this.tbTracking.get(strategyId);
         tb.entryPrice = fillPrice ?? tb.entryPrice;
@@ -888,6 +894,7 @@ export class TradovateConnector extends BaseConnector {
       // position's attribution (stale-leak: a fresh open whose event beats its
       // own fill would otherwise read the prior trade's strategy).
       this.lastFillByContract.delete(contractId);
+      this.pendingOrderSignals.delete(symbol);
     } else if (prev !== 0 && curr !== 0 && Math.sign(prev) !== Math.sign(curr)) {
       // Reversal in one report: close the old side, open the new.
       this.logger.info(`[${this._label()}] POSITION FLIP ${symbol} ${prev} → ${curr}`);
