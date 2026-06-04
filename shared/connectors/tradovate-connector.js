@@ -753,7 +753,7 @@ export class TradovateConnector extends BaseConnector {
     const fillPrice = fill.price ?? fill.lastPrice ?? null;
     const fillQty = Number(fill.qty ?? fill.lastQty ?? 0) || null;
 
-    const symbol = this._resolveSymbol(fill.contractId);
+    const symbol = await this._resolveSymbolAsync(fill.contractId);
     const { strategyId, role } = this._classifyOrder(orderId);
     let signalId = this.orderSignalMap.get(strategyId) || this.orderSignalMap.get(orderId) || null;
     let strategy = this.orderStrategyMap.get(strategyId) || this.orderStrategyMap.get(orderId) || null;
@@ -836,7 +836,7 @@ export class TradovateConnector extends BaseConnector {
     const position = payload?.entity || payload;
     if (!position || position.contractId == null) return;
     const contractId = position.contractId;
-    const symbol = this._resolveSymbol(contractId);
+    const symbol = await this._resolveSymbolAsync(contractId);
     const curr = Number(position.netPos ?? 0);
     const prev = this.lastNetPos.get(contractId) ?? 0;
     this.lastNetPos.set(contractId, curr);
@@ -1344,6 +1344,29 @@ export class TradovateConnector extends BaseConnector {
   _resolveSymbol(contractId) {
     if (!contractId) return null;
     return this.contractCache.get(contractId) || null;
+  }
+
+  /**
+   * Like _resolveSymbol but fetches contract details from the broker on a cache
+   * miss (and caches the result). The cache is only populated from orders WE
+   * place, so a position on a contract we never traded (e.g. a manual order, or
+   * the first fill after a restart) has no cached symbol. Without this the
+   * connector emits position events with symbol=null, which the orchestrator
+   * drops (it requires a symbol). One HTTP round-trip on miss only.
+   */
+  async _resolveSymbolAsync(contractId) {
+    if (!contractId) return null;
+    const cached = this.contractCache.get(contractId);
+    if (cached) return cached;
+    try {
+      const cd = await this.client.getContractDetails(contractId);
+      const name = cd?.name || null;
+      if (name) this.contractCache.set(contractId, name);
+      return name;
+    } catch (err) {
+      this.logger.debug?.(`[${this._label()}] getContractDetails(${contractId}) failed: ${err.message}`);
+      return null;
+    }
   }
 
   _cleanupStrategy(strategyId) {
