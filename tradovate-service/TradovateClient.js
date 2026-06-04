@@ -1760,16 +1760,9 @@ class TradovateClient extends EventEmitter {
       timestamp: new Date().toISOString()
     });
 
-    // Emit type-specific events.
-    // Tradovate sends entityType in lowercase ("order", "position",
-    // "cashBalance", "executionReport", "orderStrategy"). The switch previously
-    // matched capitalized labels, so position/order/cashBalance props silently
-    // fell through to default — killing the real-time netPos feed, the generic
-    // (strategy-agnostic) open/close detection, and order cancel/reject events.
-    // Only executionReport survived (it happened to have a lowercase case).
-    // Normalize to lowercase so it matches regardless of casing.
-    switch ((entityType || '').toLowerCase()) {
-      case 'order':
+    // Emit type-specific events
+    switch (entityType) {
+      case 'Order':
         // Handle order updates efficiently with caching
         this.handleOrderUpdate(entity, eventType).then(enrichedOrder => {
           this.emit('orderUpdate', { entity: enrichedOrder, eventType });
@@ -1779,16 +1772,17 @@ class TradovateClient extends EventEmitter {
           this.emit('orderUpdate', { entity, eventType });
         });
         break;
-      case 'position':
+      case 'Position':
         this.emit('positionUpdate', { entity, eventType });
         break;
-      case 'cashbalance':
+      case 'CashBalance':
         this.emit('balanceUpdate', { entity, eventType });
         break;
-      case 'executionreport':
+      case 'ExecutionReport':
+      case 'executionReport':
         this.emit('executionUpdate', { entity, eventType });
         break;
-      case 'orderstrategy':
+      case 'orderStrategy':
         this.emit('orderStrategyUpdate', { entity, eventType });
         break;
       default:
