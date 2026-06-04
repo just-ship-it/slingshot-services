@@ -40,7 +40,9 @@ function makeMgr() {
       if (sym === 'MESM6' || sym === 'ESM6') return 'ES';
       return null;
     },
-    publishModifyStop: async (payload) => modifyStopCalls.push(payload),
+    // Return true to simulate a broker-confirmed modify — the manager now only
+    // marks a BE/lsBe rule `fired` once publishModifyStop resolves truthy.
+    publishModifyStop: async (payload) => { modifyStopCalls.push(payload); return true; },
     publishClosePosition: async (payload) => closePositionCalls.push(payload),
   });
   return { mgr, modifyStopCalls, closePositionCalls };
@@ -134,11 +136,12 @@ async function run() {
     await flush();
     assert(modifyStopCalls.length === 0, 'no fire below trigger');
 
-    mgr.onPriceTick({ baseSymbol: 'NQ', high: 29733, low: 29664, close: 29680 });
+    // MFE is driven by the trade price (close), not the day-stat high/low.
+    mgr.onPriceTick({ baseSymbol: 'NQ', high: 29733, low: 29664, close: 29664 });
     await flush();
     assert(modifyStopCalls.length === 0, 'no fire just below trigger');
 
-    mgr.onPriceTick({ baseSymbol: 'NQ', high: 29733, low: 29663, close: 29680 });
+    mgr.onPriceTick({ baseSymbol: 'NQ', high: 29733, low: 29663, close: 29663 });
     await flush();
     assert(modifyStopCalls.length === 1, `expected 1 fire, got ${modifyStopCalls.length}`);
     const call = modifyStopCalls[0];
@@ -159,7 +162,7 @@ async function run() {
       originalStop: 28940,
       rules: [{ type: 'breakeven', trigger: 70, offset: 5 }],
     });
-    mgr.onPriceTick({ baseSymbol: 'NQ', high: 29080, low: 29000, close: 29050 });
+    mgr.onPriceTick({ baseSymbol: 'NQ', high: 29080, low: 29000, close: 29080 });
     await flush();
     assert(modifyStopCalls.length === 1, `LONG fire expected, got ${modifyStopCalls.length}`);
     assert(modifyStopCalls[0].newStopPrice === 29005, `long BE+5 newStop expected 29005, got ${modifyStopCalls[0].newStopPrice}`);
@@ -192,8 +195,10 @@ async function run() {
       rules: [],
     });
     assert(mgr.size() === 1, 'no rules → still tracked (for MAE/MFE)');
-    // For a short at 29733: high=29800 is ADVERSE (price up), low=29500 is FAVORABLE (price down).
-    mgr.onPriceTick({ baseSymbol: 'NQ', high: 29800, low: 29500, close: 29550 });
+    // MFE/MAE track the trade price (close). For a short at 29733: a tick at
+    // 29800 is ADVERSE (MAE 67), a tick at 29500 is FAVORABLE (MFE 233).
+    mgr.onPriceTick({ baseSymbol: 'NQ', high: 29800, low: 29800, close: 29800 });
+    mgr.onPriceTick({ baseSymbol: 'NQ', high: 29500, low: 29500, close: 29500 });
     await flush();
     assert(modifyStopCalls.length === 0, 'no rules → no fire');
     // Verify MAE+MFE captured.
@@ -215,7 +220,7 @@ async function run() {
       side: 'long', entryPrice: 5800, signalId: 'sig-B',
       rules: [{ type: 'breakeven', trigger: 10, offset: 1 }],
     });
-    mgr.onPriceTick({ baseSymbol: 'NQ', high: 29733, low: 29660, close: 29670 });
+    mgr.onPriceTick({ baseSymbol: 'NQ', high: 29733, low: 29663, close: 29663 });
     await flush();
     assert(modifyStopCalls.length === 1, `expected one fire from NQ tick, got ${modifyStopCalls.length}`);
     assert(modifyStopCalls[0].signalId === 'sig-A', 'NQ tick fired the NQ position');
@@ -232,7 +237,7 @@ async function run() {
     const mgr = createExitRuleManager({
       logger: noopLogger,
       extractUnderlying: () => null,
-      publishModifyStop: async (p) => calls.push(p),
+      publishModifyStop: async (p) => { calls.push(p); return true; },
       publishClosePosition: async () => {},
     });
     mgr.register({
@@ -338,8 +343,8 @@ async function run() {
       ],
     });
 
-    // Tick: MFE hits 80 (price 29585.5) → BE fires modifyStop
-    mgr.onPriceTick({ baseSymbol: 'NQ', high: 29665.5, low: 29585.5, close: 29600 });
+    // Tick: trade price hits 29585.5 → MFE 80 → BE fires modifyStop
+    mgr.onPriceTick({ baseSymbol: 'NQ', high: 29665.5, low: 29585.5, close: 29585.5 });
     await flush();
     assert(modifyStopCalls.length === 1, `BE should fire at MFE=80, got ${modifyStopCalls.length}`);
     assert(modifyStopCalls[0].newStopPrice === 29655.5, `short BE+10 = entry-10 = 29655.5, got ${modifyStopCalls[0].newStopPrice}`);
@@ -377,7 +382,7 @@ async function run() {
       }],
     });
     // MFE +70 → lock 40% = 28 pts. newStop = 29665.5 - 28 = 29637.5
-    mgr.onPriceTick({ baseSymbol: 'NQ', high: 29665.5, low: 29595.5, close: 29600 });
+    mgr.onPriceTick({ baseSymbol: 'NQ', high: 29665.5, low: 29595.5, close: 29595.5 });
     await flush();
     assert(modifyStopCalls.length === 1, `ratchet fire at MFE=70, got ${modifyStopCalls.length}`);
     assert(modifyStopCalls[0].newStopPrice === 29637.5, `lockPct=0.4 of MFE=70 → entry-28 = 29637.5, got ${modifyStopCalls[0].newStopPrice}`);
@@ -400,24 +405,24 @@ async function run() {
       }],
     });
     // MFE +70 → tier1 (70/0.4)
-    mgr.onPriceTick({ baseSymbol: 'NQ', high: 29665.5, low: 29595.5, close: 29600 });
+    mgr.onPriceTick({ baseSymbol: 'NQ', high: 29665.5, low: 29595.5, close: 29595.5 });
     await flush();
     assert(modifyStopCalls.length === 1, `tier1 fire, got ${modifyStopCalls.length}`);
     assert(modifyStopCalls[0].newStopPrice === 29637.5, `tier1 stop`);
 
     // Another tick at same MFE → no upgrade
-    mgr.onPriceTick({ baseSymbol: 'NQ', high: 29665.5, low: 29595.5, close: 29600 });
+    mgr.onPriceTick({ baseSymbol: 'NQ', high: 29665.5, low: 29595.5, close: 29595.5 });
     await flush();
     assert(modifyStopCalls.length === 1, 'no re-fire same tier');
 
     // MFE jumps to +100 → tier0 (100/0.6) → lock 60 pts → 29605.5
-    mgr.onPriceTick({ baseSymbol: 'NQ', high: 29665.5, low: 29565.5, close: 29570 });
+    mgr.onPriceTick({ baseSymbol: 'NQ', high: 29665.5, low: 29565.5, close: 29565.5 });
     await flush();
     assert(modifyStopCalls.length === 2, `tier0 upgrade, got ${modifyStopCalls.length}`);
     assert(modifyStopCalls[1].newStopPrice === 29605.5, `tier0 stop=29605.5, got ${modifyStopCalls[1].newStopPrice}`);
 
     // No tier3 — further MFE doesn't add more fires
-    mgr.onPriceTick({ baseSymbol: 'NQ', high: 29665.5, low: 29500, close: 29510 });
+    mgr.onPriceTick({ baseSymbol: 'NQ', high: 29665.5, low: 29500, close: 29500 });
     await flush();
     assert(modifyStopCalls.length === 2, 'no further upgrades');
   }

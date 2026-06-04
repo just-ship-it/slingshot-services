@@ -148,6 +148,13 @@ export function createExitRuleManager({ logger, publishModifyStop, publishCloseP
     throw new Error('exit-rule-manager: extractUnderlying required');
   }
 
+  // Stop-modify retry policy. A BE/lsBe modify is only marked `fired` once the
+  // broker confirms it (publishModifyStop resolves true). On failure we leave
+  // the rule un-fired so the next tick retries, throttled by the backoff, up to
+  // MAX attempts — then give up loudly (the original SL still protects us).
+  const MODIFY_RETRY_BACKOFF_MS = 5_000;
+  const MAX_MODIFY_ATTEMPTS = 6;
+
   // Map<posKey, RuleState>
   // RuleState shape:
   //   {
@@ -255,12 +262,13 @@ export function createExitRuleManager({ logger, publishModifyStop, publishCloseP
       lowWaterMark: entryPrice,
       closed: false,
       openedAt: Date.now(),
+      firstTickLogged: false,   // verification: log the first price tick's MFE
     };
     state.set(posKey, rs);
     indexAdd(rs);
 
     const summary = ruleList.map(r => describeRule(r)).join(', ');
-    logger.info(`[ExitRule] tracking ${strategy} ${symbol} ${side} @${entryPrice} rules=[${summary}]`);
+    logger.info(`[ExitRule] tracking ${strategy} ${symbol} ${side} @${entryPrice} origStop=${rs.originalStop ?? 'n/a'} rules=[${summary}]`);
   }
 
   function describeRule(r) {
@@ -280,7 +288,9 @@ export function createExitRuleManager({ logger, publishModifyStop, publishCloseP
     indexRemove(rs);
     const elapsed = ((Date.now() - rs.openedAt) / 60_000).toFixed(1);
     const fired = rs.ruleStates.map((s, i) => s.fired ? rs.rules[i].type : null).filter(Boolean);
-    logger.info(`[ExitRule] untracked ${strategy} ${symbol} after ${elapsed}min (fired=[${fired.join(',') || 'none'}])`);
+    const peakMfe = (rs.side === 'long' ? rs.highWaterMark - rs.entryPrice : rs.entryPrice - rs.lowWaterMark);
+    const peakMae = (rs.side === 'long' ? rs.entryPrice - rs.lowWaterMark : rs.highWaterMark - rs.entryPrice);
+    logger.info(`[ExitRule] untracked ${strategy} ${symbol} after ${elapsed}min (fired=[${fired.join(',') || 'none'}]) peakMFE=${peakMfe.toFixed(1)} peakMAE=${peakMae.toFixed(1)}`);
   }
 
   function updateExtremes(rs, { high, low }) {
@@ -309,14 +319,29 @@ export function createExitRuleManager({ logger, publishModifyStop, publishCloseP
     const set = byUnderlying.get(baseSymbol);
     if (!set || set.size === 0) return;
 
-    const high = numericOr(msg.high, null);
-    const low = numericOr(msg.low, null);
-    if (high == null && low == null) return;
+    // Use the LAST/trade price (close), NOT msg.high/msg.low. On Schwab L1
+    // ticks those high/low fields are the SESSION day high/low (schwab-streamer
+    // FUT_L1 fields 12/13, also surfaced as sessionHigh/sessionLow), not this
+    // tick's price. Feeding them into the water marks makes MFE/MAE instantly
+    // span the whole session range — a long adopted near the day low shows
+    // MFE = dayHigh − entry on the very first tick, false-arming BE/ratchet
+    // rules. The trade price is the correct running extreme between bars;
+    // onCandleClose still captures the true per-bar high/low each minute.
+    // See memory: exit-rule-mfe-oso-orphan-bugs.
+    const px = numericOr(msg.close, null);
+    if (px == null) return;
 
     for (const posKey of set) {
       const rs = state.get(posKey);
       if (!rs || rs.closed) continue;
-      updateExtremes(rs, { high, low });
+      updateExtremes(rs, { high: px, low: px });
+      // Verification (Bug A): the FIRST tick after register should show MFE≈0,
+      // not the full session range. A large value here means day-stat high/low
+      // are still leaking in. One line per position, then quiet.
+      if (!rs.firstTickLogged) {
+        rs.firstTickLogged = true;
+        logger.info(`[ExitRule] first-tick ${rs.strategy} ${rs.symbol} ${rs.side}: px=${px} entry=${rs.entryPrice} mfe=${currentMFE(rs).toFixed(1)} (expect ≈0)`);
+      }
       evaluateTickRules(rs);
     }
   }
@@ -423,12 +448,9 @@ export function createExitRuleManager({ logger, publishModifyStop, publishCloseP
     const newStop = rs.side === 'long'
       ? rs.entryPrice + rule.offset
       : rs.entryPrice - rule.offset;
-    rstate.fired = true;
-    rstate.publishedStop = newStop;
-    rstate.firedAt = Date.now();
     rstate.lsFlipTs = msg.timestamp ?? null;
     rstate.lsSentiment = msg.sentiment;
-    fireModifyStop(rs, newStop,
+    dispatchBEStop(rs, rstate, newStop,
       `LS flip → ${msg.sentiment} (bar=${msg.candleTime || 'n/a'}); arm BE entry${rule.offset >= 0 ? '+' : ''}${rule.offset}`);
   }
 
@@ -437,9 +459,7 @@ export function createExitRuleManager({ logger, publishModifyStop, publishCloseP
     const newStop = rs.side === 'long'
       ? rs.entryPrice + rule.offset
       : rs.entryPrice - rule.offset;
-    rstate.fired = true;
-    rstate.publishedStop = newStop;
-    fireModifyStop(rs, newStop,
+    dispatchBEStop(rs, rstate, newStop,
       `BE trigger MFE=${mfe.toFixed(1)} → entry${rule.offset >= 0 ? '+' : ''}${rule.offset}`);
   }
 
@@ -491,7 +511,41 @@ export function createExitRuleManager({ logger, publishModifyStop, publishCloseP
       `fib retrace MFE=${mfe.toFixed(1)} barClose=${barClose} fibLevel=${fibLevel.toFixed(2)} (retr=${rule.retracePct})`);
   }
 
-  function fireModifyStop(rs, newStopPrice, reason) {
+  /**
+   * Dispatch a BE/lsBe stop-modify with confirm-or-retry semantics. The rule is
+   * marked `fired` ONLY once the broker confirms (publishModifyStop → true). A
+   * failed attempt leaves it un-fired so the next tick retries (throttled by
+   * MODIFY_RETRY_BACKOFF_MS) up to MAX_MODIFY_ATTEMPTS, then gives up loudly.
+   * Replaces the old fire-and-forget that marked `fired` before the broker even
+   * answered — which is why a 404'd OSO modify silently left the original stop.
+   */
+  function dispatchBEStop(rs, rstate, newStopPrice, reason) {
+    if (rstate.fired || rstate.firing || rstate.gaveUp) return;
+    const now = Date.now();
+    if (rstate.lastAttemptAt && (now - rstate.lastAttemptAt) < MODIFY_RETRY_BACKOFF_MS) return;
+    rstate.firing = true;
+    rstate.lastAttemptAt = now;
+    rstate.attempts = (rstate.attempts || 0) + 1;
+    rstate.publishedStop = newStopPrice;
+    const attempt = rstate.attempts;
+    fireModifyStop(rs, newStopPrice, `${reason} [attempt ${attempt}/${MAX_MODIFY_ATTEMPTS}]`)
+      .then((ok) => {
+        rstate.firing = false;
+        if (ok) {
+          rstate.fired = true;
+          rstate.firedAt = Date.now();
+          logger.info(`[ExitRule] modifyStop CONFIRMED ${rs.strategy} ${rs.symbol} ${rs.side} → ${newStopPrice} (attempt ${attempt})`);
+        } else if (attempt >= MAX_MODIFY_ATTEMPTS) {
+          rstate.gaveUp = true;
+          logger.error(`[ExitRule] modifyStop GAVE UP ${rs.strategy} ${rs.symbol} ${rs.side} after ${attempt} attempts — broker stop NOT moved (still ${rs.originalStop ?? 'n/a'}); MANUAL CHECK`);
+        } else {
+          logger.warn(`[ExitRule] modifyStop FAILED ${rs.strategy} ${rs.symbol} ${rs.side} attempt ${attempt}/${MAX_MODIFY_ATTEMPTS} — will retry`);
+        }
+      });
+  }
+
+  // Returns Promise<boolean> — true only when the broker confirms the modify.
+  async function fireModifyStop(rs, newStopPrice, reason) {
     const payload = {
       accountId: rs.accountId,
       strategy: rs.strategy,
@@ -504,10 +558,14 @@ export function createExitRuleManager({ logger, publishModifyStop, publishCloseP
       entryPrice: rs.entryPrice,
       side: rs.side,
     };
-    logger.info(`[ExitRule] FIRE modifyStop ${rs.strategy} ${rs.symbol} ${rs.side}: ${reason}; newStop=${newStopPrice}`);
-    Promise.resolve()
-      .then(() => publishModifyStop(payload))
-      .catch(err => logger.error(`[ExitRule] publishModifyStop failed: ${err.message}`));
+    logger.info(`[ExitRule] FIRE modifyStop ${rs.strategy} ${rs.symbol} ${rs.side}: ${reason}; entry=${rs.entryPrice} hwm=${rs.highWaterMark} lwm=${rs.lowWaterMark} mfe=${currentMFE(rs).toFixed(1)} newStop=${newStopPrice}`);
+    try {
+      const ok = await publishModifyStop(payload);
+      return ok === true;
+    } catch (err) {
+      logger.error(`[ExitRule] publishModifyStop threw: ${err.message}`);
+      return false;
+    }
   }
 
   function fireClosePosition(rs, exitPrice, reason) {

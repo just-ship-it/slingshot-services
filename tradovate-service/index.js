@@ -324,8 +324,17 @@ function buildApp() {
     const hint = { symbol: req.query.symbol || req.body?.symbol || null, reason: req.body?.reason || null };
     try {
       const result = await conn.modifyStopBySignalId(req.params.signalId, newStopPrice, hint);
+      // Propagate a broker-side failure (e.g. OSO modify 404) as a non-2xx so
+      // the orchestrator's exit-rule manager retries instead of marking the BE
+      // as done. Returning 200 on ok:false is what hid the stale-stop bug.
+      if (result && result.ok === false) {
+        logger.warn(`[modify-stop] ${req.params.signalId} → ${newStopPrice} FAILED: ${result.reason || 'unknown'}`);
+        return res.status(502).json(result);
+      }
+      logger.info(`[modify-stop] ${req.params.signalId} → ${newStopPrice} OK (strategyId=${result?.strategyId ?? '?'})`);
       res.json(result);
     } catch (err) {
+      logger.error(`[modify-stop] ${req.params.signalId} threw: ${err.message}`);
       res.status(500).json({ error: err.message });
     }
   });

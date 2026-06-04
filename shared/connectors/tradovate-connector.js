@@ -253,6 +253,7 @@ export class TradovateConnector extends BaseConnector {
         isTrailing: !!hasTrailing,
         stopLoss: message.stopLoss ?? null,
         takeProfit: message.takeProfit ?? null,
+        qty: quantity,
         timestamp: Date.now()
       });
 
@@ -519,6 +520,25 @@ export class TradovateConnector extends BaseConnector {
   }
 
   async modifyStop(strategyId, newStopPrice) {
+    // OSO brackets (placeOSO) are NOT OrderStrategy entities, so the
+    // OrderStrategy lookup inside modifyBracketStop ("get OrderStrategy item")
+    // 404s for them — which silently left the original stop in place. We
+    // already hold the stop-leg orderId in orderStrategyLinks, so modify it
+    // directly via /order/modifyorder. Fall back to the OrderStrategy path
+    // only for trailing/orderStrategy-placed brackets (no cached leg id).
+    const links = this.orderStrategyLinks.get(strategyId)
+      || this.orderStrategyLinks.get(String(strategyId));
+    const stopOrderId = links?.stopOrderId;
+    if (stopOrderId && !links?.isTrailing) {
+      this.logger.info(`[${this._label()}] modify-stop OSO-direct: strategyId=${strategyId} stopOrderId=${stopOrderId} → ${newStopPrice}`);
+      return this.client.modifyOrder({
+        orderId: stopOrderId,
+        orderType: 'Stop',
+        orderQty: links?.qty ?? 1,
+        stopPrice: Number(newStopPrice),
+      });
+    }
+    this.logger.info(`[${this._label()}] modify-stop orderStrategy-path: strategyId=${strategyId} (stopOrderId=${stopOrderId ?? 'none'}, trailing=${!!links?.isTrailing}) → ${newStopPrice}`);
     return this.client.modifyBracketStop(strategyId, newStopPrice);
   }
 

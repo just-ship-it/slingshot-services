@@ -1437,7 +1437,7 @@ const exitRuleManager = createExitRuleManager({
     const { accountId, signalId, newStopPrice, symbol } = payload;
     if (!signalId) {
       logger.warn(`[ExitRule] publishModifyStop ${accountId} ${symbol}: no signalId — cannot identify order; skipping`);
-      return;
+      return false;
     }
     const url = `${TRADOVATE_SERVICE_URL}/accounts/${encodeURIComponent(accountId)}`
               + `/modify-stop/${encodeURIComponent(signalId)}`
@@ -1448,14 +1448,19 @@ const exitRuleManager = createExitRuleManager({
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ newStopPrice, reason: payload.reason }),
       });
-      if (!res.ok) {
-        const body = await res.text().catch(() => '');
-        logger.error(`[ExitRule] modify-stop HTTP ${res.status}: ${body.slice(0, 200)}`);
-      } else {
-        logger.info(`[ExitRule] modify-stop posted: ${accountId} ${symbol} → ${newStopPrice} (${payload.reason})`);
+      // Parse the connector result so we don't treat a broker-side failure
+      // (e.g. OSO modify 404) as success just because the HTTP call returned.
+      const body = await res.json().catch(() => ({}));
+      const ok = res.ok && body?.ok !== false;
+      if (!ok) {
+        logger.error(`[ExitRule] modify-stop FAILED: ${accountId} ${symbol} → ${newStopPrice} | HTTP ${res.status} ok=${body?.ok} reason=${body?.reason || body?.error || ''} strategyId=${body?.strategyId ?? '?'}`);
+        return false;
       }
+      logger.info(`[ExitRule] modify-stop CONFIRMED: ${accountId} ${symbol} → ${newStopPrice} via strategyId=${body?.strategyId ?? '?'} (${payload.reason})`);
+      return true;
     } catch (err) {
       logger.error(`[ExitRule] modify-stop fetch failed: ${err.message}`);
+      return false;
     }
   },
   publishClosePosition: async (payload) => {
