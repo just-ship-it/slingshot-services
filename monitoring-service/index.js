@@ -4478,6 +4478,25 @@ async function handlePositionOpenedState(message) {
     lastUpdate: message.timestamp || new Date().toISOString(),
     source: 'position_opened'
   });
+
+  // Push to the dashboard so the Accounts panel updates in REAL-TIME on open,
+  // matching the close/update path. Without this, a fresh open only appears on
+  // the next poll / manual refresh — a stale-vs-broker discrepancy (risk on a
+  // live system). The frontend binds 'position_update' → handlePositionChange
+  // (Dashboard.jsx), so reusing that channel refreshes the panel with no
+  // frontend change required.
+  broadcast('position_update', {
+    accountId: message.accountId,
+    brokerAccountId: message.brokerAccountId,
+    symbol: message.symbol,
+    side: message.side || (message.netPos > 0 ? 'long' : 'short'),
+    netPos: message.netPos ?? null,
+    strategy: message.strategy || null,
+    signalId: message.signalId || null,
+    entryPrice: message.entryPrice ?? null,
+    timestamp: message.timestamp || new Date().toISOString(),
+    source: 'position_opened'
+  });
 }
 
 async function handlePositionSnapshot(message) {
