@@ -64,8 +64,14 @@ export class TradovateConnector extends BaseConnector {
       defaultAccountId: this.brokerAccountId,
       demoUrl: config.demoUrl || 'https://demo.tradovateapi.com/v1',
       liveUrl: config.liveUrl || 'https://live.tradovateapi.com/v1',
-      wssDemoUrl: config.wssDemoUrl || 'wss://md-demo.tradovateapi.com/v1/websocket',
-      wssLiveUrl: config.wssLiveUrl || 'wss://md.tradovateapi.com/v1/websocket'
+      // TRADING/user socket — NOT the market-data (md) host. user/syncrequest
+      // and all real-time user props (Order/Position/Fill/ExecutionReport) only
+      // exist here; the md hosts 404 on user/syncrequest. (Regressed to md in
+      // the 2026 architecture refactor → real-time position events silently
+      // died, falling back to 5-min REST reconcile. See openapi.json "User
+      // Synchronization".)
+      wssDemoUrl: config.wssDemoUrl || 'wss://demo.tradovateapi.com/v1/websocket',
+      wssLiveUrl: config.wssLiveUrl || 'wss://live.tradovateapi.com/v1/websocket'
     };
 
     this.client = null;
