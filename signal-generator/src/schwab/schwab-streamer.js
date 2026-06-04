@@ -419,6 +419,12 @@ class SchwabStreamer extends EventEmitter {
       timestamp: new Date().toISOString(),
       source: 'schwab-chart-futures',
       candleTimestamp: new Date(chartTime).toISOString(),
+      // CHART_FUTURES delivers ONE finalized 1m bar per minute, ~2s AFTER the
+      // minute closes (the just-completed minute) — never an intrabar/forming
+      // update. Flag it so candle-manager publishes candle.close on arrival
+      // instead of deferring a full bar via TradingView-style forming-bar
+      // close-detection. See memory: candle-feed-emission-semantics.
+      barClosed: true,
       sessionOpen: dayStats.open ?? null,
       sessionHigh: dayStats.high ?? null,
       sessionLow: dayStats.low ?? null,

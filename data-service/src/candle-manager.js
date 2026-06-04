@@ -84,29 +84,51 @@ export class CandleManager {
       volume: quote.volume
     };
 
+    // Completed-bar feeds (quote.barClosed — Schwab CHART_FUTURES delivers one
+    // finalized 1m bar ~2s after close) publish on arrival: the bar is already
+    // closed, so deferring it to the next bar (the forming-bar path below) just
+    // adds a full bar of latency, which desyncs limit-on-trigger-bar strategies
+    // (ls-flip-trigger-bar) from their backtests. See memory:
+    // candle-feed-emission-semantics + lstb-candle-feed-one-bar-lag.
+    if (quote.barClosed) {
+      const closedCandle = buffer.addClosedCandle(candleData);
+      return closedCandle ? this._publishClose(baseSymbol, closedCandle) : null;
+    }
+
+    // Intrabar/forming feeds (legacy TradingView): the newest candle is still
+    // forming, so a close is only confirmed once the NEXT bar's timestamp lands.
     const isNewCandle = buffer.addCandle(candleData);
     if (isNewCandle) {
       const closedCandle = buffer.getLastClosedCandle();
       if (closedCandle) {
-        // Publish candle.close to Redis with product identifier
-        const candleCloseData = {
-          product: baseSymbol,
-          symbol: closedCandle.symbol,
-          timestamp: closedCandle.timestamp,
-          open: closedCandle.open,
-          high: closedCandle.high,
-          low: closedCandle.low,
-          close: closedCandle.close,
-          volume: closedCandle.volume
-        };
-
-        await messageBus.publish(CHANNELS.CANDLE_CLOSE, candleCloseData);
-        logger.info(`Published candle.close: ${baseSymbol} ${closedCandle.close} @ ${closedCandle.timestamp}`);
-        return candleCloseData;
+        return this._publishClose(baseSymbol, closedCandle);
       }
     }
 
     return null;
+  }
+
+  /**
+   * Publish a closed 1m candle to Redis CANDLE_CLOSE.
+   * @param {string} baseSymbol - 'NQ' / 'ES'
+   * @param {Candle} closedCandle - the finalized candle to emit
+   * @returns {Object} the published candle.close payload
+   */
+  async _publishClose(baseSymbol, closedCandle) {
+    const candleCloseData = {
+      product: baseSymbol,
+      symbol: closedCandle.symbol,
+      timestamp: closedCandle.timestamp,
+      open: closedCandle.open,
+      high: closedCandle.high,
+      low: closedCandle.low,
+      close: closedCandle.close,
+      volume: closedCandle.volume
+    };
+
+    await messageBus.publish(CHANNELS.CANDLE_CLOSE, candleCloseData);
+    logger.info(`Published candle.close: ${baseSymbol} ${closedCandle.close} @ ${closedCandle.timestamp}`);
+    return candleCloseData;
   }
 
   /**

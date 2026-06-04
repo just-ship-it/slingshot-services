@@ -88,6 +88,58 @@ export class CandleBuffer {
   }
 
   /**
+   * Add an ALREADY-CLOSED candle to the buffer (one finalized bar per period).
+   *
+   * For feeds that deliver completed bars after the period closes — e.g. Schwab
+   * CHART_FUTURES, which pushes one finalized 1m bar ~2s after close. Unlike
+   * addCandle() (built for TradingView's intrabar forming-bar stream, which only
+   * flags a close once the NEXT bar arrives — a wasted bar for already-closed
+   * feeds), this returns each newly-arrived bar immediately so candle.close
+   * publishes at the true bar close. See memory: candle-feed-emission-semantics.
+   *
+   * @param {object} candleData - Raw OHLCV for a completed bar
+   * @returns {Candle|null} The newly-closed candle to publish, or null if this
+   *   was a same-timestamp revision, out-of-order, or invalid (nothing to emit).
+   */
+  addClosedCandle(candleData) {
+    try {
+      const candle = new Candle(candleData);
+
+      if (!this.isValidCandle(candle)) {
+        logger.warn(`Invalid closed candle data received for ${this.symbol}:`, candleData);
+        return null;
+      }
+
+      const candleTime = new Date(candle.timestamp).getTime();
+
+      if (this.candles.length > 0) {
+        const lastCandle = this.candles[this.candles.length - 1];
+        const lastCandleTime = new Date(lastCandle.timestamp).getTime();
+
+        if (candleTime === lastCandleTime) {
+          // Same-bar revision — replace in place, do NOT re-publish.
+          this.candles[this.candles.length - 1] = candle;
+          return null;
+        }
+        if (candleTime < lastCandleTime) {
+          logger.debug(`Skipping out-of-order closed candle for ${this.symbol}: ${candle.timestamp}`);
+          return null;
+        }
+        // candleTime > lastCandleTime: a new, already-closed bar.
+      }
+
+      this.candles.push(candle);
+      this.maintainBufferSize();
+      this.lastCandleTime = candleTime;
+      this.initialized = true;
+      return candle; // already closed → publish on arrival
+    } catch (error) {
+      logger.error(`Error adding closed candle to buffer for ${this.symbol}:`, error);
+      return null;
+    }
+  }
+
+  /**
    * Validate candle data
    * @param {Candle} candle - Candle object to validate
    * @returns {boolean} True if candle is valid

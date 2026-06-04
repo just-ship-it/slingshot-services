@@ -26,6 +26,7 @@ import {
 import { createAccountStore, ACCOUNT_CHANNEL } from '../shared/utils/account-store.js';
 import { createRoutesStore, ROUTES_CHANNEL } from '../shared/utils/routes-store.js';
 import { evaluateCrossStrategyRules, evaluateStrategyAlerts } from './cross-strategy-filter.js';
+import { evaluateGammaFilter, readGammaFilterConfig, normRegime } from '../shared/filters/gamma-filter.js';
 import { createExitRuleManager, captureRuleFromSignal } from './src/exit-rule-manager.js';
 import { applyStrategyRuleProfile } from './src/strategy-rule-profile.js';
 import { shouldCancelOnPreFillExtreme, effectivePreFillExtremes } from './src/pre-fill-cancel.js';
@@ -36,6 +37,9 @@ const logger = createLogger(SERVICE_NAME);
 
 // Redis keys owned by this service
 const KILL_SWITCH_KEY = 'trading:kill_switch';
+const GAMMA_FILTER_KEY = 'trading:gamma_filter_enabled';                       // runtime override of the env default
+const GAMMA_MAX_STALE_MS = Number(process.env.GAMMA_FILTER_MAX_STALE_MS || 1800000); // 30min — older regime = unknown → fail-open
+const GAMMA_DEGRADED_ALERT_THROTTLE_MS = 15 * 60000;                           // alert at most once / 15min while degraded
 const OPEN_POSITIONS_KEY = 'orchestrator:open_positions';
 const SIGNAL_DEFAULTS_KEY = 'orchestrator:signal_defaults';
 const CONTRACTS_MAPPINGS_KEY = 'contracts:mappings';
@@ -63,6 +67,12 @@ const state = {
   contractMappings: {},
   positionSizing: { method: 'fixed', fixedQuantity: 1, contractType: 'micro', maxContracts: 5 },
   tbRules: {},
+
+  // Optional gamma-regime trade filter (loser-reduction overlay; see shared/filters/gamma-filter.js).
+  gammaFilterCfg: readGammaFilterConfig(),     // {enabled, blockShortsInPositive, blockFadeInNegative}; enabled overridable at runtime
+  gammaRegime: new Map(),                      // product(NQ/ES) -> { regime, totalGex, ts } (ts = receipt time)
+  gammaDegradedLastAlertTs: 0,
+  gammaFilterStats: { blocked: 0, degradedSkips: 0 },
 
   // Map<posKey, { accountId, strategy, symbol, side, netPos, entryPrice, signalId, openedAt }>
   openPositions: new Map(),
@@ -265,6 +275,55 @@ async function loadKillSwitch(redis) {
 async function saveKillSwitch(redis) {
   try { await redis.set(KILL_SWITCH_KEY, String(state.tradingEnabled)); }
   catch (err) { logger.error(`Failed to persist kill switch: ${err.message}`); }
+}
+
+// ---------- Gamma filter (optional, runtime-toggleable) ----------
+// `enabled` defaults from env (GAMMA_FILTER_ENABLED) but a Redis value overrides it so the
+// live on/off survives restarts (mirrors the kill switch). Rule sub-toggles stay env-driven.
+async function loadGammaFilterEnabled(redis) {
+  try {
+    const v = await redis.get(GAMMA_FILTER_KEY);
+    if (v !== null) state.gammaFilterCfg.enabled = v === 'true';
+    const c = state.gammaFilterCfg;
+    logger.info(`Gamma filter loaded: enabled=${c.enabled} (shortsInPos=${c.blockShortsInPositive}, fadeInNeg=${c.blockFadeInNegative}, maxStale=${Math.round(GAMMA_MAX_STALE_MS/60000)}min)`);
+  } catch (err) { logger.warn(`Failed to load gamma filter flag: ${err.message} — using env default ${state.gammaFilterCfg.enabled}`); }
+}
+async function saveGammaFilterEnabled(redis) {
+  try { await redis.set(GAMMA_FILTER_KEY, String(state.gammaFilterCfg.enabled)); }
+  catch (err) { logger.error(`Failed to persist gamma filter flag: ${err.message}`); }
+}
+
+// Cache net-gamma regime per product from data-service's gex.levels broadcasts.
+function handleGexLevels(msg) {
+  try {
+    const product = String(msg?.product || '').toUpperCase();
+    if (!product) return;
+    let regime = normRegime(msg.regime);
+    if (regime == null && Number.isFinite(msg.totalGex)) regime = msg.totalGex >= 0 ? 'positive' : 'negative';
+    if (regime == null) return;
+    state.gammaRegime.set(product, { regime, totalGex: Number.isFinite(msg.totalGex) ? msg.totalGex : null, ts: Date.now() });
+  } catch (err) { logger.error(`[GAMMA] gex.levels handler threw: ${err.message}`); }
+}
+// Current regime for an underlying, or null if missing/stale (→ filter fails open).
+function currentRegimeFor(underlying) {
+  const e = state.gammaRegime.get(String(underlying || '').toUpperCase());
+  if (!e) return null;
+  if (Date.now() - e.ts > GAMMA_MAX_STALE_MS) return null;
+  return e.regime;
+}
+// FAIL-OPEN is silent by default; this makes the "enabled but couldn't act" state LOUD (throttled).
+async function notifyGammaDegraded(underlying) {
+  const now = Date.now();
+  if (now - state.gammaDegradedLastAlertTs < GAMMA_DEGRADED_ALERT_THROTTLE_MS) return;
+  state.gammaDegradedLastAlertTs = now;
+  const msg = `[GAMMA] filter ENABLED but ${underlying} gamma regime is unknown/stale (>${Math.round(GAMMA_MAX_STALE_MS/60000)}min) — FAILING OPEN (signals pass unfiltered). ${state.gammaFilterStats.degradedSkips} affected since boot. Check data-service GEX feed.`;
+  logger.error(msg);
+  try {
+    await messageBus.publish(CHANNELS.STRATEGY_ALERT, {
+      ruleName: 'gamma-filter-degraded', severity: 'warning', message: msg,
+      signal: { strategy: null, symbol: underlying }, timestamp: new Date().toISOString(),
+    });
+  } catch (err) { logger.warn(`[GAMMA] degraded alert publish failed: ${err.message}`); }
 }
 
 async function loadContractMappings(redis) {
@@ -621,6 +680,29 @@ async function handleTradeSignal(raw) {
       reason: crossResult.reason, rule: crossResult.ruleName, timestamp: new Date().toISOString()
     });
     return;
+  }
+
+  // Gamma-regime filter (optional loser-reduction overlay; underlying-scoped; FAIL-OPEN).
+  {
+    const regime = currentRegimeFor(underlying);
+    const g = evaluateGammaFilter(
+      { strategy: signal.strategy, side: direction, action: signal.action },
+      regime, state.gammaFilterCfg
+    );
+    if (!g.allowed) {
+      state.gammaFilterStats.blocked++;
+      logger.warn(`[${signalId}] gamma filter rejected: ${g.reason} [${g.ruleName}] regime=${regime}`);
+      await messageBus.publish(CHANNELS.TRADE_REJECTED, {
+        signalId,
+        signal: summarizeSignalForAlert(signal, { symbol: originalSymbol, side: direction }),
+        reason: `gamma_filter:${g.ruleName}`, rule: g.ruleName, regime, timestamp: new Date().toISOString()
+      });
+      return;
+    }
+    if (g.degraded) {                 // enabled but regime unknown/stale → failed open; make it loud
+      state.gammaFilterStats.degradedSkips++;
+      await notifyGammaDegraded(underlying);
+    }
   }
 
   // Non-blocking informational alerts
@@ -1048,6 +1130,21 @@ function buildApp() {
 
   app.get('/trading/status', (_req, res) => {
     res.json({ tradingEnabled: state.tradingEnabled, timestamp: new Date().toISOString() });
+  });
+
+  // Gamma filter: live status + on/off toggle (persisted to Redis, survives restart).
+  app.get('/gamma-filter/status', (_req, res) => {
+    const now = Date.now(); const regime = {};
+    for (const [p, e] of state.gammaRegime) regime[p] = { regime: e.regime, totalGex: e.totalGex, ageSec: Math.round((now - e.ts) / 1000), stale: (now - e.ts) > GAMMA_MAX_STALE_MS };
+    res.json({ ...state.gammaFilterCfg, maxStaleMin: Math.round(GAMMA_MAX_STALE_MS / 60000), regime, stats: state.gammaFilterStats, timestamp: new Date().toISOString() });
+  });
+  app.post('/gamma-filter/enable', async (_req, res) => {
+    state.gammaFilterCfg.enabled = true; await saveGammaFilterEnabled(stores.redis);
+    logger.warn('[GAMMA] filter ENABLED via API'); res.json({ ok: true, enabled: true });
+  });
+  app.post('/gamma-filter/disable', async (_req, res) => {
+    state.gammaFilterCfg.enabled = false; await saveGammaFilterEnabled(stores.redis);
+    logger.warn('[GAMMA] filter DISABLED via API'); res.json({ ok: true, enabled: false });
   });
 
   app.get('/api/positions', (_req, res) => {
@@ -1522,6 +1619,7 @@ async function main() {
   stores.routes = createRoutesStore({ redis, messageBus, logger });
 
   await loadKillSwitch(redis);
+  await loadGammaFilterEnabled(redis);
   await loadContractMappings(redis);
   await loadPositionSizing(redis);
   await loadTbRules(redis);
@@ -1554,6 +1652,7 @@ async function main() {
     try { exitRuleManager.onLsFlip(msg); }
     catch (err) { logger.error(`[ExitRule] onLsFlip threw: ${err.message}`); }
   });
+  await messageBus.subscribe(CHANNELS.GEX_LEVELS, handleGexLevels);
   await messageBus.subscribe(CHANNELS.POSITION_OPENED, handlePositionOpened);
   await messageBus.subscribe(CHANNELS.POSITION_CLOSED, handlePositionClosed);
   await messageBus.subscribe(CHANNELS.POSITION_UPDATE, handlePositionUpdate);
