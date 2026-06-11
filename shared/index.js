@@ -105,7 +105,10 @@ export const CHANNELS = {
   ANALYTICS: 'analytics.update',
 
   // Macro Briefing events
-  MACRO_BRIEFING: 'macro.briefing'
+  MACRO_BRIEFING: 'macro.briefing',
+
+  // Config-change events (live config reload across services)
+  CONFIG_POSITION_SIZING: 'config.position-sizing.changed'
 };
 
 // Service health check helper

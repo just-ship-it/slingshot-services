@@ -1665,8 +1665,20 @@ async function main() {
   await messageBus.subscribe(CHANNELS.ORDERS_SNAPSHOT, handleOrdersSnapshot);
   await messageBus.subscribe(ACCOUNT_CHANNEL, handleAccountChanged);
   await messageBus.subscribe(ROUTES_CHANNEL, () => logger.info('routes.changed — next signal picks up new config'));
+  // Live-reload position sizing when changed via the dashboard. Previously the
+  // orchestrator only read config:position-sizing at startup, so dashboard
+  // changes (e.g. fixedQuantity 1→3) silently had no effect until a restart.
+  await messageBus.subscribe(CHANNELS.CONFIG_POSITION_SIZING, async (settings) => {
+    if (settings && typeof settings === 'object' && Number.isFinite(settings.fixedQuantity)) {
+      state.positionSizing = settings;
+      logger.info(`config.position-sizing.changed — reloaded live: ${JSON.stringify(state.positionSizing)}`);
+    } else {
+      // Malformed payload — re-read the authoritative Redis copy instead.
+      await loadPositionSizing(redis);
+    }
+  });
 
-  logger.info(`Subscribed to trade.signal, order.*, position.*, ${ACCOUNT_CHANNEL}, ${ROUTES_CHANNEL}`);
+  logger.info(`Subscribed to trade.signal, order.*, position.*, ${ACCOUNT_CHANNEL}, ${ROUTES_CHANNEL}, ${CHANNELS.CONFIG_POSITION_SIZING}`);
 
   const app = buildApp();
   app.listen(PORT, BIND_HOST, () => logger.info(`Orchestrator listening on ${BIND_HOST}:${PORT}`));

@@ -76,6 +76,15 @@ async function savePositionSizingSettings(settings, reason = 'unknown') {
 
     await messageBus.publisher.set('config:position-sizing', JSON.stringify(settings));
     logger.info('✅ Position sizing settings successfully saved to Redis');
+    // Notify other services (trade-orchestrator) so they reload live instead of
+    // using their stale startup copy. Without this, sizing changes made via the
+    // dashboard don't take effect until the orchestrator restarts.
+    try {
+      await messageBus.publish(CHANNELS.CONFIG_POSITION_SIZING, settings);
+      logger.info('📣 Published config.position-sizing.changed for live reload');
+    } catch (pubErr) {
+      logger.warn(`Failed to publish position-sizing change (consumers will reload on next restart): ${pubErr.message}`);
+    }
     return true;
   } catch (error) {
     logger.error('❌ Failed to save position sizing settings to Redis:', error);

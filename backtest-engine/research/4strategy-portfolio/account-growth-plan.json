@@ -1,0 +1,48 @@
+{
+  "_doc": "Account-size → {enabled strategies, contract size} plan for the live meta-strategy. Derived from real-account survival modeling (see SURVIVAL-MODE-SOLUTION.md). Query with: node account-plan.js <balance>. Plan = AGGRESSIVE (Drew-approved 2026-06-08): 0% ruin, ~35% worst drawdown, ~$4.36M median over 16mo in block-bootstrap. Manual reference — NOT wired into the orchestrator.",
+  "updated": "2026-06-08",
+  "preset": "aggressive",
+  "instrument": { "micro": "MNQ", "full": "NQ", "mnqPointValue": 2, "nqPointValue": 20 },
+
+  "contractLadder": {
+    "_doc": "Pick the highest tier whose minBalance <= current balance. Below the first tier, trade 1 MNQ. Mirrors the dashboard account-tracker ladder (no-trade-day/precompute-projection.py).",
+    "tiers": [
+      { "minBalance": 0,      "contract": "MNQ", "qty": 1 },
+      { "minBalance": 2000,   "contract": "MNQ", "qty": 1 },
+      { "minBalance": 3500,   "contract": "MNQ", "qty": 2 },
+      { "minBalance": 6000,   "contract": "MNQ", "qty": 3 },
+      { "minBalance": 9000,   "contract": "MNQ", "qty": 5 },
+      { "minBalance": 14000,  "contract": "MNQ", "qty": 8 },
+      { "minBalance": 25000,  "contract": "NQ",  "qty": 1 },
+      { "minBalance": 45000,  "contract": "NQ",  "qty": 2 },
+      { "minBalance": 70000,  "contract": "NQ",  "qty": 3 },
+      { "minBalance": 100000, "contract": "NQ",  "qty": 4 },
+      { "minBalance": 140000, "contract": "NQ",  "qty": 5 },
+      { "minBalance": 200000, "contract": "NQ",  "qty": 7 },
+      { "minBalance": 300000, "contract": "NQ",  "qty": 10 }
+    ]
+  },
+
+  "strategyPhaseIn": {
+    "_doc": "A strategy is ENABLED when balance >= onBalance. The offBalance is the protective hysteresis level: if already enabled and balance falls below offBalance, DISABLE it. lstb is always on. level-fade is held out until $25k because it is the small-account death trap (2.2% ruin / 67% drawdown small; weakest PF; 'giveth then taketh away quick').",
+    "strategies": [
+      { "key": "LS_FLIP_TRIGGER_BAR",   "alias": "lstb",       "onBalance": 0,     "offBalance": 0,     "stopPts": 12, "note": "Always on. Only safe small-account vehicle (12-pt stop)." },
+      { "key": "GEX_FLIP_IVPCT",        "alias": "gex-flip",   "onBalance": 4000,  "offBalance": 3200,  "note": "0% ruin solo; add early." },
+      { "key": "GEX_LT_3M_CROSSOVER",   "alias": "lt-3m",      "onBalance": 4000,  "offBalance": 3200,  "stopPts": 70, "note": "Wide stop; OK once past ~$4k." },
+      { "key": "GEX_LEVEL_FADE",        "alias": "level-fade", "onBalance": 25000, "offBalance": 20000, "stopPts": 22, "note": "DEATH TRAP small. Hold until $25k. Disable first if bleeding." }
+    ]
+  },
+
+  "expectations": {
+    "_doc": "Block-bootstrap (clustering-aware), $1,500 start, 16 months. Survival first; these are not guarantees.",
+    "pRuin": 0.0,
+    "medianFinal": 4360000,
+    "worstDrawdownP90": 0.35,
+    "drawdownFloorNote": "~21% (lstb-only) to ~35% (aggressive). No sub-20% option exists with these strategies on this ladder.",
+    "daysInLstbOnlyPhaseMedian": "small until ~$4k (fast)",
+    "alternatives": {
+      "moderate": "lt-3m/gex-flip on at $15k/$8k, level-fade $25k → ~$4.0M / 34% DD (dominated — same DD, less growth)",
+      "conservative": "lt-3m@$25k, gex-flip@$15k, level-fade NEVER → ~$3.4M / 30% DD"
+    }
+  }
+}
