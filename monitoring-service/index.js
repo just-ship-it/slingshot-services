@@ -4989,6 +4989,11 @@ function pickAlertSignalFields(sig) {
     trailingOffset: sig.trailingOffset,
     lsBeOnFlip: sig.lsBeOnFlip,
     lsBeOffset: sig.lsBeOffset,
+    // Force-close expiry (max-hold or EOD, whichever first).
+    maxHoldBars: sig.maxHoldBars,
+    expiresAt: sig.expiresAt,
+    expiryReason: sig.expiryReason,
+    eodCutoffEt: sig.eodCutoffEt,
   };
 }
 

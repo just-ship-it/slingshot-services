@@ -562,6 +562,9 @@ function summarizeSignalForAlert(signal, overrides = {}) {
     trailingOffset: signal.trailingOffset,
     lsBeOnFlip: signal.lsBeOnFlip,
     lsBeOffset: signal.lsBeOffset,
+    // When the trade would be force-closed (max-hold or EOD, whichever first).
+    maxHoldBars: signal.maxHoldBars,
+    ...computeSignalExpiry(signal),
   };
 }
 
@@ -879,6 +882,10 @@ async function handleTradeSignal(raw) {
       trailingOffset: signal.trailingOffset,
       lsBeOnFlip: signal.lsBeOnFlip,
       lsBeOffset: signal.lsBeOffset,
+      // When the trade would be force-closed (max-hold or EOD, whichever first).
+      // Max-hold leg anchored to validation time (entry estimate); EOD is exact.
+      maxHoldBars: signal.maxHoldBars,
+      ...computeSignalExpiry(signal, Date.parse(now)),
     },
     acceptedAccounts: accepted,
     rejectedAccounts: rejected,
@@ -1244,6 +1251,66 @@ function isPastEodCutoff(timestamp = Date.now()) {
   const et = getEtParts(timestamp);
   if (et.weekday === 'Sat' || et.weekday === 'Sun') return false;
   return et.hour > cutoffH || (et.hour === cutoffH && et.minute >= cutoffM);
+}
+
+// Absolute UTC ms for an ET wall-clock (HH:MM) on a given ET calendar date.
+// Computes the ET↔UTC offset empirically at the target instant so it's correct
+// across DST without hardcoding -4/-5.
+function tsForEtWallClock(dateKey, hour, minute) {
+  const [Y, Mo, D] = dateKey.split('-').map(Number);
+  const utcGuess = Date.UTC(Y, Mo - 1, D, hour, minute, 0);
+  const et = getEtParts(utcGuess);
+  let delta = (hour * 60 + minute) - (et.hour * 60 + et.minute);
+  if (delta > 720) delta -= 1440;
+  if (delta < -720) delta += 1440;
+  return utcGuess + delta * 60_000;
+}
+
+// Next EOD force-flat cutoff at/after `anchorTs` (skips weekends). null if EOD
+// flattening is disabled.
+function nextEodCutoffTs(anchorTs) {
+  if (!EOD_CUTOFF_ET) return null;
+  const [hStr, mStr] = EOD_CUTOFF_ET.split(':');
+  const h = parseInt(hStr, 10);
+  const m = parseInt(mStr || '0', 10);
+  if (!Number.isFinite(h)) return null;
+  let probe = anchorTs;
+  for (let i = 0; i < 8; i++) {
+    const et = getEtParts(probe);
+    if (et.weekday !== 'Sat' && et.weekday !== 'Sun') {
+      const ts = tsForEtWallClock(et.dateKey, h, m);
+      if (ts > anchorTs) return ts;
+    }
+    probe += 24 * 60 * 60 * 1000;
+  }
+  return null;
+}
+
+// When this trade would be force-closed if it never hits stop/target. maxHoldBars
+// is per-signal (rule-dependent) and counted as MINUTES from entry (matching
+// checkMaxHold); the EOD force-flat closes everything at EOD_CUTOFF_ET. The
+// binding expiry is whichever comes first. `anchorTs` approximates entry/fill
+// time — the alert fires at signal time, so the max-hold leg is an estimate
+// while the EOD leg is exact.
+function computeSignalExpiry(signal, anchorTs = Date.now()) {
+  const out = { expiresAt: null, expiryReason: null, eodCutoffEt: EOD_CUTOFF_ET || null };
+  const maxHoldBars = Number(signal?.maxHoldBars);
+  const maxHoldTs = Number.isFinite(maxHoldBars) && maxHoldBars > 0
+    ? anchorTs + maxHoldBars * 60_000
+    : null;
+  const eodTs = nextEodCutoffTs(anchorTs);
+
+  let ts = null, reason = null;
+  if (maxHoldTs != null && eodTs != null) {
+    if (eodTs <= maxHoldTs) { ts = eodTs; reason = 'eod'; }
+    else { ts = maxHoldTs; reason = 'max_hold'; }
+  } else if (maxHoldTs != null) {
+    ts = maxHoldTs; reason = 'max_hold';
+  } else if (eodTs != null) {
+    ts = eodTs; reason = 'eod';
+  }
+  if (ts != null) { out.expiresAt = new Date(ts).toISOString(); out.expiryReason = reason; }
+  return out;
 }
 
 // ---------- Hardened broker flatten (shared by max-hold + EOD) ----------
