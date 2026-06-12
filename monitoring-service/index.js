@@ -4980,6 +4980,15 @@ function pickAlertSignalFields(sig) {
     rulePriority: sig.rulePriority,
     stopPoints: sig.stopPoints,
     targetPoints: sig.targetPoints,
+    // Stop-management metadata so the dashboard can show where the
+    // breakeven / trailing stop engages and where the stop moves to.
+    breakevenStop: sig.breakevenStop,
+    breakevenTrigger: sig.breakevenTrigger,
+    breakevenOffset: sig.breakevenOffset,
+    trailingTrigger: sig.trailingTrigger,
+    trailingOffset: sig.trailingOffset,
+    lsBeOnFlip: sig.lsBeOnFlip,
+    lsBeOffset: sig.lsBeOffset,
   };
 }
 

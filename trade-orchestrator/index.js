@@ -553,6 +553,15 @@ function summarizeSignalForAlert(signal, overrides = {}) {
     rulePriority: signal.rulePriority,
     stopPoints: signal.stopPoints,
     targetPoints: signal.targetPoints,
+    // Stop-management metadata (breakeven / trailing engage + move-to) so the
+    // dashboard can show where the stop ratchets even on rejected signals.
+    breakevenStop: signal.breakevenStop,
+    breakevenTrigger: signal.breakevenTrigger,
+    breakevenOffset: signal.breakevenOffset,
+    trailingTrigger: signal.trailingTrigger,
+    trailingOffset: signal.trailingOffset,
+    lsBeOnFlip: signal.lsBeOnFlip,
+    lsBeOffset: signal.lsBeOffset,
   };
 }
 
@@ -855,7 +864,21 @@ async function handleTradeSignal(raw) {
       price: signal.price ?? null,
       stop_loss: signal.stop_loss ?? null,
       take_profit: signal.take_profit ?? null,
-      quantity
+      quantity,
+      // Rule + stop-management metadata so the dashboard alert can show the
+      // rule, point distances, and where the breakeven/trailing stop engages.
+      ruleId: signal.ruleId,
+      ruleDescription: signal.ruleDescription,
+      rulePriority: signal.rulePriority,
+      stopPoints: signal.stopPoints,
+      targetPoints: signal.targetPoints,
+      breakevenStop: signal.breakevenStop,
+      breakevenTrigger: signal.breakevenTrigger,
+      breakevenOffset: signal.breakevenOffset,
+      trailingTrigger: signal.trailingTrigger,
+      trailingOffset: signal.trailingOffset,
+      lsBeOnFlip: signal.lsBeOnFlip,
+      lsBeOffset: signal.lsBeOffset,
     },
     acceptedAccounts: accepted,
     rejectedAccounts: rejected,
