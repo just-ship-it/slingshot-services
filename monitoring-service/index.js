@@ -93,47 +93,62 @@ async function savePositionSizingSettings(settings, reason = 'unknown') {
 }
 
 // Contract mappings Redis functions
+//
+// The `*_CONTRACT` env vars are the single source of truth for which contract
+// month is live, and they take PRECEDENCE on every startup. The Redis key is a
+// cache (shared with trade-orchestrator) and carries the non-env fields
+// (pointValues/tickSize). Previously this was write-once: if the key existed it
+// was returned verbatim, so a quarterly rollover that updated the env vars left
+// the Redis `currentContracts` stale — fresh signals routed correctly (the
+// orchestrator's full→micro mapping preserves the env month) but manual Resends
+// of a micro symbol read the stale map and routed to the OLD contract.
 async function loadContractMappings() {
+  // Env vars win for currentContracts; fall back to stored value, then hardcoded default.
+  const envContracts = {
+    'NQ': process.env.NQ_CONTRACT,
+    'MNQ': process.env.MNQ_CONTRACT,
+    'ES': process.env.ES_CONTRACT,
+    'MES': process.env.MES_CONTRACT
+  };
+  const hardcodedDefaults = { 'NQ': 'NQM6', 'MNQ': 'MNQM6', 'ES': 'ESM6', 'MES': 'MESM6' };
+
+  let stored = null;
   try {
     const data = await messageBus.publisher.get('contracts:mappings');
-    if (data) {
-      const mappings = JSON.parse(data);
-      logger.info('Contract mappings loaded from Redis:', mappings);
-      return mappings;
-    }
+    if (data) stored = JSON.parse(data);
   } catch (error) {
     logger.error('Error loading contract mappings from Redis:', error);
   }
 
-  // Return defaults if Redis key doesn't exist or error occurred
-  const defaults = {
+  const storedContracts = stored?.currentContracts || {};
+  const currentContracts = {};
+  for (const product of Object.keys(hardcodedDefaults)) {
+    currentContracts[product] = envContracts[product] || storedContracts[product] || hardcodedDefaults[product];
+  }
+
+  const mappings = {
     lastUpdated: new Date().toISOString(),
-    currentContracts: {
-      'NQ': process.env.NQ_CONTRACT || 'NQM6',
-      'MNQ': process.env.MNQ_CONTRACT || 'MNQM6',
-      'ES': process.env.ES_CONTRACT || 'ESM6',
-      'MES': process.env.MES_CONTRACT || 'MESM6'
-    },
-    pointValues: {
-      'NQ': 20,
-      'MNQ': 2,
-      'ES': 50,
-      'MES': 5
-    },
-    tickSize: 0.25,
+    currentContracts,
+    pointValues: stored?.pointValues || { 'NQ': 20, 'MNQ': 2, 'ES': 50, 'MES': 5 },
+    tickSize: stored?.tickSize ?? 0.25,
     notes: 'Contract mappings driven by env vars (*_CONTRACT) - update in .env for rollover'
   };
 
-  // Save defaults to Redis for future use
-  try {
-    await messageBus.publisher.set('contracts:mappings', JSON.stringify(defaults));
-    logger.info('✅ Default contract mappings saved to Redis');
-  } catch (error) {
-    logger.error('❌ Failed to save default contract mappings to Redis:', error);
+  // Persist if missing or if env vars changed the live contracts (self-heals stale rollovers).
+  const changed = !stored ||
+    JSON.stringify(stored.currentContracts || {}) !== JSON.stringify(currentContracts);
+  if (changed) {
+    try {
+      await messageBus.publisher.set('contracts:mappings', JSON.stringify(mappings));
+      logger.info(`✅ Contract mappings refreshed from env: ${JSON.stringify(currentContracts)}`);
+    } catch (error) {
+      logger.error('❌ Failed to save contract mappings to Redis:', error);
+    }
+  } else {
+    logger.info(`Contract mappings loaded (env matches cache): ${JSON.stringify(currentContracts)}`);
   }
 
-  logger.warn('Using default contract mappings:', defaults);
-  return defaults;
+  return mappings;
 }
 
 // Monitoring state - trigger redeploy for market news

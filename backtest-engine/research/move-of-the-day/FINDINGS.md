@@ -149,6 +149,98 @@ Of 212 days with a glx/gfi RTH signal, the slot is FREE 144 / held-by-family 23 
 forfeit the foreign holder's remaining PnL (often an lstb winner, 72% WR) and the downstream slot-
 displacement cascade cancels the gain. Not worth implementing.
 
+## Partial scale-out overlay, 10 MNQ (`10`, equal $5 comm to isolate mechanism)
+
+Peel fraction X at trigger T = f × BE-trigger; runner keeps the native plan.
+`blended = X·T + (1−X)·native` for trades reaching T (limit fill, no slip; 1s-honest mfe).
+
+| Config | Total PnL | PF | Sharpe | DD% |
+|---|--:|--:|--:|--:|
+| Gold baseline (10 MNQ ≡ 1 NQ) | $614,730 | 1.77 | 10.78 | 4.45 |
+| Scale 50% @ 0.75×BE (all 4) | $518,060 | ~1.66 | 11.24 | 3.89 |
+| Scale 50% @ 0.25×BE (big-3 excl lstb) | $457,318 | ~1.62 | **11.62** | 4.11 |
+
+**Verdict:** beats gold on *risk-adjusted* (Sharpe +0.8, DD −0.3pp) but costs **16–26% of PnL**.
+Genuine edge vs uniform downsizing (same PnL at higher Sharpe / lower DD), so exit-timing adds value
+— but modest. **The hypothesis "losers become breakeven" is FALSE here:** full-stop losers retrace
+too little to reach the trigger (loser avg MFE ~22/24/37 pt for glx/glf/gfi), and any trade that
+reaches the BE trigger already had its stop moved to BE by the v2/v3 logic, so it can't be a full
+loser. The Sharpe gain comes from **clipping the winner tail** (variance reduction), not loss rescue.
+Real-world the 10-MNQ commission (~$12 vs $5) widens the PnL gap further. Not recommended unless a
+smoother curve is explicitly worth ~20% of PnL.
+
+## In-trade dynamics — can we cut losers early? (`12`, 1s trajectories, big-3)
+
+Reconstructed minute-by-minute paths for 1,430 glx/gfi/glf trades. **In-trade state is HIGHLY
+predictive** — at 20 min, unrl >20 → 82% WR / +75 avg final; unrl ≤−30 → 22% WR / −25 avg.
+**But every hard-cut rule LOSES money** (best T=40/Mmin=45 ≈ −$492; most −$20k to −$60k):
+
+| state @20min | n | WR | nowUnrl | avgFinal | cut-vs-hold |
+|---|--:|--:|--:|--:|--:|
+| unrl ≤ −30 | 54 | 22% | −44.9 | −24.9 | **−19.9** |
+| unrl > 20 | 313 | 82% | +52.0 | +75.1 | −23.1 |
+
+`cut-vs-hold` is negative in **every** state at **every** checkpoint: the prediction is already in
+the price. Deep-underwater trades sit at −45 but recover to −25 — these are MEAN-REVERSION strategies,
+so the adverse extreme is the setup for the bounce; cutting sells the bottom. This is the entry-time
+"no separator" wall one level deeper — the in-trade info exists but is efficient. Confirms the stops
+are placed correctly (tighter = sells the bounce).
+
+**The in-trade signal that DOES work** (prior research, `memory/ls-overlay-research`): BE-on-adverse-
+LS-flip-while-green improved all 3 strategies (PnL+PF+DD). It works because it does NOT market-sell the
+extreme — it arms a breakeven stop only when GREEN on a directional LS flip, catching the reversion at
+~$0 instead of a full stop. That is the mechanically-correct "don't let green go red." Untested
+candidate: GEX-level movement during trade (likely same "already-priced" wall — GEX is mean-reversion).
+
+## In-trade MARKET-STATE signals — IV & order flow (`13`,`14`, lead-lag tested)
+
+Drew's thesis: market-structure signals (IV, GEX, order flow) evolving DURING the trade might
+LEAD price → actionable where price (script 12) can't. Tested the available full-period intraday
+signals with a proper lead-lag design: signal over [entry→15min] vs FUTURE move [15min→exit],
+controlling for price already seen at 15min. Big-3 trades.
+
+- **IV (QQQ ATM 1m):** raw correlation strong (78% vs 47% WR) but it's **COINCIDENT** — vanishes
+  once controlled for price. In the underwater bucket (where a cut decision lives) IV gives no lead
+  (toward 31% vs against 36%). IV **skew** (put−call) too sparse/noisy at 1m to add anything.
+- **Order flow (trade-ofi-1m aggressor, book-imbalance-1m):** early flow is **highly collinear**
+  with early price (off-diagonal cells ~empty), so it carries little info orthogonal to price.
+  Actionable-bucket samples thin. One faint hint: flat-price + flow-toward → +40 future vs +15
+  against (n=21/31) — momentum confirmation, not robust.
+
+**Verdict:** none of the available 1-min market-state signals gives a clean, robust, actionable
+in-trade LEAD for cutting/trimming. Consistent with prior [[orderflow-sweep-strategy]] (1-min/second
+tape largely efficient). The future move is positive in EVERY price bucket (+10 to +20pt) — the
+mean-reversion drift dominates any state signal. A genuine microstructure test would need tick-level
+MBO (1–4 GB/day, only Dec 2025–Jan 2026 coverage) — a separate, much larger effort, and the prior
+tape-efficiency result tempers expectations. NOTE: samples in actionable buckets are small (low power)
+— this is "no signal found in available data," not proof of absence.
+
+## Tick-MBO microstructure study (`mbo/extract.js`, `15`–`17`) — the deepest dig
+
+Built a full order-by-order **limit-order-book reconstructor** from Databento MBO (the only tick
+data we have: NQH6, 2025-12-29→2026-01-28, ~40 GB). Validated: reconstructed mid matches actual
+trade entry to ~1 tick, book always sane. Emitted 467,734 per-second microstructure snapshots
+across the **102 big-3 trades** in window (book imbalance L1/L5/L10, aggressor flow, cancel/add
+asymmetry, resting walls, depth, spread, absorption).
+
+Pipeline = screen → validate → horizon, each applying the conversation's hard-won rigor
+(control for price, separate windows, day-split OOS, watch collinearity):
+- **Screen (`15`):** flagged `favImb1` (best-level book imbalance) — ρ=+0.25 in actionable buckets,
+  consistent across underwater/flat. Looked like a needle.
+- **Validate (`16`):** KILLED it. One-obs/trade OLS controlling price+drift → favImb1 t=−0.84 (sign
+  flipped vs screen ⇒ it was proxying depth-of-underwater). Day-split: train t=−1.78 → test t=−0.11.
+  Cut-rule: favImb1<0 → −11 pts (loses). Not real.
+- **Horizon (`17`):** even predicting the NEXT 120s (where OBI theoretically works), favImb1 t=−0.19;
+  favFlow whiffs in-sample (t=2.13) but fails day-split (train 2.63 → test 0.61). Only robust
+  coefficients are PRICE: positive drift + `recentMove` negative (t=−4.35) = 2-min mean reversion.
+
+**Verdict: no robust, out-of-sample microstructure lead found, at any tested horizon.** The order
+book and tape don't lead price for these mean-reversion trades — the reversion drift dominates and
+the info is in the price. The binding constraint is **sample size** (102 trades / 1-month tick
+window): even a real modest edge couldn't be reliably detected, so more feature-cleverness on this
+data would only manufacture false positives. A true microstructure test needs many more months of
+tick data (a data-acquisition project), with tempered expectations given every angle hit this wall.
+
 ## Recommendation
 
 - **Don't** build this as a PnL replacement for the portfolio — the ceiling is below it.
