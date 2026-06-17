@@ -327,18 +327,39 @@ async function notifyGammaDegraded(underlying) {
 }
 
 async function loadContractMappings(redis) {
+  // The active contract month is driven by the *_CONTRACT env vars — the SAME
+  // single source of truth signal-generator and monitoring-service use. Redis is
+  // only a fallback/cache for products without an env override (and for
+  // pointValues). Overlaying env on top of the stored map makes the orchestrator
+  // immune to a stale `contracts:mappings` key and to cold-start ordering vs
+  // monitoring-service's self-heal (orchestrator starts before monitoring on a
+  // full restart). Without this, a Resend — whose symbol is already-micro and so
+  // hits applyContractMapping's `state.contractMappings[root]` branch — gets
+  // routed on whatever stale month the key held at orchestrator startup.
+  const envContracts = {
+    NQ: process.env.NQ_CONTRACT,
+    MNQ: process.env.MNQ_CONTRACT,
+    ES: process.env.ES_CONTRACT,
+    MES: process.env.MES_CONTRACT,
+  };
+  let stored = {};
   try {
     const raw = await redis.get(CONTRACTS_MAPPINGS_KEY);
     if (raw) {
       const data = JSON.parse(raw);
       // Redis stores { currentContracts: { NQ: "NQM6", MNQ: "MNQM6", ... }, pointValues: {...}, ... }
-      state.contractMappings = data.currentContracts || data;
+      stored = data.currentContracts || data || {};
       state.pointValues = data.pointValues || {};
-      logger.info(`Contract mappings loaded: ${JSON.stringify(state.contractMappings)}`);
     }
   } catch (err) {
     logger.warn(`Failed to load contract mappings: ${err.message}`);
   }
+  const merged = { ...stored };
+  for (const [root, val] of Object.entries(envContracts)) {
+    if (val) merged[root] = val; // env always wins
+  }
+  state.contractMappings = merged;
+  logger.info(`Contract mappings loaded (env-overlaid): ${JSON.stringify(state.contractMappings)}`);
 }
 
 async function checkpointOpenPositions(redis) {
