@@ -198,8 +198,8 @@ async function importGLBX(csvPath) {
   console.log(`  Date range: ${firstBar.ts} → ${lastBar.ts}`);
   console.log(`  Symbols: ${uniqueSyms.join(', ')}`);
 
-  // Detect rollover
-  const rolloverInfo = detectRollover(hourlyVolume, 'NQH6', 'NQM6', aggregated);
+  // Detect rollover (NQM6 → NQU6 roll, June 2026)
+  const rolloverInfo = detectRollover(hourlyVolume, 'NQM6', 'NQU6', aggregated);
   return rolloverInfo;
 }
 

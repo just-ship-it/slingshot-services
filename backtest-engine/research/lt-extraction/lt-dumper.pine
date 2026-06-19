@@ -55,9 +55,11 @@ strategy("LT Levels Dumper",
      default_qty_value=1,
      process_orders_on_close=true,
      calc_on_every_tick=false,
-     initial_capital=100000,
+     initial_capital=1000000000,   // huge: 1 NQ contract ≈ $560k notional; small capital → margin rejects every order → empty report
      commission_type=strategy.commission.cash_per_contract,
      commission_value=0,
+     margin_long=0,                // 0 = no margin requirement → orders never rejected on futures
+     margin_short=0,
      max_bars_back=500)
 
 // ──────────────────────────────────────────────────────────────────────────
@@ -85,11 +87,11 @@ priceDecimals = input.int(2, "Price decimals", minval=0, maxval=4, group=gOpts)
 // ──────────────────────────────────────────────────────────────────────────
 fmt = "#." + str.repeat("#", priceDecimals)
 ltStr = "1=" + str.tostring(lt1, fmt) + "|" +
-        "2=" + str.tostring(lt2, fmt) + "|" +
-        "3=" + str.tostring(lt3, fmt) + "|" +
-        "4=" + str.tostring(lt4, fmt) + "|" +
-        "5=" + str.tostring(lt5, fmt) + "|" +
-        "S=" + str.tostring(ltSentiment, fmt)
+     "2=" + str.tostring(lt2, fmt) + "|" +
+     "3=" + str.tostring(lt3, fmt) + "|" +
+     "4=" + str.tostring(lt4, fmt) + "|" +
+     "5=" + str.tostring(lt5, fmt) + "|" +
+     "S=" + str.tostring(ltSentiment, fmt)
 
 if includeBarTime
     // YYYYMMDDTHHMM in UTC
@@ -101,9 +103,13 @@ if includeBarTime
     ltStr := ltStr + "|T=" + ts
 
 // ──────────────────────────────────────────────────────────────────────────
-// On every confirmed bar, flatten and re-enter so each round-trip carries
-// the bar's LT snapshot in its entry comment.
+// One order per bar: alternate long/short so every bar is a single reversal
+// fill carrying that bar's LT snapshot in its entry comment. Half the orders
+// of a close+re-enter (→ ~2x the date range per run, under TV's order cap),
+// and no barstate.isconfirmed dependency. The parser keeps both "Entry long"
+// and "Entry short" rows and dedupes by timestamp, so direction is irrelevant.
 // ──────────────────────────────────────────────────────────────────────────
-if barstate.isconfirmed
-    strategy.close("LT", comment="X")
-    strategy.entry("LT", strategy.long, qty=1, comment=ltStr)
+if bar_index % 2 == 0
+    strategy.entry("LT", strategy.long,  qty=1, comment=ltStr)
+else
+    strategy.entry("LT", strategy.short, qty=1, comment=ltStr)
