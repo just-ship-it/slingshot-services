@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Capital Flows — The Volatility Secret Sauce</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg-0:#0a0613; --bg-1:#130a24; --bg-2:#1c1037;
+  --orange:#ff7a1a; --orange-bright:#ff9a45; --orange-deep:#c85400; --orange-glow:#ffc08a;
+  --ink:#fdf4ff; --ink-dim:rgba(253,244,255,.62); --ink-faint:rgba(253,244,255,.15);
+  --line:rgba(253,244,255,.12);
+  --violet:#b98cff; --magenta:#ff5ca8; --green:#3affa8; --red:#ff5468; --cool:#5cc8ff;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;overflow:hidden;background:var(--bg-0);color:var(--ink)}
+body{font-family:'JetBrains Mono',monospace;-webkit-font-smoothing:antialiased}
+.bg{position:fixed;inset:0;z-index:0;background:
+  radial-gradient(900px 680px at 80% 6%, rgba(255,122,26,.16), transparent 60%),
+  radial-gradient(820px 820px at 6% 96%, rgba(185,140,255,.18), transparent 62%),
+  radial-gradient(620px 620px at 96% 92%, rgba(255,92,168,.12), transparent 62%),
+  linear-gradient(165deg,var(--bg-1) 0%, var(--bg-0) 72%);}
+.wave{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.5}
+.orb{position:fixed;border-radius:50%;filter:blur(80px);opacity:.5;z-index:0;pointer-events:none}
+.orb1{width:440px;height:440px;left:-110px;top:-90px;background:radial-gradient(circle,var(--violet),transparent 70%);animation:d1 23s ease-in-out infinite}
+.orb2{width:360px;height:360px;right:-70px;bottom:-60px;background:radial-gradient(circle,rgba(255,122,26,.5),transparent 70%);animation:d2 28s ease-in-out infinite}
+.orb3{width:300px;height:300px;right:24%;top:26%;background:radial-gradient(circle,rgba(255,92,168,.4),transparent 70%);animation:d3 31s ease-in-out infinite}
+@keyframes d1{50%{transform:translate(60px,40px) scale(1.08)}}
+@keyframes d2{50%{transform:translate(-50px,-30px) scale(1.1)}}
+@keyframes d3{50%{transform:translate(40px,-50px) scale(.9)}}
+.grain{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:.05;mix-blend-mode:overlay;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+.motes{position:fixed;inset:0;z-index:1;pointer-events:none;overflow:hidden}
+.mote{position:absolute;border-radius:50%;background:var(--orange-glow);box-shadow:0 0 8px var(--orange);opacity:0;animation:rise-m linear infinite}
+@keyframes rise-m{0%{transform:translateY(0);opacity:0}12%{opacity:.7}88%{opacity:.4}100%{transform:translateY(-106vh);opacity:0}}
+
+.progress{position:fixed;top:0;left:0;height:3px;width:0;z-index:40;background:linear-gradient(90deg,var(--orange),var(--magenta),var(--orange-deep));box-shadow:0 0 12px var(--orange);transition:width .45s cubic-bezier(.4,0,.2,1)}
+.brand{position:fixed;top:20px;left:26px;z-index:30;font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--ink-dim)}
+.brand b{color:var(--ink);font-weight:500}.brand b i{color:var(--orange);font-style:normal}
+.badge{position:fixed;top:18px;right:24px;z-index:30;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--orange);padding:7px 12px;border-radius:4px}
+.badge::before,.badge::after{content:"";position:absolute;width:9px;height:9px;border-color:var(--orange);border-style:solid}
+.badge::before{top:0;left:0;border-width:1.5px 0 0 1.5px}.badge::after{bottom:0;right:0;border-width:0 1.5px 1.5px 0}
+
+.deck{position:fixed;inset:0;z-index:10}
+.slide{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;gap:clamp(8px,1.7vh,22px);padding:max(4vh,46px) 7vw 132px;opacity:0;visibility:hidden;transition:opacity .5s ease,visibility .5s;pointer-events:none}
+.slide.active{opacity:1;visibility:visible;pointer-events:auto}
+.slide.cover{padding-bottom:16vh}
+.kicker{font-size:13px;font-weight:600;letter-spacing:4px;text-transform:uppercase;color:var(--orange);margin-bottom:10px;display:flex;align-items:center;gap:12px}
+.kicker::before{content:"";width:34px;height:2px;background:var(--orange);box-shadow:0 0 10px var(--orange)}
+.display{font-family:'Instrument Serif',Georgia,serif;text-transform:uppercase;font-size:clamp(46px,7.8vw,104px);line-height:.94;letter-spacing:-1px;font-weight:400;text-shadow:0 0 44px rgba(255,122,26,.3)}
+.display .em{color:var(--orange);font-style:italic}
+h2.head{font-family:'Instrument Serif',Georgia,serif;text-transform:uppercase;font-size:clamp(30px,4.7vw,62px);line-height:1.0;letter-spacing:-.5px;font-weight:400}
+.head .em{font-style:italic;color:var(--orange)}
+.lead{font-size:clamp(15px,1.5vw,21px);line-height:1.55;color:var(--ink);font-weight:400;max-width:940px;margin-top:6px}
+.lead .o{color:var(--orange);font-weight:600}.lead .v{color:var(--violet);font-weight:600}.lead .r{color:var(--red);font-weight:600}.lead .c{color:var(--cool);font-weight:600}.lead .g{color:var(--green);font-weight:600}.lead b{font-weight:700}
+.sub{font-family:'Instrument Serif',Georgia,serif;font-style:italic;font-size:clamp(19px,2.4vw,32px);color:var(--ink-dim);margin-top:14px;max-width:840px}
+.handle{font-size:14px;letter-spacing:2px;color:var(--orange-glow);margin-top:20px}
+.head .em,.display .em{animation:emglow 3.4s ease-in-out infinite}
+@keyframes emglow{0%,100%{text-shadow:0 0 12px currentColor}50%{text-shadow:0 0 30px currentColor,0 0 52px currentColor}}
+.ph{filter:drop-shadow(0 0 5px #fff) drop-shadow(0 0 11px currentColor)}
+
+.stage{margin-top:0;flex:1 1 auto;min-height:0;display:flex;justify-content:center;align-items:center;width:100%}
+.stage svg{width:auto;height:100%;max-width:96%;max-height:58vh;overflow:visible}
+.two{display:flex;align-items:center;gap:44px;width:100%;flex:1 1 auto;min-height:0}
+.two .col-v{flex:0 0 auto}.two .col-t{flex:1 1 auto}
+.rise{opacity:0;transform:translateY(20px)}
+.slide.active .rise{animation:rise .7s cubic-bezier(.18,.7,.2,1) forwards}
+.slide.active .r1{animation-delay:.05s}.slide.active .r2{animation-delay:.16s}.slide.active .r3{animation-delay:.27s}
+.slide.active .r4{animation-delay:.38s}.slide.active .r5{animation-delay:.49s}.slide.active .r6{animation-delay:.6s}
+@keyframes rise{to{opacity:1;transform:none}}
+
+/* signature breathing band emblem (cover/close) */
+.emblem{position:absolute;right:7vw;top:26%;transform:translateY(-50%);z-index:11;pointer-events:none;width:clamp(300px,31vw,500px)}
+
+/* panels */
+.pcard{border:1.5px solid var(--line);border-radius:11px;background:linear-gradient(165deg,rgba(28,16,55,.6),rgba(10,6,19,.5));padding:18px 22px}
+.pcard.o{border-color:var(--orange)}.pcard.v{border-color:var(--violet)}.pcard.g{border-color:var(--green)}.pcard.c{border-color:var(--cool)}.pcard.r{border-color:var(--red)}
+.pcard .ph2{font-size:12px;letter-spacing:2.5px;text-transform:uppercase;font-weight:700;margin-bottom:10px;display:flex;align-items:center;gap:9px}
+.pcard.o .ph2{color:var(--orange)}.pcard.v .ph2{color:var(--violet)}.pcard.g .ph2{color:var(--green)}.pcard.c .ph2{color:var(--cool)}.pcard.r .ph2{color:var(--red)}
+.pcard .pl{font-size:clamp(13px,1.3vw,17px);line-height:1.5;color:var(--ink)}
+.pcard.big{display:flex;flex-direction:column;justify-content:center}
+.pcard.big .pl{font-size:clamp(15px,1.5vw,20px);line-height:1.55}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.chip{font-size:12px;border:1px solid var(--line);padding:7px 12px;border-radius:3px;background:rgba(0,0,0,.28);letter-spacing:.5px;color:var(--ink-dim)}
+.chip b{color:var(--orange);font-weight:700}.chip.v b{color:var(--violet)}.chip.g b{color:var(--green)}
+
+/* triggers playbook */
+.pbk{display:flex;flex-direction:column;gap:11px;max-width:940px;width:100%;margin:0 auto}
+.pbk .row{display:grid;grid-template-columns:1fr auto 1.25fr;align-items:center;gap:14px;border:1px solid var(--line);border-radius:9px;background:rgba(28,16,55,.42);padding:12px 16px;transition:.2s}
+.pbk .row .cond{font-size:clamp(13px,1.3vw,16px);color:var(--ink)}.pbk .row .cond b{color:var(--orange)}
+.pbk .row .ar{color:var(--orange);font-weight:800;font-size:18px}
+.pbk .row .act{font-size:clamp(13px,1.3vw,16px);color:var(--ink-dim)}.pbk .row .act b{color:var(--green);font-weight:700}
+.pbk .row.hot{border-color:var(--orange);background:rgba(255,122,26,.08);box-shadow:0 0 24px rgba(255,122,26,.4);transform:translateX(4px)}
+
+/* nav / dots / tools */
+.nav{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);z-index:40;display:flex;gap:14px;align-items:center}
+.nav button{width:44px;height:44px;border-radius:50%;border:1px solid var(--line);background:rgba(28,16,55,.6);color:var(--ink);cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;transition:.2s;backdrop-filter:blur(6px)}
+.nav button:hover{border-color:var(--orange);box-shadow:0 0 14px rgba(255,122,26,.5);color:var(--orange)}
+.counter{font-size:12px;letter-spacing:2px;color:var(--ink-dim);min-width:54px;text-align:center}.counter b{color:var(--ink)}
+.dots{position:fixed;right:22px;top:50%;transform:translateY(-50%);z-index:40;display:flex;flex-direction:column;gap:8px}
+.dot{width:8px;height:8px;border-radius:50%;border:1px solid var(--ink-faint);background:transparent;cursor:pointer;transition:.25s;padding:0}
+.dot.on{background:var(--orange);border-color:var(--orange);box-shadow:0 0 10px var(--orange);transform:scale(1.3)}
+#draw{position:fixed;inset:0;z-index:25;pointer-events:none}
+.tools{position:fixed;left:14px;bottom:14px;z-index:40;display:flex;flex-direction:row;gap:5px;align-items:center;padding:5px 8px;border:1px solid var(--line);border-radius:22px;background:rgba(10,6,19,.5);backdrop-filter:blur(8px);opacity:.32;transition:opacity .25s ease}
+.tools:hover,.tools.active{opacity:1}
+.tools .pen{width:26px;height:26px;border-radius:50%;border:1px solid var(--line);background:rgba(28,16,55,.7);color:var(--ink-dim);cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;transition:.2s;padding:0}
+.tools .pen.on{border-color:var(--orange);color:var(--orange);box-shadow:0 0 10px rgba(255,122,26,.45)}
+.swatch{width:13px;height:13px;border-radius:50%;border:2px solid transparent;cursor:pointer;transition:.18s;padding:0}
+.swatch.sel{border-color:var(--ink);transform:scale(1.15)}
+.tools .sep{width:1px;height:14px;background:var(--line);margin:0 1px;flex-shrink:0}
+.tools .size{width:22px;height:18px;border-radius:4px;border:1px solid var(--line);background:rgba(28,16,55,.7);color:var(--ink-dim);cursor:pointer;font-size:8.5px;letter-spacing:.3px;display:flex;align-items:center;justify-content:center;font-weight:700;padding:0}
+.tools .size.sel{border-color:var(--orange);color:var(--orange);box-shadow:0 0 8px rgba(255,122,26,.45)}
+.tools .clr{width:26px;height:18px;border-radius:4px;border:1px solid var(--line);background:rgba(28,16,55,.7);color:var(--ink-dim);cursor:pointer;font-size:9px;letter-spacing:.3px;padding:0}
+
+@media(max-width:768px){
+  .slide{justify-content:flex-start;padding:6vh 5vw 104px}
+  .display{font-size:34px}.head{font-size:25px}.sub{font-size:18px}.lead{font-size:14px;margin-top:10px}
+  .kicker{font-size:11px;letter-spacing:3px;margin-bottom:9px}
+  .stage svg{height:30vh}
+  .two{flex-direction:column;align-items:flex-start;gap:16px}
+  .emblem{position:relative;right:auto;top:auto;transform:none;width:64vw;margin:6px auto 0}
+  .pbk .row{grid-template-columns:1fr auto 1fr;gap:9px;padding:9px 12px}
+  .dots,.tools{display:none}.brand{font-size:10px;top:14px;left:16px}.badge{font-size:8px;top:12px;right:14px}
+  .orb1{width:190px;height:190px}.orb2{width:150px;height:150px}.orb3{width:130px;height:130px}.nav{bottom:16px}
+}
+@media(max-width:480px){.display{font-size:28px}.head{font-size:21px}.brand{display:none}.nav button{width:36px;height:36px}}
+@media(max-height:820px){
+  .slide{padding:5vh 6vw 124px}
+  .emblem{width:clamp(230px,23vw,360px)}
+  .display{font-size:clamp(40px,6.4vw,82px)}h2.head{font-size:clamp(26px,4vw,50px)}
+  .stage svg{max-height:46vh}.lead{margin-top:9px;font-size:clamp(13px,1.3vw,18px)}
+  .pcard{padding:15px 18px}
+}
+@media(max-width:768px){
+  .two,.stage{flex:0 1 auto !important;min-height:auto !important}
+  .col-v svg{width:82vw !important;height:auto !important;max-height:32vh !important}
+}
+@media(max-width:768px) and (max-height:740px){
+  .slide{padding:4vh 5vw 98px;gap:8px}
+  .lead{font-size:12.5px;margin-top:7px}.display{font-size:26px}.head{font-size:21px}.sub{font-size:15px}
+  .col-v svg{max-height:27vh !important}
+}
+@media(max-width:768px){ .two.dual .col-v svg{max-height:24vh !important} }
+@media(max-width:768px) and (max-height:740px){ .two.dual .col-v svg{max-height:21vh !important} }
+</style>
+</head>
+<body>
+<div class="bg"></div>
+<svg class="wave" preserveAspectRatio="none" viewBox="0 0 1440 900" xmlns="http://www.w3.org/2000/svg">
+  <path fill="none" stroke="rgba(255,122,26,.10)" stroke-width="2" d="M0 470 Q 180 460 280 470 T 520 472 Q 600 470 660 430 T 760 472 Q 900 540 1020 472 T 1440 468">
+    <animate attributeName="d" dur="9s" repeatCount="indefinite"
+      values="M0 470 Q 180 460 280 470 T 520 472 Q 600 470 660 430 T 760 472 Q 900 540 1020 472 T 1440 468;M0 470 Q 180 360 280 470 T 520 472 Q 600 470 660 300 T 760 472 Q 900 700 1020 472 T 1440 468;M0 470 Q 180 460 280 470 T 520 472 Q 600 470 660 430 T 760 472 Q 900 540 1020 472 T 1440 468"/>
+  </path>
+</svg>
+<div class="orb orb1"></div><div class="orb orb2"></div><div class="orb orb3"></div>
+<div class="grain"></div>
+<div class="motes" id="motes"></div>
+<canvas id="draw"></canvas>
+<div class="progress" id="progress"></div>
+<div class="brand"><b>Capital Flows <i>Research</i></b> · MINDSET CORNER</div>
+<div class="badge">Mindset Corner</div>
+<svg width="0" height="0" style="position:absolute"><defs>
+  <marker id="oArrow" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#ff7a1a"/></marker>
+  <marker id="vArrow" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#b98cff"/></marker>
+  <marker id="rArrow" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#ff5468"/></marker>
+</defs></svg>
+
+<div class="deck" id="deck">
+
+  <!-- 1 COVER -->
+  <section class="slide cover active">
+    <div class="kicker rise r1">Capital Flows Research · Mindset Corner</div>
+    <div class="display rise r2" style="font-size:clamp(50px,8.6vw,124px)">THE VOLATILITY<br><span class="em">SECRET SAUCE</span></div>
+    <div class="sub rise r3" style="max-width:880px">When the range expands, everything you calibrated in the calm quietly stops working. Vol isn't noise to tune out — <span style="color:var(--orange-glow)">it's the variable to trade around.</span></div>
+    <div class="handle rise r5" style="margin-top:20px">@jaymesrosenthal · Capital Flows Livestream</div>
+    <svg class="emblem rise r3" viewBox="0 0 460 300" xmlns="http://www.w3.org/2000/svg">
+      <line x1="30" y1="150" x2="430" y2="150" stroke="var(--line)" stroke-dasharray="3 7"/>
+      <!-- breathing envelope -->
+      <path fill="rgba(255,122,26,.08)" stroke="var(--orange)" stroke-width="2" d="M30 130 Q230 70 430 120 L430 180 Q230 230 30 170 Z">
+        <animate attributeName="d" dur="4s" repeatCount="indefinite"
+          values="M30 146 Q230 140 430 144 L430 156 Q230 160 30 154 Z;M30 96 Q230 30 430 86 L430 214 Q230 270 30 204 Z;M30 146 Q230 140 430 144 L430 156 Q230 160 30 154 Z"/>
+      </path>
+      <!-- price line inside -->
+      <path fill="none" stroke="var(--orange-bright)" stroke-width="3" stroke-linecap="round" style="filter:drop-shadow(0 0 7px var(--orange))" d="M30 150 L70 148 L110 152 L150 146 L190 154 L230 150 L270 158 L310 138 L350 168 L390 132 L430 150">
+        <animate attributeName="d" dur="4s" repeatCount="indefinite"
+          values="M30 150 L70 149 L110 151 L150 149 L190 151 L230 150 L270 151 L310 149 L350 151 L390 149 L430 150;M30 150 L70 120 L110 182 L150 108 L190 196 L230 132 L270 200 L310 96 L350 210 L390 110 L430 150;M30 150 L70 149 L110 151 L150 149 L190 151 L230 150 L270 151 L310 149 L350 151 L390 149 L430 150"/>
+      </path>
+      <text x="230" y="282" text-anchor="middle" fill="var(--orange)" font-size="11" font-weight="700" letter-spacing="3" font-family="'JetBrains Mono',monospace">CONTRACT · EXPAND · REPEAT</text>
+    </svg>
+  </section>
+
+  <!-- 2 THE BLIND SPOT -->
+  <section class="slide">
+    <div class="kicker rise r1">THE VARIABLE EVERYONE SKIPS</div>
+    <h2 class="head rise r2">YOU'RE READING <span class="em">NOMINAL.</span> THE TAPE TRADES <span class="em">REAL.</span></h2>
+    <div class="stage rise r3">
+      <svg viewBox="0 0 820 320" xmlns="http://www.w3.org/2000/svg" font-family="'JetBrains Mono',monospace">
+        <!-- the nominal number -->
+        <text x="410" y="70" text-anchor="middle" fill="var(--ink-dim)" font-size="12" letter-spacing="2">THE HEADLINE MOVE</text>
+        <text x="410" y="128" text-anchor="middle" fill="var(--orange)" font-size="56" font-weight="800" style="filter:drop-shadow(0 0 18px rgba(255,122,26,.5))">+3.0%</text>
+        <line x1="410" y1="150" x2="410" y2="186" stroke="var(--line)"/>
+        <path d="M300 175 L150 205 M520 175 L670 205" stroke="var(--line)" stroke-width="1.4" fill="none"/>
+        <!-- low vol read -->
+        <g style="filter:drop-shadow(0 0 14px rgba(92,200,255,.25))">
+          <rect x="40" y="200" width="320" height="92" rx="10" fill="rgba(92,200,255,.07)" stroke="var(--cool)" stroke-width="1.8"/>
+          <text x="60" y="230" fill="var(--cool)" font-size="13" font-weight="800">IN A CALM REGIME</text>
+          <text x="60" y="256" fill="var(--ink)" font-size="13">that's a <tspan font-weight="800" fill="var(--cool)">3-sigma</tspan> shock —</text>
+          <text x="60" y="276" fill="var(--ink-dim)" font-size="12">huge. something just broke.</text>
+        </g>
+        <!-- high vol read -->
+        <g style="filter:drop-shadow(0 0 14px rgba(255,84,104,.25))">
+          <rect x="460" y="200" width="320" height="92" rx="10" fill="rgba(255,84,104,.07)" stroke="var(--red)" stroke-width="1.8"/>
+          <text x="480" y="230" fill="var(--red)" font-size="13" font-weight="800">IN A STORM REGIME</text>
+          <text x="480" y="256" fill="var(--ink)" font-size="13">that's <tspan font-weight="800" fill="var(--red)">background noise</tspan> —</text>
+          <text x="480" y="276" fill="var(--ink-dim)" font-size="12">nothing. a normal candle.</text>
+        </g>
+      </svg>
+    </div>
+    <div class="lead rise r4" style="text-align:center;margin-left:auto;margin-right:auto">A move means nothing until you divide it by the regime it happened in. <b>People quote the nominal number and skip the vol denominator</b> — the exact same mistake as <span class="v">staring at nominal rates and forgetting the real one.</span></div>
+  </section>
+
+  <!-- 3 CONTRACTION -> EXPANSION (signature) -->
+  <section class="slide">
+    <div class="kicker rise r1">THE CORE MECHANIC</div>
+    <h2 class="head rise r2">SAME MARKET. <span class="em">TWO DIFFERENT ANIMALS.</span></h2>
+    <div class="stage rise r3">
+      <svg viewBox="0 0 880 340" xmlns="http://www.w3.org/2000/svg" font-family="'JetBrains Mono',monospace">
+        <line x1="20" y1="170" x2="860" y2="170" stroke="var(--line)" stroke-dasharray="3 7"/>
+        <!-- the opening "horn": narrow left -> wide right -->
+        <path fill="rgba(255,122,26,.07)" stroke="none" d="M20 160 Q300 150 460 130 Q650 100 860 40 L860 300 Q650 240 460 210 Q300 190 20 180 Z"/>
+        <path fill="none" stroke="var(--orange)" stroke-width="1.6" stroke-dasharray="4 5" d="M20 160 Q300 150 460 130 Q650 100 860 40"/>
+        <path fill="none" stroke="var(--orange)" stroke-width="1.6" stroke-dasharray="4 5" d="M20 180 Q300 190 460 210 Q650 240 860 300"/>
+        <!-- price path: tiny wiggles -> blown-out swings -->
+        <path fill="none" stroke="var(--orange-bright)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 0 6px var(--orange))" data-trace="#ffd9b0|5"
+          d="M20 170 L70 167 L120 173 L170 166 L220 174 L270 168 L320 176 L370 160 L420 184 L470 150 L520 196 L560 120 L610 226 L660 92 L710 250 L760 70 L810 268 L860 96"/>
+        <line x1="440" y1="40" x2="440" y2="300" stroke="var(--violet)" stroke-width="1.4" stroke-dasharray="2 6"/>
+        <text x="220" y="316" text-anchor="middle" fill="var(--cool)" font-size="12" font-weight="700" letter-spacing="1">CONTRACTED · moves subdued</text>
+        <text x="660" y="316" text-anchor="middle" fill="var(--red)" font-size="12" font-weight="700" letter-spacing="1">EXPANDED · ranges blow out</text>
+        <text x="440" y="30" text-anchor="middle" fill="var(--violet)" font-size="11" font-style="italic">the regime shifts</text>
+      </svg>
+    </div>
+    <div class="lead rise r4" style="text-align:center;margin-left:auto;margin-right:auto">When vol contracts, the moves are small, slow, almost boring. When it expands, the <b>intraday and weekly range can multiply.</b> <span class="o">Sized and stopped for the calm, the storm runs you straight over</span> — and you were never even wrong.</div>
+  </section>
+
+  <!-- 4 VOL CLUSTERS -->
+  <section class="slide">
+    <div class="kicker rise r1">VOL ISN'T SPRINKLED EVENLY</div>
+    <h2 class="head rise r2">CALM BEGETS CALM. <span class="em">CHAOS BEGETS CHAOS.</span></h2>
+    <div class="stage rise r3">
+      <svg viewBox="0 0 860 320" xmlns="http://www.w3.org/2000/svg" font-family="'JetBrains Mono',monospace">
+        <line x1="30" y1="250" x2="840" y2="250" stroke="var(--line)"/>
+        <!-- calm stretch -->
+        <g stroke="var(--cool)" stroke-width="2.5" stroke-linecap="round">
+          <line x1="60" y1="246" x2="60" y2="232"/><line x1="84" y1="250" x2="84" y2="238"/><line x1="108" y1="244" x2="108" y2="234"/><line x1="132" y1="250" x2="132" y2="240"/><line x1="156" y1="246" x2="156" y2="236"/><line x1="180" y1="250" x2="180" y2="242"/><line x1="204" y1="245" x2="204" y2="235"/><line x1="228" y1="250" x2="228" y2="239"/>
+        </g>
+        <text x="150" y="290" text-anchor="middle" fill="var(--cool)" font-size="11" font-weight="700" letter-spacing="1">QUIET REGIME · persists</text>
+        <!-- the cluster of spikes -->
+        <g stroke="var(--red)" stroke-width="3" stroke-linecap="round" style="filter:drop-shadow(0 0 8px rgba(255,84,104,.5))">
+          <line x1="300" y1="250" x2="300" y2="150"><animate attributeName="y2" values="200;150;200" dur="1.6s" repeatCount="indefinite"/></line>
+          <line x1="334" y1="250" x2="334" y2="90"><animate attributeName="y2" values="150;90;150" dur="1.6s" begin=".2s" repeatCount="indefinite"/></line>
+          <line x1="368" y1="250" x2="368" y2="130"><animate attributeName="y2" values="190;130;190" dur="1.6s" begin=".4s" repeatCount="indefinite"/></line>
+          <line x1="402" y1="250" x2="402" y2="60"><animate attributeName="y2" values="120;60;120" dur="1.6s" begin=".1s" repeatCount="indefinite"/></line>
+          <line x1="436" y1="250" x2="436" y2="120"><animate attributeName="y2" values="170;120;170" dur="1.6s" begin=".5s" repeatCount="indefinite"/></line>
+          <line x1="470" y1="250" x2="470" y2="100"><animate attributeName="y2" values="150;100;150" dur="1.6s" begin=".3s" repeatCount="indefinite"/></line>
+          <line x1="504" y1="250" x2="504" y2="150"><animate attributeName="y2" values="200;150;200" dur="1.6s" begin=".6s" repeatCount="indefinite"/></line>
+        </g>
+        <text x="402" y="290" text-anchor="middle" fill="var(--red)" font-size="11" font-weight="700" letter-spacing="1">VOL CLUSTERS · feeds on itself</text>
+        <!-- calm again -->
+        <g stroke="var(--cool)" stroke-width="2.5" stroke-linecap="round">
+          <line x1="580" y1="248" x2="580" y2="236"/><line x1="604" y1="250" x2="604" y2="240"/><line x1="628" y1="245" x2="628" y2="234"/><line x1="652" y1="250" x2="652" y2="241"/><line x1="676" y1="246" x2="676" y2="236"/><line x1="700" y1="250" x2="700" y2="242"/><line x1="724" y1="247" x2="724" y2="237"/><line x1="748" y1="250" x2="748" y2="240"/><line x1="772" y1="246" x2="772" y2="236"/>
+        </g>
+        <text x="676" y="290" text-anchor="middle" fill="var(--cool)" font-size="11" font-weight="700" letter-spacing="1">calm returns</text>
+      </svg>
+    </div>
+    <div class="lead rise r4" style="text-align:center;margin-left:auto;margin-right:auto">Volatility doesn't arrive in an even drizzle — <b>it clusters.</b> Quiet regimes persist far longer than feels reasonable… until the break, and then the chaos bunches up too. <span class="o">The handoff between the two is where people get hurt.</span></div>
+  </section>
+
+  <!-- 5 SAME-PERCENT TRAP / stops run -->
+  <section class="slide">
+    <div class="kicker rise r1">THE TRAP THAT FEELS LIKE BAD LUCK</div>
+    <h2 class="head rise r2">YOUR STOP DIDN'T MOVE. <span class="em">THE RANGE DID.</span></h2>
+    <div class="two dual" style="margin-top:4px">
+      <div class="col-v rise r3" style="flex:1;display:flex;justify-content:center">
+        <svg viewBox="0 0 380 250" xmlns="http://www.w3.org/2000/svg" font-family="'JetBrains Mono',monospace" style="height:40vh;width:auto;max-width:100%">
+          <text x="190" y="22" text-anchor="middle" fill="var(--cool)" font-size="11" font-weight="700" letter-spacing="1">CALM · stop is safe</text>
+          <line x1="20" y1="200" x2="360" y2="200" stroke="var(--red)" stroke-width="1.6" stroke-dasharray="5 5"/>
+          <text x="356" y="216" text-anchor="end" fill="var(--red)" font-size="9">your stop</text>
+          <path d="M20 110 L70 104 L120 116 L170 100 L220 118 L270 102 L320 112 L360 106" fill="none" stroke="var(--cool)" stroke-width="2.5" stroke-linecap="round" data-trace="#bfe9ff|4"/>
+        </svg>
+      </div>
+      <div class="col-v rise r4" style="flex:1;display:flex;justify-content:center">
+        <svg viewBox="0 0 380 250" xmlns="http://www.w3.org/2000/svg" font-family="'JetBrains Mono',monospace" style="height:40vh;width:auto;max-width:100%">
+          <text x="190" y="22" text-anchor="middle" fill="var(--red)" font-size="11" font-weight="700" letter-spacing="1">STORM · same stop, run on noise</text>
+          <line x1="20" y1="200" x2="360" y2="200" stroke="var(--red)" stroke-width="1.6" stroke-dasharray="5 5"/>
+          <path d="M20 100 L60 150 L100 70 L140 215 L180 90 L220 60" fill="none" stroke="var(--red)" stroke-width="2.6" stroke-linecap="round" data-trace="#ffb3bd|4" style="filter:drop-shadow(0 0 6px rgba(255,84,104,.5))"/>
+          <circle cx="140" cy="208" r="6" fill="var(--red)"><animate attributeName="opacity" values="1;.3;1" dur="1s" repeatCount="indefinite"/></circle>
+          <text x="140" y="234" text-anchor="middle" fill="var(--red)" font-size="9" font-weight="700">stopped out HERE…</text>
+          <path d="M220 60 L260 50 L300 64 L340 40" fill="none" stroke="var(--green)" stroke-width="2.6" stroke-linecap="round" stroke-dasharray="3 3"/>
+          <text x="300" y="34" text-anchor="middle" fill="var(--green)" font-size="9" font-weight="700">…then it went your way</text>
+        </svg>
+      </div>
+    </div>
+    <div class="lead rise r5" style="text-align:center;margin-left:auto;margin-right:auto;margin-top:8px">A stop, a target, a size that made sense in a half-percent world get obliterated in a three-percent world. <b>You get knocked out on noise</b> — <span class="g">right before the move you were waiting for.</span></div>
+  </section>
+
+  <!-- 6 SIZE TO THE REGIME -->
+  <section class="slide">
+    <div class="kicker rise r1">CONSTANT RISK — NOT CONSTANT SIZE</div>
+    <h2 class="head rise r2">AS VOL RISES, <span class="em">SIZE COMES DOWN.</span></h2>
+    <div class="stage rise r3">
+      <svg viewBox="0 0 820 320" xmlns="http://www.w3.org/2000/svg" font-family="'JetBrains Mono',monospace">
+        <!-- vol axis rising -->
+        <text x="120" y="40" text-anchor="middle" fill="var(--red)" font-size="12" font-weight="800" letter-spacing="1">VOLATILITY ↑</text>
+        <g fill="var(--red)" opacity=".85">
+          <rect x="70" y="250" width="36" height="40" rx="3"/><rect x="120" y="210" width="36" height="80" rx="3"/><rect x="170" y="150" width="36" height="140" rx="3"/><rect x="220" y="80" width="36" height="210" rx="3"/>
+        </g>
+        <!-- size axis falling -->
+        <text x="420" y="40" text-anchor="middle" fill="var(--orange)" font-size="12" font-weight="800" letter-spacing="1">YOUR SIZE ↓</text>
+        <g fill="var(--orange)" opacity=".9">
+          <rect x="360" y="80" width="36" height="210" rx="3"/><rect x="410" y="150" width="36" height="140" rx="3"/><rect x="460" y="210" width="36" height="80" rx="3"/><rect x="510" y="250" width="36" height="40" rx="3"/>
+        </g>
+        <!-- risk held flat -->
+        <line x1="600" y1="170" x2="800" y2="170" stroke="var(--green)" stroke-width="3" stroke-linecap="round" style="filter:drop-shadow(0 0 8px rgba(58,255,168,.5))"/>
+        <text x="700" y="150" text-anchor="middle" fill="var(--green)" font-size="13" font-weight="800">RISK · FLAT</text>
+        <text x="700" y="196" text-anchor="middle" fill="var(--ink-dim)" font-size="10">what you actually control</text>
+        <path d="M576 170 L600 170" stroke="var(--green)" stroke-width="2"/>
+        <path d="M280 170 C 320 170, 320 170, 352 170" stroke="var(--ink-faint)" stroke-width="1.4" stroke-dasharray="2 5" fill="none"/>
+      </svg>
+    </div>
+    <div class="lead rise r4" style="text-align:center;margin-left:auto;margin-right:auto">Hold the <b>same position size</b> as vol expands and your real risk is quietly tripling — you just can't see it yet. <span class="o">Size to volatility, not to conviction.</span> The thing you hold constant should be the risk, never the share count.</div>
+  </section>
+
+  <!-- 7 NERVOUS SYSTEM -->
+  <section class="slide">
+    <div class="kicker rise r1">THE DAMAGE ISN'T ONLY FINANCIAL</div>
+    <h2 class="head rise r2">YOUR NERVOUS SYSTEM ISN'T BUILT FOR <span class="em">3X.</span></h2>
+    <div class="two" style="margin-top:4px">
+      <div class="col-v rise r3">
+        <svg viewBox="0 0 380 230" xmlns="http://www.w3.org/2000/svg" font-family="'JetBrains Mono',monospace" style="height:42vh">
+          <line x1="10" y1="120" x2="370" y2="120" stroke="var(--line)"/>
+          <!-- calm ekg -> spiking ekg -->
+          <path fill="none" stroke="var(--orange)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 0 6px var(--orange))"
+            d="M10 120 H60 l8 -10 l8 20 l8 -10 H150 l10 -64 l12 120 l10 -56 H230 l10 -90 l12 160 l10 -70 H370">
+            <animate attributeName="stroke" values="#ff7a1a;#ff5468;#ff7a1a" dur="2.2s" repeatCount="indefinite"/>
+          </path>
+          <text x="80" y="160" text-anchor="middle" fill="var(--ink-dim)" font-size="10">steady</text>
+          <text x="300" y="40" text-anchor="middle" fill="var(--red)" font-size="10" font-weight="700">racing</text>
+        </svg>
+      </div>
+      <div class="col-t rise r4">
+        <div class="lead" style="margin-top:0">When the range triples, your body doesn't know it's "normal for this regime." <b>Fear spikes. You panic-exit good trades, revenge-trade the loss, fat-finger the size.</b></div>
+        <div class="lead">The blow lands on your <span class="o">decision-making</span> long before it lands on your account. And you can't reason your way calm in the moment — <span class="v">you have to have expected it.</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 8 PLAN THE EXPANSION (triggers playbook) -->
+  <section class="slide">
+    <div class="kicker rise r1">THINK FORWARD — NOT IN THE MOMENT</div>
+    <h2 class="head rise r2">DECIDE HOW YOU'LL REACT <span class="em">BEFORE</span> THE RANGE OPENS.</h2>
+    <div class="pbk rise r3">
+      <div class="row"><div class="cond">IF <b>vol expands past my line</b></div><div class="ar">→</div><div class="act"><b>cut size to hold risk flat</b></div></div>
+      <div class="row"><div class="cond">IF <b>ranges double intraday</b></div><div class="ar">→</div><div class="act"><b>widen stops or step off the gas</b></div></div>
+      <div class="row"><div class="cond">IF <b>my book is one-sided into it</b></div><div class="ar">→</div><div class="act"><b>hedge the tail, keep the thesis</b></div></div>
+      <div class="row"><div class="cond">IF <b>vol is cheap &amp; ignored</b></div><div class="ar">→</div><div class="act"><b>add convexity while it's quiet</b></div></div>
+    </div>
+    <div class="lead rise r4" style="text-align:center;margin-left:auto;margin-right:auto;margin-top:16px">Pre-define the triggers and the response — how you'll cut, hedge, or rebalance — so expansion is <span class="o">expected, not a shock.</span> <b>Nothing should surprise you at the end. You already wrote the page.</b></div>
+  </section>
+
+  <!-- 9 COMPRESSED SPRING -->
+  <section class="slide">
+    <div class="kicker rise r1">SUPPRESSION DOESN'T REMOVE RISK</div>
+    <h2 class="head rise r2">SUPPRESSED VOL IS A <span class="em">COMPRESSED SPRING.</span></h2>
+    <div class="stage rise r3">
+      <svg viewBox="0 0 820 320" xmlns="http://www.w3.org/2000/svg" font-family="'JetBrains Mono',monospace">
+        <!-- coil compressing -->
+        <g stroke="var(--orange)" stroke-width="3.4" fill="none" stroke-linecap="round" style="filter:drop-shadow(0 0 7px rgba(255,122,26,.45))">
+          <path d="M70 70 q40 -22 80 0 q40 22 80 0 q40 -22 80 0 q40 22 80 0 q40 -22 80 0">
+            <animate attributeName="d" dur="2.6s" repeatCount="indefinite"
+              values="M70 70 q40 -22 80 0 q40 22 80 0 q40 -22 80 0 q40 22 80 0 q40 -22 80 0;M70 70 q22 -22 44 0 q22 22 44 0 q22 -22 44 0 q22 22 44 0 q22 -22 44 0 q22 22 44 0 q22 -22 44 0 q22 22 44 0;M70 70 q40 -22 80 0 q40 22 80 0 q40 -22 80 0 q40 22 80 0 q40 -22 80 0"/>
+          </path>
+        </g>
+        <text x="250" y="120" text-anchor="middle" fill="var(--ink-dim)" font-size="11" letter-spacing="1">vol crushed · complacency builds · everyone leans the same way</text>
+        <!-- pressure gauge -->
+        <text x="250" y="175" text-anchor="middle" fill="var(--orange)" font-size="11" font-weight="700">PRESSURE BUILDING</text>
+        <rect x="120" y="188" width="260" height="14" rx="7" fill="rgba(255,255,255,.06)" stroke="var(--line)"/>
+        <rect x="120" y="188" width="40" height="14" rx="7" fill="var(--orange)"><animate attributeName="width" values="40;260;40" dur="2.6s" repeatCount="indefinite"/></rect>
+        <!-- the snap -->
+        <g style="filter:drop-shadow(0 0 16px rgba(255,84,104,.6))">
+          <path d="M470 140 L520 150 L495 168 L545 184 L505 196 L560 214 L500 232" fill="none" stroke="var(--red)" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/>
+          <text x="640" y="150" fill="var(--red)" font-size="22" font-weight="800" font-family="'Instrument Serif',Georgia,serif">SNAP.</text>
+          <text x="640" y="178" fill="rgba(255,84,104,.85)" font-size="11">violent repricing</text>
+          <text x="640" y="196" fill="var(--ink-dim)" font-size="10">the energy had to go somewhere</text>
+        </g>
+        <path d="M408 195 L460 185" stroke="var(--red)" stroke-width="2" marker-end="url(#rArrow)" fill="none"/>
+      </svg>
+    </div>
+    <div class="lead rise r4" style="text-align:center;margin-left:auto;margin-right:auto">Crush vol and keep it crushed and complacency builds, correlations rise, everyone piles onto the same side <span class="o">picking up pennies.</span> The energy doesn't vanish — <span class="r">it coils. And when it releases, it releases violently.</span></div>
+  </section>
+
+  <!-- 10 FEATURE NOT A BUG -->
+  <section class="slide">
+    <div class="kicker rise r1">REFRAME THE WHOLE THING</div>
+    <h2 class="head rise r2">VOLATILITY IS A <span class="em">FEATURE</span> — NOT A BUG.</h2>
+    <div class="stage rise r3">
+      <svg viewBox="0 0 860 320" xmlns="http://www.w3.org/2000/svg" font-family="'JetBrains Mono',monospace">
+        <circle cx="120" cy="160" r="6" fill="var(--ink-dim)"/>
+        <text x="120" y="60" text-anchor="middle" fill="var(--cool)" font-size="11" font-weight="700">SUPPRESSED</text>
+        <text x="120" y="280" text-anchor="middle" fill="var(--ink-dim)" font-size="10">everything moves as one</text>
+        <!-- bundled lines on the left, fanning out to the right -->
+        <g fill="none" stroke-width="2.6" stroke-linecap="round">
+          <path d="M126 160 C 300 158, 520 70, 840 50" stroke="var(--green)" data-trace="#9fffd6|4"/>
+          <path d="M126 160 C 300 159, 520 120, 840 120" stroke="var(--orange)" data-trace="#ffd9b0|4.2"/>
+          <path d="M126 160 C 300 161, 520 175, 840 188" stroke="var(--violet)" data-trace="#dcc6ff|4.4"/>
+          <path d="M126 160 C 300 162, 520 235, 840 260" stroke="var(--red)" data-trace="#ffb3bd|4.6"/>
+        </g>
+        <text x="700" y="40" fill="var(--green)" font-size="11" font-weight="700">winners separate</text>
+        <text x="700" y="284" fill="var(--red)" font-size="11" font-weight="700">losers exposed</text>
+        <line x1="470" y1="20" x2="470" y2="300" stroke="var(--violet)" stroke-width="1.2" stroke-dasharray="2 6"/>
+        <text x="470" y="14" text-anchor="middle" fill="var(--violet)" font-size="10" font-style="italic">vol gets expressed → dispersion returns</text>
+      </svg>
+    </div>
+    <div class="lead rise r4" style="text-align:center;margin-left:auto;margin-right:auto">Vol is the <b>mechanism that expresses performance.</b> Suppressed, dispersion collapses — everything correlates and skill is invisible. <span class="g">When vol finally gets expressed, the dispersion comes back and good positioning is what finally gets paid.</span></div>
+  </section>
+
+  <!-- 11 WHERE THE EDGE LIVES -->
+  <section class="slide">
+    <div class="kicker rise r1">THIS IS WHERE ALPHA ACTUALLY HIDES</div>
+    <h2 class="head rise r2">EDGE LIVES WHERE VOL IS <span class="em">MISPRICED.</span></h2>
+    <div class="two" style="margin-top:4px">
+      <div class="col-v rise r3" style="flex:1.1">
+        <svg viewBox="0 0 440 300" xmlns="http://www.w3.org/2000/svg" font-family="'JetBrains Mono',monospace" style="height:44vh">
+          <line x1="40" y1="250" x2="420" y2="250" stroke="var(--line)"/>
+          <line x1="60" y1="20" x2="60" y2="250" stroke="var(--line)"/>
+          <!-- convex payoff: flat/small down, then curves up hard -->
+          <path d="M60 250 L150 250 L150 232" fill="none" stroke="var(--red)" stroke-width="3" stroke-linecap="round"/>
+          <rect x="60" y="232" width="90" height="18" fill="rgba(255,84,104,.18)"/>
+          <text x="105" y="276" text-anchor="middle" fill="var(--red)" font-size="9.5" font-weight="700">small · capped downside</text>
+          <path d="M150 232 Q 300 230 420 60" fill="none" stroke="var(--green)" stroke-width="3.4" stroke-linecap="round" style="filter:drop-shadow(0 0 7px rgba(58,255,168,.5))" data-trace="#bfffe4|4"/>
+          <text x="350" y="44" text-anchor="middle" fill="var(--green)" font-size="11" font-weight="800">convex upside</text>
+          <text x="350" y="62" text-anchor="middle" fill="var(--ink-dim)" font-size="9">if vol expresses</text>
+          <circle cx="150" cy="232" r="5" fill="var(--orange)"/>
+          <text x="150" y="222" text-anchor="middle" fill="var(--orange)" font-size="9" font-weight="700">cheap entry</text>
+        </svg>
+      </div>
+      <div class="col-t rise r4">
+        <div class="lead" style="margin-top:0">The alpha is finding <b>asymmetric risk-reward in the corners nobody's watching</b> — where vol is cheap, ignored, and suppressed — and being positioned for it to express.</div>
+        <div class="chips">
+          <span class="chip"><b>Cheap</b> convexity, not crowded</span>
+          <span class="chip v"><b>Ignored</b> corner, not the obvious trade</span>
+          <span class="chip g"><b>Positioned</b> before it's screaming</span>
+        </div>
+        <div class="lead"><span class="o">Buy it quiet and unloved — never when it's already loud.</span> That asymmetry is where superior returns come from.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 12 CLOSE -->
+  <section class="slide">
+    <div class="kicker rise r1">THE TAKEAWAY</div>
+    <div class="display rise r2" style="font-size:clamp(40px,6vw,92px)">RESPECT THE <span class="em">RANGE.</span></div>
+    <div class="lead rise r3" style="max-width:900px;margin-top:16px">The volatility regime is a first-class input — <b>as decisive for your timing and risk as the thesis itself.</b> Size to the range, pre-plan the expansion, and hunt asymmetry where vol is mispriced.</div>
+    <svg class="rise r4" viewBox="0 0 520 70" xmlns="http://www.w3.org/2000/svg" style="width:min(460px,80%);height:auto;margin-top:6px">
+      <line x1="10" y1="35" x2="510" y2="35" stroke="var(--line)" stroke-dasharray="3 7"/>
+      <path fill="none" stroke="var(--orange)" stroke-width="2.6" stroke-linecap="round" style="filter:drop-shadow(0 0 6px var(--orange))" d="M10 35 L50 34 L90 36 L130 33 L170 37 L210 30 L250 46 L290 22 L330 50 L370 26 L410 42 L450 33 L490 36 L510 35">
+        <animate attributeName="d" dur="4s" repeatCount="indefinite" values="M10 35 L50 34 L90 36 L130 34 L170 36 L210 34 L250 37 L290 33 L330 38 L370 33 L410 37 L450 34 L490 36 L510 35;M10 35 L50 34 L90 36 L130 33 L170 37 L210 24 L250 52 L290 14 L330 58 L370 20 L410 48 L450 30 L490 38 L510 35;M10 35 L50 34 L90 36 L130 34 L170 36 L210 34 L250 37 L290 33 L330 38 L370 33 L410 37 L450 34 L490 36 L510 35"/>
+      </path>
+    </svg>
+    <div class="sub rise r5" style="margin-top:10px">Trade the regime, not just the move. <span style="color:var(--orange-glow)">That's the corner — see you tomorrow.</span></div>
+    <div class="handle rise r6" style="margin-top:16px">@jaymesrosenthal · Capital Flows Livestream</div>
+  </section>
+
+</div>
+
+<div class="nav">
+  <button id="prev" aria-label="Previous">&#8249;</button>
+  <div class="counter"><b id="cur">1</b> / <span id="total">12</span></div>
+  <button id="next" aria-label="Next">&#8250;</button>
+</div>
+<div class="dots" id="dots"></div>
+<div class="tools" id="tools">
+  <button class="pen" id="pen" title="Toggle pen">&#9998;</button>
+  <div class="sep"></div>
+  <div class="sep" id="sizeSep" style="display:none"></div>
+</div>
+
+<script>
+/* motes */
+(function(){const w=document.getElementById('motes');for(let i=0;i<40;i++){const s=document.createElement('div');s.className='mote';s.style.left=Math.random()*100+'%';s.style.bottom='-10px';const z=1.5+Math.random()*2.5;s.style.width=z+'px';s.style.height=z+'px';s.style.animationDuration=(9+Math.random()*10)+'s';s.style.animationDelay=(-Math.random()*16)+'s';w.appendChild(s);}})();
+
+const slides=[...document.querySelectorAll('.slide')];const N=slides.length;let idx=0;
+const progress=document.getElementById('progress'),cur=document.getElementById('cur');
+document.getElementById('total').textContent=N;
+const dotsWrap=document.getElementById('dots');
+slides.forEach((_,i)=>{const d=document.createElement('button');d.className='dot'+(i===0?' on':'');d.setAttribute('aria-label','Slide '+(i+1));d.addEventListener('click',()=>go(i));dotsWrap.appendChild(d);});
+const dots=[...dotsWrap.children];
+function go(i){i=Math.max(0,Math.min(N-1,i));if(i===idx&&slides[i].classList.contains('active'))return;slides[idx].classList.remove('active');dots[idx].classList.remove('on');idx=i;slides[idx].classList.add('active');dots[idx].classList.add('on');cur.textContent=idx+1;progress.style.width=(N>1?(idx/(N-1))*100:100)+'%';}
+go(0);
+document.getElementById('next').addEventListener('click',()=>go(idx+1));
+document.getElementById('prev').addEventListener('click',()=>go(idx-1));
+document.addEventListener('keydown',e=>{if(['ArrowRight','ArrowDown',' ','PageDown'].includes(e.key)){e.preventDefault();go(idx+1);}else if(['ArrowLeft','ArrowUp','PageUp'].includes(e.key)){e.preventDefault();go(idx-1);}else if(e.key==='Home')go(0);else if(e.key==='End')go(N-1);});
+
+let sx=0,sy=0,st=0;const deck=document.getElementById('deck');
+deck.addEventListener('touchstart',e=>{sx=e.changedTouches[0].screenX;sy=e.changedTouches[0].screenY;st=Date.now();},{passive:true});
+deck.addEventListener('touchend',e=>{const dx=e.changedTouches[0].screenX-sx,dy=e.changedTouches[0].screenY-sy,dt=Date.now()-st;if(dt>500)return;if(Math.abs(dx)<50)return;if(Math.abs(dy)>Math.abs(dx))return;if(dx<0)go(idx+1);else go(idx-1);},{passive:true});
+
+/* drawing */
+const canvas=document.getElementById('draw'),ctx=canvas.getContext('2d');
+let penOn=false,drawing=false,color='#ff7a1a',penSize=2;
+function sizeC(){canvas.width=innerWidth;canvas.height=innerHeight;ctx.lineCap='round';ctx.lineJoin='round';ctx.lineWidth=penSize;}
+sizeC();addEventListener('resize',sizeC);
+const pen=document.getElementById('pen'),tools=document.getElementById('tools'),sizeSep=document.getElementById('sizeSep');
+['#ff7a1a','#ff9a45','#b98cff','#3affa8','#5cc8ff','#fdf4ff'].forEach((c,i)=>{const s=document.createElement('button');s.className='swatch'+(i===0?' sel':'');s.style.background=c;s.setAttribute('aria-label','color');s.addEventListener('click',()=>{color=c;[...tools.querySelectorAll('.swatch')].forEach(x=>x.classList.remove('sel'));s.classList.add('sel');if(!penOn)tog(true);});tools.insertBefore(s,sizeSep);});
+sizeSep.style.display='block';
+const sizes=[{l:'XS',v:1},{l:'S',v:2},{l:'M',v:4},{l:'L',v:8},{l:'XL',v:14}];
+sizes.forEach((s,i)=>{const b=document.createElement('button');b.className='size'+(i===1?' sel':'');b.textContent=s.l;b.title='Pen size '+s.l;b.addEventListener('click',()=>{penSize=s.v;ctx.lineWidth=s.v;[...tools.querySelectorAll('.size')].forEach(x=>x.classList.remove('sel'));b.classList.add('sel');if(!penOn)tog(true);});tools.appendChild(b);});
+const clr=document.createElement('button');clr.className='clr';clr.title='Clear';clr.textContent='CLR';clr.addEventListener('click',()=>ctx.clearRect(0,0,canvas.width,canvas.height));tools.appendChild(clr);
+function tog(f){penOn=f!==undefined?f:!penOn;pen.classList.toggle('on',penOn);tools.classList.toggle('active',penOn);canvas.style.pointerEvents=penOn?'auto':'none';}
+pen.addEventListener('click',()=>tog());
+const pos=e=>{const t=e.touches?e.touches[0]:e;return{x:t.clientX,y:t.clientY};};
+function sd(e){if(!penOn)return;drawing=true;const p=pos(e);ctx.beginPath();ctx.moveTo(p.x,p.y);}
+function md(e){if(!penOn||!drawing)return;e.preventDefault();const p=pos(e);ctx.strokeStyle=color;ctx.lineWidth=penSize;ctx.shadowColor=color;ctx.shadowBlur=Math.max(0.5,penSize*0.5);ctx.lineTo(p.x,p.y);ctx.stroke();}
+function ed(){drawing=false;}
+canvas.addEventListener('mousedown',sd);canvas.addEventListener('mousemove',md);addEventListener('mouseup',ed);
+canvas.addEventListener('touchstart',sd,{passive:false});canvas.addEventListener('touchmove',md,{passive:false});canvas.addEventListener('touchend',ed);
+
+/* slide 8: cycle the trigger rows */
+(function(){const rows=[...document.querySelectorAll('.pbk .row')];if(!rows.length)return;let i=0;function step(){rows.forEach(r=>r.classList.remove('hot'));rows[i].classList.add('hot');i=(i+1)%rows.length;}step();setInterval(step,1150);})();
+
+/* playheads */
+(function(){
+  const ns='http://www.w3.org/2000/svg';
+  document.querySelectorAll('[data-trace]').forEach(p=>{
+    const svg=p.ownerSVGElement;if(!svg)return;
+    const parts=(p.getAttribute('data-trace')||'').split('|');
+    const col=parts[0]||'#fff',dur=parts[1]||'4';
+    if(!p.id)p.id='tp'+Math.random().toString(36).slice(2,8);
+    const dot=document.createElementNS(ns,'circle');
+    dot.setAttribute('r','4');dot.setAttribute('fill',col);dot.setAttribute('class','ph');dot.style.color=col;
+    const am=document.createElementNS(ns,'animateMotion');
+    am.setAttribute('dur',dur+'s');am.setAttribute('repeatCount','indefinite');am.setAttribute('begin','0s');
+    const mp=document.createElementNS(ns,'mpath');
+    mp.setAttribute('href','#'+p.id);mp.setAttributeNS('http://www.w3.org/1999/xlink','href','#'+p.id);
+    am.appendChild(mp);dot.appendChild(am);svg.appendChild(dot);
+  });
+})();
+</script>
+</body>
+</html>

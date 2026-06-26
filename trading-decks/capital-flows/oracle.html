@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>theDesk — The Oracle Bet</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg-0:#0a0405; --bg-1:#150708; --bg-2:#210a0b;
+  --oracle:#ff2b2b; --oracle-bright:#ff5247; --oracle-deep:#b81d14; --oracle-glow:#ff8074;
+  --ink:#fff4f2; --ink-dim:rgba(255,244,242,.66); --ink-faint:rgba(255,244,242,.16);
+  --line:rgba(255,244,242,.12);
+  --gold:#ffb020; --amber:#ffce5c; --steel:#9ab8cc; --green:#2ee68a; --red-dim:#9c3b35;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;overflow:hidden;background:var(--bg-0);color:var(--ink)}
+body{font-family:'JetBrains Mono',monospace;-webkit-font-smoothing:antialiased}
+.bg{position:fixed;inset:0;z-index:0;background:
+  radial-gradient(900px 700px at 80% 8%, rgba(255,43,43,.24), transparent 60%),
+  radial-gradient(760px 760px at 6% 94%, rgba(255,176,32,.08), transparent 60%),
+  radial-gradient(640px 640px at 94% 90%, rgba(184,29,20,.18), transparent 62%),
+  linear-gradient(160deg,var(--bg-1) 0%, var(--bg-0) 72%);}
+.orb{position:fixed;border-radius:50%;filter:blur(74px);opacity:.5;z-index:0;pointer-events:none}
+.orb1{width:440px;height:440px;left:-100px;top:-90px;background:radial-gradient(circle,var(--oracle),transparent 70%);animation:drift1 22s ease-in-out infinite}
+.orb2{width:360px;height:360px;right:-70px;bottom:-60px;background:radial-gradient(circle,rgba(255,176,32,.4),transparent 70%);animation:drift2 27s ease-in-out infinite}
+.orb3{width:320px;height:320px;right:24%;top:30%;background:radial-gradient(circle,rgba(184,29,20,.5),transparent 70%);animation:drift3 31s ease-in-out infinite}
+@keyframes drift1{50%{transform:translate(60px,40px) scale(1.08)}}
+@keyframes drift2{50%{transform:translate(-50px,-30px) scale(1.1)}}
+@keyframes drift3{50%{transform:translate(40px,-50px) scale(.9)}}
+.grain{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:.05;mix-blend-mode:overlay;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+.sparks{position:fixed;inset:0;z-index:1;pointer-events:none;overflow:hidden}
+.spark{position:absolute;bottom:-12px;border-radius:50%;background:var(--oracle-glow);box-shadow:0 0 7px var(--oracle);opacity:0;animation:rise-spark linear infinite}
+@keyframes rise-spark{0%{transform:translateY(0);opacity:0}10%{opacity:.8}90%{opacity:.4}100%{transform:translateY(-104vh);opacity:0}}
+.progress{position:fixed;top:0;left:0;height:3px;width:0;z-index:40;background:linear-gradient(90deg,var(--oracle),var(--gold),var(--oracle-deep));box-shadow:0 0 12px var(--oracle);transition:width .45s cubic-bezier(.4,0,.2,1)}
+.brand{position:fixed;top:20px;left:26px;z-index:30;font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--ink-dim)}
+.brand b{color:var(--ink);font-weight:500}.brand b i{color:var(--oracle);font-style:normal}
+.deck{position:fixed;inset:0;z-index:10}
+.slide{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;gap:clamp(8px,1.7vh,24px);padding:5vh 7vw;opacity:0;visibility:hidden;transition:opacity .5s ease,visibility .5s;pointer-events:none}
+.slide.active{opacity:1;visibility:visible;pointer-events:auto}
+.kicker{font-size:13px;font-weight:600;letter-spacing:4px;text-transform:uppercase;color:var(--oracle);margin-bottom:16px;display:flex;align-items:center;gap:12px}
+.kicker::before{content:"";width:34px;height:2px;background:var(--oracle);box-shadow:0 0 10px var(--oracle)}
+.display{font-family:'Instrument Serif',Georgia,serif;text-transform:uppercase;font-size:clamp(48px,8vw,104px);line-height:.94;letter-spacing:-1.5px;font-weight:400;text-shadow:0 0 44px rgba(255,43,43,.32)}
+.display .em{color:var(--oracle);font-style:italic}
+h2.head{font-family:'Instrument Serif',Georgia,serif;text-transform:uppercase;font-size:clamp(32px,5vw,64px);line-height:1.0;letter-spacing:-.5px;font-weight:400}
+.head .em{font-style:italic;color:var(--oracle)}
+.lead{font-size:clamp(15px,1.55vw,22px);line-height:1.55;color:var(--ink);font-weight:400;max-width:920px;margin-top:6px}
+.lead .g{font-weight:500}.lead .r{color:var(--oracle);font-weight:600}.lead .a{color:var(--gold);font-weight:600}
+.sub{font-family:'Instrument Serif',Georgia,serif;font-style:italic;font-size:clamp(19px,2.5vw,33px);color:var(--ink-dim);margin-top:16px;max-width:760px}
+.handle{font-size:14px;letter-spacing:2px;color:var(--oracle-glow);margin-top:20px}
+.head .em,.display .em{animation:emglow 3.4s ease-in-out infinite}
+@keyframes emglow{0%,100%{text-shadow:0 0 12px currentColor}50%{text-shadow:0 0 30px currentColor,0 0 54px currentColor}}
+.ph{filter:drop-shadow(0 0 5px #fff) drop-shadow(0 0 11px currentColor)}
+.stage{margin-top:0;flex:1 1 auto;min-height:0;display:flex;justify-content:center;align-items:center;width:100%}
+.stage svg{width:auto;height:100%;max-width:96%;max-height:58vh;overflow:hidden}
+.two{display:flex;align-items:center;gap:46px;width:100%;flex:1 1 auto;min-height:0}
+.two .col-v{flex:0 0 auto}.two .col-t{flex:1 1 auto}
+.rise{opacity:0;transform:translateY(20px)}
+.slide.active .rise{animation:rise .7s cubic-bezier(.18,.7,.2,1) forwards}
+.slide.active .r1{animation-delay:.05s}.slide.active .r2{animation-delay:.16s}.slide.active .r3{animation-delay:.27s}
+.slide.active .r4{animation-delay:.38s}.slide.active .r5{animation-delay:.49s}.slide.active .r6{animation-delay:.6s}
+@keyframes rise{to{opacity:1;transform:none}}
+
+/* drawdown grid (missed trades) */
+.dd-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px 22px;margin-top:8px;max-width:900px;margin-left:auto;margin-right:auto;width:100%;flex:1 1 auto;min-height:0;align-content:center}
+.dd-card{border:1px solid var(--line);border-radius:6px;background:rgba(33,10,11,.4);padding:14px 18px;display:flex;align-items:center;gap:16px}
+.dd-card .dd-svg{flex:0 0 auto}
+.dd-card .dd-meta{flex:1;min-width:0}
+.dd-card .dd-name{font-family:'Instrument Serif',Georgia,serif;font-size:22px;text-transform:uppercase;line-height:1;letter-spacing:.5px}
+.dd-card .dd-pct{font-size:clamp(20px,2.4vw,30px);font-weight:800;color:var(--oracle);line-height:1;margin-top:4px;font-family:'JetBrains Mono',monospace}
+.dd-card .dd-note{font-size:10.5px;color:var(--ink-dim);margin-top:6px;letter-spacing:.3px;line-height:1.35}
+
+/* dossier */
+.dossier{border:1.5px solid var(--oracle-deep);border-radius:8px;background:linear-gradient(165deg,rgba(33,10,11,.85),rgba(10,4,5,.6));padding:22px 28px;max-width:560px;box-shadow:0 0 34px rgba(255,43,43,.1)}
+.dossier .dh{font-size:12px;letter-spacing:3px;text-transform:uppercase;color:var(--oracle);font-weight:700;border-bottom:1px solid var(--line);padding-bottom:10px;margin-bottom:14px;display:flex;justify-content:space-between}
+.dossier .dh span{color:var(--ink-dim);font-weight:400}
+.trait{display:flex;gap:12px;align-items:flex-start;margin-bottom:11px}
+.trait:last-child{margin-bottom:0}
+.trait .tx{flex:0 0 auto;width:26px;height:26px;border-radius:5px;border:1.5px solid var(--oracle);color:var(--oracle);font-size:13px;display:flex;align-items:center;justify-content:center;box-shadow:0 0 10px rgba(255,43,43,.25)}
+.trait .tt{font-size:clamp(13px,1.25vw,17px);color:var(--ink);font-weight:500;line-height:1.3}
+.trait .tt b{color:var(--oracle);font-weight:700}
+
+/* big quote */
+.quote-big{font-family:'Instrument Serif',Georgia,serif;font-size:clamp(34px,5.6vw,76px);line-height:1.06;letter-spacing:-.5px;max-width:1040px;text-shadow:0 0 40px rgba(255,43,43,.2)}
+.quote-big .q{color:var(--oracle);font-style:italic}
+.quote-attr{font-size:13px;letter-spacing:3px;text-transform:uppercase;color:var(--ink-dim);margin-top:24px}
+.quote-attr b{color:var(--oracle-glow)}
+
+/* risk panel */
+.risk-panel{display:flex;flex-direction:column;gap:12px;max-width:620px;margin-top:6px}
+.risk-row{display:flex;gap:14px;align-items:flex-start;border-left:3px solid var(--gold);padding:8px 0 8px 16px;background:linear-gradient(90deg,rgba(255,176,32,.05),transparent)}
+.risk-row .rn{flex:0 0 auto;font-family:'Instrument Serif',Georgia,serif;font-size:26px;color:var(--gold);line-height:1}
+.risk-row .rt{font-size:clamp(13px,1.25vw,17px);color:var(--ink);line-height:1.35}
+.risk-row .rt b{color:var(--gold);font-weight:700}
+
+/* cta */
+.cta-card{border:1.5px solid var(--oracle);border-radius:8px;background:linear-gradient(165deg,rgba(255,43,43,.1),rgba(10,4,5,.5));padding:20px 28px;max-width:560px;box-shadow:0 0 34px rgba(255,43,43,.15)}
+.cta-card .ch{font-size:12px;letter-spacing:3px;text-transform:uppercase;color:var(--oracle);font-weight:700;margin-bottom:12px}
+.cta-card .cl{display:flex;gap:12px;align-items:baseline;margin-bottom:9px;font-size:clamp(13px,1.2vw,16px)}
+.cta-card .cl b{color:var(--oracle);font-family:'JetBrains Mono',monospace}
+.cta-card .cl span{color:var(--ink-dim)}
+
+/* trait/talking chips */
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.chip{font-size:12px;border:1px solid var(--line);padding:7px 12px;border-radius:3px;background:rgba(0,0,0,.28);letter-spacing:.5px;color:var(--ink-dim)}
+.chip b{color:var(--oracle);font-weight:700}
+.chip.a b{color:var(--gold)}
+
+/* nav / dots */
+.nav{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);z-index:40;display:flex;gap:14px;align-items:center}
+.nav button{width:44px;height:44px;border-radius:50%;border:1px solid var(--line);background:rgba(33,10,11,.6);color:var(--ink);cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;transition:.2s;backdrop-filter:blur(6px)}
+.nav button:hover{border-color:var(--oracle);box-shadow:0 0 14px rgba(255,43,43,.5);color:var(--oracle)}
+.counter{font-size:12px;letter-spacing:2px;color:var(--ink-dim);min-width:54px;text-align:center}.counter b{color:var(--ink)}
+.dots{position:fixed;right:22px;top:50%;transform:translateY(-50%);z-index:40;display:flex;flex-direction:column;gap:8px}
+.dot{width:8px;height:8px;border-radius:50%;border:1px solid var(--ink-faint);background:transparent;cursor:pointer;transition:.25s;padding:0}
+.dot.on{background:var(--oracle);border-color:var(--oracle);box-shadow:0 0 10px var(--oracle);transform:scale(1.3)}
+
+/* tools — inconspicuous, bottom-left, brightens on hover/active only */
+#draw{position:fixed;inset:0;z-index:25;pointer-events:none}
+.tools{position:fixed;left:14px;bottom:14px;z-index:40;display:flex;flex-direction:row;gap:5px;align-items:center;padding:5px 8px;border:1px solid var(--line);border-radius:22px;background:rgba(10,4,5,.5);backdrop-filter:blur(8px);opacity:.32;transition:opacity .25s ease}
+.tools:hover{opacity:1}
+.tools.active{opacity:1}
+.tools .pen{width:26px;height:26px;border-radius:50%;border:1px solid var(--line);background:rgba(33,10,11,.7);color:var(--ink-dim);cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;transition:.2s;padding:0}
+.tools .pen.on{border-color:var(--oracle);color:var(--oracle);box-shadow:0 0 10px rgba(255,43,43,.45)}
+.swatch{width:13px;height:13px;border-radius:50%;border:2px solid transparent;cursor:pointer;transition:.18s;padding:0}
+.swatch.sel{border-color:var(--ink);transform:scale(1.15)}
+.tools .sep{width:1px;height:14px;background:var(--line);margin:0 1px;flex-shrink:0}
+.tools .size{width:22px;height:18px;border-radius:4px;border:1px solid var(--line);background:rgba(33,10,11,.7);color:var(--ink-dim);cursor:pointer;font-size:8.5px;letter-spacing:.3px;display:flex;align-items:center;justify-content:center;font-weight:700;padding:0}
+.tools .size.sel{border-color:var(--oracle);color:var(--oracle);box-shadow:0 0 8px rgba(255,43,43,.45)}
+.tools .clr{width:26px;height:18px;border-radius:4px;border:1px solid var(--line);background:rgba(33,10,11,.7);color:var(--ink-dim);cursor:pointer;font-size:9px;letter-spacing:.3px;padding:0}
+
+@media(max-width:768px){
+  .slide{justify-content:flex-start;padding:6vh 5vw 9vh}
+  .display{font-size:34px}.head{font-size:24px}.sub{font-size:18px}.lead{font-size:14px;margin-top:12px}
+  .kicker{font-size:11px;letter-spacing:3px;margin-bottom:10px}
+  .stage svg{height:28vh}
+  .two{flex-direction:column;align-items:flex-start;gap:18px}
+  .dd-grid{grid-template-columns:1fr;gap:9px}
+  .dd-card{padding:9px 12px;gap:11px}.dd-card .dd-name{font-size:17px}
+  .quote-big{font-size:24px}.dossier{padding:14px 16px}.risk-panel{gap:8px}
+  .dots,.tools{display:none}.brand{font-size:10px;top:14px;left:16px}
+  .orb1{width:190px;height:190px}.orb2{width:150px;height:150px}.orb3{width:130px;height:130px}.sparks{opacity:.45}.nav{bottom:16px}
+}
+@media(max-width:480px){.display{font-size:28px}.head{font-size:20px}.brand{display:none}.nav button{width:36px;height:36px}}
+
+/* short-height viewports */
+@media(max-height:820px){
+  .slide{padding:5vh 6vw}
+  .display{font-size:clamp(42px,6.6vw,82px)}
+  h2.head{font-size:clamp(26px,4vw,50px)}
+  .stage svg{max-height:46vh}
+  .quote-big{font-size:clamp(28px,4.4vw,60px)}
+  .lead{margin-top:10px;font-size:clamp(13px,1.3vw,18px)}
+  .dd-card{padding:10px 14px}.dossier{padding:16px 22px}
+  .trait{margin-bottom:8px}.risk-panel{gap:9px}
+}
+
+/* mobile overflow fixes — cap side-column SVGs + compact dense slides */
+@media(max-width:768px){
+  .two,.stage,.dd-grid{flex:0 1 auto !important;min-height:auto !important}
+  .col-v svg{width:84vw !important;height:auto !important;max-height:32vh !important}
+  .dd-grid{grid-template-columns:1fr 1fr;gap:7px 8px}
+  .dd-card{padding:8px 10px;gap:9px}
+  .dd-card .dd-svg{width:58px;height:38px}
+  .dd-card .dd-name{font-size:14px}.dd-card .dd-pct{font-size:17px}.dd-card .dd-note{font-size:8px;line-height:1.3}
+  .cta-card{padding:13px 15px}.cta-card .cl{font-size:11px;margin-bottom:6px}
+  .quote-big{font-size:22px}.display{font-size:30px}
+}
+@media(max-width:768px) and (max-height:700px){
+  .slide{padding:4vh 5vw 8vh}
+  .lead{font-size:12.5px;margin-top:8px}
+  .dd-card .dd-note{font-size:7.5px}
+  .display{font-size:25px}.head{font-size:20px}.sub{font-size:15px}
+  .col-v svg{max-height:26vh !important}
+}
+</style>
+</head>
+<body>
+<div class="bg"></div>
+<div class="orb orb1"></div><div class="orb orb2"></div><div class="orb orb3"></div>
+<div class="grain"></div>
+<div class="sparks" id="sparks"></div>
+<canvas id="draw"></canvas>
+<div class="progress" id="progress"></div>
+<div class="brand"><b>the<i>Desk</i></b> · GLOBAL MACRO</div>
+<svg width="0" height="0" style="position:absolute"><defs>
+  <marker id="vArrow" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="context-stroke"/></marker>
+  <marker id="rArrow" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#ff2b2b"/></marker>
+</defs></svg>
+<div class="deck" id="deck">
+  <!-- 1 COVER -->
+  <section class="slide active">
+    <div class="kicker rise r1">theDesk · A GLOBAL MACRO BET</div>
+    <div class="display rise r2" style="font-size:clamp(54px,10vw,140px)">THE <span class="em">ORACLE</span><br>BET</div>
+    <div class="sub rise r3" style="max-width:920px">One of the great founders of all time just burned the boats on the future of AI — and the market handed us a discount mid-swing.</div>
+    <div class="rise r4" style="margin-top:20px;display:flex;align-items:center;gap:16px">
+      <div style="width:48px;height:2px;background:var(--oracle);box-shadow:0 0 10px var(--oracle)"></div>
+      <span style="font-size:13px;letter-spacing:3px;color:var(--oracle);font-weight:700">FIND A WAY · OR MAKE ONE</span>
+    </div>
+    <div class="handle rise r5" style="margin-top:22px">@jaymesrosenthal</div>
+  </section>
+
+  <!-- 2 THE MISSED TRADES -->
+  <section class="slide">
+    <div class="kicker rise r1">THE SETUP WE ALL KNOW</div>
+    <h2 class="head rise r2">THE TRADES WE LOOK BACK ON AND <span class="em">WISH</span> WE'D TAKEN</h2>
+    <div class="dd-grid rise r3">
+      <div class="dd-card">
+        <svg class="dd-svg" width="92" height="58" viewBox="0 0 92 58"><path d="M4 12 L26 14 L40 48 L60 30 L88 6" fill="none" stroke="#ff2b2b" stroke-width="2.5" stroke-linecap="round" data-trace="#ff8074|3"/><circle cx="40" cy="48" r="3" fill="#ffb020"/></svg>
+        <div class="dd-meta"><div class="dd-name">Meta</div><div class="dd-pct">−77%</div><div class="dd-note">…still earning $120B revenue at the low.</div></div>
+      </div>
+      <div class="dd-card">
+        <svg class="dd-svg" width="92" height="58" viewBox="0 0 92 58"><path d="M4 14 L24 16 L42 46 L62 28 L88 5" fill="none" stroke="#ff2b2b" stroke-width="2.5" stroke-linecap="round" data-trace="#ff8074|3.2"/><circle cx="42" cy="46" r="3" fill="#ffb020"/></svg>
+        <div class="dd-meta"><div class="dd-name">NVIDIA</div><div class="dd-pct">−70%</div><div class="dd-note">Inventory glut + China bans masked an accelerating data-center engine.</div></div>
+      </div>
+      <div class="dd-card">
+        <svg class="dd-svg" width="92" height="58" viewBox="0 0 92 58"><path d="M4 8 L22 10 L44 52 L64 34 L88 7" fill="none" stroke="#ff2b2b" stroke-width="2.5" stroke-linecap="round" data-trace="#ff8074|3.4"/><circle cx="44" cy="52" r="3" fill="#ffb020"/></svg>
+        <div class="dd-meta"><div class="dd-name">Palantir</div><div class="dd-pct">−90%</div><div class="dd-note">Written off as a cash-burning govt contractor — right before the commercial AI inflection.</div></div>
+      </div>
+      <div class="dd-card">
+        <svg class="dd-svg" width="92" height="58" viewBox="0 0 92 58"><path d="M4 12 L24 14 L42 50 L62 30 L88 6" fill="none" stroke="#ff2b2b" stroke-width="2.5" stroke-linecap="round" data-trace="#ff8074|3.1"/><circle cx="42" cy="50" r="3" fill="#ffb020"/></svg>
+        <div class="dd-meta"><div class="dd-name">Netflix</div><div class="dd-pct">−80%</div><div class="dd-note">First-ever subscriber loss → password crackdown + ads re-accelerated it to ATHs.</div></div>
+      </div>
+    </div>
+    <div class="lead rise r4" style="text-align:center;margin-left:auto;margin-right:auto;margin-top:18px">The sentiment cratered. The story seemed dire. <span class="g">But the business was still there, the cash flow was humming, and the founder was working as hard as ever.</span> <span class="r">Right now, one of those is staring us in the face.</span></div>
+  </section>
+
+  <!-- 3 TWO BETS STACKED -->
+  <section class="slide">
+    <div class="kicker rise r1">WHY THIS ONE IS DIFFERENT</div>
+    <h2 class="head rise r2">IT'S NOT ONE BET.<br>IT'S <span class="em">TWO</span>, STACKED.</h2>
+    <div class="stage rise r3">
+      <svg viewBox="0 0 720 300" xmlns="http://www.w3.org/2000/svg" font-family="'JetBrains Mono',monospace">
+        <g>
+          <rect x="120" y="40" width="480" height="80" rx="8" fill="rgba(255,43,43,.1)" stroke="#ff2b2b" stroke-width="2"/>
+          <text x="150" y="72" fill="#ff2b2b" font-size="13" font-weight="700" letter-spacing="3">BET 1 · THE COMPANY</text>
+          <text x="150" y="98" fill="rgba(255,244,242,.8)" font-size="12">The ticker. The opportunity. The obvious part.</text>
+          <text x="575" y="88" text-anchor="end" font-family="'Instrument Serif',Georgia,serif" font-size="34" fill="rgba(255,43,43,.5)">ORCL</text>
+        </g>
+        <text x="360" y="150" text-anchor="middle" font-family="'Instrument Serif',Georgia,serif" font-size="30" fill="var(--gold)">+</text>
+        <g style="filter:drop-shadow(0 0 18px rgba(255,176,32,.3))">
+          <rect x="120" y="170" width="480" height="80" rx="8" fill="rgba(255,176,32,.12)" stroke="#ffb020" stroke-width="2.5"/>
+          <text x="150" y="202" fill="#ffb020" font-size="13" font-weight="700" letter-spacing="3">BET 2 · THE PERSON</text>
+          <text x="150" y="228" fill="rgba(255,244,242,.9)" font-size="12">One of the greatest founders business has ever produced.</text>
+          <text x="575" y="218" text-anchor="end" font-family="'Instrument Serif',Georgia,serif" font-size="26" fill="rgba(255,176,32,.6)">ELLISON</text>
+        </g>
+        <text x="360" y="285" text-anchor="middle" fill="rgba(255,244,242,.55)" font-size="11" font-style="italic" letter-spacing="2">stacking chapters · confluence · edge in a single moment</text>
+      </svg>
+    </div>
+    <div class="lead rise r4" style="text-align:center;margin-left:auto;margin-right:auto">The first part is obvious — the company, the opportunity. <span class="a">It's the second part I find way more interesting:</span> you're also betting on a person. And that's where this gets rare.</div>
+  </section>
+  <!-- 4 THE MAN -->
+  <section class="slide">
+    <div class="two">
+      <div class="col-t" style="flex:0 0 auto;max-width:560px">
+        <div class="dossier rise r2">
+          <div class="dh"><span>WHO WE'RE BETTING ON</span>LARRY ELLISON</div>
+          <div class="trait"><div class="tx">01</div><div class="tt"><b>Ruthless competitor</b> — survivor of every cycle for ~50 years</div></div>
+          <div class="trait"><div class="tx">02</div><div class="tt"><b>Cost obsessive</b> — watches every single dollar that moves</div></div>
+          <div class="trait"><div class="tx">03</div><div class="tt"><b>Contrarian</b> — burns the boats once he picks a direction</div></div>
+          <div class="trait"><div class="tx">04</div><div class="tt"><b>Storyteller</b> — magnetic, charismatic, even now in his 80s</div></div>
+          <div class="trait"><div class="tx">05</div><div class="tt">Would <b>rather die on the field</b> than retreat</div></div>
+        </div>
+      </div>
+      <div class="col-v rise r3" style="flex:1">
+        <div class="kicker">THE SECOND BET</div>
+        <h2 class="head">A SCARRED<br>OPERATOR<br>GOING <span class="em">ALL IN</span></h2>
+        <div class="lead">The crowd is panicking on one side of the boat. On the other side stands one of the most proven operators alive — placing every chip on the table, willing to do anything to win.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5 FIND A WAY OR MAKE ONE -->
+  <section class="slide">
+    <div class="kicker rise r1">HOW HE'S WIRED · STORY ONE</div>
+    <h2 class="head rise r2">THERE WAS A WALL.<br>SO HE PUT A HOLE IN IT.</h2>
+    <div class="two" style="margin-top:6px">
+      <div class="col-v rise r3">
+        <svg viewBox="0 0 340 260" xmlns="http://www.w3.org/2000/svg" font-family="'JetBrains Mono',monospace" style="height:46vh">
+          <rect x="20" y="20" width="300" height="220" rx="4" fill="rgba(255,244,242,.04)" stroke="rgba(255,244,242,.14)"/>
+          <text x="170" y="44" text-anchor="middle" fill="rgba(255,244,242,.35)" font-size="9" letter-spacing="3">SHEETROCK · IN THE WAY</text>
+          <g style="filter:drop-shadow(0 0 20px rgba(255,43,43,.6))">
+            <path d="M170 90 L210 120 L188 138 L222 168 L176 158 L186 200 L150 168 L128 192 L134 150 L100 162 L132 128 L108 108 Z" fill="#0a0405" stroke="#ff2b2b" stroke-width="2.5"/>
+            <ellipse cx="165" cy="150" rx="42" ry="46" fill="#ff2b2b" opacity=".28"/>
+          </g>
+          <g style="filter:drop-shadow(0 0 6px rgba(255,128,116,.6))">
+            <rect x="238" y="196" width="64" height="11" rx="3" fill="#5a3326" transform="rotate(-30 238 196)"/>
+            <rect x="228" y="186" width="28" height="24" rx="3" fill="#c0c4cc" stroke="#fff" stroke-width="1" transform="rotate(-30 228 186)"/>
+          </g>
+        </svg>
+      </div>
+      <div class="col-t rise r4">
+        <div class="quote-big" style="font-size:clamp(24px,3.4vw,42px)">Don't call a contractor. Don't schedule a meeting. <span class="q">Just find a way — or make one.</span></div>
+        <div class="lead">No hammer? He found one. No path through? He made one. That one moment is the through-line of his whole life — he refuses to accept the world as handed to him, and bends it into the shape he wants.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6 TWO KINDS OF PEOPLE -->
+  <section class="slide">
+    <div class="kicker rise r1">HOW HE'S WIRED · STORY TWO</div>
+    <h2 class="head rise r2">TWO KINDS OF PEOPLE.<br>NO <span class="em">MIDDLE GROUND.</span></h2>
+    <div class="stage rise r3">
+      <svg viewBox="0 0 720 280" xmlns="http://www.w3.org/2000/svg" font-family="'JetBrains Mono',monospace">
+        <g>
+          <rect x="60" y="60" width="240" height="120" rx="8" fill="rgba(46,230,138,.08)" stroke="rgba(46,230,138,.5)" stroke-width="1.5"/>
+          <text x="180" y="110" text-anchor="middle" fill="#2ee68a" font-size="14" font-weight="700" letter-spacing="2">ON HIS TEAM</text>
+          <text x="180" y="134" text-anchor="middle" fill="rgba(46,230,138,.65)" font-size="10" letter-spacing="1">with him</text>
+        </g>
+        <g>
+          <rect x="420" y="60" width="240" height="120" rx="8" fill="rgba(255,43,43,.1)" stroke="#ff2b2b" stroke-width="1.5"/>
+          <text x="540" y="110" text-anchor="middle" fill="#ff2b2b" font-size="14" font-weight="700" letter-spacing="2">HIS ENEMIES</text>
+          <text x="540" y="134" text-anchor="middle" fill="rgba(255,43,43,.7)" font-size="10" letter-spacing="1">picked on purpose · fuel</text>
+        </g>
+        <line x1="360" y1="40" x2="360" y2="200" stroke="rgba(255,244,242,.25)" stroke-dasharray="4 6"/>
+        <path d="M300 120 C 340 120, 340 220, 420 220" fill="none" stroke="#ffb020" stroke-width="3" marker-end="url(#vArrow)" data-trace="#ffd98a|3"/>
+        <text x="360" y="252" text-anchor="middle" fill="#ffb020" font-size="12" font-weight="700" letter-spacing="2">THE WHOLE INDUSTRY ZIGS — HE ZAGS TWICE AS HARD</text>
+      </svg>
+    </div>
+    <div class="lead rise r4" style="text-align:center;margin-left:auto;margin-right:auto">He <span class="r">loves</span> having enemies — he picks them on purpose and uses competition as fuel. Always on offense. When the industry zigs, his instinct is to zag, then <span class="a">zag twice as hard as anyone thinks is reasonable.</span></div>
+  </section>
+  <!-- 7 THE COST OBSESSIVE -->
+  <section class="slide">
+    <div class="kicker rise r1">UNDERNEATH THE SWAGGER</div>
+    <h2 class="head rise r2">HE WATCHES <span class="em">EVERY</span><br>SINGLE DOLLAR</h2>
+    <div class="two" style="margin-top:4px">
+      <div class="col-v rise r3">
+        <svg viewBox="0 0 340 260" xmlns="http://www.w3.org/2000/svg" font-family="'JetBrains Mono',monospace" style="height:44vh">
+          <g stroke="rgba(255,176,32,.4)" stroke-width="1.4" fill="none">
+            <path d="M20 60 H300" stroke-dasharray="2 6"/><path d="M20 110 H300" stroke-dasharray="2 6"/><path d="M20 160 H300" stroke-dasharray="2 6"/><path d="M20 210 H300" stroke-dasharray="2 6"/>
+          </g>
+          <g fill="#ffb020" font-size="13" font-weight="700">
+            <text x="34" y="65">$</text><text x="90" y="65">$</text><text x="146" y="65">$</text><text x="202" y="65">$</text><text x="258" y="65">$</text>
+            <text x="34" y="115">$</text><text x="90" y="115">$</text><text x="146" y="115">$</text><text x="202" y="115">$</text>
+            <text x="34" y="165">$</text><text x="90" y="165">$</text><text x="146" y="165">$</text>
+          </g>
+          <g style="filter:drop-shadow(0 0 12px rgba(255,43,43,.6))">
+            <circle cx="170" cy="135" r="46" fill="rgba(255,43,43,.06)" stroke="#ff2b2b" stroke-width="3"/>
+            <text x="170" y="142" text-anchor="middle" fill="#ff2b2b" font-size="22" font-weight="800">$</text>
+            <line x1="203" y1="168" x2="240" y2="205" stroke="#ff2b2b" stroke-width="5" stroke-linecap="round"/>
+          </g>
+        </svg>
+      </div>
+      <div class="col-t rise r4">
+        <div class="quote-big" style="font-size:clamp(22px,3.2vw,40px)">"You can't get rich <span class="q">doing the exact same thing</span> as everybody else."</div>
+        <div class="lead">If you control expenses better than your competitors, you'll always find an edge somewhere in the cycle — profit, price, or positioning. <span class="g">Expense-to-sales has to be top-notch.</span> He wants friction removed from every single process in the business.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 8 THE SIGNAL -->
+  <section class="slide">
+    <div class="kicker rise r1">THE TELL</div>
+    <h2 class="head rise r2">WHEN THE PENNY-COUNTER<br>SPENDS <span class="em">EVERYTHING</span></h2>
+    <div class="stage rise r3">
+      <svg viewBox="0 0 740 280" xmlns="http://www.w3.org/2000/svg" font-family="'JetBrains Mono',monospace">
+        <text x="150" y="40" text-anchor="middle" fill="rgba(255,244,242,.55)" font-size="11" letter-spacing="2">NORMALLY</text>
+        <g fill="#ffb020"><circle cx="120" cy="150" r="5"/><circle cx="150" cy="150" r="5"/><circle cx="180" cy="150" r="5"/></g>
+        <text x="150" y="200" text-anchor="middle" fill="rgba(255,176,32,.7)" font-size="10" letter-spacing="1">counts every penny</text>
+        <text x="370" y="155" text-anchor="middle" font-family="'Instrument Serif',Georgia,serif" font-size="30" fill="rgba(255,244,242,.7)">→</text>
+        <text x="560" y="40" text-anchor="middle" fill="var(--oracle)" font-size="11" font-weight="700" letter-spacing="2">RIGHT NOW</text>
+        <g style="filter:drop-shadow(0 0 16px rgba(255,43,43,.6))">
+          <path d="M470 90 L660 90 L640 210 L490 210 Z" fill="rgba(255,43,43,.12)" stroke="#ff2b2b" stroke-width="2.5"/>
+          <text x="565" y="158" text-anchor="middle" fill="#ff2b2b" font-size="22" font-weight="800">TENS OF $B</text>
+        </g>
+        <g fill="#ff2b2b">
+          <circle cx="500" cy="60" r="4"><animate attributeName="cy" values="60;88" dur="1.2s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;1;0" dur="1.2s" repeatCount="indefinite"/></circle>
+          <circle cx="565" cy="50" r="4"><animate attributeName="cy" values="50;88" dur="1.5s" begin=".4s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;1;0" dur="1.5s" begin=".4s" repeatCount="indefinite"/></circle>
+          <circle cx="625" cy="58" r="4"><animate attributeName="cy" values="58;88" dur="1.3s" begin=".8s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;1;0" dur="1.3s" begin=".8s" repeatCount="indefinite"/></circle>
+        </g>
+        <text x="565" y="240" text-anchor="middle" fill="rgba(255,43,43,.75)" font-size="10" letter-spacing="1" font-style="italic">like his life depends on it</text>
+      </svg>
+    </div>
+    <div class="lead rise r4" style="text-align:center;margin-left:auto;margin-right:auto">When a guy who counts every penny suddenly spends everything, <span class="g">that's not recklessness.</span> <span class="r">That's a signal amongst the noise.</span> It should tell you he sees something — and that he knows exactly what he's doing.</div>
+  </section>
+
+  <!-- 9 BURNING THE BOATS -->
+  <section class="slide">
+    <div class="kicker rise r1">HIS PATTERN · CYCLE AFTER CYCLE</div>
+    <h2 class="head rise r2">HE PICKS A FIGHT —<br>THEN <span class="em">BURNS THE BOATS</span></h2>
+    <div class="stage rise r3">
+      <svg viewBox="0 0 760 260" xmlns="http://www.w3.org/2000/svg" font-family="'JetBrains Mono',monospace">
+        <path d="M20 120 H740" stroke="rgba(255,244,242,.25)" stroke-width="1.5"/>
+        <g font-size="10" font-weight="700" letter-spacing="1">
+          <circle cx="110" cy="120" r="5" fill="#ff2b2b"/><text x="110" y="100" text-anchor="middle" fill="rgba(255,244,242,.8)">DOT-COM</text><text x="110" y="148" text-anchor="middle" fill="rgba(255,244,242,.45)" font-size="9">bet the internet</text>
+          <circle cx="280" cy="120" r="5" fill="#ff2b2b"/><text x="280" y="100" text-anchor="middle" fill="rgba(255,244,242,.8)">THE CRASHES</text><text x="280" y="148" text-anchor="middle" fill="rgba(255,244,242,.45)" font-size="9">survived</text>
+          <circle cx="450" cy="120" r="5" fill="#ff2b2b"/><text x="450" y="100" text-anchor="middle" fill="rgba(255,244,242,.8)">PLATFORM SHIFTS</text><text x="450" y="148" text-anchor="middle" fill="rgba(255,244,242,.45)" font-size="9">adapted</text>
+          <circle cx="640" cy="120" r="7" fill="#ffb020" style="filter:drop-shadow(0 0 10px #ffb020)"/><text x="640" y="98" text-anchor="middle" fill="#ffb020">THE AI BUILDOUT</text><text x="640" y="150" text-anchor="middle" fill="rgba(255,176,32,.7)" font-size="9">all in · now</text>
+        </g>
+        <g style="filter:drop-shadow(0 0 10px rgba(255,43,43,.7))">
+          <path d="M70 210 Q75 188 85 196 Q90 180 98 192 Q104 178 110 196 Q118 182 124 200 Q130 188 134 210 Z" fill="#ff2b2b" opacity=".85"/>
+          <path d="M250 210 Q256 190 264 198 Q270 182 278 196 Q286 184 292 202 Q298 192 302 210 Z" fill="#ff8074" opacity=".7"/>
+        </g>
+        <text x="380" y="40" text-anchor="middle" fill="rgba(255,244,242,.5)" font-size="11" font-style="italic" letter-spacing="2">~50 years · win or die · always looking five years out</text>
+      </svg>
+    </div>
+    <div class="lead rise r4" style="text-align:center;margin-left:auto;margin-right:auto">Decades ago everyone said the internet would kill the enterprise database. <span class="g">He took the opposite side</span> — bet it would vastly expand that business. He was right. He's done it cycle after cycle for half a century, and <span class="r">he's never resting on last quarter.</span></div>
+  </section>
+  <!-- 10 CARRIED DEAD FROM THE FIELD -->
+  <section class="slide">
+    <div class="kicker rise r1">WHAT MOTIVATES HIM</div>
+    <div class="quote-big rise r2">"I cannot accept defeat <span class="q">until I'm carried dead<br>from the field.</span>"</div>
+    <div class="quote-attr rise r3">— LARRY ELLISON · via <b>"Softwar"</b> (Matthew Symonds)</div>
+    <div class="lead rise r4" style="margin-top:28px;max-width:840px">Asked what he'd do with one year left to live, he said his life <span class="g">wouldn't change very much.</span> He's all in, all the time. He's motivated more by the <span class="r">fear of failure</span> than by greed — he hates to lose. He called Silicon Valley a killing field where few survive… <span class="a">and his whole point was that he did.</span></div>
+  </section>
+
+  <!-- 11 THE SAAS-POCALYPSE -->
+  <section class="slide">
+    <div class="kicker rise r1">THE NARRATIVE EVERYONE BELIEVES</div>
+    <h2 class="head rise r2">"OLD SOFTWARE IS <span class="em">ROADKILL.</span>"</h2>
+    <div class="stage rise r3">
+      <svg viewBox="0 0 720 280" xmlns="http://www.w3.org/2000/svg" font-family="'JetBrains Mono',monospace">
+        <path d="M40 70 Q200 90 360 150 T680 240" fill="none" stroke="var(--red-dim)" stroke-width="3" stroke-linecap="round" data-trace="#c97a73|4"/>
+        <path d="M40 70 Q200 90 360 150 T680 240 L680 250 L40 250 Z" fill="rgba(156,59,53,.1)"/>
+        <text x="60" y="56" fill="rgba(255,244,242,.6)" font-size="11" letter-spacing="2">SaaS VALUE →</text>
+        <text x="640" y="240" text-anchor="end" fill="var(--red-dim)" font-size="13" font-weight="700" letter-spacing="2">"RACE TO ZERO"</text>
+        <g font-size="11" letter-spacing="1" fill="rgba(255,244,242,.7)">
+          <text x="420" y="70">▸ AI commoditizes every app</text>
+          <text x="420" y="96">▸ "just prompt Claude / Codex"</text>
+          <text x="420" y="122">▸ enterprise giants = dinosaurs</text>
+          <text x="420" y="148">▸ Oracle = legacy, slow, a relic</text>
+        </g>
+      </svg>
+    </div>
+    <div class="lead rise r4" style="text-align:center;margin-left:auto;margin-right:auto">For two years the story has been the same: <span class="g">software is dying, it's the SaaS-pocalypse, every app is replicable with a smooth prompt.</span> And the old enterprise database company? Supposed to be the first thing run over.</div>
+  </section>
+
+  <!-- 12 AI NEEDS ORACLE -->
+  <section class="slide">
+    <div class="kicker rise r1">THE OPPOSITE CONCLUSION</div>
+    <h2 class="head rise r2">AI DOESN'T KILL ORACLE.<br>IT <span class="em">NEEDS</span> ORACLE.</h2>
+    <div class="stage rise r3">
+      <svg viewBox="0 0 720 280" xmlns="http://www.w3.org/2000/svg" font-family="'JetBrains Mono',monospace">
+        <g font-size="10" font-weight="700" letter-spacing="1" fill="rgba(255,244,242,.7)">
+          <text x="90" y="60" text-anchor="middle">TRAINING</text>
+          <text x="90" y="150" text-anchor="middle">INFERENCE</text>
+          <text x="90" y="240" text-anchor="middle">ALL THAT COMPUTE</text>
+        </g>
+        <g stroke="#ffb020" stroke-width="2.4" fill="none">
+          <path d="M170 56 C 280 56, 300 130, 410 130" data-trace="#ffd98a|2.4"/>
+          <path d="M170 150 C 280 150, 300 135, 410 135" data-trace="#ffd98a|2.2"/>
+          <path d="M170 236 C 290 236, 300 142, 410 142" data-trace="#ffd98a|2.8"/>
+        </g>
+        <g style="filter:drop-shadow(0 0 18px rgba(255,43,43,.55))">
+          <rect x="420" y="92" width="220" height="96" rx="8" fill="rgba(255,43,43,.12)" stroke="#ff2b2b" stroke-width="3"/>
+          <text x="530" y="132" text-anchor="middle" fill="#ff2b2b" font-size="15" font-weight="700" letter-spacing="2">THE INFRASTRUCTURE</text>
+          <text x="530" y="158" text-anchor="middle" fill="rgba(255,43,43,.8)" font-size="11" letter-spacing="1">it all has to run on</text>
+        </g>
+        <text x="360" y="270" text-anchor="middle" fill="rgba(255,244,242,.5)" font-size="11" font-style="italic" letter-spacing="2">all that compute has to live somewhere — he decided Oracle owns the somewhere</text>
+      </svg>
+    </div>
+    <div class="lead rise r4" style="text-align:center;margin-left:auto;margin-right:auto">Same facts, opposite conclusion. <span class="g">Compute has to train somewhere, live somewhere.</span> So he took the entire company — income statement and balance sheet — and <span class="r">leveraged all of it to the AI buildout.</span> The penny-counter bet every dollar.</div>
+  </section>
+  <!-- 13 PULLING THE PAIN FORWARD -->
+  <section class="slide">
+    <div class="kicker rise r1">THE GLOBAL FLOWS THESIS</div>
+    <h2 class="head rise r2">HE'S PULLING THE PAIN<br><span class="em">FORWARD</span> — ON PURPOSE</h2>
+    <div class="stage rise r3">
+      <svg viewBox="0 0 760 300" xmlns="http://www.w3.org/2000/svg" font-family="'JetBrains Mono',monospace">
+        <line x1="50" y1="150" x2="720" y2="150" stroke="rgba(255,244,242,.2)"/>
+        <text x="60" y="290" fill="rgba(255,244,242,.5)" font-size="10" letter-spacing="2">NOW</text>
+        <text x="715" y="290" text-anchor="end" fill="rgba(255,244,242,.5)" font-size="10" letter-spacing="2">THE FUTURE</text>
+        <path d="M50 150 Q150 260 280 250 Q400 242 480 150" fill="rgba(255,43,43,.1)" stroke="none"/>
+        <path d="M50 150 Q150 260 280 250 Q400 242 480 150" fill="none" stroke="#ff2b2b" stroke-width="3" stroke-linecap="round" data-trace="#ff8074|4"/>
+        <text x="265" y="285" text-anchor="middle" fill="#ff2b2b" font-size="11" font-weight="700" letter-spacing="1">PAIN, PULLED FORWARD</text>
+        <path d="M480 150 Q600 150 700 50" fill="none" stroke="#2ee68a" stroke-width="3" stroke-linecap="round" data-trace="#9ff5cc|4"/>
+        <text x="640" y="40" text-anchor="middle" fill="#2ee68a" font-size="11" font-weight="700" letter-spacing="1">OWN THE FUTURE</text>
+        <g font-size="10.5" letter-spacing="1" fill="rgba(255,244,242,.75)">
+          <text x="120" y="60">▸ spend the capex now</text>
+          <text x="120" y="84">▸ let cash flow look ugly now</text>
+          <text x="120" y="108">▸ take on the debt now</text>
+        </g>
+      </svg>
+    </div>
+    <div class="lead rise r4" style="text-align:center;margin-left:auto;margin-right:auto">He's the one major player <span class="g">deliberately taking the pain now</span> — capex, ugly cash flow, debt — to own the future later. <span class="r">Most CEOs physically can't do this; they're terrified of the next quarter.</span> Larry has never once cared about the next quarter. He cares about winning the war.</div>
+  </section>
+
+  <!-- 14 THE DISCOUNT -->
+  <section class="slide">
+    <div class="kicker rise r1">WHERE THE ASYMMETRY LINES UP</div>
+    <h2 class="head rise r2">THE CROWD PANICS.<br>THE PRICE GOES <span class="em">ON SALE.</span></h2>
+    <div class="two" style="margin-top:4px">
+      <div class="col-v rise r3">
+        <svg viewBox="0 0 360 240" xmlns="http://www.w3.org/2000/svg" font-family="'JetBrains Mono',monospace" style="height:42vh">
+          <path d="M20 50 L90 70 L150 200 L210 175 L300 120 L340 90" fill="none" stroke="#ff2b2b" stroke-width="3" stroke-linecap="round" data-trace="#ff8074|4"/>
+          <rect x="120" y="160" width="80" height="60" rx="4" fill="rgba(255,176,32,.1)" stroke="#ffb020" stroke-width="1.5" stroke-dasharray="3 3"/>
+          <text x="160" y="235" text-anchor="middle" fill="#ffb020" font-size="9" font-weight="700" letter-spacing="1">THE DISCOUNT</text>
+          <text x="150" y="40" fill="rgba(255,43,43,.8)" font-size="13" font-weight="800">CUT IN HALF+</text>
+          <circle cx="150" cy="200" r="4" fill="#ffb020"/>
+        </svg>
+      </div>
+      <div class="col-t rise r4">
+        <div class="lead" style="margin-top:0">The market hated it. The stock got cut in half — more near the lows. The bears came swinging: <span class="g">too much spending, too much debt, too much risk, it's all going to blow up.</span></div>
+        <div class="chips">
+          <span class="chip"><b>Legendary operator</b> goes all in</span>
+          <span class="chip"><b>The crowd</b> panics in one direction</span>
+          <span class="chip a"><b>The price</b> goes on sale</span>
+        </div>
+        <div class="lead"><span class="r">There's the asymmetry.</span> The macro regime, the sector positioning, and the man finally line up in one moment.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 15 SENTIMENT VS REALITY -->
+  <section class="slide">
+    <div class="kicker rise r1">THE MACRO BACKDROP</div>
+    <h2 class="head rise r2">EVERYONE PRICES NEGATIVE.<br>THE TAPE SAYS <span class="em">RESILIENT.</span></h2>
+    <div class="stage rise r3">
+      <svg viewBox="0 0 780 420" xmlns="http://www.w3.org/2000/svg" font-family="'JetBrains Mono',monospace">
+        <line x1="70" y1="28" x2="70" y2="372" stroke="rgba(255,244,242,.2)"/>
+        <line x1="70" y1="372" x2="752" y2="372" stroke="rgba(255,244,242,.2)"/>
+        <text x="58" y="36" text-anchor="end" fill="rgba(255,244,242,.45)" font-size="10" letter-spacing="1">MARKETS</text>
+        <text x="748" y="392" text-anchor="end" fill="rgba(255,244,242,.45)" font-size="10" letter-spacing="2">TIME →</text>
+        <!-- perceived / fear path -->
+        <path d="M92 150 Q260 215 420 285 T740 360" fill="none" stroke="var(--red-dim)" stroke-width="3" stroke-dasharray="6 6" stroke-linecap="round" data-trace="#c97a73|4"/>
+        <text x="150" y="135" fill="var(--red-dim)" font-size="12" font-weight="700" letter-spacing="1">WHAT EVERYONE PRICES</text>
+        <text x="150" y="153" fill="rgba(156,59,53,.85)" font-size="10">sticky inflation · sticky rates · "it's over"</text>
+        <!-- reality / resilient path -->
+        <path d="M92 300 Q210 280 300 305 Q400 332 480 235 Q580 150 740 96" fill="none" stroke="var(--green)" stroke-width="3.5" stroke-linecap="round" data-trace="#9ff5cc|4.4"/>
+        <text x="470" y="210" fill="var(--green)" font-size="12" font-weight="700" letter-spacing="1">WHAT THE TAPE DOES</text>
+        <text x="470" y="228" fill="rgba(46,230,138,.8)" font-size="10">resilience — even through the curve</text>
+        <circle cx="740" cy="96" r="5" fill="var(--green)" style="filter:drop-shadow(0 0 8px var(--green))"/>
+      </svg>
+    </div>
+    <div class="lead rise r4" style="text-align:center;margin-left:auto;margin-right:auto">Sticky inflation and sticky rates have everyone convinced the outcome is negative from here. <span class="g">In reality, what we've seen is resilience — even through the movement along the curve.</span></div>
+  </section>
+
+  <!-- 16 THE RATE PICTURE -->
+  <section class="slide">
+    <div class="kicker rise r1">WHAT'S ACTUALLY HAPPENING</div>
+    <h2 class="head rise r2">LONG-END UP. REAL RATES DOWN.<br>MONEY MOVES <span class="em">OUT THE CURVE.</span></h2>
+    <div class="stage rise r3">
+      <svg viewBox="0 0 800 420" xmlns="http://www.w3.org/2000/svg" font-family="'JetBrains Mono',monospace">
+        <!-- top band: long-end creeping up -->
+        <text x="40" y="48" fill="var(--amber)" font-size="11" font-weight="700" letter-spacing="1">LONG-END YIELD</text>
+        <path d="M40 120 Q160 110 280 96 Q400 82 520 70" fill="none" stroke="var(--amber)" stroke-width="3" stroke-linecap="round" data-trace="#ffe0a0|3.4"/>
+        <path d="M520 70 l-14 -2 m14 2 l-3 14" fill="none" stroke="var(--amber)" stroke-width="3" stroke-linecap="round"/>
+        <text x="545" y="74" fill="rgba(255,176,32,.85)" font-size="10">creeping up — everyone bet on cuts +</text>
+        <text x="545" y="90" fill="rgba(255,176,32,.7)" font-size="10">an incoming Fed chair (Warsh)</text>
+        <line x1="40" y1="150" x2="760" y2="150" stroke="rgba(255,244,242,.1)"/>
+        <!-- bottom band: short real rates falling -> money out risk curve -->
+        <text x="40" y="196" fill="var(--green)" font-size="11" font-weight="700" letter-spacing="1">SHORT-TERM REAL RATES</text>
+        <path d="M40 230 Q170 245 300 280 Q430 315 540 350" fill="none" stroke="var(--green)" stroke-width="3.5" stroke-linecap="round" data-trace="#9ff5cc|3.6"/>
+        <text x="60" y="335" fill="rgba(46,230,138,.8)" font-size="10">moving lower — weaker $ · grow out of the debt · kitchen sink</text>
+        <!-- flow arrow to risk assets -->
+        <path d="M560 330 C 650 320, 660 250, 700 210" fill="none" stroke="var(--oracle)" stroke-width="3" marker-end="url(#rArrow)" data-trace="#ff8074|3"/>
+        <g style="filter:drop-shadow(0 0 14px rgba(255,43,43,.5))">
+          <rect x="620" y="150" width="150" height="58" rx="7" fill="rgba(255,43,43,.12)" stroke="var(--oracle)" stroke-width="2"/>
+          <text x="695" y="176" text-anchor="middle" fill="var(--oracle)" font-size="12" font-weight="700" letter-spacing="1">OUT THE</text>
+          <text x="695" y="195" text-anchor="middle" fill="var(--oracle)" font-size="12" font-weight="700" letter-spacing="1">RISK CURVE</text>
+        </g>
+      </svg>
+    </div>
+    <div class="lead rise r4" style="text-align:center;margin-left:auto;margin-right:auto">As short-term real rates keep falling, <span class="g">money keeps moving out the risk curve</span> — especially if the long-end doesn't pull the economy down with it. <span class="a">The whole kitchen sink is being thrown at keeping the music playing.</span></div>
+  </section>
+
+  <!-- 17 THE CONFLUENCE -->
+  <section class="slide">
+    <div class="kicker rise r1">WHEN IT ALL LINES UP</div>
+    <h2 class="head rise r2">THREE CONDITIONS.<br>ONE <span class="em">GREEN LIGHT.</span></h2>
+    <div class="stage rise r3">
+      <svg viewBox="0 0 820 400" xmlns="http://www.w3.org/2000/svg" font-family="'JetBrains Mono',monospace">
+        <g>
+          <rect x="30" y="44" width="300" height="78" rx="8" fill="rgba(46,230,138,.08)" stroke="rgba(46,230,138,.45)" stroke-width="1.5"/>
+          <text x="50" y="78" fill="var(--green)" font-size="13" font-weight="700" letter-spacing="1">① GROWTH STRONG</text>
+          <text x="50" y="100" fill="rgba(255,244,242,.6)" font-size="10">the economy keeps carrying</text>
+        </g>
+        <g>
+          <rect x="30" y="158" width="300" height="78" rx="8" fill="rgba(46,230,138,.08)" stroke="rgba(46,230,138,.45)" stroke-width="1.5"/>
+          <text x="50" y="192" fill="var(--green)" font-size="13" font-weight="700" letter-spacing="1">② REAL RATES FALLING</text>
+          <text x="50" y="214" fill="rgba(255,244,242,.6)" font-size="10">money pushed out the risk curve</text>
+        </g>
+        <g>
+          <rect x="30" y="272" width="300" height="78" rx="8" fill="rgba(46,230,138,.08)" stroke="rgba(46,230,138,.45)" stroke-width="1.5"/>
+          <text x="50" y="306" fill="var(--green)" font-size="13" font-weight="700" letter-spacing="1">③ NO RECESSION</text>
+          <text x="50" y="328" fill="rgba(255,244,242,.6)" font-size="10">employment holding up</text>
+        </g>
+        <path d="M330 83 C 470 83, 470 197, 600 197" fill="none" stroke="rgba(46,230,138,.5)" stroke-width="2" data-trace="#9ff5cc|3"/>
+        <path d="M330 197 L600 197" fill="none" stroke="rgba(46,230,138,.5)" stroke-width="2"/>
+        <path d="M330 311 C 470 311, 470 197, 600 197" fill="none" stroke="rgba(46,230,138,.5)" stroke-width="2" data-trace="#9ff5cc|3.2"/>
+        <g style="filter:drop-shadow(0 0 22px rgba(255,43,43,.6))">
+          <rect x="600" y="150" width="200" height="96" rx="10" fill="rgba(255,43,43,.14)" stroke="var(--oracle)" stroke-width="2.5"/>
+          <text x="700" y="190" text-anchor="middle" fill="var(--oracle)" font-size="14" font-weight="800" letter-spacing="1">STAGE SET</text>
+          <text x="700" y="214" text-anchor="middle" fill="rgba(255,128,116,.9)" font-size="10.5" letter-spacing="1">for the contrarian bet</text>
+        </g>
+      </svg>
+    </div>
+    <div class="lead rise r4" style="text-align:center;margin-left:auto;margin-right:auto">Strong growth, real rates moving lower, and no recession on the table — <span class="r">that's the confluence.</span> The same stacking-of-chapters that turns a setup into a <span class="a">real edge in one moment.</span></div>
+  </section>
+
+  <!-- 18 SOFTWARE IS DEAD? -->
+  <section class="slide">
+    <div class="kicker rise r1">THE CHART EVERYONE SEES</div>
+    <h2 class="head rise r2">THE SECTOR LOOKS LEFT FOR DEAD.<br>ORACLE <span class="em">ISN'T.</span></h2>
+    <div class="stage rise r3">
+      <svg viewBox="0 0 780 420" xmlns="http://www.w3.org/2000/svg" font-family="'JetBrains Mono',monospace">
+        <line x1="64" y1="28" x2="64" y2="372" stroke="rgba(255,244,242,.2)"/>
+        <line x1="64" y1="372" x2="748" y2="372" stroke="rgba(255,244,242,.2)"/>
+        <!-- IGV declining -->
+        <path d="M84 150 Q240 200 400 250 Q540 292 740 330" fill="none" stroke="var(--red-dim)" stroke-width="3" stroke-dasharray="6 6" stroke-linecap="round" data-trace="#c97a73|4"/>
+        <text x="430" y="318" fill="var(--red-dim)" font-size="12" font-weight="700" letter-spacing="1">IGV · "software is dead"</text>
+        <text x="430" y="336" fill="rgba(156,59,53,.8)" font-size="10">the subsector chart everyone points to</text>
+        <!-- ORCL breaking out -->
+        <path d="M84 300 Q220 305 320 296 Q430 286 520 220 Q620 150 740 70" fill="none" stroke="var(--oracle)" stroke-width="3.5" stroke-linecap="round" data-trace="#ff8074|4.4" style="filter:drop-shadow(0 0 8px rgba(255,43,43,.5))"/>
+        <text x="150" y="290" fill="var(--oracle)" font-size="13" font-weight="700" letter-spacing="1">ORACLE</text>
+        <text x="540" y="120" fill="var(--oracle)" font-size="11" font-weight="700">the company thriving underneath</text>
+        <circle cx="360" cy="290" r="6" fill="var(--amber)" style="filter:drop-shadow(0 0 8px var(--amber))"/>
+        <text x="360" y="270" text-anchor="middle" fill="var(--amber)" font-size="9" font-weight="700">the divergence</text>
+        <circle cx="740" cy="70" r="5" fill="var(--oracle)"/>
+      </svg>
+    </div>
+    <div class="lead rise r4" style="text-align:center;margin-left:auto;margin-right:auto">Same move as the start of this story: a name left for dead while <span class="g">the actual business is thriving — with a founder who'll win at all costs.</span> Global Flows maps this in his macro-regime tracker and attribution model — flows, positioning, fundamentals.</div>
+  </section>
+
+  <!-- 19 ASYMMETRY & WHERE WE SIT -->
+  <section class="slide">
+    <div class="kicker rise r1">THE TRADE ITSELF</div>
+    <h2 class="head rise r2">MINIMAL DOWNSIDE.<br><span class="em">DOMINO</span> UPSIDE.</h2>
+    <div class="two" style="margin-top:0">
+      <div class="col-v rise r3" style="flex:1.4">
+        <svg viewBox="0 0 500 360" xmlns="http://www.w3.org/2000/svg" font-family="'JetBrains Mono',monospace" style="height:46vh;overflow:hidden">
+          <line x1="50" y1="40" x2="480" y2="40" stroke="rgba(255,244,242,.3)" stroke-dasharray="4 5"/>
+          <text x="480" y="32" text-anchor="end" fill="rgba(255,244,242,.55)" font-size="10" letter-spacing="1">ALL-TIME HIGH</text>
+          <!-- price journey: down to lows, then +60% off lows, still -35% below ATH -->
+          <path d="M60 120 L120 175 L165 300 L235 250 L320 175 L400 132" fill="none" stroke="var(--oracle)" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" data-trace="#ff8074|4.5" style="filter:drop-shadow(0 0 7px rgba(255,43,43,.5))"/>
+          <!-- invalidation band -->
+          <rect x="135" y="300" width="120" height="44" rx="4" fill="rgba(255,176,32,.08)" stroke="var(--amber)" stroke-width="1.3" stroke-dasharray="3 3"/>
+          <text x="195" y="338" text-anchor="middle" fill="var(--amber)" font-size="8.5" font-weight="700" letter-spacing="1">INVALIDATION · clear</text>
+          <circle cx="165" cy="300" r="5" fill="var(--amber)"/>
+          <text x="165" y="290" text-anchor="middle" fill="var(--amber)" font-size="9" font-weight="700">−61% off highs · entry</text>
+          <circle cx="400" cy="132" r="5" fill="var(--oracle)"/>
+          <text x="492" y="120" text-anchor="end" fill="var(--green)" font-size="11" font-weight="700">+60% off lows</text>
+          <text x="492" y="156" text-anchor="end" fill="rgba(255,244,242,.6)" font-size="9">still −35% below ATH</text>
+        </svg>
+      </div>
+      <div class="col-t rise r4">
+        <div class="lead" style="margin-top:0">We started looking when the stock was down <span class="g">~61% off its highs.</span> Downside minimal from there, invalidation easy to see. But an up-move dominoes — a rapid re-pricing as the market wakes up to the contracts, partnerships, infrastructure coming online, and revenues behind it.</div>
+        <div class="chips">
+          <span class="chip a"><b>+60%</b> off the lows already</span>
+          <span class="chip"><b>−35%</b> still below all-time highs</span>
+          <span class="chip"><b>Your call:</b> does it fit your risk bucket?</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 20 THE RISK FRAMEWORK -->
+  <section class="slide">
+    <div class="kicker rise r1">THIS IS NOT FREE MONEY</div>
+    <h2 class="head rise r2">CONVICTION FINDS IT.<br><span class="em" style="color:var(--gold)">RISK</span> LETS YOU SURVIVE IT.</h2>
+    <div class="two" style="margin-top:4px">
+      <div class="col-v rise r3">
+        <div class="risk-panel">
+          <div class="risk-row"><div class="rn">1</div><div class="rt"><b>Define your size.</b> The leverage is real. The timeline is real.</div></div>
+          <div class="risk-row"><div class="rn">2</div><div class="rt"><b>Define where you're wrong.</b> Know the level that breaks the thesis.</div></div>
+          <div class="risk-row"><div class="rn">3</div><div class="rt"><b>Respect it.</b> If it breaks the wrong way, this hurts — so honor the line.</div></div>
+        </div>
+      </div>
+      <div class="col-t rise r4">
+        <div class="lead" style="margin-top:0">I'm not pretending this is free money — it's not. If things break the wrong way, this can hurt. <span class="g">The reason a bet like this is even on the table is because it sits on top of a real risk framework.</span></div>
+        <div class="lead"><span class="a">Conviction is how we find the trade. Risk management is how you survive it.</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 16 THE SETUP + CTA -->
+  <section class="slide">
+    <div class="two">
+      <div class="col-t">
+        <div class="kicker rise r1">THE TAKEAWAY</div>
+        <div class="display rise r2" style="font-size:clamp(38px,5.4vw,76px)">STANDING<br>RIGHT <span class="em">NEXT</span><br>TO HIM</div>
+        <div class="lead rise r3">A great operator burns the boats on where the future is going — and the market hands you a discount in the middle of the swing. <span class="r">That's the kind of setup that turns into a generational trade.</span></div>
+        <div class="sub rise r4">He's got the hammer out again. This time, the wall is the future of AI — and I'm betting he breaks through it.</div>
+      </div>
+      <div class="col-v rise r4">
+        <div class="cta-card">
+          <div class="ch">▸ GO PAST THE STORY · INTO THE MECHANICS</div>
+          <div class="cl"><b>LIVE</b><span>theDesk × Global Flows — next week</span></div>
+          <div class="cl"><b>▸</b><span>The full Capital Flows Research thesis</span></div>
+          <div class="cl"><b>▸</b><span>The macro backdrop we're in right now</span></div>
+          <div class="cl"><b>▸</b><span>The risk/reward + how we're structuring it</span></div>
+          <div style="margin-top:12px;font-size:11px;color:var(--ink-dim);letter-spacing:1px;border-top:1px solid var(--line);padding-top:10px">Details below — come see us on the stream.</div>
+        </div>
+        <div class="handle rise r5" style="text-align:right">@jaymesrosenthal</div>
+      </div>
+    </div>
+  </section>
+
+</div>
+<div class="nav">
+  <button id="prev" aria-label="Previous">&#8249;</button>
+  <div class="counter"><b id="cur">1</b> / <span id="total">21</span></div>
+  <button id="next" aria-label="Next">&#8250;</button>
+</div>
+<div class="dots" id="dots"></div>
+<div class="tools" id="tools">
+  <button class="pen" id="pen" title="Toggle pen">&#9998;</button>
+  <div class="sep"></div>
+  <div class="sep" id="sizeSep" style="display:none"></div>
+</div>
+<script>
+(function(){const w=document.getElementById('sparks');for(let i=0;i<44;i++){const s=document.createElement('div');s.className='spark';s.style.left=Math.random()*100+'%';const z=1+Math.random()*2;s.style.width=z+'px';s.style.height=z+'px';s.style.animationDuration=(7+Math.random()*9)+'s';s.style.animationDelay=(-Math.random()*12)+'s';w.appendChild(s);}})();
+
+const slides=[...document.querySelectorAll('.slide')];const N=slides.length;let idx=0;
+const progress=document.getElementById('progress'),cur=document.getElementById('cur');
+document.getElementById('total').textContent=N;
+const dotsWrap=document.getElementById('dots');
+slides.forEach((_,i)=>{const d=document.createElement('button');d.className='dot'+(i===0?' on':'');d.setAttribute('aria-label','Slide '+(i+1));d.addEventListener('click',()=>go(i));dotsWrap.appendChild(d);});
+const dots=[...dotsWrap.children];
+function go(i){i=Math.max(0,Math.min(N-1,i));if(i===idx&&slides[i].classList.contains('active'))return;slides[idx].classList.remove('active');dots[idx].classList.remove('on');idx=i;slides[idx].classList.add('active');dots[idx].classList.add('on');cur.textContent=idx+1;progress.style.width=(N>1?(idx/(N-1))*100:100)+'%';}
+go(0);
+document.getElementById('next').addEventListener('click',()=>go(idx+1));
+document.getElementById('prev').addEventListener('click',()=>go(idx-1));
+document.addEventListener('keydown',e=>{if(['ArrowRight','ArrowDown',' ','PageDown'].includes(e.key)){e.preventDefault();go(idx+1);}else if(['ArrowLeft','ArrowUp','PageUp'].includes(e.key)){e.preventDefault();go(idx-1);}else if(e.key==='Home')go(0);else if(e.key==='End')go(N-1);});
+
+let sx=0,sy=0,st=0;const deck=document.getElementById('deck');
+deck.addEventListener('touchstart',e=>{sx=e.changedTouches[0].screenX;sy=e.changedTouches[0].screenY;st=Date.now();},{passive:true});
+deck.addEventListener('touchend',e=>{const dx=e.changedTouches[0].screenX-sx,dy=e.changedTouches[0].screenY-sy,dt=Date.now()-st;if(dt>500)return;if(Math.abs(dx)<50)return;if(Math.abs(dy)>Math.abs(dx))return;if(dx<0)go(idx+1);else go(idx-1);},{passive:true});
+
+/* drawing with size control */
+const canvas=document.getElementById('draw'),ctx=canvas.getContext('2d');
+let penOn=false,drawing=false,color='#ff2b2b',penSize=4;
+function sizeC(){canvas.width=innerWidth;canvas.height=innerHeight;ctx.lineCap='round';ctx.lineJoin='round';ctx.lineWidth=penSize;}
+sizeC();addEventListener('resize',sizeC);
+const pen=document.getElementById('pen'),tools=document.getElementById('tools'),sizeSep=document.getElementById('sizeSep');
+['#ff2b2b','#ffb020','#2ee68a','#9ab8cc','#fff4f2','#ff8074'].forEach((c,i)=>{const s=document.createElement('button');s.className='swatch'+(i===0?' sel':'');s.style.background=c;s.setAttribute('aria-label','color');s.addEventListener('click',()=>{color=c;[...tools.querySelectorAll('.swatch')].forEach(x=>x.classList.remove('sel'));s.classList.add('sel');if(!penOn)tog(true);});tools.insertBefore(s,sizeSep);});
+sizeSep.style.display='block';
+const sizes=[{l:'S',v:2},{l:'M',v:4},{l:'L',v:8},{l:'XL',v:14}];
+sizes.forEach((s,i)=>{const b=document.createElement('button');b.className='size'+(i===1?' sel':'');b.textContent=s.l;b.title='Pen size '+s.l;b.setAttribute('aria-label','size '+s.l);b.addEventListener('click',()=>{penSize=s.v;ctx.lineWidth=s.v;[...tools.querySelectorAll('.size')].forEach(x=>x.classList.remove('sel'));b.classList.add('sel');if(!penOn)tog(true);});tools.appendChild(b);});
+const clr=document.createElement('button');clr.className='clr';clr.id='clr';clr.title='Clear';clr.textContent='CLR';clr.addEventListener('click',()=>ctx.clearRect(0,0,canvas.width,canvas.height));tools.appendChild(clr);
+function tog(f){penOn=f!==undefined?f:!penOn;pen.classList.toggle('on',penOn);tools.classList.toggle('active',penOn);canvas.style.pointerEvents=penOn?'auto':'none';}
+pen.addEventListener('click',()=>tog());
+const pos=e=>{const t=e.touches?e.touches[0]:e;return{x:t.clientX,y:t.clientY};};
+function sd(e){if(!penOn)return;drawing=true;const p=pos(e);ctx.beginPath();ctx.moveTo(p.x,p.y);}
+function md(e){if(!penOn||!drawing)return;e.preventDefault();const p=pos(e);ctx.strokeStyle=color;ctx.lineWidth=penSize;ctx.shadowColor=color;ctx.shadowBlur=Math.max(4,penSize*1.5);ctx.lineTo(p.x,p.y);ctx.stroke();}
+function ed(){drawing=false;}
+canvas.addEventListener('mousedown',sd);canvas.addEventListener('mousemove',md);addEventListener('mouseup',ed);
+canvas.addEventListener('touchstart',sd,{passive:false});canvas.addEventListener('touchmove',md,{passive:false});canvas.addEventListener('touchend',ed);
+
+/* playheads */
+(function(){
+  const ns='http://www.w3.org/2000/svg';
+  document.querySelectorAll('[data-trace]').forEach(p=>{
+    const svg=p.ownerSVGElement;if(!svg)return;
+    const parts=(p.getAttribute('data-trace')||'').split('|');
+    const col=parts[0]||'#fff',dur=parts[1]||'4';
+    if(!p.id)p.id='tp'+Math.random().toString(36).slice(2,8);
+    const dot=document.createElementNS(ns,'circle');
+    dot.setAttribute('r','4');dot.setAttribute('fill',col);dot.setAttribute('class','ph');dot.style.color=col;
+    const am=document.createElementNS(ns,'animateMotion');
+    am.setAttribute('dur',dur+'s');am.setAttribute('repeatCount','indefinite');am.setAttribute('begin','0s');
+    const mp=document.createElementNS(ns,'mpath');
+    mp.setAttribute('href','#'+p.id);mp.setAttributeNS('http://www.w3.org/1999/xlink','href','#'+p.id);
+    am.appendChild(mp);dot.appendChild(am);svg.appendChild(dot);
+  });
+})();
+</script>
+</body>
+</html>

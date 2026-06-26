@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>theDesk — The 24/7 Trap</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg-0:#050309; --bg-1:#0a0612; --bg-2:#14091f;
+  --purple-deep:#3a1a5e; --purple:#6b3fa0; --purple-bright:#a06dd9;
+  --purple-glow:#c89eff; --purple-electric:#d4b3ff;
+  --ink:#f6efff; --ink-dim:rgba(246,239,255,.66); --ink-faint:rgba(246,239,255,.18);
+  --line:rgba(246,239,255,.12);
+  --gold:#ffd24a; --cyan:#46e0ff; --green:#56f0a8; --red:#ff7a8c;
+  --orange:#ff9d4d; --pink:#ff8fd0; --blue:#7aa2ff;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;overflow:hidden;background:var(--bg-0);color:var(--ink)}
+body{font-family:'JetBrains Mono',monospace;-webkit-font-smoothing:antialiased}
+.bg{position:fixed;inset:0;z-index:0;background:
+  radial-gradient(900px 700px at 80% 10%, rgba(107,63,160,.34), transparent 60%),
+  radial-gradient(760px 760px at 8% 92%, rgba(70,224,255,.10), transparent 60%),
+  radial-gradient(620px 620px at 92% 88%, rgba(255,210,74,.07), transparent 60%),
+  linear-gradient(160deg,var(--bg-1) 0%, var(--bg-0) 72%);}
+.orb{position:fixed;border-radius:50%;filter:blur(72px);opacity:.5;z-index:0;pointer-events:none}
+.orb1{width:420px;height:420px;left:-90px;top:-80px;background:radial-gradient(circle,var(--purple),transparent 70%);animation:drift1 22s ease-in-out infinite}
+.orb2{width:360px;height:360px;right:-70px;bottom:-60px;background:radial-gradient(circle,rgba(70,224,255,.45),transparent 70%);animation:drift2 27s ease-in-out infinite}
+.orb3{width:300px;height:300px;right:26%;top:32%;background:radial-gradient(circle,rgba(255,210,74,.4),transparent 70%);animation:drift3 31s ease-in-out infinite}
+@keyframes drift1{50%{transform:translate(60px,40px) scale(1.08)}}
+@keyframes drift2{50%{transform:translate(-50px,-30px) scale(1.1)}}
+@keyframes drift3{50%{transform:translate(40px,-50px) scale(.9)}}
+.grain{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:.05;mix-blend-mode:overlay;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+.sparks{position:fixed;inset:0;z-index:1;pointer-events:none;overflow:hidden}
+.spark{position:absolute;bottom:-12px;border-radius:50%;background:var(--purple-glow);box-shadow:0 0 6px var(--purple-glow);opacity:0;animation:rise-spark linear infinite}
+@keyframes rise-spark{0%{transform:translateY(0);opacity:0}10%{opacity:.7}90%{opacity:.4}100%{transform:translateY(-104vh);opacity:0}}
+.progress{position:fixed;top:0;left:0;height:3px;width:0;z-index:40;background:linear-gradient(90deg,var(--cyan),var(--purple-glow),var(--gold));box-shadow:0 0 12px var(--purple-glow);transition:width .45s cubic-bezier(.4,0,.2,1)}
+.brand{position:fixed;top:20px;left:26px;z-index:30;font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--ink-dim)}
+.brand b{color:var(--ink);font-weight:500}.brand b i{color:var(--purple-glow);font-style:normal}
+.deck{position:fixed;inset:0;z-index:10}
+.slide{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:7vh 7vw;opacity:0;visibility:hidden;transition:opacity .5s ease,visibility .5s;pointer-events:none}
+.slide.active{opacity:1;visibility:visible;pointer-events:auto}
+.kicker{font-size:13px;font-weight:600;letter-spacing:4px;text-transform:uppercase;color:var(--cyan);margin-bottom:16px;display:flex;align-items:center;gap:12px}
+.kicker::before{content:"";width:34px;height:2px;background:var(--cyan);box-shadow:0 0 10px var(--cyan)}
+.display{font-family:'Instrument Serif',Georgia,serif;text-transform:uppercase;font-size:clamp(48px,8vw,104px);line-height:.94;letter-spacing:-1.5px;font-weight:400;text-shadow:0 0 44px rgba(200,158,255,.3)}
+.display .em{color:var(--purple-glow);font-style:italic}
+h2.head{font-family:'Instrument Serif',Georgia,serif;text-transform:uppercase;font-size:clamp(30px,4.6vw,58px);line-height:1.0;letter-spacing:-.5px;font-weight:400}
+.head .em{font-style:italic}
+.lead{font-size:clamp(15px,1.5vw,21px);line-height:1.55;color:var(--ink);font-weight:400;max-width:860px;margin-top:16px}
+.lead .g{font-weight:500}
+.sub{font-family:'Instrument Serif',Georgia,serif;font-style:italic;font-size:clamp(19px,2.5vw,33px);color:var(--ink-dim);margin-top:16px;max-width:720px}
+.handle{font-size:14px;letter-spacing:2px;color:var(--purple-glow);margin-top:20px}
+.head .em,.display .em{animation:emglow 3.4s ease-in-out infinite}
+@keyframes emglow{0%,100%{text-shadow:0 0 12px currentColor}50%{text-shadow:0 0 30px currentColor,0 0 52px currentColor}}
+.ph{filter:drop-shadow(0 0 5px #fff) drop-shadow(0 0 11px currentColor)}
+.stage{margin-top:8px;display:flex;justify-content:center;align-items:center}
+.stage svg{width:auto;height:46vh;max-width:96%}
+.two{display:flex;align-items:center;gap:46px;width:100%}
+.two .col-v{flex:0 0 auto}.two .col-t{flex:1 1 auto}
+.rise{opacity:0;transform:translateY(20px)}
+.slide.active .rise{animation:rise .7s cubic-bezier(.18,.7,.2,1) forwards}
+.slide.active .r1{animation-delay:.05s}.slide.active .r2{animation-delay:.16s}.slide.active .r3{animation-delay:.27s}
+.slide.active .r4{animation-delay:.38s}.slide.active .r5{animation-delay:.49s}.slide.active .r6{animation-delay:.6s}
+@keyframes rise{to{opacity:1;transform:none}}
+
+/* clock */
+.clock-stage{position:relative;display:flex;justify-content:center;align-items:center}
+.clock-stage svg{width:auto;height:50vh;max-width:90%}
+.clock-hand{transform-origin:180px 180px;animation:sweep 60s linear infinite}
+@keyframes sweep{to{transform:rotate(360deg)}}
+.open-pulse{transform-box:fill-box;transform-origin:center;animation:openpulse 1.4s ease-in-out infinite}
+@keyframes openpulse{0%,100%{opacity:.7}50%{opacity:1;filter:drop-shadow(0 0 12px var(--green))}}
+
+/* peel reveal */
+.peel-wrap{position:relative;width:min(80vw,400px);height:108px;perspective:1100px;margin-top:6px}
+.peel-bottom,.peel-top{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'Instrument Serif',Georgia,serif;font-size:clamp(28px,4vw,46px);text-transform:uppercase;letter-spacing:2px;border-radius:10px;border:2px solid;backface-visibility:hidden}
+.peel-bottom{color:var(--red);border-color:var(--red);background:rgba(255,122,140,.1);box-shadow:0 0 20px rgba(255,122,140,.15)}
+.peel-top{color:var(--gold);border-color:var(--gold);background:linear-gradient(rgba(255,210,74,.14),rgba(255,210,74,.14)),#14091f;box-shadow:0 0 22px rgba(255,210,74,.22);transform-origin:top center;animation:peel 4.6s ease-in-out infinite}
+@keyframes peel{0%,28%{transform:rotateX(0deg)}50%,70%{transform:rotateX(-108deg)}100%{transform:rotateX(0deg)}}
+
+/* position widget */
+.posn-grid{display:flex;gap:clamp(10px,1.5vw,18px);justify-content:center;margin-top:8px;flex-wrap:wrap}
+.posn-card{display:flex;flex-direction:column;align-items:center;gap:8px;padding:18px 22px;border:2px solid var(--c);border-radius:14px;background:rgba(20,9,31,.5);min-width:128px}
+.posn-card .pn{font-size:10px;letter-spacing:3px;color:var(--ink-dim);text-transform:uppercase;font-weight:600}
+.posn-card .pv{font-family:'Instrument Serif',Georgia,serif;font-size:clamp(28px,3.4vw,42px);color:var(--c);text-transform:uppercase;line-height:1;text-shadow:0 0 14px color-mix(in srgb,var(--c) 50%,transparent)}
+.posn-card .ps{font-size:10px;color:var(--ink-dim);letter-spacing:1px;text-align:center;max-width:120px}
+.posn-card.sleep{border-width:2.5px;box-shadow:0 0 32px rgba(86,240,168,.32);background:rgba(86,240,168,.07)}
+.posn-card.sleep .pv{animation:emglow 3s ease-in-out infinite}
+
+/* protocol card */
+.protocol{max-width:540px;margin-top:6px;border:1.5px solid rgba(70,224,255,.4);border-radius:8px;background:linear-gradient(165deg,rgba(20,9,31,.85),rgba(10,6,18,.6));padding:22px 28px;position:relative;box-shadow:0 0 30px rgba(70,224,255,.08)}
+.protocol .ch{font-size:12px;letter-spacing:3px;text-transform:uppercase;color:var(--cyan);font-weight:700;border-bottom:1px solid var(--line);padding-bottom:10px;margin-bottom:14px}
+.proto-item{display:flex;gap:14px;align-items:flex-start;margin-bottom:13px}
+.proto-item:last-child{margin-bottom:0}
+.proto-item .pn{flex:0 0 auto;width:30px;height:30px;border-radius:6px;border:1.5px solid var(--c);color:var(--c);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;box-shadow:0 0 10px color-mix(in srgb,var(--c) 30%,transparent);font-family:'JetBrains Mono',monospace}
+.proto-item .pgroup{flex:1}
+.proto-item .pt{font-size:clamp(13px,1.2vw,17px);color:var(--ink);font-weight:600;line-height:1.25;letter-spacing:1px;text-transform:uppercase}
+.proto-item .ps{font-size:clamp(11px,1vw,13px);color:var(--ink-dim);margin-top:3px;line-height:1.4}
+
+/* nav / dots / tools */
+.nav{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);z-index:40;display:flex;gap:14px;align-items:center}
+.nav button{width:44px;height:44px;border-radius:50%;border:1px solid var(--line);background:rgba(20,9,31,.6);color:var(--ink);cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;transition:.2s;backdrop-filter:blur(6px)}
+.nav button:hover{border-color:var(--cyan);box-shadow:0 0 14px rgba(70,224,255,.5);color:var(--cyan)}
+.counter{font-size:12px;letter-spacing:2px;color:var(--ink-dim);min-width:54px;text-align:center}.counter b{color:var(--ink)}
+.dots{position:fixed;right:22px;top:50%;transform:translateY(-50%);z-index:40;display:flex;flex-direction:column;gap:9px}
+.dot{width:8px;height:8px;border-radius:50%;border:1px solid var(--ink-faint);background:transparent;cursor:pointer;transition:.25s;padding:0}
+.dot.on{background:var(--cyan);border-color:var(--cyan);box-shadow:0 0 10px var(--cyan);transform:scale(1.3)}
+#draw{position:fixed;inset:0;z-index:25;pointer-events:none}
+.tools{position:fixed;left:22px;top:50%;transform:translateY(-50%);z-index:40;display:flex;flex-direction:column;gap:9px;align-items:center;padding:12px 8px;border:1px solid var(--line);border-radius:30px;background:rgba(10,6,18,.55);backdrop-filter:blur(8px)}
+.tools .pen{width:34px;height:34px;border-radius:50%;border:1px solid var(--line);background:rgba(20,9,31,.7);color:var(--ink-dim);cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;transition:.2s}
+.tools .pen.on{border-color:var(--cyan);color:var(--cyan);box-shadow:0 0 12px rgba(70,224,255,.5)}
+.swatch{width:20px;height:20px;border-radius:50%;border:2px solid transparent;cursor:pointer;transition:.18s}
+.swatch.sel{border-color:var(--ink);transform:scale(1.2)}
+.tools .clr{width:34px;height:30px;border-radius:8px;border:1px solid var(--line);background:rgba(20,9,31,.7);color:var(--ink-dim);cursor:pointer;font-size:11px;letter-spacing:1px}
+
+@media(max-width:768px){
+  .slide{justify-content:flex-start;padding:12vh 7vw 14vh}
+  .display{font-size:34px}.head{font-size:24px}.sub{font-size:18px}.lead{font-size:14px;margin-top:12px}
+  .kicker{font-size:11px;letter-spacing:3px;margin-bottom:10px}
+  .stage svg{height:30vh}.clock-stage svg{height:34vh}
+  .two{flex-direction:column;align-items:flex-start;gap:18px}
+  .posn-card{min-width:96px;padding:14px 12px}
+  .protocol{padding:16px 18px}
+  .dots,.tools{display:none}.brand{font-size:10px;top:14px;left:16px}
+  .orb1{width:180px;height:180px}.orb2{width:150px;height:150px}.orb3{width:120px;height:120px}.sparks{opacity:.4}.nav{bottom:16px}
+}
+@media(max-width:480px){.display{font-size:28px}.head{font-size:20px}.brand{display:none}.nav button{width:36px;height:36px}.posn-grid{gap:6px}}
+</style>
+</head>
+<body>
+<div class="bg"></div>
+<div class="orb orb1"></div><div class="orb orb2"></div><div class="orb orb3"></div>
+<div class="grain"></div>
+<div class="sparks" id="sparks"></div>
+<canvas id="draw"></canvas>
+<div class="progress" id="progress"></div>
+<div class="brand"><b>the<i>Desk</i></b> · TRADING PSYCHOLOGY</div>
+<svg width="0" height="0" style="position:absolute"><defs>
+  <marker id="vArrow" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="context-stroke"/></marker>
+</defs></svg>
+<div class="deck" id="deck">
+  <!-- 1 COVER -->
+  <section class="slide active">
+    <div class="two">
+      <div class="col-t">
+        <div class="kicker rise r1">theDesk · A STREAM SEGMENT</div>
+        <div class="display rise r2">THE <span class="em">24/7</span><br>TRAP</div>
+        <div class="sub rise r3">The market never closes. Neither will you. And that's exactly how it bleeds you out.</div>
+        <div class="handle rise r5">@jaymesrosenthal</div>
+      </div>
+      <div class="col-v rise r4">
+        <div class="clock-stage">
+          <svg class="clock-face" viewBox="0 0 360 360" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="180" cy="180" r="150" fill="rgba(10,6,18,.5)" stroke="rgba(200,158,255,.25)" stroke-width="1.5"/>
+            <circle cx="180" cy="180" r="6" fill="#c89eff" style="filter:drop-shadow(0 0 8px #c89eff)"/>
+            <line class="clock-hand" x1="180" y1="180" x2="180" y2="58" stroke="#ffd24a" stroke-width="2.4" stroke-linecap="round" style="filter:drop-shadow(0 0 8px #ffd24a)"/>
+            <g class="open-pulse">
+              <rect x="148" y="206" width="64" height="22" rx="11" fill="rgba(86,240,168,.18)" stroke="#56f0a8" stroke-width="1.5"/>
+              <text x="180" y="221" fill="#56f0a8" font-size="11" font-weight="700" text-anchor="middle" font-family="'JetBrains Mono',monospace" letter-spacing="2">OPEN</text>
+            </g>
+            <text x="180" y="252" fill="rgba(246,239,255,.4)" font-size="9.5" text-anchor="middle" font-family="'JetBrains Mono',monospace" letter-spacing="3">PERPS · NO CLOSE</text>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2 THE BELL THAT DISAPPEARED -->
+  <section class="slide">
+    <div class="kicker rise r1">THE NEW REALITY</div>
+    <h2 class="head rise r2">THE BELL THAT <span class="em" style="color:var(--red)">DISAPPEARED</span></h2>
+    <div class="stage rise r3">
+      <svg viewBox="0 0 780 320" xmlns="http://www.w3.org/2000/svg" font-family="'JetBrains Mono',monospace">
+        <text x="20" y="64" fill="rgba(246,239,255,.66)" font-size="12" font-weight="700" letter-spacing="3">TRAD MARKET</text>
+        <rect x="20" y="78" width="740" height="28" rx="5" fill="rgba(255,255,255,.04)" stroke="rgba(246,239,255,.12)"/>
+        <rect x="240" y="78" width="260" height="28" rx="5" fill="rgba(86,240,168,.18)" stroke="#56f0a8" stroke-width="1.5"/>
+        <text x="370" y="97" fill="#56f0a8" font-size="11" font-weight="700" text-anchor="middle" letter-spacing="1">OPEN · 9:30 - 4:00</text>
+        <line x1="500" y1="60" x2="500" y2="116" stroke="#ffd24a" stroke-width="2"/>
+        <circle cx="500" cy="58" r="6" fill="#ffd24a" style="filter:drop-shadow(0 0 8px #ffd24a)"/>
+        <text x="500" y="50" fill="#ffd24a" font-size="10" font-weight="700" text-anchor="middle" letter-spacing="1">4:00 PM</text>
+        <text x="500" y="134" fill="#ffd24a" font-size="10" text-anchor="middle" letter-spacing="2">CLOSING BELL</text>
+        <text x="640" y="97" fill="rgba(246,239,255,.42)" font-size="11" font-style="italic" text-anchor="middle">recovery zone</text>
+        <text x="130" y="97" fill="rgba(246,239,255,.42)" font-size="11" font-style="italic" text-anchor="middle">pre-market</text>
+        <text x="20" y="222" fill="rgba(246,239,255,.66)" font-size="12" font-weight="700" letter-spacing="3">PERPS</text>
+        <rect x="20" y="236" width="740" height="28" rx="5" fill="rgba(255,122,140,.14)" stroke="#ff7a8c" stroke-width="1.5"/>
+        <text x="380" y="255" fill="#ff7a8c" font-size="11" font-weight="700" text-anchor="middle" letter-spacing="1">OPEN · 24 · 7 · 365 · INFINITY</text>
+        <text x="690" y="222" fill="#ff7a8c" font-size="13" font-weight="700" text-anchor="end" letter-spacing="2">NO BELL.</text>
+      </svg>
+    </div>
+    <div class="lead rise r4" style="text-align:center;margin-left:auto;margin-right:auto">For a hundred years the market told you when to stop. <span class="g" style="color:var(--red)">Perps took that away.</span> Most traders haven't realized what they lost.</div>
+  </section>
+
+  <!-- 3 THE CLOSE WAS PROTECTION -->
+  <section class="slide">
+    <div class="kicker rise r1">WHAT THE BELL ACTUALLY DID</div>
+    <h2 class="head rise r2">THE CLOSE WASN'T A LIMIT.<br>IT WAS <span class="em" style="color:var(--gold)">PROTECTION</span>.</h2>
+    <div class="stage rise r3">
+      <svg viewBox="0 0 700 340" xmlns="http://www.w3.org/2000/svg" font-family="'JetBrains Mono',monospace">
+        <circle cx="350" cy="170" r="150" fill="none" stroke="rgba(255,210,74,.12)" stroke-dasharray="4 8"/>
+        <g style="filter:drop-shadow(0 0 18px rgba(255,210,74,.55))">
+          <path d="M335 130 Q335 100 350 100 Q365 100 365 130 L373 178 L327 178 Z" fill="rgba(255,210,74,.22)" stroke="#ffd24a" stroke-width="2.4"/>
+          <rect x="324" y="178" width="52" height="6" rx="2" fill="#ffd24a"/>
+          <circle cx="350" cy="194" r="3.5" fill="#ffd24a"/>
+        </g>
+        <g stroke="rgba(255,210,74,.35)" stroke-width="1.5" stroke-dasharray="3 5">
+          <line x1="350" y1="170" x2="160" y2="86"/>
+          <line x1="350" y1="170" x2="540" y2="86"/>
+          <line x1="350" y1="170" x2="120" y2="240"/>
+          <line x1="350" y1="170" x2="580" y2="240"/>
+        </g>
+        <g font-size="12" font-weight="700" letter-spacing="1">
+          <text x="160" y="82" fill="#ffd24a" text-anchor="middle">FORCED REST</text>
+          <text x="160" y="98" fill="rgba(246,239,255,.5)" font-size="9.5" font-weight="400" letter-spacing="1" text-anchor="middle">you had to stop</text>
+          <text x="540" y="82" fill="#ffd24a" text-anchor="middle">NO PRICE TO CHECK</text>
+          <text x="540" y="98" fill="rgba(246,239,255,.5)" font-size="9.5" font-weight="400" letter-spacing="1" text-anchor="middle">brain went off</text>
+          <text x="120" y="258" fill="#ffd24a" text-anchor="middle">RECOVERY</text>
+          <text x="120" y="274" fill="rgba(246,239,255,.5)" font-size="9.5" font-weight="400" letter-spacing="1" text-anchor="middle">sleep, family, life</text>
+          <text x="580" y="258" fill="#ffd24a" text-anchor="middle">OFF-RAMP</text>
+          <text x="580" y="274" fill="rgba(246,239,255,.5)" font-size="9.5" font-weight="400" letter-spacing="1" text-anchor="middle">tilt had a stop</text>
+        </g>
+      </svg>
+    </div>
+    <div class="lead rise r4" style="text-align:center;margin-left:auto;margin-right:auto">The bell looked like a constraint. <span class="g" style="color:var(--gold)">It was scaffolding holding you up while you weren't looking.</span></div>
+  </section>
+  <!-- 4 DEDICATION = COMPULSION -->
+  <section class="slide">
+    <div class="kicker rise r1">THE LIE YOU TELL YOURSELF</div>
+    <h2 class="head rise r2">"ALWAYS ON" IS NOT WHAT YOU THINK IT IS</h2>
+    <div class="two" style="margin-top:8px">
+      <div class="col-v rise r3">
+        <div class="peel-wrap">
+          <div class="peel-bottom">Compulsion</div>
+          <div class="peel-top">Dedication</div>
+        </div>
+      </div>
+      <div class="col-t rise r4">
+        <div class="lead" style="margin-top:0">You're not committed. You're <span class="g" style="color:var(--red)">hooked</span>.</div>
+        <div class="lead">Refreshing the chart at 1 a.m. isn't grit. It's the same dopamine loop running the slot machine at the airport. <span class="g">The label on the top covers the truth underneath — and the chair doesn't care what you call it.</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5 WHAT YOU'RE ACTUALLY TRADING AT 3AM -->
+  <section class="slide">
+    <div class="kicker rise r1">DECISION QUALITY</div>
+    <h2 class="head rise r2">WHAT YOU'RE TRADING AT <span class="em" style="color:var(--red)">3 A.M.</span></h2>
+    <div class="stage rise r3">
+      <svg viewBox="0 0 720 340" xmlns="http://www.w3.org/2000/svg" font-family="'JetBrains Mono',monospace">
+        <line x1="60" y1="290" x2="680" y2="290" stroke="rgba(246,239,255,.25)"/>
+        <line x1="60" y1="60" x2="60" y2="290" stroke="rgba(246,239,255,.25)"/>
+        <text x="370" y="320" fill="rgba(246,239,255,.55)" font-size="11" text-anchor="middle" letter-spacing="2">HOURS AT THE SCREEN</text>
+        <text x="38" y="170" fill="rgba(246,239,255,.55)" font-size="11" text-anchor="middle" transform="rotate(-90 38 170)" letter-spacing="2">DECISION QUALITY</text>
+        <g font-size="10" fill="rgba(246,239,255,.45)" text-anchor="middle">
+          <text x="60" y="306">0</text><text x="215" y="306">4h</text><text x="370" y="306">8h</text><text x="525" y="306">12h</text><text x="680" y="306">16h+</text>
+        </g>
+        <path d="M60 110 L680 110" fill="none" stroke="#46e0ff" stroke-width="2" stroke-dasharray="4 5" opacity=".6"/>
+        <text x="220" y="100" fill="#46e0ff" font-size="11" font-weight="700">PERCEIVED EDGE</text>
+        <text x="220" y="115" fill="rgba(70,224,255,.6)" font-size="9.5" font-style="italic">"I'm fine"</text>
+        <path id="actualLine" d="M60 116 L160 112 L240 124 L320 152 L400 196 L480 232 L560 258 L680 282" fill="none" stroke="#ff7a8c" stroke-width="3" stroke-linecap="round" data-trace="#ffb0bc|5"/>
+        <text x="500" y="244" fill="#ff7a8c" font-size="11" font-weight="700">ACTUAL EDGE</text>
+        <path d="M60 116 L160 112 L240 124 L320 152 L400 196 L480 232 L560 258 L680 282 L680 110 Z" fill="rgba(255,122,140,.06)"/>
+        <line x1="525" y1="80" x2="525" y2="290" stroke="rgba(255,210,74,.5)" stroke-dasharray="3 5"/>
+        <circle cx="525" cy="252" r="9" fill="#ffd24a" style="filter:drop-shadow(0 0 10px #ffd24a)"/>
+        <text x="525" y="70" fill="#ffd24a" font-size="12" font-weight="700" text-anchor="middle" letter-spacing="2">YOU HERE</text>
+        <text x="525" y="84" fill="rgba(255,210,74,.7)" font-size="9.5" text-anchor="middle" font-style="italic">hour 12, swearing you're sharp</text>
+      </svg>
+    </div>
+    <div class="lead rise r4" style="text-align:center;margin-left:auto;margin-right:auto">The trade you're taking at hour 12 is not the trade hour-3 you would've taken. <span class="g" style="color:var(--red)">Your prefrontal cortex clocked out — your fingers didn't.</span></div>
+  </section>
+
+  <!-- 6 PHONE-CHECK LOOP -->
+  <section class="slide">
+    <div class="kicker rise r1">THE LOOP YOU'RE IN</div>
+    <h2 class="head rise r2">THE LOOP THAT GOES <span class="em" style="color:var(--red)">NOWHERE</span></h2>
+    <div class="stage rise r3">
+      <svg viewBox="0 0 660 340" xmlns="http://www.w3.org/2000/svg" font-family="'JetBrains Mono',monospace">
+        <line x1="60" y1="320" x2="600" y2="320" stroke="rgba(246,239,255,.18)" stroke-dasharray="3 6"/>
+        <text x="330" y="335" fill="rgba(246,239,255,.4)" font-size="10" text-anchor="middle" letter-spacing="3" font-style="italic">no rise · no climb · just hours</text>
+        <path id="badloop" d="M330 80 A100 100 0 1 1 329.9 80 Z" fill="none" stroke="rgba(255,122,140,.5)" stroke-width="2.6" data-trace="#ffb0bc|3"/>
+        <rect x="306" y="158" width="48" height="64" rx="6" fill="rgba(20,9,31,.85)" stroke="#ff7a8c" stroke-width="1.8"/>
+        <rect x="312" y="166" width="36" height="44" rx="2" fill="rgba(255,122,140,.18)"/>
+        <circle cx="330" cy="218" r="1.8" fill="#ff7a8c"/>
+        <circle cx="346" cy="172" r="4" fill="#ff9d4d" style="filter:drop-shadow(0 0 6px #ff9d4d)"/>
+        <text x="330" y="62" fill="#ff7a8c" font-size="13" font-weight="700" text-anchor="middle">NOTIFICATION</text>
+        <text x="452" y="184" fill="#ff7a8c" font-size="13" font-weight="700" text-anchor="start">CHECK</text>
+        <text x="330" y="304" fill="#ff7a8c" font-size="13" font-weight="700" text-anchor="middle">URGE</text>
+        <text x="208" y="184" fill="#ff7a8c" font-size="13" font-weight="700" text-anchor="end">ACTION</text>
+      </svg>
+    </div>
+    <div class="lead rise r4" style="text-align:center;margin-left:auto;margin-right:auto">Notification, check, urge, action — and around again. <span class="g">Same loop as a slot machine, dressed in TradingView.</span> Hours disappear and you went nowhere.</div>
+  </section>
+  <!-- 7 COMPOUNDING DEBT -->
+  <section class="slide">
+    <div class="kicker rise r1">THE TAB YOU NEVER SEE</div>
+    <h2 class="head rise r2">EVERY HOUR <span class="em" style="color:var(--red)">OWES YOU TOMORROW</span></h2>
+    <div class="stage rise r3">
+      <svg viewBox="0 0 720 340" xmlns="http://www.w3.org/2000/svg" font-family="'JetBrains Mono',monospace">
+        <line x1="60" y1="290" x2="640" y2="290" stroke="rgba(246,239,255,.25)"/>
+        <line x1="60" y1="50" x2="60" y2="290" stroke="rgba(246,239,255,.25)"/>
+        <g font-size="10" fill="rgba(246,239,255,.45)" text-anchor="middle">
+          <text x="120" y="307">DAY 1</text><text x="260" y="307">WEEK 1</text><text x="400" y="307">MONTH 1</text><text x="540" y="307">MONTH 3</text><text x="640" y="307">YEAR 1</text>
+        </g>
+        <text x="40" y="170" fill="rgba(246,239,255,.55)" font-size="11" text-anchor="middle" transform="rotate(-90 40 170)" letter-spacing="2">DEBT OWED</text>
+        <path d="M60 286 Q260 280 400 240 T640 80 L640 290 L60 290 Z" fill="rgba(86,240,168,.1)"/>
+        <path d="M60 286 Q260 280 400 240 T640 80" fill="none" stroke="#56f0a8" stroke-width="2" data-trace="#9fffc8|5"/>
+        <text x="118" y="278" fill="#56f0a8" font-size="11" font-weight="700">SLEEP</text>
+        <path d="M60 288 Q260 270 400 200 T640 50 L640 80 Q500 180 400 240 T60 286 Z" fill="rgba(70,224,255,.1)"/>
+        <path d="M60 288 Q260 270 400 200 T640 50" fill="none" stroke="#46e0ff" stroke-width="2"/>
+        <text x="170" y="252" fill="#46e0ff" font-size="11" font-weight="700">HEALTH</text>
+        <path d="M60 289 Q260 260 400 165 T640 30 L640 50 Q500 140 400 200 T60 288 Z" fill="rgba(255,143,208,.1)"/>
+        <path d="M60 289 Q260 260 400 165 T640 30" fill="none" stroke="#ff8fd0" stroke-width="2"/>
+        <text x="220" y="208" fill="#ff8fd0" font-size="11" font-weight="700">RELATIONSHIPS</text>
+        <line x1="640" y1="30" x2="664" y2="30" stroke="#ff7a8c" stroke-width="2"/>
+        <text x="676" y="34" fill="#ff7a8c" font-size="12" font-weight="700">TAB</text>
+        <text x="676" y="50" fill="#ff7a8c" font-size="10">growing</text>
+      </svg>
+    </div>
+    <div class="lead rise r4" style="text-align:center;margin-left:auto;margin-right:auto">You don't see the bill the night you skipped sleep. <span class="g" style="color:var(--red)">You see it three months later, in the trade you should never have taken.</span></div>
+  </section>
+
+  <!-- 8 THE PARADOX -->
+  <section class="slide">
+    <div class="kicker rise r1">THE THING NOBODY TELLS YOU</div>
+    <h2 class="head rise r2">MORE TIME &ne; <span class="em" style="color:var(--gold)">MORE EDGE</span></h2>
+    <div class="stage rise r3">
+      <svg viewBox="0 0 720 340" xmlns="http://www.w3.org/2000/svg" font-family="'JetBrains Mono',monospace">
+        <line x1="60" y1="290" x2="680" y2="290" stroke="rgba(246,239,255,.25)"/>
+        <line x1="60" y1="50" x2="60" y2="290" stroke="rgba(246,239,255,.25)"/>
+        <text x="370" y="318" fill="rgba(246,239,255,.55)" font-size="11" text-anchor="middle" letter-spacing="2">HOURS YOU GIVE TO THE MARKET</text>
+        <text x="38" y="170" fill="rgba(246,239,255,.55)" font-size="11" text-anchor="middle" transform="rotate(-90 38 170)" letter-spacing="2">EDGE</text>
+        <path d="M60 280 Q200 70 370 70 Q540 70 680 290" fill="none" stroke="#ffd24a" stroke-width="3" stroke-linecap="round" data-trace="#fff4a0|6"/>
+        <path d="M60 280 Q200 70 370 70 Q540 70 680 290 L680 290 L60 290 Z" fill="rgba(255,210,74,.06)"/>
+        <circle cx="370" cy="70" r="6" fill="#ffd24a" style="filter:drop-shadow(0 0 10px #ffd24a)"/>
+        <text x="370" y="58" fill="#ffd24a" font-size="11" font-weight="700" text-anchor="middle" letter-spacing="2">SWEET SPOT</text>
+        <path d="M540 110 L600 120 L660 290" fill="rgba(255,122,140,.1)" stroke="none"/>
+        <text x="606" y="200" fill="rgba(255,122,140,.7)" font-size="10" font-style="italic" text-anchor="middle">wasted zone</text>
+        <line x1="600" y1="50" x2="600" y2="290" stroke="rgba(255,122,140,.5)" stroke-dasharray="3 5"/>
+        <circle cx="600" cy="200" r="10" fill="#ff7a8c" style="filter:drop-shadow(0 0 12px #ff7a8c)"/>
+        <text x="600" y="44" fill="#ff7a8c" font-size="12" font-weight="700" text-anchor="middle" letter-spacing="2">YOU HERE</text>
+        <text x="600" y="174" fill="rgba(255,122,140,.85)" font-size="9.5" text-anchor="middle" font-style="italic">past peak, losing edge</text>
+      </svg>
+    </div>
+    <div class="lead rise r4" style="text-align:center;margin-left:auto;margin-right:auto">The hours past the peak don't add edge. <span class="g" style="color:var(--red)">They subtract it.</span> You're not working harder — you're paying the market for the privilege of staring at it.</div>
+  </section>
+
+  <!-- 9 SET YOUR OWN CLOSE -->
+  <section class="slide">
+    <div class="kicker rise r1">THE MOVE</div>
+    <h2 class="head rise r2">SET YOUR <span class="em" style="color:var(--green)">OWN</span> CLOSE</h2>
+    <div class="two">
+      <div class="col-v rise r3">
+        <div class="clock-stage">
+          <svg class="clock-face" data-arc="8,16" viewBox="0 0 360 360" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="180" cy="180" r="150" fill="rgba(10,6,18,.5)" stroke="rgba(86,240,168,.25)" stroke-width="1.5"/>
+            <circle cx="180" cy="180" r="6" fill="#56f0a8" style="filter:drop-shadow(0 0 8px #56f0a8)"/>
+            <line class="clock-hand" x1="180" y1="180" x2="180" y2="58" stroke="#ffd24a" stroke-width="2.4" stroke-linecap="round" style="filter:drop-shadow(0 0 8px #ffd24a)"/>
+            <text x="180" y="236" fill="#56f0a8" font-size="10" text-anchor="middle" font-family="'JetBrains Mono',monospace" letter-spacing="3" font-weight="700">YOUR HOURS</text>
+            <text x="180" y="252" fill="rgba(86,240,168,.6)" font-size="9.5" text-anchor="middle" font-family="'JetBrains Mono',monospace" letter-spacing="2">08:00 — 16:00</text>
+          </svg>
+        </div>
+      </div>
+      <div class="col-t rise r4">
+        <div class="lead" style="margin-top:0">The market won't draw the line for you anymore. <span class="g" style="color:var(--green)">You have to draw it on yourself.</span></div>
+        <div class="lead">The pros that survive aren't the ones with iron willpower. They're the ones who installed the architecture — a window, a hard end, a door that closes — so willpower never has to show up.</div>
+      </div>
+    </div>
+  </section>
+  <!-- 10 SLEEP IS A POSITION -->
+  <section class="slide">
+    <div class="kicker rise r1">REFRAME</div>
+    <h2 class="head rise r2">SLEEP IS A <span class="em" style="color:var(--green)">POSITION</span></h2>
+    <div class="posn-grid rise r3">
+      <div class="posn-card" style="--c:var(--green)"><div class="pn">Position 01</div><div class="pv">Long</div><div class="ps">you're paid if it goes up</div></div>
+      <div class="posn-card" style="--c:var(--red)"><div class="pn">Position 02</div><div class="pv">Short</div><div class="ps">you're paid if it goes down</div></div>
+      <div class="posn-card" style="--c:var(--cyan)"><div class="pn">Position 03</div><div class="pv">Flat</div><div class="ps">you're paid by not bleeding</div></div>
+      <div class="posn-card sleep" style="--c:var(--green)"><div class="pn">Position 04</div><div class="pv">Sleep</div><div class="ps">you're paid by tomorrow's clarity</div></div>
+    </div>
+    <div class="lead rise r4" style="text-align:center;margin-left:auto;margin-right:auto;margin-top:24px">All four are real positions. <span class="g" style="color:var(--green)">Three you'll brag about. The fourth is the one that actually pays the other three.</span></div>
+  </section>
+
+  <!-- 11 THE OFF-SWITCH PROTOCOL -->
+  <section class="slide">
+    <div class="kicker rise r1">THE PLAYBOOK</div>
+    <h2 class="head rise r2">THE OFF-SWITCH <span class="em" style="color:var(--cyan)">PROTOCOL</span></h2>
+    <div class="two">
+      <div class="col-v rise r3">
+        <div class="protocol">
+          <div class="ch">Run it every night · no exceptions</div>
+          <div class="proto-item" style="--c:var(--red)"><div class="pn">01</div><div class="pgroup"><div class="pt">Stop</div><div class="ps">P&amp;L tab closed. Charts closed. The decision to stop is its own trade.</div></div></div>
+          <div class="proto-item" style="--c:var(--orange)"><div class="pn">02</div><div class="pgroup"><div class="pt">Put it away</div><div class="ps">Phone in another room. Notifications off. Out of sight = out of loop.</div></div></div>
+          <div class="proto-item" style="--c:var(--cyan)"><div class="pn">03</div><div class="pgroup"><div class="pt">Reset</div><div class="ps">Ten minutes off the screen — walk, water, write tomorrow's setup.</div></div></div>
+          <div class="proto-item" style="--c:var(--green)"><div class="pn">04</div><div class="pgroup"><div class="pt">Sleep</div><div class="ps">Fixed window. 7–9 hours. No phone bedside. This is the position.</div></div></div>
+        </div>
+      </div>
+      <div class="col-t rise r4">
+        <div class="lead" style="margin-top:0">Don't try to use willpower at midnight when your prefrontal cortex is offline.</div>
+        <div class="lead"><span class="g" style="color:var(--cyan)">Build the architecture once, in daylight, when you're a different person.</span> Then let it run you when the version of you that can't be trusted shows up.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 12 CLOSE -->
+  <section class="slide">
+    <div class="two">
+      <div class="col-t">
+        <div class="kicker rise r1">THE WORK</div>
+        <div class="display rise r2">CLOSE IT <span class="em" style="color:var(--green)">YOURSELF</span></div>
+        <div class="lead rise r3">The market is never going to ring the bell for you again. <span class="g">That's not its job anymore — it's yours.</span></div>
+        <div class="sub rise r4">A finite window inside an infinite market. That's the whole game now.</div>
+        <div class="handle rise r5">@jaymesrosenthal</div>
+      </div>
+      <div class="col-v rise r3">
+        <div class="clock-stage">
+          <svg class="clock-face" data-arc="8,16" viewBox="0 0 360 360" xmlns="http://www.w3.org/2000/svg" style="filter:drop-shadow(0 0 16px rgba(86,240,168,.3))">
+            <circle cx="180" cy="180" r="150" fill="rgba(10,6,18,.5)" stroke="rgba(86,240,168,.35)" stroke-width="1.5"/>
+            <circle cx="180" cy="180" r="6" fill="#56f0a8" style="filter:drop-shadow(0 0 10px #56f0a8)"/>
+            <line class="clock-hand" x1="180" y1="180" x2="180" y2="58" stroke="#ffd24a" stroke-width="2.4" stroke-linecap="round" style="filter:drop-shadow(0 0 8px #ffd24a)"/>
+            <rect x="148" y="206" width="64" height="22" rx="11" fill="rgba(86,240,168,.22)" stroke="#56f0a8" stroke-width="1.5"/>
+            <text x="180" y="221" fill="#56f0a8" font-size="11" font-weight="700" text-anchor="middle" font-family="'JetBrains Mono',monospace" letter-spacing="2">OPEN</text>
+            <text x="180" y="252" fill="rgba(86,240,168,.7)" font-size="9.5" text-anchor="middle" font-family="'JetBrains Mono',monospace" letter-spacing="2">YOUR HOURS</text>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div>
+<div class="nav">
+  <button id="prev" aria-label="Previous">&#8249;</button>
+  <div class="counter"><b id="cur">1</b> / <span id="total">12</span></div>
+  <button id="next" aria-label="Next">&#8250;</button>
+</div>
+<div class="dots" id="dots"></div>
+<div class="tools" id="tools">
+  <button class="pen" id="pen" title="Toggle pen">&#9998;</button>
+  <button class="clr" id="clr" title="Clear">CLR</button>
+</div>
+<script>
+(function(){const w=document.getElementById('sparks');for(let i=0;i<42;i++){const s=document.createElement('div');s.className='spark';s.style.left=Math.random()*100+'%';const z=1+Math.random()*2;s.style.width=z+'px';s.style.height=z+'px';s.style.animationDuration=(7+Math.random()*9)+'s';s.style.animationDelay=(-Math.random()*12)+'s';w.appendChild(s);}})();
+
+const slides=[...document.querySelectorAll('.slide')];const N=slides.length;let idx=0;
+const progress=document.getElementById('progress'),cur=document.getElementById('cur');
+document.getElementById('total').textContent=N;
+const dotsWrap=document.getElementById('dots');
+slides.forEach((_,i)=>{const d=document.createElement('button');d.className='dot'+(i===0?' on':'');d.setAttribute('aria-label','Slide '+(i+1));d.addEventListener('click',()=>go(i));dotsWrap.appendChild(d);});
+const dots=[...dotsWrap.children];
+function go(i){i=Math.max(0,Math.min(N-1,i));if(i===idx&&slides[i].classList.contains('active'))return;slides[idx].classList.remove('active');dots[idx].classList.remove('on');idx=i;slides[idx].classList.add('active');dots[idx].classList.add('on');cur.textContent=idx+1;progress.style.width=(N>1?(idx/(N-1))*100:100)+'%';}
+go(0);
+document.getElementById('next').addEventListener('click',()=>go(idx+1));
+document.getElementById('prev').addEventListener('click',()=>go(idx-1));
+document.addEventListener('keydown',e=>{if(['ArrowRight','ArrowDown',' ','PageDown'].includes(e.key)){e.preventDefault();go(idx+1);}else if(['ArrowLeft','ArrowUp','PageUp'].includes(e.key)){e.preventDefault();go(idx-1);}else if(e.key==='Home')go(0);else if(e.key==='End')go(N-1);});
+
+let sx=0,sy=0,st=0;const deck=document.getElementById('deck');
+deck.addEventListener('touchstart',e=>{sx=e.changedTouches[0].screenX;sy=e.changedTouches[0].screenY;st=Date.now();},{passive:true});
+deck.addEventListener('touchend',e=>{const dx=e.changedTouches[0].screenX-sx,dy=e.changedTouches[0].screenY-sy,dt=Date.now()-st;if(dt>500)return;if(Math.abs(dx)<50)return;if(Math.abs(dy)>Math.abs(dx))return;if(dx<0)go(idx+1);else go(idx-1);},{passive:true});
+
+/* 24-hour clock ticks + optional personal-hours arc */
+(function(){
+  const ns='http://www.w3.org/2000/svg';
+  document.querySelectorAll('svg.clock-face').forEach(svg=>{
+    const cx=180,cy=180;
+    for(let i=0;i<24;i++){
+      const a=(i*15-270)*Math.PI/180;
+      const r1=144, r2=(i%6===0)?122:134;
+      const x1=cx+Math.cos(a)*r1, y1=cy+Math.sin(a)*r1;
+      const x2=cx+Math.cos(a)*r2, y2=cy+Math.sin(a)*r2;
+      const ln=document.createElementNS(ns,'line');
+      ln.setAttribute('x1',x1);ln.setAttribute('y1',y1);
+      ln.setAttribute('x2',x2);ln.setAttribute('y2',y2);
+      ln.setAttribute('stroke',(i%6===0)?'#c89eff':'rgba(246,239,255,.32)');
+      ln.setAttribute('stroke-width',(i%6===0)?'2.4':'1');
+      ln.setAttribute('stroke-linecap','round');
+      svg.insertBefore(ln, svg.firstChild.nextSibling);
+    }
+    [[0,'00'],[6,'06'],[12,'12'],[18,'18']].forEach(p=>{
+      const h=p[0],l=p[1];
+      const a=(h*15-270)*Math.PI/180;
+      const r=108;
+      const x=cx+Math.cos(a)*r, y=cy+Math.sin(a)*r+5;
+      const t=document.createElementNS(ns,'text');
+      t.setAttribute('x',x);t.setAttribute('y',y);
+      t.setAttribute('fill','rgba(246,239,255,.55)');
+      t.setAttribute('font-size','13');
+      t.setAttribute('font-family',"'JetBrains Mono',monospace");
+      t.setAttribute('text-anchor','middle');
+      t.setAttribute('font-weight','500');
+      t.textContent=l;
+      svg.appendChild(t);
+    });
+    const arc=svg.dataset.arc;
+    if(arc){
+      const parts=arc.split(',').map(Number);
+      const h1=parts[0],h2=parts[1];
+      const a1=(h1*15-270)*Math.PI/180;
+      const a2=(h2*15-270)*Math.PI/180;
+      const r=148;
+      const x1=cx+Math.cos(a1)*r, y1=cy+Math.sin(a1)*r;
+      const x2=cx+Math.cos(a2)*r, y2=cy+Math.sin(a2)*r;
+      const large=((a2-a1+2*Math.PI)%(2*Math.PI))>Math.PI?1:0;
+      const p=document.createElementNS(ns,'path');
+      p.setAttribute('d','M '+x1+' '+y1+' A '+r+' '+r+' 0 '+large+' 1 '+x2+' '+y2);
+      p.setAttribute('fill','none');
+      p.setAttribute('stroke','#56f0a8');
+      p.setAttribute('stroke-width','7');
+      p.setAttribute('stroke-linecap','round');
+      p.setAttribute('opacity','.85');
+      p.style.filter='drop-shadow(0 0 12px #56f0a8)';
+      svg.appendChild(p);
+    }
+  });
+})();
+
+/* drawing */
+const canvas=document.getElementById('draw'),ctx=canvas.getContext('2d');
+let penOn=false,drawing=false,color='#46e0ff';
+function sizeC(){canvas.width=innerWidth;canvas.height=innerHeight;ctx.lineCap='round';ctx.lineJoin='round';ctx.lineWidth=3;}
+sizeC();addEventListener('resize',sizeC);
+const pen=document.getElementById('pen'),tools=document.getElementById('tools');
+['#46e0ff','#ffd24a','#56f0a8','#ff7a8c','#c89eff'].forEach((c,i)=>{const s=document.createElement('button');s.className='swatch'+(i===0?' sel':'');s.style.background=c;s.setAttribute('aria-label','color');s.addEventListener('click',()=>{color=c;[...tools.querySelectorAll('.swatch')].forEach(x=>x.classList.remove('sel'));s.classList.add('sel');if(!penOn)tog(true);});tools.insertBefore(s,document.getElementById('clr'));});
+function tog(f){penOn=f!==undefined?f:!penOn;pen.classList.toggle('on',penOn);canvas.style.pointerEvents=penOn?'auto':'none';}
+pen.addEventListener('click',()=>tog());
+document.getElementById('clr').addEventListener('click',()=>ctx.clearRect(0,0,canvas.width,canvas.height));
+const pos=e=>{const t=e.touches?e.touches[0]:e;return{x:t.clientX,y:t.clientY};};
+function sd(e){if(!penOn)return;drawing=true;const p=pos(e);ctx.beginPath();ctx.moveTo(p.x,p.y);}
+function md(e){if(!penOn||!drawing)return;e.preventDefault();const p=pos(e);ctx.strokeStyle=color;ctx.shadowColor=color;ctx.shadowBlur=8;ctx.lineTo(p.x,p.y);ctx.stroke();}
+function ed(){drawing=false;}
+canvas.addEventListener('mousedown',sd);canvas.addEventListener('mousemove',md);addEventListener('mouseup',ed);
+canvas.addEventListener('touchstart',sd,{passive:false});canvas.addEventListener('touchmove',md,{passive:false});canvas.addEventListener('touchend',ed);
+
+/* playheads */
+(function(){
+  const ns='http://www.w3.org/2000/svg';
+  document.querySelectorAll('[data-trace]').forEach(p=>{
+    const svg=p.ownerSVGElement;if(!svg)return;
+    const parts=(p.getAttribute('data-trace')||'').split('|');
+    const col=parts[0]||'#fff',dur=parts[1]||'4';
+    if(!p.id)p.id='tp'+Math.random().toString(36).slice(2,8);
+    const dot=document.createElementNS(ns,'circle');
+    dot.setAttribute('r','4.5');dot.setAttribute('fill',col);dot.setAttribute('class','ph');dot.style.color=col;
+    const am=document.createElementNS(ns,'animateMotion');
+    am.setAttribute('dur',dur+'s');am.setAttribute('repeatCount','indefinite');am.setAttribute('begin','0s');
+    const mp=document.createElementNS(ns,'mpath');
+    mp.setAttribute('href','#'+p.id);mp.setAttributeNS('http://www.w3.org/1999/xlink','href','#'+p.id);
+    am.appendChild(mp);dot.appendChild(am);svg.appendChild(dot);
+  });
+})();
+</script>
+</body>
+</html>

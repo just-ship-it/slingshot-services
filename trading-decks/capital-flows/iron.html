@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>theDesk — The Iron Triangle</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg-0:#050309; --bg-1:#0a0612; --bg-2:#14091f;
+  --purple-deep:#3a1a5e; --purple:#6b3fa0; --purple-bright:#a06dd9;
+  --purple-glow:#c89eff; --purple-electric:#d4b3ff;
+  --ink:#f6efff; --ink-dim:rgba(246,239,255,.66); --ink-faint:rgba(246,239,255,.18);
+  --line:rgba(246,239,255,.12);
+  --gold:#ffd24a; --cyan:#46e0ff; --green:#56f0a8; --red:#ff7a8c;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;overflow:hidden;background:var(--bg-0);color:var(--ink)}
+body{font-family:'JetBrains Mono',monospace;-webkit-font-smoothing:antialiased}
+
+.bg{position:fixed;inset:0;z-index:0;background:
+  radial-gradient(900px 700px at 80% 10%, rgba(107,63,160,.34), transparent 60%),
+  radial-gradient(760px 760px at 8% 92%, rgba(70,224,255,.10), transparent 60%),
+  radial-gradient(620px 620px at 92% 88%, rgba(255,210,74,.07), transparent 60%),
+  linear-gradient(160deg,var(--bg-1) 0%, var(--bg-0) 72%);}
+.orb{position:fixed;border-radius:50%;filter:blur(72px);opacity:.5;z-index:0;pointer-events:none}
+.orb1{width:420px;height:420px;left:-90px;top:-80px;background:radial-gradient(circle,var(--purple),transparent 70%);animation:drift1 22s ease-in-out infinite}
+.orb2{width:360px;height:360px;right:-70px;bottom:-60px;background:radial-gradient(circle,rgba(70,224,255,.45),transparent 70%);animation:drift2 27s ease-in-out infinite}
+.orb3{width:300px;height:300px;right:26%;top:32%;background:radial-gradient(circle,rgba(255,210,74,.4),transparent 70%);animation:drift3 31s ease-in-out infinite}
+@keyframes drift1{50%{transform:translate(60px,40px) scale(1.08)}}
+@keyframes drift2{50%{transform:translate(-50px,-30px) scale(1.1)}}
+@keyframes drift3{50%{transform:translate(40px,-50px) scale(.9)}}
+.grain{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:.05;mix-blend-mode:overlay;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+.sparks{position:fixed;inset:0;z-index:1;pointer-events:none;overflow:hidden}
+.spark{position:absolute;bottom:-12px;border-radius:50%;background:var(--purple-glow);box-shadow:0 0 6px var(--purple-glow);opacity:0;animation:rise-spark linear infinite}
+@keyframes rise-spark{0%{transform:translateY(0);opacity:0}10%{opacity:.7}90%{opacity:.4}100%{transform:translateY(-104vh);opacity:0}}
+
+.progress{position:fixed;top:0;left:0;height:3px;width:0;z-index:40;background:linear-gradient(90deg,var(--cyan),var(--purple-glow),var(--gold));box-shadow:0 0 12px var(--purple-glow);transition:width .45s cubic-bezier(.4,0,.2,1)}
+.brand{position:fixed;top:20px;left:26px;z-index:30;font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--ink-dim)}
+.brand b{color:var(--ink);font-weight:500}.brand b i{color:var(--purple-glow);font-style:normal}
+
+.deck{position:fixed;inset:0;z-index:10}
+.slide{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:7vh 7vw;opacity:0;visibility:hidden;transition:opacity .5s ease,visibility .5s;pointer-events:none}
+.slide.active{opacity:1;visibility:visible;pointer-events:auto}
+
+.kicker{font-size:13px;font-weight:600;letter-spacing:4px;text-transform:uppercase;color:var(--cyan);margin-bottom:18px;display:flex;align-items:center;gap:12px}
+.kicker::before{content:"";width:34px;height:2px;background:var(--cyan);box-shadow:0 0 10px var(--cyan)}
+.display{font-family:'Instrument Serif',Georgia,serif;text-transform:uppercase;font-size:clamp(46px,7.6vw,98px);line-height:.94;letter-spacing:-1.5px;font-weight:400;text-shadow:0 0 44px rgba(200,158,255,.3)}
+.display .em{color:var(--purple-glow);font-style:italic}
+h2.head{font-family:'Instrument Serif',Georgia,serif;text-transform:uppercase;font-size:clamp(32px,5vw,62px);line-height:1.0;letter-spacing:-.5px;font-weight:400}
+.head .em{font-style:italic}
+.lead{font-size:clamp(15px,1.55vw,22px);line-height:1.55;color:var(--ink);font-weight:400;max-width:860px;margin-top:20px}
+.lead .g{font-weight:500}
+.sub{font-family:'Instrument Serif',Georgia,serif;font-style:italic;font-size:clamp(19px,2.4vw,32px);color:var(--ink-dim);margin-top:16px;max-width:680px}
+.handle{font-size:14px;letter-spacing:2px;color:var(--purple-glow);margin-top:22px}
+.chips{display:flex;flex-wrap:wrap;gap:13px;margin-top:24px}
+.chip{font-size:clamp(13px,1.3vw,17px);font-weight:600;letter-spacing:.6px;padding:10px 19px;border-radius:40px;border:1.6px solid var(--c,var(--purple-glow));color:var(--c,var(--purple-glow));text-transform:uppercase;background:rgba(255,255,255,.02);text-shadow:0 0 16px color-mix(in srgb,var(--c,var(--purple-glow)) 40%,transparent)}
+
+/* triangle motion */
+.ph{filter:drop-shadow(0 0 5px #fff) drop-shadow(0 0 11px currentColor)}
+.vtx{animation:vtxpulse 2.6s ease-in-out infinite}
+@keyframes vtxpulse{0%,100%{filter:drop-shadow(0 0 3px currentColor)}50%{filter:drop-shadow(0 0 11px currentColor)}}
+.head .em,.display .em{animation:emglow 3.4s ease-in-out infinite}
+@keyframes emglow{0%,100%{text-shadow:0 0 12px currentColor}50%{text-shadow:0 0 30px currentColor,0 0 52px currentColor}}
+.overload{animation:overload 1.8s ease-out infinite;transform-box:fill-box;transform-origin:center}
+@keyframes overload{0%{opacity:.9;r:14px}70%{opacity:0}100%{opacity:0;r:60px}}
+
+/* cover */
+.cover-wrap{display:flex;align-items:center;gap:40px;width:100%}
+.cover-text{flex:1 1 auto}
+.cover-tri{flex:0 0 40%;max-width:440px;display:flex;justify-content:center}
+.cover-tri svg{width:100%;height:auto;filter:drop-shadow(0 0 26px rgba(200,158,255,.25));animation:triFloat 8s ease-in-out infinite}
+@keyframes triFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+
+/* universal law trio */
+.trio{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-top:30px}
+.trio-card{background:linear-gradient(165deg,rgba(20,9,31,.85),rgba(10,6,18,.5));border:1px solid var(--line);border-radius:16px;padding:18px 16px 20px;text-align:center}
+.trio-card .tt{font-size:13px;letter-spacing:3px;text-transform:uppercase;color:var(--c);font-weight:700;margin-bottom:10px}
+.trio-card svg{width:100%;height:auto;max-height:24vh;display:block;margin:0 auto}
+.trio-card .pick{font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--ink-dim);margin-top:10px}
+.trio-card .pick b{color:var(--c)}
+
+/* big single triangle */
+.tri-stage{margin-top:18px;display:flex;justify-content:center}
+.tri-stage svg{width:auto;height:46vh;max-width:90%}
+.force-layout{display:flex;align-items:center;justify-content:center;gap:40px;margin-top:14px;flex-wrap:wrap}
+.force-layout .tri-stage{margin-top:0}
+.force-layout .tri-stage svg{height:44vh}
+.force-defs{flex:0 0 310px;max-width:340px;display:flex;flex-direction:column;gap:18px}
+.def{border-left:3px solid var(--c,var(--purple-glow));padding:3px 0 3px 15px}
+.def .dl{font-size:13px;letter-spacing:2px;text-transform:uppercase;color:var(--c);font-weight:700;margin-bottom:5px;text-shadow:0 0 14px color-mix(in srgb,var(--c) 40%,transparent)}
+.def .dd{font-size:clamp(13px,1.05vw,16px);line-height:1.5;color:var(--ink-dim)}
+
+/* tensions */
+.tens{display:flex;flex-direction:column;gap:12px;margin-top:24px;max-width:1000px}
+.tens-row{display:flex;gap:16px;align-items:center;padding:16px 22px;background:linear-gradient(100deg,rgba(20,9,31,.7),rgba(10,6,18,.3));border:1px solid var(--line);border-left:4px solid var(--c,var(--red));border-radius:12px}
+.tens-row{animation:rowpulse 3.8s ease-in-out infinite}
+@keyframes rowpulse{0%,100%{box-shadow:-3px 0 12px -7px var(--c,var(--red))}50%{box-shadow:-4px 0 26px -2px var(--c,var(--red))}}
+.tens-row:nth-child(2){animation-delay:.6s}.tens-row:nth-child(3){animation-delay:1.2s}
+.tens-row .pair{flex:0 0 auto;min-width:300px;font-size:clamp(14px,1.4vw,19px);letter-spacing:.5px;font-weight:600}
+.tens-row .pair .k{color:var(--gold)}
+.tens-row .cost{font-size:clamp(13px,1.05vw,16px);color:var(--ink)}
+.tens-row .cost b{color:var(--red);font-weight:600}
+
+/* archetype layout */
+.arch-grid{display:grid;grid-template-columns:.92fr 1.08fr;gap:34px;align-items:center;margin-top:22px}
+.arch-tri{display:flex;justify-content:center}
+.arch-tri svg{width:auto;height:40vh;max-width:100%}
+.arch-detail{display:flex;flex-direction:column;gap:16px}
+.arch-row{display:flex;gap:16px;align-items:baseline}
+.arch-row .al{flex:0 0 130px;font-size:12px;letter-spacing:2px;text-transform:uppercase;font-weight:700;color:var(--ink-dim)}
+.arch-row .av{font-size:clamp(15px,1.4vw,21px);color:var(--ink);font-weight:500}
+.arch-row.keep .al{color:var(--green)}.arch-row.keep .av b{color:var(--gold)}.arch-row.keep .av i{font-style:normal;color:var(--green)}
+.arch-row.surr .al{color:var(--red)}.arch-row.surr .av{color:var(--red)}
+.arch-row.why .av{font-size:clamp(13px,1.15vw,17px);color:var(--ink-dim);font-weight:400;line-height:1.5}
+
+/* rise */
+.rise{opacity:0;transform:translateY(20px)}
+.slide.active .rise{animation:rise .7s cubic-bezier(.18,.7,.2,1) forwards}
+.slide.active .r1{animation-delay:.05s}.slide.active .r2{animation-delay:.16s}.slide.active .r3{animation-delay:.27s}
+.slide.active .r4{animation-delay:.38s}.slide.active .r5{animation-delay:.49s}.slide.active .r6{animation-delay:.6s}
+@keyframes rise{to{opacity:1;transform:none}}
+
+.nav{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);z-index:40;display:flex;gap:14px;align-items:center}
+.nav button{width:44px;height:44px;border-radius:50%;border:1px solid var(--line);background:rgba(20,9,31,.6);color:var(--ink);cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;transition:.2s;backdrop-filter:blur(6px)}
+.nav button:hover{border-color:var(--cyan);box-shadow:0 0 14px rgba(70,224,255,.5);color:var(--cyan)}
+.counter{font-size:12px;letter-spacing:2px;color:var(--ink-dim);min-width:54px;text-align:center}.counter b{color:var(--ink)}
+.dots{position:fixed;right:22px;top:50%;transform:translateY(-50%);z-index:40;display:flex;flex-direction:column;gap:11px}
+.dot{width:9px;height:9px;border-radius:50%;border:1px solid var(--ink-faint);background:transparent;cursor:pointer;transition:.25s;padding:0}
+.dot.on{background:var(--cyan);border-color:var(--cyan);box-shadow:0 0 10px var(--cyan);transform:scale(1.3)}
+#draw{position:fixed;inset:0;z-index:25;pointer-events:none}
+.tools{position:fixed;left:22px;top:50%;transform:translateY(-50%);z-index:40;display:flex;flex-direction:column;gap:9px;align-items:center;padding:12px 8px;border:1px solid var(--line);border-radius:30px;background:rgba(10,6,18,.55);backdrop-filter:blur(8px)}
+.tools .pen{width:34px;height:34px;border-radius:50%;border:1px solid var(--line);background:rgba(20,9,31,.7);color:var(--ink-dim);cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;transition:.2s}
+.tools .pen.on{border-color:var(--cyan);color:var(--cyan);box-shadow:0 0 12px rgba(70,224,255,.5)}
+.swatch{width:20px;height:20px;border-radius:50%;border:2px solid transparent;cursor:pointer;transition:.18s}
+.swatch.sel{border-color:var(--ink);transform:scale(1.2)}
+.tools .clr{width:34px;height:30px;border-radius:8px;border:1px solid var(--line);background:rgba(20,9,31,.7);color:var(--ink-dim);cursor:pointer;font-size:11px;letter-spacing:1px}
+
+@media(max-width:768px){
+  .slide{justify-content:flex-start;padding:13vh 7vw 14vh}
+  .display{font-size:34px}.head{font-size:26px}.sub{font-size:18px}.lead{font-size:14px;margin-top:14px}
+  .kicker{font-size:11px;letter-spacing:3px;margin-bottom:12px}
+  .cover-wrap{flex-direction:column;align-items:flex-start;gap:18px}.cover-tri{flex:none;max-width:60%;width:60%}
+  .trio{grid-template-columns:1fr;gap:12px;margin-top:16px}.trio-card svg{max-height:30vh}
+  .tri-stage svg{height:34vh}
+  .force-layout{flex-direction:column;gap:14px}.force-defs{flex-basis:auto;max-width:100%}.force-layout .tri-stage svg{height:30vh}
+  .tens-row{flex-direction:column;align-items:flex-start;gap:6px;padding:13px 16px}.tens-row .pair{min-width:0;font-size:14px}
+  .arch-grid{grid-template-columns:1fr;gap:16px;margin-top:14px}.arch-tri svg{height:26vh}
+  .arch-row .al{flex-basis:104px;font-size:10px}
+  .dots,.tools{display:none}.brand{font-size:10px;top:14px;left:16px}
+  .orb1{width:180px;height:180px}.orb2{width:150px;height:150px}.orb3{width:120px;height:120px}.sparks{opacity:.4}.nav{bottom:16px}
+}
+@media(max-width:480px){.display{font-size:28px}.head{font-size:21px}.brand{display:none}.nav button{width:36px;height:36px;font-size:15px}}
+</style>
+</head>
+<body>
+
+<div class="bg"></div>
+<div class="orb orb1"></div><div class="orb orb2"></div><div class="orb orb3"></div>
+<div class="grain"></div>
+<div class="sparks" id="sparks"></div>
+<canvas id="draw"></canvas>
+
+<div class="progress" id="progress"></div>
+<div class="brand"><b>the<i>Desk</i></b> · TRADING PSYCHOLOGY</div>
+
+<div class="deck" id="deck">
+
+  <!-- 1 COVER / THE WOUND -->
+  <section class="slide active">
+    <div class="cover-wrap">
+      <div class="cover-text">
+        <div class="kicker rise r1">theDesk · A STREAM SEGMENT</div>
+        <div class="display rise r2">THE IRON<br><span class="em">TRIANGLE</span></div>
+        <div class="sub rise r3">You've got an edge. You trade it constantly. You swear you manage risk. So why do you keep getting cut down?</div>
+        <div class="handle rise r5">@jaymesrosenthal</div>
+      </div>
+      <div class="cover-tri rise r4">
+        <svg viewBox="0 0 460 410" xmlns="http://www.w3.org/2000/svg" font-family="'JetBrains Mono',monospace">
+          <defs>
+            <linearGradient id="gEF" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffd24a"/><stop offset="1" stop-color="#46e0ff"/></linearGradient>
+            <linearGradient id="gERC" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffd24a"/><stop offset="1" stop-color="#56f0a8"/></linearGradient>
+            <linearGradient id="gFRC" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#46e0ff"/><stop offset="1" stop-color="#56f0a8"/></linearGradient>
+          </defs>
+          <path id="cEF" d="M230 40 L56 360" fill="none" stroke="url(#gEF)" stroke-width="3" data-trace="#ffd24a|3"/>
+          <path id="cERC" d="M230 40 L404 360" fill="none" stroke="url(#gERC)" stroke-width="3" data-trace="#56f0a8|3.4"/>
+          <path id="cFRC" d="M56 360 L404 360" fill="none" stroke="url(#gFRC)" stroke-width="3" data-trace="#46e0ff|3.8"/>
+          <circle class="vtx" cx="230" cy="40" r="8" fill="#ffd24a" style="color:#ffd24a"/>
+          <circle class="vtx" cx="56" cy="360" r="8" fill="#46e0ff" style="color:#46e0ff"/>
+          <circle class="vtx" cx="404" cy="360" r="8" fill="#56f0a8" style="color:#56f0a8"/>
+        </svg>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2 THE UNIVERSAL LAW -->
+  <section class="slide">
+    <div class="kicker rise r1">START HERE — IT'S NOT A TRADING PROBLEM</div>
+    <h2 class="head rise r2">EVERY HARD GAME HAS<br>THE SAME <span class="em" style="color:var(--cyan)">LAW</span></h2>
+    <div class="trio">
+      <div class="trio-card rise r3" style="--c:var(--cyan)"><div class="tt">The Chip</div>
+        <svg viewBox="0 0 200 150" font-family="'JetBrains Mono',monospace"><path d="M100 24 L30 124 L170 124 Z" fill="none" stroke="#46e0ff" stroke-width="2" opacity=".8"/><circle cx="100" cy="24" r="4" fill="#46e0ff"/><circle cx="30" cy="124" r="4" fill="#46e0ff"/><circle cx="170" cy="124" r="4" fill="#46e0ff"/><text x="100" y="16" fill="#46e0ff" font-size="11" text-anchor="middle">SPEED</text><text x="22" y="140" fill="#46e0ff" font-size="11" text-anchor="middle">POWER</text><text x="178" y="140" fill="#46e0ff" font-size="11" text-anchor="middle">THERMAL</text></svg>
+        <div class="pick"><b>pick two</b></div></div>
+      <div class="trio-card rise r4" style="--c:var(--gold)"><div class="tt">The Build</div>
+        <svg viewBox="0 0 200 150" font-family="'JetBrains Mono',monospace"><path d="M100 24 L30 124 L170 124 Z" fill="none" stroke="#ffd24a" stroke-width="2" opacity=".8"/><circle cx="100" cy="24" r="4" fill="#ffd24a"/><circle cx="30" cy="124" r="4" fill="#ffd24a"/><circle cx="170" cy="124" r="4" fill="#ffd24a"/><text x="100" y="16" fill="#ffd24a" font-size="11" text-anchor="middle">GOOD</text><text x="26" y="140" fill="#ffd24a" font-size="11" text-anchor="middle">FAST</text><text x="174" y="140" fill="#ffd24a" font-size="11" text-anchor="middle">CHEAP</text></svg>
+        <div class="pick"><b>pick two</b></div></div>
+      <div class="trio-card rise r5" style="--c:var(--green)"><div class="tt">The Chain</div>
+        <svg viewBox="0 0 200 150" font-family="'JetBrains Mono',monospace"><path d="M100 24 L30 124 L170 124 Z" fill="none" stroke="#56f0a8" stroke-width="2" opacity=".8"/><circle cx="100" cy="24" r="4" fill="#56f0a8"/><circle cx="30" cy="124" r="4" fill="#56f0a8"/><circle cx="170" cy="124" r="4" fill="#56f0a8"/><text x="100" y="16" fill="#56f0a8" font-size="10" text-anchor="middle">DECENTRAL</text><text x="28" y="140" fill="#56f0a8" font-size="10" text-anchor="middle">SCALABLE</text><text x="174" y="140" fill="#56f0a8" font-size="10" text-anchor="middle">SECURE</text></svg>
+        <div class="pick"><b>pick two</b></div></div>
+    </div>
+    <div class="lead rise r6">Three forces that <span class="g">refuse to be maximized together.</span> Engineers made peace with it in silicon, steel, and code. You never got the memo.</div>
+  </section>
+
+  <!-- 3 THE THREE FORCES -->
+  <section class="slide">
+    <div class="kicker rise r1">SO HERE'S THE TRADER'S VERSION</div>
+    <h2 class="head rise r2">EDGE · FREQUENCY · <span class="em" style="color:var(--green)">RISK CAPACITY</span></h2>
+    <div class="force-layout rise r3">
+      <div class="tri-stage">
+      <svg id="forceTri" viewBox="0 0 460 438" xmlns="http://www.w3.org/2000/svg" font-family="'JetBrains Mono',monospace" style="touch-action:none;cursor:grab">
+        <rect x="0" y="0" width="460" height="438" fill="#fff" fill-opacity="0.001"/>
+        <line id="lnE" x1="230" y1="269" x2="230" y2="56" stroke="rgba(255,210,74,.5)" stroke-width="1.5"/>
+        <line id="lnF" x1="230" y1="269" x2="56" y2="376" stroke="rgba(70,224,255,.5)" stroke-width="1.5"/>
+        <line id="lnRC" x1="230" y1="269" x2="404" y2="376" stroke="rgba(86,240,168,.5)" stroke-width="1.5"/>
+        <path id="tEF" d="M230 56 L56 376" fill="none" stroke="url(#gEF)" stroke-width="3.5" data-trace="#ffd24a|3"/>
+        <path id="tERC" d="M230 56 L404 376" fill="none" stroke="url(#gERC)" stroke-width="3.5" data-trace="#56f0a8|3.4"/>
+        <path id="tFRC" d="M56 376 L404 376" fill="none" stroke="url(#gFRC)" stroke-width="3.5" data-trace="#46e0ff|3.8"/>
+        <circle class="vtx" cx="230" cy="56" r="9" fill="#ffd24a" style="color:#ffd24a"/>
+        <circle class="vtx" cx="56" cy="376" r="9" fill="#46e0ff" style="color:#46e0ff"/>
+        <circle class="vtx" cx="404" cy="376" r="9" fill="#56f0a8" style="color:#56f0a8"/>
+        <circle id="forceHalo" cx="230" cy="269" r="15" fill="none" stroke="#fff" stroke-width="1.5" opacity=".4"/>
+        <circle id="forceDot" cx="230" cy="269" r="9" fill="#fff" style="filter:drop-shadow(0 0 9px #fff);cursor:grab"/>
+        <text x="230" y="22" fill="#ffd24a" font-size="14" font-weight="700" text-anchor="middle">EDGE</text>
+        <text id="pctE" x="230" y="46" fill="#ffd24a" font-size="22" font-weight="700" text-anchor="middle">33%</text>
+        <text x="56" y="400" fill="#46e0ff" font-size="14" font-weight="700" text-anchor="middle">FREQUENCY</text>
+        <text id="pctF" x="56" y="424" fill="#46e0ff" font-size="22" font-weight="700" text-anchor="middle">33%</text>
+        <text x="404" y="400" fill="#56f0a8" font-size="14" font-weight="700" text-anchor="middle">RISK CAPACITY</text>
+        <text id="pctRC" x="404" y="424" fill="#56f0a8" font-size="22" font-weight="700" text-anchor="middle">34%</text>
+      </svg>
+      </div>
+      <div class="force-defs">
+        <div class="def" style="--c:var(--gold)"><div class="dl">Edge</div><div class="dd">Your advantage per trade — how far the odds tilt your way when you act.</div></div>
+        <div class="def" style="--c:var(--cyan)"><div class="dl">Frequency</div><div class="dd">How often you pull the trigger — the number of shots you take.</div></div>
+        <div class="def" style="--c:var(--green)"><div class="dl">Risk Capacity</div><div class="dd">How much drawdown your account and your nerves can absorb before you break.</div></div>
+      </div>
+    </div>
+    <div class="lead rise r4" style="text-align:center;margin-left:auto;margin-right:auto"><span class="g" style="color:var(--purple-glow)">Grab the dot</span> and pull it toward any corner — the three always rebalance to 100%.</div>
+  </section>
+
+  <!-- 4 THE LIE -->
+  <section class="slide">
+    <div class="kicker rise r1">THE TURN</div>
+    <h2 class="head rise r2">THE LIE YOU'VE<br>BEEN <span class="em" style="color:var(--gold)">SOLD</span></h2>
+    <div class="arch-grid">
+      <div class="arch-tri rise r3">
+        <svg viewBox="0 0 460 430" xmlns="http://www.w3.org/2000/svg" font-family="'JetBrains Mono',monospace">
+          <path d="M230 56 L56 376 L404 376 Z" fill="rgba(255,210,74,.06)" stroke="url(#gEF)" stroke-width="2.5"/>
+          <line x1="230" y1="216" x2="230" y2="56" stroke="#ffd24a" stroke-width="2" opacity=".85"/>
+          <line x1="230" y1="216" x2="56" y2="376" stroke="#ffd24a" stroke-width="2" opacity=".85"/>
+          <line x1="230" y1="216" x2="404" y2="376" stroke="#ffd24a" stroke-width="2" opacity=".85"/>
+          <circle class="vtx" cx="230" cy="56" r="8" fill="#ffd24a" style="color:#ffd24a"/>
+          <circle class="vtx" cx="56" cy="376" r="8" fill="#ffd24a" style="color:#ffd24a"/>
+          <circle class="vtx" cx="404" cy="376" r="8" fill="#ffd24a" style="color:#ffd24a"/>
+          <circle cx="230" cy="216" r="9" fill="#fff" style="filter:drop-shadow(0 0 12px #ffd24a)"/>
+          <text x="230" y="42" fill="#ffd24a" font-size="13" font-weight="700" text-anchor="middle">EDGE</text>
+          <text x="56" y="398" fill="#ffd24a" font-size="13" font-weight="700" text-anchor="middle">FREQ</text>
+          <text x="404" y="398" fill="#ffd24a" font-size="13" font-weight="700" text-anchor="middle">RISK CAP</text>
+        </svg>
+      </div>
+      <div class="arch-detail rise r4">
+        <div class="lead" style="margin-top:0">"With enough skill, you can have <span class="g" style="color:var(--gold)">all three</span> — a sharp edge, traded all day, with the risk dialed down."</div>
+        <div class="lead">It feels true. It's the most expensive belief you'll ever hold.</div>
+        <div class="chips"><span class="chip" style="--c:var(--gold)">edge ∞</span><span class="chip" style="--c:var(--cyan)">frequency ∞</span><span class="chip" style="--c:var(--green)">safety ∞</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5 THE TENSIONS -->
+  <section class="slide">
+    <div class="kicker rise r1">WHY YOU CAN'T</div>
+    <h2 class="head rise r2">EVERY PAIR STARVES<br>THE <span class="em" style="color:var(--red)">THIRD</span></h2>
+    <div class="tens">
+      <div class="tens-row" style="--c:var(--gold)"><div class="pair"><span class="k">EDGE</span> + <span class="k">FREQUENCY</span></div><div class="cost">→ you trade your best setups constantly, and <b>risk capacity collapses</b>.</div></div>
+      <div class="tens-row" style="--c:var(--cyan)"><div class="pair"><span class="k" style="color:var(--cyan)">FREQUENCY</span> + <span class="k" style="color:var(--green)">RISK CAPACITY</span></div><div class="cost">→ you stay active and safe, but the <b>edge per trade thins out</b>.</div></div>
+      <div class="tens-row" style="--c:var(--green)"><div class="pair"><span class="k">EDGE</span> + <span class="k" style="color:var(--green)">RISK CAPACITY</span></div><div class="cost">→ you keep the sharp, protected trades, so <b>frequency drops hard</b>.</div></div>
+    </div>
+    <div class="lead rise r4">Pick any two to push. The market sends the bill to the one you ignored.</div>
+  </section>
+
+  <!-- 6 THE BLOWUP -->
+  <section class="slide">
+    <div class="kicker rise r1" style="color:var(--red)">THE CONSEQUENCE</div>
+    <h2 class="head rise r2">PUSH ALL THREE —<br>THE SYSTEM <span class="em" style="color:var(--red)">OVERLOADS</span></h2>
+    <div class="arch-grid">
+      <div class="arch-tri rise r3">
+        <svg viewBox="0 0 460 430" xmlns="http://www.w3.org/2000/svg" font-family="'JetBrains Mono',monospace">
+          <path d="M230 56 L56 376 L404 376 Z" fill="rgba(255,122,140,.05)" stroke="#ff7a8c" stroke-width="2.5" stroke-dasharray="9 7"/>
+          <line x1="230" y1="216" x2="230" y2="56" stroke="#ff7a8c" stroke-width="2" opacity=".5" stroke-dasharray="4 5"/>
+          <line x1="230" y1="216" x2="56" y2="376" stroke="#ff7a8c" stroke-width="2" opacity=".5" stroke-dasharray="4 5"/>
+          <line x1="230" y1="216" x2="404" y2="376" stroke="#ff7a8c" stroke-width="2" opacity=".5" stroke-dasharray="4 5"/>
+          <circle cx="230" cy="56" r="7" fill="#ff7a8c" opacity=".4"/>
+          <circle cx="56" cy="376" r="7" fill="#ff7a8c" opacity=".4"/>
+          <circle cx="404" cy="376" r="7" fill="#ff7a8c" opacity=".4"/>
+          <circle class="overload" cx="230" cy="216" r="14" fill="none" stroke="#ff7a8c" stroke-width="3"/>
+          <circle cx="230" cy="216" r="10" fill="#ff7a8c" style="filter:drop-shadow(0 0 14px #ff7a8c)"/>
+          <text x="230" y="252" fill="#ff7a8c" font-size="12" font-weight="700" text-anchor="middle" letter-spacing="2">OVERLOAD</text>
+        </svg>
+      </div>
+      <div class="arch-detail rise r4">
+        <div class="lead" style="margin-top:0">You've felt this. The over-trading. The size that was too big for the conviction. The drawdown that came out of nowhere.</div>
+        <div class="lead">That's not bad luck. That's <span class="g" style="color:var(--red)">the law collecting</span> — the same one the engineers stopped fighting.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7 THE CHOICE -->
+  <section class="slide">
+    <div class="kicker rise r1">THE WAY OUT</div>
+    <h2 class="head rise r2">YOU HAVE TO<br><span class="em" style="color:var(--green)">SURRENDER A CORNER</span></h2>
+    <div class="lead rise r3">Stop fighting it. Pick two to protect, and let the third go on purpose. That one choice — what you're willing to give up — <span class="g">is</span> your entire style.</div>
+    <div class="lead rise r4">Three corners. Three ways to give one up — three traders you could be:</div>
+    <div class="chips rise r5">
+      <span class="chip" style="--c:var(--gold)">The Sniper — gives up frequency</span>
+      <span class="chip" style="--c:var(--cyan)">The Machine — gives up edge</span>
+      <span class="chip" style="--c:var(--red)">The Gambler — gives up safety</span>
+    </div>
+  </section>
+
+  <!-- 8 THE SNIPER -->
+  <section class="slide">
+    <div class="kicker rise r1">ARCHETYPE · 01 — THE PATIENT ONE</div>
+    <h2 class="head rise r2">THE <span class="em" style="color:var(--gold)">SNIPER</span></h2>
+    <div class="arch-grid">
+      <div class="arch-tri rise r3">
+        <svg viewBox="0 0 460 430" xmlns="http://www.w3.org/2000/svg" font-family="'JetBrains Mono',monospace">
+          <path d="M230 56 L56 376" fill="none" stroke="#46e0ff" stroke-width="2" opacity=".18"/>
+          <path d="M56 376 L404 376" fill="none" stroke="#56f0a8" stroke-width="2" opacity=".18"/>
+          <path id="snKeep" d="M230 56 L404 376" fill="none" stroke="url(#gERC)" stroke-width="4" data-trace="#ffe27a|3"/>
+          <circle cx="317" cy="216" r="8" fill="#fff" style="filter:drop-shadow(0 0 10px #ffd24a)"/>
+          <circle class="vtx" cx="230" cy="56" r="9" fill="#ffd24a" style="color:#ffd24a"/>
+          <circle cx="56" cy="376" r="8" fill="#46e0ff" opacity=".22"/>
+          <circle class="vtx" cx="404" cy="376" r="9" fill="#56f0a8" style="color:#56f0a8"/>
+          <text x="230" y="42" fill="#ffd24a" font-size="14" font-weight="700" text-anchor="middle">EDGE</text>
+          <text x="56" y="398" fill="rgba(70,224,255,.35)" font-size="13" text-anchor="middle">FREQUENCY</text>
+          <text x="404" y="398" fill="#56f0a8" font-size="13" font-weight="700" text-anchor="middle">RISK CAP</text>
+        </svg>
+      </div>
+      <div class="arch-detail rise r4">
+        <div class="arch-row keep"><span class="al">You keep</span><span class="av"><b>Edge</b> · <i>Risk Capacity</i></span></div>
+        <div class="arch-row surr"><span class="al">You give up</span><span class="av">Frequency</span></div>
+        <div class="arch-row why"><span class="al">Why you win</span><span class="av">You wait weeks for the one shot, then size up with protection on. You don't bleed out between trades — few bullets, each one earned.</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 9 THE MACHINE -->
+  <section class="slide">
+    <div class="kicker rise r1">ARCHETYPE · 02 — THE SYSTEMATIC ONE</div>
+    <h2 class="head rise r2">THE <span class="em" style="color:var(--cyan)">MACHINE</span></h2>
+    <div class="arch-grid">
+      <div class="arch-tri rise r3">
+        <svg viewBox="0 0 460 430" xmlns="http://www.w3.org/2000/svg" font-family="'JetBrains Mono',monospace">
+          <path d="M230 56 L56 376" fill="none" stroke="#46e0ff" stroke-width="2" opacity=".18"/>
+          <path d="M230 56 L404 376" fill="none" stroke="#56f0a8" stroke-width="2" opacity=".18"/>
+          <path id="maKeep" d="M56 376 L404 376" fill="none" stroke="url(#gFRC)" stroke-width="4" data-trace="#9fe6ff|3"/>
+          <circle cx="230" cy="376" r="8" fill="#fff" style="filter:drop-shadow(0 0 10px #46e0ff)"/>
+          <circle cx="230" cy="56" r="8" fill="#ffd24a" opacity=".22"/>
+          <circle class="vtx" cx="56" cy="376" r="9" fill="#46e0ff" style="color:#46e0ff"/>
+          <circle class="vtx" cx="404" cy="376" r="9" fill="#56f0a8" style="color:#56f0a8"/>
+          <text x="230" y="42" fill="rgba(255,210,74,.35)" font-size="14" text-anchor="middle">EDGE</text>
+          <text x="56" y="398" fill="#46e0ff" font-size="13" font-weight="700" text-anchor="middle">FREQUENCY</text>
+          <text x="404" y="398" fill="#56f0a8" font-size="13" font-weight="700" text-anchor="middle">RISK CAP</text>
+        </svg>
+      </div>
+      <div class="arch-detail rise r4">
+        <div class="arch-row keep"><span class="al">You keep</span><span class="av"><i>Frequency</i> · <i style="color:var(--green)">Risk Capacity</i></span></div>
+        <div class="arch-row surr"><span class="al">You give up</span><span class="av">Edge</span></div>
+        <div class="arch-row why"><span class="al">Why you win</span><span class="av">You run a small, repeatable edge hundreds of times with tight risk. No single trade matters — your volume and your discipline do.</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 10 THE GAMBLER -->
+  <section class="slide">
+    <div class="kicker rise r1">ARCHETYPE · 03 — THE AGGRESSIVE ONE</div>
+    <h2 class="head rise r2">THE <span class="em" style="color:var(--red)">GAMBLER</span></h2>
+    <div class="arch-grid">
+      <div class="arch-tri rise r3">
+        <svg viewBox="0 0 460 430" xmlns="http://www.w3.org/2000/svg" font-family="'JetBrains Mono',monospace">
+          <path d="M230 56 L404 376" fill="none" stroke="#56f0a8" stroke-width="2" opacity=".18"/>
+          <path d="M56 376 L404 376" fill="none" stroke="#56f0a8" stroke-width="2" opacity=".18"/>
+          <path id="huKeep" d="M230 56 L56 376" fill="none" stroke="url(#gEF)" stroke-width="4" data-trace="#ffe27a|3"/>
+          <circle cx="143" cy="216" r="8" fill="#fff" style="filter:drop-shadow(0 0 10px #46e0ff)"/>
+          <circle class="vtx" cx="230" cy="56" r="9" fill="#ffd24a" style="color:#ffd24a"/>
+          <circle class="vtx" cx="56" cy="376" r="9" fill="#46e0ff" style="color:#46e0ff"/>
+          <circle cx="404" cy="376" r="8" fill="#56f0a8" opacity=".22"/>
+          <text x="230" y="42" fill="#ffd24a" font-size="14" font-weight="700" text-anchor="middle">EDGE</text>
+          <text x="56" y="398" fill="#46e0ff" font-size="13" font-weight="700" text-anchor="middle">FREQUENCY</text>
+          <text x="404" y="398" fill="rgba(86,240,168,.35)" font-size="13" text-anchor="middle">RISK CAP</text>
+        </svg>
+      </div>
+      <div class="arch-detail rise r4">
+        <div class="arch-row keep"><span class="al">You keep</span><span class="av"><b>Edge</b> · <i style="color:var(--cyan)">Frequency</i></span></div>
+        <div class="arch-row surr"><span class="al">You give up</span><span class="av">Risk Capacity</span></div>
+        <div class="arch-row why"><span class="al">Why you win</span><span class="av">You press every real edge, as often as it shows up — and bet big enough that ruin is on the table. Highest ceiling of the three, and the only one who can bust.</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 11 CLOSE / RESOLUTION -->
+  <section class="slide">
+    <div class="kicker rise r1">THE WORK</div>
+    <div class="display rise r2">PICK YOUR <span class="em" style="color:var(--gold)">TWO</span>.</div>
+    <div class="lead rise r3">You weren't losing because you lacked skill. You were losing because you tried to hold all three. Stop. Protect two. Let one go on purpose.</div>
+    <div class="sub rise r4">So — which two are you built to hold?</div>
+    <div class="handle rise r5">@jaymesrosenthal</div>
+  </section>
+
+</div>
+
+<div class="nav">
+  <button id="prev" aria-label="Previous">‹</button>
+  <div class="counter"><b id="cur">1</b> / <span id="total">11</span></div>
+  <button id="next" aria-label="Next">›</button>
+</div>
+<div class="dots" id="dots"></div>
+<div class="tools" id="tools">
+  <button class="pen" id="pen" title="Toggle pen">✎</button>
+  <button class="clr" id="clr" title="Clear">CLR</button>
+</div>
+
+<script>
+/* sparks */
+(function(){const w=document.getElementById('sparks');for(let i=0;i<42;i++){const s=document.createElement('div');s.className='spark';s.style.left=Math.random()*100+'%';const z=1+Math.random()*2;s.style.width=z+'px';s.style.height=z+'px';s.style.animationDuration=(7+Math.random()*9)+'s';s.style.animationDelay=(-Math.random()*12)+'s';w.appendChild(s);}})();
+
+/* nav */
+const slides=[...document.querySelectorAll('.slide')];const N=slides.length;let idx=0;
+const progress=document.getElementById('progress'),cur=document.getElementById('cur');
+document.getElementById('total').textContent=N;
+const dotsWrap=document.getElementById('dots');
+slides.forEach((_,i)=>{const d=document.createElement('button');d.className='dot'+(i===0?' on':'');d.setAttribute('aria-label','Slide '+(i+1));d.addEventListener('click',()=>go(i));dotsWrap.appendChild(d);});
+const dots=[...dotsWrap.children];
+function go(i){i=Math.max(0,Math.min(N-1,i));if(i===idx&&slides[i].classList.contains('active'))return;slides[idx].classList.remove('active');dots[idx].classList.remove('on');idx=i;slides[idx].classList.add('active');dots[idx].classList.add('on');cur.textContent=idx+1;progress.style.width=(N>1?(idx/(N-1))*100:100)+'%';}
+go(0);
+document.getElementById('next').addEventListener('click',()=>go(idx+1));
+document.getElementById('prev').addEventListener('click',()=>go(idx-1));
+document.addEventListener('keydown',e=>{if(['ArrowRight','ArrowDown',' ','PageDown'].includes(e.key)){e.preventDefault();go(idx+1);}else if(['ArrowLeft','ArrowUp','PageUp'].includes(e.key)){e.preventDefault();go(idx-1);}else if(e.key==='Home')go(0);else if(e.key==='End')go(N-1);});
+
+/* swipe */
+let sx=0,sy=0,st=0;const deck=document.getElementById('deck');
+deck.addEventListener('touchstart',e=>{sx=e.changedTouches[0].screenX;sy=e.changedTouches[0].screenY;st=Date.now();},{passive:true});
+deck.addEventListener('touchend',e=>{const dx=e.changedTouches[0].screenX-sx,dy=e.changedTouches[0].screenY-sy,dt=Date.now()-st;if(dt>500)return;if(Math.abs(dx)<50)return;if(Math.abs(dy)>Math.abs(dx))return;if(dx<0)go(idx+1);else go(idx-1);},{passive:true});
+
+/* drawing */
+const canvas=document.getElementById('draw'),ctx=canvas.getContext('2d');
+let penOn=false,drawing=false,color='#46e0ff';
+function sizeC(){canvas.width=innerWidth;canvas.height=innerHeight;ctx.lineCap='round';ctx.lineJoin='round';ctx.lineWidth=3;}
+sizeC();addEventListener('resize',sizeC);
+const pen=document.getElementById('pen'),tools=document.getElementById('tools');
+['#46e0ff','#ffd24a','#56f0a8','#ff7a8c','#c89eff'].forEach((c,i)=>{const s=document.createElement('button');s.className='swatch'+(i===0?' sel':'');s.style.background=c;s.setAttribute('aria-label','color');s.addEventListener('click',()=>{color=c;[...tools.querySelectorAll('.swatch')].forEach(x=>x.classList.remove('sel'));s.classList.add('sel');if(!penOn)tog(true);});tools.insertBefore(s,document.getElementById('clr'));});
+function tog(f){penOn=f!==undefined?f:!penOn;pen.classList.toggle('on',penOn);canvas.style.pointerEvents=penOn?'auto':'none';}
+pen.addEventListener('click',()=>tog());
+document.getElementById('clr').addEventListener('click',()=>ctx.clearRect(0,0,canvas.width,canvas.height));
+const pos=e=>{const t=e.touches?e.touches[0]:e;return{x:t.clientX,y:t.clientY};};
+function sd(e){if(!penOn)return;drawing=true;const p=pos(e);ctx.beginPath();ctx.moveTo(p.x,p.y);}
+function md(e){if(!penOn||!drawing)return;e.preventDefault();const p=pos(e);ctx.strokeStyle=color;ctx.shadowColor=color;ctx.shadowBlur=8;ctx.lineTo(p.x,p.y);ctx.stroke();}
+function ed(){drawing=false;}
+canvas.addEventListener('mousedown',sd);canvas.addEventListener('mousemove',md);addEventListener('mouseup',ed);
+canvas.addEventListener('touchstart',sd,{passive:false});canvas.addEventListener('touchmove',md,{passive:false});canvas.addEventListener('touchend',ed);
+
+/* triangle edge playheads */
+(function(){
+  const ns='http://www.w3.org/2000/svg';
+  document.querySelectorAll('[data-trace]').forEach(p=>{
+    const svg=p.ownerSVGElement;if(!svg)return;
+    const parts=(p.getAttribute('data-trace')||'').split('|');
+    const col=parts[0]||'#ffffff',dur=parts[1]||'4';
+    if(!p.id)p.id='tp'+Math.random().toString(36).slice(2,8);
+    const dot=document.createElementNS(ns,'circle');
+    dot.setAttribute('r','5');dot.setAttribute('fill',col);dot.setAttribute('class','ph');dot.style.color=col;
+    const am=document.createElementNS(ns,'animateMotion');
+    am.setAttribute('dur',dur+'s');am.setAttribute('repeatCount','indefinite');am.setAttribute('begin','0s');
+    const mp=document.createElementNS(ns,'mpath');
+    mp.setAttribute('href','#'+p.id);mp.setAttributeNS('http://www.w3.org/1999/xlink','href','#'+p.id);
+    am.appendChild(mp);dot.appendChild(am);svg.appendChild(dot);
+  });
+})();
+
+/* slide 3 — draggable force dot with live percentages */
+(function(){
+  const svg=document.getElementById('forceTri');
+  if(!svg)return;
+  const dot=document.getElementById('forceDot'),halo=document.getElementById('forceHalo');
+  const lnE=document.getElementById('lnE'),lnF=document.getElementById('lnF'),lnRC=document.getElementById('lnRC');
+  const pE=document.getElementById('pctE'),pF=document.getElementById('pctF'),pRC=document.getElementById('pctRC');
+  const A={x:230,y:56},B={x:56,y:376},C={x:404,y:376};            // Edge, Frequency, Risk Capacity
+  const den=(B.y-C.y)*(A.x-C.x)+(C.x-B.x)*(A.y-C.y);
+  function weights(P){
+    let a=((B.y-C.y)*(P.x-C.x)+(C.x-B.x)*(P.y-C.y))/den;
+    let b=((C.y-A.y)*(P.x-C.x)+(A.x-C.x)*(P.y-C.y))/den;
+    let c=1-a-b;
+    a=Math.max(0,a);b=Math.max(0,b);c=Math.max(0,c);
+    const s=a+b+c||1;return{a:a/s,b:b/s,c:c/s};
+  }
+  function toSvg(e){
+    const t=e.touches?e.touches[0]:(e.changedTouches?e.changedTouches[0]:e);
+    const pt=svg.createSVGPoint();pt.x=t.clientX;pt.y=t.clientY;
+    return pt.matrixTransform(svg.getScreenCTM().inverse());
+  }
+  function apply(P){
+    const w=weights(P);
+    const x=w.a*A.x+w.b*B.x+w.c*C.x, y=w.a*A.y+w.b*B.y+w.c*C.y;   // clamped back inside triangle
+    dot.setAttribute('cx',x);dot.setAttribute('cy',y);
+    halo.setAttribute('cx',x);halo.setAttribute('cy',y);
+    lnE.setAttribute('x1',x);lnE.setAttribute('y1',y);
+    lnF.setAttribute('x1',x);lnF.setAttribute('y1',y);
+    lnRC.setAttribute('x1',x);lnRC.setAttribute('y1',y);
+    let e=Math.round(w.a*100),f=Math.round(w.b*100),r=100-e-f;     // force sum to 100
+    pE.textContent=e+'%';pF.textContent=f+'%';pRC.textContent=r+'%';
+  }
+  let dragging=false;
+  function start(e){dragging=true;svg.style.cursor='grabbing';apply(toSvg(e));}
+  function move(e){if(!dragging)return;apply(toSvg(e));}
+  function end(){dragging=false;svg.style.cursor='grab';}
+  svg.addEventListener('mousedown',e=>{e.preventDefault();start(e);});
+  window.addEventListener('mousemove',move);
+  window.addEventListener('mouseup',end);
+  svg.addEventListener('touchstart',e=>{e.stopPropagation();e.preventDefault();start(e);},{passive:false});
+  svg.addEventListener('touchmove',e=>{e.stopPropagation();e.preventDefault();move(e);},{passive:false});
+  svg.addEventListener('touchend',e=>{e.stopPropagation();end();},{passive:false});
+})();
+</script>
+</body>
+</html>

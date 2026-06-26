@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Capital Flows — The Sunk-Cost Fallacy</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg-0:#040a16; --bg-1:#071831; --bg-2:#0b2750;
+  --neon:#2fd9ff; --neon-bright:#74e8ff; --neon-deep:#0096c7; --neon-glow:#a6f0ff;
+  --ink:#eaf6ff; --ink-dim:rgba(234,246,255,.62); --ink-faint:rgba(234,246,255,.15);
+  --line:rgba(234,246,255,.12);
+  --red:#ff5a6e; --green:#34ffb0; --amber:#ffc24d; --violet:#9d8cff;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;overflow:hidden;background:var(--bg-0);color:var(--ink)}
+body{font-family:'JetBrains Mono',monospace;-webkit-font-smoothing:antialiased}
+.bg{position:fixed;inset:0;z-index:0;background:
+  radial-gradient(900px 680px at 80% 6%, rgba(47,217,255,.14), transparent 60%),
+  radial-gradient(820px 820px at 6% 96%, rgba(0,150,199,.18), transparent 62%),
+  radial-gradient(620px 620px at 96% 92%, rgba(157,140,255,.10), transparent 62%),
+  linear-gradient(165deg,var(--bg-1) 0%, var(--bg-0) 72%);}
+.currents{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.5}
+.orb{position:fixed;border-radius:50%;filter:blur(80px);opacity:.5;z-index:0;pointer-events:none}
+.orb1{width:440px;height:440px;left:-110px;top:-90px;background:radial-gradient(circle,var(--neon-deep),transparent 70%);animation:d1 23s ease-in-out infinite}
+.orb2{width:360px;height:360px;right:-70px;bottom:-60px;background:radial-gradient(circle,rgba(47,217,255,.45),transparent 70%);animation:d2 28s ease-in-out infinite}
+.orb3{width:300px;height:300px;right:24%;top:26%;background:radial-gradient(circle,rgba(157,140,255,.35),transparent 70%);animation:d3 31s ease-in-out infinite}
+@keyframes d1{50%{transform:translate(60px,40px) scale(1.08)}}
+@keyframes d2{50%{transform:translate(-50px,-30px) scale(1.1)}}
+@keyframes d3{50%{transform:translate(40px,-50px) scale(.9)}}
+.grain{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:.05;mix-blend-mode:overlay;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+.motes{position:fixed;inset:0;z-index:1;pointer-events:none;overflow:hidden}
+.mote{position:absolute;border-radius:50%;background:var(--neon-glow);box-shadow:0 0 8px var(--neon);opacity:0;animation:rise-m linear infinite}
+@keyframes rise-m{0%{transform:translateY(0);opacity:0}12%{opacity:.7}88%{opacity:.4}100%{transform:translateY(-106vh);opacity:0}}
+
+.progress{position:fixed;top:0;left:0;height:3px;width:0;z-index:40;background:linear-gradient(90deg,var(--neon),var(--violet),var(--neon-deep));box-shadow:0 0 12px var(--neon);transition:width .45s cubic-bezier(.4,0,.2,1)}
+.brand{position:fixed;top:20px;left:26px;z-index:30;font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--ink-dim)}
+.brand b{color:var(--ink);font-weight:500}.brand b i{color:var(--neon);font-style:normal}
+.badge{position:fixed;top:18px;right:24px;z-index:30;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--neon);padding:7px 12px;border-radius:4px}
+.badge::before,.badge::after{content:"";position:absolute;width:9px;height:9px;border-color:var(--neon);border-style:solid}
+.badge::before{top:0;left:0;border-width:1.5px 0 0 1.5px}.badge::after{bottom:0;right:0;border-width:0 1.5px 1.5px 0}
+
+.deck{position:fixed;inset:0;z-index:10}
+.slide{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;gap:clamp(8px,1.7vh,22px);padding:max(4vh,46px) 7vw 132px;opacity:0;visibility:hidden;transition:opacity .5s ease,visibility .5s;pointer-events:none}
+.slide.active{opacity:1;visibility:visible;pointer-events:auto}
+.slide.cover{padding-bottom:16vh}
+.kicker{font-size:13px;font-weight:600;letter-spacing:4px;text-transform:uppercase;color:var(--neon);margin-bottom:10px;display:flex;align-items:center;gap:12px}
+.kicker::before{content:"";width:34px;height:2px;background:var(--neon);box-shadow:0 0 10px var(--neon)}
+.display{font-family:'Instrument Serif',Georgia,serif;text-transform:uppercase;font-size:clamp(46px,7.8vw,104px);line-height:.94;letter-spacing:-1px;font-weight:400;text-shadow:0 0 44px rgba(47,217,255,.3)}
+.display .em{color:var(--neon);font-style:italic}
+h2.head{font-family:'Instrument Serif',Georgia,serif;text-transform:uppercase;font-size:clamp(30px,4.7vw,62px);line-height:1.0;letter-spacing:-.5px;font-weight:400}
+.head .em{font-style:italic;color:var(--neon)}
+.lead{font-size:clamp(15px,1.5vw,21px);line-height:1.55;color:var(--ink);font-weight:400;max-width:940px;margin-top:6px}
+.lead .n{color:var(--neon);font-weight:600}.lead .v{color:var(--violet);font-weight:600}.lead .r{color:var(--red);font-weight:600}.lead .a{color:var(--amber);font-weight:600}.lead .g{color:var(--green);font-weight:600}.lead b{font-weight:700}
+.sub{font-family:'Instrument Serif',Georgia,serif;font-style:italic;font-size:clamp(19px,2.4vw,32px);color:var(--ink-dim);margin-top:14px;max-width:860px}
+.handle{font-size:14px;letter-spacing:2px;color:var(--neon-glow);margin-top:20px}
+.head .em,.display .em{animation:emglow 3.4s ease-in-out infinite}
+@keyframes emglow{0%,100%{text-shadow:0 0 12px currentColor}50%{text-shadow:0 0 30px currentColor,0 0 52px currentColor}}
+.ph{filter:drop-shadow(0 0 5px #fff) drop-shadow(0 0 11px currentColor)}
+
+.stage{margin-top:0;flex:1 1 auto;min-height:0;display:flex;justify-content:center;align-items:center;width:100%}
+.stage svg{width:auto;height:100%;max-width:96%;max-height:58vh;overflow:visible}
+.two{display:flex;align-items:center;gap:44px;width:100%;flex:1 1 auto;min-height:0}
+.two .col-v{flex:0 0 auto}.two .col-t{flex:1 1 auto}
+.rise{opacity:0;transform:translateY(20px)}
+.slide.active .rise{animation:rise .7s cubic-bezier(.18,.7,.2,1) forwards}
+.slide.active .r1{animation-delay:.05s}.slide.active .r2{animation-delay:.16s}.slide.active .r3{animation-delay:.27s}
+.slide.active .r4{animation-delay:.38s}.slide.active .r5{animation-delay:.49s}.slide.active .r6{animation-delay:.6s}
+@keyframes rise{to{opacity:1;transform:none}}
+
+.emblem{position:absolute;right:7vw;top:30%;transform:translateY(-50%);z-index:11;pointer-events:none;width:clamp(260px,26vw,420px)}
+
+/* panels */
+.pcard{border:1.5px solid var(--line);border-radius:11px;background:linear-gradient(165deg,rgba(11,39,80,.55),rgba(4,10,22,.5));padding:18px 22px}
+.pcard.n{border-color:var(--neon)}.pcard.v{border-color:var(--violet)}.pcard.g{border-color:var(--green)}.pcard.r{border-color:var(--red)}.pcard.a{border-color:var(--amber)}
+.pcard .ph2{font-size:12px;letter-spacing:2.5px;text-transform:uppercase;font-weight:700;margin-bottom:10px;display:flex;align-items:center;gap:9px}
+.pcard.n .ph2{color:var(--neon)}.pcard.v .ph2{color:var(--violet)}.pcard.g .ph2{color:var(--green)}.pcard.r .ph2{color:var(--red)}.pcard.a .ph2{color:var(--amber)}
+.pcard .pl{font-size:clamp(13px,1.3vw,17px);line-height:1.5;color:var(--ink)}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.chip{font-size:12px;border:1px solid var(--line);padding:7px 12px;border-radius:3px;background:rgba(0,0,0,.28);letter-spacing:.5px;color:var(--ink-dim)}
+.chip b{color:var(--neon);font-weight:700}.chip.g b{color:var(--green)}.chip.r b{color:var(--red)}
+
+/* excuse wall */
+.exwall{display:flex;flex-wrap:wrap;gap:14px;justify-content:center;max-width:1060px;margin:0 auto;width:100%}
+.excard{position:relative;border:1px solid var(--line);border-left:4px solid var(--red);border-radius:9px;background:rgba(11,39,80,.4);padding:18px 20px 18px 52px;width:348px;transition:.2s}
+.excard .ic{position:absolute;left:18px;top:50%;transform:translateY(-50%);color:var(--red);font-size:22px}
+.excard .q{font-size:16px;color:var(--ink);line-height:1.42}
+.excard.hot{border-color:var(--neon);border-left-color:var(--neon);background:rgba(47,217,255,.12);box-shadow:0 0 24px rgba(47,217,255,.45);transform:translateY(-3px)}
+.excard.hot .ic{color:var(--neon)}
+
+/* challenge card */
+.challenge{border:2px solid var(--neon);border-radius:14px;background:linear-gradient(165deg,rgba(47,217,255,.1),rgba(4,10,22,.55));padding:22px 26px;max-width:920px;width:100%;margin:0 auto;box-shadow:0 0 40px rgba(47,217,255,.18)}
+.challenge .ch{font-size:13px;letter-spacing:3px;text-transform:uppercase;color:var(--neon);font-weight:800;margin-bottom:6px;display:flex;align-items:center;gap:10px}
+.challenge .cq{font-family:'Instrument Serif',Georgia,serif;font-size:clamp(20px,2.4vw,30px);line-height:1.2;color:var(--ink);margin-bottom:16px}
+.challenge .cq b{color:var(--neon);font-style:italic}
+.cstep{display:grid;grid-template-columns:auto 1fr;gap:13px;align-items:start;margin-bottom:11px}
+.cstep:last-child{margin-bottom:0}
+.cstep .cn{flex:0 0 auto;width:26px;height:26px;border-radius:7px;border:1.5px solid var(--neon);color:var(--neon);font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center}
+.cstep .ct{font-size:clamp(13px,1.3vw,16px);line-height:1.45;color:var(--ink)}.cstep .ct b{color:var(--neon)}
+
+/* nav / dots / tools */
+.nav{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);z-index:40;display:flex;gap:14px;align-items:center}
+.nav button{width:44px;height:44px;border-radius:50%;border:1px solid var(--line);background:rgba(11,39,80,.6);color:var(--ink);cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;transition:.2s;backdrop-filter:blur(6px)}
+.nav button:hover{border-color:var(--neon);box-shadow:0 0 14px rgba(47,217,255,.5);color:var(--neon)}
+.counter{font-size:12px;letter-spacing:2px;color:var(--ink-dim);min-width:54px;text-align:center}.counter b{color:var(--ink)}
+.dots{position:fixed;right:22px;top:50%;transform:translateY(-50%);z-index:40;display:flex;flex-direction:column;gap:8px}
+.dot{width:8px;height:8px;border-radius:50%;border:1px solid var(--ink-faint);background:transparent;cursor:pointer;transition:.25s;padding:0}
+.dot.on{background:var(--neon);border-color:var(--neon);box-shadow:0 0 10px var(--neon);transform:scale(1.3)}
+#draw{position:fixed;inset:0;z-index:25;pointer-events:none}
+.tools{position:fixed;left:14px;bottom:14px;z-index:40;display:flex;flex-direction:row;gap:5px;align-items:center;padding:5px 8px;border:1px solid var(--line);border-radius:22px;background:rgba(4,10,22,.5);backdrop-filter:blur(8px);opacity:.32;transition:opacity .25s ease}
+.tools:hover,.tools.active{opacity:1}
+.tools .pen{width:26px;height:26px;border-radius:50%;border:1px solid var(--line);background:rgba(11,39,80,.7);color:var(--ink-dim);cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;transition:.2s;padding:0}
+.tools .pen.on{border-color:var(--neon);color:var(--neon);box-shadow:0 0 10px rgba(47,217,255,.45)}
+.swatch{width:13px;height:13px;border-radius:50%;border:2px solid transparent;cursor:pointer;transition:.18s;padding:0}
+.swatch.sel{border-color:var(--ink);transform:scale(1.15)}
+.tools .sep{width:1px;height:14px;background:var(--line);margin:0 1px;flex-shrink:0}
+.tools .size{width:22px;height:18px;border-radius:4px;border:1px solid var(--line);background:rgba(11,39,80,.7);color:var(--ink-dim);cursor:pointer;font-size:8.5px;letter-spacing:.3px;display:flex;align-items:center;justify-content:center;font-weight:700;padding:0}
+.tools .size.sel{border-color:var(--neon);color:var(--neon);box-shadow:0 0 8px rgba(47,217,255,.45)}
+.tools .clr{width:26px;height:18px;border-radius:4px;border:1px solid var(--line);background:rgba(11,39,80,.7);color:var(--ink-dim);cursor:pointer;font-size:9px;letter-spacing:.3px;padding:0}
+
+@media(max-width:768px){
+  .slide{justify-content:flex-start;padding:6vh 5vw 104px}
+  .display{font-size:34px}.head{font-size:25px}.sub{font-size:18px}.lead{font-size:14px;margin-top:10px}
+  .kicker{font-size:11px;letter-spacing:3px;margin-bottom:9px}
+  .stage svg{height:30vh}
+  .two{flex-direction:column;align-items:flex-start;gap:16px}
+  .emblem{position:relative;right:auto;top:auto;transform:none;width:58vw;margin:6px auto 0}
+  .exwall{gap:8px}.excard{width:100%;padding:12px 14px 12px 46px}.excard .q{font-size:14px;line-height:1.34}.excard .ic{font-size:18px;left:16px}
+  .challenge{padding:16px 18px}.cstep{margin-bottom:9px}
+  .dots,.tools{display:none}.brand{font-size:10px;top:14px;left:16px}.badge{font-size:8px;top:12px;right:14px}
+  .orb1{width:190px;height:190px}.orb2{width:150px;height:150px}.orb3{width:130px;height:130px}.nav{bottom:16px}
+}
+@media(max-width:480px){.display{font-size:28px}.head{font-size:21px}.brand{display:none}.nav button{width:36px;height:36px}}
+@media(max-height:820px){
+  .slide{padding:5vh 6vw 124px}
+  .emblem{width:clamp(220px,21vw,330px)}
+  .display{font-size:clamp(40px,6.4vw,82px)}h2.head{font-size:clamp(26px,4vw,50px)}
+  .stage svg{max-height:46vh}.lead{margin-top:9px;font-size:clamp(13px,1.3vw,18px)}
+  .pcard{padding:15px 18px}.challenge{padding:16px 20px}.cstep{margin-bottom:8px}
+}
+@media(max-width:768px){
+  .two,.stage{flex:0 1 auto !important;min-height:auto !important}
+  .col-v svg{width:82vw !important;height:auto !important;max-height:32vh !important}
+}
+@media(max-width:768px) and (max-height:740px){
+  .slide{padding:4vh 5vw 98px;gap:8px}
+  .lead{font-size:12.5px;margin-top:7px}.display{font-size:26px}.head{font-size:21px}.sub{font-size:15px}
+  .col-v svg{max-height:27vh !important}
+  .excard:nth-child(n+5){display:none}
+  .challenge{padding:11px 14px}.challenge .ch{margin-bottom:4px;font-size:11px}.challenge .cq{font-size:16px;margin-bottom:9px}
+  .cstep{margin-bottom:6px;gap:9px}.cstep .ct{font-size:12px;line-height:1.34}.cstep .cn{width:22px;height:22px;font-size:11px}
+}
+
+/* slide 4 — red energy frame around the text */
+.redframe{position:relative;border-radius:14px;padding:3px;overflow:hidden;max-width:560px}
+.redframe::before{content:"";position:absolute;left:50%;top:50%;width:200%;height:200%;transform:translate(-50%,-50%);background:conic-gradient(from 0deg,transparent 0 66%,var(--red) 80%,#ffd2d8 88%,var(--red) 95%,transparent 100%);animation:redspin 2.8s linear infinite;pointer-events:none}
+.redframe .inner{position:relative;border-radius:12px;background:var(--bg-1);padding:20px 24px;z-index:1}
+@keyframes redspin{to{transform:translate(-50%,-50%) rotate(360deg)}}
+</style>
+</head>
+<body>
+<div class="bg"></div>
+<svg class="currents" preserveAspectRatio="none" viewBox="0 0 1440 900" xmlns="http://www.w3.org/2000/svg">
+  <path fill="none" stroke="rgba(47,217,255,.10)" stroke-width="2" d="M-40 300 Q 300 250 720 320 T 1480 300">
+    <animate attributeName="d" dur="11s" repeatCount="indefinite" values="M-40 300 Q 300 250 720 320 T 1480 300;M-40 300 Q 300 380 720 260 T 1480 320;M-40 300 Q 300 250 720 320 T 1480 300"/>
+  </path>
+  <path fill="none" stroke="rgba(0,150,199,.12)" stroke-width="2" d="M-40 600 Q 360 560 720 620 T 1480 590">
+    <animate attributeName="d" dur="9s" repeatCount="indefinite" values="M-40 600 Q 360 560 720 620 T 1480 590;M-40 600 Q 360 680 720 540 T 1480 620;M-40 600 Q 360 560 720 620 T 1480 590"/>
+  </path>
+</svg>
+<div class="orb orb1"></div><div class="orb orb2"></div><div class="orb orb3"></div>
+<div class="grain"></div>
+<div class="motes" id="motes"></div>
+<canvas id="draw"></canvas>
+<div class="progress" id="progress"></div>
+<div class="brand"><b>Capital Flows <i>Research</i></b> · MINDSET CORNER</div>
+<div class="badge">Mindset Corner</div>
+<svg width="0" height="0" style="position:absolute"><defs>
+  <marker id="nArrow" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#2fd9ff"/></marker>
+  <marker id="gArrow" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#34ffb0"/></marker>
+  <marker id="rArrow" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#ff5a6e"/></marker>
+</defs></svg>
+
+<div class="deck" id="deck">
+
+  <!-- 1 COVER -->
+  <section class="slide cover active">
+    <div class="kicker rise r1">Capital Flows Research · Mindset Corner</div>
+    <div class="display rise r2" style="font-size:clamp(50px,8.4vw,120px)">THE SUNK-COST<br><span class="em">FALLACY</span></div>
+    <div class="sub rise r3" style="max-width:880px">Money moves faster and harder than ever — anchor your identity to a position for what you've already sunk into it, and <span style="color:var(--neon-glow)">the current leaves without you.</span></div>
+    <div class="handle rise r5" style="margin-top:18px">@jaymesrosenthal · Capital Flows Livestream</div>
+    <svg class="emblem rise r3" viewBox="0 0 320 380" xmlns="http://www.w3.org/2000/svg">
+      <g stroke="var(--neon)" stroke-width="2.6" fill="none" opacity=".55" stroke-linecap="round">
+        <path d="M-20 130 q 20 -13 40 0 t 40 0 t 40 0 t 40 0 t 40 0 t 40 0 t 40 0 t 40 0 t 40 0" stroke-dasharray="16 18"><animate attributeName="stroke-dashoffset" values="0;-136" dur="2.6s" repeatCount="indefinite"/></path>
+        <path d="M-20 215 q 20 -16 40 0 t 40 0 t 40 0 t 40 0 t 40 0 t 40 0 t 40 0 t 40 0 t 40 0" stroke-dasharray="20 16"><animate attributeName="stroke-dashoffset" values="0;-144" dur="2.1s" repeatCount="indefinite"/></path>
+        <path d="M-20 300 q 20 -11 40 0 t 40 0 t 40 0 t 40 0 t 40 0 t 40 0 t 40 0 t 40 0 t 40 0" stroke-dasharray="14 16"><animate attributeName="stroke-dashoffset" values="0;-120" dur="3s" repeatCount="indefinite"/></path>
+      </g>
+      <g stroke="var(--neon)" stroke-width="4" fill="none" opacity=".8">
+        <ellipse cx="160" cy="18" rx="9" ry="12"/><ellipse cx="160" cy="42" rx="9" ry="12"/><ellipse cx="160" cy="64" rx="9" ry="12"/>
+      </g>
+      <g style="filter:drop-shadow(0 0 20px var(--neon))">
+        <animateTransform attributeName="transform" attributeType="XML" type="rotate" values="-3 160 80;3 160 80;-3 160 80" dur="5s" repeatCount="indefinite"/>
+        <g stroke="var(--neon-bright)" stroke-width="10" fill="none" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="160" cy="78" r="22"/>
+          <line x1="160" y1="100" x2="160" y2="316"/>
+          <line x1="100" y1="126" x2="220" y2="126"/>
+          <path d="M96 272 Q160 350 224 272"/>
+          <path d="M160 316 Q160 248 96 272 M160 316 Q160 248 224 272"/>
+        </g>
+        <path d="M96 272 L74 252 L92 302 Z" fill="var(--neon-bright)"/>
+        <path d="M224 272 L246 252 L228 302 Z" fill="var(--neon-bright)"/>
+      </g>
+      <text x="160" y="362" text-anchor="middle" fill="var(--neon)" font-size="11" font-weight="700" letter-spacing="3" font-family="'JetBrains Mono',monospace">THE CURRENT DOESN'T WAIT</text>
+    </svg>
+  </section>
+
+  <!-- 2 THE NEW SPEED -->
+  <section class="slide">
+    <div class="kicker rise r1">THE WATER'S MOVING FASTER THAN EVER</div>
+    <h2 class="head rise r2" style="font-size:clamp(40px,6.2vw,84px)">VIOLENT ROTATIONS. <span class="em">RIP CURRENTS.</span></h2>
+    <div class="stage rise r3">
+      <svg viewBox="0 0 820 348" xmlns="http://www.w3.org/2000/svg" font-family="'JetBrains Mono',monospace">
+        <text x="410" y="182" text-anchor="middle" fill="var(--neon)" font-size="17" font-weight="700" letter-spacing="2">WHERE'S THE MONEY TODAY?</text>
+        <g font-size="16" font-weight="800" text-anchor="middle">
+          <g><circle cx="410" cy="60" r="48" fill="rgba(47,217,255,.06)" stroke="var(--line)" stroke-width="1.6"/><text x="410" y="66" fill="var(--ink)">AI CAPEX</text></g>
+          <g><circle cx="690" cy="172" r="48" fill="rgba(47,217,255,.06)" stroke="var(--line)" stroke-width="1.6"/><text x="690" y="178" fill="var(--ink)">ENERGY</text></g>
+          <g><circle cx="560" cy="296" r="48" fill="rgba(47,217,255,.06)" stroke="var(--line)" stroke-width="1.6"/><text x="560" y="302" fill="var(--ink)">CRYPTO</text></g>
+          <g><circle cx="260" cy="296" r="48" fill="rgba(47,217,255,.06)" stroke="var(--line)" stroke-width="1.6"/><text x="260" y="302" fill="var(--ink)">BONDS</text></g>
+          <g><circle cx="130" cy="172" r="48" fill="rgba(47,217,255,.06)" stroke="var(--line)" stroke-width="1.6"/><text x="130" y="178" fill="var(--ink)">SMALL CAPS</text></g>
+        </g>
+        <g fill="none" stroke="var(--neon)" stroke-width="2.6" stroke-dasharray="9 11">
+          <path d="M150 142 Q300 38 366 66"><animate attributeName="stroke-dashoffset" values="0;-160" dur="1s" repeatCount="indefinite"/></path>
+          <path d="M452 74 Q644 80 666 138"><animate attributeName="stroke-dashoffset" values="0;-160" dur="1s" begin=".1s" repeatCount="indefinite"/></path>
+          <path d="M676 216 Q642 292 606 292"><animate attributeName="stroke-dashoffset" values="0;-160" dur="1s" begin=".2s" repeatCount="indefinite"/></path>
+          <path d="M514 308 Q410 352 306 308"><animate attributeName="stroke-dashoffset" values="0;-160" dur="1s" begin=".3s" repeatCount="indefinite"/></path>
+          <path d="M220 292 Q150 270 144 216"><animate attributeName="stroke-dashoffset" values="0;-160" dur="1s" begin=".4s" repeatCount="indefinite"/></path>
+        </g>
+        <g style="filter:drop-shadow(0 0 9px var(--green)) drop-shadow(0 0 18px var(--green))">
+          <text font-size="40" font-weight="800" fill="var(--green)" text-anchor="middle" dominant-baseline="central">$<animateMotion dur="5s" repeatCount="indefinite" keyPoints="0;0.2;0.4;0.6;0.8;1" keyTimes="0;0.2;0.4;0.6;0.8;1" calcMode="discrete" path="M410 60 L690 172 L560 296 L260 296 L130 172 L410 60"/></text>
+        </g>
+      </svg>
+    </div>
+    <div class="lead rise r4" style="text-align:center;margin-left:auto;margin-right:auto">Leadership flips in <b>weeks, not years</b> now — so in water moving this fast, <span class="n">the one thing you can't afford is to be anchored in place.</span></div>
+  </section>
+
+  <!-- 3 WHAT SUNK COST IS -->
+  <section class="slide">
+    <div class="kicker rise r1">FIRST — GET THE DEFINITION CLEAN</div>
+    <h2 class="head rise r2">WHAT'S ALREADY SPENT IS <span class="em">GONE.</span></h2>
+    <div class="stage rise r3">
+      <svg viewBox="0 0 900 340" xmlns="http://www.w3.org/2000/svg" font-family="'JetBrains Mono',monospace">
+        <path d="M10 28 q 22 -9 44 0 t 44 0 t 44 0 t 44 0 t 44 0 t 44 0 t 44 0" fill="none" stroke="var(--neon)" stroke-width="2.4" opacity=".4" stroke-linecap="round"><animate attributeName="opacity" values=".22;.5;.22" dur="3s" repeatCount="indefinite"/></path>
+        <line x1="10" y1="298" x2="376" y2="298" stroke="var(--ink-faint)" stroke-width="2"/>
+        <g stroke="var(--ink-faint)" stroke-width="1.5" opacity=".5"><line x1="30" y1="306" x2="58" y2="306"/><line x1="92" y1="308" x2="122" y2="308"/><line x1="300" y1="306" x2="334" y2="306"/></g>
+        <g fill="var(--neon)">
+          <circle cx="122" cy="120" r="3.5"><animate attributeName="cy" values="252;30" dur="3.2s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;.6;0" dur="3.2s" repeatCount="indefinite"/></circle>
+          <circle cx="150" cy="120" r="2.5"><animate attributeName="cy" values="244;30" dur="2.6s" begin=".6s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;.5;0" dur="2.6s" begin=".6s" repeatCount="indefinite"/></circle>
+          <circle cx="100" cy="120" r="2.5"><animate attributeName="cy" values="248;30" dur="3.6s" begin="1.1s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;.5;0" dur="3.6s" begin="1.1s" repeatCount="indefinite"/></circle>
+        </g>
+        <g>
+          <animateTransform attributeName="transform" type="translate" values="0 -168; 0 0; 0 0; 0 -168" keyTimes="0;0.42;0.9;1" dur="7s" repeatCount="indefinite" calcMode="spline" keySplines="0.45 0 0.5 1; 0 0 1 1; 0 0 1 1"/>
+          <g opacity="1"><animate attributeName="opacity" values="1;1;1;0;1" keyTimes="0;0.42;0.86;0.93;1" dur="7s" repeatCount="indefinite"/>
+            <g transform="rotate(12 132 250)" stroke="var(--red)" stroke-width="3.6" fill="rgba(255,90,110,.07)" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 0 6px rgba(255,90,110,.45))">
+              <path d="M70 250 L196 250 L176 288 Q133 304 90 288 Z"/>
+              <line x1="70" y1="250" x2="196" y2="250"/>
+              <line x1="133" y1="250" x2="133" y2="186"/>
+              <path d="M133 194 L184 214 L133 234 Z" fill="rgba(255,90,110,.13)"/>
+            </g>
+          </g>
+        </g>
+        <text x="252" y="150" text-anchor="middle" fill="var(--ink-dim)" font-size="19" font-weight="800" letter-spacing="1">ALREADY SUNK</text>
+        <text x="252" y="180" text-anchor="middle" fill="var(--ink)" font-size="15">time · money · research</text>
+        <text x="252" y="204" text-anchor="middle" fill="rgba(255,90,110,.85)" font-size="13" font-style="italic">— unrecoverable, gone for good —</text>
+        <circle cx="406" cy="172" r="6" fill="var(--neon)"><animate attributeName="opacity" values="1;.3;1" dur="1.2s" repeatCount="indefinite"/></circle>
+        <text x="406" y="208" text-anchor="middle" fill="var(--neon)" font-size="13" font-weight="700">NOW</text>
+        <line x1="418" y1="172" x2="578" y2="172" stroke="var(--neon)" stroke-width="6" stroke-linecap="round" marker-end="url(#nArrow)" stroke-dasharray="16 13" style="filter:drop-shadow(0 0 9px var(--neon))"><animate attributeName="stroke-dashoffset" values="0;-116" dur="0.7s" repeatCount="indefinite"/></line>
+        <text x="500" y="150" text-anchor="middle" fill="var(--neon-glow)" font-size="13" font-weight="700" letter-spacing="1">FORWARD EXPECTED VALUE<animate attributeName="opacity" values="1;.2;1" dur="1.1s" repeatCount="indefinite"/></text>
+        <g style="filter:drop-shadow(0 0 20px rgba(47,217,255,.45))">
+          <rect x="600" y="104" width="290" height="132" rx="14" fill="rgba(47,217,255,.1)" stroke="var(--neon)" stroke-width="3"><animate attributeName="stroke-opacity" values="1;.45;1" dur="1.6s" repeatCount="indefinite"/></rect>
+          <text x="745" y="150" text-anchor="middle" fill="var(--neon)" font-size="23" font-weight="800">FORWARD EV</text>
+          <text x="745" y="182" text-anchor="middle" fill="var(--ink)" font-size="15.5">the ONLY input</text>
+          <text x="745" y="204" text-anchor="middle" fill="var(--ink)" font-size="15.5">a dollar actually cares about</text>
+        </g>
+      </svg>
+    </div>
+    <div class="lead rise r4" style="text-align:center;margin-left:auto;margin-right:auto">What you've already poured in is <b>gone the second it's spent</b> — <span class="n">all that matters now is where the capital goes from here.</span></div>
+  </section>
+
+  <!-- 4 THE IDENTITY HOOK -->
+  <section class="slide">
+    <div class="kicker rise r1">WHY IT'S SO HARD TO LET GO</div>
+    <h2 class="head rise r2">YOU STOP HOLDING THE POSITION. YOU <span class="em">BECOME</span> IT.</h2>
+    <div class="two" style="margin-top:4px">
+      <div class="col-v rise r3">
+        <svg viewBox="0 0 380 300" xmlns="http://www.w3.org/2000/svg" font-family="'JetBrains Mono',monospace" style="height:42vh">
+          <line x1="20" y1="286" x2="360" y2="286" stroke="var(--line)" stroke-width="1.5"/>
+          <g fill="none" stroke="var(--neon-bright)" stroke-width="4.5" stroke-linecap="round" style="filter:drop-shadow(0 0 8px var(--neon))">
+            <circle cx="120" cy="62" r="26"/>
+            <path d="M120 88 L120 184 M120 114 L78 150 M120 114 L162 150 M120 184 L96 246 M120 184 L150 246"/>
+          </g>
+          <text x="120" y="276" text-anchor="middle" fill="var(--ink-dim)" font-size="16" font-style="italic" font-weight="600">"I'm a ___ guy."</text>
+          <g stroke="var(--red)" stroke-width="3.4" fill="none" style="filter:drop-shadow(0 0 5px rgba(255,90,110,.5))">
+            <ellipse cx="160" cy="240" rx="9" ry="5.5" transform="rotate(30 160 240)"/>
+            <ellipse cx="180" cy="246" rx="9" ry="5.5" transform="rotate(18 180 246)"/>
+            <ellipse cx="200" cy="250" rx="9" ry="5.5" transform="rotate(8 200 250)"/>
+            <ellipse cx="220" cy="252" rx="9" ry="5.5" transform="rotate(0 220 252)"/>
+          </g>
+          <g style="filter:drop-shadow(0 0 16px rgba(255,90,110,.55))">
+            <circle cx="288" cy="250" r="46" fill="rgba(255,90,110,.12)" stroke="var(--red)" stroke-width="3.5"/>
+            <text x="288" y="246" text-anchor="middle" fill="var(--red)" font-size="17" font-weight="800">$TICKER</text>
+            <text x="288" y="266" text-anchor="middle" fill="rgba(255,90,110,.85)" font-size="11">= "who I am"</text>
+          </g>
+        </svg>
+      </div>
+      <div class="col-t rise r4">
+        <div class="redframe"><div class="inner">
+          <div class="lead" style="margin-top:0;font-size:clamp(17px,1.9vw,25px)">Once the trade becomes <b>a flag you've planted</b>, selling feels like <span class="r">admitting you were wrong</span> — so you defend the identity instead of the capital, and <span class="n">that's the trap.</span></div>
+        </div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5 THE EXCUSES -->
+  <section class="slide">
+    <div class="kicker rise r1">LISTEN FOR THESE — THEY'RE ALL THE SAME TELL</div>
+    <h2 class="head rise r2">EVERY EXCUSE IS AN <span class="em">ANCHOR</span> IN DISGUISE.</h2>
+    <div class="exwall rise r3">
+      <div class="excard"><span class="ic">&#9875;</span><div class="q">"I'm already in <b>too deep</b> to sell now."</div></div>
+      <div class="excard"><span class="ic">&#9875;</span><div class="q">"I just need to get back to <b>breakeven</b>."</div></div>
+      <div class="excard"><span class="ic">&#9875;</span><div class="q">"It'll <b>come back</b> — it always does."</div></div>
+      <div class="excard"><span class="ic">&#9875;</span><div class="q">"I've done <b>too much research</b> to be wrong."</div></div>
+      <div class="excard"><span class="ic">&#9875;</span><div class="q">"Averaging down <b>lowers my cost basis</b>."</div></div>
+      <div class="excard"><span class="ic">&#9875;</span><div class="q">"I can't take the <b>loss</b> right now."</div></div>
+    </div>
+    <div class="lead rise r4" style="text-align:center;margin-left:auto;margin-right:auto;margin-top:16px">None of these is a thesis — <b>each is just the money you've already spent reaching forward to make the next call</b>, and <span class="n">that's the voice to stop trusting.</span></div>
+  </section>
+
+  <!-- 6 EXAMPLE 1 — CRYPTO -> AI -->
+  <section class="slide">
+    <div class="kicker rise r1">EXAMPLE ONE · THE ROTATION THEY MISSED</div>
+    <h2 class="head rise r2">STUCK IN CRYPTO WHILE <span class="em">AI CAPEX</span> RAN.</h2>
+    <div class="stage rise r3">
+      <svg viewBox="0 0 880 320" xmlns="http://www.w3.org/2000/svg" font-family="'JetBrains Mono',monospace">
+        <line x1="20" y1="284" x2="300" y2="284" stroke="var(--ink-faint)" stroke-width="2" opacity=".55"/>
+        <g opacity=".6">
+          <circle cx="140" cy="150" r="76" fill="rgba(234,246,255,.04)" stroke="var(--line)" stroke-width="2"/>
+          <text x="140" y="146" text-anchor="middle" fill="var(--ink-dim)" font-size="20" font-weight="800">CRYPTO</text>
+          <text x="140" y="170" text-anchor="middle" fill="var(--ink-faint)" font-size="12">"this is my thing"</text>
+        </g>
+        <g stroke="var(--red)" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 0 6px rgba(255,90,110,.5))" transform="rotate(-14 96 250)">
+          <circle cx="96" cy="232" r="9"/>
+          <line x1="96" y1="241" x2="96" y2="288"/>
+          <line x1="74" y1="252" x2="118" y2="252"/>
+          <path d="M76 280 Q96 302 116 280"/>
+        </g>
+        <text x="208" y="252" text-anchor="middle" fill="var(--red)" font-size="15" font-weight="800">anchored here</text>
+        <text x="404" y="98" text-anchor="middle" fill="var(--green)" font-size="32" font-weight="800" style="filter:drop-shadow(0 0 10px var(--green))">$<animate attributeName="opacity" values="1;.4;1" dur="1.4s" repeatCount="indefinite"/></text>
+        <path d="M228 150 C 360 150, 440 150, 600 150" fill="none" stroke="var(--neon)" stroke-width="4.5" marker-end="url(#nArrow)" stroke-dasharray="10 10" style="filter:drop-shadow(0 0 7px var(--neon))"><animate attributeName="stroke-dashoffset" values="0;-160" dur="0.9s" repeatCount="indefinite"/></path>
+        <text x="404" y="136" text-anchor="middle" fill="var(--neon)" font-size="14" font-weight="700">the money rotated</text>
+        <circle cx="708" cy="150" r="88" fill="none" stroke="var(--neon)" stroke-width="2"><animate attributeName="r" values="88;112;88" dur="2.4s" repeatCount="indefinite"/><animate attributeName="opacity" values=".55;0;.55" dur="2.4s" repeatCount="indefinite"/></circle>
+        <circle cx="708" cy="150" r="88" fill="none" stroke="var(--neon)" stroke-width="2"><animate attributeName="r" values="88;112;88" dur="2.4s" begin="1.2s" repeatCount="indefinite"/><animate attributeName="opacity" values=".4;0;.4" dur="2.4s" begin="1.2s" repeatCount="indefinite"/></circle>
+        <g style="filter:drop-shadow(0 0 24px rgba(47,217,255,.6))">
+          <circle cx="708" cy="150" r="84" fill="rgba(47,217,255,.12)" stroke="var(--neon)" stroke-width="3"><animate attributeName="fill-opacity" values=".12;.24;.12" dur="2s" repeatCount="indefinite"/></circle>
+          <text x="708" y="142" text-anchor="middle" fill="var(--neon)" font-size="21" font-weight="800">AI CAPEX</text>
+          <text x="708" y="170" text-anchor="middle" fill="var(--neon-glow)" font-size="13">the big buildout</text>
+        </g>
+        <g fill="var(--neon)"><circle cx="628" cy="82" r="3.5"><animate attributeName="opacity" values="0;1;0" dur="1.4s" repeatCount="indefinite"/></circle><circle cx="790" cy="84" r="3.5"><animate attributeName="opacity" values="0;1;0" dur="1.4s" begin=".5s" repeatCount="indefinite"/></circle></g>
+      </svg>
+    </div>
+    <div class="lead rise r4" style="text-align:center;margin-left:auto;margin-right:auto">Anchored to a <b>crypto identity</b>, plenty couldn't rotate into the AI-capex trade flowing right past them — <span class="n">the thesis wasn't the problem, the attachment was.</span></div>
+  </section>
+
+  <!-- 7 EXAMPLE 2 — OIL / HORMUZ -->
+  <section class="slide">
+    <div class="kicker rise r1">EXAMPLE TWO · WAITING FOR THE CATASTROPHE</div>
+    <h2 class="head rise r2">OIL BULLS BETTING ON A SHOCK THAT <span class="em">DEFLATED.</span></h2>
+    <div class="stage rise r3">
+      <svg viewBox="0 0 860 340" xmlns="http://www.w3.org/2000/svg" font-family="'JetBrains Mono',monospace">
+        <g transform="translate(398,10)" style="filter:drop-shadow(0 0 8px rgba(255,194,77,.4))">
+          <rect x="0" y="8" width="64" height="72" rx="9" fill="rgba(255,194,77,.1)" stroke="var(--amber)" stroke-width="2.6"/>
+          <ellipse cx="32" cy="10" rx="32" ry="9" fill="rgba(255,194,77,.16)" stroke="var(--amber)" stroke-width="2.6"/>
+          <line x1="0" y1="34" x2="64" y2="34" stroke="var(--amber)" stroke-width="2"/><line x1="0" y1="58" x2="64" y2="58" stroke="var(--amber)" stroke-width="2"/>
+          <text x="32" y="52" text-anchor="middle" fill="var(--amber)" font-size="15" font-weight="800">OIL</text>
+        </g>
+        <line x1="40" y1="252" x2="800" y2="252" stroke="var(--line)"/>
+        <path d="M60 246 L150 238 L210 124 L250 152 L300 178 L380 214 L480 234 L800 240" fill="none" stroke="var(--amber)" stroke-width="4" stroke-linecap="round" data-trace="#ffe0a0|4.5" style="filter:drop-shadow(0 0 6px rgba(255,194,77,.55))"/>
+        <text x="214" y="110" text-anchor="middle" fill="var(--amber)" font-size="14" font-weight="800">Hormuz fear spike</text>
+        <text x="150" y="288" text-anchor="middle" fill="var(--red)" font-size="13" font-weight="800">&#9875; "it HAS to spike"</text>
+        <path d="M60 272 C 300 272, 520 162, 800 82" fill="none" stroke="var(--green)" stroke-width="3.4" stroke-linecap="round" stroke-dasharray="3 4" data-trace="#9fffd6|4"/>
+        <text x="706" y="68" text-anchor="middle" fill="var(--green)" font-size="13" font-weight="800">capital that moved on</text>
+        <text x="430" y="320" text-anchor="middle" fill="var(--ink-dim)" font-size="13" font-weight="600">risk premium drained · barrels came online · no sustained shock</text>
+      </svg>
+    </div>
+    <div class="lead rise r4" style="text-align:center;margin-left:auto;margin-right:auto">Convinced the oil shock <b>had</b> to come, they <span class="r">tied up capital waiting for a catastrophe</span> that never arrived instead of <span class="g">putting it where the move actually was.</span></div>
+  </section>
+
+  <!-- 8 EXAMPLE 3 — THE BREAKEVEN TRAP -->
+  <section class="slide">
+    <div class="kicker rise r1">EXAMPLE THREE · THE ONE EVERYBODY DOES</div>
+    <h2 class="head rise r2">ADDING TO THE LOSER TO REACH <span class="em">BREAKEVEN.</span></h2>
+    <div class="stage rise r3">
+      <svg viewBox="0 0 860 320" xmlns="http://www.w3.org/2000/svg" font-family="'JetBrains Mono',monospace">
+        <line x1="40" y1="86" x2="800" y2="86" stroke="var(--neon)" stroke-width="1.6" stroke-dasharray="6 6"/>
+        <text x="800" y="76" text-anchor="end" fill="var(--neon)" font-size="13" font-weight="700">breakeven — the obsession</text>
+        <path d="M60 116 L180 158 L300 138 L420 208 L540 186 L660 256 L780 242" fill="none" stroke="var(--red)" stroke-width="3.6" stroke-linecap="round" data-trace="#ffb3bd|4.5" style="filter:drop-shadow(0 0 6px rgba(255,90,110,.5))"/>
+        <g fill="var(--red)" font-size="12" font-weight="800" text-anchor="middle">
+          <circle cx="180" cy="158" r="7"/><text x="180" y="184">ADD</text>
+          <circle cx="420" cy="208" r="7"/><text x="420" y="234">ADD</text>
+          <circle cx="660" cy="256" r="7"/><text x="660" y="282">ADD MORE</text>
+        </g>
+        <text x="118" y="132" fill="var(--red)" font-size="14" font-weight="800">good money &#8594; after bad</text>
+        <path d="M60 212 C 300 212, 470 120, 780 52" fill="none" stroke="var(--green)" stroke-width="3.4" stroke-linecap="round" stroke-dasharray="3 4" data-trace="#9fffd6|4"/>
+        <text x="690" y="40" text-anchor="middle" fill="var(--green)" font-size="14" font-weight="800">the trade you didn't take</text>
+      </svg>
+    </div>
+    <div class="lead rise r4" style="text-align:center;margin-left:auto;margin-right:auto">"I'm down too much to sell" — so you <b>throw good money after bad</b> chasing a breakeven the market never promised, when <span class="g">the real cost is everything that capital could've been.</span></div>
+  </section>
+
+  <!-- 9 OPPORTUNITY COST -->
+  <section class="slide">
+    <div class="kicker rise r1">THE BILL YOU NEVER SEE ON A STATEMENT</div>
+    <h2 class="head rise r2">THE REAL PRICE IS THE PATH YOU <span class="em">GAVE UP.</span></h2>
+    <div class="stage rise r3">
+      <svg viewBox="0 0 860 330" xmlns="http://www.w3.org/2000/svg" font-family="'JetBrains Mono',monospace">
+        <circle cx="72" cy="200" r="8" fill="var(--neon)" style="filter:drop-shadow(0 0 8px var(--neon))"/>
+        <text x="72" y="230" text-anchor="middle" fill="var(--ink-dim)" font-size="12" font-weight="700">same capital</text>
+        <line x1="120" y1="262" x2="690" y2="262" stroke="var(--ink-faint)" stroke-width="2" opacity=".5"/>
+        <path d="M80 200 C 300 208, 520 214, 770 218" fill="none" stroke="var(--red)" stroke-width="3.6" stroke-linecap="round" data-trace="#ffb3bd|4.5"/>
+        <g stroke="var(--red)" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 0 6px rgba(255,90,110,.5))" transform="rotate(-12 430 232)">
+          <circle cx="430" cy="216" r="9"/><line x1="430" y1="225" x2="430" y2="268"/><line x1="408" y1="236" x2="452" y2="236"/><path d="M410 260 Q430 282 450 260"/>
+        </g>
+        <text x="545" y="246" fill="var(--red)" font-size="13" font-weight="800">anchored &#183; dead money</text>
+        <path d="M80 200 C 320 184, 540 106, 800 40" fill="none" stroke="var(--green)" stroke-width="4.4" stroke-linecap="round" marker-end="url(#gArrow)" style="filter:drop-shadow(0 0 9px rgba(52,255,176,.6))" pathLength="100" stroke-dasharray="100" stroke-dashoffset="100"><animate attributeName="stroke-dashoffset" values="100;0;0" keyTimes="0;0.6;1" dur="2.6s" repeatCount="indefinite"/></path>
+        <text x="540" y="32" fill="var(--green)" font-size="14" font-weight="800">what it could've compounded into</text>
+        <g transform="translate(706,96)" style="filter:drop-shadow(0 0 10px rgba(255,194,77,.45))">
+          <path d="M0 0 H84 V108 L72 98 L60 108 L48 98 L36 108 L24 98 L12 108 L0 98 Z" fill="rgba(255,194,77,.08)" stroke="var(--amber)" stroke-width="2.4"/>
+          <text x="42" y="26" text-anchor="middle" fill="var(--amber)" font-size="12" font-weight="800" letter-spacing="1">THE BILL</text>
+          <line x1="12" y1="42" x2="72" y2="42" stroke="rgba(255,194,77,.5)" stroke-width="2"/>
+          <line x1="12" y1="60" x2="72" y2="60" stroke="rgba(255,194,77,.5)" stroke-width="2"/>
+          <line x1="12" y1="78" x2="54" y2="78" stroke="rgba(255,194,77,.5)" stroke-width="2"/>
+          
+        </g>
+        <path d="M812 218 L812 56" stroke="var(--amber)" stroke-width="1.6" stroke-dasharray="4 4" opacity=".6"/>
+      </svg>
+    </div>
+    <div class="lead rise r4" style="text-align:center;margin-left:auto;margin-right:auto">Holding the loser costs you <b>everything that capital could've become elsewhere</b> — a gap that compounds silently, <span class="a">never a line item until it's enormous.</span></div>
+  </section>
+
+  <!-- 10 THE REFRAME -->
+  <section class="slide">
+    <div class="kicker rise r1">THE ONE QUESTION THAT CUTS THROUGH IT</div>
+    <h2 class="head rise r2">WOULD YOU BUY IT <span class="em">TODAY</span> — FROM SCRATCH?</h2>
+    <div class="two" style="margin-top:4px">
+      <div class="col-v rise r3" style="flex:1.05">
+        <svg viewBox="0 0 460 320" xmlns="http://www.w3.org/2000/svg" font-family="'JetBrains Mono',monospace" style="height:44vh">
+          <defs><linearGradient id="wipeG" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="var(--neon)" stop-opacity="0"/><stop offset="0.75" stop-color="var(--neon)" stop-opacity="0.16"/><stop offset="1" stop-color="var(--neon)" stop-opacity="0.4"/></linearGradient></defs>
+          <rect x="40" y="18" width="380" height="118" rx="12" fill="rgba(234,246,255,.03)" stroke="var(--line)" stroke-width="1.5"/>
+          <text x="230" y="38" text-anchor="middle" fill="var(--ink-faint)" font-size="11" letter-spacing="3">THE HISTORY</text>
+          <g font-size="15" font-weight="700" text-anchor="middle" fill="var(--ink-dim)">
+            <text x="230" y="74">avg cost · 18 months in · all the DD</text>
+            <text x="230" y="106">cost basis · "I've held this forever"</text>
+          </g>
+          <line x1="58" y1="100" x2="402" y2="58" stroke="var(--red)" stroke-width="4" stroke-linecap="round" style="filter:drop-shadow(0 0 6px rgba(255,90,110,.5))"/>
+          <g><animateTransform attributeName="transform" type="translate" values="-380 0; 380 0; 380 0" keyTimes="0;0.55;1" dur="4s" repeatCount="indefinite"/>
+            <rect x="42" y="20" width="44" height="114" fill="url(#wipeG)"/>
+            <line x1="86" y1="20" x2="86" y2="134" stroke="var(--neon)" stroke-width="4" style="filter:drop-shadow(0 0 9px var(--neon))"/>
+          </g>
+          <g style="filter:drop-shadow(0 0 16px rgba(47,217,255,.4))">
+            <rect x="40" y="152" width="380" height="60" rx="12" fill="rgba(47,217,255,.1)" stroke="var(--neon)" stroke-width="2.4"><animate attributeName="stroke-opacity" values="1;.5;1" dur="1.8s" repeatCount="indefinite"/></rect>
+            <text x="230" y="178" text-anchor="middle" fill="var(--neon)" font-size="15" font-weight="800">"Fresh cash, zero history —</text>
+            <text x="230" y="199" text-anchor="middle" fill="var(--neon)" font-size="15" font-weight="800">would I buy THIS, here, today?"</text>
+          </g>
+          <path d="M150 212 L96 252" stroke="var(--green)" stroke-width="3" marker-end="url(#gArrow)" fill="none"/>
+          <path d="M310 212 L364 252" stroke="var(--red)" stroke-width="3" marker-end="url(#rArrow)" fill="none"/>
+          <g transform="translate(60,256)">
+            <circle cx="18" cy="18" r="19" fill="rgba(52,255,176,.12)" stroke="var(--green)" stroke-width="2.6" style="filter:drop-shadow(0 0 8px rgba(52,255,176,.5))"/>
+            <path d="M9 19 L16 26 L28 10" fill="none" stroke="var(--green)" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"/>
+            <text x="18" y="58" text-anchor="middle" fill="var(--green)" font-size="14" font-weight="800">KEEP IT</text>
+          </g>
+          <g transform="translate(346,256)">
+            <circle cx="18" cy="18" r="19" fill="rgba(255,90,110,.12)" stroke="var(--red)" stroke-width="2.6" style="filter:drop-shadow(0 0 8px rgba(255,90,110,.5))"/>
+            <path d="M10 10 L26 26 M26 10 L10 26" fill="none" stroke="var(--red)" stroke-width="3.6" stroke-linecap="round"/>
+            <text x="18" y="58" text-anchor="middle" fill="var(--red)" font-size="14" font-weight="800">SUNK-COST HOLD</text>
+          </g>
+        </svg>
+      </div>
+      <div class="col-t rise r4">
+        <div class="lead" style="margin-top:0">If that position landed in your lap as <b>fresh cash today</b> and you wouldn't buy it, <span class="n">you're not "holding" — you're making a buy you'd never actually make.</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 11 THE PIVOTERS WIN -->
+  <section class="slide">
+    <div class="kicker rise r1">WHO ACTUALLY COMPOUNDS</div>
+    <h2 class="head rise r2">THE NIMBLE RIDE THE CURRENT. THE <span class="em">ANCHORED</span> DRAG.</h2>
+    <div class="stage rise r3">
+      <svg viewBox="0 0 880 320" xmlns="http://www.w3.org/2000/svg" font-family="'JetBrains Mono',monospace">
+        <g transform="translate(48,108)"><line x1="0" y1="0" x2="0" y2="92" stroke="var(--ink-dim)" stroke-width="3"/><g><rect x="2" y="2" width="13" height="13" fill="var(--ink)"/><rect x="15" y="2" width="13" height="13" fill="rgba(234,246,255,.10)"/><rect x="28" y="2" width="13" height="13" fill="var(--ink)"/><rect x="41" y="2" width="13" height="13" fill="rgba(234,246,255,.10)"/><rect x="2" y="15" width="13" height="13" fill="rgba(234,246,255,.10)"/><rect x="15" y="15" width="13" height="13" fill="var(--ink)"/><rect x="28" y="15" width="13" height="13" fill="rgba(234,246,255,.10)"/><rect x="41" y="15" width="13" height="13" fill="var(--ink)"/><rect x="2" y="28" width="13" height="13" fill="var(--ink)"/><rect x="15" y="28" width="13" height="13" fill="rgba(234,246,255,.10)"/><rect x="28" y="28" width="13" height="13" fill="var(--ink)"/><rect x="41" y="28" width="13" height="13" fill="rgba(234,246,255,.10)"/></g></g>
+        <text x="74" y="216" text-anchor="middle" fill="var(--ink-dim)" font-size="13" font-weight="700">same start</text>
+        <path d="M74 152 C 280 160, 540 170, 792 180" fill="none" stroke="var(--red)" stroke-width="5" stroke-linecap="round" data-trace="#ffb3bd|4.5" style="filter:drop-shadow(0 0 7px rgba(255,90,110,.5))"/>
+        <text x="430" y="214" text-anchor="middle" fill="var(--red)" font-size="14" font-weight="800">&#9875; married to the thesis &#183; flat-to-down</text>
+        <path d="M74 152 Q200 118 280 132 Q360 146 440 92 Q520 44 620 80 Q720 110 792 44" fill="none" stroke="var(--green)" stroke-width="5" stroke-linecap="round" data-trace="#9fffd6|4.5" style="filter:drop-shadow(0 0 9px rgba(52,255,176,.6))"/>
+        <g fill="var(--green)"><circle cx="280" cy="132" r="5"/><circle cx="440" cy="92" r="5"/><circle cx="620" cy="80" r="5"/></g>
+        <text x="420" y="40" text-anchor="middle" fill="var(--green)" font-size="14" font-weight="800">pivots early &#8594; compounds</text>
+        <g transform="translate(800,8)" style="filter:drop-shadow(0 0 12px rgba(52,255,176,.6))">
+          <path d="M20 16 L52 16 L44 30 Q72 44 72 74 Q72 104 36 104 Q0 104 0 74 Q0 44 28 30 Z" fill="rgba(52,255,176,.16)" stroke="var(--green)" stroke-width="3.2"/>
+          <line x1="22" y1="20" x2="50" y2="20" stroke="var(--green)" stroke-width="3.2" stroke-linecap="round"/>
+          <text x="36" y="86" text-anchor="middle" fill="var(--green)" font-size="26" font-weight="800">$</text>
+        </g>
+        <g transform="translate(802,150)" style="filter:drop-shadow(0 0 8px rgba(255,90,110,.4))" opacity=".92">
+          <path d="M22 14 L46 14 L40 26 Q58 40 46 60 Q34 76 24 64 Q8 48 26 26 Z" fill="rgba(255,90,110,.05)" stroke="var(--red)" stroke-width="2.8"/>
+          <line x1="24" y1="18" x2="44" y2="18" stroke="var(--red)" stroke-width="2.8" stroke-linecap="round"/>
+          <text x="32" y="52" text-anchor="middle" fill="rgba(255,90,110,.5)" font-size="16" font-weight="800">$</text>
+        </g>
+      </svg>
+    </div>
+    <div class="lead rise r4" style="text-align:center;margin-left:auto;margin-right:auto">The outsized returns go to those who <b>pivot before the attachment sets in</b> — <span class="n">treating capital as a tool for the best forward EV.</span></div>
+  </section>
+
+  <!-- 12 THE CHALLENGE / CLOSE -->
+  <section class="slide">
+    <div class="kicker rise r1">DON'T JUST NOD — DO THIS</div>
+    <h2 class="head rise r2" style="margin-bottom:4px">YOUR CHALLENGE: <span class="em">THE BLANK-SLATE AUDIT</span></h2>
+    <div class="challenge rise r3">
+      <div class="ch">&#9986; CUT ONE ANCHOR THIS WEEK</div>
+      <div class="cq">Run every open position through one question: <b>"With fresh cash and zero history, would I buy this — here, at this size — today?"</b></div>
+      <div class="cstep"><div class="cn">1</div><div class="ct">Pick your <b>most-defended</b> position — the one you argue hardest for.</div></div>
+      <div class="cstep"><div class="cn">2</div><div class="ct">Write the forward thesis using <b>zero history</b> — no cost basis, no "I've held this for ages," no research you've already done.</div></div>
+      <div class="cstep"><div class="cn">3</div><div class="ct">If it can't earn its spot on <b>forward EV alone</b> → trim it or cut it. If it can → keep it, now for the right reason.</div></div>
+    </div>
+    <div class="sub rise r4" style="margin-top:12px">Cut one anchor this week and feel how much faster you move — <span style="color:var(--neon-glow)">that's the corner, see you tomorrow.</span></div>
+    <div class="handle rise r5" style="margin-top:12px">@jaymesrosenthal · Capital Flows Livestream</div>
+  </section>
+
+</div>
+
+<div class="nav">
+  <button id="prev" aria-label="Previous">&#8249;</button>
+  <div class="counter"><b id="cur">1</b> / <span id="total">12</span></div>
+  <button id="next" aria-label="Next">&#8250;</button>
+</div>
+<div class="dots" id="dots"></div>
+<div class="tools" id="tools">
+  <button class="pen" id="pen" title="Toggle pen">&#9998;</button>
+  <div class="sep"></div>
+  <div class="sep" id="sizeSep" style="display:none"></div>
+</div>
+
+<script>
+/* motes */
+(function(){const w=document.getElementById('motes');for(let i=0;i<40;i++){const s=document.createElement('div');s.className='mote';s.style.left=Math.random()*100+'%';s.style.bottom='-10px';const z=1.5+Math.random()*2.5;s.style.width=z+'px';s.style.height=z+'px';s.style.animationDuration=(9+Math.random()*10)+'s';s.style.animationDelay=(-Math.random()*16)+'s';w.appendChild(s);}})();
+
+const slides=[...document.querySelectorAll('.slide')];const N=slides.length;let idx=0;
+const progress=document.getElementById('progress'),cur=document.getElementById('cur');
+document.getElementById('total').textContent=N;
+const dotsWrap=document.getElementById('dots');
+slides.forEach((_,i)=>{const d=document.createElement('button');d.className='dot'+(i===0?' on':'');d.setAttribute('aria-label','Slide '+(i+1));d.addEventListener('click',()=>go(i));dotsWrap.appendChild(d);});
+const dots=[...dotsWrap.children];
+function go(i){i=Math.max(0,Math.min(N-1,i));if(i===idx&&slides[i].classList.contains('active'))return;slides[idx].classList.remove('active');dots[idx].classList.remove('on');idx=i;slides[idx].classList.add('active');dots[idx].classList.add('on');cur.textContent=idx+1;progress.style.width=(N>1?(idx/(N-1))*100:100)+'%';}
+go(0);
+document.getElementById('next').addEventListener('click',()=>go(idx+1));
+document.getElementById('prev').addEventListener('click',()=>go(idx-1));
+document.addEventListener('keydown',e=>{if(['ArrowRight','ArrowDown',' ','PageDown'].includes(e.key)){e.preventDefault();go(idx+1);}else if(['ArrowLeft','ArrowUp','PageUp'].includes(e.key)){e.preventDefault();go(idx-1);}else if(e.key==='Home')go(0);else if(e.key==='End')go(N-1);});
+
+let sx=0,sy=0,st=0;const deck=document.getElementById('deck');
+deck.addEventListener('touchstart',e=>{sx=e.changedTouches[0].screenX;sy=e.changedTouches[0].screenY;st=Date.now();},{passive:true});
+deck.addEventListener('touchend',e=>{const dx=e.changedTouches[0].screenX-sx,dy=e.changedTouches[0].screenY-sy,dt=Date.now()-st;if(dt>500)return;if(Math.abs(dx)<50)return;if(Math.abs(dy)>Math.abs(dx))return;if(dx<0)go(idx+1);else go(idx-1);},{passive:true});
+
+/* drawing */
+const canvas=document.getElementById('draw'),ctx=canvas.getContext('2d');
+let penOn=false,drawing=false,color='#2fd9ff',penSize=2;
+function sizeC(){canvas.width=innerWidth;canvas.height=innerHeight;ctx.lineCap='round';ctx.lineJoin='round';ctx.lineWidth=penSize;}
+sizeC();addEventListener('resize',sizeC);
+const pen=document.getElementById('pen'),tools=document.getElementById('tools'),sizeSep=document.getElementById('sizeSep');
+['#2fd9ff','#74e8ff','#34ffb0','#ffc24d','#9d8cff','#eaf6ff'].forEach((c,i)=>{const s=document.createElement('button');s.className='swatch'+(i===0?' sel':'');s.style.background=c;s.setAttribute('aria-label','color');s.addEventListener('click',()=>{color=c;[...tools.querySelectorAll('.swatch')].forEach(x=>x.classList.remove('sel'));s.classList.add('sel');if(!penOn)tog(true);});tools.insertBefore(s,sizeSep);});
+sizeSep.style.display='block';
+const sizes=[{l:'XS',v:1},{l:'S',v:2},{l:'M',v:4},{l:'L',v:8},{l:'XL',v:14}];
+sizes.forEach((s,i)=>{const b=document.createElement('button');b.className='size'+(i===1?' sel':'');b.textContent=s.l;b.title='Pen size '+s.l;b.addEventListener('click',()=>{penSize=s.v;ctx.lineWidth=s.v;[...tools.querySelectorAll('.size')].forEach(x=>x.classList.remove('sel'));b.classList.add('sel');if(!penOn)tog(true);});tools.appendChild(b);});
+const clr=document.createElement('button');clr.className='clr';clr.title='Clear';clr.textContent='CLR';clr.addEventListener('click',()=>ctx.clearRect(0,0,canvas.width,canvas.height));tools.appendChild(clr);
+function tog(f){penOn=f!==undefined?f:!penOn;pen.classList.toggle('on',penOn);tools.classList.toggle('active',penOn);canvas.style.pointerEvents=penOn?'auto':'none';}
+pen.addEventListener('click',()=>tog());
+const pos=e=>{const t=e.touches?e.touches[0]:e;return{x:t.clientX,y:t.clientY};};
+function sd(e){if(!penOn)return;drawing=true;const p=pos(e);ctx.beginPath();ctx.moveTo(p.x,p.y);}
+function md(e){if(!penOn||!drawing)return;e.preventDefault();const p=pos(e);ctx.strokeStyle=color;ctx.lineWidth=penSize;ctx.shadowColor=color;ctx.shadowBlur=Math.max(0.5,penSize*0.5);ctx.lineTo(p.x,p.y);ctx.stroke();}
+function ed(){drawing=false;}
+canvas.addEventListener('mousedown',sd);canvas.addEventListener('mousemove',md);addEventListener('mouseup',ed);
+canvas.addEventListener('touchstart',sd,{passive:false});canvas.addEventListener('touchmove',md,{passive:false});canvas.addEventListener('touchend',ed);
+
+/* slide 5: cycle the excuse highlight */
+(function(){const cards=[...document.querySelectorAll('.exwall .excard')];if(!cards.length)return;let i=0;function step(){cards.forEach(c=>c.classList.remove('hot'));cards[i].classList.add('hot');i=(i+1)%cards.length;}step();setInterval(step,1150);})();
+
+/* playheads */
+(function(){
+  const ns='http://www.w3.org/2000/svg';
+  document.querySelectorAll('[data-trace]').forEach(p=>{
+    const svg=p.ownerSVGElement;if(!svg)return;
+    const parts=(p.getAttribute('data-trace')||'').split('|');
+    const col=parts[0]||'#fff',dur=parts[1]||'4';
+    if(!p.id)p.id='tp'+Math.random().toString(36).slice(2,8);
+    const dot=document.createElementNS(ns,'circle');
+    dot.setAttribute('r','4');dot.setAttribute('fill',col);dot.setAttribute('class','ph');dot.style.color=col;
+    const am=document.createElementNS(ns,'animateMotion');
+    am.setAttribute('dur',dur+'s');am.setAttribute('repeatCount','indefinite');am.setAttribute('begin','0s');
+    const mp=document.createElementNS(ns,'mpath');
+    mp.setAttribute('href','#'+p.id);mp.setAttributeNS('http://www.w3.org/1999/xlink','href','#'+p.id);
+    am.appendChild(mp);dot.appendChild(am);svg.appendChild(dot);
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,242 @@
+theDesk — The Token Flow
+the Desk · MARKET STRUCTURE
+theDesk · A STREAM SEGMENT
+THE TOKEN FLOW
+Every AI dollar enters the system in one place and flows to ten. We're going to walk the whole path — and find where the money actually stays.
+@jaymesrosenthal
+$
+01 · APPLICATIONS
+02 · MODELS
+03 · CLOUD
+04 · INTERCONNECT
+05 · ACCELERATORS
+06 · FOUNDRY
+07 · EQUIPMENT
+08 · POWER
+09 · RAW INPUTS
+WHERE IT ALL STARTS
+EVERYTHING DOWNSTREAM SURVIVES ON ONE STREAM
+THE FAUCET consumer · enterprise · API
+$20/MO PLANS
+SEAT LICENSES
+API CALLS
+800M+ WEEKLY USERS
+EVERY LAYER BELOW FEEDS HERE →
+10 LAYERS · 1 SOURCE
+A consumer sub. A seat license. A metered API call. That's it. Every chip foundry, every datacenter, every model lab — they all live or die on a slice of that one stream.
+THE REAL QUESTION
+IS THE FAUCET WIDENING FAST ENOUGH FOR THE BILL ?
+REVENUE GROWTH
+consumer + enterprise + API
+FAUCET
+vs.
+CAPEX SPEND
+datacenters · GPUs · power · labs
+$650B+
+if the gold curve outruns the cyan one — it ALL gets repriced
+The "is AI a bubble" debate isn't really about AI. It's about whether the faucet on the left keeps widening fast enough to pay the bill on the right. That's the only question that matters.
+THE CAPITAL INTERMEDIARY
+THE HYPERSCALERS AREN'T A LAYER. THEY'RE THE VALVE .
+FAUCET $
+MSFT
+LEGACY · pays the bills
+Office · Win · Azure
+Search · LinkedIn
+AI · not yet expressed
+DEBT · BUYBACKS ↓
+AMZN
+LEGACY · pays the bills
+Retail · AWS
+Ads · Prime
+AI · not yet expressed
+DEBT · BUYBACKS ↓
+GOOGL
+LEGACY · pays the bills
+Search ads
+YouTube · GCP
+AI · not yet expressed
+DEBT · BUYBACKS ↓
+$650B+ CAPEX
+washes over every layer below
+Not pure plays. Closer to the consumer than to inference — legacy businesses pay the bills while AI capex leaves the balance sheet through SPVs, off-BS debt, and suspended buybacks. The bill itself washes over every layer downstream.
+THE TEN-LAYER STACK
+EVERY DOLLAR FLOWS THROUGH ALL OF THIS
+00 End User · Demand faucet
+01 Applications & Agents contested
+02 Foundation Models cash burn
+03 Cloud & Inference strong moat
+04 Interconnect & Memory oligopoly
+05 AI Accelerators toll booth
+06 Foundry · Manufacturing near-monopoly
+07 Chip Equipment sole supplier
+08 Power & Cooling binding constraint
+09 Raw Inputs upstream
+Top is where you spend the money. Bottom is where it stays. Let's walk it.
+01
+Applications & Agents THE SURFACE · WHAT USERS ACTUALLY TOUCH
+UX LAYER
+a thin sheet of glass
+SOMEONE ELSE'S
+MODEL
+SWITCHING COSTS: LOW
+Cursor PRIV
+Perplexity PRIV
+Harvey PRIV
+Glean PRIV
+Microsoft Copilot MSFT
+Adobe Firefly ADBE
+Closest to the user, furthest from a moat. Most are a thin layer of UX over someone else's model . Winners earn defensibility through proprietary data, workflow lock-in, or distribution. High revenue is easy here. Keeping it is the hard part.
+MARGIN: CONTESTED · WRAPPER RISK
+02
+Foundation Models THE LABS · WHERE THE FRONTIER IS TRAINED
+CASH FLOW NEGATIVE ~2030
+OpenAI ~$850B
+Anthropic ~$965B
+Google DeepMind GOOGL
+Meta AI META
+xAI PRIV
+Mistral PRIV
+The headline names — and the most capital-hungry layer. Anthropic ~$47B run-rate; OpenAI $13B+ heading to $100B target. But most of it flows straight down to compute. Brand and scale are real moats; frontier capability is rented from the layers below.
+MARGIN: THIN / NEGATIVE · CASH BURN
+03
+Cloud & Inference THE TOLL ROAD · RENTED COMPUTE BY THE HOUR
+$
+TOLL
+$
+TOLL
+DEMAND
+SILICON
+Oracle OCI ORCL
+CoreWeave CRWV
+Nebius NBIS
+IREN IREN
+The pure-play neoclouds — companies whose entire business is renting GPUs at scale. Oracle is the largest non-hyperscaler AI cloud; CoreWeave, Nebius, and IREN are dedicated GPU-hosting plays where AI is the whole story, not a side bet. The hyperscalers' clouds live one slide up — they're the valve, not pure inference plays.
+MARGIN: STRONG · CAPEX-HEAVY
+04
+Interconnect & Memory THE WIRES & HBM · A GPU IS USELESS ALONE
+GPU
+GPU
+GPU
+GPU
+HBM
+OLIGOPOLY
+Broadcom AVGO
+Arista ANET
+Astera Labs ALAB
+SK Hynix KRX:000660
+Micron MU
+Coherent COHR
+Quietly one of the best risk/rewards in the stack. A GPU needs networking (Broadcom, Arista) and high-bandwidth memory — and HBM is its own supply-constrained oligopoly. Broadcom also designs the custom AI chips for Google. Picks-and-shovels behind the picks-and-shovels.
+MARGIN: STRONG · OLIGOPOLY
+05
+AI Accelerators THE TOLL BOOTH · CENTER OF GRAVITY
+CUDA MOAT · 15+ YEARS
+NVIDIA
+81-92%
+SHARE · $5T MCAP
+TPU
+TRAINIUM
+MAIA
+custom silicon · ~50% by 2030
+NVIDIA NVDA
+AMD AMD
+Google TPU GOOGL
+AWS Trainium AMZN
+Microsoft Maia MSFT
+NVIDIA holds ~81-92% of AI accelerators, hit ~$5T market cap, and projects $1T of Blackwell + Rubin sales across '26-'27 . Protected by 15+ years of CUDA. The real threat is custom silicon from its own customers — TPU, Trainium, Maia — forecast to be ~50% of capacity by 2030. The most concentrated rent in tech right now — and the most crowded trade.
+MARGIN: MONOPOLY-LIKE · THE TOLL BOOTH
+06
+Foundry · Manufacturing THE ONLY ROAD · NVIDIA DESIGNS, TSMC BUILDS
+NVDA
+GATE
+TSMC
+90%+ ADVANCED
+SAMSUNG · BROKEN ROAD
+INTEL · YIELD ISSUES
+sold out before production
+TSMC TSM
+Samsung Foundry KRX:005930
+Intel Foundry INTC
+TSMC owns ~70% of all foundry and well into the 90%s on advanced AI nodes , running ~66% gross margins with capacity sold out before mass production. '26 capex of $52-56B is the most aggressive in foundry history. Samsung and Intel are measurably behind on yield. If NVIDIA is the toll booth, TSMC owns the only road that reaches it.
+MARGIN: WIDE MOAT · NEAR-MONOPOLY
+07
+Chip Equipment THE BEDROCK · YOU CAN'T ROUTE AROUND PHYSICS
+EVERYTHING ABOVE
+CHIP EQUIPMENT · BEDROCK
+ASML
+EUV
+$500B+
+ONLY
+COMPANY
+ON EARTH
+NO
+SUBSTITUTE
+EXISTS
+ASML ASML
+Applied Materials AMAT
+Lam Research LRCX
+KLA KLAC
+Tokyo Electron TSE:8035
+ASML is the only company on earth that makes EUV lithography — TSMC physically cannot print advanced chips without it. Applied, Lam and KLA round out a tight oligopoly for deposition, etch and inspection. The single hardest layer to disrupt in the entire flow.
+MARGIN: DEEPEST CHOKEPOINT · SOLE SUPPLIER
+08
+Power & Cooling THE NEW BOTTLENECK · YOU HAVE TO PLUG IT IN
+~5% OF GLOBAL ELECTRICITY · 2030
+NUCLEAR
+GAS
+GRID
+COOL
+HVAC
+DIST
+Constellation CEG
+Vistra VST
+GE Vernova GEV
+Vertiv VRT
+Eaton ETN
+Schneider EURONEXT:SU
+AI data centers may consume ~5% of global electricity by 2030 , and TSMC now says energy efficiency — not compute — is the main design constraint. That turns power generation and thermal/electrical gear into AI infrastructure plays. The market spent two years pricing chips. It's now waking up to the fact you have to plug them in.
+MARGIN: RISING FAST · BINDING CONSTRAINT
+09
+Raw Inputs THE SECOND-ORDER TRADE · COPPER · EARTH · WATER
+SURFACE · DIGITAL ECONOMY
+COPPER VEINS
+RARE EARTHS
+WATER · COOLING
+Copper FCX · SCCO
+Rare Earths MP
+Specialty Gases APD · LIN
+Water / Cooling COMMODITY
+Every data center is a physical object — miles of copper, rare-earth magnets, specialty process gases, and enormous volumes of cooling water. Lowest margin, most cyclical — but the true upstream. Real-economy demand created entirely by the digital boom above. The second-order AI trade most people never get to.
+MARGIN: CYCLICAL · UPSTREAM
+THE PATTERN
+MARGIN GETS FATTER THE DEEPER YOU GO
+01 APPS — contested
+02 MODELS — burning cash
+03 CLOUD — strong
+04 INTERCONNECT — oligopoly
+05 ACCELERATORS — monopoly
+06 FOUNDRY — wide moat
+07 EQUIPMENT — chokepoint
+08 POWER — rising fast
+09 RAW — cyclical
+DEPTH
+→
+bar width = strength of moat
+The layers in the middle — accelerators, foundry, equipment — are where the dollar actually stops moving. The pattern is the lesson: in any value chain, follow the bottleneck.
+TAKE THIS WITH YOU
+THE TOKEN FLOW WATCHLIST
+VALVE Hyperscalers MSFT AMZN GOOGL
+01 Applications MSFT ADBE CURSOR PERPLEXITY HARVEY GLEAN
+02 Foundation Models GOOGL META OPENAI ANTHROPIC xAI MISTRAL
+03 Cloud & Inference ORCL CRWV NBIS IREN
+04 Interconnect & Memory AVGO ANET ALAB KRX:000660 MU COHR
+05 AI Accelerators NVDA AMD GOOGL AMZN MSFT
+06 Foundry TSM KRX:005930 INTC
+07 Chip Equipment ASML AMAT LRCX KLAC TSE:8035
+08 Power & Cooling CEG VST GEV VRT ETN EURONEXT:SU
+09 Raw Inputs FCX SCCO MP APD LIN
+Screenshot this. Then watch where the dollar actually rests when you walk it through.
+‹
+1 / 15
+›
+✎

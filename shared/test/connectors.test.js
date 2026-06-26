@@ -497,3 +497,107 @@ describe('TradovateConnector', () => {
     assert.equal(captured.clOrdId, undefined);
   });
 });
+
+describe('TradovateConnector — entry-through-stop guard (Layer 2)', () => {
+  beforeEach(() => _resetRegistryForTests());
+
+  // Build an inited connector and stub the two flatten paths so we can assert
+  // which one fired (and with what args) without hitting a broker.
+  async function makeConn() {
+    const { TradovateConnector } = await import('../connectors/tradovate-connector.js');
+    class FakeClient {
+      constructor() { this.isConnected = false; this.accessToken = null; }
+      async connect() { this.isConnected = true; this.accessToken = 't'; }
+    }
+    const conn = new TradovateConnector(
+      { id: 'tv', broker: 'tradovate', config: { mode: 'demo', accountId: 1 }, credentials: {} },
+      silentLogger(),
+      { ClientClass: FakeClient, messageBus: fakeBus(), channels: fakeChannels() }
+    );
+    await conn.init();
+    const calls = { bySignal: [], bySymbol: [] };
+    conn.closePositionBySignalId = async (signalId, hint) => { calls.bySignal.push({ signalId, hint }); };
+    conn.closePosition = async (symbol) => { calls.bySymbol.push(symbol); };
+    return { conn, calls };
+  }
+
+  test('short filled AT the stop is flattened (zero tolerance)', async () => {
+    const { conn, calls } = await makeConn();
+    conn.orderStrategyLinks.set('S1', { stopLoss: 30557, takeProfit: 30530 });
+    const attr = { signalId: 'sig-1', strategy: 'LSTB', strategyId: 'S1' };
+    const flat = await conn._guardEntryThroughStop('MNQU6', -1, { netPrice: 30557 }, {}, attr);
+    assert.equal(flat, true);
+    assert.equal(calls.bySignal.length, 1);
+    assert.equal(calls.bySignal[0].signalId, 'sig-1');
+    assert.deepEqual(calls.bySignal[0].hint, { symbol: 'MNQU6' });
+  });
+
+  test('short filled THROUGH the stop is flattened (the live 30562 vs 30557 case)', async () => {
+    const { conn, calls } = await makeConn();
+    conn.orderStrategyLinks.set('S2', { stopLoss: 30557 });
+    const attr = { signalId: 'sig-2', strategy: 'LSTB', strategyId: 'S2' };
+    const flat = await conn._guardEntryThroughStop('MNQU6', -1, { netPrice: 30562 }, {}, attr);
+    assert.equal(flat, true);
+    assert.equal(calls.bySignal.length, 1);
+  });
+
+  test('long filled THROUGH the stop is flattened', async () => {
+    const { conn, calls } = await makeConn();
+    conn.orderStrategyLinks.set('S3', { stopLoss: 30534.75 });
+    const attr = { signalId: 'sig-3', strategy: 'LSTB', strategyId: 'S3' };
+    const flat = await conn._guardEntryThroughStop('MNQU6', 1, { netPrice: 30530 }, {}, attr);
+    assert.equal(flat, true);
+    assert.equal(calls.bySignal.length, 1);
+  });
+
+  test('short with stop still ABOVE entry is NOT flattened (valid trade)', async () => {
+    const { conn, calls } = await makeConn();
+    conn.orderStrategyLinks.set('S4', { stopLoss: 30557 });
+    const attr = { signalId: 'sig-4', strategy: 'LSTB', strategyId: 'S4' };
+    const flat = await conn._guardEntryThroughStop('MNQU6', -1, { netPrice: 30545 }, {}, attr);
+    assert.equal(flat, false);
+    assert.equal(calls.bySignal.length, 0);
+    assert.equal(calls.bySymbol.length, 0);
+  });
+
+  test('long with stop still BELOW entry is NOT flattened (valid trade)', async () => {
+    const { conn, calls } = await makeConn();
+    conn.orderStrategyLinks.set('S5', { stopLoss: 30534.75 });
+    const attr = { signalId: 'sig-5', strategy: 'LSTB', strategyId: 'S5' };
+    const flat = await conn._guardEntryThroughStop('MNQU6', 1, { netPrice: 30546.75 }, {}, attr);
+    assert.equal(flat, false);
+    assert.equal(calls.bySignal.length, 0);
+  });
+
+  test('unknown stop (no strategy link) fails OPEN — no flatten', async () => {
+    const { conn, calls } = await makeConn();
+    const attr = { signalId: 'sig-6', strategy: 'LSTB', strategyId: 'missing' };
+    const flat = await conn._guardEntryThroughStop('MNQU6', -1, { netPrice: 99999 }, {}, attr);
+    assert.equal(flat, false);
+    assert.equal(calls.bySignal.length, 0);
+    assert.equal(calls.bySymbol.length, 0);
+  });
+
+  test('through-stop with no signalId falls back to closePosition(symbol)', async () => {
+    const { conn, calls } = await makeConn();
+    conn.orderStrategyLinks.set('S7', { stopLoss: 30557 });
+    const attr = { signalId: null, strategy: 'UNKNOWN', strategyId: 'S7' };
+    const flat = await conn._guardEntryThroughStop('MNQU6', -1, { netPrice: 30560 }, {}, attr);
+    assert.equal(flat, true);
+    assert.equal(calls.bySymbol.length, 1);
+    assert.equal(calls.bySymbol[0], 'MNQU6');
+    assert.equal(calls.bySignal.length, 0);
+  });
+
+  test('entry price falls back to avgPrice then fill.price', async () => {
+    const { conn, calls } = await makeConn();
+    conn.orderStrategyLinks.set('S8', { stopLoss: 30557 });
+    const attr = { signalId: 'sig-8', strategy: 'LSTB', strategyId: 'S8' };
+    // no netPrice on the position row → avgPrice used
+    const flatA = await conn._guardEntryThroughStop('MNQU6', -1, { avgPrice: 30562 }, {}, attr);
+    assert.equal(flatA, true);
+    // neither netPrice nor avgPrice → fill.price used
+    const flatB = await conn._guardEntryThroughStop('MNQU6', -1, {}, { price: 30562 }, attr);
+    assert.equal(flatB, true);
+  });
+});

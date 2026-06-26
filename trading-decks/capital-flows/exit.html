@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>theDesk — The Art of the Exit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg-0:#070611; --bg-1:#0d0b1d; --bg-2:#151030;
+  --purple:#c54bff; --purple-bold:#b23cff; --purple-deep:#7a1fd0; --purple-glow:#c89eff;
+  --ink:#f4f1ff; --ink-dim:rgba(244,241,255,.66); --ink-faint:rgba(244,241,255,.16);
+  --line:rgba(244,241,255,.12);
+  --cyan:#00e5ff; --green:#1aff95; --red:#ff4d6d; --neon:#e8ff00; --gold:#ffd24a;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;overflow:hidden;background:var(--bg-0);color:var(--ink)}
+body{font-family:'JetBrains Mono',monospace;-webkit-font-smoothing:antialiased}
+.bg{position:fixed;inset:0;z-index:0;background:
+  radial-gradient(900px 700px at 82% 8%, rgba(197,75,255,.22), transparent 60%),
+  radial-gradient(760px 760px at 6% 92%, rgba(0,229,255,.08), transparent 60%),
+  radial-gradient(640px 640px at 92% 92%, rgba(122,31,208,.20), transparent 62%),
+  linear-gradient(160deg,var(--bg-1) 0%, var(--bg-0) 72%);}
+.orb{position:fixed;border-radius:50%;filter:blur(76px);opacity:.5;z-index:0;pointer-events:none}
+.orb1{width:440px;height:440px;left:-100px;top:-90px;background:radial-gradient(circle,var(--purple),transparent 70%);animation:drift1 23s ease-in-out infinite}
+.orb2{width:360px;height:360px;right:-70px;bottom:-60px;background:radial-gradient(circle,rgba(0,229,255,.34),transparent 70%);animation:drift2 28s ease-in-out infinite}
+.orb3{width:320px;height:320px;right:24%;top:28%;background:radial-gradient(circle,rgba(122,31,208,.5),transparent 70%);animation:drift3 31s ease-in-out infinite}
+@keyframes drift1{50%{transform:translate(60px,40px) scale(1.08)}}
+@keyframes drift2{50%{transform:translate(-50px,-30px) scale(1.1)}}
+@keyframes drift3{50%{transform:translate(40px,-50px) scale(.9)}}
+.grain{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:.05;mix-blend-mode:overlay;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+.sparks{position:fixed;inset:0;z-index:1;pointer-events:none;overflow:hidden}
+.spark{position:absolute;bottom:-12px;border-radius:50%;background:var(--purple-glow);box-shadow:0 0 7px var(--purple);opacity:0;animation:rise-spark linear infinite}
+@keyframes rise-spark{0%{transform:translateY(0);opacity:0}10%{opacity:.8}90%{opacity:.4}100%{transform:translateY(-104vh);opacity:0}}
+.progress{position:fixed;top:0;left:0;height:3px;width:0;z-index:40;background:linear-gradient(90deg,var(--purple),var(--cyan),var(--purple-deep));box-shadow:0 0 12px var(--purple);transition:width .45s cubic-bezier(.4,0,.2,1)}
+.brand{position:fixed;top:20px;left:26px;z-index:30;font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--ink-dim)}
+.brand b{color:var(--ink);font-weight:500}.brand b i{color:var(--purple);font-style:normal}
+.deck{position:fixed;inset:0;z-index:10}
+.slide{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;gap:clamp(8px,1.7vh,24px);padding:max(4vh,46px) 7vw 108px;opacity:0;visibility:hidden;transition:opacity .5s ease,visibility .5s;pointer-events:none}
+.slide.active{opacity:1;visibility:visible;pointer-events:auto}
+.kicker{font-size:13px;font-weight:600;letter-spacing:4px;text-transform:uppercase;color:var(--purple);margin-bottom:16px;display:flex;align-items:center;gap:12px}
+.kicker::before{content:"";width:34px;height:2px;background:var(--purple);box-shadow:0 0 10px var(--purple)}
+.display{font-family:'Instrument Serif',Georgia,serif;text-transform:uppercase;font-size:clamp(48px,8vw,104px);line-height:.94;letter-spacing:-1.5px;font-weight:400;text-shadow:0 0 44px rgba(197,75,255,.32)}
+.display .em{color:var(--purple);font-style:italic}
+h2.head{font-family:'Instrument Serif',Georgia,serif;text-transform:uppercase;font-size:clamp(32px,5vw,64px);line-height:1.0;letter-spacing:-.5px;font-weight:400}
+.head .em{font-style:italic;color:var(--purple)}
+.lead{font-size:clamp(15px,1.55vw,22px);line-height:1.55;color:var(--ink);font-weight:400;max-width:920px;margin-top:6px}
+.lead .g{font-weight:500}.lead .p{color:var(--purple-glow);font-weight:600}.lead .c{color:var(--cyan);font-weight:600}
+.lead .gr{color:var(--green);font-weight:600}.lead .gd{color:var(--gold);font-weight:600}.lead .rd{color:var(--red);font-weight:600}
+.sub{font-family:'Instrument Serif',Georgia,serif;font-style:italic;font-size:clamp(19px,2.5vw,33px);color:var(--ink-dim);margin-top:16px;max-width:780px}
+.handle{font-size:14px;letter-spacing:2px;color:var(--purple-glow);margin-top:20px}
+.head .em,.display .em{animation:emglow 3.4s ease-in-out infinite}
+@keyframes emglow{0%,100%{text-shadow:0 0 12px currentColor}50%{text-shadow:0 0 30px currentColor,0 0 54px currentColor}}
+.ph{filter:drop-shadow(0 0 5px #fff) drop-shadow(0 0 11px currentColor)}
+.stage{margin-top:0;flex:1 1 auto;min-height:0;display:flex;justify-content:center;align-items:center;width:100%}
+.stage svg{width:auto;height:100%;max-width:96%;max-height:58vh;overflow:hidden}
+.two{display:flex;align-items:center;gap:46px;width:100%;flex:1 1 auto;min-height:0}
+.two .col-v{flex:0 0 auto}.two .col-t{flex:1 1 auto}
+.rise{opacity:0;transform:translateY(20px)}
+.slide.active .rise{animation:rise .7s cubic-bezier(.18,.7,.2,1) forwards}
+.slide.active .r1{animation-delay:.05s}.slide.active .r2{animation-delay:.16s}.slide.active .r3{animation-delay:.27s}
+.slide.active .r4{animation-delay:.38s}.slide.active .r5{animation-delay:.49s}.slide.active .r6{animation-delay:.6s}
+@keyframes rise{to{opacity:1;transform:none}}
+
+/* exit menu grid */
+.menu-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:13px;width:100%;max-width:1120px;margin:0 auto;flex:1 1 auto;min-height:0;align-content:center}
+.menu-card{border:1px solid var(--line);border-radius:9px;background:rgba(20,16,41,.5);padding:15px 16px;display:flex;flex-direction:column;gap:9px}
+.menu-card .mi{width:36px;height:36px;flex:0 0 auto}
+.menu-card .mt{font-family:'Instrument Serif',Georgia,serif;font-size:20px;line-height:1.04;letter-spacing:.3px}
+.menu-card .md{font-size:10.5px;color:var(--ink-dim);line-height:1.4;letter-spacing:.2px}
+.menu-card.span2{grid-column:span 2}
+
+/* archetype / profile cards */
+.profile{border:1.5px solid var(--line);border-radius:10px;background:linear-gradient(165deg,rgba(20,16,41,.8),rgba(7,6,17,.5));padding:20px 24px;max-width:560px}
+.profile .ph2{font-size:12px;letter-spacing:3px;text-transform:uppercase;font-weight:700;border-bottom:1px solid var(--line);padding-bottom:10px;margin-bottom:14px;display:flex;justify-content:space-between}
+.profile .row{display:flex;gap:12px;align-items:flex-start;margin-bottom:10px;font-size:clamp(13px,1.2vw,16px);line-height:1.35}
+.profile .row:last-child{margin-bottom:0}
+.profile .rk{flex:0 0 auto;width:22px;font-family:'Instrument Serif',Georgia,serif;font-size:20px;line-height:1}
+
+/* generic stat / framework rows */
+.rows{display:flex;flex-direction:column;gap:12px;max-width:640px}
+.row-line{display:flex;gap:14px;align-items:flex-start;border-left:3px solid var(--purple);padding:8px 0 8px 16px;background:linear-gradient(90deg,rgba(197,75,255,.05),transparent)}
+.row-line .rn{flex:0 0 auto;font-family:'Instrument Serif',Georgia,serif;font-size:26px;color:var(--purple-glow);line-height:1}
+.row-line .rt{font-size:clamp(13px,1.25vw,17px);color:var(--ink);line-height:1.35}
+.row-line .rt b{color:var(--purple-glow);font-weight:700}
+
+/* chips */
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.chip{font-size:12px;border:1px solid var(--line);padding:7px 12px;border-radius:3px;background:rgba(0,0,0,.28);letter-spacing:.5px;color:var(--ink-dim)}
+.chip b{color:var(--purple-glow);font-weight:700}
+.chip.c b{color:var(--cyan)}.chip.g b{color:var(--green)}.chip.gd b{color:var(--gold)}
+
+/* big quote */
+.quote-big{font-family:'Instrument Serif',Georgia,serif;font-size:clamp(34px,5.6vw,76px);line-height:1.06;letter-spacing:-.5px;max-width:1040px;text-shadow:0 0 40px rgba(197,75,255,.2)}
+.quote-big .q{color:var(--purple);font-style:italic}
+
+/* nav / dots */
+.nav{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);z-index:40;display:flex;gap:14px;align-items:center}
+.nav button{width:44px;height:44px;border-radius:50%;border:1px solid var(--line);background:rgba(20,16,41,.6);color:var(--ink);cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;transition:.2s;backdrop-filter:blur(6px)}
+.nav button:hover{border-color:var(--purple);box-shadow:0 0 14px rgba(197,75,255,.5);color:var(--purple)}
+.counter{font-size:12px;letter-spacing:2px;color:var(--ink-dim);min-width:54px;text-align:center}.counter b{color:var(--ink)}
+.dots{position:fixed;right:22px;top:50%;transform:translateY(-50%);z-index:40;display:flex;flex-direction:column;gap:8px}
+.dot{width:8px;height:8px;border-radius:50%;border:1px solid var(--ink-faint);background:transparent;cursor:pointer;transition:.25s;padding:0}
+.dot.on{background:var(--purple);border-color:var(--purple);box-shadow:0 0 10px var(--purple);transform:scale(1.3)}
+
+/* tools — inconspicuous, bottom-left */
+#draw{position:fixed;inset:0;z-index:25;pointer-events:none}
+.tools{position:fixed;left:14px;bottom:14px;z-index:40;display:flex;flex-direction:row;gap:5px;align-items:center;padding:5px 8px;border:1px solid var(--line);border-radius:22px;background:rgba(7,6,17,.5);backdrop-filter:blur(8px);opacity:.32;transition:opacity .25s ease}
+.tools:hover{opacity:1}
+.tools.active{opacity:1}
+.tools .pen{width:26px;height:26px;border-radius:50%;border:1px solid var(--line);background:rgba(20,16,41,.7);color:var(--ink-dim);cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;transition:.2s;padding:0}
+.tools .pen.on{border-color:var(--purple);color:var(--purple);box-shadow:0 0 10px rgba(197,75,255,.45)}
+.swatch{width:13px;height:13px;border-radius:50%;border:2px solid transparent;cursor:pointer;transition:.18s;padding:0}
+.swatch.sel{border-color:var(--ink);transform:scale(1.15)}
+.tools .sep{width:1px;height:14px;background:var(--line);margin:0 1px;flex-shrink:0}
+.tools .size{width:22px;height:18px;border-radius:4px;border:1px solid var(--line);background:rgba(20,16,41,.7);color:var(--ink-dim);cursor:pointer;font-size:8.5px;letter-spacing:.3px;display:flex;align-items:center;justify-content:center;font-weight:700;padding:0}
+.tools .size.sel{border-color:var(--purple);color:var(--purple);box-shadow:0 0 8px rgba(197,75,255,.45)}
+.tools .clr{width:26px;height:18px;border-radius:4px;border:1px solid var(--line);background:rgba(20,16,41,.7);color:var(--ink-dim);cursor:pointer;font-size:9px;letter-spacing:.3px;padding:0}
+
+@media(max-width:768px){
+  .slide{justify-content:flex-start;padding:6vh 5vw 80px}
+  .display{font-size:34px}.head{font-size:24px}.sub{font-size:18px}.lead{font-size:14px;margin-top:12px}
+  .kicker{font-size:11px;letter-spacing:3px;margin-bottom:10px}
+  .stage svg{height:28vh}
+  .two{flex-direction:column;align-items:flex-start;gap:18px}
+  .menu-grid{grid-template-columns:1fr 1fr;gap:7px}
+  .menu-card{padding:9px 11px;gap:5px;flex-direction:row;align-items:center}.menu-card .mi{width:22px;height:22px}.menu-card .mt{font-size:13px;line-height:1.05}.menu-card .md{display:none}.menu-card.span2{grid-column:span 2}
+  .quote-big{font-size:24px}.profile{padding:14px 16px}.rows{gap:8px}
+  .dots,.tools{display:none}.brand{font-size:10px;top:14px;left:16px}
+  .orb1{width:190px;height:190px}.orb2{width:150px;height:150px}.orb3{width:130px;height:130px}.sparks{opacity:.45}.nav{bottom:16px}
+}
+@media(max-width:480px){.display{font-size:28px}.head{font-size:20px}.brand{display:none}.nav button{width:36px;height:36px}.menu-grid{grid-template-columns:1fr}.menu-card.span2{grid-column:span 1}}
+
+/* short-height viewports */
+@media(max-height:820px){
+  .slide{padding:max(3.5vh,46px) 6vw 102px}
+  .display{font-size:clamp(42px,6.6vw,82px)}
+  h2.head{font-size:clamp(26px,4vw,50px)}
+  .stage svg{max-height:46vh}
+  .quote-big{font-size:clamp(28px,4.4vw,60px)}
+  .lead{margin-top:10px;font-size:clamp(13px,1.3vw,18px)}
+  .menu-card{padding:11px 13px}.profile{padding:16px 20px}.rows{gap:9px}.profile .row{margin-bottom:8px}
+}
+
+/* mobile overflow fixes */
+@media(max-width:768px){
+  .two,.stage,.menu-grid{flex:0 1 auto !important;min-height:auto !important}
+  .col-v svg{width:80vw !important;height:auto !important;max-height:32vh !important;overflow:hidden}
+}
+@media(max-width:768px) and (max-height:700px){
+  .slide{padding:2.5vh 5vw 86px}
+  .lead{font-size:12.5px;margin-top:8px}
+  .display{font-size:25px}.head{font-size:20px}.sub{font-size:15px}
+  .col-v svg{max-height:26vh !important}
+  .menu-grid{gap:5px}.menu-card{padding:6px 9px}.menu-card .mi{width:20px;height:20px}.menu-card .mt{font-size:12px}
+}
+</style>
+</head>
+<body>
+<div class="bg"></div>
+<div class="orb orb1"></div><div class="orb orb2"></div><div class="orb orb3"></div>
+<div class="grain"></div>
+<div class="sparks" id="sparks"></div>
+<canvas id="draw"></canvas>
+<div class="progress" id="progress"></div>
+<div class="brand"><b>the<i>Desk</i></b> · EXECUTION</div>
+<svg width="0" height="0" style="position:absolute"><defs>
+  <marker id="pArrow" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="context-stroke"/></marker>
+  <marker id="cArrow" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#00e5ff"/></marker>
+</defs></svg>
+<div class="deck" id="deck">
+  <!-- 1 COVER -->
+  <section class="slide active">
+    <div class="kicker rise r1">theDesk · EXECUTION & PSYCHOLOGY</div>
+    <div class="display rise r2" style="font-size:clamp(50px,9vw,128px)">THE ART<br>OF THE <span class="em">EXIT</span></div>
+    <div class="sub rise r3" style="max-width:900px">Everyone obsesses over the entry. The hardest part of the trade — and the part that actually decides your ultimate fate and longevity in the space — is how you get out.</div>
+    <div class="rise r4" style="margin-top:20px;display:flex;align-items:center;gap:16px">
+      <div style="width:48px;height:2px;background:var(--purple);box-shadow:0 0 10px var(--purple)"></div>
+      <span style="font-size:13px;letter-spacing:3px;color:var(--purple);font-weight:700">KNOW WHEN TO CLAIM VICTORY</span>
+    </div>
+    <div class="handle rise r5" style="margin-top:22px">@jaymesrosenthal</div>
+  </section>
+
+  <!-- 2 THE OVERLOOKED HALF -->
+  <section class="slide">
+    <div class="kicker rise r1">THE HALF NOBODY TRAINS</div>
+    <h2 class="head rise r2">EVERYONE STUDIES THE ENTRY.<br>THE <span class="em">EXIT</span> DECIDES THE OUTCOME.</h2>
+    <div class="stage rise r3">
+      <svg viewBox="0 0 760 380" xmlns="http://www.w3.org/2000/svg" font-family="'JetBrains Mono',monospace">
+        <!-- the trade arc -->
+        <path d="M60 300 L150 250 L230 180 L330 120 L430 150 L520 95 L620 140 L700 70" fill="none" stroke="rgba(244,241,255,.28)" stroke-width="2.5" stroke-linecap="round"/>
+        <!-- entry marker -->
+        <circle cx="150" cy="250" r="9" fill="none" stroke="var(--cyan)" stroke-width="3"/>
+        <circle cx="150" cy="250" r="3.5" fill="var(--cyan)"/>
+        <text x="150" y="300" text-anchor="middle" fill="var(--cyan)" font-size="13" font-weight="700" letter-spacing="1">ENTRY</text>
+        <text x="150" y="320" text-anchor="middle" fill="rgba(0,229,255,.65)" font-size="9.5">all the books · all the attention</text>
+        <!-- exit zone -->
+        <rect x="470" y="60" width="250" height="120" rx="8" fill="rgba(197,75,255,.07)" stroke="var(--purple)" stroke-width="1.5" stroke-dasharray="4 5"/>
+        <text x="595" y="42" text-anchor="middle" fill="var(--purple)" font-size="13" font-weight="700" letter-spacing="1">EXIT</text>
+        <text x="595" y="205" text-anchor="middle" fill="rgba(200,158,255,.75)" font-size="9.5">barely trained · where the P&amp;L is really made</text>
+        <g fill="var(--purple)"><circle cx="520" cy="95" r="4"/><circle cx="620" cy="140" r="4"/><circle cx="700" cy="70" r="4"/></g>
+        <text x="595" y="125" text-anchor="middle" fill="rgba(244,241,255,.5)" font-size="11" font-style="italic">…so which one do you take?</text>
+      </svg>
+    </div>
+    <div class="lead rise r4" style="text-align:center;margin-left:auto;margin-right:auto">Getting in is hard. But the toughest execution lives on the way out — <span class="g">an open winner gives you a dozen places you could leave, and no alarm telling you which one is yours.</span></div>
+  </section>
+
+  <!-- 3 NO UNIVERSAL EXIT -->
+  <section class="slide">
+    <div class="kicker rise r1">THERE IS NO "RIGHT" EXIT</div>
+    <h2 class="head rise r2">THE EXIT IS <span class="em">PERSONAL.</span></h2>
+    <div class="stage rise r3">
+      <svg viewBox="0 0 760 330" xmlns="http://www.w3.org/2000/svg" font-family="'JetBrains Mono',monospace">
+        <g>
+          <rect x="70" y="56" width="250" height="86" rx="8" fill="rgba(0,229,255,.07)" stroke="var(--cyan)" stroke-width="1.5"/>
+          <text x="195" y="94" text-anchor="middle" fill="var(--cyan)" font-size="14" font-weight="700" letter-spacing="2">YOUR PERSONALITY</text>
+          <text x="195" y="118" text-anchor="middle" fill="rgba(0,229,255,.7)" font-size="10">how you're actually wired</text>
+        </g>
+        <text x="380" y="110" text-anchor="middle" font-family="'Instrument Serif',Georgia,serif" font-size="36" fill="var(--gold)">+</text>
+        <g>
+          <rect x="440" y="56" width="250" height="86" rx="8" fill="rgba(26,255,149,.07)" stroke="var(--green)" stroke-width="1.5"/>
+          <text x="565" y="94" text-anchor="middle" fill="var(--green)" font-size="14" font-weight="700" letter-spacing="2">YOUR OBJECTIVE</text>
+          <text x="565" y="118" text-anchor="middle" fill="rgba(26,255,149,.7)" font-size="10">what you're actually here to do</text>
+        </g>
+        <path d="M195 142 C 195 200, 380 188, 380 240" fill="none" stroke="rgba(244,241,255,.25)" stroke-width="2"/>
+        <path d="M565 142 C 565 200, 380 188, 380 240" fill="none" stroke="rgba(244,241,255,.25)" stroke-width="2"/>
+        <g style="filter:drop-shadow(0 0 20px rgba(197,75,255,.6))">
+          <rect x="250" y="240" width="260" height="64" rx="9" fill="rgba(197,75,255,.14)" stroke="var(--purple)" stroke-width="2.5"/>
+          <text x="380" y="279" text-anchor="middle" fill="var(--purple)" font-size="16" font-weight="800" letter-spacing="2">YOUR CREDIBLE EXIT</text>
+        </g>
+      </svg>
+    </div>
+    <div class="lead rise r4" style="text-align:center;margin-left:auto;margin-right:auto">A "credible exit" isn't a universal rule you copy from someone else. <span class="p">It's the one you'll actually honor</span> — because it fits how you're wired and what you're trying to achieve.</div>
+  </section>
+  <!-- 4 WHAT MAKES AN EXIT CREDIBLE -->
+  <section class="slide">
+    <div class="kicker rise r1">DEFINE IT BEFORE YOU NEED IT</div>
+    <h2 class="head rise r2">A CREDIBLE EXIT IS A <span class="em">DECISION</span><br>YOU ALREADY MADE.</h2>
+    <div class="two" style="margin-top:4px">
+      <div class="col-v rise r3">
+        <div class="rows">
+          <div class="row-line"><div class="rn">1</div><div class="rt"><b>Pre-committed.</b> Chosen while you're calm and objective — not mid-trade with money on the line.</div></div>
+          <div class="row-line"><div class="rn">2</div><div class="rt"><b>Specific.</b> A condition you can actually see hit — not "I'll know it when I feel it."</div></div>
+          <div class="row-line"><div class="rn">3</div><div class="rt"><b>Yours.</b> Sized to your personality and goal — so you'll honor it under pressure.</div></div>
+        </div>
+      </div>
+      <div class="col-t rise r4">
+        <div class="lead" style="margin-top:0">In the moment, your brain is the least reliable it will ever be. <span class="g">The whole point of a credible exit is to move the decision to a time when you can think clearly</span> — and then just follow it.</div>
+        <div class="lead"><span class="p">Scenario planning beats willpower.</span> You're not trying to be disciplined in the heat of it. You're trying to not need to be.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5 THE EXIT MENU -->
+  <section class="slide">
+    <div class="kicker rise r1">THE MENU OF CREDIBLE EXITS</div>
+    <h2 class="head rise r2">MAP EVERY SPOT YOU'D BE <span class="em">HAPPY</span> TO LEAVE.</h2>
+    <div class="menu-grid rise r3">
+      <div class="menu-card">
+        <svg class="mi" viewBox="0 0 36 36"><line x1="4" y1="12" x2="32" y2="12" stroke="#00e5ff" stroke-width="2" stroke-dasharray="3 3"/><line x1="4" y1="24" x2="32" y2="24" stroke="#00e5ff" stroke-width="2" stroke-dasharray="3 3"/><path d="M4 20 L12 16 L20 22 L28 10" fill="none" stroke="#f4f1ff" stroke-width="2" stroke-linecap="round"/></svg>
+        <div class="mt">Support &amp; Resistance</div><div class="md">Pre-marked levels on the chart where you've decided the move is "done enough."</div>
+      </div>
+      <div class="menu-card">
+        <svg class="mi" viewBox="0 0 36 36"><path d="M5 28 L14 18 L22 22 L31 8" fill="none" stroke="#1aff95" stroke-width="2.2" stroke-linecap="round"/><text x="5" y="14" fill="#1aff95" font-size="9" font-weight="700">R</text></svg>
+        <div class="mt">Move × Time</div><div class="md">How far it's run in your favor, over what window — a target return inside a target horizon.</div>
+      </div>
+      <div class="menu-card">
+        <svg class="mi" viewBox="0 0 36 36"><path d="M18 6 C 9 14, 9 22, 18 30 C 27 22, 27 14, 18 6 Z" fill="none" stroke="#ffd24a" stroke-width="2"/><circle cx="18" cy="18" r="3" fill="#ffd24a"/></svg>
+        <div class="mt">Vol Expansion / Rich Premium</div><div class="md">Volatility blows out and option premium gets fat — the market pays you to hand it over.</div>
+      </div>
+      <div class="menu-card">
+        <svg class="mi" viewBox="0 0 36 36"><circle cx="18" cy="18" r="13" fill="none" stroke="#c54bff" stroke-width="2"/><path d="M12 20 Q18 26 24 20" fill="none" stroke="#c54bff" stroke-width="2" stroke-linecap="round"/><circle cx="13" cy="15" r="1.6" fill="#c54bff"/><circle cx="23" cy="15" r="1.6" fill="#c54bff"/></svg>
+        <div class="mt">Sentiment</div><div class="md">The crowd flips from doubt to euphoria — the easy money has already been priced.</div>
+      </div>
+      <div class="menu-card">
+        <svg class="mi" viewBox="0 0 36 36"><rect x="6" y="20" width="6" height="10" fill="#00e5ff"/><rect x="15" y="13" width="6" height="17" fill="#00e5ff"/><rect x="24" y="7" width="6" height="23" fill="#00e5ff"/></svg>
+        <div class="mt">Positioning</div><div class="md">Everyone's already on your side of the boat — fuel for the move is running low.</div>
+      </div>
+      <div class="menu-card">
+        <svg class="mi" viewBox="0 0 36 36"><path d="M6 24 L18 10 L30 24" fill="none" stroke="#ff4d6d" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><text x="6" y="32" fill="#1aff95" font-size="8" font-weight="700">P</text><text x="26" y="32" fill="#ff4d6d" font-size="8" font-weight="700">C</text></svg>
+        <div class="mt">Put / Call Skew</div><div class="md">How the options market is pricing fear vs greed — a tell on how stretched the move is.</div>
+      </div>
+      <div class="menu-card">
+        <svg class="mi" viewBox="0 0 36 36"><path d="M18 5 L21 14 L31 14 L23 20 L26 30 L18 24 L10 30 L13 20 L5 14 L15 14 Z" fill="none" stroke="#e8ff00" stroke-width="1.8" stroke-linejoin="round"/></svg>
+        <div class="mt">Sector Over-Exuberance</div><div class="md">The whole theme goes parabolic and makes headlines — late money chasing your trade.</div>
+      </div>
+      <div class="menu-card">
+        <svg class="mi" viewBox="0 0 36 36"><rect x="6" y="6" width="24" height="24" rx="4" fill="none" stroke="#c89eff" stroke-width="2"/><path d="M12 18 L16 22 L24 13" fill="none" stroke="#c89eff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <div class="mt">…Your Own Tell</div><div class="md">Whatever you trust most. The menu is yours to build — just define it before you're in it.</div>
+      </div>
+    </div>
+    <div class="lead rise r4" style="text-align:center;margin-left:auto;margin-right:auto;margin-top:6px">You don't pick one. <span class="g">You map all of them</span> — every condition where you'd genuinely be happy walking away with the win.</div>
+  </section>
+
+  <!-- 6 MAP IT IN ADVANCE -->
+  <section class="slide">
+    <div class="kicker rise r1">SCENARIO PLANNING</div>
+    <h2 class="head rise r2">WRITE THE EXITS WHILE<br>YOU'RE STILL <span class="em">OBJECTIVE.</span></h2>
+    <div class="stage rise r3">
+      <svg viewBox="0 0 780 360" xmlns="http://www.w3.org/2000/svg" font-family="'JetBrains Mono',monospace">
+        <g style="filter:drop-shadow(0 0 12px rgba(197,75,255,.4))">
+          <rect x="40" y="150" width="150" height="60" rx="8" fill="rgba(197,75,255,.12)" stroke="var(--purple)" stroke-width="2"/>
+          <text x="115" y="178" text-anchor="middle" fill="var(--purple)" font-size="13" font-weight="700">IN THE</text>
+          <text x="115" y="196" text-anchor="middle" fill="var(--purple)" font-size="13" font-weight="700">TRADE</text>
+        </g>
+        <path d="M190 170 C 280 170, 280 70, 380 70" fill="none" stroke="var(--green)" stroke-width="2" marker-end="url(#pArrow)" style="color:var(--green)" data-trace="#9fffd0|3"/>
+        <path d="M190 180 L380 180" fill="none" stroke="var(--gold)" stroke-width="2" marker-end="url(#pArrow)" style="color:var(--gold)"/>
+        <path d="M190 190 C 280 190, 280 290, 380 290" fill="none" stroke="var(--red)" stroke-width="2" marker-end="url(#pArrow)" style="color:var(--red)" data-trace="#ff9fb3|3.2"/>
+        <g font-size="11.5">
+          <rect x="385" y="48" width="360" height="46" rx="6" fill="rgba(26,255,149,.06)" stroke="rgba(26,255,149,.4)"/>
+          <text x="402" y="68" fill="var(--green)" font-weight="700">IF it hits my level / target →</text><text x="402" y="85" fill="rgba(244,241,255,.7)">take the win, full or partial</text>
+          <rect x="385" y="158" width="360" height="46" rx="6" fill="rgba(255,210,74,.06)" stroke="rgba(255,210,74,.4)"/>
+          <text x="402" y="178" fill="var(--gold)" font-weight="700">IF it stalls / vol pops →</text><text x="402" y="195" fill="rgba(244,241,255,.7)">tighten up, ring the register</text>
+          <rect x="385" y="268" width="360" height="46" rx="6" fill="rgba(255,77,109,.06)" stroke="rgba(255,77,109,.4)"/>
+          <text x="402" y="288" fill="var(--red)" font-weight="700">IF it breaks my line →</text><text x="402" y="305" fill="rgba(244,241,255,.7)">out, no negotiation</text>
+        </g>
+      </svg>
+    </div>
+    <div class="lead rise r4" style="text-align:center;margin-left:auto;margin-right:auto">Decide each "if-this-then-that" before you enter. <span class="g">The version of you that's flat and calm writes a far better plan</span> than the version that's up big and greedy — or down and scared.</div>
+  </section>
+  <!-- 7 TRUST THE PROCESS -->
+  <section class="slide">
+    <div class="kicker rise r1">PROCESS OVER OUTCOME</div>
+    <h2 class="head rise r2">JUDGE THE EXIT BY THE PLAN —<br>NOT BY WHAT IT DID <span class="em">NEXT.</span></h2>
+    <div class="two" style="margin-top:4px">
+      <div class="col-v rise r3">
+        <svg viewBox="0 0 420 320" xmlns="http://www.w3.org/2000/svg" font-family="'JetBrains Mono',monospace" style="height:44vh">
+          <circle cx="210" cy="160" r="96" fill="none" stroke="rgba(197,75,255,.3)" stroke-width="2" stroke-dasharray="5 7"/>
+          <!-- direction arc -->
+          <path d="M210 160 m0 -96 a96 96 0 0 1 96 96" fill="none" stroke="var(--cyan)" stroke-width="3" marker-end="url(#cArrow)" data-trace="#7df5ff|3.5"/>
+          <!-- nodes -->
+          <g fill="var(--purple)"><circle cx="210" cy="64" r="5"/><circle cx="306" cy="160" r="5"/><circle cx="210" cy="256" r="5"/><circle cx="114" cy="160" r="5"/></g>
+          <!-- labels, clear of nodes -->
+          <g font-size="10.5" font-weight="700" letter-spacing="1" fill="var(--purple-glow)">
+            <text x="210" y="44" text-anchor="middle">PLAN</text>
+            <text x="322" y="164" text-anchor="start">EXECUTE</text>
+            <text x="210" y="284" text-anchor="middle">REVIEW</text>
+            <text x="98" y="164" text-anchor="end">REFINE</text>
+          </g>
+          <!-- center: ooda reference -->
+          <text x="210" y="156" text-anchor="middle" fill="rgba(244,241,255,.5)" font-size="11" font-style="italic">your own</text>
+          <text x="210" y="176" text-anchor="middle" fill="var(--cyan)" font-size="15" font-weight="800" letter-spacing="2">OODA LOOP</text>
+        </svg>
+      </div>
+      <div class="col-t rise r4">
+        <div class="lead" style="margin-top:0">If you followed the plan, it was a <span class="gr">good exit</span> — even if it keeps running after. If you abandoned the plan, it was a <span class="rd">bad exit</span> — even if you got lucky.</div>
+        <div class="lead"><span class="p">Outcome is noisy. Process is yours.</span> It's your own OODA loop — observe, orient, decide, act, repeat. Grade yourself on the part you control, or you'll teach yourself the wrong lesson every single time.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 8 GUARDRAILS VS THE PULL -->
+  <section class="slide">
+    <div class="kicker rise r1">DON'T GO REACTIONARY</div>
+    <h2 class="head rise r2">THE ENVIRONMENT WILL <span class="em">PULL</span><br>YOU TO STAY. BUILD RAILS.</h2>
+    <div class="stage rise r3">
+      <svg viewBox="0 0 800 360" xmlns="http://www.w3.org/2000/svg" font-family="'JetBrains Mono',monospace">
+        <!-- guardrails forming the lane -->
+        <line x1="60" y1="140" x2="630" y2="140" stroke="var(--purple)" stroke-width="3.5" stroke-linecap="round" style="filter:drop-shadow(0 0 6px rgba(197,75,255,.5))"/>
+        <line x1="60" y1="250" x2="630" y2="250" stroke="var(--purple)" stroke-width="3.5" stroke-linecap="round" style="filter:drop-shadow(0 0 6px rgba(197,75,255,.5))"/>
+        <text x="60" y="128" fill="var(--purple)" font-size="10" font-weight="700" letter-spacing="2">YOUR GUARDRAILS</text>
+        <!-- the plan: stay in the lane, reach the exit -->
+        <path d="M248 195 L600 195" fill="none" stroke="var(--green)" stroke-width="3" stroke-dasharray="2 7" marker-end="url(#pArrow)" style="color:var(--green)" data-trace="#9fffd0|4.5"/>
+        <text x="360" y="184" fill="rgba(26,255,149,.7)" font-size="9.5" letter-spacing="1">stay on the plan →</text>
+        <!-- YOU travelling the lane -->
+        <g style="filter:drop-shadow(0 0 12px rgba(0,229,255,.6))">
+          <circle cx="205" cy="195" r="24" fill="rgba(0,229,255,.15)" stroke="var(--cyan)" stroke-width="2.5"/>
+          <text x="205" y="200" text-anchor="middle" fill="var(--cyan)" font-size="12" font-weight="700">YOU</text>
+        </g>
+        <!-- the exit at the end of the lane -->
+        <g style="filter:drop-shadow(0 0 16px rgba(26,255,149,.4))">
+          <rect x="636" y="150" width="106" height="90" rx="8" fill="rgba(26,255,149,.12)" stroke="var(--green)" stroke-width="2.5"/>
+          <text x="689" y="190" text-anchor="middle" fill="var(--green)" font-size="16" font-weight="800" letter-spacing="2">EXIT</text>
+          <text x="689" y="210" text-anchor="middle" fill="rgba(26,255,149,.7)" font-size="9">claim the win</text>
+        </g>
+        <!-- the pulls, stopped by the rails -->
+        <g font-size="10" font-weight="700">
+          <text x="205" y="56" text-anchor="middle" fill="var(--red)">"it'll keep running"</text>
+          <path d="M205 68 L205 133" stroke="var(--red)" stroke-width="2" stroke-dasharray="4 4" marker-end="url(#pArrow)" style="color:var(--red)"/>
+          <text x="430" y="56" text-anchor="middle" fill="var(--red)">"just one more day"</text>
+          <path d="M430 68 L430 133" stroke="var(--red)" stroke-width="2" stroke-dasharray="4 4" marker-end="url(#pArrow)" style="color:var(--red)"/>
+          <text x="205" y="334" text-anchor="middle" fill="var(--red)">the loud new narrative</text>
+          <path d="M205 322 L205 257" stroke="var(--red)" stroke-width="2" stroke-dasharray="4 4" marker-end="url(#pArrow)" style="color:var(--red)"/>
+          <text x="430" y="334" text-anchor="middle" fill="var(--red)">FOMO on more</text>
+          <path d="M430 322 L430 257" stroke="var(--red)" stroke-width="2" stroke-dasharray="4 4" marker-end="url(#pArrow)" style="color:var(--red)"/>
+        </g>
+        <!-- deflection points where the pulls hit the rails -->
+        <g fill="var(--purple-glow)"><circle cx="205" cy="140" r="3.5"/><circle cx="430" cy="140" r="3.5"/><circle cx="205" cy="250" r="3.5"/><circle cx="430" cy="250" r="3.5"/></g>
+      </svg>
+    </div>
+    <div class="lead rise r4" style="text-align:center;margin-left:auto;margin-right:auto">Once you're in, everything conspires to keep you in. <span class="g">Guardrails are what keep you on the plan</span> instead of reacting to whatever the tape and the timeline are screaming at you.</div>
+  </section>
+
+  <!-- 9 CLAIM VICTORY -->
+  <section class="slide">
+    <div class="kicker rise r1">AT SOME POINT, YOU WIN ON PURPOSE</div>
+    <h2 class="head rise r2">THINK BIG —<br>THEN <span class="em">CLAIM VICTORY.</span></h2>
+    <div class="two" style="margin-top:4px">
+      <div class="col-v rise r3">
+        <svg viewBox="0 0 420 320" xmlns="http://www.w3.org/2000/svg" font-family="'JetBrains Mono',monospace" style="height:44vh">
+          <path d="M30 280 L100 240 L160 180 L240 150 L300 110" fill="none" stroke="var(--green)" stroke-width="3.5" stroke-linecap="round" data-trace="#9fffd0|4"/>
+          <!-- the realistic ceiling you claim -->
+          <g style="filter:drop-shadow(0 0 10px rgba(255,210,74,.6))">
+            <circle cx="300" cy="110" r="7" fill="var(--gold)"/>
+            <path d="M300 110 L300 70 L338 80 L300 90" fill="var(--gold)" stroke="var(--gold)" stroke-width="1.5" stroke-linejoin="round"/>
+          </g>
+          <text x="300" y="58" text-anchor="middle" fill="var(--gold)" font-size="11" font-weight="700">CLAIM IT</text>
+          <!-- the dream upside, faded -->
+          <path d="M300 110 L360 60 L405 30" fill="none" stroke="rgba(244,241,255,.22)" stroke-width="2" stroke-dasharray="5 5"/>
+          <text x="405" y="40" text-anchor="end" fill="rgba(244,241,255,.4)" font-size="9.5">the dream you don't need</text>
+        </g>
+      </div>
+      <div class="col-t rise r4">
+        <div class="lead" style="margin-top:0">Optimism is an asset — keep it. But a position you never close is just a feeling, not a result. <span class="g">At some point you have to convert the move into a realized win</span> and respect what the downside could take back.</div>
+        <div class="lead"><span class="gd">Claiming victory is a skill.</span> The chart doesn't ring a bell at the top — you decide what "enough" means, in advance, and you take it.</div>
+      </div>
+    </div>
+  </section>
+  <!-- 10 KNOW THYSELF -->
+  <section class="slide">
+    <div class="kicker rise r1">THE EXIT THAT FITS YOU</div>
+    <h2 class="head rise r2">WHICH MISTAKE IS <span class="em">YOURS?</span></h2>
+    <div class="stage rise r3">
+      <svg viewBox="0 0 780 360" xmlns="http://www.w3.org/2000/svg" font-family="'JetBrains Mono',monospace">
+        <line x1="390" y1="40" x2="390" y2="320" stroke="rgba(244,241,255,.18)" stroke-dasharray="4 6"/>
+        <!-- left: gives it back -->
+        <text x="195" y="60" text-anchor="middle" fill="var(--red)" font-size="13" font-weight="700" letter-spacing="1">GIVES IT BACK</text>
+        <path d="M50 250 L110 200 L170 150 L230 130 L290 200 L340 250" fill="none" stroke="var(--red)" stroke-width="3" stroke-linecap="round" data-trace="#ff9fb3|4"/>
+        <circle cx="230" cy="130" r="5" fill="var(--gold)"/>
+        <text x="195" y="295" text-anchor="middle" fill="rgba(255,77,109,.8)" font-size="10">great at finding winners · holds too long</text>
+        <!-- right: sells too soon -->
+        <text x="585" y="60" text-anchor="middle" fill="var(--cyan)" font-size="13" font-weight="700" letter-spacing="1">SELLS TOO SOON</text>
+        <path d="M440 250 L500 210 L540 190 L590 150 L650 100 L730 60" fill="none" stroke="rgba(0,229,255,.4)" stroke-width="3" stroke-linecap="round" stroke-dasharray="2 4"/>
+        <path d="M440 250 L500 210 L540 190" fill="none" stroke="var(--cyan)" stroke-width="3.5" stroke-linecap="round" data-trace="#7df5ff|3"/>
+        <circle cx="540" cy="190" r="5" fill="var(--gold)"/>
+        <text x="585" y="295" text-anchor="middle" fill="rgba(0,229,255,.8)" font-size="10">books wins fast · caps the upside</text>
+      </svg>
+    </div>
+    <div class="lead rise r4" style="text-align:center;margin-left:auto;margin-right:auto">Two traders, opposite leaks. <span class="g">The right exit rule for one would wreck the other.</span> So the first move isn't a chart — it's an honest read of which one you actually are.</div>
+  </section>
+
+  <!-- 11 PROFILE A -->
+  <section class="slide">
+    <div class="kicker rise r1">PROFILE A</div>
+    <h2 class="head rise r2">YOU TAKE WINNERS WELL —<br>BUT YOU <span class="em" style="color:var(--red)">GIVE THEM BACK.</span></h2>
+    <div class="two" style="margin-top:4px">
+      <div class="col-v rise r3">
+        <div class="profile">
+          <div class="ph2" style="color:var(--red)"><span style="color:var(--ink-dim);font-weight:400">THE LEAK</span>HOLDS TOO LONG</div>
+          <div class="row"><div class="rk" style="color:var(--green)">✓</div><div>Great at spotting setups and finding the next opportunity</div></div>
+          <div class="row"><div class="rk" style="color:var(--red)">✕</div><div>Rides winners past the top and hands back too much</div></div>
+          <div class="row" style="border-top:1px solid var(--line);padding-top:12px;margin-top:4px"><div class="rk" style="color:var(--purple)">→</div><div><b style="color:var(--purple-glow)">The fix:</b> get out at your spots and <b style="color:var(--gold)">claim the win.</b> Trust that you'll find more.</div></div>
+        </div>
+      </div>
+      <div class="col-t rise r4">
+        <div class="lead" style="margin-top:0">If finding trades is your superpower, you can <span class="g">afford to leave some of the max upside on the table.</span> Trading a little ceiling for clean, repeatable wins is a great deal for you.</div>
+        <div class="lead">Because giving it back doesn't just cost money — <span class="rd">it costs confidence and momentum</span>, the two things your edge actually runs on. Protect those and the next setup is right there.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 12 PROFILE B -->
+  <section class="slide">
+    <div class="kicker rise r1">PROFILE B</div>
+    <h2 class="head rise r2">YOU LOCK WINS FAST —<br>BUT YOU <span class="em" style="color:var(--cyan)">SELL TOO SOON.</span></h2>
+    <div class="two" style="margin-top:4px">
+      <div class="col-v rise r3">
+        <div class="profile">
+          <div class="ph2" style="color:var(--cyan)"><span style="color:var(--ink-dim);font-weight:400">THE LEAK</span>EXITS EARLY</div>
+          <div class="row"><div class="rk" style="color:var(--green)">✓</div><div>Disciplined, banks gains, rarely gives much back</div></div>
+          <div class="row"><div class="rk" style="color:var(--cyan)">✕</div><div>Snips winners early — never lets a big one fully run</div></div>
+          <div class="row" style="border-top:1px solid var(--line);padding-top:12px;margin-top:4px"><div class="rk" style="color:var(--purple)">→</div><div><b style="color:var(--purple-glow)">The fix:</b> practice <b style="color:var(--cyan)">holding for the bigger winner</b> — let a runner run.</div></div>
+        </div>
+      </div>
+      <div class="col-t rise r4">
+        <div class="lead" style="margin-top:0">Your discipline is real — but it's capping you. <span class="g">A few big winners held to target can change your whole curve</span> more than a stack of small, early exits ever will.</div>
+        <div class="lead"><span class="c">This is how you scale as a trader:</span> learn to sit through the noise on your best ideas, and let size plus patience do the compounding.</div>
+      </div>
+    </div>
+  </section>
+  <!-- 13 THE COST IS PSYCHOLOGICAL -->
+  <section class="slide">
+    <div class="kicker rise r1">THE REAL PRICE OF A BAD EXIT</div>
+    <h2 class="head rise r2">IT'S NOT JUST THE P&amp;L.<br>IT'S THE <span class="em">CONFIDENCE.</span></h2>
+    <div class="stage rise r3">
+      <svg viewBox="0 0 800 320" xmlns="http://www.w3.org/2000/svg" font-family="'JetBrains Mono',monospace">
+        <!-- METER 1: confidence draining (gives it back) -->
+        <text x="80" y="58" fill="var(--red)" font-size="12" font-weight="700" letter-spacing="1">GIVES IT BACK · CONFIDENCE &amp; MOMENTUM</text>
+        <rect x="80" y="74" width="640" height="38" rx="19" fill="none" stroke="rgba(255,77,109,.45)" stroke-width="1.5"/>
+        <rect x="80" y="74" width="180" height="38" rx="19" fill="rgba(255,77,109,.3)"/>
+        <line x1="260" y1="68" x2="260" y2="118" stroke="var(--red)" stroke-width="2"/>
+        <path d="M250 93 L210 93" stroke="var(--red)" stroke-width="2" marker-end="url(#pArrow)" style="color:var(--red)" data-trace="#ff9fb3|2.6"/>
+        <text x="715" y="98" text-anchor="end" fill="rgba(255,77,109,.7)" font-size="10" font-style="italic">drains every time you hand a winner back</text>
+        <text x="80" y="140" fill="rgba(244,241,255,.5)" font-size="10">tilt · hesitation · smaller next size</text>
+        <!-- METER 2: ceiling capped (sells too soon) -->
+        <text x="80" y="206" fill="var(--cyan)" font-size="12" font-weight="700" letter-spacing="1">SELLS TOO SOON · YOUR CEILING</text>
+        <rect x="80" y="222" width="640" height="38" rx="19" fill="none" stroke="rgba(0,229,255,.3)" stroke-width="1.5" stroke-dasharray="6 5"/>
+        <rect x="80" y="222" width="250" height="38" rx="19" fill="rgba(0,229,255,.28)"/>
+        <line x1="330" y1="216" x2="330" y2="266" stroke="var(--cyan)" stroke-width="2"/>
+        <path d="M340 241 L470 241" stroke="var(--cyan)" stroke-width="2" stroke-dasharray="4 4" marker-end="url(#cArrow)" data-trace="#7df5ff|3"/>
+        <text x="500" y="245" fill="rgba(0,229,255,.7)" font-size="10" font-style="italic">the upside you never let compound</text>
+        <text x="80" y="288" fill="rgba(244,241,255,.5)" font-size="10">small, early wins · a ceiling you keep capping</text>
+      </svg>
+    </div>
+    <div class="lead rise r4" style="text-align:center;margin-left:auto;margin-right:auto">Pick the exit style that <span class="g">protects the asset your edge actually runs on.</span> For one trader that's momentum and conviction; for the other it's the size of their winners. Optimize for your future self, not the perfect trade.</div>
+  </section>
+
+  <!-- 14 SCALE OUT -->
+  <section class="slide">
+    <div class="kicker rise r1">YOU DON'T HAVE TO CHOOSE</div>
+    <h2 class="head rise r2">SCALE OUT — CLAIM THE WIN<br><span class="em">AND</span> KEEP A RUNNER.</h2>
+    <div class="two" style="margin-top:4px">
+      <div class="col-v rise r3">
+        <svg viewBox="0 0 440 320" xmlns="http://www.w3.org/2000/svg" font-family="'JetBrains Mono',monospace" style="height:44vh">
+          <path d="M30 290 L100 240 L170 200 L250 150 L320 110 L400 60" fill="none" stroke="var(--green)" stroke-width="3.5" stroke-linecap="round" data-trace="#9fffd0|4"/>
+          <g>
+            <circle cx="170" cy="200" r="7" fill="var(--gold)"/><text x="170" y="185" text-anchor="middle" fill="var(--gold)" font-size="9" font-weight="700">⅓ off</text>
+            <circle cx="250" cy="150" r="7" fill="var(--gold)"/><text x="250" y="135" text-anchor="middle" fill="var(--gold)" font-size="9" font-weight="700">⅓ off</text>
+            <circle cx="320" cy="110" r="7" fill="var(--purple)" style="filter:drop-shadow(0 0 8px var(--purple))"/><text x="320" y="95" text-anchor="middle" fill="var(--purple-glow)" font-size="9" font-weight="700">runner</text>
+          </g>
+          <path d="M320 110 L400 60" fill="none" stroke="rgba(197,75,255,.4)" stroke-width="2.5" stroke-dasharray="4 5"/>
+        </svg>
+      </div>
+      <div class="col-t rise r4">
+        <div class="lead" style="margin-top:0">Selling in pieces is a psychological tool, not a compromise. <span class="g">Booking part of the position satisfies the urge to claim victory</span> — which quiets the brain that wants to bail on the whole thing.</div>
+        <div class="lead">And the runner you leave on keeps you exposed to the big outcome. <span class="p">It lets each trader lean against their own leak</span> — the giver-backer banks more sooner, the early-seller stays in longer.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 15 CLOSE -->
+  <section class="slide">
+    <div class="kicker rise r1">THE TAKEAWAY</div>
+    <div class="quote-big rise r2">The entry is a guess.<br>The exit is <span class="q">where you show what you know about yourself.</span></div>
+    <div class="lead rise r3" style="margin-top:28px;max-width:880px">Map your credible exits while you're calm. Set the guardrails. Trust the process over the outcome. And build the exit that fits the trader you actually are — <span class="g">not the one you wish you were at the top of a chart.</span></div>
+    <div class="handle rise r5" style="margin-top:24px">@jaymesrosenthal · theDesk</div>
+  </section>
+
+</div>
+<div class="nav">
+  <button id="prev" aria-label="Previous">&#8249;</button>
+  <div class="counter"><b id="cur">1</b> / <span id="total">15</span></div>
+  <button id="next" aria-label="Next">&#8250;</button>
+</div>
+<div class="dots" id="dots"></div>
+<div class="tools" id="tools">
+  <button class="pen" id="pen" title="Toggle pen">&#9998;</button>
+  <div class="sep"></div>
+  <div class="sep" id="sizeSep" style="display:none"></div>
+</div>
+<script>
+(function(){const w=document.getElementById('sparks');for(let i=0;i<44;i++){const s=document.createElement('div');s.className='spark';s.style.left=Math.random()*100+'%';const z=1+Math.random()*2;s.style.width=z+'px';s.style.height=z+'px';s.style.animationDuration=(7+Math.random()*9)+'s';s.style.animationDelay=(-Math.random()*12)+'s';w.appendChild(s);}})();
+
+const slides=[...document.querySelectorAll('.slide')];const N=slides.length;let idx=0;
+const progress=document.getElementById('progress'),cur=document.getElementById('cur');
+document.getElementById('total').textContent=N;
+const dotsWrap=document.getElementById('dots');
+slides.forEach((_,i)=>{const d=document.createElement('button');d.className='dot'+(i===0?' on':'');d.setAttribute('aria-label','Slide '+(i+1));d.addEventListener('click',()=>go(i));dotsWrap.appendChild(d);});
+const dots=[...dotsWrap.children];
+function go(i){i=Math.max(0,Math.min(N-1,i));if(i===idx&&slides[i].classList.contains('active'))return;slides[idx].classList.remove('active');dots[idx].classList.remove('on');idx=i;slides[idx].classList.add('active');dots[idx].classList.add('on');cur.textContent=idx+1;progress.style.width=(N>1?(idx/(N-1))*100:100)+'%';}
+go(0);
+document.getElementById('next').addEventListener('click',()=>go(idx+1));
+document.getElementById('prev').addEventListener('click',()=>go(idx-1));
+document.addEventListener('keydown',e=>{if(['ArrowRight','ArrowDown',' ','PageDown'].includes(e.key)){e.preventDefault();go(idx+1);}else if(['ArrowLeft','ArrowUp','PageUp'].includes(e.key)){e.preventDefault();go(idx-1);}else if(e.key==='Home')go(0);else if(e.key==='End')go(N-1);});
+
+let sx=0,sy=0,st=0;const deck=document.getElementById('deck');
+deck.addEventListener('touchstart',e=>{sx=e.changedTouches[0].screenX;sy=e.changedTouches[0].screenY;st=Date.now();},{passive:true});
+deck.addEventListener('touchend',e=>{const dx=e.changedTouches[0].screenX-sx,dy=e.changedTouches[0].screenY-sy,dt=Date.now()-st;if(dt>500)return;if(Math.abs(dx)<50)return;if(Math.abs(dy)>Math.abs(dx))return;if(dx<0)go(idx+1);else go(idx-1);},{passive:true});
+
+/* drawing with size control */
+const canvas=document.getElementById('draw'),ctx=canvas.getContext('2d');
+let penOn=false,drawing=false,color='#c54bff',penSize=4;
+function sizeC(){canvas.width=innerWidth;canvas.height=innerHeight;ctx.lineCap='round';ctx.lineJoin='round';ctx.lineWidth=penSize;}
+sizeC();addEventListener('resize',sizeC);
+const pen=document.getElementById('pen'),tools=document.getElementById('tools'),sizeSep=document.getElementById('sizeSep');
+['#c54bff','#00e5ff','#1aff95','#ffd24a','#ff4d6d','#f4f1ff'].forEach((c,i)=>{const s=document.createElement('button');s.className='swatch'+(i===0?' sel':'');s.style.background=c;s.setAttribute('aria-label','color');s.addEventListener('click',()=>{color=c;[...tools.querySelectorAll('.swatch')].forEach(x=>x.classList.remove('sel'));s.classList.add('sel');if(!penOn)tog(true);});tools.insertBefore(s,sizeSep);});
+sizeSep.style.display='block';
+const sizes=[{l:'S',v:2},{l:'M',v:4},{l:'L',v:8},{l:'XL',v:14}];
+sizes.forEach((s,i)=>{const b=document.createElement('button');b.className='size'+(i===1?' sel':'');b.textContent=s.l;b.title='Pen size '+s.l;b.setAttribute('aria-label','size '+s.l);b.addEventListener('click',()=>{penSize=s.v;ctx.lineWidth=s.v;[...tools.querySelectorAll('.size')].forEach(x=>x.classList.remove('sel'));b.classList.add('sel');if(!penOn)tog(true);});tools.appendChild(b);});
+const clr=document.createElement('button');clr.className='clr';clr.id='clr';clr.title='Clear';clr.textContent='CLR';clr.addEventListener('click',()=>ctx.clearRect(0,0,canvas.width,canvas.height));tools.appendChild(clr);
+function tog(f){penOn=f!==undefined?f:!penOn;pen.classList.toggle('on',penOn);tools.classList.toggle('active',penOn);canvas.style.pointerEvents=penOn?'auto':'none';}
+pen.addEventListener('click',()=>tog());
+const pos=e=>{const t=e.touches?e.touches[0]:e;return{x:t.clientX,y:t.clientY};};
+function sd(e){if(!penOn)return;drawing=true;const p=pos(e);ctx.beginPath();ctx.moveTo(p.x,p.y);}
+function md(e){if(!penOn||!drawing)return;e.preventDefault();const p=pos(e);ctx.strokeStyle=color;ctx.lineWidth=penSize;ctx.shadowColor=color;ctx.shadowBlur=Math.max(4,penSize*1.5);ctx.lineTo(p.x,p.y);ctx.stroke();}
+function ed(){drawing=false;}
+canvas.addEventListener('mousedown',sd);canvas.addEventListener('mousemove',md);addEventListener('mouseup',ed);
+canvas.addEventListener('touchstart',sd,{passive:false});canvas.addEventListener('touchmove',md,{passive:false});canvas.addEventListener('touchend',ed);
+
+/* playheads */
+(function(){
+  const ns='http://www.w3.org/2000/svg';
+  document.querySelectorAll('[data-trace]').forEach(p=>{
+    const svg=p.ownerSVGElement;if(!svg)return;
+    const parts=(p.getAttribute('data-trace')||'').split('|');
+    const col=parts[0]||'#fff',dur=parts[1]||'4';
+    if(!p.id)p.id='tp'+Math.random().toString(36).slice(2,8);
+    const dot=document.createElementNS(ns,'circle');
+    dot.setAttribute('r','4');dot.setAttribute('fill',col);dot.setAttribute('class','ph');dot.style.color=col;
+    const am=document.createElementNS(ns,'animateMotion');
+    am.setAttribute('dur',dur+'s');am.setAttribute('repeatCount','indefinite');am.setAttribute('begin','0s');
+    const mp=document.createElementNS(ns,'mpath');
+    mp.setAttribute('href','#'+p.id);mp.setAttributeNS('http://www.w3.org/1999/xlink','href','#'+p.id);
+    am.appendChild(mp);dot.appendChild(am);svg.appendChild(dot);
+  });
+})();
+</script>
+</body>
+</html>

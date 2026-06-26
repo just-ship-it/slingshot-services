@@ -91,6 +91,25 @@ export class LsFlipTriggerBarStrategy extends BaseStrategy {
     // the trigger bar's range is too tight — tiny bars have negative expectancy.
     this.params.minTriggerRange = params.minTriggerRange ?? null;
 
+    // Optional LT-sentiment alignment filter. When true, only take flips whose
+    // direction agrees with the prevailing 15m LT sentiment (BULLISH→long,
+    // BEARISH→short). Meta-label research (2026-06-20) found LT-aligned flips
+    // run PF ~1.78 vs ~1.44 for misaligned, WR 73.8% vs 70.7%. When the LT
+    // sentiment is unavailable for a bar, the flip is NOT blocked (fail-open).
+    this.params.requireLtAlign = params.requireLtAlign ?? false;
+
+    // Optional LT target-clearance filter. When true, reject flips where a 15m LT
+    // level sits inside the take-profit path. Meta-label research (2026-06-21).
+    this.params.requireLtTargetClear = params.requireLtTargetClear ?? false;
+
+    // Optional flip-at-level filter. When true, only take flips firing within
+    // flipAtLevelAtr × ATR(20) of a 1m LT level (raw space). Meta-label research
+    // (2026-06-21, corrected price space): on top of ltAlign, flip-at-level PF
+    // 1.99 vs 1.78, keeping ~48% of aligned trades. Requires --lt-1m-file loaded
+    // (marketData.ltLevels1m). Fail-open when 1m LT levels are unavailable.
+    this.params.requireLtFlipAtLevel = params.requireLtFlipAtLevel ?? false;
+    this.params.flipAtLevelAtr = params.flipAtLevelAtr ?? 0.5;
+
     // ATR rolling state — true range list on the primary contract series.
     // Reset on contract rollover (symbol change) so TR doesn't span the
     // ~200pt roll spread.
@@ -220,6 +239,20 @@ export class LsFlipTriggerBarStrategy extends BaseStrategy {
     const side = newState === 1 ? 'buy' : 'sell';
     const direction = newState === 1 ? 'long' : 'short';
 
+    // Step 2c: LT-sentiment alignment filter (optional). Reject flips that fight
+    // the prevailing 15m LT sentiment. Fail-open when sentiment is unavailable.
+    if (this.params.requireLtAlign) {
+      const sent = marketData?.ltLevels?.sentiment ?? marketData?.liquidityLevels?.sentiment;
+      if (sent === 'BULLISH' || sent === 'BEARISH') {
+        const bull = sent === 'BULLISH';
+        const aligned = (direction === 'long' && bull) || (direction === 'short' && !bull);
+        if (!aligned) {
+          this._lastRejectReason = `LT sentiment ${sent} misaligned with ${direction} flip`;
+          return null;
+        }
+      }
+    }
+
     // Step 3: trigger bar range. Skip degenerate bars.
     const range = candle.high - candle.low;
     if (!(range > 0)) {
@@ -278,6 +311,48 @@ export class LsFlipTriggerBarStrategy extends BaseStrategy {
     if (direction === 'short' && !(entryPrice < stopLoss && entryPrice > takeProfit)) {
       this._lastRejectReason = `sanity fail (short): entry ${entryPrice} not strictly between stop ${stopLoss} and target ${takeProfit}`;
       return null;
+    }
+
+    // Step 5b: LT target-clearance filter (optional). Reject when a 15m LT level
+    // sits inside the take-profit path (entry → takeProfit) — the level acts as a
+    // wall the target must punch through, lowering hit probability. Meta-label
+    // research (2026-06-21): blocked-target trades run PF 1.35 vs 1.66 clear, and
+    // on top of ltAlign the clear subset is PF 1.85 vs 1.78. Fail-open when LT
+    // levels are unavailable.
+    if (this.params.requireLtTargetClear) {
+      const lt = marketData?.ltLevels ?? marketData?.liquidityLevels;
+      if (lt) {
+        const levels = [lt.level_1, lt.level_2, lt.level_3, lt.level_4, lt.level_5]
+          .filter(x => Number.isFinite(x) && x > 0);
+        for (const L of levels) {
+          const blocks = direction === 'long'
+            ? (L > entryPrice && L < takeProfit)
+            : (L < entryPrice && L > takeProfit);
+          if (blocks) {
+            this._lastRejectReason = `LT level ${L} blocks ${direction} target path (${entryPrice}→${takeProfit})`;
+            return null;
+          }
+        }
+      }
+    }
+
+    // Step 5c: flip-at-level filter (optional). Reject flips that fire far from
+    // any 1m LT level (raw space). The trade thesis is a reversal at liquidity;
+    // flips in open space are lower quality. Fail-open when 1m LT unavailable.
+    if (this.params.requireLtFlipAtLevel) {
+      const lt1m = marketData?.ltLevels1m;
+      if (lt1m) {
+        const levels = [lt1m.level_1, lt1m.level_2, lt1m.level_3, lt1m.level_4, lt1m.level_5]
+          .filter(x => Number.isFinite(x) && x > 0);
+        if (levels.length && atr > 0) {
+          let nearest = Infinity;
+          for (const L of levels) nearest = Math.min(nearest, Math.abs(candle.close - L));
+          if (nearest > this.params.flipAtLevelAtr * atr) {
+            this._lastRejectReason = `flip ${(nearest / atr).toFixed(2)} ATR from nearest 1m LT level > ${this.params.flipAtLevelAtr}`;
+            return null;
+          }
+        }
+      }
     }
 
     this._lastFlipTs = lsRec.timestamp;

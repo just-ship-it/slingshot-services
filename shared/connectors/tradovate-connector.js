@@ -820,6 +820,48 @@ export class TradovateConnector extends BaseConnector {
   }
 
   /**
+   * Golden-rule guard (Layer 2): the FCFS slot must never be held by a trade the
+   * backtest would already have closed. If the fill landed AT or THROUGH the
+   * bracket stop — a fast move / latency made the entry limit marketable past its
+   * own stop — the backtest would have entered and stopped within the same window
+   * and freed the slot. Reproduce that on the time/slot axis: flatten immediately
+   * and let the normal net-to-zero close path release the slot + book the loss.
+   * We do NOT move the stop, we EXECUTE it.
+   *
+   * Sourced from the broker `positionUpdate` (most authoritative, least-droppable
+   * signal) rather than a downstream event, since the very sync gaps that strand a
+   * naked position could also drop the event a higher-layer guard would rely on.
+   *
+   * @param {string} symbol
+   * @param {number} netPos      signed net position (negative = short)
+   * @param {Object} position    broker position row (entry = netPrice/avgPrice)
+   * @param {Object} fill        last fill for the contract (entry-price fallback)
+   * @param {Object} attribution {signalId, strategy, strategyId}
+   * @returns {Promise<boolean>} true if the position was flattened
+   */
+  async _guardEntryThroughStop(symbol, netPos, position, fill, attribution) {
+    const entryPx = position?.netPrice ?? position?.avgPrice ?? fill?.price ?? null;
+    const links   = attribution?.strategyId ? this.orderStrategyLinks.get(attribution.strategyId) : null;
+    const stopPx  = links?.stopLoss ?? null;
+    if (entryPx == null || stopPx == null) return false;
+
+    // Zero tolerance: a fill AT the stop counts as through (matches the backtest's
+    // stop-touch). Short: stop sits ABOVE entry, breached when entry >= stop.
+    // Long: stop sits BELOW entry, breached when entry <= stop.
+    const throughStop = (netPos < 0 && entryPx >= stopPx) || (netPos > 0 && entryPx <= stopPx);
+    if (!throughStop) return false;
+
+    this.logger.warn(`[${this._label()}] ENTRY-THROUGH-STOP ${symbol} ${netPos < 0 ? 'short' : 'long'} filled @ ${entryPx} vs stop ${stopPx} — backtest would already be stopped; flattening to free the slot (${attribution.signalId ?? '—'})`);
+    try {
+      if (attribution.signalId) await this.closePositionBySignalId(attribution.signalId, { symbol });
+      else await this.closePosition(symbol);
+    } catch (err) {
+      this.logger.error(`[${this._label()}] ENTRY-THROUGH-STOP flatten failed for ${symbol}: ${err.message}`);
+    }
+    return true;
+  }
+
+  /**
    * Authoritative position lifecycle. The `position` entity's netPos is the
    * source of truth; we compare it to the PRIOR netPos we tracked ourselves
    * (Tradovate's `prevPos` is session-start, unusable for transitions):
@@ -885,6 +927,7 @@ export class TradovateConnector extends BaseConnector {
       this.openPositionAttribution.set(contractId, { ...attribution }); // fix strategy at open
       this.logger.info(`[${this._label()}] POSITION OPENED ${symbol} ${curr > 0 ? 'long' : 'short'} ${curr} @ ${position.netPrice} (${attribution.strategy}/${attribution.signalId ?? '—'})`);
       await opened(curr);
+      await this._guardEntryThroughStop(symbol, curr, position, fill, attribution);
     } else if (prev !== 0 && curr === 0) {
       this.logger.info(`[${this._label()}] POSITION CLOSED ${symbol} (was ${prev}) exit=${fill.price} reason=${closeReason()} (${attribution.strategy})`);
       await closed(closeReason());
@@ -904,6 +947,7 @@ export class TradovateConnector extends BaseConnector {
       this.openPositionAttribution.set(contractId, newAttr);
       attribution = newAttr;
       await opened(curr);
+      await this._guardEntryThroughStop(symbol, curr, position, fill, attribution);
     } else if (curr !== 0) {
       // Same-side scale in/out — a live update, NOT a new open.
       await this.messageBus.publish(this.channels.POSITION_UPDATE, {

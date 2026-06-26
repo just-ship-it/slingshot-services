@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Capital Flows — Positioning Into Events</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg-0:#070705; --bg-1:#0e0d07; --bg-2:#15130b;
+  --amber:#ffd60a; --amber-bright:#ffe24d; --amber-deep:#b89400; --amber-glow:#ffe88a;
+  --ink:#fdfbef; --ink-dim:rgba(253,251,239,.62); --ink-faint:rgba(253,251,239,.14);
+  --line:rgba(253,251,239,.12);
+  --hazard:#ff8a1e; --red:#ff4d3d; --cool:#46c2ff; --green:#37ff9e;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;overflow:hidden;background:var(--bg-0);color:var(--ink)}
+body{font-family:'JetBrains Mono',monospace;-webkit-font-smoothing:antialiased}
+.bg{position:fixed;inset:0;z-index:0;background:
+  radial-gradient(900px 680px at 82% 6%, rgba(255,214,10,.16), transparent 60%),
+  radial-gradient(760px 760px at 4% 96%, rgba(255,138,30,.07), transparent 60%),
+  radial-gradient(620px 620px at 96% 94%, rgba(184,148,0,.16), transparent 62%),
+  linear-gradient(165deg,var(--bg-1) 0%, var(--bg-0) 72%);}
+.caution{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.035;background:repeating-linear-gradient(135deg,var(--amber) 0 22px, transparent 22px 46px);background-size:200% 200%;animation:caudrift 28s linear infinite}
+@keyframes caudrift{to{background-position:200% 0}}
+.orb{position:fixed;border-radius:50%;filter:blur(78px);opacity:.5;z-index:0;pointer-events:none}
+.orb1{width:440px;height:440px;left:-110px;top:-90px;background:radial-gradient(circle,var(--amber),transparent 70%);animation:d1 23s ease-in-out infinite}
+.orb2{width:360px;height:360px;right:-70px;bottom:-60px;background:radial-gradient(circle,rgba(184,148,0,.5),transparent 70%);animation:d2 28s ease-in-out infinite}
+.orb3{width:300px;height:300px;right:22%;top:28%;background:radial-gradient(circle,rgba(255,138,30,.32),transparent 70%);animation:d3 31s ease-in-out infinite}
+@keyframes d1{50%{transform:translate(60px,40px) scale(1.08)}}
+@keyframes d2{50%{transform:translate(-50px,-30px) scale(1.1)}}
+@keyframes d3{50%{transform:translate(40px,-50px) scale(.9)}}
+.grain{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:.05;mix-blend-mode:overlay;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+.motes{position:fixed;inset:0;z-index:1;pointer-events:none;overflow:hidden}
+.mote{position:absolute;border-radius:50%;background:var(--amber-glow);box-shadow:0 0 8px var(--amber);opacity:0;animation:rise-m linear infinite}
+@keyframes rise-m{0%{transform:translateY(0);opacity:0}12%{opacity:.7}88%{opacity:.4}100%{transform:translateY(-106vh);opacity:0}}
+
+.progress{position:fixed;top:0;left:0;height:3px;width:0;z-index:40;background:linear-gradient(90deg,var(--amber),var(--hazard),var(--amber-deep));box-shadow:0 0 12px var(--amber);transition:width .45s cubic-bezier(.4,0,.2,1)}
+.brand{position:fixed;top:20px;left:26px;z-index:30;font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--ink-dim)}
+.brand b{color:var(--ink);font-weight:500}.brand b i{color:var(--amber);font-style:normal}
+
+.deck{position:fixed;inset:0;z-index:10}
+.slide{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;gap:clamp(8px,1.7vh,22px);padding:max(4vh,46px) 7vw 108px;opacity:0;visibility:hidden;transition:opacity .5s ease,visibility .5s;pointer-events:none}
+.slide.active{opacity:1;visibility:visible;pointer-events:auto}
+.kicker{font-size:13px;font-weight:600;letter-spacing:4px;text-transform:uppercase;color:var(--amber);margin-bottom:10px;display:flex;align-items:center;gap:12px}
+.kicker::before{content:"";width:34px;height:2px;background:var(--amber);box-shadow:0 0 10px var(--amber)}
+.display{font-family:'Instrument Serif',Georgia,serif;text-transform:uppercase;font-size:clamp(46px,7.8vw,104px);line-height:.94;letter-spacing:-1px;font-weight:400;text-shadow:0 0 44px rgba(255,214,10,.28)}
+.display .em{color:var(--amber);font-style:italic}
+h2.head{font-family:'Instrument Serif',Georgia,serif;text-transform:uppercase;font-size:clamp(30px,4.7vw,62px);line-height:1.0;letter-spacing:-.5px;font-weight:400}
+.head .em{font-style:italic;color:var(--amber)}
+.lead{font-size:clamp(15px,1.5vw,21px);line-height:1.55;color:var(--ink);font-weight:400;max-width:940px;margin-top:6px}
+.lead .a{color:var(--amber);font-weight:600}.lead .o{color:var(--hazard);font-weight:600}.lead .r{color:var(--red);font-weight:600}.lead .c{color:var(--cool);font-weight:600}.lead .g{color:var(--green);font-weight:600}.lead b{font-weight:700}
+.sub{font-family:'Instrument Serif',Georgia,serif;font-style:italic;font-size:clamp(19px,2.4vw,32px);color:var(--ink-dim);margin-top:14px;max-width:820px}
+.handle{font-size:14px;letter-spacing:2px;color:var(--amber-glow);margin-top:20px}
+.head .em,.display .em{animation:emglow 3.4s ease-in-out infinite}
+@keyframes emglow{0%,100%{text-shadow:0 0 12px currentColor}50%{text-shadow:0 0 30px currentColor,0 0 52px currentColor}}
+.ph{filter:drop-shadow(0 0 5px #fff) drop-shadow(0 0 11px currentColor)}
+
+.stage{margin-top:0;flex:1 1 auto;min-height:0;display:flex;justify-content:center;align-items:center;width:100%}
+.stage svg{width:auto;height:100%;max-width:96%;max-height:58vh;overflow:visible}
+.two{display:flex;align-items:center;gap:44px;width:100%;flex:1 1 auto;min-height:0}
+.two .col-v{flex:0 0 auto}.two .col-t{flex:1 1 auto}
+.rise{opacity:0;transform:translateY(20px)}
+.slide.active .rise{animation:rise .7s cubic-bezier(.18,.7,.2,1) forwards}
+.slide.active .r1{animation-delay:.05s}.slide.active .r2{animation-delay:.16s}.slide.active .r3{animation-delay:.27s}
+.slide.active .r4{animation-delay:.38s}.slide.active .r5{animation-delay:.49s}.slide.active .r6{animation-delay:.6s}
+@keyframes rise{to{opacity:1;transform:none}}
+
+/* caution-tape divider */
+.haz{height:11px;border-radius:3px;background:repeating-linear-gradient(45deg,var(--amber) 0 15px,#0a0a06 15px 30px);background-size:200% 100%;animation:hazscroll 2.2s linear infinite;box-shadow:0 0 16px rgba(255,214,10,.35);opacity:.9}
+@keyframes hazscroll{to{background-position:60px 0}}
+
+/* cover beacon */
+.beaconwrap{position:absolute;right:7vw;top:50%;transform:translateY(-50%);z-index:11;pointer-events:none;width:clamp(280px,29vw,460px)}
+
+/* reactive if-then cards */
+.ifwall{display:flex;flex-wrap:wrap;gap:14px;justify-content:center;max-width:1040px;margin:0 auto;width:100%}
+.ifcard{position:relative;border:1px solid var(--line);border-left:3px solid var(--ink-faint);border-radius:8px;background:rgba(21,19,11,.5);padding:14px 16px;width:300px;animation:bob 4s ease-in-out infinite}
+.ifcard:nth-child(2){animation-delay:.6s}.ifcard:nth-child(3){animation-delay:1.2s}.ifcard:nth-child(4){animation-delay:1.8s}.ifcard:nth-child(5){animation-delay:.9s}.ifcard:nth-child(6){animation-delay:1.5s}
+@keyframes bob{50%{transform:translateY(-7px)}}
+.ifcard .if{font-size:12px;color:var(--ink-dim);letter-spacing:.5px;margin-bottom:7px}
+.ifcard .if b{color:var(--ink)}
+.ifcard .then{display:flex;align-items:center;gap:9px;font-size:13px;color:var(--ink)}
+.ifcard .then .ar{color:var(--ink-faint);animation:arrpush 1.6s ease-in-out infinite}
+.ifcard .then .q{color:var(--ink-dim);font-style:italic}
+@keyframes arrpush{50%{transform:translateX(5px);color:var(--ink-dim)}}
+
+/* matrix */
+.mtx{display:grid;grid-template-columns:auto 1fr 1fr;grid-template-rows:auto 1fr 1fr;gap:10px;max-width:860px;width:100%;margin:0 auto}
+.mtx .lab{display:flex;align-items:center;justify-content:center;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--ink-dim);font-weight:700;text-align:center;padding:4px}
+.mtx .cell{border:1px solid var(--line);border-radius:9px;padding:14px 16px;min-height:108px;display:flex;flex-direction:column;justify-content:center;gap:5px;background:rgba(21,19,11,.4)}
+.mtx .cell .ct{font-family:'Instrument Serif',Georgia,serif;font-size:clamp(17px,2vw,25px);line-height:1.05;text-transform:uppercase}
+.mtx .cell .cs{font-size:11px;color:var(--ink-dim);letter-spacing:.3px}
+.mtx .cell.flareR{border-color:var(--red);background:rgba(255,77,61,.08);box-shadow:0 0 24px rgba(255,77,61,.18);animation:flarepulse 2.6s ease-in-out infinite}
+.mtx .cell.flareR .ct{color:var(--red)}
+.mtx .cell.flareA{border-color:var(--amber);background:rgba(255,214,10,.08);box-shadow:0 0 24px rgba(255,214,10,.2);animation:flarepulse 2.6s ease-in-out infinite .6s}
+.mtx .cell.flareA .ct{color:var(--amber)}
+.mtx .cell.mute{opacity:.62}.mtx .cell.mute .ct{color:var(--ink-dim)}
+@keyframes flarepulse{0%,100%{box-shadow:0 0 16px rgba(255,214,10,.12)}50%{box-shadow:0 0 30px rgba(255,214,10,.3)}}
+
+/* playbook */
+.pbk{display:flex;flex-direction:column;gap:11px;max-width:920px;width:100%;margin:0 auto}
+.pbk .row{display:grid;grid-template-columns:1fr auto 1.2fr;align-items:center;gap:14px;border:1px solid var(--line);border-radius:9px;background:rgba(21,19,11,.42);padding:12px 16px}
+.pbk .row .cond{font-size:clamp(13px,1.3vw,16px);color:var(--ink)}
+.pbk .row .cond b{color:var(--amber)}
+.pbk .row .ar{color:var(--amber);font-weight:800;font-size:18px}
+.pbk .row .act{font-size:clamp(13px,1.3vw,16px);color:var(--ink-dim)}
+.pbk .row .act b{color:var(--green);font-weight:700}
+.pbk .row .chk{display:none}
+
+/* generic panel cards */
+.pcard{border:1.5px solid var(--line);border-radius:11px;background:linear-gradient(165deg,rgba(21,19,11,.7),rgba(7,7,5,.5));padding:20px 24px}
+.pcard.amber{border-color:var(--amber)}.pcard.cool{border-color:var(--cool)}.pcard.green{border-color:var(--green)}
+.pcard .ph2{font-size:12px;letter-spacing:2.5px;text-transform:uppercase;font-weight:700;margin-bottom:10px;display:flex;align-items:center;gap:9px}
+.pcard.amber .ph2{color:var(--amber)}.pcard.cool .ph2{color:var(--cool)}.pcard.green .ph2{color:var(--green)}
+.pcard .pl{font-size:clamp(13px,1.3vw,17px);line-height:1.5;color:var(--ink)}
+.pcard .pl b{color:var(--ink)}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.chip{font-size:12px;border:1px solid var(--line);padding:7px 12px;border-radius:3px;background:rgba(0,0,0,.28);letter-spacing:.5px;color:var(--ink-dim)}
+.chip b{color:var(--amber);font-weight:700}.chip.c b{color:var(--cool)}.chip.g b{color:var(--green)}
+
+/* nav / dots / tools */
+.nav{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);z-index:40;display:flex;gap:14px;align-items:center}
+.nav button{width:44px;height:44px;border-radius:50%;border:1px solid var(--line);background:rgba(21,19,11,.6);color:var(--ink);cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;transition:.2s;backdrop-filter:blur(6px)}
+.nav button:hover{border-color:var(--amber);box-shadow:0 0 14px rgba(255,214,10,.5);color:var(--amber)}
+.counter{font-size:12px;letter-spacing:2px;color:var(--ink-dim);min-width:54px;text-align:center}.counter b{color:var(--ink)}
+.dots{position:fixed;right:22px;top:50%;transform:translateY(-50%);z-index:40;display:flex;flex-direction:column;gap:8px}
+.dot{width:8px;height:8px;border-radius:50%;border:1px solid var(--ink-faint);background:transparent;cursor:pointer;transition:.25s;padding:0}
+.dot.on{background:var(--amber);border-color:var(--amber);box-shadow:0 0 10px var(--amber);transform:scale(1.3)}
+#draw{position:fixed;inset:0;z-index:25;pointer-events:none}
+.tools{position:fixed;left:14px;bottom:14px;z-index:40;display:flex;flex-direction:row;gap:5px;align-items:center;padding:5px 8px;border:1px solid var(--line);border-radius:22px;background:rgba(7,7,5,.5);backdrop-filter:blur(8px);opacity:.32;transition:opacity .25s ease}
+.tools:hover,.tools.active{opacity:1}
+.tools .pen{width:26px;height:26px;border-radius:50%;border:1px solid var(--line);background:rgba(21,19,11,.7);color:var(--ink-dim);cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;transition:.2s;padding:0}
+.tools .pen.on{border-color:var(--amber);color:var(--amber);box-shadow:0 0 10px rgba(255,214,10,.45)}
+.swatch{width:13px;height:13px;border-radius:50%;border:2px solid transparent;cursor:pointer;transition:.18s;padding:0}
+.swatch.sel{border-color:var(--ink);transform:scale(1.15)}
+.tools .sep{width:1px;height:14px;background:var(--line);margin:0 1px;flex-shrink:0}
+.tools .size{width:22px;height:18px;border-radius:4px;border:1px solid var(--line);background:rgba(21,19,11,.7);color:var(--ink-dim);cursor:pointer;font-size:8.5px;letter-spacing:.3px;display:flex;align-items:center;justify-content:center;font-weight:700;padding:0}
+.tools .size.sel{border-color:var(--amber);color:var(--amber);box-shadow:0 0 8px rgba(255,214,10,.45)}
+.tools .clr{width:26px;height:18px;border-radius:4px;border:1px solid var(--line);background:rgba(21,19,11,.7);color:var(--ink-dim);cursor:pointer;font-size:9px;letter-spacing:.3px;padding:0}
+
+@media(max-width:768px){
+  .slide{justify-content:flex-start;padding:6vh 5vw 88px}
+  .display{font-size:34px}.head{font-size:25px}.sub{font-size:18px}.lead{font-size:14px;margin-top:10px}
+  .kicker{font-size:11px;letter-spacing:3px;margin-bottom:9px}
+  .stage svg{height:30vh}
+  .two{flex-direction:column;align-items:flex-start;gap:16px}
+  .beaconwrap{position:relative;right:auto;top:auto;transform:none;width:60vw;margin:6px auto 0}
+  .ifwall{gap:9px}.ifcard{width:100%}
+  .mtx{grid-template-columns:auto 1fr 1fr;gap:6px}.mtx .cell{min-height:78px;padding:9px 11px}
+  .pbk .row{grid-template-columns:1fr auto 1fr;gap:9px;padding:9px 12px}
+  .dots,.tools{display:none}.brand{font-size:10px;top:14px;left:16px}
+  .orb1{width:190px;height:190px}.orb2{width:150px;height:150px}.orb3{width:130px;height:130px}.nav{bottom:16px}
+}
+@media(max-width:480px){.display{font-size:28px}.head{font-size:21px}.brand{display:none}.nav button{width:36px;height:36px}}
+@media(max-height:820px){
+  .slide{padding:5vh 6vw 100px}
+  .beaconwrap{width:clamp(230px,23vw,350px)}
+  .display{font-size:clamp(40px,6.4vw,82px)}h2.head{font-size:clamp(26px,4vw,50px)}
+  .stage svg{max-height:46vh}.lead{margin-top:9px;font-size:clamp(13px,1.3vw,18px)}
+  .mtx .cell{min-height:92px}.pcard{padding:16px 20px}
+}
+/* mobile overflow caps */
+@media(max-width:768px){
+  .two,.stage{flex:0 1 auto !important;min-height:auto !important}
+  .col-v svg{width:82vw !important;height:auto !important;max-height:32vh !important}
+  .mtx .cell .ct{font-size:15px}.mtx .cell .cs{font-size:9px}
+}
+@media(max-width:768px) and (max-height:740px){
+  .slide{padding:4vh 5vw 84px;gap:8px}
+  .lead{font-size:12.5px;margin-top:7px}.display{font-size:26px}.head{font-size:21px}.sub{font-size:15px}
+  .col-v svg{max-height:27vh !important}
+  .mtx .cell{min-height:62px;padding:7px 9px}.mtx .cell .ct{font-size:13px}
+  .col-t svg{height:25vh !important}.tell{font-size:11px}
+  .ifcard:nth-child(n+5){display:none}
+}
+@media(max-width:768px){
+  .ifwall{gap:7px}.ifcard{padding:9px 12px;animation:none}.ifcard .if{margin-bottom:4px;font-size:11px}.ifcard .then{font-size:12px}
+  .pcard{padding:13px 15px}.pcard .ph2{margin-bottom:7px;font-size:11px}.pcard .pl{font-size:12.5px;line-height:1.42}
+  .pcard .chips{display:none}
+}
+
+/* === revision additions === */
+.ifcard.hot{background:var(--amber);border-color:var(--amber);border-left-color:var(--amber-deep);box-shadow:0 0 26px rgba(255,214,10,.55);transform:translateY(-3px)}
+.ifcard.hot .if,.ifcard.hot .if b,.ifcard.hot .then,.ifcard.hot .then .q,.ifcard.hot .then .ar{color:#1a1400 !important}
+.mtx .cell{cursor:pointer}
+.mtx .cell.flareC{border-color:var(--cool);background:rgba(70,194,255,.08);box-shadow:0 0 22px rgba(70,194,255,.16);animation:flarepulse 2.6s ease-in-out infinite .3s}
+.mtx .cell.flareC .ct{color:var(--cool)}
+.mtx .cell.flareG{border-color:var(--green);background:rgba(55,255,158,.08);box-shadow:0 0 22px rgba(55,255,158,.16);animation:flarepulse 2.6s ease-in-out infinite .9s}
+.mtx .cell.flareG .ct{color:var(--green)}
+.mtx .cell.picked{animation:none !important;border-width:3px;box-shadow:0 0 0 1px var(--ink) inset,0 0 30px rgba(255,255,255,.2) !important;transform:translateY(-3px)}
+.pbk .row{transition:.2s}
+.pbk .row.hot{border-color:var(--amber);background:rgba(255,214,10,.07);box-shadow:0 0 24px rgba(255,214,10,.4);transform:translateX(4px)}
+.pcard.big{display:flex;flex-direction:column;justify-content:center}
+.pcard.big .ph2{font-size:13px;margin-bottom:13px}
+.pcard.big .pl{font-size:clamp(15px,1.55vw,21px);line-height:1.55}
+.pcard.big .chips{margin-top:15px}
+.reframe{display:flex;flex-direction:column;gap:10px;max-width:380px;width:100%}
+.rfbox{border-radius:12px;padding:15px 18px;display:flex;flex-direction:column;justify-content:center;min-height:88px}
+.rfbox.dim{border:1px solid var(--line);background:rgba(21,19,11,.5);opacity:.62}
+.rfbox.lit{border:2px solid var(--amber);background:rgba(255,214,10,.1);box-shadow:0 0 24px rgba(255,214,10,.22)}
+.rfbox .q{font-size:clamp(14px,1.45vw,19px);font-weight:700;color:var(--ink);line-height:1.2}
+.rfbox.lit .q{color:var(--amber)}
+.rfbox small{display:block;margin-top:7px;font-size:10.5px;color:var(--ink-dim);letter-spacing:.3px}
+.rfar{color:var(--amber);font-size:22px;text-align:center;line-height:.6}
+.tells{display:grid;grid-template-columns:1fr 1fr;gap:10px 18px;width:100%}
+.tellhead{font-size:12px;letter-spacing:2.5px;text-transform:uppercase;color:var(--amber);font-weight:700;margin-bottom:6px}
+.tell{display:flex;align-items:flex-start;gap:12px;font-size:clamp(14px,1.5vw,19px);color:var(--ink);line-height:1.36}
+.tell .tn{flex:0 0 auto;width:23px;height:23px;border-radius:6px;border:1px solid var(--amber);color:var(--amber);font-size:11px;display:flex;align-items:center;justify-content:center;font-weight:700;margin-top:1px}
+@media(max-width:768px){.tells{grid-template-columns:1fr 1fr;gap:6px 10px}.tell{font-size:12.5px;gap:8px}.tell .tn{width:18px;height:18px;font-size:9px}.tellhead{font-size:10.5px}.reframe{max-width:none;gap:7px}.rfbox{min-height:0;padding:10px 13px}.rfbox .q{font-size:13px}.rfbox small{font-size:9.5px;margin-top:4px}.pcard.big .pl{font-size:14px}.col-t svg{height:30vh !important;max-height:300px !important;width:auto !important}}
+
+@media(max-width:768px){
+  .pie7camps{flex-direction:row !important;gap:9px !important}
+  .pie7camps .pcard{padding:11px 12px}.pie7camps .pl{font-size:12px;line-height:1.4}.pie7camps .ph2{margin-bottom:6px;font-size:10px}
+  .col-t svg{height:26vh !important}
+}
+@media(max-width:768px) and (max-height:760px){ .col-t svg{height:22vh !important} }
+@media(max-width:768px) and (max-height:680px){ .col-t svg{height:20vh !important} .lead{font-size:11.5px} }
+
+@media(max-width:768px) and (max-height:740px){
+  .pcard.big .pl{font-size:12px !important;line-height:1.34}
+  .pcard.big .ph2{margin-bottom:6px;font-size:10px}
+  .pcard{padding:10px 12px}
+}
+</style>
+</head>
+<body>
+<div class="bg"></div>
+<div class="caution"></div>
+<div class="orb orb1"></div><div class="orb orb2"></div><div class="orb orb3"></div>
+<div class="grain"></div>
+<div class="motes" id="motes"></div>
+<canvas id="draw"></canvas>
+<div class="progress" id="progress"></div>
+<div class="brand"><b>Capital Flows <i>Research</i></b> · MINDSET CORNER</div>
+<svg width="0" height="0" style="position:absolute"><defs>
+  <marker id="aArrow" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#ffd60a"/></marker>
+  <marker id="rArrow" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#ff4d3d"/></marker>
+  <marker id="cArrow" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#46c2ff"/></marker>
+</defs></svg>
+
+<div class="deck" id="deck">
+
+  <!-- 1 COVER -->
+  <section class="slide active">
+    <div class="kicker rise r1">Capital Flows Research · Mindset Corner</div>
+    <div class="display rise r2" style="font-size:clamp(50px,9vw,128px)">POSITIONING<br><span class="em">INTO EVENTS</span></div>
+    <div class="sub rise r3" style="max-width:900px">FOMC Wednesday. A new Fed chair at the mic. The event was never the trade — <span style="color:var(--amber-glow)">how everyone's positioned into it is.</span></div>
+    <div class="haz rise r4" style="max-width:360px;margin-top:18px"></div>
+    <div class="handle rise r5" style="margin-top:18px">@jaymesrosenthal · Capital Flows Livestream</div>
+    <svg class="beaconwrap rise r3" viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="120" cy="120" r="22" fill="none" stroke="var(--amber)" stroke-width="2"/>
+      <circle cx="120" cy="120" r="22" fill="none" stroke="var(--amber)" stroke-width="2"><animate attributeName="r" values="22;104" dur="3s" repeatCount="indefinite"/><animate attributeName="opacity" values="0.9;0" dur="3s" repeatCount="indefinite"/></circle>
+      <circle cx="120" cy="120" r="22" fill="none" stroke="var(--hazard)" stroke-width="2"><animate attributeName="r" values="22;104" dur="3s" begin="1.5s" repeatCount="indefinite"/><animate attributeName="opacity" values="0.9;0" dur="3s" begin="1.5s" repeatCount="indefinite"/></circle>
+      <circle cx="120" cy="120" r="15" fill="var(--amber)" style="filter:drop-shadow(0 0 14px var(--amber))"><animate attributeName="opacity" values="1;.5;1" dur="1.4s" repeatCount="indefinite"/></circle>
+      <text x="120" y="125" text-anchor="middle" fill="#0a0a06" font-size="11" font-weight="800" font-family="'JetBrains Mono',monospace">EVENT</text>
+      <text x="120" y="206" text-anchor="middle" fill="var(--amber)" font-size="11" font-weight="700" letter-spacing="3" font-family="'JetBrains Mono',monospace">INCOMING</text>
+    </svg>
+  </section>
+
+  <!-- 2 THE EVENT -->
+  <section class="slide">
+    <div class="kicker rise r1">THE THING ON EVERYONE'S CALENDAR</div>
+    <h2 class="head rise r2">WEDNESDAY. THE WHOLE TAPE IS <span class="em">STARING</span> AT IT.</h2>
+    <div class="stage rise r3">
+      <svg viewBox="0 0 860 380" xmlns="http://www.w3.org/2000/svg" font-family="'JetBrains Mono',monospace">
+        <!-- Fed building (centered over WED at x=400, bigger + energetic) -->
+        <circle cx="400" cy="80" r="64" fill="rgba(255,214,10,.08)"><animate attributeName="r" values="54;76;54" dur="3s" repeatCount="indefinite"/><animate attributeName="opacity" values=".55;.12;.55" dur="3s" repeatCount="indefinite"/></circle>
+        <circle cx="400" cy="22" r="5" fill="none" stroke="var(--amber)" stroke-width="2"><animate attributeName="r" values="5;30" dur="2.1s" repeatCount="indefinite"/><animate attributeName="opacity" values=".9;0" dur="2.1s" repeatCount="indefinite"/></circle>
+        <circle cx="400" cy="22" r="5" fill="none" stroke="var(--hazard)" stroke-width="2"><animate attributeName="r" values="5;30" dur="2.1s" begin="1.05s" repeatCount="indefinite"/><animate attributeName="opacity" values=".9;0" dur="2.1s" begin="1.05s" repeatCount="indefinite"/></circle>
+        <g stroke="var(--amber)" stroke-width="2.8" fill="none" stroke-linecap="round" style="filter:drop-shadow(0 0 11px rgba(255,214,10,.6))">
+          <path d="M310 62 L400 22 L490 62 Z"><animate attributeName="stroke-opacity" values="1;.5;1" dur="2.3s" repeatCount="indefinite"/></path>
+          <line x1="304" y1="70" x2="496" y2="70"/>
+          <line x1="322" y1="76" x2="322" y2="126"/><line x1="348" y1="76" x2="348" y2="126"/><line x1="374" y1="76" x2="374" y2="126"/>
+          <line x1="400" y1="76" x2="400" y2="126"/>
+          <line x1="426" y1="76" x2="426" y2="126"/><line x1="452" y1="76" x2="452" y2="126"/><line x1="478" y1="76" x2="478" y2="126"/>
+          <line x1="298" y1="130" x2="502" y2="130"/>
+          <line x1="290" y1="138" x2="510" y2="138" stroke-width="3.6"/>
+        </g>
+        <line y1="74" y2="128" stroke="var(--amber-bright)" stroke-width="3" opacity=".85" style="filter:drop-shadow(0 0 8px var(--amber))"><animate attributeName="x1" values="312;488;312" dur="3.4s" repeatCount="indefinite"/><animate attributeName="x2" values="312;488;312" dur="3.4s" repeatCount="indefinite"/></line>
+        <circle cx="400" cy="22" r="6" fill="var(--amber)" style="filter:drop-shadow(0 0 12px var(--amber))"><animate attributeName="opacity" values="1;.25;1" dur="1.2s" repeatCount="indefinite"/><animate attributeName="r" values="6;8;6" dur="1.2s" repeatCount="indefinite"/></circle>
+        <text x="400" y="152" text-anchor="middle" fill="var(--amber-glow)" font-size="13" font-weight="700" letter-spacing="2">A NEW FED CHAIR'S FIRST PRESSER</text>
+        <!-- week row -->
+        <g font-size="15" font-weight="700" letter-spacing="1" text-anchor="middle">
+          <g fill="var(--ink-dim)">
+            <rect x="70" y="172" width="118" height="74" rx="8" fill="rgba(21,19,11,.5)" stroke="var(--line)"/><text x="129" y="216">MON</text>
+            <rect x="198" y="172" width="118" height="74" rx="8" fill="rgba(21,19,11,.5)" stroke="var(--line)"/><text x="257" y="216">TUE</text>
+          </g>
+          <g style="filter:drop-shadow(0 0 24px rgba(255,214,10,.55))">
+            <rect x="326" y="158" width="148" height="102" rx="10" fill="rgba(255,214,10,.12)" stroke="var(--amber)" stroke-width="2.5"/>
+            <text x="400" y="206" fill="var(--amber)" font-size="26" font-weight="800">WED</text>
+            <text x="400" y="232" fill="var(--amber-glow)" font-size="13" letter-spacing="1">FOMC · 2PM</text>
+            <circle cx="400" cy="176" r="5.5" fill="var(--amber)"><animate attributeName="opacity" values="1;.3;1" dur="1.2s" repeatCount="indefinite"/></circle>
+          </g>
+          <g fill="var(--ink-dim)">
+            <rect x="484" y="172" width="118" height="74" rx="8" fill="rgba(21,19,11,.5)" stroke="var(--line)"/><text x="543" y="216">THU</text>
+            <rect x="612" y="172" width="118" height="74" rx="8" fill="rgba(21,19,11,.5)" stroke="var(--line)"/><text x="671" y="216">FRI</text>
+          </g>
+        </g>
+        <!-- converging stakes (new labels, bigger) -->
+        <path d="M150 300 C 250 280, 330 270, 388 262 M400 300 L400 268 M650 300 C 550 280, 470 270, 412 262" stroke="var(--amber)" stroke-width="1.6" stroke-dasharray="2 7" fill="none" data-trace="#ffe88a|3"/>
+        <g text-anchor="middle">
+          <g><rect x="40" y="300" width="220" height="56" rx="8" fill="rgba(21,19,11,.55)" stroke="var(--line)"/><text x="150" y="324" fill="var(--ink)" font-size="13" font-weight="700">Actual policy</text><text x="150" y="342" fill="var(--amber-glow)" font-size="13" font-weight="700">rate decision</text></g>
+          <g><rect x="300" y="300" width="200" height="56" rx="8" fill="rgba(255,214,10,.08)" stroke="var(--amber)" stroke-width="1.5"/><text x="400" y="324" fill="var(--ink)" font-size="13" font-weight="700">The dot plot</text><text x="400" y="342" fill="var(--amber)" font-size="13" font-weight="700">/ guidance</text></g>
+          <g><rect x="540" y="300" width="260" height="56" rx="8" fill="rgba(21,19,11,.55)" stroke="var(--line)"/><text x="670" y="324" fill="var(--ink)" font-size="13" font-weight="700">Narrative / tone-setting</text><text x="670" y="342" fill="var(--amber-glow)" font-size="13" font-weight="700">for the year</text></g>
+        </g>
+      </svg>
+    </div>
+    <div class="lead rise r4" style="text-align:center;margin-left:auto;margin-right:auto">One catalyst, fixed on the calendar, with an <span class="a">untested chair</span> setting the tone. Everybody knows it's coming. <b>That's exactly why the game isn't the print — it's the lean going in.</b></div>
+  </section>
+
+  <!-- 3 THE REACTIVE TRAP -->
+  <section class="slide">
+    <div class="kicker rise r1">WHAT ALMOST EVERYONE IS DOING</div>
+    <h2 class="head rise r2">THE WHOLE FEED IS WRITING THE SAME <span class="em">IF → THEN.</span></h2>
+    <div class="ifwall rise r3">
+      <div class="ifcard"><div class="if">IF <b>Warsh sounds hawkish…</b></div><div class="then"><span class="ar">→</span> then sell, <span class="q">risk-off</span></div></div>
+      <div class="ifcard"><div class="if">IF <b>the dots move up…</b></div><div class="then"><span class="ar">→</span> then it's <span class="q">over</span></div></div>
+      <div class="ifcard"><div class="if">IF <b>he hints the next move is a cut…</b></div><div class="then"><span class="ar">→</span> then <span class="q">risk-on, rip</span></div></div>
+      <div class="ifcard"><div class="if">IF <b>he sounds worried on inflation…</b></div><div class="then"><span class="ar">→</span> then <span class="q">risk-off</span></div></div>
+      <div class="ifcard"><div class="if">IF <b>he says "data-dependent"…</b></div><div class="then"><span class="ar">→</span> then <span class="q">fade it</span></div></div>
+      <div class="ifcard"><div class="if">IF <b>the presser is calm…</b></div><div class="then"><span class="ar">→</span> then <span class="q">melt-up</span></div></div>
+    </div>
+    <div class="lead rise r4" style="text-align:center;margin-left:auto;margin-right:auto;margin-top:16px">Every one of these is a plan to <span class="r">react</span> — to wait for the print and then scramble for a take. <b>Nobody in this pile is asking the question that actually pays.</b></div>
+  </section>
+
+  <!-- 4 REACTIVE = EXIT LIQUIDITY -->
+  <section class="slide">
+    <div class="kicker rise r1">THE PART THEY DON'T SEE</div>
+    <h2 class="head rise r2">THE REACTIVE CROWD <span class="em">IS</span> THE LIQUIDITY.</h2>
+    <div class="stage rise r3">
+      <svg viewBox="0 0 900 320" xmlns="http://www.w3.org/2000/svg" font-family="'JetBrains Mono',monospace">
+        <!-- LEFT: the spike -->
+        <path d="M40 250 L108 244 L168 130 L214 175 L278 95 L320 132" fill="none" stroke="var(--amber)" stroke-width="3" stroke-linecap="round" data-trace="#ffe88a|4" style="filter:drop-shadow(0 0 7px rgba(255,214,10,.5))"/>
+        <text x="180" y="285" text-anchor="middle" fill="var(--ink-dim)" font-size="12" letter-spacing="1">THE PRINT HITS</text>
+        <!-- MIDDLE: reactive crowd (centered, by itself) -->
+        <text x="455" y="66" text-anchor="middle" fill="var(--red)" font-size="15" font-weight="800" letter-spacing="1">REACTIVE CROWD</text>
+        <g fill="var(--red)">
+          <path d="M402 98 l20 11 l-20 11 l7 -11 z"><animate attributeName="opacity" values="0;1;0" dur="1.4s" repeatCount="indefinite"/></path>
+          <path d="M438 98 l20 11 l-20 11 l7 -11 z"><animate attributeName="opacity" values="0;1;0" dur="1.4s" begin=".25s" repeatCount="indefinite"/></path>
+          <path d="M474 98 l20 11 l-20 11 l7 -11 z"><animate attributeName="opacity" values="0;1;0" dur="1.4s" begin=".5s" repeatCount="indefinite"/></path>
+          <path d="M420 130 l20 11 l-20 11 l7 -11 z"><animate attributeName="opacity" values="0;1;0" dur="1.4s" begin=".7s" repeatCount="indefinite"/></path>
+          <path d="M456 130 l20 11 l-20 11 l7 -11 z"><animate attributeName="opacity" values="0;1;0" dur="1.4s" begin=".95s" repeatCount="indefinite"/></path>
+        </g>
+        <text x="455" y="192" text-anchor="middle" fill="rgba(255,77,61,.85)" font-size="12">piles in late · emotional</text>
+        <text x="455" y="210" text-anchor="middle" fill="rgba(255,77,61,.7)" font-size="11">buying tops, selling bottoms</text>
+        <!-- RIGHT: the positioned, alone -->
+        <g style="filter:drop-shadow(0 0 18px rgba(255,214,10,.5))">
+          <rect x="648" y="112" width="220" height="100" rx="11" fill="rgba(255,214,10,.1)" stroke="var(--amber)" stroke-width="2.5"/>
+          <text x="758" y="146" text-anchor="middle" fill="var(--amber)" font-size="15" font-weight="800">THE POSITIONED</text>
+          <text x="758" y="170" text-anchor="middle" fill="var(--amber-glow)" font-size="12">already in — now</text>
+          <text x="758" y="188" text-anchor="middle" fill="var(--amber-glow)" font-size="12">distributing into the panic</text>
+        </g>
+        <path d="M644 158 C 600 158, 575 152, 530 152" fill="none" stroke="var(--amber)" stroke-width="2.5" marker-end="url(#aArrow)" data-trace="#ffe88a|2.6"/>
+        <text x="450" y="300" text-anchor="middle" fill="var(--ink-faint)" font-size="12" font-style="italic">their hot take is your fill</text>
+      </svg>
+    </div>
+    <div class="lead rise r4" style="text-align:center;margin-left:auto;margin-right:auto">When the crowd finally "reacts," they're buying the top or selling the bottom <span class="r">to someone.</span> <b>That someone is whoever did the work beforehand.</b> <span class="a">You want to be the fill — not the chaser.</span></div>
+  </section>
+
+  <!-- 5 THE REFRAME -->
+  <section class="slide">
+    <div class="kicker rise r1">THE QUESTION THAT ACTUALLY PAYS</div>
+    <h2 class="head rise r2">STOP ASKING <span class="em">"WHAT HAPPENS?"</span> — ASK <span class="em">"WHO'S POSITIONED?"</span></h2>
+    <div class="two" style="margin-top:6px;align-items:center">
+      <div class="col-v rise r3">
+        <div class="reframe">
+          <div class="rfbox dim"><div class="q">"What will the Fed do?"</div><small>reactive · everyone's already here</small></div>
+          <div class="rfar">&#8595;</div>
+          <div class="rfbox lit"><div class="q">"Who's positioned — and how does that bend it?"</div><small>preemptive · almost nobody does this work</small></div>
+        </div>
+      </div>
+      <div class="col-t rise r4">
+        <div class="tellhead">&#9656; Read the lean — what actually tells you how people are positioned</div>
+        <div class="tells">
+          <div class="tell"><span class="tn">1</span>Price action heading <b>into</b> the event</div>
+          <div class="tell"><span class="tn">2</span>Volatility &amp; term structure (IV)</div>
+          <div class="tell"><span class="tn">3</span>Credit spreads</div>
+          <div class="tell"><span class="tn">4</span>Put / call skew</div>
+          <div class="tell"><span class="tn">5</span>Fear &amp; greed</div>
+          <div class="tell"><span class="tn">6</span>Your own gut feel</div>
+          <div class="tell"><span class="tn">7</span>Commitment of Traders (COT)</div>
+          <div class="tell"><span class="tn">8</span>Any real-time positioning data</div>
+        </div>
+      </div>
+    </div>
+    <div class="lead rise r5" style="text-align:center;margin-left:auto;margin-right:auto">The print is one input. <b>The book the market is already carrying into it</b> decides whether it's a shrug, a squeeze, or a slaughter — <span class="a">so read the lean before you guess the outcome.</span></div>
+  </section>
+
+  <!-- 6 POSITIONING SHAPES THE REACTION -->
+  <section class="slide">
+    <div class="kicker rise r1">WHY THE SAME HEADLINE DOES OPPOSITE THINGS</div>
+    <h2 class="head rise r2">IT'S NOT THE NEWS. IT'S NEWS <span class="em">vs THE LEAN.</span></h2>
+    <div class="mtx rise r3">
+      <div class="lab"></div>
+      <div class="lab">CROWD IS<br><span style="color:var(--cool)">LONG / BULLED UP</span></div>
+      <div class="lab">CROWD IS<br><span style="color:var(--hazard)">SHORT / BEARISH</span></div>
+      <div class="lab" style="writing-mode:vertical-rl;transform:rotate(180deg)">HAWKISH SURPRISE</div>
+      <div class="cell flareR"><div class="ct">Violent unwind</div><div class="cs">everyone offside at once → air pocket lower</div></div>
+      <div class="cell flareC"><div class="ct">Shrug</div><div class="cs">bears already there → little new selling</div></div>
+      <div class="lab" style="writing-mode:vertical-rl;transform:rotate(180deg)">DOVISH SURPRISE</div>
+      <div class="cell flareG"><div class="ct">Grind / muted</div><div class="cs">longs already paid → who's left to buy?</div></div>
+      <div class="cell flareA"><div class="ct">Face-rip squeeze</div><div class="cs">shorts forced to cover → fuel into the move</div></div>
+    </div>
+    <div class="lead rise r4" style="text-align:center;margin-left:auto;margin-right:auto;margin-top:14px">The biggest moves come when the surprise lands <span class="o">against</span> a crowded book. <b>Same Fed, same words — the reaction is decided before he opens his mouth.</b></div>
+  </section>
+
+  <!-- 7 MAP THE PLAYERS -->
+  <section class="slide">
+    <div class="kicker rise r1">KNOW WHO'S ON THE OTHER SIDE</div>
+    <h2 class="head rise r2">WHO'S POSITIONED — AND WHO <span class="em">MOVES THE TAPE.</span></h2>
+    <div class="two" style="margin-top:4px;align-items:center">
+      <div class="col-v rise r3 pie7camps" style="flex:0 0 42%;display:flex;flex-direction:column;gap:14px">
+        <div class="pcard cool">
+          <div class="ph2">&#9656; INSTITUTIONS</div>
+          <div class="pl">Positioned <b>early</b>. Hedged. Thinking in scenarios and size. Often <b>already in</b> the trade you're just now noticing.</div>
+        </div>
+        <div class="pcard amber">
+          <div class="ph2">&#9656; RETAIL</div>
+          <div class="pl">Positioned <b>late</b>. Headline-driven. Herding into the obvious take <b>after</b> it's printed — the reactive flow.</div>
+        </div>
+      </div>
+      <div class="col-t rise r4" style="display:flex;justify-content:center;align-items:center">
+        <svg viewBox="0 0 440 296" xmlns="http://www.w3.org/2000/svg" font-family="'JetBrains Mono',monospace" style="height:48vh;max-height:400px;width:100%">
+          <text x="220" y="26" text-anchor="middle" fill="var(--ink)" font-size="14" font-weight="800" letter-spacing="1.5">WHO'S DRIVING PRICE NOW?</text>
+          <path d="M50 218 A170 170 0 0 1 390 218" fill="none" stroke="var(--line)" stroke-width="20" stroke-linecap="round"/>
+          <path d="M50 218 A170 170 0 0 1 220 48" fill="none" stroke="var(--cool)" stroke-width="20" stroke-linecap="round" opacity=".5"/>
+          <path d="M220 48 A170 170 0 0 1 390 218" fill="none" stroke="var(--amber)" stroke-width="20" stroke-linecap="round" opacity=".5"/>
+          <g transform="translate(220,218)">
+            <g>
+              <animateTransform attributeName="transform" type="rotate" values="-58 0 0;58 0 0;-58 0 0" dur="7s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.5;1" keySplines="0.4 0 0.6 1;0.4 0 0.6 1"/>
+              <line x1="0" y1="0" x2="0" y2="-152" stroke="var(--ink)" stroke-width="5" stroke-linecap="round" style="filter:drop-shadow(0 0 10px var(--amber))"/>
+              <circle cx="0" cy="-152" r="6.5" fill="var(--amber)" style="filter:drop-shadow(0 0 8px var(--amber))"/>
+            </g>
+            <circle r="14" fill="var(--bg-2)" stroke="var(--amber)" stroke-width="3"/>
+          </g>
+          <text x="58" y="252" text-anchor="middle" fill="var(--cool)" font-size="14" font-weight="800">INSTITUTIONS</text>
+          <text x="382" y="252" text-anchor="middle" fill="var(--amber)" font-size="14" font-weight="800">RETAIL</text>
+          <text x="220" y="284" text-anchor="middle" fill="var(--ink-dim)" font-size="11.5" font-style="italic">this needle is what you're solving for</text>
+        </svg>
+      </div>
+    </div>
+    <div class="lead rise r5" style="text-align:center;margin-left:auto;margin-right:auto;margin-top:10px">Get a read on <span class="c">how each camp is leaning</span> — and, just as important, <span class="a">who's actually setting price into the event.</span> When a crowded, one-sided book is driving, the surprise that hurts it most is the one to plan around.</div>
+  </section>
+
+  <!-- 8 RANGE OF OUTCOMES -->
+  <section class="slide">
+    <div class="kicker rise r1">REDUNDANCY PLANNING</div>
+    <h2 class="head rise r2">MAP THE <span class="em">RANGE.</span> NOT ONE PREDICTION.</h2>
+    <div class="stage rise r3">
+      <svg viewBox="0 0 820 330" xmlns="http://www.w3.org/2000/svg" font-family="'JetBrains Mono',monospace">
+        <!-- event node -->
+        <g style="filter:drop-shadow(0 0 16px rgba(255,214,10,.5))">
+          <circle cx="110" cy="165" r="34" fill="rgba(255,214,10,.12)" stroke="var(--amber)" stroke-width="2.5"/>
+          <text x="110" y="162" text-anchor="middle" fill="var(--amber)" font-size="11" font-weight="800">THE</text>
+          <text x="110" y="176" text-anchor="middle" fill="var(--amber)" font-size="11" font-weight="800">EVENT</text>
+        </g>
+        <!-- branches -->
+        <g fill="none" stroke-width="2.5" stroke-linecap="round">
+          <path d="M144 150 C 240 90, 320 70, 430 64" stroke="var(--green)" data-trace="#9bffd0|3"/>
+          <path d="M146 158 C 250 130, 330 124, 430 120" stroke="var(--cool)" data-trace="#bfe9ff|3.2"/>
+          <path d="M146 175 C 250 200, 330 206, 430 210" stroke="var(--hazard)" data-trace="#ffce9a|3.4"/>
+          <path d="M144 182 C 240 240, 320 262, 430 268" stroke="var(--red)" data-trace="#ffb3ab|3.6"/>
+        </g>
+        <g font-family="'JetBrains Mono',monospace">
+          <g><rect x="430" y="44" width="356" height="40" rx="7" fill="rgba(55,255,158,.07)" stroke="rgba(55,255,158,.4)"/><text x="446" y="62" fill="var(--green)" font-size="12" font-weight="700">A · Dovish into shorts</text><text x="446" y="77" fill="var(--ink-dim)" font-size="10">~25% · squeeze higher, fast</text><text x="770" y="69" text-anchor="end" fill="var(--green)" font-size="13" font-weight="800">25%</text></g>
+          <g><rect x="430" y="100" width="356" height="40" rx="7" fill="rgba(70,194,255,.06)" stroke="rgba(70,194,255,.35)"/><text x="446" y="118" fill="var(--cool)" font-size="12" font-weight="700">B · In-line / "data-dependent"</text><text x="446" y="133" fill="var(--ink-dim)" font-size="10">~35% · chop, fade the knee-jerk</text><text x="770" y="125" text-anchor="end" fill="var(--cool)" font-size="13" font-weight="800">35%</text></g>
+          <g><rect x="430" y="190" width="356" height="40" rx="7" fill="rgba(255,138,30,.06)" stroke="rgba(255,138,30,.35)"/><text x="446" y="208" fill="var(--hazard)" font-size="12" font-weight="700">C · Mildly hawkish</text><text x="446" y="223" fill="var(--ink-dim)" font-size="10">~25% · orderly de-risk lower</text><text x="770" y="215" text-anchor="end" fill="var(--hazard)" font-size="13" font-weight="800">25%</text></g>
+          <g><rect x="430" y="246" width="356" height="40" rx="7" fill="rgba(255,77,61,.06)" stroke="rgba(255,77,61,.35)"/><text x="446" y="264" fill="var(--red)" font-size="12" font-weight="700">D · Hawkish into crowded longs</text><text x="446" y="279" fill="var(--ink-dim)" font-size="10">~15% · violent unwind / air pocket</text><text x="770" y="271" text-anchor="end" fill="var(--red)" font-size="13" font-weight="800">15%</text></g>
+        </g>
+        <text x="110" y="240" text-anchor="middle" fill="var(--ink-faint)" font-size="10" font-style="italic">you hold the whole tree</text>
+      </svg>
+    </div>
+    <div class="lead rise r4" style="text-align:center;margin-left:auto;margin-right:auto">Don't marry one call. <b>Lay out the branches, weight them, and tag each with the positioning that makes it move.</b> <span class="a">Redundancy planning is holding the tree — not betting the leaf.</span></div>
+  </section>
+
+  <!-- 9 THE FORK -->
+  <section class="slide">
+    <div class="kicker rise r1">YOUR CURRENT BOOK DECIDES YOUR MOVE</div>
+    <h2 class="head rise r2">ARE YOU <span class="em">ALREADY</span> POSITIONED?</h2>
+    <div class="stage rise r3">
+      <svg viewBox="0 0 800 300" xmlns="http://www.w3.org/2000/svg" font-family="'JetBrains Mono',monospace">
+        <g style="filter:drop-shadow(0 0 12px rgba(255,214,10,.4))">
+          <rect x="280" y="20" width="240" height="58" rx="10" fill="rgba(255,214,10,.1)" stroke="var(--amber)" stroke-width="2"/>
+          <text x="400" y="44" text-anchor="middle" fill="var(--amber)" font-size="12" font-weight="800">Biased toward one outcome,</text>
+          <text x="400" y="62" text-anchor="middle" fill="var(--amber)" font-size="12" font-weight="800">medium-to-long term?</text>
+        </g>
+        <path d="M340 80 C 300 110, 250 120, 210 140" fill="none" stroke="var(--green)" stroke-width="2.5" marker-end="url(#aArrow)" data-trace="#9bffd0|2.6"/>
+        <path d="M460 80 C 500 110, 550 120, 590 140" fill="none" stroke="var(--cool)" stroke-width="2.5" marker-end="url(#cArrow)" data-trace="#bfe9ff|2.6"/>
+        <text x="250" y="112" fill="var(--green)" font-size="12" font-weight="800">YES →</text>
+        <text x="520" y="112" fill="var(--cool)" font-size="12" font-weight="800">← NO / FLAT</text>
+        <g style="filter:drop-shadow(0 0 14px rgba(55,255,158,.35))">
+          <rect x="70" y="150" width="280" height="120" rx="11" fill="rgba(55,255,158,.07)" stroke="var(--green)" stroke-width="2"/>
+          <text x="90" y="182" fill="var(--green)" font-size="15" font-weight="800">HEDGE THE THESIS</text>
+          <text x="90" y="208" fill="var(--ink)" font-size="11">Protect the med/long position</text>
+          <text x="90" y="226" fill="var(--ink)" font-size="11">through the noise. Don't blow</text>
+          <text x="90" y="244" fill="var(--ink)" font-size="11">up the big idea over one print.</text>
+        </g>
+        <g style="filter:drop-shadow(0 0 14px rgba(70,194,255,.3))">
+          <rect x="450" y="150" width="280" height="120" rx="11" fill="rgba(70,194,255,.06)" stroke="var(--cool)" stroke-width="2"/>
+          <text x="470" y="182" fill="var(--cool)" font-size="15" font-weight="800">GET POSITIONED</text>
+          <text x="470" y="208" fill="var(--ink)" font-size="11">Clean slate = optionality. Enter</text>
+          <text x="470" y="226" fill="var(--ink)" font-size="11">ahead if you've got an edge, or</text>
+          <text x="470" y="244" fill="var(--ink)" font-size="11">let the fallout hand you a price.</text>
+        </g>
+      </svg>
+    </div>
+    <div class="lead rise r4" style="text-align:center;margin-left:auto;margin-right:auto">The event means something <b>different</b> depending on what you're already holding. <span class="g">Carrying a thesis? Defend it.</span> <span class="c">Flat? It's an opportunity, not an obligation.</span></div>
+  </section>
+
+  <!-- 10 HEDGE vs GET POSITIONED -->
+  <section class="slide">
+    <div class="kicker rise r1">TWO CLEAN PATHS — PICK ON PURPOSE</div>
+    <h2 class="head rise r2">HEDGE THE THESIS — OR USE THE <span class="em">FALLOUT.</span></h2>
+    <div class="two" style="margin-top:6px;align-items:stretch">
+      <div class="col-v rise r3" style="flex:1">
+        <div class="pcard green big" style="height:100%">
+          <div class="ph2">◆ IF YOU'RE POSITIONED → HEDGE</div>
+          <div class="pl">Name exactly <b>what</b> you're protecting and over what horizon. Size the hedge to the scenario that breaks you, <b>not</b> every wiggle. Accept it's a cost of carrying conviction through a known landmine.</div>
+          <div class="chips"><span class="chip g"><b>Define</b> the break</span><span class="chip g"><b>Size</b> to the tail</span><span class="chip g"><b>Keep</b> the core thesis</span></div>
+        </div>
+      </div>
+      <div class="col-t rise r4" style="flex:1">
+        <div class="pcard cool big" style="height:100%">
+          <div class="ph2">◆ IF YOU'RE FLAT → GET POSITIONED</div>
+          <div class="pl">Two ways in: <b>pre-position</b> if you genuinely have an edge on the range and the lean — or <b>wait for the overreaction</b> and let the reactive crowd hand you the price. Either way it's deliberate, not a flinch.</div>
+          <div class="chips"><span class="chip c"><b>Pre</b> · if you have the edge</span><span class="chip c"><b>Post</b> · buy the panic</span><span class="chip c"><b>Never</b> · chase the move</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="lead rise r5" style="text-align:center;margin-left:auto;margin-right:auto;margin-top:12px">Both are active choices made <span class="a">before</span> the bell. <b>The one move that isn't on the menu is improvising live.</b></div>
+  </section>
+
+  <!-- 11 PRE-MORTEM PLAYBOOK -->
+  <section class="slide">
+    <div class="kicker rise r1">THE INVERSION OF THE REACTIVE WALL</div>
+    <h2 class="head rise r2">WRITE THE PLAYBOOK <span class="em">BEFORE</span> THE BELL.</h2>
+    <div class="pbk rise r3">
+      <div class="row"><div class="cond">IF <b>A · dovish squeeze</b></div><div class="ar">→</div><div class="act"><b>trim the hedge, let winners run / don't chase</b></div></div>
+      <div class="row"><div class="cond">IF <b>B · in-line chop</b></div><div class="ar">→</div><div class="act"><b>fade the knee-jerk, stay sized small</b></div></div>
+      <div class="row"><div class="cond">IF <b>C · mild hawkish</b></div><div class="ar">→</div><div class="act"><b>add to hedge / start scaling the entry</b></div></div>
+      <div class="row"><div class="cond">IF <b>D · violent unwind</b></div><div class="ar">→</div><div class="act"><b>this is the fill — deploy the dry powder</b></div></div>
+    </div>
+    <div class="lead rise r4" style="text-align:center;margin-left:auto;margin-right:auto;margin-top:16px">Same "if → then" shape as the crowd's takes — except <span class="a">you wrote yours first, you own the action, and you're not guessing live.</span> <b>When the print lands, you execute. They react.</b></div>
+  </section>
+
+  <!-- 12 CLOSE -->
+  <section class="slide">
+    <div class="kicker rise r1">THE TAKEAWAY</div>
+    <div class="display rise r2" style="font-size:clamp(38px,5.6vw,82px)">DON'T BE THE<br><span class="em">EXIT LIQUIDITY.</span></div>
+    <div class="haz rise r3" style="max-width:420px;margin-top:6px"></div>
+    <div class="lead rise r4" style="max-width:900px;margin-top:18px">Every catalyst quietly sorts the room into two groups: the people who <b>planned the range and own their actions</b> — and the people who show up to <span class="r">react</span> and become someone else's fill.</div>
+    <div class="sub rise r5" style="margin-top:14px">Read the lean. Map the range. Hedge it, position into it, or sit on your hands — <span style="color:var(--amber-glow)">but decide before he steps to the mic.</span></div>
+    <div class="handle rise r6" style="margin-top:18px">@jaymesrosenthal · Capital Flows Livestream</div>
+  </section>
+
+</div>
+
+<div class="nav">
+  <button id="prev" aria-label="Previous">&#8249;</button>
+  <div class="counter"><b id="cur">1</b> / <span id="total">12</span></div>
+  <button id="next" aria-label="Next">&#8250;</button>
+</div>
+<div class="dots" id="dots"></div>
+<div class="tools" id="tools">
+  <button class="pen" id="pen" title="Toggle pen">&#9998;</button>
+  <div class="sep"></div>
+  <div class="sep" id="sizeSep" style="display:none"></div>
+</div>
+
+<script>
+/* motes */
+(function(){const w=document.getElementById('motes');for(let i=0;i<40;i++){const s=document.createElement('div');s.className='mote';s.style.left=Math.random()*100+'%';s.style.bottom='-10px';const z=1.5+Math.random()*2.5;s.style.width=z+'px';s.style.height=z+'px';s.style.animationDuration=(9+Math.random()*10)+'s';s.style.animationDelay=(-Math.random()*16)+'s';w.appendChild(s);}})();
+
+const slides=[...document.querySelectorAll('.slide')];const N=slides.length;let idx=0;
+const progress=document.getElementById('progress'),cur=document.getElementById('cur');
+document.getElementById('total').textContent=N;
+const dotsWrap=document.getElementById('dots');
+slides.forEach((_,i)=>{const d=document.createElement('button');d.className='dot'+(i===0?' on':'');d.setAttribute('aria-label','Slide '+(i+1));d.addEventListener('click',()=>go(i));dotsWrap.appendChild(d);});
+const dots=[...dotsWrap.children];
+function go(i){i=Math.max(0,Math.min(N-1,i));if(i===idx&&slides[i].classList.contains('active'))return;slides[idx].classList.remove('active');dots[idx].classList.remove('on');idx=i;slides[idx].classList.add('active');dots[idx].classList.add('on');cur.textContent=idx+1;progress.style.width=(N>1?(idx/(N-1))*100:100)+'%';}
+go(0);
+document.getElementById('next').addEventListener('click',()=>go(idx+1));
+document.getElementById('prev').addEventListener('click',()=>go(idx-1));
+document.addEventListener('keydown',e=>{if(['ArrowRight','ArrowDown',' ','PageDown'].includes(e.key)){e.preventDefault();go(idx+1);}else if(['ArrowLeft','ArrowUp','PageUp'].includes(e.key)){e.preventDefault();go(idx-1);}else if(e.key==='Home')go(0);else if(e.key==='End')go(N-1);});
+
+let sx=0,sy=0,st=0;const deck=document.getElementById('deck');
+deck.addEventListener('touchstart',e=>{sx=e.changedTouches[0].screenX;sy=e.changedTouches[0].screenY;st=Date.now();},{passive:true});
+deck.addEventListener('touchend',e=>{const dx=e.changedTouches[0].screenX-sx,dy=e.changedTouches[0].screenY-sy,dt=Date.now()-st;if(dt>500)return;if(Math.abs(dx)<50)return;if(Math.abs(dy)>Math.abs(dx))return;if(dx<0)go(idx+1);else go(idx-1);},{passive:true});
+
+/* drawing */
+const canvas=document.getElementById('draw'),ctx=canvas.getContext('2d');
+let penOn=false,drawing=false,color='#ffd60a',penSize=2;
+function sizeC(){canvas.width=innerWidth;canvas.height=innerHeight;ctx.lineCap='round';ctx.lineJoin='round';ctx.lineWidth=penSize;}
+sizeC();addEventListener('resize',sizeC);
+const pen=document.getElementById('pen'),tools=document.getElementById('tools'),sizeSep=document.getElementById('sizeSep');
+['#ffd60a','#ff8a1e','#ff4d3d','#46c2ff','#37ff9e','#fdfbef'].forEach((c,i)=>{const s=document.createElement('button');s.className='swatch'+(i===0?' sel':'');s.style.background=c;s.setAttribute('aria-label','color');s.addEventListener('click',()=>{color=c;[...tools.querySelectorAll('.swatch')].forEach(x=>x.classList.remove('sel'));s.classList.add('sel');if(!penOn)tog(true);});tools.insertBefore(s,sizeSep);});
+sizeSep.style.display='block';
+const sizes=[{l:'XS',v:1},{l:'S',v:2},{l:'M',v:4},{l:'L',v:8},{l:'XL',v:14}];
+sizes.forEach((s,i)=>{const b=document.createElement('button');b.className='size'+(i===1?' sel':'');b.textContent=s.l;b.title='Pen size '+s.l;b.addEventListener('click',()=>{penSize=s.v;ctx.lineWidth=s.v;[...tools.querySelectorAll('.size')].forEach(x=>x.classList.remove('sel'));b.classList.add('sel');if(!penOn)tog(true);});tools.appendChild(b);});
+const clr=document.createElement('button');clr.className='clr';clr.title='Clear';clr.textContent='CLR';clr.addEventListener('click',()=>ctx.clearRect(0,0,canvas.width,canvas.height));tools.appendChild(clr);
+function tog(f){penOn=f!==undefined?f:!penOn;pen.classList.toggle('on',penOn);tools.classList.toggle('active',penOn);canvas.style.pointerEvents=penOn?'auto':'none';}
+pen.addEventListener('click',()=>tog());
+const pos=e=>{const t=e.touches?e.touches[0]:e;return{x:t.clientX,y:t.clientY};};
+function sd(e){if(!penOn)return;drawing=true;const p=pos(e);ctx.beginPath();ctx.moveTo(p.x,p.y);}
+function md(e){if(!penOn||!drawing)return;e.preventDefault();const p=pos(e);ctx.strokeStyle=color;ctx.lineWidth=penSize;ctx.shadowColor=color;ctx.shadowBlur=Math.max(0.5,penSize*0.5);ctx.lineTo(p.x,p.y);ctx.stroke();}
+function ed(){drawing=false;}
+canvas.addEventListener('mousedown',sd);canvas.addEventListener('mousemove',md);addEventListener('mouseup',ed);
+canvas.addEventListener('touchstart',sd,{passive:false});canvas.addEventListener('touchmove',md,{passive:false});canvas.addEventListener('touchend',ed);
+
+/* slide 3: cycle yellow highlight through the if-then cards */
+(function(){const cards=[...document.querySelectorAll('.ifwall .ifcard')];if(!cards.length)return;let i=0;function step(){cards.forEach(c=>c.classList.remove('hot'));cards[i].classList.add('hot');i=(i+1)%cards.length;}step();setInterval(step,1150);})();
+/* slide 11: cycle border highlight A -> B -> C -> D */
+(function(){const rows=[...document.querySelectorAll('.pbk .row')];if(!rows.length)return;let i=0;function step(){rows.forEach(r=>r.classList.remove('hot'));rows[i].classList.add('hot');i=(i+1)%rows.length;}step();setInterval(step,1150);})();
+/* slide 6: click a matrix cell to emphasize its border */
+(function(){const cells=[...document.querySelectorAll('.mtx .cell')];cells.forEach(c=>c.addEventListener('click',()=>{const was=c.classList.contains('picked');cells.forEach(x=>x.classList.remove('picked'));if(!was)c.classList.add('picked');}));})();
+
+/* playheads */
+(function(){
+  const ns='http://www.w3.org/2000/svg';
+  document.querySelectorAll('[data-trace]').forEach(p=>{
+    const svg=p.ownerSVGElement;if(!svg)return;
+    const parts=(p.getAttribute('data-trace')||'').split('|');
+    const col=parts[0]||'#fff',dur=parts[1]||'4';
+    if(!p.id)p.id='tp'+Math.random().toString(36).slice(2,8);
+    const dot=document.createElementNS(ns,'circle');
+    dot.setAttribute('r','4');dot.setAttribute('fill',col);dot.setAttribute('class','ph');dot.style.color=col;
+    const am=document.createElementNS(ns,'animateMotion');
+    am.setAttribute('dur',dur+'s');am.setAttribute('repeatCount','indefinite');am.setAttribute('begin','0s');
+    const mp=document.createElementNS(ns,'mpath');
+    mp.setAttribute('href','#'+p.id);mp.setAttributeNS('http://www.w3.org/1999/xlink','href','#'+p.id);
+    am.appendChild(mp);dot.appendChild(am);svg.appendChild(dot);
+  });
+})();
+</script>
+</body>
+</html>

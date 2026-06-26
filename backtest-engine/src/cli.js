@@ -225,6 +225,25 @@ export class CLI {
         type: 'number',
         description: 'ls-flip-trigger-bar: skip trigger bars whose range < this points. Filters tiny-bar low-expectancy flips.'
       })
+      .option('lstb-require-lt-align', {
+        type: 'boolean',
+        default: false,
+        description: 'ls-flip-trigger-bar: only take flips aligned with 15m LT sentiment (BULLISH→long, BEARISH→short). Meta-label research: PF 1.78 vs 1.44 misaligned.'
+      })
+      .option('lstb-require-lt-target-clear', {
+        type: 'boolean',
+        default: false,
+        description: 'ls-flip-trigger-bar: reject flips where a 15m LT level sits inside the take-profit path. Meta-label research: clear-target PF 1.66 vs 1.35 blocked.'
+      })
+      .option('lstb-require-flip-at-level', {
+        type: 'boolean',
+        default: false,
+        description: 'ls-flip-trigger-bar: only take flips within --lstb-flip-at-level-atr ATR of a 1m LT level (needs --lt-1m-file). Meta-label research: on top of ltAlign PF 1.99 vs 1.78.'
+      })
+      .option('lstb-flip-at-level-atr', {
+        type: 'number',
+        description: 'ls-flip-trigger-bar: max distance (× ATR20) from a 1m LT level for the flip-at-level filter. Default 0.5.'
+      })
       .option('lstb-breakeven-stop', {
         type: 'boolean',
         default: false,
@@ -2046,6 +2065,10 @@ export class CLI {
     if (args['lstb-stop-pts'] !== undefined) strategyParams.stopPoints = args['lstb-stop-pts'];
     if (args['lstb-target-pts'] !== undefined) strategyParams.targetPoints = args['lstb-target-pts'];
     if (args['lstb-min-range'] !== undefined) strategyParams.minTriggerRange = args['lstb-min-range'];
+    if (args['lstb-require-lt-align']) strategyParams.requireLtAlign = true;
+    if (args['lstb-require-lt-target-clear']) strategyParams.requireLtTargetClear = true;
+    if (args['lstb-require-flip-at-level']) strategyParams.requireLtFlipAtLevel = true;
+    if (args['lstb-flip-at-level-atr'] !== undefined) strategyParams.flipAtLevelAtr = args['lstb-flip-at-level-atr'];
 
     // gex-touch-confirm knobs
     if (args['gtc-iv-skew-threshold'] !== undefined) strategyParams.ivSkewThreshold = args['gtc-iv-skew-threshold'];

@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>theDesk — The Token Flow</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg-0:#050309; --bg-1:#0a0612; --bg-2:#14091f;
+  --purple-deep:#3a1a5e; --purple:#6b3fa0; --purple-bright:#a06dd9;
+  --purple-glow:#c89eff; --purple-bold:#c54bff;
+  --ink:#f6efff; --ink-dim:rgba(246,239,255,.66); --ink-faint:rgba(246,239,255,.18);
+  --line:rgba(246,239,255,.12);
+  --gold:#ffd24a; --cyan:#00e5ff; --green:#1aff95; --red:#ff4d6d;
+  --orange:#ff9d4d; --pink:#ff8fd0; --blue:#7aa2ff;
+  --neon:#e8ff00;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;overflow:hidden;background:var(--bg-0);color:var(--ink)}
+body{font-family:'JetBrains Mono',monospace;-webkit-font-smoothing:antialiased}
+.bg{position:fixed;inset:0;z-index:0;background:
+  radial-gradient(900px 700px at 80% 10%, rgba(197,75,255,.32), transparent 60%),
+  radial-gradient(760px 760px at 8% 92%, rgba(0,229,255,.12), transparent 60%),
+  radial-gradient(620px 620px at 92% 88%, rgba(232,255,0,.06), transparent 60%),
+  linear-gradient(160deg,var(--bg-1) 0%, var(--bg-0) 72%);}
+.orb{position:fixed;border-radius:50%;filter:blur(72px);opacity:.55;z-index:0;pointer-events:none}
+.orb1{width:420px;height:420px;left:-90px;top:-80px;background:radial-gradient(circle,var(--purple-bold),transparent 70%);animation:drift1 22s ease-in-out infinite}
+.orb2{width:360px;height:360px;right:-70px;bottom:-60px;background:radial-gradient(circle,rgba(0,229,255,.5),transparent 70%);animation:drift2 27s ease-in-out infinite}
+.orb3{width:300px;height:300px;right:26%;top:32%;background:radial-gradient(circle,rgba(232,255,0,.36),transparent 70%);animation:drift3 31s ease-in-out infinite}
+@keyframes drift1{50%{transform:translate(60px,40px) scale(1.08)}}
+@keyframes drift2{50%{transform:translate(-50px,-30px) scale(1.1)}}
+@keyframes drift3{50%{transform:translate(40px,-50px) scale(.9)}}
+.grain{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:.05;mix-blend-mode:overlay;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+.sparks{position:fixed;inset:0;z-index:1;pointer-events:none;overflow:hidden}
+.spark{position:absolute;bottom:-12px;border-radius:50%;background:var(--purple-glow);box-shadow:0 0 6px var(--purple-glow);opacity:0;animation:rise-spark linear infinite}
+@keyframes rise-spark{0%{transform:translateY(0);opacity:0}10%{opacity:.7}90%{opacity:.4}100%{transform:translateY(-104vh);opacity:0}}
+.progress{position:fixed;top:0;left:0;height:3px;width:0;z-index:40;background:linear-gradient(90deg,var(--cyan),var(--purple-bold),var(--neon));box-shadow:0 0 12px var(--purple-bold);transition:width .45s cubic-bezier(.4,0,.2,1)}
+.brand{position:fixed;top:20px;left:26px;z-index:30;font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--ink-dim)}
+.brand b{color:var(--ink);font-weight:500}.brand b i{color:var(--purple-glow);font-style:normal}
+.deck{position:fixed;inset:0;z-index:10}
+.slide{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:7vh 7vw;opacity:0;visibility:hidden;transition:opacity .5s ease,visibility .5s;pointer-events:none}
+.slide.active{opacity:1;visibility:visible;pointer-events:auto}
+.kicker{font-size:13px;font-weight:600;letter-spacing:4px;text-transform:uppercase;color:var(--neon);margin-bottom:16px;display:flex;align-items:center;gap:12px}
+.kicker::before{content:"";width:34px;height:2px;background:var(--neon);box-shadow:0 0 10px var(--neon)}
+.display{font-family:'Instrument Serif',Georgia,serif;text-transform:uppercase;font-size:clamp(48px,8vw,104px);line-height:.94;letter-spacing:-1.5px;font-weight:400;text-shadow:0 0 44px rgba(197,75,255,.32)}
+.display .em{color:var(--purple-bold);font-style:italic}
+h2.head{font-family:'Instrument Serif',Georgia,serif;text-transform:uppercase;font-size:clamp(30px,4.6vw,58px);line-height:1.0;letter-spacing:-.5px;font-weight:400}
+.head .em{font-style:italic}
+.lead{font-size:clamp(15px,1.5vw,21px);line-height:1.55;color:var(--ink);font-weight:400;max-width:860px;margin-top:16px}
+.lead .g{font-weight:500}.lead .n{color:var(--neon);font-weight:600}
+.sub{font-family:'Instrument Serif',Georgia,serif;font-style:italic;font-size:clamp(19px,2.5vw,33px);color:var(--ink-dim);margin-top:16px;max-width:720px}
+.handle{font-size:14px;letter-spacing:2px;color:var(--purple-glow);margin-top:20px}
+.head .em,.display .em{animation:emglow 3.4s ease-in-out infinite}
+@keyframes emglow{0%,100%{text-shadow:0 0 12px currentColor}50%{text-shadow:0 0 30px currentColor,0 0 52px currentColor}}
+.ph{filter:drop-shadow(0 0 5px #fff) drop-shadow(0 0 11px currentColor)}
+.stage{margin-top:8px;display:flex;justify-content:center;align-items:center}
+.stage svg{width:auto;height:48vh;max-width:96%;overflow:hidden}
+.two{display:flex;align-items:center;gap:46px;width:100%}
+.two .col-v{flex:0 0 auto}.two .col-t{flex:1 1 auto}
+.rise{opacity:0;transform:translateY(20px)}
+.slide.active .rise{animation:rise .7s cubic-bezier(.18,.7,.2,1) forwards}
+.slide.active .r1{animation-delay:.05s}.slide.active .r2{animation-delay:.16s}.slide.active .r3{animation-delay:.27s}
+.slide.active .r4{animation-delay:.38s}.slide.active .r5{animation-delay:.49s}.slide.active .r6{animation-delay:.6s}
+@keyframes rise{to{opacity:1;transform:none}}
+
+/* layer slide structure */
+.layer-head{display:flex;align-items:baseline;gap:22px;margin-bottom:6px}
+.layer-num{font-family:'Instrument Serif',Georgia,serif;font-size:clamp(48px,7vw,92px);line-height:.85;color:var(--neon);text-shadow:0 0 28px rgba(232,255,0,.35);font-weight:400}
+.layer-info{flex:1}
+.layer-name{font-family:'Instrument Serif',Georgia,serif;font-size:clamp(28px,3.8vw,48px);text-transform:uppercase;line-height:1;font-weight:400}
+.layer-desc{font-size:clamp(12px,1.2vw,15px);color:var(--ink-dim);margin-top:6px;letter-spacing:1px}
+.layer-body{display:flex;gap:36px;align-items:center;width:100%;margin-top:18px}
+.layer-vis{flex:0 0 auto}
+.layer-vis svg{height:34vh;width:auto;max-width:42vw}
+.layer-side{flex:1;display:flex;flex-direction:column;gap:14px;min-width:0}
+.tickers{display:flex;flex-wrap:wrap;gap:7px}
+.tk{font-size:12px;border:1px solid var(--line);padding:6px 10px;border-radius:3px;background:rgba(0,0,0,.28);display:flex;gap:8px;align-items:center;letter-spacing:.5px}
+.tk b{color:var(--neon);font-weight:700;font-family:'JetBrains Mono',monospace}
+.tk.priv b{color:var(--purple-glow)}
+.tk.priv span{color:var(--ink-dim)}
+.heat-meter{display:flex;flex-direction:column;gap:5px;margin-top:4px}
+.heat-bar{display:flex;gap:4px}
+.heat-seg{width:18px;height:11px;border-radius:2px;background:rgba(255,255,255,.06)}
+.heat-seg.on{background:var(--heatc);box-shadow:0 0 8px var(--heatc)}
+.heat-lab{font-size:9.5px;letter-spacing:2.5px;color:var(--ink-dim);text-transform:uppercase}
+.heat-lab b{color:var(--heatc)}
+.margin-tag{font-size:11px;letter-spacing:2px;color:var(--ink-dim);text-transform:uppercase}
+.margin-tag b{color:var(--heatc);font-weight:700}
+.insight{font-size:clamp(13px,1.3vw,17px);line-height:1.5;color:var(--ink);max-width:520px;margin-top:4px}
+.insight .g{font-weight:600;color:var(--ink)}
+.insight .n{color:var(--neon);font-weight:600}
+
+/* heat color classes */
+.h0{--heatc:#6E4F9E}.h1{--heatc:#A06DD9}.h2{--heatc:var(--purple-bold)}.h3{--heatc:#ff9d4d}.h4{--heatc:var(--neon)}.h5{--heatc:var(--neon)}
+
+/* tokens / drops animation (cover + faucet) */
+.token{transform-box:fill-box;transform-origin:center}
+.drop1{animation:dropfall 2.4s linear infinite}
+.drop2{animation:dropfall 2.4s linear infinite;animation-delay:.6s}
+.drop3{animation:dropfall 2.4s linear infinite;animation-delay:1.2s}
+.drop4{animation:dropfall 2.4s linear infinite;animation-delay:1.8s}
+@keyframes dropfall{0%{transform:translateY(0);opacity:0}10%{opacity:1}90%{opacity:.7}100%{transform:translateY(400px);opacity:0}}
+
+/* stack-spine (the map) */
+.stack-row{display:flex;align-items:center;gap:14px;padding:7px 0}
+.stack-pill{flex:1;display:flex;align-items:center;gap:14px;padding:10px 16px;border:1px solid var(--line);border-left:3px solid var(--c,var(--purple-bold));border-radius:3px;background:linear-gradient(90deg,rgba(255,255,255,.018),transparent);transition:.25s}
+.slide.active .stack-pill{animation:rowin .55s cubic-bezier(.2,.7,.2,1) backwards}
+.stack-pill .sn{font-size:11px;color:var(--ink-dim);letter-spacing:1px;min-width:24px;font-weight:700}
+.stack-pill .snm{font-family:'Instrument Serif',Georgia,serif;font-size:18px;text-transform:uppercase;letter-spacing:.5px;flex:1}
+.stack-pill .stag{font-size:10px;color:var(--c,var(--purple-bold));letter-spacing:2px;text-transform:uppercase;font-weight:700}
+@keyframes rowin{0%{opacity:0;transform:translateX(-20px)}100%{opacity:1;transform:none}}
+
+/* watchlist */
+.wl-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px 18px;margin-top:6px}
+.wl-card{border:1px solid var(--line);border-left:3px solid var(--c,var(--purple-bold));background:rgba(20,9,31,.5);padding:10px 14px;border-radius:3px}
+.wl-card .wlh{display:flex;align-items:baseline;gap:9px;margin-bottom:5px}
+.wl-card .wln{font-size:10px;color:var(--ink-dim);font-weight:700;letter-spacing:1px}
+.wl-card .wlt{font-family:'Instrument Serif',Georgia,serif;font-size:15px;text-transform:uppercase;line-height:1;letter-spacing:.5px}
+.wl-card .wltk{display:flex;flex-wrap:wrap;gap:5px;margin-top:5px}
+.wl-card .wltk span{font-size:10px;color:var(--neon);font-weight:700;letter-spacing:.5px;padding:2px 6px;border:1px solid rgba(232,255,0,.18);border-radius:2px;background:rgba(0,0,0,.25)}
+.wl-card .wltk span.p{color:var(--purple-glow);border-color:rgba(200,158,255,.18)}
+
+/* nav / tools (with pen size buttons) */
+.nav{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);z-index:40;display:flex;gap:14px;align-items:center}
+.nav button{width:44px;height:44px;border-radius:50%;border:1px solid var(--line);background:rgba(20,9,31,.6);color:var(--ink);cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;transition:.2s;backdrop-filter:blur(6px)}
+.nav button:hover{border-color:var(--cyan);box-shadow:0 0 14px rgba(0,229,255,.5);color:var(--cyan)}
+.counter{font-size:12px;letter-spacing:2px;color:var(--ink-dim);min-width:54px;text-align:center}.counter b{color:var(--ink)}
+.dots{position:fixed;right:22px;top:50%;transform:translateY(-50%);z-index:40;display:flex;flex-direction:column;gap:8px}
+.dot{width:8px;height:8px;border-radius:50%;border:1px solid var(--ink-faint);background:transparent;cursor:pointer;transition:.25s;padding:0}
+.dot.on{background:var(--neon);border-color:var(--neon);box-shadow:0 0 10px var(--neon);transform:scale(1.3)}
+/* tools — inconspicuous, bottom-left, brightens on hover/active only */
+#draw{position:fixed;inset:0;z-index:25;pointer-events:none}
+.tools{position:fixed;left:14px;bottom:14px;z-index:40;display:flex;flex-direction:row;gap:5px;align-items:center;padding:5px 8px;border:1px solid var(--line);border-radius:22px;background:rgba(10,6,18,.5);backdrop-filter:blur(8px);opacity:.32;transition:opacity .25s ease}
+.tools:hover{opacity:1}
+.tools.active{opacity:1}
+.tools .pen{width:26px;height:26px;border-radius:50%;border:1px solid var(--line);background:rgba(20,9,31,.7);color:var(--ink-dim);cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;transition:.2s;padding:0}
+.tools .pen.on{border-color:var(--cyan);color:var(--cyan);box-shadow:0 0 10px rgba(0,229,255,.45)}
+.swatch{width:13px;height:13px;border-radius:50%;border:2px solid transparent;cursor:pointer;transition:.18s;padding:0}
+.swatch.sel{border-color:var(--ink);transform:scale(1.15)}
+.tools .sep{width:1px;height:14px;background:var(--line);margin:0 1px;flex-shrink:0}
+.tools .size{width:22px;height:18px;border-radius:4px;border:1px solid var(--line);background:rgba(20,9,31,.7);color:var(--ink-dim);cursor:pointer;font-size:8.5px;letter-spacing:.3px;display:flex;align-items:center;justify-content:center;font-weight:700;padding:0}
+.tools .size.sel{border-color:var(--cyan);color:var(--cyan);box-shadow:0 0 8px rgba(0,229,255,.45)}
+.tools .clr{width:26px;height:18px;border-radius:4px;border:1px solid var(--line);background:rgba(20,9,31,.7);color:var(--ink-dim);cursor:pointer;font-size:9px;letter-spacing:.3px;padding:0}
+
+@media(max-width:768px){
+  .slide{justify-content:flex-start;padding:11vh 6vw 14vh}
+  .display{font-size:34px}.head{font-size:24px}.sub{font-size:18px}.lead{font-size:14px;margin-top:12px}
+  .kicker{font-size:11px;letter-spacing:3px;margin-bottom:10px}
+  .stage svg{height:28vh}
+  .two{flex-direction:column;align-items:flex-start;gap:18px}
+  .layer-body{flex-direction:column;gap:16px}.layer-vis svg{height:24vh;max-width:80vw}
+  .layer-num{font-size:42px}.layer-name{font-size:22px}.tk{font-size:10px;padding:4px 7px}
+  .wl-grid{grid-template-columns:1fr;gap:7px}
+  .dots,.tools{display:none}.brand{font-size:10px;top:14px;left:16px}
+  .orb1{width:180px;height:180px}.orb2{width:150px;height:150px}.orb3{width:120px;height:120px}.sparks{opacity:.4}.nav{bottom:16px}
+}
+@media(max-width:480px){.display{font-size:28px}.head{font-size:20px}.brand{display:none}.nav button{width:36px;height:36px}}
+
+/* ---- short-height viewports (small laptops, 1366x768 etc) ---- */
+@media(max-height:820px){
+  .slide{padding:5vh 6vw}
+  .display{font-size:clamp(42px,6.6vw,82px)}
+  h2.head{font-size:clamp(26px,4vw,50px)}
+  .stage svg{height:42vh}
+  .layer-vis svg{height:30vh}
+  .layer-num{font-size:clamp(40px,5.5vw,72px)}
+  .layer-name{font-size:clamp(22px,3.2vw,40px)}
+  .lead{margin-top:10px;font-size:clamp(13px,1.3vw,18px)}
+  .stack-pill{padding:6px 14px}
+  .stack-pill .snm{font-size:15px}
+  .stack-row{padding:3px 0}
+  .wl-card{padding:8px 12px}
+  .wl-card .wlt{font-size:13px}
+  .wl-grid{gap:8px 16px}
+}
+
+/* ---- tighter rules for the dense slides on mobile ---- */
+@media(max-width:768px){
+  .slide{padding:6vh 5vw 9vh}
+  /* cover waterfall: cap height when screen is short */
+  .slide:first-child .col-v svg{height:48vh !important}
+  /* map: compress all 10 rows */
+  .stack-pill{padding:5px 12px}
+  .stack-pill .snm{font-size:12px;letter-spacing:.3px}
+  .stack-pill .stag{font-size:8.5px;letter-spacing:1.5px}
+  .stack-pill .sn{font-size:9.5px;min-width:18px}
+  .stack-row{padding:1px 0}
+  .stack-spine{margin-top:10px !important;gap:1px !important}
+  /* watchlist: keep 2-col, compact cards */
+  .wl-grid{grid-template-columns:1fr 1fr !important;gap:6px 7px !important;margin-top:4px !important}
+  .wl-card{padding:7px 9px}
+  .wl-card .wlt{font-size:11px;letter-spacing:.3px}
+  .wl-card .wln{font-size:8.5px}
+  .wl-card .wlh{margin-bottom:3px;gap:6px}
+  .wl-card .wltk{gap:3px;margin-top:3px}
+  .wl-card .wltk span{font-size:8.5px;padding:1px 4px;letter-spacing:0}
+  .wl-card[style*="grid-column:1/-1"]{grid-column:1/-1 !important}
+}
+</style>
+</head>
+<body>
+<div class="bg"></div>
+<div class="orb orb1"></div><div class="orb orb2"></div><div class="orb orb3"></div>
+<div class="grain"></div>
+<div class="sparks" id="sparks"></div>
+<canvas id="draw"></canvas>
+<div class="progress" id="progress"></div>
+<div class="brand"><b>the<i>Desk</i></b> · MARKET STRUCTURE</div>
+<svg width="0" height="0" style="position:absolute"><defs>
+  <marker id="vArrow" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="context-stroke"/></marker>
+  <marker id="nArrow" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#e8ff00"/></marker>
+</defs></svg>
+<div class="deck" id="deck">
+  <!-- 1 COVER -->
+  <section class="slide active">
+    <div class="two">
+      <div class="col-t">
+        <div class="kicker rise r1">theDesk · A STREAM SEGMENT</div>
+        <div class="display rise r2">THE <span class="em">TOKEN<br>FLOW</span></div>
+        <div class="sub rise r3">Every AI dollar enters the system in one place and flows to ten. We're going to walk the whole path — and find where the money actually stays.</div>
+        <div class="handle rise r5">@jaymesrosenthal</div>
+      </div>
+      <div class="col-v rise r4">
+        <svg viewBox="0 0 320 460" xmlns="http://www.w3.org/2000/svg" style="height:62vh;width:auto">
+          <rect x="146" y="20" width="28" height="22" rx="3" fill="rgba(0,229,255,.18)" stroke="#00e5ff" stroke-width="2"/>
+          <text x="160" y="36" text-anchor="middle" fill="#00e5ff" font-size="11" font-weight="700" font-family="'JetBrains Mono',monospace">$</text>
+          <path d="M160 42 L160 430" stroke="rgba(0,229,255,.4)" stroke-width="2" stroke-dasharray="3 5"/>
+          <g font-family="'JetBrains Mono',monospace">
+            <g><rect x="60" y="60" width="200" height="34" rx="3" fill="rgba(197,75,255,.06)" stroke="rgba(197,75,255,.4)" stroke-width="1"/><text x="160" y="82" text-anchor="middle" fill="#c89eff" font-size="11" font-weight="700" letter-spacing="2">01 · APPLICATIONS</text></g>
+            <g><rect x="60" y="100" width="200" height="34" rx="3" fill="rgba(197,75,255,.08)" stroke="rgba(197,75,255,.5)" stroke-width="1"/><text x="160" y="122" text-anchor="middle" fill="#c89eff" font-size="11" font-weight="700" letter-spacing="2">02 · MODELS</text></g>
+            <g><rect x="60" y="140" width="200" height="34" rx="3" fill="rgba(255,157,77,.1)" stroke="rgba(255,157,77,.5)" stroke-width="1"/><text x="160" y="162" text-anchor="middle" fill="#ff9d4d" font-size="11" font-weight="700" letter-spacing="2">03 · CLOUD</text></g>
+            <g><rect x="60" y="180" width="200" height="34" rx="3" fill="rgba(255,157,77,.12)" stroke="rgba(255,157,77,.6)" stroke-width="1"/><text x="160" y="202" text-anchor="middle" fill="#ff9d4d" font-size="11" font-weight="700" letter-spacing="2">04 · INTERCONNECT</text></g>
+            <g><rect x="60" y="220" width="200" height="34" rx="3" fill="rgba(232,255,0,.1)" stroke="rgba(232,255,0,.65)" stroke-width="1.5"/><text x="160" y="242" text-anchor="middle" fill="#e8ff00" font-size="11" font-weight="700" letter-spacing="2">05 · ACCELERATORS</text></g>
+            <g><rect x="60" y="260" width="200" height="34" rx="3" fill="rgba(232,255,0,.1)" stroke="rgba(232,255,0,.65)" stroke-width="1.5"/><text x="160" y="282" text-anchor="middle" fill="#e8ff00" font-size="11" font-weight="700" letter-spacing="2">06 · FOUNDRY</text></g>
+            <g><rect x="60" y="300" width="200" height="34" rx="3" fill="rgba(232,255,0,.1)" stroke="rgba(232,255,0,.7)" stroke-width="1.5"/><text x="160" y="322" text-anchor="middle" fill="#e8ff00" font-size="11" font-weight="700" letter-spacing="2">07 · EQUIPMENT</text></g>
+            <g><rect x="60" y="340" width="200" height="34" rx="3" fill="rgba(255,157,77,.12)" stroke="rgba(255,157,77,.6)" stroke-width="1"/><text x="160" y="362" text-anchor="middle" fill="#ff9d4d" font-size="11" font-weight="700" letter-spacing="2">08 · POWER</text></g>
+            <g><rect x="60" y="380" width="200" height="34" rx="3" fill="rgba(197,75,255,.06)" stroke="rgba(197,75,255,.4)" stroke-width="1"/><text x="160" y="402" text-anchor="middle" fill="#c89eff" font-size="11" font-weight="700" letter-spacing="2">09 · RAW INPUTS</text></g>
+          </g>
+          <circle class="token drop1" cx="160" cy="48" r="5" fill="#e8ff00" style="filter:drop-shadow(0 0 8px #e8ff00)"/>
+          <circle class="token drop2" cx="160" cy="48" r="5" fill="#e8ff00" style="filter:drop-shadow(0 0 8px #e8ff00)"/>
+          <circle class="token drop3" cx="160" cy="48" r="5" fill="#e8ff00" style="filter:drop-shadow(0 0 8px #e8ff00)"/>
+          <circle class="token drop4" cx="160" cy="48" r="5" fill="#e8ff00" style="filter:drop-shadow(0 0 8px #e8ff00)"/>
+        </svg>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2 THE FAUCET -->
+  <section class="slide">
+    <div class="kicker rise r1">WHERE IT ALL STARTS</div>
+    <h2 class="head rise r2">EVERYTHING DOWNSTREAM<br>SURVIVES ON <span class="em" style="color:var(--neon)">ONE STREAM</span></h2>
+    <div class="stage rise r3">
+      <svg viewBox="0 0 700 360" xmlns="http://www.w3.org/2000/svg" font-family="'JetBrains Mono',monospace">
+        <g><rect x="290" y="20" width="120" height="50" rx="6" fill="rgba(0,229,255,.14)" stroke="#00e5ff" stroke-width="2.4"/><text x="350" y="42" text-anchor="middle" fill="#00e5ff" font-size="11" font-weight="700" letter-spacing="2">THE FAUCET</text><text x="350" y="59" text-anchor="middle" fill="rgba(246,239,255,.7)" font-size="10">consumer · enterprise · API</text></g>
+        <path d="M340 70 L340 110 L300 110 L300 130" fill="none" stroke="rgba(0,229,255,.5)" stroke-width="1.8"/>
+        <path d="M360 70 L360 110 L400 110 L400 130" fill="none" stroke="rgba(0,229,255,.5)" stroke-width="1.8"/>
+        <path d="M350 70 L350 130" stroke="rgba(0,229,255,.5)" stroke-width="1.8"/>
+        <circle class="token drop1" cx="350" cy="80" r="4" fill="#e8ff00" style="filter:drop-shadow(0 0 6px #e8ff00)"><animate attributeName="cy" values="80;330" dur="2s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;1;1;0" dur="2s" repeatCount="indefinite"/></circle>
+        <circle class="token drop2" cx="300" cy="140" r="4" fill="#e8ff00" style="filter:drop-shadow(0 0 6px #e8ff00)"><animate attributeName="cy" values="140;330" dur="2.4s" begin=".5s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;1;1;0" dur="2.4s" begin=".5s" repeatCount="indefinite"/></circle>
+        <circle class="token drop3" cx="400" cy="140" r="4" fill="#e8ff00" style="filter:drop-shadow(0 0 6px #e8ff00)"><animate attributeName="cy" values="140;330" dur="2.2s" begin="1s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;1;1;0" dur="2.2s" begin="1s" repeatCount="indefinite"/></circle>
+        <g font-size="10.5" font-weight="700" letter-spacing="1" fill="rgba(246,239,255,.65)">
+          <rect x="60" y="200" width="100" height="32" rx="3" fill="rgba(255,255,255,.03)" stroke="rgba(246,239,255,.18)"/>
+          <text x="110" y="220" text-anchor="middle">$20/MO PLANS</text>
+          <rect x="190" y="200" width="120" height="32" rx="3" fill="rgba(255,255,255,.03)" stroke="rgba(246,239,255,.18)"/>
+          <text x="250" y="220" text-anchor="middle">SEAT LICENSES</text>
+          <rect x="340" y="200" width="100" height="32" rx="3" fill="rgba(255,255,255,.03)" stroke="rgba(246,239,255,.18)"/>
+          <text x="390" y="220" text-anchor="middle">API CALLS</text>
+          <rect x="470" y="200" width="170" height="32" rx="3" fill="rgba(232,255,0,.06)" stroke="rgba(232,255,0,.32)"/>
+          <text x="555" y="220" text-anchor="middle" fill="#e8ff00">800M+ WEEKLY USERS</text>
+        </g>
+        <path d="M60 280 L640 280" stroke="rgba(232,255,0,.32)" stroke-width="1.5" stroke-dasharray="2 6"/>
+        <text x="60" y="298" fill="rgba(246,239,255,.5)" font-size="10" letter-spacing="2">EVERY LAYER BELOW FEEDS HERE  →</text>
+        <text x="640" y="298" text-anchor="end" fill="#e8ff00" font-size="10" letter-spacing="2" font-weight="700">10 LAYERS · 1 SOURCE</text>
+      </svg>
+    </div>
+    <div class="lead rise r4" style="text-align:center;margin-left:auto;margin-right:auto">A consumer sub. A seat license. A metered API call. <span class="g">That's it.</span> Every chip foundry, every datacenter, every model lab — they all live or die on a slice of <span class="n">that one stream.</span></div>
+  </section>
+
+  <!-- 3 THE BUBBLE QUESTION -->
+  <section class="slide">
+    <div class="kicker rise r1">THE REAL QUESTION</div>
+    <h2 class="head rise r2">IS THE FAUCET WIDENING<br>FAST ENOUGH FOR <span class="em" style="color:var(--neon)">THE BILL</span>?</h2>
+    <div class="stage rise r3">
+      <svg viewBox="0 0 720 320" xmlns="http://www.w3.org/2000/svg" font-family="'JetBrains Mono',monospace">
+        <text x="180" y="40" text-anchor="middle" fill="#00e5ff" font-size="13" font-weight="700" letter-spacing="3">REVENUE GROWTH</text>
+        <text x="180" y="56" text-anchor="middle" fill="rgba(246,239,255,.5)" font-size="10">consumer + enterprise + API</text>
+        <path d="M60 240 Q120 200 180 160 T300 90" fill="none" stroke="#00e5ff" stroke-width="3" stroke-linecap="round" data-trace="#a8f5ff|5"/>
+        <path d="M60 240 Q120 200 180 160 T300 90 L300 290 L60 290 Z" fill="rgba(0,229,255,.08)"/>
+        <text x="312" y="92" fill="#00e5ff" font-size="11" font-weight="700">FAUCET</text>
+        <text x="380" y="166" text-anchor="middle" fill="rgba(246,239,255,.85)" font-size="38" font-family="'Instrument Serif',Georgia,serif">vs.</text>
+        <text x="540" y="40" text-anchor="middle" fill="#e8ff00" font-size="13" font-weight="700" letter-spacing="3">CAPEX SPEND</text>
+        <text x="540" y="56" text-anchor="middle" fill="rgba(246,239,255,.5)" font-size="10">datacenters · GPUs · power · labs</text>
+        <path d="M440 250 Q500 200 560 140 T680 40" fill="none" stroke="#e8ff00" stroke-width="3" stroke-linecap="round" data-trace="#f5ffa8|5"/>
+        <path d="M440 250 Q500 200 560 140 T680 40 L680 290 L440 290 Z" fill="rgba(232,255,0,.08)"/>
+        <text x="448" y="42" fill="#e8ff00" font-size="11" font-weight="700">$650B+</text>
+        <line x1="60" y1="290" x2="680" y2="290" stroke="rgba(246,239,255,.2)"/>
+        <text x="370" y="312" text-anchor="middle" fill="rgba(246,239,255,.55)" font-size="11" letter-spacing="2" font-style="italic">if the gold curve outruns the cyan one — it ALL gets repriced</text>
+      </svg>
+    </div>
+    <div class="lead rise r4" style="text-align:center;margin-left:auto;margin-right:auto">The "is AI a bubble" debate isn't really about AI. It's about whether the faucet on the left keeps widening fast enough to pay the bill on the right. <span class="g n">That's the only question that matters.</span></div>
+  </section>
+  <!-- 3.5 THE HYPERSCALERS · THE VALVE -->
+  <section class="slide">
+    <div class="kicker rise r1">THE CAPITAL INTERMEDIARY</div>
+    <h2 class="head rise r2">THE HYPERSCALERS AREN'T A LAYER.<br>THEY'RE THE <span class="em" style="color:var(--neon)">VALVE</span>.</h2>
+    <div class="stage rise r3">
+      <svg viewBox="0 0 720 360" xmlns="http://www.w3.org/2000/svg" font-family="'JetBrains Mono',monospace">
+        <rect x="320" y="6" width="80" height="22" rx="3" fill="rgba(0,229,255,.14)" stroke="#00e5ff" stroke-width="1.5"/>
+        <text x="360" y="22" text-anchor="middle" fill="#00e5ff" font-size="10" font-weight="700" letter-spacing="2">FAUCET $</text>
+        <path d="M360 28 L140 60" stroke="rgba(0,229,255,.4)" stroke-width="1.5"/>
+        <path d="M360 28 L360 60" stroke="rgba(0,229,255,.4)" stroke-width="1.5"/>
+        <path d="M360 28 L580 60" stroke="rgba(0,229,255,.4)" stroke-width="1.5"/>
+        <g>
+          <rect x="60" y="60" width="160" height="200" rx="8" fill="rgba(20,9,31,.7)" stroke="#c89eff" stroke-width="2"/>
+          <text x="140" y="82" text-anchor="middle" fill="#c89eff" font-size="14" font-weight="700" letter-spacing="2">MSFT</text>
+          <rect x="72" y="92" width="136" height="62" rx="2" fill="rgba(197,75,255,.14)" stroke="rgba(197,75,255,.45)"/>
+          <text x="140" y="112" text-anchor="middle" fill="#c89eff" font-size="8.5" font-weight="700" letter-spacing="1">LEGACY · pays the bills</text>
+          <text x="140" y="128" text-anchor="middle" fill="rgba(200,158,255,.72)" font-size="8" letter-spacing="0.5">Office · Win · Azure</text>
+          <text x="140" y="143" text-anchor="middle" fill="rgba(200,158,255,.72)" font-size="8" letter-spacing="0.5">Search · LinkedIn</text>
+          <rect x="72" y="162" width="136" height="22" rx="2" fill="rgba(0,229,255,.15)" stroke="rgba(0,229,255,.5)"/>
+          <text x="140" y="177" text-anchor="middle" fill="#00e5ff" font-size="8.5" font-weight="700" letter-spacing="1">AI · not yet expressed</text>
+          <rect x="72" y="192" width="136" height="22" rx="2" fill="rgba(255,77,109,.1)" stroke="rgba(255,77,109,.5)" stroke-dasharray="2 2"/>
+          <text x="140" y="207" text-anchor="middle" fill="#ff4d6d" font-size="8" font-weight="700" letter-spacing="1">DEBT · BUYBACKS ↓</text>
+          <path d="M140 260 L140 290" stroke="#e8ff00" stroke-width="3.5" marker-end="url(#nArrow)" style="filter:drop-shadow(0 0 6px rgba(232,255,0,.6))"/>
+        </g>
+        <g>
+          <rect x="280" y="60" width="160" height="200" rx="8" fill="rgba(20,9,31,.7)" stroke="#c89eff" stroke-width="2"/>
+          <text x="360" y="82" text-anchor="middle" fill="#c89eff" font-size="14" font-weight="700" letter-spacing="2">AMZN</text>
+          <rect x="292" y="92" width="136" height="62" rx="2" fill="rgba(197,75,255,.14)" stroke="rgba(197,75,255,.45)"/>
+          <text x="360" y="112" text-anchor="middle" fill="#c89eff" font-size="8.5" font-weight="700" letter-spacing="1">LEGACY · pays the bills</text>
+          <text x="360" y="128" text-anchor="middle" fill="rgba(200,158,255,.72)" font-size="8" letter-spacing="0.5">Retail · AWS</text>
+          <text x="360" y="143" text-anchor="middle" fill="rgba(200,158,255,.72)" font-size="8" letter-spacing="0.5">Ads · Prime</text>
+          <rect x="292" y="162" width="136" height="22" rx="2" fill="rgba(0,229,255,.15)" stroke="rgba(0,229,255,.5)"/>
+          <text x="360" y="177" text-anchor="middle" fill="#00e5ff" font-size="8.5" font-weight="700" letter-spacing="1">AI · not yet expressed</text>
+          <rect x="292" y="192" width="136" height="22" rx="2" fill="rgba(255,77,109,.1)" stroke="rgba(255,77,109,.5)" stroke-dasharray="2 2"/>
+          <text x="360" y="207" text-anchor="middle" fill="#ff4d6d" font-size="8" font-weight="700" letter-spacing="1">DEBT · BUYBACKS ↓</text>
+          <path d="M360 260 L360 290" stroke="#e8ff00" stroke-width="3.5" marker-end="url(#nArrow)" style="filter:drop-shadow(0 0 6px rgba(232,255,0,.6))"/>
+        </g>
+        <g>
+          <rect x="500" y="60" width="160" height="200" rx="8" fill="rgba(20,9,31,.7)" stroke="#c89eff" stroke-width="2"/>
+          <text x="580" y="82" text-anchor="middle" fill="#c89eff" font-size="14" font-weight="700" letter-spacing="2">GOOGL</text>
+          <rect x="512" y="92" width="136" height="62" rx="2" fill="rgba(197,75,255,.14)" stroke="rgba(197,75,255,.45)"/>
+          <text x="580" y="112" text-anchor="middle" fill="#c89eff" font-size="8.5" font-weight="700" letter-spacing="1">LEGACY · pays the bills</text>
+          <text x="580" y="128" text-anchor="middle" fill="rgba(200,158,255,.72)" font-size="8" letter-spacing="0.5">Search ads</text>
+          <text x="580" y="143" text-anchor="middle" fill="rgba(200,158,255,.72)" font-size="8" letter-spacing="0.5">YouTube · GCP</text>
+          <rect x="512" y="162" width="136" height="22" rx="2" fill="rgba(0,229,255,.15)" stroke="rgba(0,229,255,.5)"/>
+          <text x="580" y="177" text-anchor="middle" fill="#00e5ff" font-size="8.5" font-weight="700" letter-spacing="1">AI · not yet expressed</text>
+          <rect x="512" y="192" width="136" height="22" rx="2" fill="rgba(255,77,109,.1)" stroke="rgba(255,77,109,.5)" stroke-dasharray="2 2"/>
+          <text x="580" y="207" text-anchor="middle" fill="#ff4d6d" font-size="8" font-weight="700" letter-spacing="1">DEBT · BUYBACKS ↓</text>
+          <path d="M580 260 L580 290" stroke="#e8ff00" stroke-width="3.5" marker-end="url(#nArrow)" style="filter:drop-shadow(0 0 6px rgba(232,255,0,.6))"/>
+        </g>
+        <rect x="40" y="295" width="640" height="52" rx="6" fill="rgba(232,255,0,.18)" stroke="#e8ff00" stroke-width="2.5" style="filter:drop-shadow(0 0 14px rgba(232,255,0,.4))"/>
+        <text x="360" y="320" text-anchor="middle" fill="#e8ff00" font-size="16" font-weight="700" letter-spacing="3">$650B+ CAPEX</text>
+        <text x="360" y="338" text-anchor="middle" fill="rgba(232,255,0,.75)" font-size="9" letter-spacing="2" font-style="italic">washes over every layer below</text>
+      </svg>
+    </div>
+    <div class="lead rise r4" style="text-align:center;margin-left:auto;margin-right:auto"><span class="g">Not pure plays.</span> Closer to the consumer than to inference — legacy businesses pay the bills while AI capex leaves the balance sheet through SPVs, off-BS debt, and suspended buybacks. <span class="n">The bill itself washes over every layer downstream.</span></div>
+  </section>
+
+  <!-- 4 THE MAP -->
+  <section class="slide">
+    <div class="kicker rise r1">THE TEN-LAYER STACK</div>
+    <h2 class="head rise r2">EVERY DOLLAR FLOWS<br>THROUGH <span class="em" style="color:var(--neon)">ALL OF THIS</span></h2>
+    <div class="stack-spine rise r3" style="margin-top:18px;display:flex;flex-direction:column;gap:2px;max-width:920px;margin-left:auto;margin-right:auto;width:100%">
+      <div class="stack-row" style="animation-delay:.08s"><div class="stack-pill" style="--c:var(--cyan);animation-delay:.05s"><div class="sn">00</div><div class="snm">End User · Demand</div><div class="stag" style="color:var(--cyan)">faucet</div></div></div>
+      <div class="stack-row"><div class="stack-pill" style="--c:var(--purple-glow);animation-delay:.13s"><div class="sn">01</div><div class="snm">Applications &amp; Agents</div><div class="stag">contested</div></div></div>
+      <div class="stack-row"><div class="stack-pill" style="--c:var(--purple-bold);animation-delay:.21s"><div class="sn">02</div><div class="snm">Foundation Models</div><div class="stag">cash burn</div></div></div>
+      <div class="stack-row"><div class="stack-pill" style="--c:var(--orange);animation-delay:.29s"><div class="sn">03</div><div class="snm">Cloud &amp; Inference</div><div class="stag" style="color:var(--orange)">strong moat</div></div></div>
+      <div class="stack-row"><div class="stack-pill" style="--c:var(--orange);animation-delay:.37s"><div class="sn">04</div><div class="snm">Interconnect &amp; Memory</div><div class="stag" style="color:var(--orange)">oligopoly</div></div></div>
+      <div class="stack-row"><div class="stack-pill" style="--c:var(--neon);animation-delay:.45s"><div class="sn">05</div><div class="snm">AI Accelerators</div><div class="stag" style="color:var(--neon)">toll booth</div></div></div>
+      <div class="stack-row"><div class="stack-pill" style="--c:var(--neon);animation-delay:.53s"><div class="sn">06</div><div class="snm">Foundry · Manufacturing</div><div class="stag" style="color:var(--neon)">near-monopoly</div></div></div>
+      <div class="stack-row"><div class="stack-pill" style="--c:var(--neon);animation-delay:.61s"><div class="sn">07</div><div class="snm">Chip Equipment</div><div class="stag" style="color:var(--neon)">sole supplier</div></div></div>
+      <div class="stack-row"><div class="stack-pill" style="--c:var(--orange);animation-delay:.69s"><div class="sn">08</div><div class="snm">Power &amp; Cooling</div><div class="stag" style="color:var(--orange)">binding constraint</div></div></div>
+      <div class="stack-row"><div class="stack-pill" style="--c:var(--purple-glow);animation-delay:.77s"><div class="sn">09</div><div class="snm">Raw Inputs</div><div class="stag">upstream</div></div></div>
+    </div>
+    <div class="lead rise r4" style="text-align:center;margin-left:auto;margin-right:auto;margin-top:22px">Top is where you spend the money. <span class="g">Bottom is where it stays.</span> Let's walk it.</div>
+  </section>
+
+  <!-- 5 LAYER 01 — APPLICATIONS -->
+  <section class="slide h1">
+    <div class="layer-head rise r1">
+      <div class="layer-num">01</div>
+      <div class="layer-info"><div class="layer-name">Applications &amp; Agents</div><div class="layer-desc">THE SURFACE · WHAT USERS ACTUALLY TOUCH</div></div>
+    </div>
+    <div class="layer-body rise r3">
+      <div class="layer-vis">
+        <svg viewBox="0 0 360 280" xmlns="http://www.w3.org/2000/svg" font-family="'JetBrains Mono',monospace">
+          <rect x="40" y="40" width="280" height="60" rx="6" fill="rgba(200,158,255,.08)" stroke="rgba(200,158,255,.5)" stroke-width="2" stroke-dasharray="4 4"/>
+          <text x="180" y="68" text-anchor="middle" fill="#c89eff" font-size="13" font-weight="700" letter-spacing="3">UX LAYER</text>
+          <text x="180" y="86" text-anchor="middle" fill="rgba(200,158,255,.6)" font-size="10" font-style="italic">a thin sheet of glass</text>
+          <rect x="60" y="130" width="240" height="120" rx="4" fill="rgba(20,9,31,.7)" stroke="rgba(246,239,255,.18)"/>
+          <text x="180" y="170" text-anchor="middle" fill="rgba(246,239,255,.85)" font-size="13" font-weight="700" letter-spacing="2">SOMEONE ELSE'S</text>
+          <text x="180" y="192" text-anchor="middle" fill="rgba(246,239,255,.85)" font-size="13" font-weight="700" letter-spacing="2">MODEL</text>
+          <text x="180" y="222" text-anchor="middle" fill="rgba(255,77,109,.85)" font-size="10" letter-spacing="2">SWITCHING COSTS: LOW</text>
+          <path d="M180 100 L180 130" stroke="rgba(255,77,109,.6)" stroke-width="1.5" stroke-dasharray="2 4" marker-end="url(#vArrow)"/>
+        </svg>
+      </div>
+      <div class="layer-side">
+        <div class="tickers">
+          <span class="tk priv"><span>Cursor</span><b>PRIV</b></span>
+          <span class="tk priv"><span>Perplexity</span><b>PRIV</b></span>
+          <span class="tk priv"><span>Harvey</span><b>PRIV</b></span>
+          <span class="tk priv"><span>Glean</span><b>PRIV</b></span>
+          <span class="tk"><span>Microsoft Copilot</span><b>MSFT</b></span>
+          <span class="tk"><span>Adobe Firefly</span><b>ADBE</b></span>
+        </div>
+        <div class="insight">Closest to the user, furthest from a moat. Most are a <span class="g">thin layer of UX over someone else's model</span>. Winners earn defensibility through proprietary data, workflow lock-in, or distribution. <span class="n">High revenue is easy here. Keeping it is the hard part.</span></div>
+        <div class="heat-meter">
+          <div class="heat-bar"><div class="heat-seg"></div><div class="heat-seg on"></div><div class="heat-seg on"></div><div class="heat-seg"></div><div class="heat-seg"></div></div>
+          <div class="heat-lab">MARGIN: <b>CONTESTED</b> · WRAPPER RISK</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6 LAYER 02 — FOUNDATION MODELS -->
+  <section class="slide h2">
+    <div class="layer-head rise r1">
+      <div class="layer-num">02</div>
+      <div class="layer-info"><div class="layer-name">Foundation Models</div><div class="layer-desc">THE LABS · WHERE THE FRONTIER IS TRAINED</div></div>
+    </div>
+    <div class="layer-body rise r3">
+      <div class="layer-vis">
+        <svg viewBox="0 0 360 280" xmlns="http://www.w3.org/2000/svg" font-family="'JetBrains Mono',monospace">
+          <path d="M100 80 L260 80 L240 220 L120 220 Z" fill="rgba(197,75,255,.1)" stroke="#c54bff" stroke-width="2.4"/>
+          <ellipse cx="180" cy="80" rx="80" ry="14" fill="rgba(197,75,255,.18)" stroke="#c54bff" stroke-width="2.4"/>
+          <g style="filter:drop-shadow(0 0 12px rgba(255,77,109,.7))">
+            <path d="M150 200 Q145 175 155 165 Q160 180 168 170 Q170 185 175 175 Q180 195 190 175 Q200 190 205 165 Q215 175 210 200 Z" fill="rgba(255,77,109,.7)"/>
+          </g>
+          <circle cx="170" cy="50" r="3.5" fill="#e8ff00"><animate attributeName="cy" values="50;78" dur="1.4s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;1;0" dur="1.4s" repeatCount="indefinite"/></circle>
+          <circle cx="190" cy="40" r="3.5" fill="#e8ff00"><animate attributeName="cy" values="40;78" dur="1.6s" begin=".4s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;1;0" dur="1.6s" begin=".4s" repeatCount="indefinite"/></circle>
+          <circle cx="180" cy="46" r="3.5" fill="#e8ff00"><animate attributeName="cy" values="46;78" dur="1.5s" begin=".8s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;1;0" dur="1.5s" begin=".8s" repeatCount="indefinite"/></circle>
+          <text x="180" y="252" text-anchor="middle" fill="#ff4d6d" font-size="10" letter-spacing="2" font-weight="700">CASH FLOW NEGATIVE ~2030</text>
+        </svg>
+      </div>
+      <div class="layer-side">
+        <div class="tickers">
+          <span class="tk priv"><span>OpenAI</span><b>~$850B</b></span>
+          <span class="tk priv"><span>Anthropic</span><b>~$965B</b></span>
+          <span class="tk"><span>Google DeepMind</span><b>GOOGL</b></span>
+          <span class="tk"><span>Meta AI</span><b>META</b></span>
+          <span class="tk priv"><span>xAI</span><b>PRIV</b></span>
+          <span class="tk priv"><span>Mistral</span><b>PRIV</b></span>
+        </div>
+        <div class="insight">The headline names — and the most capital-hungry layer. Anthropic ~$47B run-rate; OpenAI $13B+ heading to $100B target. <span class="g">But most of it flows straight down to compute.</span> Brand and scale are real moats; frontier capability is <span class="n">rented from the layers below.</span></div>
+        <div class="heat-meter">
+          <div class="heat-bar"><div class="heat-seg"></div><div class="heat-seg on"></div><div class="heat-seg on"></div><div class="heat-seg on"></div><div class="heat-seg"></div></div>
+          <div class="heat-lab">MARGIN: <b>THIN / NEGATIVE</b> · CASH BURN</div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <!-- 7 LAYER 03 — CLOUD -->
+  <section class="slide h3">
+    <div class="layer-head rise r1">
+      <div class="layer-num">03</div>
+      <div class="layer-info"><div class="layer-name">Cloud &amp; Inference</div><div class="layer-desc">THE TOLL ROAD · RENTED COMPUTE BY THE HOUR</div></div>
+    </div>
+    <div class="layer-body rise r3">
+      <div class="layer-vis">
+        <svg viewBox="0 0 360 280" xmlns="http://www.w3.org/2000/svg" font-family="'JetBrains Mono',monospace">
+          <path d="M30 220 L330 80" stroke="rgba(255,157,77,.5)" stroke-width="40" stroke-linecap="round"/>
+          <path d="M30 220 L330 80" stroke="rgba(255,157,77,.9)" stroke-width="1.5" stroke-dasharray="10 12"/>
+          <g>
+            <rect x="80" y="170" width="36" height="42" rx="3" fill="rgba(232,255,0,.18)" stroke="#e8ff00" stroke-width="2"/>
+            <text x="98" y="196" text-anchor="middle" fill="#e8ff00" font-size="14" font-weight="700">$</text>
+            <text x="98" y="226" text-anchor="middle" fill="rgba(232,255,0,.7)" font-size="8" letter-spacing="2">TOLL</text>
+          </g>
+          <g>
+            <rect x="190" y="118" width="36" height="42" rx="3" fill="rgba(232,255,0,.18)" stroke="#e8ff00" stroke-width="2"/>
+            <text x="208" y="144" text-anchor="middle" fill="#e8ff00" font-size="14" font-weight="700">$</text>
+            <text x="208" y="174" text-anchor="middle" fill="rgba(232,255,0,.7)" font-size="8" letter-spacing="2">TOLL</text>
+          </g>
+          <circle r="5" fill="#fff" style="filter:drop-shadow(0 0 8px #fff)"><animateMotion path="M30 220 L330 80" dur="3s" repeatCount="indefinite"/></circle>
+          <circle r="5" fill="#fff" style="filter:drop-shadow(0 0 8px #fff)"><animateMotion path="M30 220 L330 80" dur="3s" begin="1s" repeatCount="indefinite"/></circle>
+          <circle r="5" fill="#fff" style="filter:drop-shadow(0 0 8px #fff)"><animateMotion path="M30 220 L330 80" dur="3s" begin="2s" repeatCount="indefinite"/></circle>
+          <text x="40" y="252" fill="rgba(246,239,255,.55)" font-size="10" letter-spacing="2">DEMAND</text>
+          <text x="320" y="65" text-anchor="end" fill="rgba(246,239,255,.55)" font-size="10" letter-spacing="2">SILICON</text>
+        </svg>
+      </div>
+      <div class="layer-side">
+        <div class="tickers">
+          <span class="tk"><span>Oracle OCI</span><b>ORCL</b></span>
+          <span class="tk"><span>CoreWeave</span><b>CRWV</b></span>
+          <span class="tk"><span>Nebius</span><b>NBIS</b></span>
+          <span class="tk"><span>IREN</span><b>IREN</b></span>
+        </div>
+        <div class="insight">The <span class="g">pure-play neoclouds</span> — companies whose entire business is renting GPUs at scale. Oracle is the largest non-hyperscaler AI cloud; CoreWeave, Nebius, and IREN are dedicated GPU-hosting plays where AI is the whole story, not a side bet. <span class="n">The hyperscalers' clouds live one slide up — they're the valve, not pure inference plays.</span></div>
+        <div class="heat-meter">
+          <div class="heat-bar"><div class="heat-seg"></div><div class="heat-seg on"></div><div class="heat-seg on"></div><div class="heat-seg on"></div><div class="heat-seg on"></div></div>
+          <div class="heat-lab">MARGIN: <b>STRONG</b> · CAPEX-HEAVY</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 8 LAYER 04 — INTERCONNECT & MEMORY -->
+  <section class="slide h3">
+    <div class="layer-head rise r1">
+      <div class="layer-num">04</div>
+      <div class="layer-info"><div class="layer-name">Interconnect &amp; Memory</div><div class="layer-desc">THE WIRES &amp; HBM · A GPU IS USELESS ALONE</div></div>
+    </div>
+    <div class="layer-body rise r3">
+      <div class="layer-vis">
+        <svg viewBox="0 0 360 280" xmlns="http://www.w3.org/2000/svg" font-family="'JetBrains Mono',monospace">
+          <g>
+            <rect x="40" y="40" width="60" height="60" rx="4" fill="rgba(232,255,0,.08)" stroke="#e8ff00" stroke-width="1.6"/>
+            <text x="70" y="74" text-anchor="middle" fill="#e8ff00" font-size="10" font-weight="700">GPU</text>
+            <rect x="260" y="40" width="60" height="60" rx="4" fill="rgba(232,255,0,.08)" stroke="#e8ff00" stroke-width="1.6"/>
+            <text x="290" y="74" text-anchor="middle" fill="#e8ff00" font-size="10" font-weight="700">GPU</text>
+            <rect x="40" y="180" width="60" height="60" rx="4" fill="rgba(232,255,0,.08)" stroke="#e8ff00" stroke-width="1.6"/>
+            <text x="70" y="214" text-anchor="middle" fill="#e8ff00" font-size="10" font-weight="700">GPU</text>
+            <rect x="260" y="180" width="60" height="60" rx="4" fill="rgba(232,255,0,.08)" stroke="#e8ff00" stroke-width="1.6"/>
+            <text x="290" y="214" text-anchor="middle" fill="#e8ff00" font-size="10" font-weight="700">GPU</text>
+          </g>
+          <g stroke="#ff9d4d" stroke-width="2.2" fill="none">
+            <path d="M100 70 L260 70" data-trace="#ffd5a0|2"/>
+            <path d="M100 210 L260 210" data-trace="#ffd5a0|2.5"/>
+            <path d="M70 100 L70 180" data-trace="#ffd5a0|2.2"/>
+            <path d="M290 100 L290 180" data-trace="#ffd5a0|2.7"/>
+            <path d="M100 100 L260 180" data-trace="#ffd5a0|3"/>
+            <path d="M260 100 L100 180" data-trace="#ffd5a0|3.2"/>
+          </g>
+          <rect x="140" y="120" width="80" height="40" rx="3" fill="rgba(255,157,77,.18)" stroke="#ff9d4d" stroke-width="2"/>
+          <text x="180" y="138" text-anchor="middle" fill="#ff9d4d" font-size="10" font-weight="700">HBM</text>
+          <text x="180" y="152" text-anchor="middle" fill="rgba(255,157,77,.7)" font-size="8" letter-spacing="2">OLIGOPOLY</text>
+        </svg>
+      </div>
+      <div class="layer-side">
+        <div class="tickers">
+          <span class="tk"><span>Broadcom</span><b>AVGO</b></span>
+          <span class="tk"><span>Arista</span><b>ANET</b></span>
+          <span class="tk"><span>Astera Labs</span><b>ALAB</b></span>
+          <span class="tk"><span>SK Hynix</span><b>KRX:000660</b></span>
+          <span class="tk"><span>Micron</span><b>MU</b></span>
+          <span class="tk"><span>Coherent</span><b>COHR</b></span>
+        </div>
+        <div class="insight">Quietly one of the best risk/rewards in the stack. A GPU needs <span class="g">networking (Broadcom, Arista) and high-bandwidth memory</span> — and HBM is its own supply-constrained oligopoly. Broadcom also designs the custom AI chips for Google. <span class="n">Picks-and-shovels behind the picks-and-shovels.</span></div>
+        <div class="heat-meter">
+          <div class="heat-bar"><div class="heat-seg"></div><div class="heat-seg on"></div><div class="heat-seg on"></div><div class="heat-seg on"></div><div class="heat-seg on"></div></div>
+          <div class="heat-lab">MARGIN: <b>STRONG</b> · OLIGOPOLY</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 9 LAYER 05 — ACCELERATORS -->
+  <section class="slide h4">
+    <div class="layer-head rise r1">
+      <div class="layer-num">05</div>
+      <div class="layer-info"><div class="layer-name">AI Accelerators</div><div class="layer-desc">THE TOLL BOOTH · CENTER OF GRAVITY</div></div>
+    </div>
+    <div class="layer-body rise r3">
+      <div class="layer-vis">
+        <svg viewBox="0 0 360 280" xmlns="http://www.w3.org/2000/svg" font-family="'JetBrains Mono',monospace">
+          <circle cx="180" cy="140" r="100" fill="none" stroke="rgba(232,255,0,.18)" stroke-dasharray="3 7"/>
+          <text x="180" y="46" text-anchor="middle" fill="rgba(232,255,0,.6)" font-size="9" letter-spacing="3">CUDA MOAT · 15+ YEARS</text>
+          <g style="filter:drop-shadow(0 0 18px rgba(232,255,0,.7))">
+            <rect x="120" y="90" width="120" height="100" rx="6" fill="rgba(232,255,0,.18)" stroke="#e8ff00" stroke-width="3"/>
+            <text x="180" y="124" text-anchor="middle" fill="#e8ff00" font-size="13" font-weight="700" letter-spacing="2">NVIDIA</text>
+            <text x="180" y="146" text-anchor="middle" fill="#e8ff00" font-size="24" font-weight="800" font-family="'Instrument Serif',Georgia,serif">81-92%</text>
+            <text x="180" y="170" text-anchor="middle" fill="rgba(232,255,0,.85)" font-size="10" letter-spacing="2">SHARE · $5T MCAP</text>
+          </g>
+          <g font-size="9" font-weight="700" letter-spacing="1">
+            <path d="M50 240 L120 200" stroke="rgba(255,77,109,.6)" stroke-width="1.5" marker-end="url(#vArrow)"/>
+            <text x="50" y="252" fill="#ff4d6d">TPU</text>
+            <path d="M180 250 L180 200" stroke="rgba(255,77,109,.6)" stroke-width="1.5" marker-end="url(#vArrow)"/>
+            <text x="180" y="266" text-anchor="middle" fill="#ff4d6d">TRAINIUM</text>
+            <path d="M310 240 L240 200" stroke="rgba(255,77,109,.6)" stroke-width="1.5" marker-end="url(#vArrow)"/>
+            <text x="310" y="252" text-anchor="end" fill="#ff4d6d">MAIA</text>
+            <text x="180" y="36" text-anchor="middle" fill="rgba(255,77,109,.7)" font-size="9" font-style="italic" letter-spacing="1">custom silicon · ~50% by 2030</text>
+          </g>
+        </svg>
+      </div>
+      <div class="layer-side">
+        <div class="tickers">
+          <span class="tk"><span>NVIDIA</span><b>NVDA</b></span>
+          <span class="tk"><span>AMD</span><b>AMD</b></span>
+          <span class="tk"><span>Google TPU</span><b>GOOGL</b></span>
+          <span class="tk"><span>AWS Trainium</span><b>AMZN</b></span>
+          <span class="tk"><span>Microsoft Maia</span><b>MSFT</b></span>
+        </div>
+        <div class="insight">NVIDIA holds ~81-92% of AI accelerators, hit ~$5T market cap, and projects <span class="g">$1T of Blackwell + Rubin sales across '26-'27</span>. Protected by 15+ years of CUDA. The real threat is custom silicon from its own customers — TPU, Trainium, Maia — forecast to be ~50% of capacity by 2030. <span class="n">The most concentrated rent in tech right now — and the most crowded trade.</span></div>
+        <div class="heat-meter">
+          <div class="heat-bar"><div class="heat-seg on"></div><div class="heat-seg on"></div><div class="heat-seg on"></div><div class="heat-seg on"></div><div class="heat-seg on"></div></div>
+          <div class="heat-lab">MARGIN: <b>MONOPOLY-LIKE</b> · THE TOLL BOOTH</div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <!-- 10 LAYER 06 — FOUNDRY -->
+  <section class="slide h5">
+    <div class="layer-head rise r1">
+      <div class="layer-num">06</div>
+      <div class="layer-info"><div class="layer-name">Foundry · Manufacturing</div><div class="layer-desc">THE ONLY ROAD · NVIDIA DESIGNS, TSMC BUILDS</div></div>
+    </div>
+    <div class="layer-body rise r3">
+      <div class="layer-vis">
+        <svg viewBox="0 0 360 280" xmlns="http://www.w3.org/2000/svg" font-family="'JetBrains Mono',monospace">
+          <g>
+            <rect x="270" y="100" width="70" height="60" rx="4" fill="rgba(232,255,0,.18)" stroke="#e8ff00" stroke-width="2.4"/>
+            <text x="305" y="128" text-anchor="middle" fill="#e8ff00" font-size="11" font-weight="700">NVDA</text>
+            <text x="305" y="146" text-anchor="middle" fill="rgba(232,255,0,.6)" font-size="9" letter-spacing="1">GATE</text>
+          </g>
+          <path d="M30 130 L270 130" stroke="#e8ff00" stroke-width="14" stroke-linecap="round"/>
+          <path d="M30 130 L270 130" stroke="rgba(10,6,18,.9)" stroke-width="1.5" stroke-dasharray="8 10"/>
+          <rect x="60" y="105" width="100" height="50" rx="4" fill="rgba(232,255,0,.12)" stroke="#e8ff00" stroke-width="2"/>
+          <text x="110" y="128" text-anchor="middle" fill="#e8ff00" font-size="14" font-weight="700">TSMC</text>
+          <text x="110" y="146" text-anchor="middle" fill="rgba(232,255,0,.7)" font-size="9" letter-spacing="2">90%+ ADVANCED</text>
+          <path d="M30 70 L250 70" stroke="rgba(255,77,109,.4)" stroke-width="4" stroke-linecap="round" stroke-dasharray="6 10"/>
+          <text x="30" y="58" fill="rgba(255,77,109,.7)" font-size="9" font-weight="700" letter-spacing="1">SAMSUNG · BROKEN ROAD</text>
+          <path d="M30 200 L250 200" stroke="rgba(255,77,109,.4)" stroke-width="4" stroke-linecap="round" stroke-dasharray="6 10"/>
+          <text x="30" y="220" fill="rgba(255,77,109,.7)" font-size="9" font-weight="700" letter-spacing="1">INTEL · YIELD ISSUES</text>
+          <circle r="4" fill="#fff" style="filter:drop-shadow(0 0 8px #fff)"><animateMotion path="M30 130 L270 130" dur="2.4s" repeatCount="indefinite"/></circle>
+          <circle r="4" fill="#fff" style="filter:drop-shadow(0 0 8px #fff)"><animateMotion path="M30 130 L270 130" dur="2.4s" begin=".8s" repeatCount="indefinite"/></circle>
+          <text x="180" y="260" text-anchor="middle" fill="rgba(232,255,0,.8)" font-size="9" letter-spacing="2" font-style="italic">sold out before production</text>
+        </svg>
+      </div>
+      <div class="layer-side">
+        <div class="tickers">
+          <span class="tk"><span>TSMC</span><b>TSM</b></span>
+          <span class="tk"><span>Samsung Foundry</span><b>KRX:005930</b></span>
+          <span class="tk"><span>Intel Foundry</span><b>INTC</b></span>
+        </div>
+        <div class="insight">TSMC owns ~70% of all foundry and <span class="g">well into the 90%s on advanced AI nodes</span>, running ~66% gross margins with capacity sold out before mass production. '26 capex of $52-56B is the most aggressive in foundry history. Samsung and Intel are measurably behind on yield. <span class="n">If NVIDIA is the toll booth, TSMC owns the only road that reaches it.</span></div>
+        <div class="heat-meter">
+          <div class="heat-bar"><div class="heat-seg on"></div><div class="heat-seg on"></div><div class="heat-seg on"></div><div class="heat-seg on"></div><div class="heat-seg on"></div></div>
+          <div class="heat-lab">MARGIN: <b>WIDE MOAT</b> · NEAR-MONOPOLY</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 11 LAYER 07 — CHIP EQUIPMENT -->
+  <section class="slide h5">
+    <div class="layer-head rise r1">
+      <div class="layer-num">07</div>
+      <div class="layer-info"><div class="layer-name">Chip Equipment</div><div class="layer-desc">THE BEDROCK · YOU CAN'T ROUTE AROUND PHYSICS</div></div>
+    </div>
+    <div class="layer-body rise r3">
+      <div class="layer-vis">
+        <svg viewBox="0 0 360 280" xmlns="http://www.w3.org/2000/svg" font-family="'JetBrains Mono',monospace">
+          <rect x="20" y="20" width="320" height="40" rx="3" fill="rgba(232,255,0,.04)" stroke="rgba(232,255,0,.18)"/>
+          <text x="180" y="44" text-anchor="middle" fill="rgba(232,255,0,.6)" font-size="10" letter-spacing="3">EVERYTHING ABOVE</text>
+          <g>
+            <rect x="20" y="80" width="320" height="180" rx="6" fill="rgba(232,255,0,.1)" stroke="#e8ff00" stroke-width="2.4"/>
+            <text x="180" y="106" text-anchor="middle" fill="#e8ff00" font-size="10" font-weight="700" letter-spacing="3">CHIP EQUIPMENT · BEDROCK</text>
+            <g style="filter:drop-shadow(0 0 20px rgba(232,255,0,.65))">
+              <rect x="140" y="125" width="80" height="120" rx="4" fill="rgba(232,255,0,.32)" stroke="#e8ff00" stroke-width="3"/>
+              <text x="180" y="170" text-anchor="middle" fill="#0a0612" font-size="20" font-weight="800">ASML</text>
+              <text x="180" y="190" text-anchor="middle" fill="#0a0612" font-size="9" font-weight="700" letter-spacing="2">EUV</text>
+              <text x="180" y="222" text-anchor="middle" fill="#0a0612" font-size="9" font-weight="700" letter-spacing="2">$500B+</text>
+            </g>
+            <text x="50" y="180" fill="rgba(232,255,0,.7)" font-size="9" letter-spacing="1">ONLY</text>
+            <text x="50" y="194" fill="rgba(232,255,0,.7)" font-size="9" letter-spacing="1">COMPANY</text>
+            <text x="50" y="208" fill="rgba(232,255,0,.7)" font-size="9" letter-spacing="1">ON EARTH</text>
+            <text x="310" y="180" text-anchor="end" fill="rgba(232,255,0,.7)" font-size="9" letter-spacing="1">NO</text>
+            <text x="310" y="194" text-anchor="end" fill="rgba(232,255,0,.7)" font-size="9" letter-spacing="1">SUBSTITUTE</text>
+            <text x="310" y="208" text-anchor="end" fill="rgba(232,255,0,.7)" font-size="9" letter-spacing="1">EXISTS</text>
+          </g>
+        </svg>
+      </div>
+      <div class="layer-side">
+        <div class="tickers">
+          <span class="tk"><span>ASML</span><b>ASML</b></span>
+          <span class="tk"><span>Applied Materials</span><b>AMAT</b></span>
+          <span class="tk"><span>Lam Research</span><b>LRCX</b></span>
+          <span class="tk"><span>KLA</span><b>KLAC</b></span>
+          <span class="tk"><span>Tokyo Electron</span><b>TSE:8035</b></span>
+        </div>
+        <div class="insight"><span class="g">ASML is the only company on earth</span> that makes EUV lithography — TSMC physically cannot print advanced chips without it. Applied, Lam and KLA round out a tight oligopoly for deposition, etch and inspection. <span class="n">The single hardest layer to disrupt in the entire flow.</span></div>
+        <div class="heat-meter">
+          <div class="heat-bar"><div class="heat-seg on"></div><div class="heat-seg on"></div><div class="heat-seg on"></div><div class="heat-seg on"></div><div class="heat-seg on"></div></div>
+          <div class="heat-lab">MARGIN: <b>DEEPEST CHOKEPOINT</b> · SOLE SUPPLIER</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 12 LAYER 08 — POWER & COOLING -->
+  <section class="slide h3">
+    <div class="layer-head rise r1">
+      <div class="layer-num">08</div>
+      <div class="layer-info"><div class="layer-name">Power &amp; Cooling</div><div class="layer-desc">THE NEW BOTTLENECK · YOU HAVE TO PLUG IT IN</div></div>
+    </div>
+    <div class="layer-body rise r3">
+      <div class="layer-vis">
+        <svg viewBox="0 0 360 280" xmlns="http://www.w3.org/2000/svg" font-family="'JetBrains Mono',monospace">
+          <g style="filter:drop-shadow(0 0 14px rgba(255,157,77,.6))">
+            <polygon points="180,30 130,140 175,140 150,250 230,120 185,120 215,30" fill="#ff9d4d" stroke="#fff" stroke-width="1.5"/>
+          </g>
+          <text x="180" y="270" text-anchor="middle" fill="#ff9d4d" font-size="11" font-weight="700" letter-spacing="3">~5% OF GLOBAL ELECTRICITY · 2030</text>
+          <g stroke="rgba(255,157,77,.5)" stroke-width="1.2" stroke-dasharray="2 4" fill="none">
+            <path d="M40 80 L120 60"/><path d="M40 200 L120 220"/>
+            <path d="M320 80 L240 60"/><path d="M320 200 L240 220"/>
+            <path d="M40 140 L100 140"/><path d="M320 140 L260 140"/>
+          </g>
+          <g font-size="8.5" font-weight="700" letter-spacing="1" fill="rgba(246,239,255,.7)">
+            <rect x="10" y="60" width="48" height="22" rx="3" fill="rgba(255,157,77,.12)" stroke="rgba(255,157,77,.5)"/>
+            <text x="34" y="75" text-anchor="middle" fill="#ff9d4d">NUCLEAR</text>
+            <rect x="10" y="130" width="48" height="22" rx="3" fill="rgba(255,157,77,.12)" stroke="rgba(255,157,77,.5)"/>
+            <text x="34" y="145" text-anchor="middle" fill="#ff9d4d">GAS</text>
+            <rect x="10" y="200" width="48" height="22" rx="3" fill="rgba(255,157,77,.12)" stroke="rgba(255,157,77,.5)"/>
+            <text x="34" y="215" text-anchor="middle" fill="#ff9d4d">GRID</text>
+            <rect x="302" y="60" width="48" height="22" rx="3" fill="rgba(255,157,77,.12)" stroke="rgba(255,157,77,.5)"/>
+            <text x="326" y="75" text-anchor="middle" fill="#ff9d4d">COOL</text>
+            <rect x="302" y="130" width="48" height="22" rx="3" fill="rgba(255,157,77,.12)" stroke="rgba(255,157,77,.5)"/>
+            <text x="326" y="145" text-anchor="middle" fill="#ff9d4d">HVAC</text>
+            <rect x="302" y="200" width="48" height="22" rx="3" fill="rgba(255,157,77,.12)" stroke="rgba(255,157,77,.5)"/>
+            <text x="326" y="215" text-anchor="middle" fill="#ff9d4d">DIST</text>
+          </g>
+        </svg>
+      </div>
+      <div class="layer-side">
+        <div class="tickers">
+          <span class="tk"><span>Constellation</span><b>CEG</b></span>
+          <span class="tk"><span>Vistra</span><b>VST</b></span>
+          <span class="tk"><span>GE Vernova</span><b>GEV</b></span>
+          <span class="tk"><span>Vertiv</span><b>VRT</b></span>
+          <span class="tk"><span>Eaton</span><b>ETN</b></span>
+          <span class="tk"><span>Schneider</span><b>EURONEXT:SU</b></span>
+        </div>
+        <div class="insight">AI data centers may consume <span class="g">~5% of global electricity by 2030</span>, and TSMC now says energy efficiency — not compute — is the main design constraint. That turns power generation and thermal/electrical gear into AI infrastructure plays. <span class="n">The market spent two years pricing chips. It's now waking up to the fact you have to plug them in.</span></div>
+        <div class="heat-meter">
+          <div class="heat-bar"><div class="heat-seg"></div><div class="heat-seg on"></div><div class="heat-seg on"></div><div class="heat-seg on"></div><div class="heat-seg on"></div></div>
+          <div class="heat-lab">MARGIN: <b>RISING FAST</b> · BINDING CONSTRAINT</div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <!-- 13 LAYER 09 — RAW INPUTS -->
+  <section class="slide h2">
+    <div class="layer-head rise r1">
+      <div class="layer-num">09</div>
+      <div class="layer-info"><div class="layer-name">Raw Inputs</div><div class="layer-desc">THE SECOND-ORDER TRADE · COPPER · EARTH · WATER</div></div>
+    </div>
+    <div class="layer-body rise r3">
+      <div class="layer-vis">
+        <svg viewBox="0 0 360 280" xmlns="http://www.w3.org/2000/svg" font-family="'JetBrains Mono',monospace">
+          <path d="M0 70 L360 70 L360 280 L0 280 Z" fill="rgba(58,26,94,.4)"/>
+          <path d="M0 70 L360 70" stroke="rgba(200,158,255,.4)" stroke-width="1.5" stroke-dasharray="4 8"/>
+          <text x="180" y="56" text-anchor="middle" fill="rgba(200,158,255,.5)" font-size="9" letter-spacing="3">SURFACE · DIGITAL ECONOMY</text>
+          <g>
+            <path d="M30 110 Q80 105 130 115 T230 130 L280 122 L330 138" stroke="#ff9d4d" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+            <text x="60" y="100" fill="#ff9d4d" font-size="10" font-weight="700" letter-spacing="2">COPPER VEINS</text>
+          </g>
+          <g>
+            <polygon points="80,170 90,160 100,170 95,184" fill="rgba(232,255,0,.6)" stroke="#e8ff00" stroke-width="1.5" style="filter:drop-shadow(0 0 8px rgba(232,255,0,.6))"/>
+            <polygon points="160,180 172,170 184,180 178,196" fill="rgba(232,255,0,.6)" stroke="#e8ff00" stroke-width="1.5" style="filter:drop-shadow(0 0 8px rgba(232,255,0,.6))"/>
+            <polygon points="250,168 260,158 270,168 265,182" fill="rgba(232,255,0,.6)" stroke="#e8ff00" stroke-width="1.5" style="filter:drop-shadow(0 0 8px rgba(232,255,0,.6))"/>
+            <text x="50" y="210" fill="#e8ff00" font-size="10" font-weight="700" letter-spacing="2">RARE EARTHS</text>
+          </g>
+          <g>
+            <path d="M20 240 Q70 232 120 240 T220 246 T320 240 L320 260 L20 260 Z" fill="rgba(0,229,255,.25)" stroke="#00e5ff" stroke-width="1.5"/>
+            <text x="180" y="254" text-anchor="middle" fill="#00e5ff" font-size="10" font-weight="700" letter-spacing="2">WATER · COOLING</text>
+          </g>
+        </svg>
+      </div>
+      <div class="layer-side">
+        <div class="tickers">
+          <span class="tk"><span>Copper</span><b>FCX · SCCO</b></span>
+          <span class="tk"><span>Rare Earths</span><b>MP</b></span>
+          <span class="tk"><span>Specialty Gases</span><b>APD · LIN</b></span>
+          <span class="tk priv"><span>Water / Cooling</span><b>COMMODITY</b></span>
+        </div>
+        <div class="insight">Every data center is a <span class="g">physical object</span> — miles of copper, rare-earth magnets, specialty process gases, and enormous volumes of cooling water. Lowest margin, most cyclical — but the true upstream. Real-economy demand created entirely by the digital boom above. <span class="n">The second-order AI trade most people never get to.</span></div>
+        <div class="heat-meter">
+          <div class="heat-bar"><div class="heat-seg"></div><div class="heat-seg on"></div><div class="heat-seg on"></div><div class="heat-seg on"></div><div class="heat-seg"></div></div>
+          <div class="heat-lab">MARGIN: <b>CYCLICAL</b> · UPSTREAM</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 14 THE PATTERN -->
+  <section class="slide">
+    <div class="kicker rise r1">THE PATTERN</div>
+    <h2 class="head rise r2">MARGIN GETS <span class="em" style="color:var(--neon)">FATTER</span><br>THE DEEPER YOU GO</h2>
+    <div class="stage rise r3">
+      <svg viewBox="0 0 880 340" xmlns="http://www.w3.org/2000/svg" font-family="'JetBrains Mono',monospace">
+        <g font-size="11" font-weight="700" letter-spacing="1">
+          <rect x="80" y="40" width="180" height="22" rx="2" fill="rgba(255,77,109,.18)" stroke="rgba(255,77,109,.6)"/>
+          <text x="270" y="55" fill="rgba(246,239,255,.85)">01 APPS — contested</text>
+          <rect x="80" y="70" width="220" height="22" rx="2" fill="rgba(255,77,109,.18)" stroke="rgba(255,77,109,.6)"/>
+          <text x="310" y="85" fill="rgba(246,239,255,.85)">02 MODELS — burning cash</text>
+          <rect x="80" y="100" width="380" height="22" rx="2" fill="rgba(255,157,77,.2)" stroke="rgba(255,157,77,.7)"/>
+          <text x="470" y="115" fill="rgba(246,239,255,.85)">03 CLOUD — strong</text>
+          <rect x="80" y="130" width="400" height="22" rx="2" fill="rgba(255,157,77,.2)" stroke="rgba(255,157,77,.7)"/>
+          <text x="490" y="145" fill="rgba(246,239,255,.85)">04 INTERCONNECT — oligopoly</text>
+          <rect x="80" y="160" width="540" height="22" rx="2" fill="rgba(232,255,0,.22)" stroke="rgba(232,255,0,.85)"/>
+          <text x="630" y="175" fill="#e8ff00">05 ACCELERATORS — monopoly</text>
+          <rect x="80" y="190" width="560" height="22" rx="2" fill="rgba(232,255,0,.22)" stroke="rgba(232,255,0,.85)"/>
+          <text x="650" y="205" fill="#e8ff00">06 FOUNDRY — wide moat</text>
+          <rect x="80" y="220" width="600" height="22" rx="2" fill="rgba(232,255,0,.28)" stroke="rgba(232,255,0,1)"/>
+          <text x="690" y="235" fill="#e8ff00">07 EQUIPMENT — chokepoint</text>
+          <rect x="80" y="250" width="380" height="22" rx="2" fill="rgba(255,157,77,.2)" stroke="rgba(255,157,77,.7)"/>
+          <text x="470" y="265" fill="rgba(246,239,255,.85)">08 POWER — rising fast</text>
+          <rect x="80" y="280" width="220" height="22" rx="2" fill="rgba(197,75,255,.18)" stroke="rgba(197,75,255,.6)"/>
+          <text x="310" y="295" fill="rgba(246,239,255,.85)">09 RAW — cyclical</text>
+        </g>
+        <line x1="80" y1="40" x2="80" y2="302" stroke="rgba(246,239,255,.25)"/>
+        <text x="74" y="30" text-anchor="end" fill="rgba(246,239,255,.55)" font-size="10" letter-spacing="2">DEPTH</text>
+        <text x="74" y="306" text-anchor="end" fill="rgba(246,239,255,.55)" font-size="10" letter-spacing="2">→</text>
+        <text x="440" y="328" text-anchor="middle" fill="rgba(246,239,255,.5)" font-size="10" font-style="italic" letter-spacing="2">bar width = strength of moat</text>
+      </svg>
+    </div>
+    <div class="lead rise r4" style="text-align:center;margin-left:auto;margin-right:auto">The layers in the middle — <span class="n">accelerators, foundry, equipment</span> — are where the dollar actually stops moving. <span class="g">The pattern is the lesson: in any value chain, follow the bottleneck.</span></div>
+  </section>
+
+  <!-- 15 WATCHLIST -->
+  <section class="slide">
+    <div class="kicker rise r1">TAKE THIS WITH YOU</div>
+    <h2 class="head rise r2">THE TOKEN FLOW <span class="em" style="color:var(--neon)">WATCHLIST</span></h2>
+    <div class="wl-grid rise r3" style="max-width:1080px;margin-left:auto;margin-right:auto;width:100%;margin-top:14px">
+      <div class="wl-card" style="--c:var(--cyan)"><div class="wlh"><div class="wln">VALVE</div><div class="wlt">Hyperscalers</div></div><div class="wltk"><span style="color:var(--cyan);border-color:rgba(0,229,255,.3)">MSFT</span><span style="color:var(--cyan);border-color:rgba(0,229,255,.3)">AMZN</span><span style="color:var(--cyan);border-color:rgba(0,229,255,.3)">GOOGL</span></div></div>
+      <div class="wl-card" style="--c:var(--purple-glow)"><div class="wlh"><div class="wln">01</div><div class="wlt">Applications</div></div><div class="wltk"><span>MSFT</span><span>ADBE</span><span class="p">CURSOR</span><span class="p">PERPLEXITY</span><span class="p">HARVEY</span><span class="p">GLEAN</span></div></div>
+      <div class="wl-card" style="--c:var(--purple-bold)"><div class="wlh"><div class="wln">02</div><div class="wlt">Foundation Models</div></div><div class="wltk"><span>GOOGL</span><span>META</span><span class="p">OPENAI</span><span class="p">ANTHROPIC</span><span class="p">xAI</span><span class="p">MISTRAL</span></div></div>
+      <div class="wl-card" style="--c:var(--orange)"><div class="wlh"><div class="wln">03</div><div class="wlt">Cloud &amp; Inference</div></div><div class="wltk"><span>ORCL</span><span>CRWV</span><span>NBIS</span><span>IREN</span></div></div>
+      <div class="wl-card" style="--c:var(--orange)"><div class="wlh"><div class="wln">04</div><div class="wlt">Interconnect &amp; Memory</div></div><div class="wltk"><span>AVGO</span><span>ANET</span><span>ALAB</span><span>KRX:000660</span><span>MU</span><span>COHR</span></div></div>
+      <div class="wl-card" style="--c:var(--neon)"><div class="wlh"><div class="wln">05</div><div class="wlt">AI Accelerators</div></div><div class="wltk"><span>NVDA</span><span>AMD</span><span>GOOGL</span><span>AMZN</span><span>MSFT</span></div></div>
+      <div class="wl-card" style="--c:var(--neon)"><div class="wlh"><div class="wln">06</div><div class="wlt">Foundry</div></div><div class="wltk"><span>TSM</span><span>KRX:005930</span><span>INTC</span></div></div>
+      <div class="wl-card" style="--c:var(--neon)"><div class="wlh"><div class="wln">07</div><div class="wlt">Chip Equipment</div></div><div class="wltk"><span>ASML</span><span>AMAT</span><span>LRCX</span><span>KLAC</span><span>TSE:8035</span></div></div>
+      <div class="wl-card" style="--c:var(--orange)"><div class="wlh"><div class="wln">08</div><div class="wlt">Power &amp; Cooling</div></div><div class="wltk"><span>CEG</span><span>VST</span><span>GEV</span><span>VRT</span><span>ETN</span><span>EURONEXT:SU</span></div></div>
+      <div class="wl-card" style="--c:var(--purple-glow)"><div class="wlh"><div class="wln">09</div><div class="wlt">Raw Inputs</div></div><div class="wltk"><span>FCX</span><span>SCCO</span><span>MP</span><span>APD</span><span>LIN</span></div></div>
+    </div>
+    <div class="lead rise r4" style="text-align:center;margin-left:auto;margin-right:auto;margin-top:14px;max-width:780px"><span class="n">Screenshot this.</span> Then watch where the dollar actually rests when you walk it through.</div>
+  </section>
+
+</div>
+<div class="nav">
+  <button id="prev" aria-label="Previous">&#8249;</button>
+  <div class="counter"><b id="cur">1</b> / <span id="total">15</span></div>
+  <button id="next" aria-label="Next">&#8250;</button>
+</div>
+<div class="dots" id="dots"></div>
+<div class="tools" id="tools">
+  <button class="pen" id="pen" title="Toggle pen">&#9998;</button>
+  <div class="sep"></div>
+  <div class="sep" id="sizeSep" style="display:none"></div>
+</div>
+<script>
+(function(){const w=document.getElementById('sparks');for(let i=0;i<42;i++){const s=document.createElement('div');s.className='spark';s.style.left=Math.random()*100+'%';const z=1+Math.random()*2;s.style.width=z+'px';s.style.height=z+'px';s.style.animationDuration=(7+Math.random()*9)+'s';s.style.animationDelay=(-Math.random()*12)+'s';w.appendChild(s);}})();
+
+const slides=[...document.querySelectorAll('.slide')];const N=slides.length;let idx=0;
+const progress=document.getElementById('progress'),cur=document.getElementById('cur');
+document.getElementById('total').textContent=N;
+const dotsWrap=document.getElementById('dots');
+slides.forEach((_,i)=>{const d=document.createElement('button');d.className='dot'+(i===0?' on':'');d.setAttribute('aria-label','Slide '+(i+1));d.addEventListener('click',()=>go(i));dotsWrap.appendChild(d);});
+const dots=[...dotsWrap.children];
+function go(i){i=Math.max(0,Math.min(N-1,i));if(i===idx&&slides[i].classList.contains('active'))return;slides[idx].classList.remove('active');dots[idx].classList.remove('on');idx=i;slides[idx].classList.add('active');dots[idx].classList.add('on');cur.textContent=idx+1;progress.style.width=(N>1?(idx/(N-1))*100:100)+'%';}
+go(0);
+document.getElementById('next').addEventListener('click',()=>go(idx+1));
+document.getElementById('prev').addEventListener('click',()=>go(idx-1));
+document.addEventListener('keydown',e=>{if(['ArrowRight','ArrowDown',' ','PageDown'].includes(e.key)){e.preventDefault();go(idx+1);}else if(['ArrowLeft','ArrowUp','PageUp'].includes(e.key)){e.preventDefault();go(idx-1);}else if(e.key==='Home')go(0);else if(e.key==='End')go(N-1);});
+
+let sx=0,sy=0,st=0;const deck=document.getElementById('deck');
+deck.addEventListener('touchstart',e=>{sx=e.changedTouches[0].screenX;sy=e.changedTouches[0].screenY;st=Date.now();},{passive:true});
+deck.addEventListener('touchend',e=>{const dx=e.changedTouches[0].screenX-sx,dy=e.changedTouches[0].screenY-sy,dt=Date.now()-st;if(dt>500)return;if(Math.abs(dx)<50)return;if(Math.abs(dy)>Math.abs(dx))return;if(dx<0)go(idx+1);else go(idx-1);},{passive:true});
+
+/* drawing with size control */
+const canvas=document.getElementById('draw'),ctx=canvas.getContext('2d');
+let penOn=false,drawing=false,color='#00e5ff',penSize=4;
+function sizeC(){canvas.width=innerWidth;canvas.height=innerHeight;ctx.lineCap='round';ctx.lineJoin='round';ctx.lineWidth=penSize;}
+sizeC();addEventListener('resize',sizeC);
+const pen=document.getElementById('pen'),tools=document.getElementById('tools'),sizeSep=document.getElementById('sizeSep');
+// colors (vivid set)
+['#00e5ff','#e8ff00','#1aff95','#ff4d6d','#c54bff','#ff9d4d'].forEach((c,i)=>{const s=document.createElement('button');s.className='swatch'+(i===0?' sel':'');s.style.background=c;s.setAttribute('aria-label','color');s.addEventListener('click',()=>{color=c;[...tools.querySelectorAll('.swatch')].forEach(x=>x.classList.remove('sel'));s.classList.add('sel');if(!penOn)tog(true);});tools.insertBefore(s,sizeSep);});
+sizeSep.style.display='block';
+// pen sizes
+const sizes=[{l:'S',v:2},{l:'M',v:4},{l:'L',v:8},{l:'XL',v:14}];
+sizes.forEach((s,i)=>{const b=document.createElement('button');b.className='size'+(i===1?' sel':'');b.textContent=s.l;b.title='Pen size '+s.l;b.setAttribute('aria-label','size '+s.l);b.addEventListener('click',()=>{penSize=s.v;ctx.lineWidth=s.v;[...tools.querySelectorAll('.size')].forEach(x=>x.classList.remove('sel'));b.classList.add('sel');if(!penOn)tog(true);});tools.appendChild(b);});
+// clear at end
+const clr=document.createElement('button');clr.className='clr';clr.id='clr';clr.title='Clear';clr.textContent='CLR';clr.addEventListener('click',()=>ctx.clearRect(0,0,canvas.width,canvas.height));tools.appendChild(clr);
+function tog(f){penOn=f!==undefined?f:!penOn;pen.classList.toggle('on',penOn);tools.classList.toggle('active',penOn);canvas.style.pointerEvents=penOn?'auto':'none';}
+pen.addEventListener('click',()=>tog());
+const pos=e=>{const t=e.touches?e.touches[0]:e;return{x:t.clientX,y:t.clientY};};
+function sd(e){if(!penOn)return;drawing=true;const p=pos(e);ctx.beginPath();ctx.moveTo(p.x,p.y);}
+function md(e){if(!penOn||!drawing)return;e.preventDefault();const p=pos(e);ctx.strokeStyle=color;ctx.lineWidth=penSize;ctx.shadowColor=color;ctx.shadowBlur=Math.max(4,penSize*1.5);ctx.lineTo(p.x,p.y);ctx.stroke();}
+function ed(){drawing=false;}
+canvas.addEventListener('mousedown',sd);canvas.addEventListener('mousemove',md);addEventListener('mouseup',ed);
+canvas.addEventListener('touchstart',sd,{passive:false});canvas.addEventListener('touchmove',md,{passive:false});canvas.addEventListener('touchend',ed);
+
+/* playheads */
+(function(){
+  const ns='http://www.w3.org/2000/svg';
+  document.querySelectorAll('[data-trace]').forEach(p=>{
+    const svg=p.ownerSVGElement;if(!svg)return;
+    const parts=(p.getAttribute('data-trace')||'').split('|');
+    const col=parts[0]||'#fff',dur=parts[1]||'4';
+    if(!p.id)p.id='tp'+Math.random().toString(36).slice(2,8);
+    const dot=document.createElementNS(ns,'circle');
+    dot.setAttribute('r','4.5');dot.setAttribute('fill',col);dot.setAttribute('class','ph');dot.style.color=col;
+    const am=document.createElementNS(ns,'animateMotion');
+    am.setAttribute('dur',dur+'s');am.setAttribute('repeatCount','indefinite');am.setAttribute('begin','0s');
+    const mp=document.createElementNS(ns,'mpath');
+    mp.setAttribute('href','#'+p.id);mp.setAttributeNS('http://www.w3.org/1999/xlink','href','#'+p.id);
+    am.appendChild(mp);dot.appendChild(am);svg.appendChild(dot);
+  });
+})();
+</script>
+</body>
+</html>

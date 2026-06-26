@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>theDesk — Catching Knives</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg-0:#05070e; --bg-1:#0a0e1a; --bg-2:#0f1426;
+  --red:#ff3b52; --red-deep:#c81e3a; --red-glow:#ff8093;
+  --steel:#a9bcd6; --blade:#dce8ff; --steel-dim:#6c7b93;
+  --ink:#eaf1ff; --ink-dim:rgba(234,241,255,.66); --ink-faint:rgba(234,241,255,.15);
+  --line:rgba(234,241,255,.12);
+  --green:#1aff95; --gold:#ffce5c; --purple:#a96bff;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;overflow:hidden;background:var(--bg-0);color:var(--ink)}
+body{font-family:'JetBrains Mono',monospace;-webkit-font-smoothing:antialiased}
+.bg{position:fixed;inset:0;z-index:0;background:
+  radial-gradient(900px 680px at 80% 6%, rgba(255,59,82,.20), transparent 60%),
+  radial-gradient(760px 760px at 6% 92%, rgba(169,188,214,.07), transparent 60%),
+  radial-gradient(640px 640px at 94% 92%, rgba(200,30,58,.16), transparent 62%),
+  linear-gradient(165deg,var(--bg-1) 0%, var(--bg-0) 72%);}
+.orb{position:fixed;border-radius:50%;filter:blur(80px);opacity:.45;z-index:0;pointer-events:none}
+.orb1{width:440px;height:440px;left:-110px;top:-90px;background:radial-gradient(circle,var(--red),transparent 70%);animation:drift1 23s ease-in-out infinite}
+.orb2{width:360px;height:360px;right:-70px;bottom:-60px;background:radial-gradient(circle,rgba(169,188,214,.4),transparent 70%);animation:drift2 28s ease-in-out infinite}
+.orb3{width:320px;height:320px;right:22%;top:26%;background:radial-gradient(circle,rgba(200,30,58,.5),transparent 70%);animation:drift3 32s ease-in-out infinite}
+@keyframes drift1{50%{transform:translate(60px,40px) scale(1.08)}}
+@keyframes drift2{50%{transform:translate(-50px,-30px) scale(1.1)}}
+@keyframes drift3{50%{transform:translate(40px,-50px) scale(.9)}}
+.grain{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:.05;mix-blend-mode:overlay;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+/* falling cleavers ambient layer */
+.knives{position:fixed;inset:0;z-index:1;pointer-events:none;overflow:hidden}
+.knife{position:absolute;top:-22vh;animation:fall linear infinite;will-change:transform,opacity}
+@keyframes fall{
+  0%{transform:translateY(-22vh) rotate(var(--rot,0deg));opacity:0}
+  8%{opacity:var(--op,.3)}
+  90%{opacity:var(--op,.3)}
+  100%{transform:translateY(124vh) rotate(calc(var(--rot,0deg) + var(--spin,10deg)));opacity:0}}
+/* dripping blood layer */
+.blood{position:fixed;inset:0;z-index:1;pointer-events:none;overflow:hidden}
+.bdrip{position:absolute;top:0;opacity:var(--bop,.2)}
+.bdrip .trail{width:var(--bw);height:var(--blen);border-radius:0 0 99px 99px;background:linear-gradient(180deg,rgba(168,18,44,.95),rgba(126,14,34,.55));transform-origin:top;animation:btrail var(--bd) cubic-bezier(.5,.05,.6,1) infinite}
+@keyframes btrail{0%{transform:scaleY(.14)}38%{transform:scaleY(1)}100%{transform:scaleY(1)}}
+.bdrip .drop{position:absolute;left:50%;top:0;width:calc(var(--bw)*1.9);height:calc(var(--bw)*2.5);border-radius:50% 50% 62% 62% / 42% 42% 68% 68%;background:radial-gradient(circle at 36% 30%,#d2204a,#7e0e22 72%);animation:bdrop var(--bd) cubic-bezier(.5,0,.88,.45) infinite}
+@keyframes bdrop{0%,40%{transform:translate(-50%,calc(var(--blen) - 6px)) scale(.3);opacity:0}50%{transform:translate(-50%,calc(var(--blen) + 2px)) scale(1);opacity:1}100%{transform:translate(-50%,112vh) scale(.92);opacity:1}}
+.progress{position:fixed;top:0;left:0;height:3px;width:0;z-index:40;background:linear-gradient(90deg,var(--red),var(--steel),var(--red-deep));box-shadow:0 0 12px var(--red);transition:width .45s cubic-bezier(.4,0,.2,1)}
+.brand{position:fixed;top:20px;left:26px;z-index:30;font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--ink-dim)}
+.brand b{color:var(--ink);font-weight:500}.brand b i{color:var(--red);font-style:normal}
+.deck{position:fixed;inset:0;z-index:10}
+.slide{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;gap:clamp(10px,2.3vh,34px);padding:max(4vh,46px) 7vw 108px;opacity:0;visibility:hidden;transition:opacity .5s ease,visibility .5s;pointer-events:none}
+.slide.active{opacity:1;visibility:visible;pointer-events:auto}
+.kicker{font-size:15px;font-weight:600;letter-spacing:4px;text-transform:uppercase;color:var(--red);margin-bottom:14px;display:flex;align-items:center;gap:12px}
+.kicker::before{content:"";width:34px;height:2px;background:var(--red);box-shadow:0 0 10px var(--red)}
+.display{font-family:'Instrument Serif',Georgia,serif;text-transform:uppercase;font-size:clamp(54px,9.2vw,120px);line-height:.94;letter-spacing:-1.5px;font-weight:400;text-shadow:0 0 44px rgba(255,59,82,.3)}
+.display .em{color:var(--red);font-style:italic}
+h2.head{font-family:'Instrument Serif',Georgia,serif;text-transform:uppercase;font-size:clamp(40px,6.4vw,88px);line-height:1.0;letter-spacing:-.5px;font-weight:400}
+.head .em{font-style:italic;color:var(--red)}
+.lead{font-size:clamp(18px,2.15vw,31px);line-height:1.6;color:var(--ink);font-weight:400;max-width:940px;margin-top:6px}
+.lead .g{font-weight:500}.lead .r{color:var(--red-glow);font-weight:600}.lead .s{color:var(--steel);font-weight:600}
+.lead .gr{color:var(--green);font-weight:600}.lead .gd{color:var(--gold);font-weight:600}.lead .bl{color:var(--blade);font-weight:600}
+.sub{font-family:'Instrument Serif',Georgia,serif;font-style:italic;font-size:clamp(24px,3.3vw,44px);color:var(--ink-dim);margin-top:16px;max-width:820px}
+.handle{font-size:15px;letter-spacing:2px;color:var(--red-glow);margin-top:20px}
+.head .em,.display .em{animation:emglow 3.4s ease-in-out infinite}
+@keyframes emglow{0%,100%{text-shadow:0 0 12px currentColor}50%{text-shadow:0 0 30px currentColor,0 0 54px currentColor}}
+.ph{filter:drop-shadow(0 0 5px #fff) drop-shadow(0 0 11px currentColor)}
+.stage{margin-top:0;flex:1 1 auto;min-height:0;display:flex;justify-content:center;align-items:center;width:100%}
+.stage svg{width:auto;height:100%;max-width:96%;max-height:62vh;overflow:hidden}
+.two{display:flex;align-items:center;gap:46px;width:100%;flex:1 1 auto;min-height:0}
+.two .col-v{flex:0 0 auto}.two .col-t{flex:1 1 auto}
+.rise{opacity:0;transform:translateY(20px)}
+.slide.active .rise{animation:rise .7s cubic-bezier(.18,.7,.2,1) forwards}
+.slide.active .r1{animation-delay:.05s}.slide.active .r2{animation-delay:.16s}.slide.active .r3{animation-delay:.27s}
+.slide.active .r4{animation-delay:.38s}.slide.active .r5{animation-delay:.49s}.slide.active .r6{animation-delay:.6s}
+@keyframes rise{to{opacity:1;transform:none}}
+
+/* chips */
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.chip{font-size:14px;border:1px solid var(--line);padding:7px 12px;border-radius:3px;background:rgba(0,0,0,.28);letter-spacing:.5px;color:var(--ink-dim)}
+.chip b{color:var(--red-glow);font-weight:700}.chip.g b{color:var(--green)}.chip.s b{color:var(--steel)}.chip.gd b{color:var(--gold)}
+
+/* two-column verdict (green/red lights) */
+.cols2{display:grid;grid-template-columns:1fr 1fr;gap:20px;width:100%;max-width:1080px;margin:0 auto;flex:1 1 auto;min-height:0;align-content:center}
+.lightcard{border:1.5px solid var(--line);border-radius:10px;background:linear-gradient(165deg,rgba(15,20,38,.8),rgba(5,7,14,.5));padding:22px 26px}
+.lightcard.go{border-color:rgba(26,255,149,.5)}.lightcard.no{border-color:rgba(255,59,82,.5)}
+.lightcard .lh{font-size:14px;letter-spacing:3px;text-transform:uppercase;font-weight:700;border-bottom:1px solid var(--line);padding-bottom:10px;margin-bottom:12px;display:flex;justify-content:space-between}
+.lightcard.go .lh{color:var(--green)}.lightcard.no .lh{color:var(--red)}
+.lightcard .li{display:flex;gap:12px;align-items:flex-start;margin-bottom:12px;font-size:clamp(15px,1.65vw,22px);line-height:1.35}
+.lightcard .li:last-child{margin-bottom:0}
+.lightcard .li .ic{flex:0 0 auto;width:17px;font-weight:800}
+.lightcard.go .li .ic{color:var(--green)}.lightcard.no .li .ic{color:var(--red)}
+
+/* generic framework rows */
+.rows{display:flex;flex-direction:column;gap:12px;max-width:660px}
+.row-line{display:flex;gap:14px;align-items:flex-start;border-left:3px solid var(--red);padding:8px 0 8px 16px;background:linear-gradient(90deg,rgba(255,59,82,.05),transparent)}
+.row-line .rn{flex:0 0 auto;font-family:'Instrument Serif',Georgia,serif;font-size:26px;color:var(--red-glow);line-height:1}
+.row-line .rt{font-size:clamp(16px,1.7vw,24px);color:var(--ink);line-height:1.35}
+.row-line .rt b{color:var(--red-glow);font-weight:700}
+
+/* interactive self-check widget */
+.check{display:flex;flex-direction:column;gap:14px;width:100%;max-width:1080px;margin:0 auto;flex:1 1 auto;min-height:0;justify-content:center}
+.check-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.fac{border:1px solid var(--line);border-radius:9px;background:rgba(15,20,38,.55);padding:18px 20px;cursor:pointer;display:flex;align-items:center;gap:11px;transition:.18s;text-align:left;font-family:inherit}
+.fac .bx{width:24px;height:24px;border-radius:5px;border:1.6px solid var(--steel-dim);flex:0 0 auto;display:flex;align-items:center;justify-content:center;font-size:12px;color:transparent;transition:.18s}
+.fac .ft{font-size:17px;color:var(--ink-dim);line-height:1.25}
+.fac:hover{border-color:var(--steel)}
+.fac.on{border-color:var(--green);background:rgba(26,255,149,.08);box-shadow:0 0 14px rgba(26,255,149,.15)}
+.fac.on .bx{border-color:var(--green);background:var(--green);color:#04110a}
+.fac.on .ft{color:var(--ink)}
+.verdict{display:flex;align-items:center;gap:18px;border:1px solid var(--line);border-radius:10px;padding:17px 24px;background:rgba(15,20,38,.6)}
+.verdict .vc{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--ink-dim);white-space:nowrap}
+.gauge{flex:1;height:12px;border-radius:6px;background:rgba(234,241,255,.08);overflow:hidden;min-width:80px}
+.gauge .fill{height:100%;width:0;border-radius:6px;background:var(--red);transition:width .4s cubic-bezier(.4,0,.2,1),background .4s}
+.vlabel{font-family:'Instrument Serif',Georgia,serif;font-size:clamp(26px,3.1vw,42px);white-space:nowrap;color:var(--red);min-width:188px;text-align:right}
+
+/* nav / dots */
+.nav{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);z-index:40;display:flex;gap:14px;align-items:center}
+.nav button{width:44px;height:44px;border-radius:50%;border:1px solid var(--line);background:rgba(15,20,38,.6);color:var(--ink);cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;transition:.2s;backdrop-filter:blur(6px)}
+.nav button:hover{border-color:var(--red);box-shadow:0 0 14px rgba(255,59,82,.5);color:var(--red)}
+.counter{font-size:12px;letter-spacing:2px;color:var(--ink-dim);min-width:54px;text-align:center}.counter b{color:var(--ink)}
+.dots{position:fixed;right:22px;top:50%;transform:translateY(-50%);z-index:40;display:flex;flex-direction:column;gap:8px}
+.dot{width:8px;height:8px;border-radius:50%;border:1px solid var(--ink-faint);background:transparent;cursor:pointer;transition:.25s;padding:0}
+.dot.on{background:var(--red);border-color:var(--red);box-shadow:0 0 10px var(--red);transform:scale(1.3)}
+
+/* tools — inconspicuous, bottom-left */
+#draw{position:fixed;inset:0;z-index:25;pointer-events:none}
+.tools{position:fixed;left:14px;bottom:14px;z-index:40;display:flex;flex-direction:row;gap:5px;align-items:center;padding:5px 8px;border:1px solid var(--line);border-radius:22px;background:rgba(5,7,14,.5);backdrop-filter:blur(8px);opacity:.32;transition:opacity .25s ease}
+.tools:hover{opacity:1}.tools.active{opacity:1}
+.tools .pen{width:26px;height:26px;border-radius:50%;border:1px solid var(--line);background:rgba(15,20,38,.7);color:var(--ink-dim);cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;transition:.2s;padding:0}
+.tools .pen.on{border-color:var(--red);color:var(--red);box-shadow:0 0 10px rgba(255,59,82,.45)}
+.swatch{width:13px;height:13px;border-radius:50%;border:2px solid transparent;cursor:pointer;transition:.18s;padding:0}
+.swatch.sel{border-color:var(--ink);transform:scale(1.15)}
+.tools .sep{width:1px;height:14px;background:var(--line);margin:0 1px;flex-shrink:0}
+.tools .size{width:22px;height:18px;border-radius:4px;border:1px solid var(--line);background:rgba(15,20,38,.7);color:var(--ink-dim);cursor:pointer;font-size:8.5px;letter-spacing:.3px;display:flex;align-items:center;justify-content:center;font-weight:700;padding:0}
+.tools .size.sel{border-color:var(--red);color:var(--red);box-shadow:0 0 8px rgba(255,59,82,.45)}
+.tools .clr{width:26px;height:18px;border-radius:4px;border:1px solid var(--line);background:rgba(15,20,38,.7);color:var(--ink-dim);cursor:pointer;font-size:9px;letter-spacing:.3px;padding:0}
+
+@media(max-width:768px){
+  .slide{justify-content:flex-start;padding:6vh 5vw 80px}
+  .display{font-size:38px}.head{font-size:27px}.sub{font-size:20px}.lead{font-size:15px;margin-top:10px}
+  .kicker{font-size:11px;letter-spacing:3px;margin-bottom:10px}
+  .stage svg{height:28vh}
+  .two{flex-direction:column;align-items:flex-start;gap:13px}
+  .cols2{grid-template-columns:1fr;gap:6px}
+  .lightcard{padding:8px 11px}.lightcard .lh{margin-bottom:5px;padding-bottom:5px}.lightcard .li{font-size:10px;margin-bottom:3px}
+  .check-grid{grid-template-columns:1fr 1fr;gap:8px}.fac{padding:10px 11px;gap:8px}.fac .ft{font-size:11px}.fac .bx{width:17px;height:17px}
+  .verdict{padding:11px 14px;gap:12px}.vlabel{font-size:17px;min-width:0}.verdict .vc{display:none}
+  .rows{gap:8px}.dots,.tools{display:none}.brand{font-size:10px;top:14px;left:16px}
+  .orb1{width:190px;height:190px}.orb2{width:150px;height:150px}.orb3{width:130px;height:130px}.nav{bottom:16px}
+}
+@media(max-width:480px){.display{font-size:32px}.head{font-size:23px}.brand{display:none}.nav button{width:36px;height:36px}.check-grid{grid-template-columns:1fr 1fr;gap:6px}.fac{padding:8px 9px;gap:7px}.fac .ft{font-size:10px}.fac .bx{width:15px;height:15px;font-size:10px}.verdict{padding:9px 12px}}
+
+@media(max-height:820px){
+  .slide{padding:max(3.5vh,46px) 6vw 102px;gap:clamp(8px,1.8vh,24px)}
+  .sub{font-size:clamp(19px,2.6vw,32px)}
+  .display{font-size:clamp(48px,7.6vw,98px)}
+  h2.head{font-size:clamp(34px,5.2vw,68px)}
+  .stage svg{max-height:54vh}
+  .quote-big{font-size:clamp(28px,4.4vw,60px)}
+  .lead{margin-top:10px;font-size:clamp(16px,1.8vw,26px)}
+  .lightcard{padding:14px 18px}.lightcard .li{margin-bottom:7px}.rows{gap:9px}.check{gap:10px}.fac{padding:11px 13px}
+}
+
+/* mobile overflow fixes */
+@media(max-width:768px){
+  .two,.stage,.check,.cols2{flex:0 1 auto !important;min-height:auto !important}
+  .col-v svg{width:74vw !important;height:auto !important;max-height:21vh !important;overflow:hidden}
+}
+@media(max-width:768px) and (max-height:700px){
+  .slide{padding:2.5vh 5vw 86px}
+  .lead{font-size:14px;margin-top:8px}
+  .display{font-size:28px}.head{font-size:22px}.sub{font-size:16.5px}
+  .col-v svg{max-height:20vh !important}
+  .fac{padding:8px 10px}.fac .ft{font-size:10.5px}.check-grid{gap:6px}
+}
+</style>
+</head>
+<body>
+<div class="bg"></div>
+<div class="orb orb1"></div><div class="orb orb2"></div><div class="orb orb3"></div>
+<div class="grain"></div>
+<div class="knives" id="knives"></div>
+<div class="blood" id="blood"></div>
+<canvas id="draw"></canvas>
+<div class="progress" id="progress"></div>
+<div class="brand"><b>the<i>Desk</i></b> · RISK</div>
+<svg width="0" height="0" style="position:absolute"><defs>
+  <marker id="rArrow" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="context-stroke"/></marker>
+  <marker id="gArrow" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#1aff95"/></marker>
+</defs></svg>
+<div class="deck" id="deck">
+  <!-- 1 COVER -->
+  <section class="slide active">
+    <div class="kicker rise r1">theDesk · RISK &amp; TIMING</div>
+    <div class="display rise r2" style="font-size:clamp(58px,10.8vw,152px)">CATCHING<br><span class="em">KNIVES</span></div>
+    <div class="sub rise r3" style="max-width:860px">The dip just got violent. When does it make sense to reach for the blade — and when do you keep your hands back?</div>
+    <div class="rise r4" style="margin-top:20px;display:flex;align-items:center;gap:16px">
+      <div style="width:48px;height:2px;background:var(--red);box-shadow:0 0 10px var(--red)"></div>
+      <span style="font-size:13px;letter-spacing:3px;color:var(--red);font-weight:700">REACH WITH A PLAN — OR NOT AT ALL</span>
+    </div>
+    <div class="handle rise r5" style="margin-top:22px">@jaymesrosenthal</div>
+  </section>
+
+  <!-- 2 THE REFLEX -->
+  <section class="slide">
+    <div class="kicker rise r1">RIGHT NOW</div>
+    <h2 class="head rise r2">A RAGING BULL JUST GOT <span class="em">KNIFED.</span></h2>
+    <div class="stage rise r3">
+      <svg viewBox="0 0 760 360" xmlns="http://www.w3.org/2000/svg" font-family="'JetBrains Mono',monospace">
+        <line x1="50" y1="330" x2="730" y2="330" stroke="rgba(234,241,255,.15)"/>
+        <!-- bull run then the cliff -->
+        <path d="M50 300 L130 270 L200 230 L280 190 L350 150 L410 120 L450 110" fill="none" stroke="var(--green)" stroke-width="3" stroke-linecap="round" data-trace="#9fffd0|4"/>
+        <text x="220" y="150" fill="rgba(26,255,149,.7)" font-size="11" font-weight="700" letter-spacing="1">THE BULL RUN</text>
+        <!-- the plunge -->
+        <path d="M450 110 L480 150 L500 210 L520 300 L540 250 L560 320" fill="none" stroke="var(--red)" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" data-trace="#ff8093|2.6" style="filter:drop-shadow(0 0 7px rgba(255,59,82,.6))"/>
+        <text x="600" y="150" fill="var(--red)" font-size="13" font-weight="800" letter-spacing="1">— ASTRONOMICAL</text>
+        <text x="600" y="170" fill="rgba(255,59,82,.7)" font-size="11">in a couple of days</text>
+        <!-- the temptation -->
+        <circle cx="540" cy="300" r="9" fill="none" stroke="var(--gold)" stroke-width="2.5"/>
+        <circle cx="540" cy="300" r="3.5" fill="var(--gold)"/>
+        <text x="540" y="350" text-anchor="middle" fill="var(--gold)" font-size="11" font-weight="700">"BUY THE DIP?"</text>
+      </svg>
+    </div>
+    <div class="lead rise r4" style="text-align:center;margin-left:auto;margin-right:auto">Everybody's scared — and everybody's already hunting the bounce. <span class="g">After a bull market this strong, the reflex to pile back in is enormous.</span> That reflex is exactly what gets people cut.</div>
+  </section>
+
+  <!-- 3 MACRO FIRST -->
+  <section class="slide">
+    <div class="kicker rise r1">START AT THE FOUNDATION</div>
+    <h2 class="head rise r2">DON'T START AT THE ASSET.<br><span class="em">FUNNEL</span> DOWN TO IT.</h2>
+    <div class="two" style="margin-top:4px">
+      <div class="col-v rise r3">
+        <svg viewBox="0 0 340 320" xmlns="http://www.w3.org/2000/svg" font-family="'JetBrains Mono',monospace" style="height:52vh">
+          <!-- funnel walls -->
+          <path d="M20 24 L320 24 L210 250 L130 250 Z" fill="rgba(169,188,214,.05)" stroke="rgba(169,188,214,.25)" stroke-width="1.5"/>
+          <!-- layers -->
+          <g font-family="'JetBrains Mono',monospace" text-anchor="middle">
+            <text x="170" y="52" fill="var(--steel)" font-size="13" font-weight="800" letter-spacing="1">MACRO REGIME</text>
+            <line x1="44" y1="66" x2="296" y2="66" stroke="rgba(169,188,214,.18)"/>
+            <text x="170" y="92" fill="var(--ink-dim)" font-size="11.5">RATES</text>
+            <line x1="60" y1="106" x2="280" y2="106" stroke="rgba(169,188,214,.14)"/>
+            <text x="170" y="132" fill="var(--ink-dim)" font-size="11.5">THE DOLLAR</text>
+            <line x1="76" y1="146" x2="264" y2="146" stroke="rgba(169,188,214,.14)"/>
+            <text x="170" y="172" fill="var(--ink-dim)" font-size="11.5">GEOPOLITICS</text>
+            <line x1="92" y1="186" x2="248" y2="186" stroke="rgba(169,188,214,.14)"/>
+            <text x="170" y="212" fill="var(--gold)" font-size="11.5" font-weight="700">INFLATION · OIL SHOCK</text>
+            <line x1="110" y1="226" x2="230" y2="226" stroke="rgba(169,188,214,.14)"/>
+          </g>
+          <!-- drip path -->
+          <path d="M170 240 L170 286" fill="none" stroke="var(--red)" stroke-width="2.5" data-trace="#ff8093|2.4"/>
+          <!-- the knife = the asset -->
+          <g style="filter:drop-shadow(0 0 8px rgba(255,59,82,.6))">
+            <rect x="166" y="286" width="8" height="9" rx="2" fill="#2b3346"/>
+            <rect x="161" y="294" width="18" height="3.5" rx="1.5" fill="#7c8aa3"/>
+            <path d="M164 298 L176 298 L170 318 Z" fill="var(--red)"/>
+          </g>
+          <text x="210" y="312" fill="rgba(255,59,82,.8)" font-size="10" font-weight="700">THE ASSET</text>
+        </svg>
+      </div>
+      <div class="col-t rise r4">
+        <div class="lead" style="margin-top:0">Before you decide whether to catch a knife in any name, you read the <span class="s">regime</span> first: rates, the dollar, geopolitics, and what this <span class="gd">oil shock</span> does to inflation expectations.</div>
+        <div class="lead"><span class="g">The macro sets the odds on every dip.</span> Only then do you funnel down to the specific asset — and ask if it's even worth catching.</div>
+      </div>
+    </div>
+  </section>
+  <!-- 4 INTERACTIVE SELF-CHECK -->
+  <section class="slide">
+    <div class="kicker rise r1">IT DEPENDS ON YOU</div>
+    <h2 class="head rise r2">SHOULD <span class="em">YOU</span> CATCH THIS ONE?</h2>
+    <div class="check rise r3">
+      <div class="check-grid" id="facGrid">
+        <button class="fac" data-fac><span class="bx">&#10003;</span><span class="ft">Real experience in this asset</span></button>
+        <button class="fac" data-fac><span class="bx">&#10003;</span><span class="ft">Reading the macro regime well</span></button>
+        <button class="fac" data-fac><span class="bx">&#10003;</span><span class="ft">Recent results are solid</span></button>
+        <button class="fac" data-fac><span class="bx">&#10003;</span><span class="ft">Long time horizon on it</span></button>
+        <button class="fac" data-fac><span class="bx">&#10003;</span><span class="ft">Genuine conviction, not just a trade</span></button>
+        <button class="fac" data-fac><span class="bx">&#10003;</span><span class="ft">Room left in my allocation</span></button>
+        <button class="fac" data-fac><span class="bx">&#10003;</span><span class="ft">Defined risk &amp; a written plan</span></button>
+        <button class="fac" data-fac><span class="bx">&#10003;</span><span class="ft">Calm — not reacting to the red</span></button>
+      </div>
+      <div class="verdict">
+        <span class="vc">your honest read →</span>
+        <div class="gauge"><div class="fill" id="cvFill"></div></div>
+        <span class="vlabel" id="cvLabel">HANDS BACK</span>
+      </div>
+    </div>
+    <div class="lead rise r4" style="text-align:center;margin-left:auto;margin-right:auto;margin-top:4px">Tap what's <span class="g">actually true</span> for you right now. The more boxes you can honestly check, the more a catch is a decision — not a flinch.</div>
+  </section>
+
+  <!-- 5 TRADE OR CONVICTION -->
+  <section class="slide">
+    <div class="kicker rise r1">KNOW WHICH GAME YOU'RE PLAYING</div>
+    <h2 class="head rise r2">A TRADE? OR SOMETHING YOU<br><span class="em">BELIEVE</span> IN?</h2>
+    <div class="stage rise r3">
+      <svg viewBox="0 0 760 320" xmlns="http://www.w3.org/2000/svg" font-family="'JetBrains Mono',monospace">
+        <!-- the knife falls in -->
+        <g style="filter:drop-shadow(0 0 8px rgba(255,59,82,.5))">
+          <rect x="366" y="20" width="8" height="10" rx="2" fill="#2b3346"/>
+          <rect x="361" y="29" width="18" height="3.5" rx="1.5" fill="#7c8aa3"/>
+          <path d="M364 33 L376 33 L370 55 Z" fill="var(--red)"/>
+        </g>
+        <path d="M370 58 L370 86" stroke="rgba(234,241,255,.3)" stroke-width="2"/>
+        <!-- fork -->
+        <path d="M370 86 C 370 120, 200 120, 200 150" fill="none" stroke="var(--steel)" stroke-width="2" marker-end="url(#rArrow)" style="color:var(--steel)"/>
+        <path d="M370 86 C 370 120, 560 120, 560 150" fill="none" stroke="var(--green)" stroke-width="2" marker-end="url(#gArrow)"/>
+        <!-- TRADE box -->
+        <g>
+          <rect x="60" y="150" width="280" height="120" rx="9" fill="rgba(169,188,214,.06)" stroke="var(--steel)" stroke-width="1.5"/>
+          <text x="200" y="180" text-anchor="middle" fill="var(--steel)" font-size="15" font-weight="800" letter-spacing="2">IT'S A TRADE</text>
+          <text x="200" y="208" text-anchor="middle" fill="var(--ink-dim)" font-size="11">tight invalidation · small · quick</text>
+          <text x="200" y="228" text-anchor="middle" fill="var(--ink-dim)" font-size="11">levels do the deciding</text>
+          <text x="200" y="252" text-anchor="middle" fill="rgba(169,188,214,.8)" font-size="10.5" font-style="italic">wrong = out, no marriage</text>
+        </g>
+        <!-- CONVICTION box -->
+        <g>
+          <rect x="420" y="150" width="280" height="120" rx="9" fill="rgba(26,255,149,.06)" stroke="var(--green)" stroke-width="1.5"/>
+          <text x="560" y="180" text-anchor="middle" fill="var(--green)" font-size="15" font-weight="800" letter-spacing="2">CONVICTION</text>
+          <text x="560" y="208" text-anchor="middle" fill="var(--ink-dim)" font-size="11">scale over time · wider berth</text>
+          <text x="560" y="228" text-anchor="middle" fill="var(--ink-dim)" font-size="11">size into weakness on purpose</text>
+          <text x="560" y="252" text-anchor="middle" fill="rgba(26,255,149,.8)" font-size="10.5" font-style="italic">years, not hours</text>
+        </g>
+      </svg>
+    </div>
+    <div class="lead rise r4" style="text-align:center;margin-left:auto;margin-right:auto">Decide <span class="g">before</span> you reach. Catching a knife in a quick trade and then marrying it as a "long-term hold" because it went against you — <span class="r">that's how accounts die.</span></div>
+  </section>
+
+  <!-- 6 THE VOLATILITY TRAP -->
+  <section class="slide">
+    <div class="kicker rise r1">THE MINDSET UNDER FIRE</div>
+    <h2 class="head rise r2">VOL EXPANDS. PREMIUMS FATTEN.<br>ARE YOU <span class="em">REACTING</span> — OR EXECUTING?</h2>
+    <div class="two" style="margin-top:4px">
+      <div class="col-v rise r3">
+        <svg viewBox="0 0 380 300" xmlns="http://www.w3.org/2000/svg" font-family="'JetBrains Mono',monospace" style="height:38vh">
+          <line x1="40" y1="250" x2="360" y2="250" stroke="rgba(234,241,255,.15)"/>
+          <!-- vol spike -->
+          <path d="M40 220 L120 210 L170 200 L210 120 L240 40 L270 150 L320 175" fill="none" stroke="var(--gold)" stroke-width="3" stroke-linecap="round" data-trace="#ffe19a|3.4"/>
+          <text x="240" y="30" text-anchor="middle" fill="var(--gold)" font-size="11" font-weight="700">VOLATILITY · PREMIUM</text>
+          <!-- two responses -->
+          <g>
+            <circle cx="240" cy="40" r="6" fill="var(--red)" style="filter:drop-shadow(0 0 6px var(--red))"/>
+            <path d="M252 52 L300 100" stroke="var(--red)" stroke-width="2" stroke-dasharray="4 4" marker-end="url(#rArrow)" style="color:var(--red)"/>
+            <text x="305" y="110" fill="var(--red)" font-size="10" font-weight="700">panic grab</text>
+            <text x="305" y="124" fill="rgba(255,59,82,.65)" font-size="8.5">all-in at the worst tick</text>
+          </g>
+          <g>
+            <path d="M230 50 L120 110" stroke="var(--green)" stroke-width="2" marker-end="url(#gArrow)"/>
+            <text x="60" y="118" fill="var(--green)" font-size="10" font-weight="700">read it as info</text>
+            <text x="60" y="132" fill="rgba(26,255,149,.65)" font-size="8.5">sized, deliberate response</text>
+          </g>
+        </svg>
+      </div>
+      <div class="col-t rise r4">
+        <div class="lead" style="margin-top:0">When volatility blows out and premium gets rich, that's <span class="s">information</span> — the market is pricing fear.</div>
+        <div class="lead">Are you <span class="r">reacting to the emotion</span> — or running a <span class="gr">planned process</span>, sizing into the fear on purpose with the premium working for you?</div>
+      </div>
+    </div>
+  </section>
+  <!-- 7 SCALE DON'T LUNGE -->
+  <section class="slide">
+    <div class="kicker rise r1">IF YOU DO REACH</div>
+    <h2 class="head rise r2">SCALE INTO IT.<br>DON'T <span class="em">LUNGE.</span></h2>
+    <div class="stage rise r3">
+      <svg viewBox="0 0 760 340" xmlns="http://www.w3.org/2000/svg" font-family="'JetBrains Mono',monospace">
+        <!-- the descent -->
+        <path d="M70 50 L180 110 L300 180 L430 250 L560 300 L690 290" fill="none" stroke="var(--steel)" stroke-width="2.5" stroke-linecap="round" data-trace="#cfe0f5|4.5"/>
+        <!-- planned tranches along the way -->
+        <g>
+          <circle cx="300" cy="180" r="7" fill="var(--green)"/><text x="300" y="166" text-anchor="middle" fill="var(--green)" font-size="10" font-weight="700">¼</text>
+          <circle cx="430" cy="250" r="7" fill="var(--green)"/><text x="430" y="236" text-anchor="middle" fill="var(--green)" font-size="10" font-weight="700">¼</text>
+          <circle cx="560" cy="300" r="7" fill="var(--green)"/><text x="560" y="286" text-anchor="middle" fill="var(--green)" font-size="10" font-weight="700">¼</text>
+          <text x="660" y="276" text-anchor="middle" fill="rgba(26,255,149,.8)" font-size="10" font-weight="700">reserve</text>
+        </g>
+        <text x="300" y="210" text-anchor="middle" fill="rgba(26,255,149,.6)" font-size="9.5">planned · keeps dry powder</text>
+        <!-- the lunge that gets cut -->
+        <g style="filter:drop-shadow(0 0 7px rgba(255,59,82,.6))">
+          <circle cx="180" cy="110" r="9" fill="none" stroke="var(--red)" stroke-width="2.5"/>
+          <text x="180" y="92" text-anchor="middle" fill="var(--red)" font-size="11" font-weight="800">ALL-IN</text>
+          <path d="M180 119 L180 150" stroke="var(--red)" stroke-width="2" stroke-dasharray="3 3"/>
+          <text x="180" y="168" text-anchor="middle" fill="rgba(255,59,82,.8)" font-size="9.5">one lunge, top tick →</text>
+          <text x="180" y="182" text-anchor="middle" fill="rgba(255,59,82,.8)" font-size="9.5">cut on the way down</text>
+        </g>
+      </svg>
+    </div>
+    <div class="lead rise r4" style="text-align:center;margin-left:auto;margin-right:auto">A knife is caught in pieces, with intent — <span class="g">defined levels, partial size, powder in reserve.</span> The hero who lunges all-in at the first scary print is the one who gets cut the deepest.</div>
+  </section>
+
+  <!-- 8 GREEN / RED LIGHTS -->
+  <section class="slide">
+    <div class="kicker rise r1">WHEN IT WORKS · WHEN IT DOESN'T</div>
+    <h2 class="head rise r2">GREEN LIGHTS &amp; <span class="em">RED FLAGS.</span></h2>
+    <div class="cols2 rise r3">
+      <div class="lightcard go">
+        <div class="lh"><span>IT CAN MAKE SENSE</span><span style="color:var(--ink-dim);font-weight:400">reach</span></div>
+        <div class="li"><span class="ic">&#10003;</span><div>Real experience and an edge in this name</div></div>
+        <div class="li"><span class="ic">&#10003;</span><div>A planned, scaled process — not a flinch</div></div>
+        <div class="li"><span class="ic">&#10003;</span><div>Conviction, or a clearly-defined trade</div></div>
+        <div class="li"><span class="ic">&#10003;</span><div>Room to add, dry powder, long horizon</div></div>
+        <div class="li"><span class="ic">&#10003;</span><div>You're reading the regime well, and calm</div></div>
+      </div>
+      <div class="lightcard no">
+        <div class="lh"><span>IT'S A BAD IDEA</span><span style="color:var(--ink-dim);font-weight:400">hands back</span></div>
+        <div class="li"><span class="ic">&#10007;</span><div>Reacting to fear with no plan or edge</div></div>
+        <div class="li"><span class="ic">&#10007;</span><div>Recent results shaky, momentum gone</div></div>
+        <div class="li"><span class="ic">&#10007;</span><div>Already over-allocated, no powder left</div></div>
+        <div class="li"><span class="ic">&#10007;</span><div>Marrying a "trade" that went against you</div></div>
+        <div class="li"><span class="ic">&#10007;</span><div>Fighting the regime · revenge · FOMO</div></div>
+      </div>
+    </div>
+    <div class="lead rise r4" style="text-align:center;margin-left:auto;margin-right:auto;margin-top:2px">Same falling price, opposite decision. <span class="g">The difference isn't the chart — it's everything you bring to it.</span></div>
+  </section>
+
+  <!-- 9 CLOSE -->
+  <section class="slide">
+    <div class="kicker rise r1">THE TAKEAWAY</div>
+    <div class="display rise r2" style="font-size:clamp(44px,6.4vw,92px)">THE KNIFE DOESN'T<br>CARE HOW YOU <span class="em">FEEL.</span></div>
+    <div class="lead rise r3" style="margin-top:22px;max-width:900px">Catching it isn't brave and it isn't stupid on its own. <span class="g">It's only smart when it fits your regime read, your profile, and your process</span> — experience, edge, allocation, horizon, and a plan you set before the candle turned red.</div>
+    <div class="sub rise r4" style="margin-top:16px">Don't reach because you're scared of missing the bounce. Reach only with a plan — or keep your hands back.</div>
+    <div class="handle rise r5" style="margin-top:20px">@jaymesrosenthal · theDesk</div>
+  </section>
+
+</div>
+<div class="nav">
+  <button id="prev" aria-label="Previous">&#8249;</button>
+  <div class="counter"><b id="cur">1</b> / <span id="total">9</span></div>
+  <button id="next" aria-label="Next">&#8250;</button>
+</div>
+<div class="dots" id="dots"></div>
+<div class="tools" id="tools">
+  <button class="pen" id="pen" title="Toggle pen">&#9998;</button>
+  <div class="sep"></div>
+  <div class="sep" id="sizeSep" style="display:none"></div>
+</div>
+<script>
+/* falling butcher cleavers — 3 depth tiers */
+(function(){
+  const wrap=document.getElementById('knives');
+  const M=innerWidth<768?0.6:1;
+  function knifeSVG(w,h,blood,uid){
+    return '<svg width="'+w+'" height="'+h+'" viewBox="0 0 40 160" fill="none">'
+      +'<defs><linearGradient id="bl'+uid+'" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#8d9cb4"/><stop offset=".5" stop-color="#cfdbee"/><stop offset="1" stop-color="#f0f6ff"/></linearGradient></defs>'
+      /* long riveted handle */
+      +'<rect x="14" y="2" width="12" height="56" rx="5.5" fill="#4a3b2c"/>'
+      +'<rect x="15.6" y="3.6" width="3" height="52" rx="1.5" fill="#5e4b37" opacity=".8"/>'
+      +'<circle cx="20" cy="13" r="1.9" fill="#b5c2d6"/><circle cx="20" cy="30" r="1.9" fill="#b5c2d6"/><circle cx="20" cy="47" r="1.9" fill="#b5c2d6"/>'
+      /* guard */
+      +'<rect x="9" y="56" width="22" height="7" rx="3" fill="#7e8da8"/>'
+      /* blade: straight spine left, edge sweeping to a sharp tip */
+      +'<path d="M13 63 L27.5 63 L27.5 96 Q26 132 19.5 155 Q14.5 122 13 96 Z" fill="url(#bl'+uid+')" stroke="#42506a" stroke-width="1.1"/>'
+      /* spine shading */
+      +'<path d="M13 63 L17 63 L16.5 100 Q15.5 125 19.5 155 Q14.5 122 13 96 Z" fill="#55637e" opacity=".55"/>'
+      /* cutting edge highlight, down to the point */
+      +'<path d="M27.5 67 L27.5 96 Q26 132 19.5 153.5" stroke="#ffffff" stroke-width="2.4" stroke-linecap="round" fill="none"/>'
+      +(blood?('<path d="M27.5 84 L27.5 96 Q26 132 19.5 153.5" stroke="#b3142e" stroke-width="3" stroke-linecap="round" fill="none" opacity=".62"/>'
+        +'<path d="M19.5 155 q3 6.5 .2 11 q-3.2 -4.5 -.2 -11" fill="#b3142e" opacity=".75"/>'
+        +'<circle cx="25" cy="120" r="1.7" fill="#b3142e" opacity=".6"/>'):'')
+      +'</svg>';
+  }
+  const tiers=[
+    {n:7,s:[0.55,0.9],op:[0.22,0.32],blur:1.4,dur:[12,17],sh:'rgba(207,219,238,.4)'},
+    {n:6,s:[1.05,1.6],op:[0.38,0.52],blur:0.3,dur:[8.5,12],sh:'rgba(207,219,238,.55)'},
+    {n:5,s:[1.9,2.9],op:[0.55,0.72],blur:0,dur:[6,8.5],sh:'rgba(240,246,255,.6)'}
+  ];
+  let uid=0;
+  tiers.forEach(t=>{
+    for(let i=0;i<t.n;i++){
+      const s=(t.s[0]+Math.random()*(t.s[1]-t.s[0]))*M;
+      const w=Math.round(40*s),h=Math.round(160*s);
+      const k=document.createElement('div');k.className='knife';
+      k.style.left=(Math.random()*100)+'%';
+      k.style.setProperty('--op',(t.op[0]+Math.random()*(t.op[1]-t.op[0])).toFixed(2));
+      k.style.setProperty('--rot',(-10+Math.random()*20).toFixed(0)+'deg');
+      k.style.setProperty('--spin',(-8+Math.random()*16).toFixed(0)+'deg');
+      k.style.animationDuration=(t.dur[0]+Math.random()*(t.dur[1]-t.dur[0])).toFixed(1)+'s';
+      k.style.animationDelay=(-Math.random()*14).toFixed(1)+'s';
+      k.style.filter=(t.blur?('blur('+t.blur+'px) '):'')+'drop-shadow(0 4px 10px rgba(0,0,0,.45)) drop-shadow(0 0 6px '+t.sh+')';
+      k.innerHTML=knifeSVG(w,h,Math.random()<0.45,uid++);
+      wrap.appendChild(k);
+    }
+  });
+})();
+
+/* subtle dripping blood from the top edge */
+(function(){
+  const b=document.getElementById('blood');if(!b)return;
+  for(let i=0;i<6;i++){
+    const d=document.createElement('div');d.className='bdrip';
+    d.style.left=(4+Math.random()*92)+'%';
+    d.style.setProperty('--bw',(4.5+Math.random()*5.5).toFixed(1)+'px');
+    d.style.setProperty('--blen',(55+Math.random()*120).toFixed(0)+'px');
+    d.style.setProperty('--bd',(9+Math.random()*8).toFixed(1)+'s');
+    d.style.setProperty('--bop',(0.2+Math.random()*0.2).toFixed(2));
+    const t=document.createElement('div');t.className='trail';
+    const dr=document.createElement('div');dr.className='drop';
+    const del=(-Math.random()*16).toFixed(1)+'s';
+    t.style.animationDelay=del;dr.style.animationDelay=del;
+    d.appendChild(t);d.appendChild(dr);b.appendChild(d);
+  }
+})();
+
+const slides=[...document.querySelectorAll('.slide')];const N=slides.length;let idx=0;
+const progress=document.getElementById('progress'),cur=document.getElementById('cur');
+document.getElementById('total').textContent=N;
+const dotsWrap=document.getElementById('dots');
+slides.forEach((_,i)=>{const d=document.createElement('button');d.className='dot'+(i===0?' on':'');d.setAttribute('aria-label','Slide '+(i+1));d.addEventListener('click',()=>go(i));dotsWrap.appendChild(d);});
+const dots=[...dotsWrap.children];
+function go(i){i=Math.max(0,Math.min(N-1,i));if(i===idx&&slides[i].classList.contains('active'))return;slides[idx].classList.remove('active');dots[idx].classList.remove('on');idx=i;slides[idx].classList.add('active');dots[idx].classList.add('on');cur.textContent=idx+1;progress.style.width=(N>1?(idx/(N-1))*100:100)+'%';}
+go(0);
+document.getElementById('next').addEventListener('click',()=>go(idx+1));
+document.getElementById('prev').addEventListener('click',()=>go(idx-1));
+document.addEventListener('keydown',e=>{if(e.target.closest('#facGrid'))return;if(['ArrowRight','ArrowDown',' ','PageDown'].includes(e.key)){e.preventDefault();go(idx+1);}else if(['ArrowLeft','ArrowUp','PageUp'].includes(e.key)){e.preventDefault();go(idx-1);}else if(e.key==='Home')go(0);else if(e.key==='End')go(N-1);});
+
+let sx=0,sy=0,st=0;const deck=document.getElementById('deck');
+deck.addEventListener('touchstart',e=>{sx=e.changedTouches[0].screenX;sy=e.changedTouches[0].screenY;st=Date.now();},{passive:true});
+deck.addEventListener('touchend',e=>{const dx=e.changedTouches[0].screenX-sx,dy=e.changedTouches[0].screenY-sy,dt=Date.now()-st;if(dt>500)return;if(Math.abs(dx)<50)return;if(Math.abs(dy)>Math.abs(dx))return;if(dx<0)go(idx+1);else go(idx-1);},{passive:true});
+
+/* interactive self-check */
+(function(){
+  const grid=document.getElementById('facGrid');if(!grid)return;
+  const fill=document.getElementById('cvFill'),label=document.getElementById('cvLabel');
+  const facs=[...grid.querySelectorAll('.fac')];const T=facs.length;
+  function update(){
+    const n=facs.filter(f=>f.classList.contains('on')).length;
+    fill.style.width=Math.round(n/T*100)+'%';
+    let col,txt;
+    if(n<=2){col='var(--red)';txt='HANDS BACK';}
+    else if(n<=4){col='var(--gold)';txt='SMALL & CAREFUL';}
+    else if(n<=6){col='var(--green)';txt='A PLANNED CATCH';}
+    else{col='var(--green)';txt='CONVICTION CATCH';}
+    fill.style.background=col;label.style.color=col;label.textContent=txt;
+  }
+  facs.forEach(f=>f.addEventListener('click',()=>{f.classList.toggle('on');update();}));
+  update();
+})();
+
+/* drawing with size control */
+const canvas=document.getElementById('draw'),ctx=canvas.getContext('2d');
+let penOn=false,drawing=false,color='#ff3b52',penSize=4;
+function sizeC(){canvas.width=innerWidth;canvas.height=innerHeight;ctx.lineCap='round';ctx.lineJoin='round';ctx.lineWidth=penSize;}
+sizeC();addEventListener('resize',sizeC);
+const pen=document.getElementById('pen'),tools=document.getElementById('tools'),sizeSep=document.getElementById('sizeSep');
+['#ff3b52','#a9bcd6','#1aff95','#ffce5c','#dce8ff','#ffffff'].forEach((c,i)=>{const s=document.createElement('button');s.className='swatch'+(i===0?' sel':'');s.style.background=c;s.setAttribute('aria-label','color');s.addEventListener('click',()=>{color=c;[...tools.querySelectorAll('.swatch')].forEach(x=>x.classList.remove('sel'));s.classList.add('sel');if(!penOn)tog(true);});tools.insertBefore(s,sizeSep);});
+sizeSep.style.display='block';
+const sizes=[{l:'S',v:2},{l:'M',v:4},{l:'L',v:8},{l:'XL',v:14}];
+sizes.forEach((s,i)=>{const b=document.createElement('button');b.className='size'+(i===1?' sel':'');b.textContent=s.l;b.title='Pen size '+s.l;b.setAttribute('aria-label','size '+s.l);b.addEventListener('click',()=>{penSize=s.v;ctx.lineWidth=s.v;[...tools.querySelectorAll('.size')].forEach(x=>x.classList.remove('sel'));b.classList.add('sel');if(!penOn)tog(true);});tools.appendChild(b);});
+const clr=document.createElement('button');clr.className='clr';clr.id='clr';clr.title='Clear';clr.textContent='CLR';clr.addEventListener('click',()=>ctx.clearRect(0,0,canvas.width,canvas.height));tools.appendChild(clr);
+function tog(f){penOn=f!==undefined?f:!penOn;pen.classList.toggle('on',penOn);tools.classList.toggle('active',penOn);canvas.style.pointerEvents=penOn?'auto':'none';}
+pen.addEventListener('click',()=>tog());
+const pos=e=>{const t=e.touches?e.touches[0]:e;return{x:t.clientX,y:t.clientY};};
+function sd(e){if(!penOn)return;drawing=true;const p=pos(e);ctx.beginPath();ctx.moveTo(p.x,p.y);}
+function md(e){if(!penOn||!drawing)return;e.preventDefault();const p=pos(e);ctx.strokeStyle=color;ctx.lineWidth=penSize;ctx.shadowColor=color;ctx.shadowBlur=Math.max(4,penSize*1.5);ctx.lineTo(p.x,p.y);ctx.stroke();}
+function ed(){drawing=false;}
+canvas.addEventListener('mousedown',sd);canvas.addEventListener('mousemove',md);addEventListener('mouseup',ed);
+canvas.addEventListener('touchstart',sd,{passive:false});canvas.addEventListener('touchmove',md,{passive:false});canvas.addEventListener('touchend',ed);
+
+/* playheads */
+(function(){
+  const ns='http://www.w3.org/2000/svg';
+  document.querySelectorAll('[data-trace]').forEach(p=>{
+    const svg=p.ownerSVGElement;if(!svg)return;
+    const parts=(p.getAttribute('data-trace')||'').split('|');
+    const col=parts[0]||'#fff',dur=parts[1]||'4';
+    if(!p.id)p.id='tp'+Math.random().toString(36).slice(2,8);
+    const dot=document.createElementNS(ns,'circle');
+    dot.setAttribute('r','4');dot.setAttribute('fill',col);dot.setAttribute('class','ph');dot.style.color=col;
+    const am=document.createElementNS(ns,'animateMotion');
+    am.setAttribute('dur',dur+'s');am.setAttribute('repeatCount','indefinite');am.setAttribute('begin','0s');
+    const mp=document.createElementNS(ns,'mpath');
+    mp.setAttribute('href','#'+p.id);mp.setAttributeNS('http://www.w3.org/1999/xlink','href','#'+p.id);
+    am.appendChild(mp);dot.appendChild(am);svg.appendChild(dot);
+  });
+})();
+</script>
+</body>
+</html>
