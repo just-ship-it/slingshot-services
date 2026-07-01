@@ -284,6 +284,11 @@ const config = {
 
   // Options Flow Configuration
   RISK_FREE_RATE: parseFloat(process.env.RISK_FREE_RATE || '0.05'),
+  // Exclude same-day (0DTE) expirations from GEX so live matches the backtest
+  // generator (generate-intraday-gex.py filters dte > 0). Live otherwise includes
+  // 0DTE contracts whose ATM gamma explodes under the 0.001-year TTE floor,
+  // inflating near-spot strikes and pulling the walls to spot. Default on for parity.
+  EXCLUDE_ZERO_DTE: (process.env.EXCLUDE_ZERO_DTE || 'true') !== 'false',
   EXPOSURE_POLL_INTERVAL_MINUTES: parseInt(process.env.EXPOSURE_POLL_INTERVAL_MINUTES || '2'),
   TRADIER_SYMBOLS: (process.env.TRADIER_SYMBOLS || 'SPY,QQQ').split(',').map(s => s.trim()),
   // Cache every expiration in [0, CHAIN_MAX_DTE] days. Must cover the longest
@@ -716,6 +721,7 @@ const config = {
       chainMaxDTE: this.CHAIN_MAX_DTE,
       pollInterval: this.EXPOSURE_POLL_INTERVAL_MINUTES,
       riskFreeRate: this.RISK_FREE_RATE,
+      excludeZeroDTE: this.EXCLUDE_ZERO_DTE,
       // Schwab override
       useSchwab: this.SCHWAB_ENABLED,
       schwabAppKey: this.SCHWAB_APP_KEY,

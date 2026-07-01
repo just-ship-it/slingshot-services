@@ -8,6 +8,12 @@ class ExposureCalculator {
     // Dividend yield set to 0 to match the backtest GEX calculator
     // (generate-intraday-gex.py), which omits dividend yield from gamma.
     this.dividendYield = options.dividendYield ?? 0;
+    // Exclude same-day (0DTE) expirations (opt-in). The backtest GEX
+    // generator (generate-intraday-gex.py:317) filters dte > 0, so it never
+    // sees expiring-today contracts. Live includes them, and their ATM gamma
+    // explodes under the 0.001-year TTE floor, inflating near-spot strikes and
+    // pulling the put/call wall to spot vs the backtest. Enable for parity.
+    this.excludeZeroDTE = options.excludeZeroDTE ?? false;
   }
 
   /**
@@ -397,6 +403,16 @@ class ExposureCalculator {
             // shifts walls and pulls the gamma flip toward spot.
             if (openInterest === 0) continue;
             if (volume === 0) continue;
+
+            // 0DTE exclusion (opt-in) — match backtest generate-intraday-gex.py
+            // which filters dte > 0. Compares calendar dates so a contract
+            // expiring later today is dropped just like the backtest.
+            if (this.excludeZeroDTE) {
+              const asOfDate = (this.asOf || new Date());
+              const expMs = new Date(option.expiration_date).getTime();
+              const dteDays = Math.floor((expMs - Date.UTC(asOfDate.getUTCFullYear(), asOfDate.getUTCMonth(), asOfDate.getUTCDate())) / 86400000);
+              if (dteDays <= 0) continue;
+            }
 
             // Calculate exposures using each contract's own bid/ask-derived IV.
             const gex = this.calculateGEX(option, spotPrice);

@@ -94,7 +94,9 @@ class OptionsExposureService {
 
       // Initialize exposure calculator
       this.exposureCalculator = new ExposureCalculator({
-        riskFreeRate: this.config.riskFreeRate
+        riskFreeRate: this.config.riskFreeRate,
+        // Parity with backtest: drop 0DTE contracts (generate-intraday-gex.py dte>0).
+        excludeZeroDTE: this.config.excludeZeroDTE
       });
 
       // Initialize futures converter
