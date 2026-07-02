@@ -29,7 +29,7 @@ import { evaluateCrossStrategyRules, evaluateStrategyAlerts } from './cross-stra
 import { evaluateGammaFilter, readGammaFilterConfig, normRegime } from '../shared/filters/gamma-filter.js';
 import { createExitRuleManager, captureRuleFromSignal } from './src/exit-rule-manager.js';
 import { applyStrategyRuleProfile } from './src/strategy-rule-profile.js';
-import { shouldCancelOnPreFillExtreme, effectivePreFillExtremes } from './src/pre-fill-cancel.js';
+import { shouldCancelOnPreFillExtreme, effectivePreFillExtremes, shouldCancelOnAdverseLsFlip } from './src/pre-fill-cancel.js';
 import { reconcileOrdersSnapshot, reconcilePositionSnapshot } from './src/snapshot-reconciler.js';
 
 const SERVICE_NAME = 'trade-orchestrator';
@@ -867,6 +867,12 @@ async function handleTradeSignal(raw) {
       cancelOnPreFillExtreme: signal.cancelOnPreFillExtreme === true,
       preFillStopLoss: signal.stop_loss ?? null,
       preFillTakeProfit: signal.take_profit ?? null,
+      // Adverse-LS-flip cancel (opt-in via signal.cancelOnAdverseLsFlip; lstb
+      // sets it). checkAdverseLsFlip cancels this limit if the LS flips back
+      // the opposite way before fill. adverseFlipCreatedTs (ms) is the flip
+      // that created the signal, so a stale/creating flip can't self-cancel.
+      cancelOnAdverseLsFlip: signal.cancelOnAdverseLsFlip === true,
+      adverseFlipCreatedTs: signal.metadata?.flipTs ?? null,
     });
 
     // Persist signal's protection metadata to the signalDefaults registry so
@@ -1705,6 +1711,53 @@ async function checkPreFillExtremes(priceMsg) {
   }
 }
 
+// Adverse-LS-flip cancellation: ls-flip-trigger-bar enters on an LS flip
+// (BULLISH→long, BEARISH→short, per multi-strategy-engine's mapping) via a
+// retrace limit. If the LS flips back the OPPOSITE way before the limit
+// fills, the directional thesis is invalidated → cancel the pending limit.
+// Mirrors the backtest's adverseFlipCancelTs, which is simply the next LS
+// flip (LS state strictly alternates, so the next flip is always adverse).
+// Opt-in per signal via signal.cancelOnAdverseLsFlip; other strategies leave
+// it undefined → skipped here.
+async function checkAdverseLsFlip(lsMsg) {
+  if (!lsMsg) return;
+  const product = lsMsg.product ? String(lsMsg.product).toUpperCase() : null;
+  const sentiment = lsMsg.sentiment ? String(lsMsg.sentiment).toUpperCase() : null;
+  if (!product || (sentiment !== 'BULLISH' && sentiment !== 'BEARISH')) return;
+  // LS_STATUS timestamp is epoch SECONDS; adverseFlipCreatedTs is stored in ms.
+  const flipTsMs = Number.isFinite(lsMsg.timestamp) ? lsMsg.timestamp * 1000 : null;
+
+  for (const pending of state.pendingOrders.values()) {
+    if (!pending.cancelOnAdverseLsFlip) continue;
+    if (pending.cancelRequested) continue;
+    if (pending.action !== 'place_limit') continue;
+    if (!pending.signalId) continue;
+    if (extractUnderlying(pending.symbol) !== product) continue;
+    // Only cancel when the flip is adverse (opposite the pending direction).
+    // An aligned flip — including the very flip that created the signal — is
+    // a no-op here. Sign-critical logic lives in shouldCancelOnAdverseLsFlip.
+    if (!shouldCancelOnAdverseLsFlip(pending.direction, sentiment)) continue;
+    // Only act on a flip strictly AFTER the one that created the order, so a
+    // stale/replayed flip cannot cancel a freshly-placed order.
+    if (flipTsMs != null && pending.adverseFlipCreatedTs != null && flipTsMs <= pending.adverseFlipCreatedTs) continue;
+
+    pending.cancelRequested = true;
+    logger.warn(`[ADVERSE-FLIP-CANCEL] ${pending.accountId} ${pending.strategy} ${pending.symbol} ${pending.direction} — LS flipped ${sentiment} before fill — cancelling pending limit`);
+    const url = `${TRADOVATE_SERVICE_URL}/accounts/${encodeURIComponent(pending.accountId)}/cancel/${encodeURIComponent(pending.signalId)}?symbol=${encodeURIComponent(pending.symbol)}`;
+    try {
+      const res = await fetch(url, { method: 'POST' });
+      if (!res.ok) {
+        logger.error(`[ADVERSE-FLIP-CANCEL] cancel HTTP ${res.status} url=${url}: ${await res.text().catch(() => '')}`);
+        pending.cancelRequested = false; // allow retry on next flip
+      }
+    } catch (err) {
+      const cause = err.cause ? `cause=${err.cause.code || err.cause.name || ''} ${err.cause.message || err.cause}` : '';
+      logger.error(`[ADVERSE-FLIP-CANCEL] cancel failed url=${url} msg="${err.message}" ${cause}`);
+      pending.cancelRequested = false;
+    }
+  }
+}
+
 async function probeTradovateService() {
   const url = `${TRADOVATE_SERVICE_URL}/health`;
   const startedAt = Date.now();
@@ -1767,6 +1820,10 @@ async function main() {
   await messageBus.subscribe(CHANNELS.LS_STATUS, (msg) => {
     try { exitRuleManager.onLsFlip(msg); }
     catch (err) { logger.error(`[ExitRule] onLsFlip threw: ${err.message}`); }
+    // Adverse-flip cancel watcher (opt-in per signal via cancelOnAdverseLsFlip).
+    // Fire-and-forget — errors are logged inside, won't propagate.
+    checkAdverseLsFlip(msg).catch(err =>
+      logger.error(`[ADVERSE-FLIP-CANCEL] watcher threw: ${err.message}`));
   });
   await messageBus.subscribe(CHANNELS.GEX_LEVELS, handleGexLevels);
   await messageBus.subscribe(CHANNELS.POSITION_OPENED, handlePositionOpened);

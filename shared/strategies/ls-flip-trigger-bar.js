@@ -378,6 +378,12 @@ export class LsFlipTriggerBarStrategy extends BaseStrategy {
       // requires a retrace to the fib midpoint; running through an extreme
       // first invalidates the setup.
       cancelOnPreFillExtreme: true,
+      // Live adverse-flip cancel: boolean opt-in the orchestrator reads to
+      // cancel this pending limit when the LS flips back the opposite way
+      // before fill. adverseFlipCancelTs below is the backtest's precomputed
+      // timestamp (null in live, since the next flip is unknowable at signal
+      // time) — the live path keys off this boolean + the LS_STATUS stream.
+      cancelOnAdverseLsFlip: true,
       // Adverse-flip cancel: if a subsequent opposite-direction LS flip
       // occurs before fill, the directional bias is invalidated → cancel.
       // adverseFlipTs is precomputed by the LS loader (always the next

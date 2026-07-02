@@ -46,6 +46,28 @@ export function effectivePreFillExtremes({ barStartMs, placedAtMs, high, low, cl
   return { high: close ?? null, low: close ?? null };
 }
 
+/**
+ * Adverse-LS-flip cancel decision. ls-flip-trigger-bar enters on an LS flip
+ * (BULLISH → long, BEARISH → short — the signal-generator's sentiment→state
+ * mapping in multi-strategy-engine.js). A pending lstb limit is invalidated
+ * when the LS flips back the OPPOSITE way before the limit fills, mirroring
+ * the backtest's adverseFlipCancelTs (the next LS flip, which always
+ * alternates state). Accepts both 'long'/'short' and 'buy'/'sell'.
+ *
+ * @param {'buy'|'sell'|'long'|'short'} direction - pending order direction.
+ * @param {string} sentiment - LS_STATUS sentiment ('BULLISH'|'BEARISH').
+ * @returns {boolean} true when the flip is adverse to the pending direction.
+ */
+export function shouldCancelOnAdverseLsFlip(direction, sentiment) {
+  const s = String(sentiment || '').toUpperCase();
+  if (s !== 'BULLISH' && s !== 'BEARISH') return false;
+  const isLong = direction === 'buy' || direction === 'long';
+  const isShort = direction === 'sell' || direction === 'short';
+  if (!isLong && !isShort) return false;
+  // Long is invalidated by a BEARISH flip; short by a BULLISH flip.
+  return (isLong && s === 'BEARISH') || (isShort && s === 'BULLISH');
+}
+
 export function shouldCancelOnPreFillExtreme(direction, stopLoss, takeProfit, high, low) {
   const isBuy = direction === 'buy' || direction === 'long';
   const isSell = direction === 'sell' || direction === 'short';

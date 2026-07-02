@@ -12,7 +12,7 @@
  * failing scenario and exits 1.
  */
 
-import { shouldCancelOnPreFillExtreme, effectivePreFillExtremes } from '../src/pre-fill-cancel.js';
+import { shouldCancelOnPreFillExtreme, effectivePreFillExtremes, shouldCancelOnAdverseLsFlip } from '../src/pre-fill-cancel.js';
 
 let passes = 0;
 function ok(cond, msg) {
@@ -97,5 +97,17 @@ ok(eb3.high === 95 && eb3.low === 95, 'unknown bar start → fall back to live c
 const e = effectivePreFillExtremes(placementBar);
 ok(shouldCancelOnPreFillExtreme('long', 90, 110, e.high, e.low) === null,
    'REGRESSION: lstb long not cancelled on arrival when only the pre-placement bar range straddles the bracket');
+
+// --- adverse-LS-flip cancel (sign-critical: long cancels on BEARISH, short on BULLISH) ---
+// lstb enters long on a BULLISH flip and short on a BEARISH flip; a pending
+// limit is invalidated only when the LS flips back the OPPOSITE way before fill.
+ok(shouldCancelOnAdverseLsFlip('long', 'BEARISH') === true, 'long pending cancels on BEARISH flip');
+ok(shouldCancelOnAdverseLsFlip('short', 'BULLISH') === true, 'short pending cancels on BULLISH flip');
+ok(shouldCancelOnAdverseLsFlip('long', 'BULLISH') === false, 'long NOT cancelled by aligned/creating BULLISH flip');
+ok(shouldCancelOnAdverseLsFlip('short', 'BEARISH') === false, 'short NOT cancelled by aligned/creating BEARISH flip');
+ok(shouldCancelOnAdverseLsFlip('buy', 'BEARISH') === true, 'buy vocabulary also cancels on BEARISH');
+ok(shouldCancelOnAdverseLsFlip('sell', 'BULLISH') === true, 'sell vocabulary also cancels on BULLISH');
+ok(shouldCancelOnAdverseLsFlip('long', 'sideways') === false, 'unknown sentiment never cancels');
+ok(shouldCancelOnAdverseLsFlip('na', 'BEARISH') === false, 'unknown direction never cancels');
 
 console.log(`OK — ${passes} pre-fill-cancel scenarios passed`);
