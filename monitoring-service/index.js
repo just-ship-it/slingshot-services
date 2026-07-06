@@ -364,7 +364,7 @@ async function handleStrategyAlert(message) {
   await persistAndBroadcastAlert(message);
 
   await sendDiscordNotification({
-    title: `${message.severity === 'warning' ? '⚠️' : 'ℹ️'} Strategy Alert`,
+    title: `${message.severity === 'critical' ? '🚨' : message.severity === 'warning' ? '⚠️' : 'ℹ️'} Strategy Alert`,
     color: message.severity === 'warning' ? 0xf59e0b : message.severity === 'critical' ? 0xef4444 : 0x3b82f6,
     fields: [
       { name: 'Rule', value: message.ruleName || 'N/A', inline: true },

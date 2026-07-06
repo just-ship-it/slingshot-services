@@ -593,7 +593,8 @@ class OptionsExposureService {
       ratios: this.futuresConverter?.getRatioInfo(),
       symbols: this.config.symbols,
       chainCount: cacheStats?.totalChains || 0,
-      websocket: websocketStatus
+      websocket: websocketStatus,
+      auth: this.tradierClient?.getAuthStatus?.() || null
     };
   }
 

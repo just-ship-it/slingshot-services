@@ -51,6 +51,14 @@ const FLAP_ALERT_THROTTLE_MS = 5 * 60_000; // min spacing between conflict alert
 const FLAP_HARD_RESET_THRESHOLD = 5;    // consecutive flaps before a hard reset
 const HARD_RESET_COOLDOWN_MS = 15_000;  // settle time before the clean reconnect
 
+// Prolonged-disconnect alerting: session conflicts flap (connect→boot→connect),
+// but a dead refresh token or Schwab outage fails every reconnect ATTEMPT, so
+// flap detection never fires and the streamer loops silently at max backoff.
+// After this many consecutive failed reconnects (~3+ min down), raise a
+// throttled 'prolonged_disconnect' that data-service forwards to STRATEGY_ALERT.
+const DISCONNECT_ALERT_THRESHOLD = 4;        // failed reconnect attempts before alerting
+const DISCONNECT_ALERT_THROTTLE_MS = 15 * 60_000; // min spacing between disconnect alerts
+
 // LEVELONE_FUTURES field map (only fields we surface).
 const FUT_L1 = {
   KEY: 'key',
@@ -137,6 +145,7 @@ class SchwabStreamer extends EventEmitter {
     this._connectedAt = null;        // ms of last LOGIN ack
     this._consecutiveFlaps = 0;      // short-lived connections in a row
     this._lastConflictAlertAt = 0;   // throttle session-conflict alerts
+    this._lastDisconnectAlertAt = 0; // throttle prolonged-disconnect alerts
     this._stabilityTimer = null;     // fires once a connection proves stable
     this._reconnectTimer = null;     // single pending reconnect (no chain multiplication)
     this._loginAbort = null;         // rejects the in-flight connect() if the WS closes pre-ack
@@ -631,10 +640,32 @@ class SchwabStreamer extends EventEmitter {
         this.emit('reconnected');
       } catch (e) {
         logger.error(`Schwab reconnect failed: ${e.message}`);
+        if (this.reconnectAttempts >= DISCONNECT_ALERT_THRESHOLD) {
+          this._raiseProlongedDisconnect(e);
+        }
         this._scheduleReconnect();
       }
     }, delay);
     this._reconnectTimer.unref?.();
+  }
+
+  // Emit a throttled alert that the streamer has been down across multiple
+  // reconnect attempts (dead refresh token, Schwab outage, network). Distinct
+  // from session_conflict: those connections SUCCEED then get booted.
+  _raiseProlongedDisconnect(lastError) {
+    const now = Date.now();
+    if (now - this._lastDisconnectAlertAt < DISCONNECT_ALERT_THROTTLE_MS) return;
+    this._lastDisconnectAlertAt = now;
+    const message =
+      `Schwab streamer DOWN — ${this.reconnectAttempts} consecutive reconnect attempts failed ` +
+      `(last error: ${lastError?.message || 'unknown'}). Live candles/quotes are NOT flowing. ` +
+      `If the error is a token/401 failure, re-authenticate Schwab via the OAuth flow.`;
+    logger.error(`🚨 ${message}`);
+    this.emit('prolonged_disconnect', {
+      attempts: this.reconnectAttempts,
+      lastError: lastError?.message || null,
+      message
+    });
   }
 
   // Detach + kill the current socket so it can't linger as a second live session

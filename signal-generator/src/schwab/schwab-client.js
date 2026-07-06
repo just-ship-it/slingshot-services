@@ -1,5 +1,6 @@
 import axios from 'axios';
 import fs from 'fs';
+import { EventEmitter } from 'events';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import Redis from 'ioredis';
@@ -90,8 +91,14 @@ function calculateIVBisection(optionPrice, S, K, T, r, optionType) {
   return (low + high) / 2;
 }
 
-class SchwabClient {
+// Emits: 'auth_failure' ({status, error, needsReauth, consecutiveFailures}) on
+// every failed token refresh, and 'auth_recovered' ({consecutiveFailures}) when
+// a refresh succeeds after failures. data-service forwards these to
+// STRATEGY_ALERT so a dead Schwab session is visible on the dashboard instead
+// of only in the logs (GEX/IV/exposure silently go stale otherwise).
+class SchwabClient extends EventEmitter {
   constructor(options = {}) {
+    super();
     this.appKey = options.appKey;
     this.appSecret = options.appSecret;
     this.callbackUrl = options.callbackUrl || 'https://127.0.0.1:8182';
@@ -124,6 +131,12 @@ class SchwabClient {
 
     // Token refresh timer
     this._refreshTimer = null;
+
+    // Auth health state (surfaced via getAuthStatus() + auth_failure events)
+    this.authFailureStreak = 0;
+    this.lastAuthFailureAt = null;
+    this.lastAuthError = null;
+    this.needsReauth = false;
 
     if (!this.appKey || !this.appSecret) {
       throw new Error('Schwab app key and secret are required');
@@ -237,6 +250,7 @@ class SchwabClient {
 
   async refreshAccessToken() {
     if (!this.refreshToken) {
+      this._recordAuthFailure(null, 'No refresh token available', true);
       throw new Error('No refresh token available — re-authenticate via browser OAuth flow');
     }
 
@@ -261,16 +275,59 @@ class SchwabClient {
       await this._saveTokens();
 
       logger.info('Schwab access token refreshed successfully');
+      this._recordAuthSuccess();
     } catch (error) {
       const status = error.response?.status;
       const errData = error.response?.data;
       logger.error(`Schwab token refresh failed (${status}):`, JSON.stringify(errData || error.message));
 
-      if (status === 401 || errData?.error === 'invalid_grant') {
+      // A 400/401 from the token endpoint means the refresh token itself is
+      // dead (expired 7-day token or invalid_grant) — only a browser OAuth
+      // re-auth fixes it. Anything else (network, 5xx) may be transient.
+      const needsReauth = status === 400 || status === 401 || errData?.error === 'invalid_grant';
+      if (needsReauth) {
         logger.error('Refresh token expired or invalid — re-authenticate via browser OAuth flow');
       }
+      this._recordAuthFailure(status, JSON.stringify(errData) || error.message, needsReauth);
       throw error;
     }
+  }
+
+  _recordAuthFailure(status, errorMessage, needsReauth) {
+    this.authFailureStreak++;
+    this.lastAuthFailureAt = new Date().toISOString();
+    this.lastAuthError = errorMessage;
+    if (needsReauth) this.needsReauth = true;
+    this.emit('auth_failure', {
+      status,
+      error: errorMessage,
+      needsReauth: this.needsReauth,
+      consecutiveFailures: this.authFailureStreak
+    });
+  }
+
+  _recordAuthSuccess() {
+    if (this.authFailureStreak > 0) {
+      this.emit('auth_recovered', { consecutiveFailures: this.authFailureStreak });
+    }
+    this.authFailureStreak = 0;
+    this.lastAuthError = null;
+    this.needsReauth = false;
+  }
+
+  getAuthStatus() {
+    const refreshTokenAgeDays = this.tokenObtainedAt
+      ? (Date.now() - new Date(this.tokenObtainedAt).getTime()) / 86_400_000
+      : null;
+    return {
+      healthy: this.authFailureStreak === 0,
+      needsReauth: this.needsReauth,
+      consecutiveFailures: this.authFailureStreak,
+      lastFailureAt: this.lastAuthFailureAt,
+      lastError: this.lastAuthError,
+      tokenObtainedAt: this.tokenObtainedAt,
+      refreshTokenAgeDays: refreshTokenAgeDays != null ? +refreshTokenAgeDays.toFixed(2) : null
+    };
   }
 
   startTokenRefresh() {

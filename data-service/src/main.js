@@ -79,7 +79,33 @@ class DataService {
     // Candle manager for all products
     this.candleManager = new CandleManager();
 
+    // Throttle repeated Schwab connectivity alerts (keyed by alert type)
+    this._schwabAlertLastAt = new Map();
+
     this.isRunning = false;
+  }
+
+  // Publish a Schwab connectivity/auth problem to STRATEGY_ALERT so it reaches
+  // the dashboard + Discord instead of dying in the logs. Failure types are
+  // throttled (the token refresher retries every 25 min and every API 401 also
+  // triggers a refresh, so an expired refresh token would otherwise spam);
+  // recovery alerts always go out and reset the throttle so a NEW failure
+  // after recovery alerts immediately.
+  _publishSchwabAlert(type, severity, message, details = {}, { throttleMs = 15 * 60_000 } = {}) {
+    const now = Date.now();
+    if (throttleMs > 0) {
+      const last = this._schwabAlertLastAt.get(type) || 0;
+      if (now - last < throttleMs) return;
+    }
+    this._schwabAlertLastAt.set(type, now);
+    messageBus.publish(CHANNELS.STRATEGY_ALERT, {
+      severity,
+      source: 'data-service',
+      type,
+      message,
+      details,
+      timestamp: new Date().toISOString(),
+    }).catch(err => logger.warn(`Failed to publish ${type} alert: ${err.message}`));
   }
 
   async start() {
@@ -192,6 +218,29 @@ class DataService {
           message: info?.message || 'Schwab streamer session conflict (competing session likely)',
           timestamp: new Date().toISOString(),
         }).catch(err => logger.warn(`Failed to publish schwab session_conflict alert: ${err.message}`));
+      });
+
+      // Streamer down across multiple reconnect attempts (dead token, Schwab
+      // outage) — distinct from session_conflict, which flaps. The streamer
+      // throttles this itself, so no _publishSchwabAlert throttle needed.
+      this.schwabStreamer.on('prolonged_disconnect', (info) => {
+        this._schwabStreamerDownAlerted = true;
+        this._publishSchwabAlert(
+          'schwab_streamer_down', 'critical',
+          info?.message || 'Schwab streamer down — repeated reconnect failures; live candles are NOT flowing.',
+          info, { throttleMs: 0 }
+        );
+      });
+      // 'reconnected' fires on every routine reconnect — only publish a
+      // recovery alert if we previously alerted that the streamer was down.
+      this.schwabStreamer.on('reconnected', () => {
+        if (!this._schwabStreamerDownAlerted) return;
+        this._schwabStreamerDownAlerted = false;
+        this._publishSchwabAlert(
+          'schwab_streamer_recovered', 'info',
+          'Schwab streamer reconnected — live candles/quotes flowing again.',
+          {}, { throttleMs: 0 }
+        );
       });
 
       // Connect to Schwab — gated by a single-instance Redis lock so two
@@ -379,6 +428,34 @@ class DataService {
       });
 
       await this.tradierExposureService.initialize();
+
+      // Surface Schwab REST auth failures (token refresh 400/401, missing
+      // refresh token) on the dashboard — this is the path that feeds
+      // GEX/exposure/IV, and it previously died silently in the logs while
+      // every strategy ran on stale levels.
+      const optionsClient = this.tradierExposureService.tradierClient;
+      if (optionsClient?.on) {
+        optionsClient.on('auth_failure', (info) => {
+          const hint = info.needsReauth
+            ? 'Refresh token EXPIRED/INVALID — re-authenticate Schwab via the browser OAuth flow.'
+            : 'May be transient (network/Schwab outage) — will keep retrying.';
+          this._publishSchwabAlert(
+            info.needsReauth ? 'schwab_auth_expired' : 'schwab_auth_failure',
+            'critical',
+            `Schwab token refresh failed (HTTP ${info.status ?? 'n/a'}, ${info.consecutiveFailures} consecutive). ` +
+            `GEX/IV/exposure data is going STALE. ${hint}`,
+            info
+          );
+        });
+        optionsClient.on('auth_recovered', (info) => {
+          this._schwabAlertLastAt.clear();
+          this._publishSchwabAlert(
+            'schwab_auth_recovered', 'info',
+            `Schwab auth recovered after ${info.consecutiveFailures} failed refresh attempt(s) — GEX/IV/exposure data flowing again.`,
+            info, { throttleMs: 0 }
+          );
+        });
+      }
 
       if (config.TRADIER_AUTO_START) {
         await this.tradierExposureService.start();
