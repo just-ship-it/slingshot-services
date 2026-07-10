@@ -1,0 +1,229 @@
+                                      Weekly Chat 2026-01-12
+
+
+                                             Main Points
+
+
+
+       -   VoEx-daily for $SPY has been steadily decreasing towards the PZ while VoEx has
+           paused at the boundary out of the PZ. $QQQ’s VoEx remains in PZ while its VoEx-
+           daily also decreases.
+       -   Gamma-hedging environments showcase robust selling and purchasing support
+           where it would be expected but with $SPY being surrounded by a thin blanket of
+           selling pressure.
+       -   LS&T show bullish liquidity with encroaching profit-takers on the 90-, 144-, and
+           weekly views. Reasonable support located spot-down despite these findings.
+       -   The predictive MWGS data show things have cooled down and outlooks no longer
+           paint a future of increasing gamma squeezes.
+       -   Overall, the conditions look bullish but said rigor is brought into question on
+           holistic view of trends.
+
+                                             SUMMARY
+
+
+           This week, we investigated volume and found that $SPY and $QQQ have
+           abnormally low volumes in comparison to several slices of the past. One of the
+           potential expectations from a low-volume market is the relative increase in the
+           effect hedging has on price movement.
+
+           VoEx for $SPY finds itself paused at the exit to the Propagation Zone, while VoEx-
+           daily is continuing its steady decline to the PZ. $QQQ is reminiscent but VoEx
+           remains in the PZ.
+
+           Hedging environments showcase purchasing support located spot-up and selling
+           pressure located spot-down in steady and persistent amounts. $SPY has a thin
+           layer of selling pressure to start the week.
+
+           LS&T investigation showcases bullish LS prints but LT indicates mounting profit-
+           taking on the 90-, 144-, and the 1-Week views. This echoes the notion of a bump
+           start to the week.
+
+           Overall, the data are technically bullish but one can’t help but notice some
+           worrying patterns – likely either drift-and-flat, or downside starts!
+
+
+
+
+Deep Dive Stocks – Weekly Chat             for the week of                  2026-01-12 to 2026-01-16
+                                              DETAILS
+
+
+
+
+Hello every-body!
+Last week, we left off with net bullish thoughts as the storm clouds appear to be receding, and
+recede they did, as $SPY moved +1.6% while $QQQ moved 2.21%! Quite the moves indeed – we
+can visualize them below in the gamma hedging heatmaps:
+
+
+
+
+Surprisingly, despite $SPY’s (apparent) larger quantity of purchasing support, $QQQ appears to
+have received a greater benefit from its less-opaque purchasing support! With such a difference
+in performance, and with its connection to the heatmaps (as we can see above), I thought it’d be
+worthwhile to check in on our volume idea that lower volume tends to infer larger hedging
+influence. The idea here is: if such a difference in the hedging impact is seen, could it be explained
+by any changes in the volume behavior between the two?
+ To do this, and things got curious! Below is a table of the running standard-deviations over 5
+different lookbacks (20-, 40-, 60-, 120-, and 252-(trading) days) for $SPY and $QQQ for volume
+smoothed for 1 week (5-days). The values represents the relative performance over those periods
+as well as their probability. Negative values indicate the volume is less than average and positive
+indicate more than average,
+and the distance from zero                          $SPY Z-Score               $QQQ
+represents       the     relative                   (Probability)              (Probability)
+likelihood of this distance (the
+further from zero, the less 20-Days                        -0.619 (27%)            -1.299 (11%)
+likely). Doing this gives us the
+                                    40-Days                -0.744 (23%)             -1.372 (9%)
+table:
+Some curious trends! The first 60-Days                     -0.954 (17%)            -1.099 (14%)
+is that almost all of the values   120-Days                   3.222 (1%)              0.381 (36%)
+are negative. This means that
+if we compare this week’s          252-Days                  -0.543 (29%)            -0.803 (20%)
+volume to all of the other
+
+
+
+Deep Dive Stocks – Weekly Chat             for the week of                  2026-01-12 to 2026-01-16
+weeks’ week-end (Friday)’s volume, the current volume is far below expectations. For instance,
+let’s translate the data into words:
+        -   For $SPY, if you calculated the probability of the 5-day rolling average of volume on
+            Friday Volume (measured on Friday) being what it was, it would tell you: 27%. If you
+            did this for $QQQ, it would show 11%.
+
+So that means both $SPY and $QQQ beat the odds by quite a bit ! And since the values are
+negative, this means they beat the odds by extraordinarily low volume. So it turns out our hunches
+about the holidays and hedging might have been somewhat founded!
+To continue some of the observations, we could say:
+        -   For $QQQ, if you calculated the probability of the 5-day rolling average of volume on
+            last Friday being what it was, it would say 9%.
+
+This means there was, per the numbers, only a 9% likelihood of having volume as low as it was
+on Friday, when calculated over the past 2-months.
+
+These are quite unusual and low values! You’d normally expect, in a relatively “average” market
+that these values would be much closer to 0 and be more diverse in their positive or negativity;
+but here: we see a general trend of being both negative and quite negative to boot.
+Going back to our original idea, it seems that our hunch was correct once again! Despite the
+minimal amount of purchasing support (relative to $SPY), we can see that the overall volume was
+particularly low – both objectively and in comparison to $SPY’s. Low volume → minimal market
+participants → greater relative influence has on price action → less “raw” purchasing support
+required to move spot up!
+This is quite validating !
+What does it mean? We shall try to find out – but for now, let’s keep our feet in ground and remind
+ourselves of our goals this week: should we expect a continued bounce? If so, how much bounce
+is a no longer a bounce anymore, and if not, where should we expect to land ?
+Let’s get started!
+With VoEx as usual, we have:
+
+
+
+
+Deep Dive Stocks – Weekly Chat           for the week of               2026-01-12 to 2026-01-16
+On the whole, we have VoEx residing yet in the Propagation Zone for $QQQ and on $SPY, VoEx
+is refusing to coӧperate further with demands, and has paused at border-control. The take
+home: very nerve wracking for the bulls, much less so for the bears, and so it would seem a
+bearish take wins out in favor of prudence.
+To add to the gaїety of the bears, we can see VoEx-daily experience quite the drill-down into the
+Propagation Zone on $SPY (almost reminiscent of a VoEx Divergence pattern!) while VoEx-daily
+on $QQQ appears in-kind yet slightly more unstable in its descent. These are both unusual and
+bearish.
+
+Thus, the take-home from VoEx: downside is still likely and perhaps closer than it was
+previously.
+Moving onwards to the hedging heatmaps, let’s check out what influences might float our ways
+this week:
+
+
+
+
+Shifted!
+We have the same general set up (with $QQQ joining) as last week: profound purchasing support
+located spot-down and steady selling pressure located spot-up, but unlike last week, $SPY has
+lost its bullish encirclement and has replaced it with a thin layer of selling pressure. The suggests
+the market is likely going to open with a bit of a downwards jolt (per $SPY) with relative “safety”
+on $QQQ, given its slightly more progressive purchasing support.
+
+
+
+
+Deep Dive Stocks – Weekly Chat            for the week of                2026-01-12 to 2026-01-16
+Overall, however, it does paint a market that is poised to receiving some hefty head-winds, those
+of which might be stronger than usual should the recent trend of unusually low volumes continue.
+This produces an interesting potential:
+
+Suppose the market opens to exaggerated downside due to a greater-than-usual hedging
+influence on spot, only to bring more volume into the market, thereby potentially reducing the
+relative strength of ongoing hedging.
+If so, this increase in volume would offset the increase in “relative” purchase support from the
+hedgers! Thus, let’s hope the market participants who enter are bid!
+To gauge this, let’s quickly step over some toes and proceed with LS&T to see if we can identity
+nearby bids or asks that might step in and assist:
+
+
+
+
+Here we see there is quite a bit of eager ask that is encroaching on current spot! This is worrisome
+indeed.
+On the 90-minute [top-left], we can see bullish liquidity (LS is telling us this is largely spurred by
+an eager bid; we can see an awkward aggressive bid cascade-like complex just after the 9th)
+along with an increase in the presence of profit-taking (lower-order LTs are rising rapidly above
+spot). This suggests that those waiting to enter the market on the near-term are likely sellers.
+
+
+
+
+Deep Dive Stocks – Weekly Chat             for the week of               2026-01-12 to 2026-01-16
+We have a very similar set up, just not as progressed, on the 144-minute: just after the 9th we see
+the aggressive bid (much more refined, this one) which helped spot bump up slightly. Now,
+however, we see the encroaching cascade of eager bids working their way up.
+The 987-minute [bottom-left] is curious because we can see the remnants of the aggressive bid
+but here its obvious where and why the price was halted: the organic ask at LT5 looks quite robust
+– and has kept a lid on things since around December ! For the bulls, this is another, slightly
+unnerving, finding: all this aggressive bid only to be halted at the door!
+
+
+
+
+[Same graph, just for ease].
+On the 1-Week, we see LT5 continuing its support while LT3 shows persistence above spot –
+suggesting there is quite reasonable (and persistent!) profit-taking going on a relatively high-level.
+The name of the game, then, is simply: how long will LT5 last and will it be longer than the profit-
+takers?
+Overall, this paints more near-term turbulence as LS&T shows encroaching profit-takers and
+hedging suggests that the best thing for the market is another week of minimal volume and some
+bouncing between purchasing support and selling pressure. The introduction of volume, in either
+direction, will diminish hedging’s recent relative supremacy and should this occur in combination
+with a predominance of ask-volume, the market may be quite bereft of its structural supports.
+Speaking of structural supports, let’s check on the gamma squeeze data:
+
+
+
+Deep Dive Stocks – Weekly Chat             for the week of               2026-01-12 to 2026-01-16
+The market saw a net decrease in counts this week (back down to the 600s) [not shown] and
+growth is negative.
+In turning to the predictive data:
+
+
+
+
+It seems outlooks have settled down slightly as both outlooks show a cooling off is expected:
+both the predictive count and growth curves are back to baseline.
+This suggests that the options environment isn’t detecting any tremors!
+Overall, the data appear rocky at best with a high risk for downside. Spot is near several levels of
+support on larger timeframes which may come into use in the near future.
+
+Overall, the data are currently saying “likely flat-to-up” but with a bit of a smirk.
+
+
+Happy trading,
+
+
+
+Justin
+
+
+
+
+Deep Dive Stocks – Weekly Chat              for the week of                2026-01-12 to 2026-01-16
+

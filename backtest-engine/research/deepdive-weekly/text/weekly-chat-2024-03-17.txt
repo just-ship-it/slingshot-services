@@ -1,0 +1,299 @@
+                                  Weekly Chat 03/18/2024
+
+
+                                         Main Points
+
+
+    -   VoEx on $SPY and $QQQ have continued their Divergence with $QQQ’s VoEx-trend
+        having left stability. Both $SPY and $QQQ’s VoEx-dailies are (mostly) in the P.Z.
+    -   Hedging environments between $SPY and $QQQ are quite distinct with respect to their
+        gamma neutrality; both are in a vanna-stable orientation.
+    -   DLP behavior remains at zero.
+    -   GTM has printed its first negative print since starting its large, positive complex
+        several months ago.
+    -   VoEx Variance suggests that things are in a cooling off period within stability.
+    -   Overall, high expectations for near-term downside.
+
+                                         SUMMARY
+
+
+
+          VoEx for $SPY and $QQQ have progressed with their Divergence plans
+          with $QQQ’s VoEx-trend having already left the Inhibition Zone. This is a
+          bearish print for both.
+
+          The hedging environments are in a vanna-stable orientation for both $SPY
+          and $QQQ. $SPY has a sparsely distributed, but abundant gamma neutral
+          zone. On pontification regarding the possible consequence of this
+          orientation, and with respect to the anticipation of downside, there is
+          concern about the creation of an environment wherein the gamma neutral
+          zone can be expected to quickly be replaced via new options flows at the
+          start of the week. This places additional burden on $QQQ’s available
+          purchasing support, should the market find itself in need of said support
+          in the upcoming week.
+
+          DLP behavior is still flat and zero; no anticipations for profitability via
+          $+/IV- in the week ahead. MWGS data is largely the same except for GTM-
+          5’s most recent, negative print. Should this continue, it brings with it
+          bearish tidings and increasing gamma squeeze counts.
+
+          VoEx variance view neo-VoEx is showing a market in the process of
+          “cooling-off” from its recent excursion. This suggests that, for now, any
+          downside experienced should be “short lived”.
+
+          Bearish expectations abound.
+
+
+
+Deep Dive Stocks – Weekly Chat                                                      03/18/2024
+                                             DETAILS
+
+
+
+
+Hello everybody!
+Last week, we left off with neutral-to-bearish inclinations, and it would seem this modestly
+protective stance served its purpose quite well throughout the week as $SPY’s net movement
+was near-zero (-0.37%), and a negative move for $QQQ of -1.16%.
+This week, let’s see if we can uncover data to either confirm that the “cooling off” period has, in
+fact, begun, or, if this is just another small wave in a sea of bearish-inclinations.
+Let’s get started!
+Looking at the week’s progress through the lens of the hedging environments, a curious sight
+emerges. The first oddity is $SPY’s IV on 2024-03-11 – we can see it goes off of the map some
+                                                      with a casual print of 0.70 (a 488%
+                                                      increase), followed by a sudden drop
+                                                      back towards where things were,
+                                                      followed by an even stranger fall directly
+                                                      into purchasing support.
+
+
+
+
+                                                          Meanwhile, we see $QQQ’s initial rise
+                                                          throughout the week brought it into
+                                                          light    selling      pressure.      The
+                                                          consequence of this re-union seems to
+                                                          have been rather robust: rejection back
+                                                          to gamma neutrality thereafter, $QQQ
+                                                          slid down for the later-half of the week.
+                                                          Curious that the maintaining of
+                                                          gamma-neutral also effectively cut
+                                                          $QQQ off from any reasonable
+                                                          purchasing support, or perhaps, the
+                                                          purchasing support helped keep things
+                                                          in gamma neutrality (it is worth nothing
+that the purchasing support just below the 12th, 13th, and 14th rests at ~$435, which was the
+relative bottom of the week until Friday’s massive-red-candle-open pushed the price below!).
+
+
+Deep Dive Stocks – Weekly Chat                                                        03/18/2024
+This behavior is quite strange and, arguably, it is also more dynamic than we usually witness
+within the hedging environments, especially of late with the persistent bull run.
+The net-effect of all of this sound and furry is a VoEx-trend on $SPY and $QQQ that have officially
+left the Inhibition Zone!
+
+
+
+
+(Okay – almost left, for $SPY. But that’s less fun to say).
+
+This behavior has been anticipated for quite a while, as both $SPY and $QQQ have been teasing
+with several bouts of VoEx Divergence in the last few months. In fact, it is this, uh, fact that might
+have you pausing and going “Uhm – Didn’t this happen before (especially with $QQQ), and we
+rebounded back into BUPO (of the Bullish Variety)?
+And the answer is: yes! Yes, we did. The last time VoEx-daily peeked its head into the Propagation
+Zone on $QQQ was 01-31-20241. But a quick look at VoEx between then and now suggests that
+not all is the same:
+
+
+
+
+1
+    The moment is talked about in Weekly Chat 2024-01-29.
+
+Deep Dive Stocks – Weekly Chat                                                           03/18/2024
+The last time, as compared to the current episode of VoEx-daily spiking into the Propagation Zone
+on $QQQ, the spike was accompanied by a pretty robust and established BUPO (of the Bullish
+Variety), whereas the current spike into the Propagation Zone is accompanied by a just-post-
+VoEx-Divergence VoEx.
+The difference? Well, last time this happened, the end-result was a bullish interpretation:
+                                                 “
+VoEx for $SPY and $QQQ have remained in a persistently elevated state within the Inhibition Zone,
+which qualifies them both for Bullish-until-proven-otherwise (BUPO). This stance will be
+maintained until VoEx exits the Inhibition Zone.
+                                                 “
+This time, however, it seems I cannot make such a statement as VoEx[-trend] has, in fact, left the
+inhibition Zone.
+This places the interpretation in a bearish majority-owned state: the slow grind of VoEx
+Divergence these past two months have paved the way for this configuration, and there’s minimal
+data to suggest this trend is set to be disrupted.
+Moving from the VoExes to the Hedges, we are confronted with a relatively unique environment
+for $SPY in particular.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                         03/18/2024
+A vanna-stable orientation for $QQQ (right), with local and reasonable purchasing support, along
+with a relatively pronounced left-tail per the influence distribution.
+$SPY, on the other hand, seems to have a bit of a … hole. It would seem the loss of ~5 million
+options on Friday put $SPY’s hedging environment into a bit of a tussle. How the dealers will
+respond to this is uncertain, but it does suggest a curious path forward:
+   1- There may be an increase in “spot-hedging” as new positions will undoubtedly quickly
+      disrupt this wider-than-normal gamma neutrality, which will provoke more active hedging
+      via underlying.
+   2- A market in downturn would provide onus for retail to start intaking long puts.
+   3- In combination, should the market experience a downturn and retail begins opening short-
+      delta positions, this will place long-delta in the hands of the options dealers who, as
+      suggested above, will be more prone and apt to “actively” hedge positions. The
+      consequence is the influx of additional selling pressure (due to the long-delta being taken
+      by the options dealers) that is more “active” .
+
+So – in other words, $SPY seems to have a relatively mis-matched risk-balance environment;
+despite the increased risk of downside, there seems to be little by-way of reward, just an empty,
+bleak, gamma neutral environment.
+Conversely, it would seem that $QQQ is reasonably protected against what VoEx is suggesting is
+inbound; whether or not it is sufficient to starve-off the magnitude of what VoEx suggests is
+coming is another story.
+$SPY, on the other hand, is a bit of a wild-card, and I will eagerly look at its hedging environment
+after Monday’s close to see how things are shaping up.
+Now that the hedging environments are out of the way, let’s see what our put-selling friends are
+up to:
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                         03/18/2024
+It would seem that our DLP friends are up to: a whole bunch of nothing! Except perhaps some
+other trade that doesn’t involve a $+/IV- path towards profitability.
+
+Moving on from DLPs to the Market-Wide Gamma Squeeze data, we see: much the same. Despite
+the neutral-to-red week, gamma squeeze counts decreased, with the counts now ~10% lower than
+the 5-day average (949 vs. 1,100).
+
+DLPs offer a slight change-of-pace for the MWGS data with an ever-so-tiny negative GTM print.
+
+
+
+
+This negative GTM print is occurring after about 2 months of steady GTM-EMA decline – perhaps
+this means we will finally get to see some action in the GTM data. This is, by-and-large, a
+tentatively bearish print. In the coming days, should the other “higher-order” GTMs also make their
+way into negative territory, then it would become reasonable for me to expect a future of robust
+gamma squeeze growth, and, consequently, market downturn.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                        03/18/2024
+Now, let’s look at the neo-VoExes to see if they offer any congruent or discordant insights.
+
+
+
+
+$SPY’s neo-VoEx also shows a VoEx-daily extending into the Propagation Zone, and a VoEx that
+is quickly heading out of stability.
+
+These data seem congruent with the above.
+The story is more progressed with $QQQ, where we see (below) that VoEx-daily, much like $SPY,
+has reached into the Propagation Zone, but unlike $SPY, $QQQ’s VoEx has already left stability:
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                        03/18/2024
+This is, of course, resoundingly bearish.
+Thus, it would seem that for $SPY and $QQQ, downside is expected per neo-VoEx, as it is
+suggested above.
+While we are in neo-VoEx-land, let’s check out some interesting single-tickers. First up: $NVDA
+
+
+
+
+Much the same with $QQQ and $SPY - VoEx-daily within the Propagation Zone and a VoEx that
+is falling quite rapidly out of stability.
+Lastly, let’s take a peek at $TSLA:
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                       03/18/2024
+It would seem the recent price-appreciation during 2024-02 was provoking a lot of instability, and
+failed to ignite a lasting bullish run (since VoEx wasn’t able to “make” it out of the P.Z.).
+Subsequently, and currently, both VoExes have resumed their intent towards deepening their
+relationship with the Propagation Zone, a finding that is severely bearish.
+Not the most re-assuring of VoEx prints (for the bulls at least)!
+Speaking of VoEx prints, let’s check out VoEx Variance but with the neo-VoEx instead of traditional
+VoEx!
+
+Quick reminder about VoEx Variance: it attempts to look at two aspects of thousands of VoEx
+throughout the market (grouped by their respective ETFs):
+   1) The average location of all of the VoExes within a given ETF, and
+   2) The “energy state” of the respective ETF’s constituent VoExes.
+
+Each dot on the graph is the daily measurement. It can be located in one of the three zones. In
+this version of the graph, with the new VoEx, there are these three zones, one in each of the panels:
+   1) Overheating [top panel],
+   2) Stability [Middle], and
+   3) Propagation Zone [Bottom]
+Within each of the three zones, the dot is placed based on the relative energy state of the ETF’s
+VoExes, as measured by the overall variance of the VoExes for each ETF.
+So, a dot that is in the middle panel, and in the middle portion (say 0 or so), tells us:
+   1) The average VoEx within this ETF is in a “Overheating” state, and
+2) Within the ETF, everything is “in agreement” since VoExes are clustered with low variance.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                              03/18/2024
+The takeaway? Bullish performance that is shared throughout the ETF, and since VoExes are
+experiencing “minimal” excitability, this bullish performance can be expected to persist (i.e.: dips
+can be bought with confidence for long-term value)
+
+Now that we got the words out of the way, let’s take a look at the graph:
+
+
+
+
+   A cool feature of these data is we can see how waves move throughout the market (indicated
+   above with the boxes).
+   Another cool feature is that it appears there’s no data yet within the Propagation Zone! It
+   seems the early part of the most recent rally was indicated via VoEx Variance jumping into
+   the “Over-heat” zone around the start of 2023-12, and left around 2024-02. During this time,
+   $SPY moved 6.99%. Afterwards, VoExes moved back towards Stability (and “calmed down”
+   since things moved towards 0 within stability). After this (until currently), $SPY has moved
+   4.22%! This is almost ~50% change in performance (based on VoEx’s location).
+   The current interpretation is that – intriguingly – the market is in a stable and calm state. For
+   now, there are no data presenting within the Propagation Zone. Until that happens, VoEx
+   Variance is printing bullish inclinations! We shall keep an eye on this in the next week or so.
+The takeaway of this is: near term downside that shows signs of being relatively isolated for now.
+Until data starts to appear in the Propagation Zone, it suggests that the market, by-and-large, is
+
+Deep Dive Stocks – Weekly Chat                                                         03/18/2024
+well suited to “handle” and near-term downside. Should data start to appear in the P.Z. during the
+anticipated near-term downside, then this time-horizon will have to be re-evaluated.
+So, overall, the data are bearish.
+VoEx and neo-VoEx are indicating the start of a persistent decline in market performance. GTM
+has printed the first negative print, suggesting that short gamma is starting to trickle back into
+the market, and with it, gamma squeezes. Along with these data, it seems our put-selling-friends’
+data also does not appear to show any hopes for profitability via $+/IV-; a bold statement.
+In addition, or maybe in spite of, this are the hedging environments. On $SPY we see a wide,
+unequal gamma neutrality that offers no push or pull, but only a concerning path; and on $QQQ, a
+sea of consistent purchasing support in the $-/IV+ quadrants.
+VoEx Variance is suggesting that overheating has occurred but it seems that recent times have
+seen a reasonable amount of cooling off. Suggesting that perhaps there is an upper-limit to the
+current expectations for downside.
+Overall, bearish and expecting to stay so for a second.
+
+
+Happy Trading,
+
+
+
+Justin
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                       03/18/2024
+

@@ -1,0 +1,151 @@
+                                 Weekly Chat 09/02/2024
+
+
+ Main Points
+
+
+
+    -   VoEx movement out of the Propagation Zone noted on $SPY and $QQQ – neither have
+        reached Stability.
+    -   Hedging environments are mixed; $SPY’s offers diffuse purchasing support while $QQQ
+        straddles a vanna-unstbale, gamma-squeeze orientation.
+    -   Put-selling has remained near-zero.
+    -   Market-wide gamma squeeze data is largely unmoved currently.
+    -   LDPS is demonstrating bearish outlooks on $QQQ on the Weekly and Monthly
+        timeframes.
+
+          SUMMARY
+
+
+
+          Risk assessment continues to demonstrate high-risk for the current
+          performance being a bull-trap.
+
+          VoEx-daily has pivoted southwards towards the Propagation Zone, while
+          VoEx is still to enter stability.
+
+          Put-selling is moot and only $QQQ has shown a small increase ahead of
+          the long-weekend, but overall the behavior remains absent. Suggesting
+          little confidence in profitability in the [$+, IV-] sector.
+
+          LDPS is printing bearish liquidity for $QQQ on the Weekly and Monthly
+          timeframes.
+
+          Overall, continued expectation for a bull-trap with high risk for large
+          downside movement.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                  09/02/2024
+ DETAILS
+
+
+
+
+Hello everybody!
+
+
+Last week, we had lingering-but-skeptical bullish ideations for the future-ahead. This outlook
+fared mixed, with $SPY giving an ever-so-slightly bullish performance of SPY% while $QQQ gave
+a modest (but bearish) performance of around -0.80%.
+These moves can be visualized below as usual with the Weekly Heatmap:
+
+
+
+
+$QQQ’s moves brought it into selling pressure in the latter-half of the week; the consequence was
+survived but it will be worth keeping an eye out later-on to see if the selling pressure is still present.
+If so, well, then we’ll have to consider what that means for our future.
+Let’s get started!
+The start
+begins with a look at VoEx, as usual:
+
+
+
+
+The first noticeable difference since last week is VoEx’s movement out of the Propagation Zone
+on $SPY, and $QQQ (to a lesser degree).
+
+Deep Dive Stocks – Weekly Chat                                                              09/02/2024
+Unfortunate that this is occurring contralaterally to VoEx-daily, who finds itself looking to embark
+on an exit.
+The net effect of this is: tenuously bullish and evidence that the current bullish movement has
+robust steam behind it. Nonetheless – until VoEx is in stability, this is, unfortunately, still a bull-
+trap in the eyes of VoEx.
+Soon, perhaps this will change; but for now, the outlook remains largely the same.
+What about the hedging environments? How do they look for the week ahead. Does $QQQ still
+have selling pressure?
+
+
+
+
+Ye! $QQQ does indeed have some nearby selling pressure! For now, it seems things are
+precariously hanging on to it a small plot of soutein d’achat that is separating the market from
+pretty persistent selling pressure in the [$-, IV+] pathway.
+
+On $SPY, the purchasing support is present (yay) but diffuse and doesn’t really provide any
+directionality. For some directionality insights, we can peek the Influence Distribution, which
+shows a neutral-to-bullish outlook for $SPY and a bearish-to-neutral outlook for $QQQ.
+
+Another suggestion from these heatmaps is that if an early-week move pushes $QQQ into selling
+pressure, the rest of the week may struggle to maintain its bullish outlook, as is the (ever-so)
+dominant ideology.
+Moving on, let’s check out the put-sellers to see what they are up to. Not much!
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                            09/02/2024
+Some put-selling seen on $QQQ (curious!) but other than that, things have calmed down. It’s worth
+noting that usually one sees at-least a small up-tick in put-selling preceding longer-weekends, but
+it seems this week we don’t. No desire to profit from additional theta decay it seems.
+Thus, so far it seems we have continued evidence for a developing bull-trap, with a mixed hedging
+environment that is poised to “drop the floor” out from under $QQQ, and little-to-no desire to sell
+puts in front of a long weekend. These are bearish-leaning prints for sure.
+Zooming into GTM (the rest of the MWGS data are largely the same with little movement in GS
+numbers) we see GTM-ema is, or was, just about to become positive like its fellow compatriots,
+but is simply not doing so.
+
+
+
+
+Obviously zooming in this far is more whimsical than objective but it does suggest that the latest
+long-gamma surge in the market (measured via the reduction in gamma squeezes) does not
+seem to have much follow-up noted to it for the weeks ahead.
+I still don’t think the market is being bothered by the underlying option flows all that much
+currently – a fact that we can use to keep our downside expectations confined still to the medium-
+term.
+Moving slightly tangentially to LDPM/LDPS, we see that $QQQ’s tenuously-bullish-condition-as-
+discerned-from-VoEx is echoed by an also-tenuous-showing-of-data-by-way-of-LDPS in that LDPS
+has downgraded $QQQ (on Balanced setting) on the Daiy and Weekly interval to Bearish:
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                        09/02/2024
+This suggests that in the event of the bull-trap trapping, a potential price-target for $QQQ is nearly
+$414(!) where LDPM-144 currently sits. This is currently about a 12% decline, should all things
+remain largely the same.
+So, all-in-all, the data are continuing along the anticipated pathway for a bull-trap: so far we had
+very bullish, bullish, and now weakly-bullish market performances all-the-while conditions have
+worsened on the hedging environments and LDPM/S slightly and though, improved slightly from
+VoEx’s perspective.
+The actional outcome of all this blabbering? Bullish-until-proven-otherwise! Just as with all bull-
+traps.
+In our case, otherwise here is likely movement towards LDPM-144 on $QQQ’s weekly, VoEx
+moving back into the Propagation Zone, and gamma—squeeze growth. These should be the
+expected consequence of a deteriorating bull-trap.
+Otherwise, if VoEx continues to improve, gamma squeeze data remains relatively dormant, put-
+sellers reëmerge, then perhaps our medium-timeframe for bearish performance has passed.
+But, until then: planning for bullish performance but expecting termination of the bull-trap shortly.
+
+
+Happy trading,
+
+
+Justin
+
+
+Deep Dive Stocks – Weekly Chat                                                           09/02/2024
+

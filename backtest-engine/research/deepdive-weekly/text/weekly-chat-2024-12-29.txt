@@ -1,0 +1,281 @@
+                                    Weekly Chat 2024-12-30
+
+
+                                          Main Points
+
+
+
+    -   VoEx-daily remains within the Propagation Zone.
+    -   Hedging environments present $SPY with a vanna-stable configuration, and $QQQ with
+        a standard orientation (separated thinly from selling pressure spot-down).
+    -   Put-selling remains a vacuum.
+    -   Market-Wide Gamma Squeeze (MWGS) data showcases a local decrease in positive
+        growth balanced by a persistently negative GTM.
+    -   Liquidity Levels have stopped but not reversed on $SPY, indicating a recent and ongoing
+        liquidity drain on the market.
+    -   Overall, prudency suggests increased volatility with likely realization towards the
+        downside.
+
+                                           SUMMARY
+
+
+
+           VoEx-daily for $SPY and $QQQ hang at the Propagation Line, while on
+           $IWM, $EEM, $VTI, $DIA, and $EEM, VoEx has already moved into the
+           Propagation Zone, showcasing wide-spread market instability.
+
+           Gamma-hedging environments showcase the net pull of movement for
+           gamma neutrality between $SPY and $QQQ is mainly a product of IV, and
+           so, the market seems confined to either [𝐼𝐼𝑉𝑉 − ] (but through selling
+           pressure on $SPY and towards selling pressure on $QQQ) or through [𝐼𝐼𝑉𝑉 + ]
+           (but without corresponding $− ).
+
+           Put-selling remains non-existent, suggesting minimal support for
+           profitability with [$+ , 𝐼𝐼𝑉𝑉 −] in the near-term future ahead. MWGS shows a
+           slight reprieve in gamma squeeze growth but a persistently negative GTM.
+
+           Investigation into liquidity suggests a recent and ongoing liquidity drain,
+           which has brought the net-flow of liquidity into the market to a halt,
+           increasing the likelihood for greater-than-expected price movements in
+           the week ahead.
+
+           LDPM and LDPS suggest downwards movement target of ~4% from
+           current spot in pursuit of testing the next organic liquidity floor at LDPM-
+           610 on the daily interval.
+
+
+
+Deep Dive Stocks – Weekly Chat                                                        12/30/2024
+                                             DETAILS
+
+
+
+
+Hello all!
+Last week, we left off with continued bearish ideations, with downside targets coming somewhat
+into focus near ~2.5% - ~4.0% down range.
+This week, the market offered no such extravaganzas, with $SPY moving 0.65% into the positive,
+and $QQQ moving with 0.75% towards the positive as well – not quite the bearish moves we were
+looking for.
+We can visualize the movements below in the heatmaps for $SPY and $QQQ:
+
+
+
+
+A drift up followed by a rhombus return towards near baseline, with the net movement being
+neutral-ish price movement and a drift down in IV.
+Not too exciting for the holiday week – and so now, our goal is laid out before us: doth the market
+resume its downside, or hath it instore something else for us?
+Let see if we can find out!
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                        12/30/2024
+Finding out
+Starting with usual, let’s take a peek at VoEx for $SPY and $QQQ:
+
+
+
+
+Immediately, we can see that VoEx-daily has remained within the Propagation Zone and VoEx
+itself is continuing its dive theretoin.
+This brings with it continued bearish outlooks; an outlook still confined to the reasonable locale
+(temporally and spot-wise), so long as VoEx itself persists within stability, however, this outlook
+wavers as VoEx’s resolve deepens towards the Propagation Zone.
+
+Due to the relative length that VoEx-daily has been in the Propagation Zone, I decided it might be
+a good exercise in diversification if we looked at some other large-scale ETF VoEx’s to see if there
+is anything curious going on:
+First up, $IWM:
+
+
+                                                                    VoEx and VoEx-daily residing
+                                                                    within the Propagation Zone –
+                                                                    it seems VoEx entered the
+                                                                    Propagation Zone previously
+                                                                    with a strange paradoxical
+                                                                    bullish performance. This
+                                                                    time, conditions have so far
+                                                                    been less fortuitous for irony,
+                                                                    as the price has begun
+                                                                    dropping as well. Outlook is
+                                                                    similarly bearish.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                         12/30/2024
+Second up, $VTI:
+Similar in spirit: VoEx-daily diving into the
+Propagation Zone with VoEx well on its
+way. Outlook is bearish as well.
+
+
+
+
+Moving towards our emerging friends,
+$EEM
+
+
+                                                     Quite the volatile behavior with VoEx
+                                                     continuing to indicate downside ahead
+                                                     – recent bullish performances (mainly
+                                                     since VoEx entered the P.Z. ~2024-08)
+                                                     have met with VoEx spikes (2024-09,
+                                                     2024-10, 2024-12).
+                                                     This suggests stability is “located on the
+                                                     downside”, and so, downside is the
+                                                     expectation.
+
+
+
+
+Last up, we have $DIA which is
+showcasing a similar environment:
+it looks like recent bullish
+performance is provoking VoEx-
+spikes (i.e.: bull trap).
+With VoEx within the Propagation
+Zone, this suggests that, once
+more, stability is “located on the
+downside”.
+Taken together, it would seem that
+outlooks all-around are quite
+bearish, with some views of the
+market showcasing substantial instability (by way of VoEx being             within       the
+Propagation Zone) – and so it seems ever more likely that VoEx will do the same for $SPY and
+$QQQ, bringing with it even greater and more profound downside expectations.
+
+
+
+Deep Dive Stocks – Weekly Chat                                                    12/30/2024
+With these headings, let’s check out the Hedging Environments for the forecast ahead:
+
+
+
+
+Erhm – well, on one hand you have $SPY (the left one as it were), and on the right you have $QQQ.
+Additionally, on the left hand, or in it perhaps, you have a vanna-stable hedging environment1 - but
+don’t let the stable in its name indicate anything about its absolute stability – ha! No - not at all,
+for this vanna stable environment is itself unstable environment on its own (i.e. the local and
+surrounding selling pressures)!
+To balance the scales, on the right, you have a refreshingly robust boundary separating selling
+pressure from purchasing support – well, perhaps robust is a relative term here, but relatively
+speaking, relative terms are objectively relative, and one can’t argue with objectivity.
+In furrowing the brow in an attempt to form a conjoined outlook between these two, one can’t
+help but cry remember our recent re-revelations regarding robustly-ready, really responsible
+hedging and its consequence on price action (i.e.: volatile markets [like those of late] typically
+beget more eager hedging (since the risk environment is more robust overall), which in turn,
+begets a stronger overall pull towards gamma neutrality [white spots]).
+This leads one to the investigation of the intersection of the directs leading towards gamma
+neutrality for $SPY and those for $QQQ; this leaves us with:
+                                                    $𝑆𝑆𝑆𝑆𝑆𝑆 ∩ $𝑄𝑄𝑄𝑄𝑄𝑄
+                                     [(𝐼𝐼𝑉𝑉 −, 𝐼𝐼𝑉𝑉 + )] ∩ [(𝐼𝐼𝑉𝑉 − , 𝐼𝐼𝑉𝑉 + ), ($+, $− )]
+Leaving us with just (𝐼𝐼𝑉𝑉 − , 𝐼𝐼𝐼𝐼+) as our choices for “shifting” the market towards gamma neutrality
+that befits both $SPY and $QQQ.
+In consideration of the prior data, this shapes up a reasonable picture for [$− , 𝐼𝐼𝑉𝑉 + ] as the tango
+partners for the week ahead.
+Speaking about partners and the week ahead, let’s see if we are unionèd with our put-selling
+friends this week:
+
+
+1
+  Note the selling pressure and purchasing support are separated mainly by IV movement. In an unstable
+environment, the selling pressure worsens as IV increases, but here, at least, the selling pressure diminishes, and so,
+improves. Thus, making it a stable vanna-hedging heatmap.
+
+Deep Dive Stocks – Weekly Chat                                                                          12/30/2024
+Sub-zero temperatures noted throughout! Definitely not a nod in the direction of [$+ , 𝐼𝐼𝑉𝑉 − ] for the
+week ahead.
+                                                        Last up, we come across the Market-Wide
+                                                        Gamma Squeeze data – a month or so ago
+                                                        we mentioned that things remained `calm`
+                                                        within the gamma flows, and lately we’ve
+                                                        been tracking this not being the case, and it
+                                                        would seem this trend is continuing.
+                                                        A local decrease in overall gamma-squeeze
+                                                        growth rate and counts, but conditions
+                                                        remain well-positive, with a 20% increase in
+                                                        gamma squeezes over the past month.
+
+                                                        GTM (bottom graph) shows continued
+                                                        residence      within    negative    territory,
+                                                        foretelling the flow of short gamma into the
+                                                        market, and with it, a further increase in the
+                                                        number of gamma squeezes.
+                                                        Thus, overall, conditions seem quite bearish
+                                                        all around with the only non-bearish
+                                                        pathway being a push towards gamma
+                                                        neutrality in the [𝐼𝐼𝑉𝑉 −] way, which would
+                                                        necessitate quite a bit of purchasing
+                                                        support, which would provide reasonable
+                                                        onus for vroom.
+                                                        Support for a forming vroom (although, not
+                                                        necessarily of the up variety) is found within
+                                                        the Liquidity Levels for $SPY, which shows
+a rapid liquidity drain is present:
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                            12/30/2024
+By applying both the `Percent Difference` and the `MAD` to Liquidity Levels, you get liquidity
+velocity (bottom panel), and liquidity acceleration (top panel).
+With this view, we can see that a rapid de-acceleration of liquidity flow occurred sometime around
+the arrow, and this has brought liquidity flow to net zero (things aren’t becoming more or less
+liquid).
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                       12/30/2024
+If Liquidity Acceleration remains negative, then liquidity will start moving out of the market (seen
+via Liquidity Velocity becoming negative), and thus it seems reasonable to expect more market
+volatility in the weeks ahead, regardless of price direction.
+
+And so, the overall current seems to have shifted towards downside with the data evermore
+pointing towards a darkening horizon.
+In preparation for downside, investigating LDPS (on balanced setting), showcases a return to
+bearish ideologies, with LDPM-610 as a respectable test-of-stability at $5,851, which is currently
+about -3.7% away.
+
+
+
+
+And in expanding our view outwards to investigate potential realities in which the market is not
+satisfied with a measly 4% drop, we arrive to the weekly view, which shows bullish LDPS (balanced
+setting), but with some curious LDPM behavior:
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                         12/30/2024
+The lower-order LDPMs have risen quite above $ES on the weekly timeframe – this brings with it
+an expectation of modest price-suppression; an expectation that demands audience with the
+previously discussed data.
+
+Despite the initial rounds of arbitration, the Weekly Data were allowed to join and offered an eerily
+similar outlook: should the lower-order LDPMs2 and their selling combine with low liquidity, then
+movement down towards ~$5,600 seems reasonable; which is an appreciable 7% removed from
+us currently.
+And so, it would seem the conclusion to our journey this week is a bearish outlook and a slight
+nod as we look around for the seat belt as we approach the next leg of the journey ahead of us.
+
+
+Happy Trading!
+
+
+Justin
+
+
+
+
+2
+ Quick reminder: the lower-order LDPMs (the dim ones) are good gauges of the `eager` parties of various “strengths”
+(with increasing “paper-handed-ness as the order decreases”; so LDPM-13 represents the group of traders that are
+significantly more “paper-handed” than LDPM-144, etc.), and so here we see all eager parties are above the price,
+thus, they are eager asks.
+
+Deep Dive Stocks – Weekly Chat                                                                      12/30/2024
+

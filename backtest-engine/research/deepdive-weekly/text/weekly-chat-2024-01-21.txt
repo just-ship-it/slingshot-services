@@ -1,0 +1,322 @@
+                                   Weekly Chat 01/19/2024
+
+
+                                        Main Points
+
+
+      -   VoEx has moved back into the I.Z. on $SPY and $QQQ, indicating another round of
+          Bulish-until-proven-otherwise.
+      -   Hedging Heatmaps remain in a vanna-unstable orientation with no purchasing
+          support nearby.
+      -   DLP behavior shows an increase in activity.
+      -   MWGS data show continued growth of GS’s along with bearish GTM prints.
+      -   VoEx suggests BUPO (of the Bullish variety) but greater-than-normal caution exists
+          regarding the longevity of this bullish expectation exists.
+
+
+
+                                          SUMMARY
+
+
+
+          VoEx has exited its stalled-state, and has moved into the Inhibition Zone
+          on $QQQ and $SPY. On one hand, this is exciting for another round of
+          BUPO (of the Bullish variety) but on the other hand, the increase in
+          VoEx’s erratic behavior continues to point towards a bull-trap more than
+          a bull-market.
+
+          Hedging environments once again find themselves in a vanna-unstbale
+          orientation with diffuse and mild selling pressure throughout.
+
+          Put-selling has increased slightly on $SPY, coincidentally a head of
+          Friday’s large movement. Put-selling on $QQQ remains largely the same.
+          In both cases, despite the bullish interpretation, the increase in selling is
+          moderate-at-best in magnitude.
+
+          MWGS data suggest that the currents of gamma squeezes have
+          increased as expected and GTM suggests continued growth of gamma
+          squeezes in the future. This is a bearish print.
+
+          Taken together, VoEx is printing BUPO (of the Bullish variety), and so a
+          bullish outlook is adopted, if but only tenuously and without much
+          confidence in its duration.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                        01/19/2024
+                                                   DETAILS
+
+
+
+
+Hello everyone!
+
+
+What an exciting week. Last week, we left off with a renewed sense of bearish-ness, which, as it
+turns out, was incorrect. Despite thoughts and prayers, the market continued its bullish reign, as
+can be visualized in the heatmaps below:
+
+
+
+
+We can begin our weekly digressions by noting that for both $SPY and $QQQ, despite the green-
+end-of-week, IV30 remains elevated as compared to the Friday prior. Not by a terrible amount,
+but $SPY’s IV remains 5% elevated as compared to last Friday’s (2023-01-12.; 0.1114 → 0.1168),
+and $QQQ’s remains about 7% elevated (0.1543 → 0.1646).
+To stall digging into this week’s data even more, I went and checked LDPM-Vol to see if this IV
+change was maybe just a result of retail positioning (i.e.: purchasing calls) or if maybe there
+was something else going on. To do this, I figured LDPM-Vol might be a good place to start1.
+$SPY’s LDPM-Vol ended last week at 5.74, and ended this week at 8.05, a 40% increase. $QQQ’s
+LDPM-Vol ended last week at 6.90, and this week at 8.94, producing a 30% increase. This
+increase in LDPM-Vol is reflective of a decrease in liquidity.
+Perhaps nothing on its own other than a curious observation but let’s keep it in mind as we
+progress.
+
+
+
+
+1
+  Quick recap on LDPM-Vol: it was designed to somewhat replace IV-30, or rather, be a measure of volatility (and
+tangentially, liquidity) without needing the derivatives market.
+
+Deep Dive Stocks – Weekly Chat                                                                      01/19/2024
+As we progress
+A good amount of energy last week was spent in deciding if VoEx’s “stalling” at the Inhibition
+Zone was an early indication of a return to BUPO (of the Bullish variety) or if it was a quirk in
+behavior that should be ignored, while bearish inclinations continued. The bulk of the hand-
+waving centered on the leveraged ETFs and their “cleaner” view of VoEx, from which it appeared
+that the VoExes on these leveraged ETFs (and $IWM) were still indicating imminent BUPO (of
+the bearish variety).
+Thus, the stance was taken that the stall should resolve with continued movement towards the
+Propagation Zone.
+Naturally, the market mocks us.
+Et so does VoEx, it seems.
+
+
+
+
+$SPY’s recent VoEx behavior continues to show robust instability with price appreciation, but
+the rejection once again from the Propagation Zone continues to muddy the waters of
+enlightenment.
+$QQQ’s VoEx has also demonstrated renewed bullish inclinations by way of moving into the
+Inhibition Zone once more.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                      01/19/2024
+In this view, we see that the stalling was a precursor to another bout of instability, and as such,
+BUPO (of the Bullish variety).
+In review of the leveraged ETFs ($TQQQ, $SPXL), the view is much the same as observed on
+$SPY and $QQQ: VoExes have reversed course back towards the Inhibition Zone. Worth noting
+that this is not true for $IWM, whose VoEx is still within “Stability” and appears to be headed
+towards the Propagation Zone:
+
+
+
+
+The outlook from these VoExes is, exhaustingly, Bullish-until-proven-otherwise (BUPO) (well,
+except for $IWM).
+Perhaps also worth noting on these leveraged ETFs experienced the same increase in IV,
+despite the overall green-week.
+One difference between $IWM and the rest of the group, is that $IWM experienced a net
+decrease in LDPM-Vol, suggesting that this week, liquidity entered $IWM. Despite the overall
+weekly decrease in LDPM-Vol, Thursday and Friday saw particularly responsive and positive
+moves for LDPM-Vol.
+Nonetheless, the take-away from VoEx is that the market has entered into another round of
+BUPO (of the Bullish variety). However, I will be keeping my longer-dated vega positions as the
+erratic behavior of VoEx continues to raise concern over the longevity of this bullish
+performance.
+Thus, with tentative bullish outlooks a head, let’s see how the Hedging environments might
+respond to a green
+week.
+Largely the same
+set-up:          no
+purchasing support
+in sight and only
+local, and diffuse
+selling pressure all
+around. This vanna-
+unstable orientation is a common feature of the markets lately, and it seems the market has
+
+Deep Dive Stocks – Weekly Chat                                                        01/19/2024
+become quite apt at moving towards gamma neutrality, which is in the $+/IV- (or largely IV-)
+direction for both $SPY and $QQQ.
+Before moving on, let’s take a peek at the progress of $TQQQ, $SPXL, and $IWM throughout the
+week.
+Some interesting findings:
+                                                 -       As mentioned previously, we note
+                                                 that the week ended green, but IV remained
+                                                 elevated.
+                                                 -       Both $SPXL and $TQQQ had nearby
+                                                 purchasing support, which appears to have
+                                                 “bolstered” the end-of-week purchasing
+                                                 support.
+                                                 -       $SPXL’s IV decreased 78% more
+                                                 than $TQQQ’s did from the 17th to the 19th;
+                                                 $SPXL moved through purchasing support
+                                                 while $TQQQ through selling pressure.
+
+                                                 Concerning point (3), this discrepancy in IV
+                                                 change is also reflected within LDPM-Vol.
+                                                 $TQQQ’s LDPM-Vol rose 178% from the 17th
+                                                 to the 19th, while $SPXL’s only rose 81% (a
+                                                 75% difference).
+                                                 Thus, it seems appreciating into selling
+                                                 pressure drained more liquidity than
+                                                 appreciating into purchasing support!
+                                                 This suggests that the bid is the liquidity
+                                                 provider.
+                                                 This implies the ask is the liquidity taker.
+                                                 Together, it suggests that the bid is moving
+                                                 to the ask and facilitating transactions such
+                                                 that the price moving up is the “path of least
+                                                 resistance”. This sounds like an eager bid: a
+                                                 bid that is bidding, regardless of the price.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                     01/19/2024
+Thus, we have an eager bid that is also the liquidity provider. This begs the question, “what
+happens if the bid stops being eager?”. In other words, what happens when the bid is no longer
+interested in rising towards the ask? Does this immediately remove liquidity from the market,
+causing the ask to have to move
+down to the organic bid to
+transact?
+A potential to ponder perhaps.
+Moving    from    the    Hedging
+Environments to the hedgers, let’s
+see how our put-selling overlords
+friends handled this week’s
+performance.
+A smidgen of put-selling activity
+registered on $SPY, and a
+somewhat persistent growth of
+DLPs noted on $QQQ.
+
+Nothing to write home about but it
+does suggest that there is
+someone betting on continued
+$+/IV-.
+Is this sufficient behavior to inspire
+confidence of continued bullish
+performance? I’ll leave that
+determination to the reader.
+
+On the surface, this is a
+“lukewarm” print for yours truly
+(me) – the ideal would be a nice
+complex of put-selling on $SPY, as
+observed in 2023-10; nonetheless,
+lukewarm isn’t luke-cold.
+Moving from the put-sellers to the gamma squeezers, we encounter the paradox of the Weekly
+Chat:
+The top graph shows the growth-rate of Gamma Squeezes via the gold line, and the overall trend
+with the black line. In both cases, we see that since around the start of the year, the growth-rate
+of gamma squeezes has been positive.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                        01/19/2024
+This tracks as the number of gamma squeezes in the market has grown 23% over the past 20
+days (933 → 1,150). This growth, however, has been met with concurrent price appreciation, a
+strange mix of data.
+                                                             The data become stranger
+                                                             when we look at the GTM print!
+                                                             It’s the infamous “strange
+                                                             print” discussed in Weekly
+                                                             Chat 2023-08-07.
+                                                             In said Weekly Chat, I
+                                                             elucidated on the potential
+                                                             causes of this type of GTM
+                                                             print   by    intricately and
+                                                             painstakingly explaining its
+                                                             existence as follows:
+
+                                                                             “
+                                                               Frankly, I’m not sure exactly.
+                                                                             “
+                                                             And since this condition hasn’t
+                                                             changed much, let’s take a
+                                                             peek at the data to see if we
+                                                             can perhaps get some clarity.
+                                                             To do this, let’s look at the
+                                                             revised-GTM, since it is more
+                                                             robust and long overdue (we
+                                                             can consider this the first entry
+                                                             in the updated primer for the
+                                                             revised GTM! Yay progress).
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                   01/19/2024
+                                                                                                         2
+
+
+The “strange GTM prints” from the old-GTM, correspond with the positive movements we are
+currently experiencing.
+So, to analyze, let’s just take the data, filter for the days that have a GTM print greater-than 50,
+                                                    and then look at the 10-Day Rolling Average of
+                                                    the %-Change in future price on $SPY. In other
+                                                    words, let’s see what the average daily change in
+                                                    price is for 10-days after such a large print.
+                                                       To the left, we see the boxplot of this process. It
+                                                       appears that almost exclusively              $SPY
+                                                       experiences an average daily decrease in price
+                                                       of -0.37% (median: -0.63%), as compared to
+                                                       when GTM is less than 50, which demonstrates
+                                                       a average daily move of 0.06% (median: 0.11%).
+                                                       This is actually quite surprising and powerful.
+                                                       Let’s expand this from just 10-days (trading
+                                                       days, by the way), the 20-days to see if this
+                                                       relationship holds up.
+Sure does! How nifty.
+
+
+
+
+2
+  Quick recap: GTM (Gamma Trending Metric) measures the flow of gamma headed towards the market in an
+effort to anticipate the creation or destruction of gamma squeezes. When the squiggly lines are above zero, this
+means that long gamma is flowing towards the market (and, as such, the future should start to see a decrease in
+gamma squeezes, which is a bullish finding for the market), and when the line is below zero, the opposite.
+
+Deep Dive Stocks – Weekly Chat                                                                   01/19/2024
+So, there does appear to be some validation to the
+hand-waving offered last week: these large positive
+spikes (or negative spikes on the old GTM), are
+associated with price-decline in the future.
+The association does not appear to be quite as
+strong, but nonetheless, this appears to be a rather
+potent signal.
+This adds some collaboration to the hand-waving
+that suggested the future should be filled with more
+gamma squeezes and more depreciation.
+
+
+So, all-in-all, we’ve reviewed:
+         -   VoEx, which suggests BUPO (of the Bullish Variety) is back,
+         -   Hedging Environments which show no purchasing support, continued selling
+             pressure, and evidence that the end-of-the-week move was due to an eager bid,
+         -   DLP behavior that is technically present but with reduced fervor,
+         -   And MWGS data that show GS growth and a GTM print that is correlated with future
+             price decline.
+Taken together, it’s a difficult compilation of data.
+Which brings up a consideration that might be worth considering: in healthy markets, the data is
+rarely difficult to interpret.
+So, VoEx ushers forth with BUPO (of the Bullish variety), and so I follow tentatively while keeping
+a close eye on VoEx, DLP and the MWGS data to monitor this round of overheating.
+Happy trading,
+
+
+Justin
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                        01/19/2024
+

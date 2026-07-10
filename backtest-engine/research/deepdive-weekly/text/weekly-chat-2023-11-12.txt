@@ -1,0 +1,420 @@
+                                    Weekly Chat 11/13/2023
+
+
+                                         Main Points
+
+
+   -   VoEx has increased its position within the Inhibition Zone after a green week,
+   -   Hedging Environments are in a vanna-unstable orientation,
+   -   DLP behavior is un-inspiring with a week-over-week decrease in activity,
+   -   MWSG data is suggestive of an incoming flow of short-gamma (gamma squeezes)
+       into the market,
+   -   𝑉𝑉 2’s collapse is flattening out and becoming reminiscent of pre-2022.
+   -   Overall, a technical BUPO (of the bullish variety) is indicated but only tenuously so.
+
+
+
+                                           SUMMARY
+
+
+
+           $SPY’s VoEx stagnated at the Inhibition Zone throughout the week, only
+           to spike further into the Inhibition Zone on Friday. A similar tale for
+           $QQQ. These movements were significant enough to register both
+           indexes with a VoEx Spikes per the Market Scan.
+
+           The Hedging Environments are unsupportive with a vanna-unstable
+           orientation and a negative-leaning outlook for the week a head per the
+           Influence Distributions.
+
+           DLP behavior has reduced significantly week-over-week, with near-zero
+           prints on $SPY, and concurrent reduction on $QQQ.
+
+           MWGS data suggests that the reduction in gamma squeezes may not be
+           “organic” but rather a result of gamma’s inherent distribution rather than
+           options flows or new positionings. Should DDS’ handwaving have merit,
+           this gives GTM’s interpretation a technically-bullish-but-ready-to-swing-
+           the-other-way outlook.
+
+           𝑉𝑉 2 collapse appears to be flattening out without concurrent loss of data
+           within the Propagation Zone, which is reminiscent of pre-2022’s 𝑉𝑉 2
+           collapse and is suggestive of continued medium-to-long-term downside.
+
+           Overall, technically a BUPO outlook (of the Bullish variety) as per VoEx
+           but with a strong side eye and anticipation of a quick reversal.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                        11/13/2023
+                                           DETAILS
+
+
+
+
+Hello everyone!
+
+This week, along with my our normal ranting about the market, there are some updates about
+LDPM, LDPS and a brewing LDPS Robot!
+But first – we must acknowledge our past. Last week, the Weekly Chat left off with a tentatively
+bullish outlook, and along with this outlook, there were a few events to look out for that might
+suggest conditions were changing. This outlook, it seems, was reasonable now but not quite so
+easy to maintain throughout the week, as we will see below.
+Nonetheless! With $SPY moving a paultry 1.36% while $QQQ moved 2.90% throughout the week,
+it seems this outlook ultimately served its purpose well.
+A good place to start this week would be a quick review of the aforementioned list of events for
+which to look out for as the week progressed. The criteria were mainly based on VoEx’s
+behavior: should VoEx continue its migration northward, then all shall be sound and bullish
+performance (albeit, unstable bullish performance) shall reign, etc. etc.; however, should VoEx
+complete a spike-like-pattern, then to hell with BUPO as it would be time to adopt BUPO1.
+In true VoEx fashion and in a bold display of comedic timing, VoEx decided to do neither:
+
+
+
+
+VoEx’s assertion of autonomy coincides with a stagnate price action as well, as can be seen
+with the Hedging Heatmaps:
+
+
+
+
+1
+    Bearish until Proven otherwise.
+
+Deep Dive Stocks – Weekly Chat                                                      11/13/2023
+$SPY (left), seems to have listlessly bobbed within selling pressure while $QQQ shows hinting
+that purchasing support helped bolster $QQQ’s end-of-week rebound. This hinting becomes
+more of a not-that-quiet-whisper when one looks at the hedging environment from Thursday’s
+(2023-11-08) perspective:
+
+
+
+
+This purchasing-support-bounce, however, may not have been without consequence as we will
+see below in the new data! But first, let’s not get a head of ourselves.
+
+
+
+Deep Dive Stocks – Weekly Chat                                                   11/13/2023
+Let’s map out our goals this week: examine if this green week provoked increased instability (it
+did), and, if it did (it did), and then try to find evidence for which side the card-house is leaning.
+Stagnation is Development
+
+$SPY may have stagnated in the first 4/5ths of the week but ultimately there was activity
+sufficient to register and push
+$SPY (top) and $QQQ’s (bottom)
+VoExes higher.
+For the significance of such a
+decision, a quote from last week:
+
+                  “
+  All-in-all, the early part of the
+  week will be pivotal: should
+  VoEx fall out of the I.Z., then
+  an outlook more congruent
+  with VoEx Spike seems
+  reasonable, whereas should
+  VoEx continue northward, or
+  persist within the I.Z., a BUPO
+  outlook seems reasonable.
+                  “
+
+
+
+
+Well – it would appear we have the answer: things moved northward – we just had to wait a tad
+longer than desired to get our answer.
+So, until anything changes, such as VoEx Spike out of the Inhibition Zone (and preferably directly
+into the Propagation Zone), or VoEx Divergence it would seem that for now, a new era of
+instability-provoking price appreciation appears to be awaiting us (read: bull-trap).
+
+Easy-peasy, right? Well – as much as I hate caveats, there is one present in my side.
+That is - I would be much more inclined to accept BUPO (of the bull variety) with arms-wide-
+open if $QQQ didn’t exceed its T+1 EPR on Friday by a casual 120% and this greater-than-EPR
+move was met with a VoEx Spike (as seen via the the Market Scan). This is what, I think, the
+French would call une combinaison dangereuse – I’m not sure what it means though, but I have
+heard them say it.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                           11/13/2023
+$SPY’s situation could be described exactly the same (in French again even)2. $SPY’s T+1 EPR
+was exceeded by 79%, and also registered a VoEx Spike per the Market Scan.
+In other words – it’s not entirely unusual to see a VoEx Spike while in BUPO but it is still a sight
+that warrants notice.
+In terms of how the market might react or prepare for this bullish performance, we see the first
+hurdle in VoEx’s way are the Hedging Environments themselves:
+
+
+
+
+Slightly moving against the notion of an unhindered-bullish-wave as we see selling pressure
+located in the immediate proximity of $SPY and $QQQ, along with re-configuration of the
+Hedging Environments once more to an unstable-vanna orientation. A combination of which is
+poised to offer more selling pressure in the event of a $-/IV+ week.
+The Influence Distribution supposes a negative-leaning week, but with a slight touch of right-tail
+risk (low probability of a large positive movement).
+This tail risk reminds of last week’s foray into looking at how the market responds after greater-
+than-EPR moves. This quick adventure into research-land suggested that $SPY’s T+10 range (as
+calculated from its Movement to EPR ratio) was ±2.5 - ±3.5%, despite the traditional EPR
+suggesting only a ±2.14% move for T+10 (this represents a 15% - 48% larger-than-expected
+move for $SPY).
+Should these data continue to hold, and given $SPY’s weekly move this week of 1.36%, perhaps
+the right tail risk is hinting at an additional ~2% in upwards mobility for the week. Worth noting
+that the T+5 EPR for now sits at ±1.42%. Perhaps worth pondering as the week progresses.
+
+
+
+
+2
+ Autrement dit, je serais beaucoup plus enclin à accepter BUPO (de la variété Taureau) à bras grands ouverts si
+$SPY ne dépassait pas son T+1 EPR d’un simple 79 % et cette plus-que-EPR movement n’était pas accompagné
+d’un VoEx Spike (comment vu à la Market Scan). J’en pense que les Americaines l’appelleraient a dangerous
+combination – je ne suis pas bien sûr de ce que cela signifie, mais je les ai entendus le dire.
+
+Deep Dive Stocks – Weekly Chat                                                                      11/13/2023
+Moving on from the Hedging Environments, let’s check in on our put-selling-friends. Last week,
+we languished over their inability to be direct-enough for us (that is, they didn’t foreshadow the
+week’s progress with a surge in put-selling but rather kept
+things rather moot ).
+                                                                                      “
+Once again, however, our folly and ignorance presents itself
+                                                                 Not the most bullish of prints but certainly
+as our put-selling-friends did quite well this week.
+                                                                         not an overtly bearish one.
+                                                                                      “
+
+
+
+
+                                              With near-zero DLP growth to start the upcoming
+                                              week, one can’t help but consider bullish-
+                                              inclinations to be relatively minimal for $SPY’s
+                                              put-sellers.
+
+
+
+
+As we turn towards $QQQ, a slight breeze
+of refreashign commitment can be as a
+slight rebound in selling has occurred
+going into the week-end – a technically
+bullish but, it might be worth considering
+any differences in the other, recent
+displays of opinion that both indexes put-
+sellers have shown.
+
+
+Thus, perhaps a dose of reality and diminishing optimism for bullish prints is making its way
+into our put-selling-friends as they reduce their willingness to sell volatility and whatnot.
+Moving from just the puts to all things gamma-related, the MWGS-data is showing an increasly
+turbulent underbelly in the market:
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                       11/13/2023
+In prior rantings, it was suggested that, much like me, gamma wasn’t really “doing” “much” or
+“contributing” – but recent squiggly lines suggest that this may be, at least for gamma,
+tangentially untrue.
+To summarize:
+
+                                                                                           “
+                                                               In a nut shell [sic], its shaped sort of like the Influence
+                                                                Distribution curves but a bit more symmetrical. Now
+                                                                – suppose a bunch of stocks are sitting at the peak
+                                                                 (in the middle), and are in a gamma squeeze. If the
+                                                               price moves (say, things more to the left of the peak),
+                                                                  then the overall gamma amount decreases! If this
+                                                                 decrease in gamma is a decrease in short gamma,
+                                                                    then it would appear on the surface as though
+                                                                gamma squeezes have suddenly dried up! But is this
+                                                                                      really the case?
+
+                                                                                           “
+
+
+                                                               The distribution graph noted above
+                                                               was this graph (from the Cheat
+                                                               Sheet for Gamma, next page):
+                                                               And the idea was: what if, say, a
+                                                               sudden surge in price moved
+                                                               conditions such that the overall
+                                                              short gamma present decreased
+                                                             simply due to its distribution, rather
+                                                            than a change in the options
+                                                            environment? Could this potential
+                                                            warrant a closer inspection?
+
+
+
+
+After this week’s data, I think it’s reasonable to do so. Thus, let’s consider a few points:
+   1) Prior to the sudden drop-off in gamma squeezes, gamma flows in the market were
+      negative (GTM [bottom plot] is in the negative prior to the gray line),
+
+
+
+Deep Dive Stocks – Weekly Chat                                                                 11/13/2023
+   2) There is a concurrent increase in gamma squeezes with an increase in long-gamma
+      flows.
+   3) If we look at the price-action leading up to 2023-11-03 (the largest 1-day decline in the
+      number of gamma squeezes) since 2023-10-31 (4 days), we get a %-change of 3.94%.
+      Yet, if we look at the change in $SPY since 2023-11-03 (5 days), we only get a %-change
+      of 1.36%! A 97% difference in “price velocity”’s influence on gamma.
+Thus, a gamma-situation involving both time and location (space) seems to have manifested,
+and my wand-having suggests it goes like this (let’s assume new options flows have been
+minimal):
+   1) The market is experiencing a flow of short-gamma (prior to 2023-10-31), and this is
+      coinciding with modest growth-rates,
+   2) The market experiences a robust movement in price (as indicated by green arrow),
+   3) This pushes the gamma distribution in such a way that the gamma squeezes
+      “disappear” (but are still present, just the gamma distributions [for the short gamma]
+      have been reduced. The blue transparent arrow (left-most arrow) shows the change in
+      short gamma amounts with the price increase; as the arrow moves down, so too does
+      gamma’s “influence”.),
+   4) Since the price appreciation, time has passed, and with it, the curves (gamma
+      distributions) have all slid to the left (i.e.: the gold curve has become light blue, and light
+      blue become slightly-less-light-blue, and so on, demonstrated with the transparent gray
+      arrow). This increases net gamma in the market again:
+          a. On some individual stocks, this increase in gamma exposure brought with it short
+              gamma; hence the slight increase in gamma squeezes since then,
+          b. But for most stocks, this gamma-distribution-migration has brought relative net
+              long gamma as evidenced by GTM printing positive values (long gamma flows)
+              since     this           price appreciation.
+                                                           Slightly convoluted but the logic seem
+                                                                     reasonably sound.
+                                                                   The consequence? Well – on
+                                                                   the surface it suggests that
+                                                                   perhaps this decrease in
+                                                                   gamma squeezes the market
+                                                                   experienced recently isn’t all
+                                                                   that organic (i.e.: not a
+                                                                   consequence of an increase
+                                                                   in     stabilizing structural
+                                                                   changes) and that GTM’s
+                                                                   positive prints may be due
+                                                                   more to the passage of time
+                                                                   than to new positions
+                                                                   stabilizing the market (by
+way of providing long gamma                       flows by way of new positionings).
+
+
+Deep Dive Stocks – Weekly Chat                                                          11/13/2023
+This is suggested prima facie with the surge in the MWGS-growth line (top graph, gold line)
+which shows a sudden rebound in gamma squeeze growth-rate without concurrent changes in
+GTM.
+In other words: some caution may be needed when interpreting the latest gamma-squeeze
+information. A normal reaction to a reduction in gamma squeezes is to develop a more bullish
+stance – but this is predicated that the reduction in gamma squeezes is due to stabilizing
+forces. Here, I think with the recent larger-than-EPR price moves, VoEx’s behavior, there is
+reason to suspect a different cause might be present for this reduction.
+The consequence? Keep an eye on the MWGS data s the week progresses – GTM moving
+negative quickly would be a point for this theory.
+
+Moving right along to 𝑉𝑉 2, there is growing similarities between the start of 2022 and the end of
+2023:
+
+
+
+
+The main similarities being:
+
+   1) The large 𝑉𝑉 2 collapse that occurred, and
+   2) Flattening out of the curve without any significant migration of data from within the
+      Propagation Zone.
+
+
+Deep Dive Stocks – Weekly Chat                                                       11/13/2023
+This is a similar set-up to 2022, albeit on a seemingly faster timeframe (𝑉𝑉 2’s collapse in 2022
+took 5 months (!) to go from its peak of +1 to 0 vs. 2 months for our current collapse).
+These data, for me, are sufficient to anticipate medium and longer-term downturn in price and
+market performance for the year(?) a head.
+So, overall, we have growing evidence for:
+
+   -     A bullish-wave that has shifted not only the market’s prices but also its gamma currents,
+         resulting in some notable thoughts:
+            o This bull-wave seems to be resting on tenuous grounds as evidenced by VoEx’s
+                 response to the recent price appreciations, which are still a tad “spikey”.
+            o This tenuous bullish performance also rests on even more tenuous hedging
+                 environments, of which $SPY and $QQQ’s are demonstrating renewed vanna-
+                 unstable orientations, which, we all know, are quite tenuous.
+            o Along with all of this, our put-selling-friends seem to be downsizing their bullish
+                 bets for the week(s) a head as evidenced by diminished put-selling week-over-
+                 week. A very tenuous spot for a perma-bull.
+So, what does this tenuously mean for us? A priori it suggests a BUPO (of the bullish variety)
+outlook as VoEx is clear in its northward trajectory, however the data are sufficiently aligned to
+keep this bullish run regarded as tenuous rather than persistent.
+The name-of-the-game then is to simply ride the wave and wait for VoEx to indicate that
+downside should resume.
+
+Happy trading!
+Justin
+Oh wait! Updates!
+A few quick updates on the activities and going-on’s from behind the scenes:
+   1) LDPM has been updated!
+
+         I wanted to release LDPM’s update along with a video describing all of the changes but
+         the video editing is taking longer than normal. I’m working with a video editor so we are
+         ironing out the style and whatnot. The idea is that if I have an editor, then videos will be
+         easier to produce, and as such, I will get back into making more of them!
+
+         If you haven’t check out the LDPM updates here. If anything is funky with the update
+         process on your end, please don’t hesitate to reach out.
+
+   2) LDPS Beta has been extended a week
+
+         Some new suggestions were made and they were implemented, so I extended the beta
+         for a week.
+
+
+
+Deep Dive Stocks – Weekly Chat                                                          11/13/2023
+           Please give it a go and let me know if there’s anything you would like to see updated /
+           changed.
+
+       3) A robot is being formed!
+
+           Yes – that’s right! A DDS Robot / Trigger strategy is being developed for beta testing.
+           This robot, ideally, will demonstrate when liquidity levels are supportive to go long or to
+           go short, along with the corresponding quantities and whatnot. The goal is to set this up
+           to be able to be plugged into a broker and just trade the day away.
+
+           It is based on the robot that I currently use for my own personal use, along with some
+           improvements to its user-ability and customizability. The robot utilizes LDPM and LDPS
+           for all of its logic.
+
+           I am hoping to have the beta out for Premium Members3 by the end of the week but
+           there are still a few bugs to iron out with the re-factor from personal-, to shared-use, and
+           thanks to the Pinescript language, this is a task that can only be undertaken in 15-minute
+           chunks of time every-other business day before I start crying get frustrated.
+
+       4) Finally, Dashboard updates!
+
+           Yes – that’s right. Work is finally underway again for the next push in Dashboard
+           updates. Once I have the final plans in place and a tentative date for completion, I’ll be
+           sure to let you guys know.
+
+
+In the mean time, if there’s anything that you would like to see changed / updated / improved
+upon / removed, please let me know! Even if you already have – its always helpful to get a
+reminder.
+
+
+That’s all I have for you this week!
+
+
+Happy trading (again)!
+
+
+Justin
+
+
+
+
+3
+    That’s you!
+
+Deep Dive Stocks – Weekly Chat                                                            11/13/2023
+

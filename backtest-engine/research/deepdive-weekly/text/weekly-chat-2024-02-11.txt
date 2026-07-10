@@ -1,0 +1,31 @@
+                                           LDPS Update Notes
+                                                2024-02-09
+
+
+Liquidity Dependent Price Stability
+
+   Increased Depth
+
+           Several architecture changes to help LDPS determine liquidity status. These changes provide
+           additional clarity to an equity’s liquidity status during previously difficult-to-decipher moments.
+           LDPS should have a better handle on the situation now.
+
+   Liquidity Status Classification Algorithm
+
+       Several changes to the LDPS Liquidity Status algorithm aimed at providing greater accuracy and
+       delineation between the various states.
+
+   Default Configuration Changes – Aesthetics
+
+       Default color choices for Strong Bullish / Bullish / Weak Bullish and Strong Bearish / Bearish /
+       Weak bearish have been changed to more pleasing choices.
+
+       For best results, use with default LDPM stylization and dark mode and background set to
+       #191d2e.
+
+
+   Color Legend
+
+    A color legend has been added. It can be applied to the chart to show the chosen colors for the various
+    LDPS Liquidity Conditions (Weak Bullish / Bearish, etc.) for when a reference might be handy.
+

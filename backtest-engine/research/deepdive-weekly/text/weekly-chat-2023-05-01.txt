@@ -1,0 +1,403 @@
+                                  Weekly Chat 05/01/2023
+
+
+                                         Main Points
+
+
+    -   VoEx has rebounded back into the IZ,
+    -   This is typically associated with bull runs,
+    -   Hedging environments are unsupportive in a $-/IV+ movement but demonstrate a path
+        for gamma neutrality with a $+/IV- move.
+
+
+
+                                          SUMMARY
+
+
+          The market seems primed to end its bull-run but VoEx suggests that
+          something is keeping the bull train moving along.
+
+          Despite the spike into the PZ, which we were eagerly expecting, VoEx
+          quickly returned to the IZ after two days of price appreciation.
+
+          In review of historical precedence, it is seen that this VoEx behavior is
+          associated with near-term bull runs but more interestingly, it seems that
+          this VoEx behavior is relatively confined to pre-correction periods in the
+          market.
+
+          The hedging environment is unsupportive in a $-/IV+ manner and the
+          influence distributions are predominately bearish but there is an avenue
+          for $+/IV- via gamma neutrality.
+
+          DLP behavior is ramping back up, suggestive that big money has an inkling
+          for further price appreciation.
+
+          GTM is printing bearish prints and that’s all we’ll say about it here.
+
+          Overall, bullish outlooks until VoEx decides to journey back south again.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                        04/24/2023
+                                                 DETAILS
+
+
+
+
+Hello everyone!
+
+
+What an exciting week - $SPY moved a combined 4.7% with a net movement of +0.79% -
+we find that our bearish expectations for the week ahead (that of a negative move for the
+market) were thwarted. But, if our dreams are to be crushed, they should at least be done
+so in spectacular fashion like we saw this week.
+So, let’s dive into the data, how the week progressed, and then look towards the future.
+A circle of infinite radius is a straight line
+The absurdity of last week is easily reflected in $SPY and $QQQ’s heatmaps:
+
+
+
+
+Whenever heatmaps become hard to annotate, you know something interesting is
+happening.
+We can see that we coursed along as expected, digging down ever deeper into selling
+pressure – things seemed to be going according to plan. Plans were proceeding so well
+that by Tuesday, $SPY had moved more than its weekly allotted EPR – sitting at a close
+of $404.36 with the weekly lower EPR bound of $405.68. All things seemed right in the
+word for continued downside.
+But then – it happened.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                04/24/2023
+What is it ? I don’t know! Let’s investigate what that something was that paved the way
+for Thursday and Friday to be not only green but very green 1.
+To start, let’s look at
+Wednesday’s        data
+prints.
+By Wednesday, $SPY’s
+VoEx had already fallen
+into the Propagation
+Zone and Wednesday
+didn’t change that
+much:
+                                                            The hedging environment for $SPY was
+                                                            much less “unremarkable” than $SPY’s
+                                                            VoEx
+                                                            With the emergence of not only
+                                                            purchasing support located $-/IV+ we,
+                                                            also see $SPY ended the day smack-dab in
+                                                            the middle of purchasing support.
+                                                            The consequence of this newfound
+                                                            purchasing support (seen on the left) can
+                                                            be readily seen if you look closely.
+                                                In isolation, the hedging environment’s
+                                                sudden change was a bit surprising but I
+didn’t necessarily thin that the rest of the week should be green – but rather perhaps the
+downturn in the market would be dampened somewhat for the remaining part of the
+week.
+There was, however, one more potent data print that suggested this bullish turn was a bit
+more robust than just adding some purchasing support in the event of continued
+downturn: Dealer Long Puts.
+
+
+
+
+1
+ Check out Conway’s tweet thread about the data! It’s a great recap and I wish I could just copy paste it here.
+https://twitter.com/ConwayYen/status/1652022035839631377
+
+Deep Dive Stocks – Weekly Chat                                                                        04/24/2023
+With a quick jump in DLPs, it was clear that the market was thinking either IV was going
+to plummet or the market’s price was going to rise; it would turn out that our impeccably-
+timed-DLP-friends hit the nail on the head again with a 2-day rise in $SPY of 2.8% and a
+decline in IV of 20%. Not too shabby!
+This does, however, lead us to a bit of a pickle leading into this week’s data – namely: do
+we maintain our bearish outlook or is there sufficient evidence to suggest the bull-run’s
+end may not be over yet?
+Let’s dive in and find out.
+In a group of just 57 people, there’s a 99% probability two of them share the same birthday
+Let’s start by taking a moment to ponder at VoEx:
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                 04/24/2023
+VoEx seems to have juked us out. With a sudden dip into the PZ followed by an immediate
+return to the IZ – this action seems antithesis to our expectation that VoEx would
+invariably fall into the PZ (namely because of its inching towards the IZ), and then reside
+there for awhile during a downturn, and slowly start to run back up – precisely the action
+typically seen during bull runs.
+This time, however, it didn’t. It did something rather unusual. So, let’s get started with:
+What does this type of VoEx behavior mean? Have we seen it before and what happened?
+This VoEx fake-out doesn’t occur often – even in $SPY’s VoEx below, we see that although
+there are several large spikes and spike-like-complexes, it is rare to see VoEx spike in the
+span of 3 days from the Inhibition Zone, to the Propagation Zone, and then back into the
+Inhibition Zone.
+
+
+
+
+We can see this in the highlighted regions above. Although a drastic move into the PZ
+followed by a reversal isn’t too uncommon (nowadays), there are a few notable
+differences between VoEx’s current behavior and past episodes:
+   1) The first (left-most) VoEx Spike Complex (VSC) starts in the PZ and ends in the PZ;
+   2) The second VSC persists inside of the PZ during the price’s downside and only
+      returns once a recovery is signaled;
+   3) The third VSC also extends its stay into the PZ.
+However, in our current edition of VoEx doing whatever-it-feels-like-and-making-us-work-
+harder, we see that the spike into the PZ was as swift as its recovery while transversing
+several zones.
+My brain start tingling – a sign that I was either having a thought or needed a snack. Had
+I seen this type of behavior before? I think I had!
+
+
+Deep Dive Stocks – Weekly Chat                                                    04/24/2023
+Thus began my task of haphazardly searching through past VoExs for similar episodes –
+much without avail – I couldn’t find any in the recent VoEx “fossil records”. Was I
+mistaken?
+No! How dare you suggest.
+I remembered I was looking at the wrong times! Let’s look at $SPY from sometime at or
+around 2018 (left) and at or around 2020 (right):
+
+
+
+
+On the left we see VoEx began behaving quite significantly deviant prior to the GFC
+(thankfully or else we’d have to question VoEx’s efficacy) but we also see that during this
+period of turbulence there were many times (well, a few but in relative terms, an
+astronomical amount as these behaviors are quite rare) wherein VoEx was in the IZ and
+suddenly spiked into the PZ only to very rapidly return.
+The same goes for the right – although it seems there was so much inhibitory pressure
+that VoEx only made it down into the PZ just prior to the start of the fall.
+We see the same with $QQQ:
+
+
+
+
+From these historical analogues we can see some trends:
+   1) These VoEx behaviors are rare – in fact outside of the selected timeframes shown
+      above, they do not present in the data.
+   2) These data are typically associated with near-term bullish performance
+   3) These data seem to be associated with large downside in the longer-term future.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                 04/24/2023
+Now, does this suggest positive movement is likely in the time ahead? Yes.
+Does it suggest that a massive correction is inbound?
+Maybe.
+It definitely suggests that the behavior we are starting to experience in the market is
+uniquely unstable – a kind of instability that is only present prior to 2018’s correction and
+2020’s correction.
+However, we also see that in the run-ups to those prior corrections, it was more than the
+single measly spike we have before us today – in fact, thankfully VoEx seems to remind
+us that it will give us plenty of heads-up prior to any larger correction.
+So, VoEx is telling us some interesting information this week:
+   1) The anticipated end to the bull-run may have been a rug-pull and bullish
+      continuance is likely,
+   2) VoEx is starting to exhibit behaviors only typically seen prior to large corrections.
+Although we will leave point 2 to be pondered with due time, for now it seems as though
+the end of the bull run isn’t quite over.
+[It is worth noting that the SNAP algorithm agrees! Bullish performance expected over the
+next week but things get progressively more bearish from there.]
+Do the other data agree?
+Yes and no – a usual finding of late.
+                                                           The hedging environments find
+                                                           themselves      bereft       of
+                                                           purchasing support - save for a
+                                                           smidgen in QQQ’s below.
+                                                           With strong selling pressure
+                                                           located throughout, and with
+                                                           the    influence     distribution
+                                                           showing      a    predominately
+                                                           negative outlook – it doesn’t
+                                                           look as though the hedging
+                                                           environments quite agree with
+                                                           this      near-term       bullish
+                                                           sentiment.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                   04/24/2023
+If one were still inclined to maintain their bullish outlook, they may well be pleased to see,
+however, that there is quite a nice $+/IV- corridor of gamma neutrality that, should the
+market find its way therein, would at least provide little resistance to the bullish run.
+Also - another bullish
+glimmer in the dark is
+the rather large right-
+sided tails in the
+influence distribution.
+So, although from the
+vantage point of the
+hedging environment,
+downside is the most
+likely outcome (because
+the     peak    of   the
+Influence Distribution’s
+curves are in the red), it
+would appear that we have a small but not-insignificant bullish run potential.
+Moving towards the DLPs:
+
+
+
+
+That’s a decent showing of bullish-support!
+Historically, as we have seen, those-who-sell-puts tend to be very well-timed. There’s no
+reason to suggest they aren’t this time either – thus giving us a bullish print.
+The only truly discordant data print to a bullish run is MWGSC and GTM. With positive
+GTM values (indicating anticipated growth of gamma squeezes in the future), and with
+the current 5-day growth being positive (top graph, gold lined), these data are definitively
+bearish.
+
+Deep Dive Stocks – Weekly Chat                                                    04/24/2023
+In searching for a potential reason to this, I stumbled down a strange hole and I confused
+myself again.
+In an effort to reconcile my perpetual state of confusion with reality, I will impose it upon
+you such that you are now also confused and thus reality is set back to “the norm”.
+                                                           To do this, let’s look at some
+                                                           confusing pictures.
+                                                           I started with asking myself
+                                                             “Why did you start tradin Is
+                                                                                     there
+
+
+                                                                  something     particularly
+                                                           unique about GTM now versus
+                                                           GTM before?” In other words, I
+                                                           wanted to make sure I wasn’t
+                                                           missing anything when it came
+                                                           to GTM. To answer this, I looked
+                                                           at the ~ raw ~ data. I wanted to
+                                                           see if there was an association
+                                                           with how GTM operated during
+                                                           two different market conditions:
+                                                             1) When       GTM     moves
+                                                                  suddenly positive or
+                                                                  negative
+                                                              2)      When the net growth
+                                                           of gamma squeezes was
+                                                           positive (in a net negative
+                                                           gamma market), or was
+                                                           negative (in a net positive
+                                                           gamma market).
+                                                  To answer these questions, I
+                                                  produced the following graph
+wherein these moments (1) and (2) were magnified in their significance with some
+unpleasant math:
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                   04/24/2023
+Ooo. Aa. More spikes! (Why is it always spikes?)
+There are some note-worthy features here:
+   1) What are the spike complexes?
+   2) Why is this metric declining into 2022 and rising into 2023 when 2022 saw
+      predominate downside while, so far, 2023 has seen predominate up-side.
+   3) Where did the spike complexes go in 2022?
+   4) Do the spike complexes mean anything?
+Although I suggested above I would point out some interesting features, you can see now
+I really just presented you with the questions that I have – in hopes you can do the work
+for me.
+Buuut, until you take up the mantle, seeing as you won’t even read this until tomorrow,
+which simply doesn’t much help me today, I suppose we could look at what happens at
+or around those spikes, to get a general feel for what these data are telling us.
+The first thing I did was simply plot lines at the points in time when these “spikes” (Why
+is it always spikes?) occur. However, that wasn’t quite enough because as you can
+imagine, there are four types of lines:
+
+
+
+Deep Dive Stocks – Weekly Chat                                                04/24/2023
+      1) 2 Types depending on if GTM was positive or negative
+      2) 2 Types depending on if the market was in a net negative or net positive gamma
+         state
+One the events were categorized into two groups:
+   1) GTM is positive (bearish) and the market is in a net negative gamma state
+   2) GTM is negative (bullish) and the market is in a net positive gamma state
+I worked to graph the instances of when these spikes occurred while meeting the 2
+conditions above, and a curious finding: there was only 1 group of lines that showed up:
+the (1) group; for when GTM is negative (and spikes) and the market is in a net negative
+state. You can see it below:
+
+
+
+
+Well, that’s odd! It seems that these instances almost always precede downside! But
+where were the other spikes? Did not such spikes occur during a negative GTM spike and
+a net positive gamma environment? (A tangential finding is that we do not have one of
+those spikey-events currently. In fact, we seem to just be finishing one up!)
+There were some other interesting findings when peeling back the layers to the raw data
+a bit more than I had when writing the primer up – let’s look at a few more curious images.
+First, let’s do the same technique as before but let’s just overlay $SPY and expand our
+horizon back some:
+
+Deep Dive Stocks – Weekly Chat                                                 04/24/2023
+This raises even more questions! Why do these values rise and fall? Why is a 180-Day
+Mean that is negative associated with choppy markets? Why was there a surge of
+something in late 2020?
+Okay – I’m getting confused again. Let’s instead look at the raw data but let’s start
+controlling for certain market conditions. The first thing is let’s control for the relative
+availability of the “gamma squeeze conditions”, i.e.: let’s start looking at how probable it
+is that a gamma squeeze will occur:
+
+
+
+
+Okay – a simple relationship would have been nice but we can work with this too.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                  04/24/2023
+   1) It appears when the 20-day “raw data” value rises – things go bad.
+   2) Does it matter if this value is greater or less than zero?
+   3) Why is it growing?
+After peering down several hallways to glean an answer, I grasped at a small strand that
+I thought, surly, would bring about at least one answer to this rabbit hole I threw myself
+down into. I remembered that the number of gamma squeezes has been increasing
+steadily since 2022! Could this be hidden somewhere in the data, and thus, making the
+somewhat impressive beam of northward something that started in 2021-02-01 rise ever-
+higher?
+To check this, I simply standardized the values to the number of gamma squeezes – this
+should remove the effects of an ever-creepingly-positive MWGSC and leave only the “real”
+data behind. I graphed it below:
+
+
+
+
+And this is where I decided to throw in the towel for this week! It is clear that a quick
+journey into the more seedy underbelly of gamma and gamma squeezes in the market
+produces far more questions than answers for right now.
+Can we learn anything from these findings so far? I think there are a few preliminary take-
+aways that will prove insightful and actionable for sure:
+   1) Something odd is happening in the market
+With regards to GTM specifically, I would be surprised if it maintains it positive viewpoint
+for long – the data appear under the hood to be cooling off somewhat, and for now, lest
+we start drooling again, we are going to leave it at that.
+So – what can we say for the week ahead:
+
+
+Deep Dive Stocks – Weekly Chat                                                  04/24/2023
+   1) VoEx is suggestive of a “rebound” rally – in other words, it tricked us and we fell
+      for it,
+   2) DLP behavior is ramping up, a bullish finding,
+   3) The hedging heatmaps appear to be non-supportive again but do provide a casual
+      path for $+/IV- via gamma neutrality, and finally,
+   4) GTM is printing bearish prints but things may be more complicated than that.
+So, for now, I will return to a default bullish stance until VoEx decides to work it’s way
+back into the PZ again for us but in the mean time, I am going to be paying close attention
+to the many reminiscences that seem to be appearing the in the data between now and
+late 2019.
+Happy trading, Justin
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                 04/24/2023
+

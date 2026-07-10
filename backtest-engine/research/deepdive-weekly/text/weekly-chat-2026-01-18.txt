@@ -1,0 +1,228 @@
+                                      Weekly Chat 2026-01-19
+
+
+                                             Main Points
+
+
+
+       -   VoEx-daily for $SPY continues its Divergence pattern while VoEx-proper remains
+           bound at the boundary-zone. $QQQ’s VoEx-daily has stagnated while VoEx remains
+           in the Propagation Zone.
+       -   Gamma-hedging environments showcase persistent and local purchasing support
+           along with a stable-vanna orientation for $QQQ.
+       -   Market-Wide Gamma Squeeze data show a market a its GS minimum along with
+           the predictive data showing minimal anticipations for the future.
+       -   LS&T showcase near-term instability and bearish liquidity while the longe-term
+           views show a market utilizing its supportive resources in order to maintain a
+           relatively flat price.
+       -   Overall, turbulence and downside expected.
+
+                                              SUMMARY
+
+
+           The market appears to have been benefitting from a lower-than-usual volume
+           profit over the past ~2 months with regards to the purchasing support and its
+           relative impact provided by the gamma-hedgers. Currently, volume trends
+           indicate an increase in volume which threatens the sanctity of this potency.
+
+           VoEx for $SPY has failed to achieve new heights while VoEx-daily has continued
+           its descent observed over the past 2 months. $QQQ’s VoEx-daily has stalled
+           within neutrality while VoEx remains within the Propagation Zone. This is a picture
+           of instability with downside likely.
+
+           The gamma-squeeze data show a market in relative peace – with minimal GS
+           noted throughout and with the predictive data forecasting a non-changing
+           interim. These data should be re-assessed if downside starts for any evidence of
+           sudden spikes in activity.
+
+           LS&T data showcase near-term bearish expectations via the 90-, and the 144-
+           minute intervals. These bearish inklings are balanced against longer-term bullish
+           supports on the 987-minute and 1-week views, which look poised to be tested
+           once again in the week ahead.
+
+           Overall, the market continues to look unstable with emphasis on the near-term
+           while the longer-term data suggest things are “holding on”. Prudency suggests
+           bracing for downside and turbulence.
+
+
+
+
+Deep Dive Stocks – Weekly Chat              for the week of                 2026-01-19 to 2026-01-23
+                                              DETAILS
+
+
+
+
+Hello everyone! Last week, we left off with the idea of “flat-float” or “downside”, and the week, it
+appears, decided on “downside. This is evidenced via $SPY’s -0.35% move and $QQQ’s -0.86%
+moves. We can visualize these moves below:
+
+
+
+
+It seems the market dove quickly and urgently into the purchasing support provided by the
+gamma-hedgers to start the week. Last week, our thinking was if this occurred, it might be worth
+keeping tabs on volume: the idea being that an increase in volume would minimize the extra
+purchasing support’s relative “oomph” - is this the case? In crunching the numbers as last week
+for the 20-day period, we see that throughout the week, the Z-score for volume rose from last
+Friday’s value of -0.619 for $SPY to +0.16! This is definitely an increase.
+
+For a less nerdy look, if we just look at the 5-day rolling average for volume to see how the most
+recent previous Friday compared to the slightly, less-recent previous Friday; the outcome of this
+adventure shows an 11% increase! Not staggering but definitely something! We can visualize the
+recent change in volume behavior:
+We can extend this reasoning since it
+seems reasonably founded to look at
+the recent behavior between volume
+and price change. If we assume that
+the general current market condition
+is such that (1) hedging is providing
+substantial    purchasing      support
+[evidenced via the recent hedging
+heatmaps] and (2) the relative
+minimal volume is invoking a “boost”
+the oomph provided by the gamma-
+hedging, then if we look at the relationship between volume and price, we should see an inverse
+relationship – that’s to say, over the past 2 months or so, as volume increases, price should tend
+to decrease. Is this the case?
+
+
+Deep Dive Stocks – Weekly Chat            for the week of               2026-01-19 to 2026-01-23
+Indeed! For the most part – we see that around 7M volume an inflection occurs whereby the larger
+the amount of volume that enters the
+market, the more downside it
+experiences ! Now, this is far from a
+complete picture of the situation
+(and more data should be analyzed
+than just 1.5 months of $SPY) but it
+is quite in-line with our expectations
+and prior findings.
+Perhaps something to consider as
+we move into the data for next week!
+
+Well also we can do some of that
+now – let’s adjust the volume for
+$SPY and $QQQ to a 20-day rolling Z-score (so that we can compare them directly), combine the
+data and graph: do we get the same showing?
+
+
+
+
+Even more so! This is pretty decisive – the more volume $SPY and $QQQ experience, the more
+price has declined!
+Now with that in mind,
+
+
+
+
+Deep Dive Stocks – Weekly Chat          for the week of              2026-01-19 to 2026-01-23
+Let’s get started with VoEx:
+
+
+
+
+VoEx (both!) for $SPY have re-entered the Propagation Zone! If but ever so slightly but in
+conjunction with the overall VoEx-daily divergence and the failure of VoEx to really exit the P.Z.,
+this seems rather straightforward: downside is expected!
+
+Its not unusual, especially in recent times, for there to be a small bounce before VoEx commits to
+entering / exiting a given zone but even so – this is usually just a stall tactic before the market
+catches up to VoEx, and so, prudence suggests downside is likely, near, and potentially exciting.
+For $QQQ, the outlook is less dire in some sense, as VoEx-daily is further from the boundary zone
+to despair (read: Propagation Zone) but what $QQQ lacks in VoEx-daily it makes up for with VoEx-
+proper who is still quite content buried deep in the ground.
+Thus, per VoEx, instability is still present, and its resolution for downside appears both obligate
+and closer to us today than it was yesterday.
+Let’s check in with the gamma-hedging heatmaps to see what influences, diminished or
+otherwise, the hedgers might bring to the market:
+
+
+
+
+A similar set up to what we have seen! On the surface, these are both bullish: $SPY’s inundation
+with purchasing support allows for $+ until selling pressure kicks in at around ~$700, while
+$QQQ’s more nuanced purchasing support gives for unrestricted take-off, in so long as IV remains
+unsuppressed.
+
+
+
+
+Deep Dive Stocks – Weekly Chat           for the week of               2026-01-19 to 2026-01-23
+Given our recent foray into looking at the relative magnitude of hedging per volume, its worth
+noting that these areas of purchasing support will benefit most should the market not experience
+an influx of participants; so long as the market lets hedgers hedge, things should float up-and-to-
+the-left – but, should the recent trend of increasing volume continue, this will erode the influence
+said purchasing support will have on the market.
+Thus, the hedging heatmaps are, on their faces, bullish but in context they are at-best beacons of
+hope guiding us towards what an optimal market ought do in order to maintain said support.
+Moving onwards, let’s check in with the
+Market-Wide Gamma Squeeze data to see
+how things are coming along. Our counts
+are steady over the past month, with the
+market hovering around ~600, which is
+about the usual “minimum” that the market
+experiences.
+From this view, things are calm! Growth is
+negative, counts are low and all seems right.
+Let’s check in with the predictive MWGS
+data to see if they are picking up any
+tremors:
+
+
+
+
+All quite on the Gamma Squeeze Front it would seem! The PCC & PCG are near-zero, suggesting
+that the outlook for the future is an environment similar to what we have today. This will be worth
+checking in on in the future!
+
+
+
+
+Deep Dive Stocks – Weekly Chat            for the week of               2026-01-19 to 2026-01-23
+Moving along, we can check in with LS&T to see how liquidity conditions are on SPX futures:
+
+
+
+
+On the 90-minute, we see bearish liquidity without any down-stream supports. Some evidence via
+the lower-order LTs that some dip-buying has started (via the downwards pointed nature of LT1-
+3) but this hasn’t translated yet to anything “substantial” (aka LT4 – 7 are not pointing downwards,
+suggesting this is less of an “aggressive bid entering” and more “dip buyers dipping their toes”.
+Thus, on this view, downside is near and without local supports.
+The 144-minute (top-right) shows bearish liquidity and futures that have been trapped within the
+LT6 – 7 channel for quite a while. Persistent bearish liquidity suggests another test of LT7 is
+likely. For the bulls, some good news in that there is no evidence from this view of any aggressive
+asks stepping in (recently at least) which provides some comfort that LT7 will persist in its
+supportive duties.
+The high-order timeframes demonstrate less overtly concerning findings: the 987-minute
+(bottom-left) shows bullish liquidity unable to surmount LT5 since mid December 2025 which is
+somewhat encouraging for the bears in the crowd but the persistence of bullish LS suggests
+continued attempts to overtake LT7 is likely.
+On the weekly, we see the profit-takers (LT1 & 2) continues to rise from spot, suggesting more
+profit-takers are entering into the market. This is occurring along side a market that has relied on
+LT5 for support and (presumably) bullish liquidity since July of 2025.
+
+
+
+
+Deep Dive Stocks – Weekly Chat            for the week of               2026-01-19 to 2026-01-23
+Thus, taken together, this paints a picture of near-term turbulence with likely movement to LT7 on
+the 144-minute ($6,951.01) currently but any failure thereof will likely see spot free to move to
+LT7 on the 987-minute ($6,883 currently) and ultimately down to LT6 on the weekly ($6,462)!
+So, taken all together, the market is showing continued anticipations for near-term turbulence via
+LS&T along with near-, and long-term turbulence via VoEx. This is balanced on the short-term via
+the hedging environments (should they remain potent from the continued volume-drought) and
+the 987-minute and 1-week LS&T views.
+Downside expected and perhaps some excitement to follow!
+
+
+Happy Trading,
+
+
+Justin
+
+
+
+
+Deep Dive Stocks – Weekly Chat           for the week of              2026-01-19 to 2026-01-23
+

@@ -1,0 +1,469 @@
+                                  Weekly Chat 2025-05-19
+
+
+                                         Main Points
+
+
+
+    -   VoEx resides within stability and brings medium-to-long term bullish outlooks.
+    -   Hedging environment is set to provide local and diffuse selling pressure in all $+
+        directions for both $SPY and $QQQ.
+    -   Dealer-Long Put activity remains subdued at zero.
+    -   Market-Wide Gamma Squeeze (MWGS) data showcase continued subdued gamma
+        squeeze growth and activity with minimal evidence of future growth.
+    -   LDPM&S showcase near-term bearish liquidity with longer-term bulltraps testing their
+        local ceilings.
+    -   Overall, the outlook is near-term downside with growing evidence that the market
+        reversal has passed.
+
+                                         SUMMARY
+
+
+
+          Slight concern as the market skyrockets further north with regards to the
+          motivating forces. The consequence of these developments is that VoEx
+          has returned to stability while the hedging heatmaps have filled with local
+          selling pressure.
+
+          In anticipation for the future bullishness, where one might expect to see
+          DLP activity one instead sees continued absence. This is an unusual
+          response, should the market’s reversal be substantial enough to last.
+          Another mixed data stream is the MWGS data show a continued subdued
+          nature from gamma-squeeze land
+
+          LDPM&S suggest bearish liquidity has taken hold on the short-term
+          timeframes, with downside targets at about 4% down as the first target
+          and then 8% down. $VX shares a similar downside target view but in its
+          own, bullish, way by way of bullish liquidity on the shorter-term
+          timeframes.
+
+          Thus prudency suggests bracing for downside which will likely
+          necessitate another review of the medium and longer term outlooks,
+          which currently, stand at bullish.
+
+
+
+
+Deep Dive Stocks – Weekly Chat         for the week of               2025-05-19 to 2025-05-23
+                                               DETAILS
+
+
+
+
+Hello every-body!
+Last week, we left off with bearish leanings as the overall bullish feel in the air felt sour. Well, the
+only thing sour after last week is our faces, as $SPY moved 5.29% while $QQQ moved 6.87!
+Obviously, these numbers are quite larger than the week’s EPRs, and so, let’s bust out the handy-
+dandy Expected Price Range (EPR) table to contextualize these moves!
+
+ Symbol               T+5 Anticipated T + 5 Realized           T + 5 Ratio          T+5 %-
+                      Move (±%)       Move (%)                 (Real / Ant.)        magnitude Dif.
+
+
+ $SPY                   2.23                 5.29                 2.37               81.40
+
+ $QQQ                   2.70                 6.87                 2.54               87.14
+
+
+
+Some nice big numbers to welcome our handy-dandy table back with. We can see the market
+moved about 2.5x what the very same market was expected itself to move. This definitely puts
+the spectre of mean reversion back within sights.
+We can also see the somewhat curious spot that the market found itself within by viewing the
+hedging heatmaps and the week’s progression therein throughout:
+
+
+
+
+In observing $SPY, we find realization of our concern from the week prior - $SPY ran out of room
+in the 𝐼𝐼𝑉𝑉 − direction! Any more reduction in IV and $SPY would have immediately switched
+polarities and started suppling ask to the market!
+This, in hindsight, may not have been that disruptive, given $QQQ’s peculiarities for the week, with
+the index having absorbed a steady and robust stream of selling pressure.
+An usual dynamic!
+                                     Thought Experiment Time
+
+
+
+
+Deep Dive Stocks – Weekly Chat             for the week of                2025-05-19 to 2025-05-23
+The benefit of having an identifiable price-insensitive party is that they act like a smoke-trail to
+discern the wind direction, in this case, to discern the movement of the liquidity provider 1! You’ll
+remember that hedging is a price-insensitive task (allegedly) and so, the transactions will naturally
+occur where the source of liquidity is. Thus, we can “track” the movement or rather the general
+direction of the winds moving towards the great-liquidity-attractor. Here, we see that the winds
+are sweeping our heavy smoke trail (lots of selling) rapidly upwards and to the north-westernly
+direction.
+The benefit of this rather unique situation2 is two-fold: the first is it tells us (without even LDPM/S!)
+that the source of liquidity is likely at or near the organic ask. This tells us that the transactions
+occurring are predominately occurring via an eager bid! An eager-bid driven price appreciation
+puts incredible risk for a liquidity vacuum formation, which we should look for when we
+investigate LDPM/S on ES (spoiler: cant really find one!). Secondly, such a situation tells us that
+an eager ask is currently indistinguishable from an organic ask.
+Spooky! Because of the presumed location of the liquidity-source (namely it being at or within the
+organic ask), this tells us that effectively the price-sensitive eager asks (those looking to take
+profits and or those looking to short) would also be swept upwards.
+
+
+
+
+1
+  To be more specific: if you consider some point between the bid and the ask (where 𝑓𝑓𝑓𝑓𝑓𝑓 ∀𝜖𝜖 | �|𝑏𝑏𝑏𝑏𝑏𝑏 − 𝑎𝑎𝑎𝑎𝑎𝑎|� > 0,
+∃𝛿𝛿 > 𝜖𝜖 > 0 [math joke for the nerds]) as the fountain of liquidity supplying transaction-lubricant to the market,
+then the origin of said liquidity can exist at or between the bid and the ask. Thus, we can visualize the relative state
+of “taking” or “supplying” liquidity as an attractor point of transactions that moves between the bid and the ask.
+When the attractor is closer to the ask, it acts as a magnet and the bid will move more then the ask will in order to
+transact, conversely, if the liquidity source and transaction-attractor exists more near the bid, then you will expect
+all eager parties to flow towards the attractor.
+
+
+
+
+2
+ Unique in that this analysis really rests on the idea that the hedging has been performed and is as significant as the
+hedging heatmaps tell us. Essentially, for this kind of liquidity discernment to be functional from the hedging
+environment, we have to be reasonably convinced that the hedging environment is uniformly “impactful” (such as
+a giant, blank wall of persistent selling pressure regardless of IV on a major index).
+
+
+Deep Dive Stocks – Weekly Chat                     for the week of                     2025-05-19 to 2025-05-23
+                          But if the eager asks are being swept upwards.
+
+                     And eager parties always transact at where the liquidity is.
+                     This suggests there is a liquidity source is above the asks.
+
+                                                  !
+Spooky! Here it is in picture-words:
+
+
+
+
+Now, you might be saying “Justin, aggressive bid?” There’s another? Yup! We just don’t often see
+the Aggressives pop their heads out of the woodworks! But, if we do a quick review of the LDPM/S
+Addendum, we find this
+handy-dandy chart (right;
+LDPM & LDPS Addendum, pg.
+2):
+The aggressives are price
+obligate!
+The plot thickens.
+The obvious next question is:
+who could possible have that
+much price obligation? And
+although that is an interesting
+question, let’s stop our quick
+journey of discerning liquidity
+through the gamma-hedging
+environment to recap some
+initial thoughts:
+   -   The market may have
+       ingested the ask too
+       well. We should see if
+       we can identify any
+       areas of aggressive
+       bid in the data below.
+   -   The market may be on the verge of a substantial loss of liquidity, and as such, we should
+       look for signs for the likelihood of this in the data below.
+
+
+Deep Dive Stocks – Weekly Chat             for the week of              2025-05-19 to 2025-05-23
+   -   If it appears likely that there is downside approaching, the data should be assessed, to the
+       best extent possible, for if this is a dip-within-a-recovering-market or a return-to-downside-
+       for-a-market-being-bent.
+In short: even from a cursory review of the old data and the week’s movements, there are already
+signs of a potentially substantially unstable market on our hands. We should see if this instability
+is (1) real and (2) how far it extends throughout the rest of the data. From there, the task will be
+determining which scenario the data best narrate and preparing appropriately.
+Let’s get started!
+Lasciate ogne speranza, voi ch'intrate
+Starting as usual with VoEx, we find significant movements:
+
+
+
+
+Those are bullish VoExes! Why don’t I like that? I don’t know but I don’t. But one cannot hope to
+change the markets on one’s wants nor how the data behave and so I must capitulate (in part) to
+VoExes assertion that downside is done!
+Henceforth we shall view the data with such an outlook in mind. We discussed last week the
+fallibility of VoEx during long-term market-downchurns (as seen in VoEx entering stability falsely
+twice in 2022) and while that will be something to keep an eye out for, the paradigm is no longer:
+bearish until proven otherwise, but now: bullish until proven otherwise!
+It is worth noting, however, that VoEx-daily has stalled and for both $SPY and $QQQ look
+interested in a movement downwards. In such an event, the downside is expected to be contained
+(even if severe) in so long as VoEx remains within stability.
+With such outlooks switched officially, let’s view the current hedging environments for any
+insights:
+
+
+
+
+Deep Dive Stocks – Weekly Chat            for the week of               2025-05-19 to 2025-05-23
+Life mocks yo us at every turn. Whereas before we had $QQQ with a stacked selling pressure in
+all directions, now we have $SPY – just in time for the officiation of the switching of the outlooks
+from bearish to bullish per VoEx.
+To complicate matters even more, consider the rant from above – had I spared you from it, then
+the idea of “selling pressure sucking price up” would seem foreign, strange and unlikely but now,
+after the rant, I imagine it sounds foreign, strange, but somewhat likely.
+This does suggest to an even higher degree that the missing piece (or confirmational piece) of
+the puzzle for this sucking-up hypothesis is the identification of an aggressive bid – if an
+aggressive bid can be found, then this frames these heatmaps as potentially incredibly bullish in
+so long as the aggressive bid is present. If no aggressive bid can be found, well, then we will just
+have to find some other way to navigate life’s uncertainties together!
+On the surface and without the details, however, these heatmaps are quite bearish, with both
+indexes poised to offer significant and substantial selling pressure, down to about $587ish on
+$SPY and $517ish on $QQQ (~-1%).
+Let’s move on and check on the Dealer Long Put activity:
+
+
+
+
+Burrowing themselves into the ground it seems! Continued strange behavior from the DLP crowd,
+and one that does not invoke confidence in our financial overlords having a [$+ , 𝐼𝐼𝑉𝑉 − ] centric mind
+for the coming days.
+
+
+Deep Dive Stocks – Weekly Chat             for the week of                2025-05-19 to 2025-05-23
+Next, let’s check in on the MWGS data:
+
+                                          The market is down to 664 gamma squeezes!
+                                          Incredible – it’s worth noting that there is about 500
+                                          gamma squeezes in the market that are “persistent”
+                                          (some equities always are in gamma squeezes),
+                                          which implies that currently the market effectively has
+                                          ~no~ gamma squeezes!
+                                          A scary marvel as that suggests the only way to go is
+                                          up!
+                                          To this end, we can see GTM is still migrating (if but
+                                          slowly) towards negativity, which suggests that the
+                                          flow of gamma towards the market is starting to
+                                          definitively shift in favor of short-gamma.
+                                          On the surface these data are bullish once more but
+                                          gestalt suggests caution. Let’s try to either verify or
+                                          remove said concerns with the updated MWGS data
+                                          set:
+
+                                     These data are also bullish! We have the Predictive
+Count Curve spear-heading down, suggesting that the combination of current and expected
+growth is, well, down.
+Additionally we see the
+Predictive Growth Cruve
+(PGC) is hangingout well
+below zero (red dashed
+line), suggesting that the
+breaks are still being
+applied to the (already)
+declining grwoth rate.
+Taken together, these
+paint    a    longer-term
+bullish     picture,    in
+agreement with VoEx’s
+current interpretation of
+the situation as well!
+Thus, on the more long-term the outlook does seem to have shifted towards a bullish view. This
+is evidence via VoEx’s return to stability and the MWGS data, which doesn’t show any signs of a
+resurgence of GSs after the recent mass-destruciton. On the shorter-term, however, the outlook
+does look concern, given the hedging environment’s substantial selling pressure and the DLP folk
+still hiding in their holes.
+
+
+
+
+Deep Dive Stocks – Weekly Chat           for the week of             2025-05-19 to 2025-05-23
+Let’s now check on the VoEx Variance data. If we can see any difinitve moves towards Phase III
+in the data, then it may be time to declare the next bull-market a go.
+Now, let’s take a peek at LDPM and LDPS, to see if we can identify any actionable targets in the
+days ahead.
+First up, ES (note: I switched LDPS to `aggressive` to check on the higher-interval bultraps):
+
+
+
+
+In line with the near-term bearish ideologies, we see that the 90-minute and the 144-minute (top
+panels) both show bearish liquidity forming, with downside targets at about $5,900-5,700ish (~-
+4.00%) as the first step down, with the 144-minute interval showing the next floor being at $5,500
+(~-7.50%).
+On the higher-timeframes (ignore the drawings in the 987-minute for a minute), we see the bull-
+traps have reached their respective ceilings. The bullish liquidity does suggest a robust test and
+if LDPM should start to migrate north, it could spell the end of the bull-trap and return to
+bullishness period!
+Now, we can look at the drawings. You’ll remember that LDPM is a vector, to put it in more nerd
+terms, LDPM-Fib loadout creates a vector field of liquidity flows! The consequence is that since
+the vector is pointing towards where things are going (in both magnitude [how much LDPM moves
+from the price) and direction (where LDPM is pointed), you can treat them as such and extend
+their projections if needed! The projections will only change once LDPMs do. With that, we can
+kind of devine what the future might look like.
+Take a moment to peek the drawings above to get an idea of what I might be up to with those
+lines.
+
+
+
+Deep Dive Stocks – Weekly Chat            for the week of              2025-05-19 to 2025-05-23
+Then, check out this version:
+
+
+
+
+If we track through time the different stages, as expected from LDPM’s projections, we can
+identify distinct areas that can help guide us in the future (note that the zones show us what the
+expectation will be once we are in a given zone, not the expectation of performance while in the
+zone per se but the expected future performance once in said zones [e.g.: if LDPM lines progress
+as expected along their projections, then if price ends up in the Soft-Bearish / Bullish leaning zone
+{purple}, this tells us that although price has sinked [from current spot] the expectation is still
+leaning towards a bullish recovery ]).
+For instance, note that if price reacts to the ceiling and falls back below LDPM-L5, this will put
+conditions in a pure `Bearish` stance, as it will be the first “checkpoint” (the first circle, denoted
+on June 5th, 2025).
+
+Should price stay above the bearish zone, then conditions will be bull-trap until the first check-
+point, at which time conditions will become “Mixed – Bullish leaning” (mixed since the LDPM
+stack is disrupted and bullish-leaning because LDPS bullish). Should spot look to maintain this
+area until the second check point (Jun 24th, 2025), then it will likely be the early signs of a full
+conversion back to bulish orientations.
+This is more of a fun little exercise than a definitve road map, but I will be keeing an eye on it as
+time progresses in the next few weeks, as it might serve as a helpful guide (hopefully – and if so,
+then maybe we include it consistently!)
+Speaking of consistency, let’s take a quick break from the Weekly Chat to look at a new side-
+project I am putting together for you all. The idea is to create a “Trading Protocols” deck which
+
+
+
+Deep Dive Stocks – Weekly Chat             for the week of               2025-05-19 to 2025-05-23
+can help guide and navigate the various situation one finds oneself occasionally in when using
+LDPM/S. Here’s an example protocol (still in progress!) that goes over the initial inspection of an
+equity:
+
+
+
+
+This way, you can just quickly go through things and make actionable assessments! Here’s one
+that’s a bit more involved, the Beartrap Protocol:
+
+
+
+
+Deep Dive Stocks – Weekly Chat           for the week of               2025-05-19 to 2025-05-23
+                                                                            The idea is that
+                                                                            once         you’ve
+                                                                            identified a bear
+                                                                            trap, you can work
+                                                                            through         the
+                                                                            protocol to help
+                                                                            guide what the
+                                                                            next       expected
+                                                                            action is.
+                                                                            Pretty nifty, no!
+                                                                            Once I have the
+                                                                            standard set made,
+                                                                            I’ll work on putting
+                                                                            them together all
+                                                                            nice-like (also with
+                                                                            a glossary of sorts
+                                                                            to help identify
+                                                                            what `Evidence of
+                                                                            an Aggressive Ask
+                                                                            Cascade`      might
+                                                                            be) and then get
+                                                                            them out to you
+                                                                            guys!
+                                                                            Okay, back to the
+                                                                            show.
+
+
+
+
+Taken together, the LDPM/S view paints a picture of growing near-term bearish outlooks with the
+continued potential for the bull-trap to complete unravel down 8%.
+
+Next up, let’s see if $VX has anything to say or disagree with:
+
+
+
+
+Deep Dive Stocks – Weekly Chat            for the week of           2025-05-19 to 2025-05-23
+On the short-term, we see the re-emergence of a bullish candle (90-minute, top-left), rekindling
+the notion of a volatilty bulltrap forming. This is particularly exciting as we look at the nearby
+ceilings which are LDPM-L6 on the 90-minute and then LDPM-L7 (on the 90-minute) along with
+LDPM-L6 (on the 144-minute), both at about $25.90! This is about a 32% jump in volatilty that is
+brewing with the re-emergence of the bulltrap.
+The longer-term views, however, show bear-trap ideations as price tests LDPM-L6 on the 987-
+minute (bottom left). It would seem the organic bid at this level is quite robust and not interested
+in letting the price fall. Should said bear trap dissolve and return price northward, the next ceilings
+are found at LDPM-L5, at about $31! This represents an almost 60% potential for runaway action!
+Zooming out even further, we see the current bulltrap (also with aggressive LDPS) being worked
+into submission by profit-taking, but as LDPM-L7 approaches for a test, we will have to see how
+things react. An explosive bounce back up is not off the table, and should the rest of the data fall
+in line until then (i.e.: the bulltrap bulltraps more), then it will become the likely outcome. But,
+should, at any point, LDPS switch to Bearish, we can effectively consider the bulltrap over.
+So, taken together, the near-term looks bearish. This is evidence in part by VoEx-daily’s stall and
+remanuevering towards the P.Z.; the hedging environment showcasing substantial selling
+pressure [without consideration for the aggressive bid theory], LDPM/S showcase near-term
+bearish liquidity on $ES with near-term bullish liquidity and forming bulltraps on $VX; and DLP
+activity is still sub-zero.
+
+
+
+
+Deep Dive Stocks – Weekly Chat             for the week of                2025-05-19 to 2025-05-23
+Contextually, these near-term downside expectations come on the back of a strange morphing of
+the long-term expectations away from bearish downside. This is evidence by VoEx’s instistence
+in the Stable Zone, and the MWGS data which showcase minimal evidence for the resurgence of
+gamma squeezes in the market.
+Thus, the goal is to brace for downside and while said downside is downsiding, we can check in
+on VoEx and the MWGS data to see just how resolute they are.
+
+Until then, happy trading!
+
+
+Justin
+
+
+
+
+Deep Dive Stocks – Weekly Chat         for the week of             2025-05-19 to 2025-05-23
+                                            Quick Note!
+
+Hello friends!
+This is a quick note to apprise you as to the going-ons behind the scenes - its been awhile!
+
+Basically, as you all know, I've spent the past few months getting more familiar with ~webdev~
+so that I could update the dashboard. The consequence of this is I have learned quite a bit!
+Thankfully, for us, learning-time seems to be over, as its time to put some of my newfound lessons
+to the test.
+To that effect, here is the following updates actively in the works, with some tech details for you
+nerds:
+- The dashboard is likely going to be migrated from shiny-sever to a svelte front-end with a Rust
+actix backed but I am still going to focus on getting some of the critical missing features from
+the current dashboard squared away prior to this. This will be a big nice change! If I can get things
+going just right, we will be able to have some really nice and reactive data displays and graphs
+with using D3.js and chart.js!
+Originally I was attempting to avoid having to redo the whole framework so extensively, but after
+conversations with TV regarding bringing LDPM/S into the dashboard via TV charts, it seems like
+the only option (they don't want their charts behind paywalls, so we have to build our own!).
+Also, this backend will have API access finally! Which I have finally gotten a decent grasp of. This
+also means that there is going to be live-data integrations (especially now that I know async
+Rust!).
+Another change is the data storage, which is undergoing a total revamp which will include
+significantly more query potential for all of you data heads. Migration from a standard storage
+scheme to a fancy sleek relational database is currently underway. The current data storage is
+based on a very static system, which is why our market scans have been difficult to scale. A
+potential happening is that if things appear to be going on the "slow is smooth and smooth is
+fast" side of things, I may work on integrating this new database schema directly into the existing
+dashboard to play with and speed things up some.
+
+- Most of the core algorithms have been translated to Rust/C in preparation for this migration
+(except, admittedly, the directionalization algorithm proper - I'm dreading that but it will be done
+soon). This means that data processing will be very much faster. To this end, the processing is
+likely going to be moved towards a dedicated server as well; this should greatly increase the
+speed and will work to push the updating process down significantly.
+
+Naturally, these updates are just a high-level view, I have a lot of smaller details that I hope to
+impress you with later on, but for now, I wanted to thank you for your patience as I spent time
+learning!
+I hope to have more formal updates and patch notes extending from these activities here shortly,
+and in the mean time, I wanted to express my appreciation for your hanging about while I got my
+webdev act together! I am hoping to make it worth your while. Happy trading - Justin
+
+
+
+Deep Dive Stocks – Weekly Chat            for the week of               2025-05-19 to 2025-05-23
+

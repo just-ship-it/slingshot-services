@@ -1,0 +1,150 @@
+                                     Weekly Chat 2026-02-02
+
+
+                                            Main Points
+
+
+       -   VoEx remains in the Propagation zone for $SPY and $QQQ.
+       -   Hedging heatmaps showcase purchasing support for both $SPY and $QQQ.
+       -   Market-wide gamma squeeze data has experienced a growth and the predictive
+           data suggest growth-rate will increase in the future.
+       -   LS&T study demonstrates wide-spread bearish liquidity with multiple over-head LT
+           resistances.
+
+                                             SUMMARY
+
+
+           Last week the idea was turbulence and downside and the week before us appear
+           similar.
+
+           VoEx remains in the Propagation zone for $SPY and $QQQ, while VoEx-daily (for
+           both) have exited stability.
+
+           Said VoEx behaviors coїncide with supportive hedging heatmaps for both $SPY
+           and $QQQ. $QQQ’s heatmap demonstrates a vanna-dependent orientation with
+           diminishing purchasing support in the event of 𝐼𝐼𝑉𝑉 +.
+
+           The market-wide gamma squeeze data show a modest increase in the week,
+           particularly of note given the predominately flat week. The predictive MWGS data
+           suggest the future will see a faster rate of GS growth than is currently present.
+
+           LS&T data showcases persistent bearish liquidity and multiple LT over-heads.
+           Downside support appears to be around 8% down at LT-6 on the weekly.
+
+           Overall, turbulence and continued downside is expected.
+
+
+
+
+Deep Dive Stocks – Weekly Chat             for the week of                 2026-02-02 to 2026-02-06
+                                                 DETAILS
+
+
+
+
+Hello everyone! Last week we had visions of turbulence that would ultimately resolve to the
+downside. This is exactly what happened! In fact, the idea last week was that the purchasing
+support present would help push above the LT asks but that ultimately this seemed like “… a stall
+before continued downside”.
+Indeed!
+$SPY managed a 0.40% move to the affirm while $QQQ moved 0.14% to the downside. These
+moves can be visualized below with the hedging heatmaps:
+
+
+
+
+Not too shabby!
+Thus, this week, the goal is simple: investigate if the downside shall start on the morrow or if
+continued market obstinance will usher in another bounce.
+So, without further ado, let’s get started!
+To do an ado is to be an ado
+
+Starting as usual with VoEx, we find:
+
+
+
+
+Deep Dive Stocks – Weekly Chat                for the week of         2026-02-02 to 2026-02-06
+For $SPY and $QQQ, both VoExes reside still within the Bearish Zone, while VoEx-daily resides in
+the neutral-zone. Its worth mentioning that VoEx-daily for both recently experienced a VoEx-spike
+with the early-week appreciation, but one that didn’t move far northward (in fact, $SPY’s appears
+to have been stuck on the boundary to the bullish zone!).
+Overall, these data still point towards downside – marginally on the near term (it would be most
+ideal if VoEx-daily had moved back into the Propagation Zone but alas), and definitely on the
+longer-term.
+Thus, with sights set predominately on the downside, let’s check out the hedging environments
+to see how the market might assist or desist our intentions:
+
+
+
+
+Desist it would seem! With purchasing support located locally for both $SPY and $QQQ, and with
+purchasing support located spot-down, the hedging activity expected for the week ahead appears
+to be predominately in the bullish-flow camp.
+It is worth mentioning that $QQQ is in a bit more of a pickle than its counterpart $SPY given the
+diminishing purchasing should IV increase. Something to keep in mind as the week progresses
+(i.e.: the bullish would likely much prefer that $QQQ’s IV decrease!).
+Moving onwards to the market-wide gamma squeeze data, we find a modest increase in gamma
+squeeze (not shown) from 743 to 858 (+15%); a modest increase. This is paired with the predictive
+data which has just poked
+into positive territory!
+This suggests that in the
+future, the rate of growth of
+gamma squeezes will be
+greater than it is today! Last
+week, we mentioned these
+data should be monitored
+for such an event (which
+would       suggest       that
+downside is still nearing)
+and so it would appear as
+though downside is still
+appearing!
+
+
+Deep Dive Stocks – Weekly Chat          for the week of               2026-02-02 to 2026-02-06
+Lastly, let’s check in with LS&T for ES to see how liquidity conditions are:
+
+
+
+
+On the 90-minute, bearish liquidity with LT resistances located immediately spot-up. Worth noting
+that the “scoop” that is underway after the most recent Aggressive Ask (on the 30th AH) has been
+“disrespected” – that is to say, price has fallen below LT-1 and LT-2 – suggestive that the rest of
+the scoop will be unsuccessful. This brings doubt to ES’s ability to mount above LT resistances.
+Curiously on the 144-minute (top-right), we find the start of an aggressive bid with bearish
+liquidity. The bearish rejoice here is that even with the early signs of an aggressive bid, liquidity
+has maintained its bearish stance and spot has failed to overtake LT-6 & 7.
+On the 987-minute, we find bearish liquidity with the early signs of an aggressive ask (all LTs are
+pointed upwards but just so ). This gives bearish ideations as LT-7 is once-again tested for
+support.
+Lastly, on the weekly, we have bullish liquidity but another week where spot was unable to regain
+ground above LT-5.
+
+Overall, this suggests a weakened market evermore – with evidence of aggressive bids that are
+failing to bring bullish liquidity or mount above LT resistance and a wide-spread bearish liquidity,
+it would seem conditions are well poised towards the downside for the future ahead.
+With regards to where said downside would be, for now, we only have the weekly view to give us
+a concrete floor, and said floor sits currently at $6,485.20 (-8ish%).
+
+
+
+Deep Dive Stocks – Weekly Chat            for the week of                2026-02-02 to 2026-02-06
+So, overall, downside seems the most prudent outlook for the week head: VoEx remains in the
+Propagation Zone, the predictive MWGS suggests growth will continue to increase, LS&T
+showcase wide-spread bearish liquidity and LT ceilings once more; the only bullish reprieve
+comes by-way of the hedging heatmaps, of which said purchasing support is partially dependent
+on $QQQ’s IV not dropping too much, should it find the time to do so at all.
+Turbulence and downside ahead –
+
+
+Happy Trading,
+
+
+Justin
+
+
+
+
+Deep Dive Stocks – Weekly Chat         for the week of             2026-02-02 to 2026-02-06
+

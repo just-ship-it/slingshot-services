@@ -1,0 +1,259 @@
+[
+  {
+    "file": "weekly-chat-2026-03-08",
+    "report_date": "2026-03-08",
+    "direction": {
+      "call": "bearish",
+      "confidence": "high",
+      "summary": "All data unanimously bearish; downside expected to continue with a conservative 3% downside target toward LT6 support.",
+      "conditions": "QQQ's heatmap purchasing support could soften the decline (float down vs slam down); any bounce is mere volatility, not changing tides.",
+      "quote": "In sum, these data are resoundingly bearish!"
+    },
+    "levels": [],
+    "notes": "Downside target expressed only as a percentage (LT6 ~3% down), no numeric price levels given."
+  },
+  {
+    "file": "weekly-chat-2026-03-15",
+    "report_date": "2026-03-15",
+    "direction": {
+      "call": "bearish",
+      "confidence": "high",
+      "summary": "Downside expectations renewed and growing: VoEx deepening in Propagation Zone, gamma-squeeze growth, bearish liquidity on all timeframes.",
+      "conditions": "Some risk of a classic bounce, with weekly LT6 the only potential instigator, though its robustness is in question.",
+      "quote": "Overall, downside expectations have been affirmed and continue to grow!"
+    },
+    "levels": [],
+    "notes": "Ends with an admin note about an upcoming Registration Event (users losing/regaining TradingView script access)."
+  },
+  {
+    "file": "weekly-chat-2026-03-29",
+    "report_date": "2026-03-29",
+    "direction": {
+      "call": "bearish",
+      "confidence": "high",
+      "summary": "Very bearish data; downside likely to continue, with only a short-lived early-week bounce possible off LT7 weekly support.",
+      "conditions": "Dip-buyers on 90-minute and LT7 weekly support could produce an early-week bounce, expected short-lived with downside resuming after.",
+      "quote": "Overall, downside is neigh with minimal signs of relenting !"
+    },
+    "levels": [],
+    "notes": "Very short report; author notes technical issues ('everything is breaking') and registration pushed to next week."
+  },
+  {
+    "file": "weekly-chat-2026-04-05",
+    "report_date": "2026-04-05",
+    "direction": {
+      "call": "bearish",
+      "confidence": "medium",
+      "summary": "Bounce underway but with limited fuel; flat-to-down expected as VoEx-daily spike terminates and profit-takers emerge on all intervals.",
+      "conditions": "Heatmap purchasing support plus bullish 90/144-minute liquidity could extend the bounce; LT7 weekly bid effects may persist.",
+      "quote": "Thus, overall, flat-to-down is likely in the week ahead... So downside is likely!"
+    },
+    "levels": [],
+    "notes": "Author notes another very short weekly chat; registration completed admin note included."
+  },
+  {
+    "file": "weekly-chat-2026-04-12",
+    "report_date": "2026-04-12",
+    "direction": {
+      "call": "bearish",
+      "confidence": "medium",
+      "summary": "Near-term mean-reversion downside (~3.5% to LT6) expected, but the broader downturn's bottom looks in; longer-term pivot to bullish paradigm.",
+      "conditions": "If VoEx moves into stability, bottom is confirmed; author advises loosening short positions and expecting a bullish pivot nearby.",
+      "quote": "Thus, downside is expected but not as before, merely as a byproduct of the bulls awakening."
+    },
+    "levels": [],
+    "notes": "Split near-term bearish vs longer-term bullish thesis; downside target given only as ~3.5% down to LT6 (90-minute), no numeric prices. Ends with premium-member roadmap/admin section."
+  },
+  {
+    "file": "weekly-chat-2026-04-19",
+    "report_date": "2026-04-19",
+    "direction": {
+      "call": "bearish",
+      "confidence": "medium",
+      "summary": "After SPY +4.5%/QQQ +6.17%, mean-reversion dip very probable this week (stop at LT-6, -2.75% to -5%), within a longer-term recovery.",
+      "conditions": "If mean-reversion doesn't happen, extra evidence the bottom is in; position for longer-term bullish expectations beneath the expected dip.",
+      "quote": "Taken together, the risk of mean-reversion is substantial and so the immediate expectation is a rocky road down."
+    },
+    "levels": [],
+    "notes": "Downside stops given only as percentages (LT-6 at -2.75% on 90-minute, -5% on 144-minute), no numeric price levels. Header/footer dates still say 2026-04-13 to 2026-04-17 (stale template)."
+  },
+  {
+    "file": "weekly-chat-2026-04-26",
+    "report_date": "2026-04-26",
+    "direction": {
+      "call": "bearish",
+      "confidence": "low",
+      "summary": "Mixed 'recovery or bulltrap' data; near-term turbulence and downside expected once more, but downside threat diminishes further out, followed by recovery.",
+      "conditions": "Dip-buyers on 90/144/987-minute should catch downside quickly; longer-term data (VoEx stable zone, GS collapse) argue recovery is in full swing.",
+      "quote": "Overall, the turbulence speaks to turbulence and near-term downside is expected once more."
+    },
+    "levels": [
+      {
+        "value": 700.0,
+        "instrument": "SPY",
+        "role": "support",
+        "side": "below",
+        "quote": "purchasing support for $SPY and $QQQ not starting until ~$700 and ~$650, respectively"
+      },
+      {
+        "value": 650.0,
+        "instrument": "QQQ",
+        "role": "support",
+        "side": "below",
+        "quote": "purchasing support for $SPY and $QQQ not starting until ~$700 and ~$650, respectively"
+      }
+    ],
+    "notes": "Explicitly mixed/hedged: near-term bearish lean inside a longer-term bullish recovery view."
+  },
+  {
+    "file": "weekly-chat-2026-05-03",
+    "report_date": "2026-05-03",
+    "direction": {
+      "call": "bullish",
+      "confidence": "high",
+      "summary": "Market poised to continue northward; VoEx (QQQ), calmed gamma-squeeze data and bullish LS&T liquidity all aligned pointing up.",
+      "conditions": "Reconsider if QQQ's VoEx returns to Propagation Zone, pGC leaps up, and an Aggressive Ask appears on the weekly.",
+      "quote": "Thus, it seems the data are aligned and pointing up!"
+    },
+    "levels": [
+      {
+        "value": 7184.92,
+        "instrument": "SPX_ES",
+        "role": "resistance",
+        "side": "below",
+        "quote": "spot has punctured ever so slightly therethrough ($7,195.50 vs $7,184.92)"
+      }
+    ],
+    "notes": "SPY's VoEx disagrees with QQQ's (bulltrap vs bull-run) but overall call is bullish; 7184.92 is LT-7 on the 987-minute, just punctured by spot."
+  },
+  {
+    "file": "weekly-chat-2026-05-17",
+    "report_date": "2026-05-17",
+    "direction": {
+      "call": "bearish",
+      "confidence": "medium",
+      "summary": "VoEx-divergence signals draining liquidity and an impending correction; choppy downside expected toward multi-interval supports about 2% down.",
+      "conditions": "Bearish ideations stop at ~2% down (LT-7 supports); early dip-buyers on 144-minute could stall the decline early-week.",
+      "quote": "Thus, the outlook for next week: choppy and down as instability grows!"
+    },
+    "levels": [],
+    "notes": "Downside target expressed only as ~2% down (LT-7 on 144/987-minute), no numeric price levels."
+  },
+  {
+    "file": "weekly-chat-2026-05-25",
+    "report_date": "2026-05-25",
+    "direction": {
+      "call": "bullish",
+      "confidence": "high",
+      "summary": "Data wholly bullish: aggressive bids on 90/144-minute, no profit-takers, cooling gamma foundations; short week primed for another leg up.",
+      "conditions": "Selling pressure extends further down on heatmaps; market must absorb selling or it retests bullish support.",
+      "quote": "Overall, the conditions look primed for another leg up - as crazy as that may sound!"
+    },
+    "levels": [],
+    "notes": "Deliberately short 'speed run' report for a holiday-shortened week; VoEx methodology/aesthetic update mentioned."
+  },
+  {
+    "file": "weekly-chat-2026-06-07",
+    "report_date": "2026-06-07",
+    "direction": {
+      "call": "bearish",
+      "confidence": "high",
+      "summary": "Downside looks imminent: VoEx-daily flirting with bearish zone, bearish liquidity devoid of support, target around $7,200 on ES.",
+      "conditions": "A bounce is liable once the ~$7,200 floor (LT-6 987-minute / LT-5 weekly) is reached; whether it means normalcy is unknown.",
+      "quote": "Overall, downside looks imminent with a target around $7,200 on ES."
+    },
+    "levels": [
+      {
+        "value": 7200.0,
+        "instrument": "SPX_ES",
+        "role": "target",
+        "side": "below",
+        "quote": "downside looks imminent with a target around $7,200 on ES"
+      }
+    ],
+    "notes": "Short report (author promises it's the last short one); the $7,200 target doubles as the expected floor (LT-6 on 987-minute and LT-5 on weekly)."
+  },
+  {
+    "file": "weekly-chat-2026-06-14",
+    "report_date": "2026-06-14",
+    "direction": {
+      "call": "bearish",
+      "confidence": "medium",
+      "summary": "Shaky downside with intermittent spot bursts: up first toward LT ceilings, then downside returns via Jorge's sign bulltrap resolution.",
+      "conditions": "GS data stagnant, so no rapid systemic correction expected; multiple support layers slow the decline; strategy is short the peaks.",
+      "quote": "the outlook can best be described as: shakey-downside with intermittent bursts of spot"
+    },
+    "levels": [
+      {
+        "value": 7473.0,
+        "instrument": "SPX_ES",
+        "role": "resistance",
+        "side": "above",
+        "quote": "the LT6 level at $7,473 has a high potential to act as a stop-check, prompting downside to return"
+      }
+    ],
+    "notes": null
+  },
+  {
+    "file": "weekly-chat-2026-06-22",
+    "report_date": "2026-06-22",
+    "direction": {
+      "call": "bearish",
+      "confidence": "medium",
+      "summary": "More turbulence and downside expected within a range: ceiling ~7,700, floor ~7,300; SPY may see another early-week bump.",
+      "conditions": "SPY surrounded by purchasing support (early-week bump possible); weekly interval still bullish with LT5 bounce potential; SPY/QQQ decoupling.",
+      "quote": "Overall, turbulence and downside expected with a reasonable ceiling of $7,700-ish ... and a reasonable floor of 7,300-ish"
+    },
+    "levels": [
+      {
+        "value": 7700.0,
+        "instrument": "SPX_ES",
+        "role": "ceiling",
+        "side": "above",
+        "quote": "a reasonable ceiling of $7,700-ish (LT5 on the 987-minute and LT7 on the 144-minute)"
+      },
+      {
+        "value": 7300.0,
+        "instrument": "SPX_ES",
+        "role": "floor",
+        "side": "below",
+        "quote": "a reasonable floor of 7,300-ish (LT7 on the 987-minute and LT5 on the weekly)"
+      }
+    ],
+    "notes": "Prior-week SPY high 756.68 / low 739.22 and QQQ high 744.76 / low 720.85 mentioned as history, not forward levels (excluded)."
+  },
+  {
+    "file": "weekly-chat-2026-06-28",
+    "report_date": "2026-06-28",
+    "direction": {
+      "call": "bearish",
+      "confidence": "medium",
+      "summary": "Downside is the predominant direction for next week and beyond, though nearby supports make a slight bounce a reasonable first move.",
+      "conditions": "Supports on 987-minute, weekly, and 144-minute dip-buyers could produce a bounce before downside resolution.",
+      "quote": "downside is the predominant direction expected for the next week and more but there is reasonable risk for a slight bounce"
+    },
+    "levels": [],
+    "notes": "Data hiccup week: several data sections missing (heatmaps, gamma-squeeze skipped); very short report jumping from VoEx to LS&T."
+  },
+  {
+    "file": "weekly-chat-2026-07-05",
+    "report_date": "2026-07-05",
+    "direction": {
+      "call": "bullish",
+      "confidence": "high",
+      "summary": "The anticipated bounce is underway and likely continues: VoEx-daily shot upward, purchasing support all around, dip-buyers on 987-minute.",
+      "conditions": "Bounce ends if IV drops substantially (support dissolves into selling pressure) or an LT ceiling like $7,632 is reached.",
+      "quote": "at least until IV prompts selling pressure or one of the LT ceilings is reached. Until then, bullish is the word!"
+    },
+    "levels": [
+      {
+        "value": 7632.0,
+        "instrument": "SPX_ES",
+        "role": "ceiling",
+        "side": "above",
+        "quote": "The 144-minute shows a bulltrap with a ceiling at $7,632 (which represents the next likely \"stop\")"
+      }
+    ],
+    "notes": "Bullish call is explicitly a bounce within an ongoing VoEx downtrend (VoEx still migrating south overall)."
+  }
+]

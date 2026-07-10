@@ -1,0 +1,160 @@
+                                   Weekly Chat 2024-11-25
+
+
+                                          Main Points
+
+
+
+    -   VoEx has migrated back into stability.
+    -   Hedging environments present with persistently local purchasing support.
+    -   Put-selling was responsive throughout the week to IV changes and remains positive.
+    -   Overall, bullish ideations reign supreme.
+
+
+
+                                           SUMMARY
+
+
+
+          Last week, there was concern that the market was still shaking off a good
+          bit of its instability such that there was threat that this process may extend
+          the downside outlooks. For now, however, it seems that these fears were
+          unrealized and the ever-looming spectre of downside seems to be fading.
+
+          VoEx-daily has rebounded back into Stability, re-joining its VoEx brother
+          therein. This is a bullish presentation to the data.
+
+          The hedging environments offer pretty consistent purchasing support in
+          all directions, except for $QQQ who presents with slightly less
+          immediately-spot-down purchasing support than $SPY. This presents an
+          avenue of risk and an opportunity for observation throughout the week.
+
+          Overall, the data do not appear to reflect continued threat of imminent or
+          prolonged downside, with the market seemingly well-poised to absorb any
+          strong ask. Thus, a return to bullish outlooks commences.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                         11/25/2024
+                                            DETAILS
+
+
+
+
+Hello everyone!
+Last week, we left off with more notions of downside due to the data bearishly scattered about
+but with the market moving pretty steadily in the opposite direction, we are left with a bit of a
+head-scratcher.
+We can see the peculiarities with the price-movement in the hedging heatmaps below:
+
+
+
+
+The first-half of the week is clearly characterized by a spot-up, IV-up dynamic that is always a
+pleasant surprise (in that its not).
+So, this week, let’s continue our investigations regarding the anticipated downside and the
+projected duration thereof (if there is any duration left, that is!).
+Let’s get started and then have a chat about the dashboard migration next week!
+Already started
+
+Starting as usual with VoEx, we see:
+
+
+
+
+Bullish ideations abound! With VoEx maintaining its position within stability and VoEx-daily
+rejoining VoEx therein, the interpretation is pretty straightforward: the downside has faded and
+
+
+Deep Dive Stocks – Weekly Chat                                                      11/25/2024
+upside has appeared. Last week’s concern regarding VoEx-daily returning into the Propagation
+Zone seems to have passed. For now, VoEx-daily is pointed away!
+Quick and easy – bullish interpretations!
+How are the hedging environments poised to respond to this bullish vibes?
+
+
+
+
+Pretty-well! It looks as though the market is prepared to offer a reasonable amount of purchasing
+support in all directions – although $SPY does present with its usual flirtatious self, comingling
+with nearby selling pressure. Nonetheless, this bodes well when one considers just the data and
+bodes quite disastrously if one considers the market’s response recently to the data.
+You can choose your own adventure this week!
+
+Nonetheless, this suggests that any upside should be “sped along” while any downside should
+have some breaking power applied to it.
+Moving onwards and upwards, we encounter our put-selling friends once more:
+
+
+
+
+A curious mix of activity, it would seem that the early-week increase in IV pushed put-selling into
+negative territory, only to have the end-of-week relaxation produce a small amount of put-selling
+on $SPY and, as is usual, a reasonably more robust response from $QQQ.
+This is a nice healthy bullish print – admittedly not with as much fervor as we are always
+desperate for, nonetheless, it shows a responsiveness to IV[+] and a willingness to attempt to
+capture IV[-] profits; such confidence is surly weighted against our put-selling friends concern for
+spot-down, and so, we must conclude that the net balance of considerations favors an
+environment with minimal spot-down risk but with maximal IV-down opportunity.
+
+Deep Dive Stocks – Weekly Chat                                                         11/25/2024
+Oh but to be a fly on the monitor of one of the put-sellers one day!
+Moving onwards evermore, we would encounter the gamma-squeeze data, but it is largely the
+same, so I’ll save some digital trees: growth-rate is still positive and moving so, despite the weekly
+decrease in gamma squeezes (a total weekly, 10-day, and 20-day decrease of 180 [-18%], 198 [-
+20%], and 219, [-22%] respectively). During this very same period, GTM has maintained its slightly-
+negative disposition.
+
+Taken together these data do still hint at foundational instability (what with the growth rates
+positive and all), but they do not suggest that the instability is extreme or proximal.
+So, taken together, the data are pretty bullish! Any downside should be met with healthy,
+omnidirectional purchasing support and our put-selling friends seem comfortable, well, sell-puts
+in a responsive way.
+Some of the threats that exist do stem from $QQQ’s heatmap – too much spot-down may trigger
+the gamma-neutrality void into selling pressure – but said threat should minimize as the distance
+therefrom maximizes.
+Should price dip, and VoEx with it, then I might consider another whip-lashing head-turn back to
+near-term bearish but I would still expect a buy-the-dip moment more than a prepare-for-more
+moment.
+Happy Trading,
+
+
+Justin
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                           11/25/2024
+Dashboard migration!
+The new dashboard is up and runnin’, you can check it out at https://dd.deepdivestocks.com , just
+be advised it won’t always be up (as I’ll be tinkering with it over the next week) but starting on
+Monday December 2nd, 2024 the new dashboard will be `dd` instead of `data-dash`.
+The good news is there’s nothing you need to do! All of the log-in stuff has been handled.
+
+
+But
+
+
+The bad news is I’m not quite perfect just yet and a consequence of said failing is that the watch
+list is inoperable.
+Sorry!
+The good news to this good news, however, is that it won’t really be necessary for the watch list
+to be operable, as developing the new version of the dashboard is now fully underway!
+
+Give me a few months and then you’ll never even remember the watchlist was broken (I’m also
+still working on fixing it, so its possible that happens too).
+There are a lot of upgrades I am planning on baking into this upgrade, and I’ll keep you updated
+as they come on-line!
+
+If you think of any ideas, comments, or suggestions for the new dashboard, please feel free to
+drop them in the Discord channel for suggestions or send me an email!
+
+
+Justin
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                       11/25/2024
+

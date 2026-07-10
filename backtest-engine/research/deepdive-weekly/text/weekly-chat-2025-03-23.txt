@@ -1,0 +1,392 @@
+                                   Weekly Chat 2025-03-24
+
+
+                                          Main Points
+
+
+
+    -   VoEx-daily for $SPY and $QQQ have spiked with minimal-to-no underlying price-action;
+        VoEx itself remains within the P.Z..
+    -   Hedging environments show a locally supportive environment but with selling-pressure
+        headwinds and diminishing purchasing support tailwinds.
+    -   Put-selling shows a rapid increase in action on $SPY in the latter-half of week while
+        $QQQ is demonstrating a persistent, slow growth of DLP activity.
+    -   MWGS shows a rapidly decreasing growth curve, and a positive GTM.
+    -   LDPM and LDPS showcase bearish liquidity throughout but with several identifiable
+        “scoops” noted.
+    -   Elevated risk for minor bull-trap that looks poised to resolve significantly on the
+        downside.
+
+
+
+                                          SUMMARY
+
+
+
+          The week was largely flat, and this seems to have angered VoEx as VoEx-
+          daily has begun spiking northwards on $SPY and $QQQ. This brings with
+          it signals of instability and an elevated risk of a bull-run on the near-term
+          time horizon but with VoEx remaining within the P.Z., the overall outlook
+          is still bearish.
+
+          The hedging environments are set to provide initial support to the market
+          but there exists a headwinds of selling-pressure not far from current spot.
+          This harmonizes with the prospect of a bull-run followed by downside as
+          the selling pressure would send the price downwards into diminishing
+          purchasing support towards gamma neutrality.
+
+          Put-selling for $SPY and $QQQ is equivalent in performance (elevated) but
+          differs in interpretation; whereas $SPY’s accumulation of DLPs is rapid
+          and sudden, $QQQ’s appears to be slow and persistent. The former
+          suggests near-by [$+ , 𝐼𝐼𝑉𝑉 − ] while the latter suggests more fundamental,
+          structural instability.
+
+          LDPM/S data showcase a wholly bearish market in `free-fall` but some
+          identifiable eager-bid scoops underway. The unhealthy nature of these
+          scoops suggests imminent failure on testing the LDPM-L5 organic ask but
+          a test of LDPM-L5 they do suggest, nonetheless. Thus, prudency suggests
+          bracing for a small wave followed by movement downwards.
+
+
+Deep Dive Stocks – Weekly Chat          for the week of               2025-03-24 to 2025-03-28
+                                             DETAILS
+
+
+
+
+Hello everyone!
+Last week, we left-off with bearish ideations that were coated lighted with a dusting of bullish
+preparation. Such expectations left us relative well-off with a flattish week that saw $SPY move
++0.21% while $QQQ mustered a substantial +0.24% week-over-week move. That exactly the
+bearish performance expected but at least the bull-trap wasn’t too ferocious.
+The silver-lining in these moves is that we don’t have to bust out the handy-dandy EPR-notebooks
+as these values are well, well, within the expected price ranges. Thus, we can move directly to the
+hedging heatmaps and check on the progress throughout the week:
+
+
+
+
+It seems that for the most part, the market meandered at the boundary zone, lifted-up ever-so-
+slightly by the purchasing support. It would seem last week’s Influence Distribution showcasing
+the highest probability for the week ahead being ~0.00% (via the peak being near 0) wasn’t too
+far off!
+But, with such a stall, many have called for the advancement of the cessation of continued
+downside, ultimately leading to, should said proclaimaters have their way, a reversal of price-
+action. Although from prior projections, this outcome seems unlikely, given how voluminous this
+chorus has become (and out of an abundance of prudency), perhaps some additional digging
+should be performed to see if the bottom is in fact in, and, if so, what that means for us.
+
+Then, let’s briefly chat about our long-time friend and foe: the hedging heatmap algorithm.
+Righto!
+
+
+
+
+Deep Dive Stocks – Weekly Chat           for the week of               2025-03-24 to 2025-03-28
+Starting as usual with VoEx
+
+We see:
+
+
+
+
+VoEx Spikes! Especially on $SPY but also noticed on $QQQ. Whereas VoEx itself is remaining
+well-housed within the Propagation Zone, we can see VoEx-Daily spiking rapidly northward! A
+classic combination suggesting a bull-trap is underway.
+A curious finding is that this VoEx Spike (which is emblematic of instability) occurred with quite
+a muted week (price-action wise!). This suggests that the market is particularly sensitive to price
+appreciation in an unstable manner1. Typically, such performance are heralds to upcoming bull-
+runs (and eventual traps) and so an additional level of risk does indeed seem prudent.
+For now, in broad strokes, current VoEx behavior seems to be reminiscent of 2025-01-01 whereby
+VoEx-daily spiked, price slowly appreciated and then VoEx-daily gave way, leading to the most
+recent downslide; since this occurred while VoEx itself was in the Propagation Zone, the whole
+ordeal was considered a bull-trap.
+It would seem a similar situation is unfolding, or at least, attempting to unfold currently.
+Thus, with both appreciation (of the bull-trap variety) and depreciation (of the VoEx in the P.Z.
+zone and VoEx-daily Spike variety) on the table, let’s check on the hedging environments to scout
+out the potential futures ahead of us:
+                                                Note:
+       The hedging heatmap algorithm has undergone bug-fixes, as described below and in the
+                                     upcoming patch notes.
+      Thus, the heatmaps displayed here may be different from those currently (as of the time of
+                    writing) displayed on the Dashboard and/or within the PDFs.
+
+
+
+
+1
+    A recent finding as of late!
+
+
+Deep Dive Stocks – Weekly Chat             for the week of              2025-03-24 to 2025-03-28
+ At the time of writing, the algorithms for the dashboard and the heatmaps are undergoing the
+                 respective bug fixes and are set to no longer have decencies.
+                                  Apologies for any inconveniences!
+
+
+
+
+A supportive environment! There does seem to be some head-winds ahead by-way of a ridge of
+selling pressure.
+
+This presents the market with two opportunities to achieve gamma-neutrality: either upwards and
+to the left [$+ , 𝐼𝐼𝑉𝑉 − ] through the selling pressure or downwards and to the right [$− , 𝐼𝐼𝑉𝑉 + ] through
+diminishing purchasing support.
+The influence distribution for both $SPY and $QQQ favor the former, with both displaying an
+elevated slightly-positive outlook for the week ahead.
+Thus, to answer the question as to if the hedging heatmaps are supportive for a bull-trap or
+reversion back to expected-programing (i.e.: downside), the answer seems to hinge on whether
+or not the market is prepared to absorb any selling pressure; if yes, then the market seems well-
+equipped with local and immediate purchasing support to catapult upwards into gamma
+neutrality (and then, if I were a betting man, fall back down) but if no, then the market’s initial
+contact with the selling pressure will send price hurling downwards towards gamma neutrality.
+
+A more contentious, if not explicitly annoying, avenue of future performance also rests in the
+market bouncing back and forth throughout the week between the selling pressure and
+purchasing support. If so, maybe a calendar spread at or near the boundary between the two for
+the week ahead? Who knows – maybe it’s time to go throw inhibition to the wind and live on the
+wild sign of non-algorithmic trading.
+With the stage set and consisting mainly of VoEx within the Propagation Zone (signaling expected
+protracted downside) and VoEx-Daily spiking northward (signaling an unstable bull run forming)
+and a hedging environment set to provide headwinds to the latter, it seems conditions are tilted
+toward up-then-back-down. Let’s check in on what our put-selling friends are observing.
+
+
+
+
+Deep Dive Stocks – Weekly Chat               for the week of                 2025-03-24 to 2025-03-28
+One must admit, this seems like a bullish expectations! On $SPY, the latter-half of the week (the
+flattish part, you’ll remember) it seems there was some up-tick in put-selling on $SPY, and a
+general week-long increase on $QQQ. This suggests continued expectations for profitability in
+the [$+ , 𝐼𝐼𝑉𝑉 − ] directions! Of particular curiousness, is $QQQ’s behavior, which is starting to look
+like a general, persistent increase in DLP behavior since around the end of January!
+What strikes my attention the most with this showing of data is that, as you’ll remember from our
+initial investigations into DLPs from Weekly Chat 2022-06-06, it was noted that there was a pattern
+in the data such that long-term, slow accumulation of DLPs were associated with future market
+                                                           downside, while short-term, rapid
+                                                           accumulation was associated with
+                                                           rapid appreciation. As seen below:
+                                                                                        And it looks like on $QQQ this is
+                                                                                        exactly what we see – long term,
+                                                                                        steady accumulation of DLPs!
+                                                                                        Admittedly, this is from a time before
+                                                                                        I got somewhat better from graphs,
+                                                                                        but the idea was simple: a steady flow
+                                                                                        of dealer long puts was associated
+                                                                                        with future market downturns due to
+                                                                                        the inherent instability they provide2.
+                                                                                        Thus, this brings some conflict into an
+                                                                                        already     contentious    data-field:
+                                                                                        whereas on $SPY the DLP behavior is
+                                                                                        rapid, and spikey (such as would be
+
+
+2 Consider an OTM DLP that starts becoming ITM. This will cause the option dealer’s delta to move to -1 (𝛿𝛿 → 1− in nerd speak) and so the option
+
+dealer will be forced to initially purchase shares (as the 𝛿𝛿 < 0 → 1− this means more negative delta which means more equity-delta needed to
+achieve neutrality!). But! As those DLPs rapidly unwind as they approach ITM, the 𝛿𝛿 < 0 that has been accumulated needs to be rapidly
+unwound. This causes aggressive de-leveraging and rapid selling into the market. Additional, and to a lesser-known degree, the long-accumulation
+(and profitability) of DLPs has a similar effect as the puts decay; whereas DSPs decay and provoke a steady stream of long equity into the market,
+DSPs decay and provide a steady stream of short equity into the market! Thus, consider the situation wherein you have persistent put-selling
+which is already in a “decay cycle” and moving short equity into the market, and then the market experiences a downside, the DLPs work to
+absorb some of the ask (by way of promoting dealer purchasing) but if at some point the collective zeitgeist is such that the DLPs need to be
+rapidly closed, all of this “potential energy” is suddenly released into the market, at presumably, a bad time!
+
+
+
+Deep Dive Stocks – Weekly Chat                               for the week of                            2025-03-24 to 2025-03-28
+expected for a turn-of-events), $QQQ’s DLP behavior is slow and steady (such as would be expect
+to precede a market correction!).
+Perhaps Monday’s DLP performance will be most noteworthy: should $SPY’s behavior move to
+zero, then we can side with $QQQ’s outlook quite confidently; and if it doesn’t, well, not everything
+in life is easy!
+
+
+                                                                     Moving onwards and upwards, the
+                                                                     Market-Wide       Gamma        Squeeze
+                                                                     (MWGS) data presents with us a
+                                                                     curious showing. The recent stalling
+                                                                     in price action has seen a rapid loss of
+                                                                     growth rate (top graph, blue line),
+                                                                     while gamma squeezes have
+                                                                     decreased 20% in the last 10-trading
+                                                                     days.
+                                                                     During this time, we can also see GTM
+                                                                     has risen rapidly into long territory,
+                                                                     suggesting the flow of gamma
+                                                                     heading towards the market is
+                                                                     robustly long.
+                                                                     I don’t like this. For no real reason
+                                                                     other than hand-wavy ones3.
+                                                                     But, in being empirical, one must
+                                                                     acknowledge         the       apparent
+                                                                     bullishness of the data; decreasing GS
+                                                                     counts and an increasingly positive
+                                                                     GTM that suggests continued
+                                                                     degradation of gamma squeezes, and
+                                                                     thus, bullish market performance.
+
+
+However, as I mentioned previously, something about this feels off. So, I did some tinkering! The
+net result is likely an upcoming upgrade to the MWGS data, namely the top-most graph. Instead
+of just displaying nominal data, I decide to work-up a quick algorithm to help contextualize and
+capture the meaningful changes in the data.
+I will likely work on this over the next week or so, but so far, things look good! Have a peek:
+
+
+
+
+3
+ I’ve been somewhat longfull for a chance to improve the MWGS data, in particular the top graph. I find the data
+to be helpful but with time, inspiration has fostered some ideas for improvements!
+
+
+Deep Dive Stocks – Weekly Chat                  for the week of                   2025-03-24 to 2025-03-28
+Besides the colors, the differences are:
+   -   Whereas the initial growth curve was essentially just monitoring the actual change in
+       gamma squeeze counts, the new algorithm, the `Predictive Count Algorithm` takes these
+       same data but runs them through a somewhat ad hoc unsupervised learning algorithm
+       and voila! Instead of just looking at the growth we get a pretty decently predictive growth
+       curve! This means the line tells us both the relative amount of gamma squeezes (you’ll
+       note the general shape of the green line is the same as the regular GS count graph) but it
+       also is telling us (or attempting to tell us) where the growth looks like it is headed!
+
+       So, whereas in the original graph, the growth curve is pointed distinctly in the negative
+       direction, we can see with the new system, this recent decrease in gamma squeezes
+       hasn’t affected the expected future behavior! The green line is still pointed up -admittedly
+       less so than perhaps the younger version- but up, nonetheless.
+
+   -   Another difference is the brown line, or the `Predictive Growth Algorithm` – this is an
+       attempt to mirror the GTM data but from a different angle (namely, not the GTM
+       algorithm). Although not exactly the same, a reasonable analogy to this curve is an
+       “acceleration” curve. When the line is above zero, it indicates that the growth is
+       accelerating in the positive direction (hitting the gas on the growth momentum) and when
+       it is below zero, it indicates that growth is decelerating (applying the breaks to the growth
+       momentum).
+There’s still some work to do but I think it’s a good first start to improving our view of gamma
+squeezes.
+So far, things are quite messy. VoEx-proper suggests continued downside as both $SPY and
+$QQQ’s VoExes are residing deep within the Propagation Zone, but in the near-term, VoEx-daily’s
+
+
+Deep Dive Stocks – Weekly Chat             for the week of             2025-03-24 to 2025-03-28
+spiking (with very minimal price action) suggests brewing instability, of which the classic
+expectation is a bull-trap performance.
+In searching the local environment to see which outcome may be more favored by the forces-
+that-be, we find a locally supportive environment for bullish performance, but this purchasing is
+poised to give way to a field of selling pressure, and the purchasing support in the down-direction
+finds itself wearing a tad thin as it approaches gamma neutrality. If one were looking for an
+environment supportive of an up-then-back-down future, this would seem like a fortuitous
+configuration!
+Then, in turning to the put-sellers, we find a spike of DLP activity on $SPY (that may or may not
+be in the process of cessating) which provides a near-term bullish outlook, while on $QQQ, the
+data show a progressively increasing rate of DLP activity, which is known to provide substantial
+instability in the presence of a market “shock”.
+In seeking reprieve, we find the MWGS data showing largely the same: a reduction in GS “activity”
+suggesting a near term reprieve but the overall growths are still positive, suggesting a more long-
+term bearish expectation.
+Moving onwards for clarity, let’s take a peek at LDPM/LDPS for clues. First up is $SPX on the
+weekly timeframe with LDPS on `Balanced` (note, this is the LDPM/S updated algorithms).
+
+
+
+
+This view shows price “clinging” to LDPM-5 but with bearish liquidity. This suggests degradation
+of the “cling” will result in movement to LDPM-6 at $5,350-ish (-5.00%!). The irksome part is that
+this view alone can’t tell us for how long the cling is likely to cling.
+Searching for cracks in the suction, we can `zoom in` some, where we arrive at the 987-minute
+for $SPX which showcases a recent test of LDPM-987 [pink line] resulting in a bounce:
+
+
+
+
+Deep Dive Stocks – Weekly Chat           for the week of               2025-03-24 to 2025-03-28
+The support providing by the organic bid at LDPM-L1 seems to have little follow through as there
+are minimal eager-bids working to move under spot, and liquidity remains bearish. This minimizes
+the chances for a bull run but it does set a ceiling for us, should it occur: where-ever LDPM-L5 is!
+Switching views laterally, we arrive at ES futures on the 987-minute, as seen below:
+
+
+
+
+This shows a migration supported by an eager-bid scoop upwards towards LDPM-L5. Ordinarily
+this would suggest continued upwards movement as the eager bids work to “test” the organic
+
+
+
+
+Deep Dive Stocks – Weekly Chat            for the week of              2025-03-24 to 2025-03-28
+ask at LDPM-5 but one might well notice there’s a kink in the scoop’s armor! Namely, the scoop
+broke!
+You’ll remember from Weekly Chat 2024-07-29, not all scoops are equal!
+
+
+
+
+The top panel shows the morphology of a failed scoop, namely that of poorly defined boundaries,
+and non-robust eager parties (rapid switching from eager bid to eager ask at the slightest
+downturn; look at LDPM-13’s behavior on the top graph), and multiple failed LDPM-scoop
+boundaries (not the price `ignoring` LDPM-13, -21, and -34 at various points).
+
+Compared with the morphology of a successful scoop, on the bottom panel, which shows very
+distinct and “directed” movements, the eager parts `hold their line` as the price tests them;
+ultimately leading to a `merging` of sorts of the eager bid back into an organic bid to support
+continued bullish movements.
+If we compare these examples with the current ES scoop, it appears to be more of the former
+than the latter: the eager bids are erratic, loosely defined, and there have already been several
+episodes of rapid conversion from eager bid to eager ask. This suggests that any upcoming tests
+of an organic ask will likely fail.
+So – by and large, it seems through some preponderance of the data, it looks as though there is
+fertile ground for a bull-trap to raise the market somewhat, but there is currently minimal data to
+suggest that this performance would be supported in the long-term.
+Thus, for now, acknowledgement of the current potential for movement upside, but the data still
+suggest downside is most likely overall. This means the chorus will have to be ignored for a tad
+longer as perhaps not all screaming is singing.
+Happy Trading!
+Justin
+
+
+Deep Dive Stocks – Weekly Chat           for the week of               2025-03-24 to 2025-03-28
+Pesky algorithms doing pesky things
+There has been an invasion of the swiss within DDS’ systems. Yes, that’s right. Swiss cheese.
+The heatmaps for a while now have differed slightly in their algorithms due to various computing
+restraints but by-and-large the differences produced were negligible. This, however, has begun to
+change as the market has become more turbulent! This is, of course, precisely when one does
+not want their data streams to start differing.
+
+Long story short, there were several small issues with the cross-performance of these two
+algorithms that were, at various and differing times, provoking different pathways of computation,
+and ultimately, leading to different outlooks.
+These issues were multi-faceted and difficult to pin down and as such, there is no “correct”
+version of the heatmaps, as there are times when it was the PDF’s heatmap algorithm that spun
+out of control and at times it was the Dashboards.
+The good news is, however, I have found all of the loose wires! I am in the process of incorporating
+the changes throughout the system and am planning on getting a patch through before Monday’s
+processing; however, admittedly, I will be watching Monday’s processing for any issues so there
+may be a small chance of a delay in case I’m not thorough enough in my preparations.
+I apologize for the inconvenience!
+
+Another silver lining here is that the updated dashboard will have an entirely new system where
+these types of issues will no longer be of issue; only different, newer type of issues to have issue
+with.
+Also – there is an upcoming critical update for LTA, with the following proposed changes:
+
+   -     Algorithmic upgrades,
+   -     Ability to enter/exit position within the same “cycle” without having a built-in pause.
+   -     General fixes (typos, spelling, etc.).
+
+If there is anything you would like to see fixed / improved explicitly, let me know and I’ll see what
+I can do.
+I am planning on having this update done for next weekend, so by Friday 28th, March 2025. I will
+also use this opportunity to switch everyone over to the new T.V. script anyways.
+After all that, we’ll talk about the latest updates and moves towards the new dashboard!
+
+
+Happy Trading (again and evermore)
+Justin
+
+
+
+
+Deep Dive Stocks – Weekly Chat             for the week of               2025-03-24 to 2025-03-28
+

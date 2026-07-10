@@ -1,0 +1,360 @@
+                                     Data Dashboard Patch Notes
+                                              2023-07-21
+
+
+Market Scan
+      The Market Scan has undergone significant changes both with its UI and its quarriable metrics.
+
+      UI
+      - The selections are now located at the top of the page, and can be accessed by pressing the
+         relevant button.
+      - The market scan is initiated via pressing “Perform Scan” after selecting all of the desired
+         selection criteria.
+      - The selection criteria can now be reset with the “Reset Scan” button.
+      - Several “pop-up” tool tips have been added to test their functionality and benefit.
+
+
+      Functionality
+
+      -   Directional Options Filter
+                  The Market Scan can now filter for
+                       Dealer Long / Short OTM Calls
+                       Dealer Long / Short OTM Puts
+                  There are two additional criteria that can be selected within the “Directional Options”
+                  criteria:
+                       Remove Outliers : this will remove the top and bottom 25% off the results,
+                           based on the percent change.
+                       “Set %-Change Ranges” : if a particular greater-than or less-than or range-of-
+                           percent-change values are desired, this can be selected, and the relevant inputs
+                           provided.
+
+      -   Volume Filter
+                Filtering by Volume can now be done in a similar way as described above, with greater-
+                than, less-than, or a range of values being selected.
+
+      Future Work
+      -   Future work will be aimed at increasing the dynamic nature and useability of the market scan
+          for the currently available criteria as well as adding some more.
+                                     Data Dashboard Patch Notes
+                                              2023-07-21
+
+General Updates
+   -   Approximately 1,100 new stocks have been added to DDS’ repertoire. For a complete list of
+       added stocks, see the last page.
+
+
+Bug Fixes
+
+   -   There was a bug causing erroneous error handling due to certain inputs when searching for stock
+       data. This has been fixed.
+   -   A bug causing volume to not be appropriately filtered-for in the Market Scan. This has been fixed.
+   -   There were issues with some unintended files being transferred to the Dashboard as report
+       PDFs. This has been fixed.
+   -   There was an issue with checking user-supplied inputs over-reacting. This has been fixed.
+                   Stock Availability
+                       2023-07-16
+
+
+
+Symbol    Symbol       Symbol       Symbol    Symbol
+AACT      CLAYU        HKD          MS_P_O    SDAWW
+AACT_WS   CLBR_U       HKIT         MS_P_P    SDRL
+AAPB      CLBR_WS      HLN          MTBL      SDSI
+AAPD      CLCO         HLP          MTRYW     SEDA
+AAPU      CLIA         HMA          MURFU     SEPA
+ABL       CLINU        HMAC         MURFW     SEPAU
+ABLLW     CLIP         HMACR        MUSQ      SESG
+ACABW     CLMB         HMACU        MVLA      SES_WS
+ACAC      CLOA         HMACW        MVLAW     SETM
+ACACU     CLOI         HOLO         MWG       SFLR
+ACACW     CLOZ         HOLOW        NA        SFR
+ACAQ      CLRCR        HOUS         NAAS      SFWL
+ACAQ_WS   CMCA         HPCO         NAMS      SGE
+ACAX      CMDT         HPP_P_C      NAMSW     SGII
+ACAXU     CMND         HROWM        NB        SGIIU
+ACBAU     CNDA         HSAI         NBCM      SGLC
+ACDC      CNVS         HSCS         NBSTU     SGMT
+ACGN      CNXA         HSCSW        NBSTW     SHCO
+ACNT      COEP         HSHP         NCAC      SHFS
+ACRO_U    COEPW        HSPO         NCACW     SHFSW
+ACRO_WS   CONL         HSPOR        NCPL      SHLT
+ACRV      COPJ         HSPOU        NCRA      SHNY
+ADD       COWG         HSPOW        NDIV      SHOC
+ADEA      COYA         HTFC         NEE_P_R   SHPH
+ADOCR     CPII         HUBC         NEOV      SHPP
+ADPV      CPTNW        HUBCW        NEOVW     SILO
+ADRT      CRBG         HUBCZ        NETC      SIO
+ADRT_U    CRDT         HUDA         NETC_U    SKGR
+AENT      CRED         HWEL         NETDU     SKGRW
+AENTW     CRGO         HWELU        NE_WS     SKWD
+AESI      CSHI         HYFI         NE_WS_A   SLACU
+AFAR      CSLM         HYGI         NFNT      SLACW
+AFARU     CSLMU        HYLG         NFTG      SLNA
+AFRI      CSLMW        IBDX         NIKL      SLNAW
+AFRIW     CSSEL        IBDY         NIR       SLND
+AGAC_U    CSWCZ        IBOT         NIRWW     SLND_WS
+AGAE      CTM          IBRN         NIWM      SLRN
+AGBA      CTV_WS       IBTM         NMK_P_B   SMAP
+AGIH      CVIE         IBTO         NOGN      SMX
+AGNCL     CVKD         ICG          NOGNW     SMXWW
+AGRH      CVLC         ICLO         NOPE      SNAL
+AHOY      CVMC         ICOP         NOTE      SNTI
+
+
+                            1
+(continued)
+ Symbol       Symbol    Symbol   Symbol    Symbol
+ AIDB         CVSB      ICU      NOTE_WS   SOLR
+ AIMBU        CVSE      ICUCW    NOVV      SPAQ
+ AIMD         CVU       IDUB     NOVVW     SPE_P_C
+ AIMDW        CWD       IDVO     NPAB      SPHR
+ AIXI         CXAI      IE       NPABW     SPKX
+ AKLI         CXAIW     IFIN     NPWR      SPKY
+ ALAR         CXT       IGTA     NPWR_WS   SPRU
+ ALBT         CZFS      IGTAR    NRACU     SPRY
+ ALCY         DALS      IGTAU    NSPL      SQLLW
+ ALCYU        DCMB      IGTR     NSPY      SRHQ
+ ALCYW        DC_WS     ILAG     NSTB_WS   SROI
+ ALL_P_J      DECA      ILIT     NSTD      SSXU
+ ALPAU        DECT      ILLM     NSTD_U    STBX
+ ALPAW        DECW      IMNN     NTRL      STCE
+ ALPS         DEFI      IMTXW    NTZG      STEL
+ ALTI         DFCA      INBS     NUBI      STHO
+ ALVO         DFGR      INC      NVACR     STIX
+ ALVOW        DFLI      INCM     NVBT      STIXW
+ AMBI         DFLIW     INDV     NVBW      STKH
+ AMBI_WS      DFLV      INFR     NVDL      STR
+ AMID         DFSB      INLX     NVDS      STRV
+ AMLI         DFSE      INTEU    NVDY      STRW
+ AMPD         DFSI      INTR     NVIR      STXD
+ AMPX         DFSU      INTS     NVRI      STXE
+ AMPX_WS      DHAC      IOAC     NWTN      STXG
+ AMZD         DHCA      ION      NWTNW     STXK
+ AMZU         DHCAU     IONR     NXG       STXV
+ ANZUU        DIEM      IPB      NXL       SURE
+ AOTG         DISAW     IPX      NXLIW     SURI
+ APCA         DIST      IPXXU    NXPLW     SVII
+ APCB         DISTR     IQHI     NXT       SVIIR
+ APGE         DISTW     IQRA     NXTE      SVIIU
+ APGN         DIVD      IQSM     NXU       SVIIW
+ APGNW        DIVI      IRAA     NYAX      SVRE
+ APIE         DIVY      IRAAU    OABI      SVREW
+ APLM         DKDCU     IRAAW    OAEM      SVV
+ APLY         DKDCW     IRON     OAIA      SWSSW
+ APMU         DMAQR     IRRX     OAIB      SXTP
+ APRT         DMBS      IRVH     OAIE      SXTPW
+ APRW         DMYY      ISDB     OAIM      SYII
+ APTM         DMYY_U    ISPR     OAKUU     SYM
+ APTMU        DMYY_WS   ISRL     OARK      SYNB
+ APTMW        DOMH      ISRLU    OBDC      SYT
+ APUE         DRLL      ITAQ     OBIL      SZZL
+ APXIW        DRMAW     ITAQU    OBIO      TAFI
+ AQU          DRS       ITCL     OBK       TBCPW
+ AQUNR        DSMC      IVCA     OCEA      TBIL
+ AQUNU        DTI       IVCPU    OCEAW     TBIO
+ ARBB         DTRE      IVRS     OCS       TBMC
+ ARBGU        DULL      IVVD     OCTO      TBMCR
+ ARBGW        DVAL      IWFG     OCTT      TCAF
+
+
+                             2
+(continued)
+ Symbol       Symbol    Symbol    Symbol      Symbol
+ ARP          DVND      IWLG      OCTW        TCJH
+ ARTE         DYTA      IWTR      ODVWW       TCOA_U
+ ASBA         EACPW     IZM       OGCP        TCOA_WS
+ ASCAU        ECBK      JANT      OHAA        TENK
+ ASCAW        ECML      JANW      OIG         TENKR
+ ASCB         ECX       JCHI      OLITU       TENKU
+ ASCBR        ECXWW     JETD      OMH         TETEU
+ ASCBW        EFC_P_B   JETU      ONFO        TFIN
+ ASPAU        EFC_P_C   JEWL      ONFOW       TFINP
+ ASPI         EFHTR     JFBR      OPAL        TFLR
+ ASST         EFRA      JGRO      OPP_P_B     TFPM
+ ASTI         EFSH      JHDV      OSA         TFPN
+ ATAKU        EFXT      JHID      OSAAW       TGAAU
+ ATAQ_U       EG        JIRE      OSEA        TGAAW
+ ATAT         EGIO      JPST      OSI_U       TGL
+ ATEK         EHAB      JPSV      OUST_WS_A   TGN
+ ATEK_WS      EIPX      JULT      OXAC        TGRT
+ ATH_P_E      ELME      JULW      OXLCN       TGVC
+ ATLX         ELTX      JUNT      OXSQG       TGVCU
+ ATMC         ELV       JUNW      PACI_WS     THCH
+ ATMCR        ELVA      JWSM_WS   PACWP       THLV
+ ATMCU        ELVN      JXJT      PAVS        THRD
+ ATMCW        EMC       JXN_P_A   PBDC        THY
+ ATMU         EMCG      JYD       PCG_P_C     THYF
+ ATMV         EMCGR     JZ        PCG_P_G     TIO
+ ATMVR        EMCGU     KA        PCRB        TLF
+ ATS          EMCGW     KACL      PDBA        TLGA
+ ATXG         EMDM      KACLR     PEMX        TLGYU
+ AUB_P_A      EMLDU     KACLU     PERF        TMPO
+ AULT         EMM       KACLW     PET         TMPOW
+ AULT_P_D     ENCP      KARB      PEV         TMSL
+ AVGE         ENLT      KCGI_WS   PGY         TMTCR
+ AVGV         ENRG      KDIV      PGYWW       TMTCU
+ AVHI         EPOW      KEY_P_L   PHIN        TNONW
+ AVIE         EQLS      KGS       PHXM        TOON
+ AVMA         EQS       KITT      PHYD        TOP
+ AVNM         EQTY      KITTW     PJFG        TORO
+ AVNV         ERET      KLIP      PJFV        TOUS
+ AVTA         ERNA      KMET      PKST        TOVX
+ AWEG         ESAC      KNF       PLAO        TPCS
+ AWIN         ESHAU     KNSW      PLAOU       TPET
+ AWINW        ETAO      KNW       PLMI        TPMN
+ AZTD         ETEC      KPOP      PLMIU       TRFK
+ AZTR         EU        KRUZ      PLTN        TRFM
+ BABX         EUDA      KTTAW     PLTNR       TRINL
+ BACK         EVAV      KVUE      PLTNW       TRIS
+ BAER         EVTV      KWE       PLUR        TRNR
+ BAERW        EVXX      KWESW     PMGM        TRTL
+ BANL         FACT_U    LAES      PMGMW       TSL
+ BBAG         FAZEW     LALT      PMN         TSLQ
+ BBCB         FBIN      LANDP     PNAC        TSLS
+
+
+                             3
+(continued)
+ Symbol       Symbol    Symbol    Symbol     Symbol
+ BBLU         FBL       LANV      PNACR      TSLY
+ BCAL         FBOT      LANV_WS   POCI       TSME
+ BCAN         FCUS      LASE      POL        TUA
+ BCDF         FDAT      LATG      POL_WS     TUNE
+ BDGS         FDCF      LBBB      PP         TVAL
+ BDRX         FDFF      LBBBU     PPEM       TWEB
+ BDVG         FDIF      LBBBW     PPHPW      TWLVU
+ BENF         FDLS      LCAHU     PPIE       TXO
+ BENFW        FDTX      LCFYW     PR         TXS
+ BFRG         FDV       LCLG      PRFD       TYGO
+ BFRGW        FEBT      LCW       PRH        TYGOW
+ BGC          FEBW      LFAC      PRIF_P_G   TYLG
+ BHACU        FEXDU     LFCR      PRIF_P_K   UCAR
+ BHM          FFLS      LGVC      PRLH       UDI
+ BHRB         FG        LGVCW     PRLHW      UDIV
+ BIAF         FGDL      LHC       PRME       UFIV
+ BIAFW        FGH       LIBYU     PROK       UHAL_B
+ BIGB         FGMC      LICN      PRPC_U     UHG
+ BIGT         FGMCU     LIFW      PRST       UHGWW
+ BILZ         FGMCW     LIFWW     PRSTW      UNIY
+ BINC         FHLTU     LIFWZ     PRVT       UPBD
+ BIO_B        FI        LIPO      PSNY       UPTDW
+ BITC         FIAX      LITP      PSNYW      UPWD
+ BKDT         FICVW     LIVB      PTEC       UPXI
+ BKIV         FIHL      LMND_WS   PTHRU      URNJ
+ BKWO         FIP       LNC_P_D   PTIXW      USCA
+ BLACR        FIXT      LNKB      PTNQ       USCL
+ BLACW        FLFV      LNZA      PTWOW      USE
+ BLCV         FLFVR     LNZAW     PULT       USEA
+ BLLD         FLFVU     LONZ      PWM        USGO
+ BLNG         FLJ       LOPP      PXMD       USGOW
+ BLUA         FLME_WS   LOWV      PXSAW      USNZ
+ BLUA_U       FLOW      LPTV      PYLD       USPX
+ BLUA_WS      FLYD      LSDI      PYPT       USVN
+ BMN          FLYU      LSGR      QBTS       UTAAU
+ BMR          FMED      LSTA      QBTS_WS    UTEN
+ BN           FORLU     LSXMB     QDROU      UTHY
+ BNDI         FORLW     LUCY      QDROW      UTRE
+ BNH          FOXO      LUCYW     QGRW       UTWO
+ BNIXW        FRBN      LUNR      QIS        UTWY
+ BNJ          FRBNU     LUNRW     QNCX       UYLD
+ BNMV         FRES      LUX       QOMO       VANI
+ BNRE         FRLAU     LUXH      QOMOR      VBOCU
+ BOCN         FRTX      LVOXU     QOMOU      VBOCW
+ BOF          FRZA      LVRO      QOMOW      VCIG
+ BOWNU        FSCO      LVROW     QQQS       VEMY
+ BOXX         FTBD      LVWR      QSG        VFLO
+ BPAY         FTGS      LVWR_WS   QWST       VGAS
+ BRAC         FTIF      LYT       QYLE       VGASW
+ BRD_U        FTIIU     LZM       RATE       VHNAW
+ BREA         FTIIW     LZM_WS    RAYA       VMCA
+
+
+                             4
+(continued)
+ Symbol       Symbol    Symbol    Symbol     Symbol
+ BRLI         FUSI      LZRD      RBC        VOXR
+ BRLIU        FWD       MACAU     RBCP       VRAX
+ BRNY         FXCO      MAIA      RBLD       VSACW
+ BRSH         FXED      MART      RBT        VTES
+ BRSHW        FYLG      MARW      RBT_WS     VTLE
+ BSCW         FZT_U     MARX      RCAC       VTMX
+ BSJU         F_P_D     MARXR     RCACW      VTS
+ BSMW         GAINL     MARXU     RCFA       VVX
+ BSR          GAMCU     MATH      RCLFU      VXX
+ BSVO         GAQ       MATV      RDVI       WAVC_WS
+ BTDR         GATE      MAXI      REBN       WAVS
+ BTE          GATEW     MAYT      RENEW      WAVSU
+ BTM          GBBK      MAYW      RENW       WAVSW
+ BTMWW        GBBKR     MBAC_WS   REUN       WCEO
+ BTR          GBBKW     MBC       RFAC       WDS
+ BUCK         GBTG      MBINM     RFACU      WEST
+ BUJAU        GCAD      MBLY      RITM       WESTW
+ BURU         GCT       MBSC_U    RITM_P_A   WETG
+ BWAQU        GDC       MCAAW     RITM_P_B   WGS
+ BWCAW        GDEF      MCACR     RITM_P_C   WGSWW
+ BWEB         GDEV      MCACW     RITM_P_D   WKC
+ BWET         GDHG      MCAGR     RJF_P_B    WKSPW
+ BYN          GDSTU     MCAGU     RNEW       WLDS
+ BYNOU        GDTC      MCH       RNWZ       WLDSW
+ BYN_U        GDV_P_K   MCOM      ROCLW      WLGS
+ BYN_WS       GECCO     MCOMW     ROSS_U     WT
+ BYOB         GEHC      MCSE      RSHO       WTID
+ BYTS         GEN       MCVT      RSPC       WTIU
+ CACO         GENK      MEDI      RSPD       WTMA
+ CAFG         GENQW     MEDX      RSPF       WTMAU
+ CALC         GETR      MEGL      RSPG       WUCT
+ CAMX         GETR_WS   MEM       RSPH       WWAC
+ CAOS         GETY      MEMX      RSPM       WWACU
+ CARD         GFOR      METCB     RSPN       XC
+ CARM         GFOR_WS   MFIC      RSPR       XCOR
+ CARU         GGLL      MGAM      RSPS       XFIV
+ CARY         GGLS      MGIH      RSPT       XHLF
+ CATX         GHI       MGOL      RSPU       XNAV
+ CAVA         GHIXW     MGRM      RTC        XONE
+ CBRGW        GJT       MGRX      RTO        XPAXU
+ CBUS         GLLIU     MINV      RUM        XPDB
+ CCAI         GLOF      MISL      RUMBW      XSVN
+ CCAIU        GLST      MKAM      RUNN       XTEN
+ CCLD         GLSTU     MKUL      RVTY       XTRE
+ CCLDO        GMUN      MLEC      RVYL       XTWO
+ CCLDP        GNLX      MLECW     RWAYL      XTWY
+ CCSO         GODNR     MLGO      RWAYZ      XWEL
+ CCTSW        GODNU     MLYS      RWODR      XYLE
+ CCZ          GPCR      MMSB      RWODU      YALL
+ CDEI         GRFX      MMV       RWT_P_A    YEAR
+ CDIO         GRI       MMVWW     RXO        YGF
+
+
+                             5
+(continued)
+ Symbol       Symbol     Symbol   Symbol      Symbol
+ CDIOW        GRND       MNK      RYLD        YOSH
+ CECO         GRND_WS    MOB      RYLG        YOTA
+ CELL         GRNT       MOBBW    RYSE        YOTAR
+ CETF         GROV       MOBV     RY_P_T      YOTAW
+ CETU         GRRR       MOBVU    RZC         YS
+ CETUU        GRRRW      MOBVW    SAGAR       YSBPW
+ CETUW        GSD        MODG     SAJ         ZAPP
+ CETY         GSUN       MODL     SATX        ZAPPW
+ CFFS         GTLS_P_B   MOND     SATX_WS_A   ZFOX
+ CFIVW        GVLU       MORE     SAY         ZFOXW
+ CGMS         GWAV       MPRA     SAZ         ZJYL
+ CGMU         GXUS       MPRAU    SBIG        ZSB
+ CGSD         HAIA       MPTI     SBIGW       ZSPY
+ CGV          HAIAW      MPU      SBXC        ZURA
+ CHAT         HAPI       MRDB     SBXC_WS     ZURAW
+ CHEAW        HAPS       MRSK     SB_P_C      ZVRA
+ CHPS         HARD       MRT      SCCG        ZVSA
+ CHRD         HCMT       MRT_WS   SCLX        NA
+ CHRG         HDUS       MSBIP    SCLXW       NA
+ CHSN         HFND       MSFD     SCMB        NA
+ CIRC         HHGCU      MSFU     SCWO        NA
+ CISS         HIDV       MSOX     SCYB        NA
+ CITE         HIGH       MSSA     SDA         NA
+ CJET         HIYS       MSSAW    SDAC        NA
+
+
+
+
+                              6
+

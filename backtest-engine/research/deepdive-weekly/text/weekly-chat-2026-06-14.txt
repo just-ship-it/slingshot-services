@@ -1,0 +1,132 @@
+                                     Weekly Chat 2026-06-15
+
+
+                                            Main Points
+
+
+
+       -   VoEx for $SPY and $QQQ are diving into bearish zone while VoEx-daily resides
+           already therein,
+       -   Gamma-hedging heatmaps showcase a stable orientation with purchasing support
+           located spot-down and selling pressure spot-up,
+       -   GS data suggests continued growth, albeit slowly with similar interpretations
+           coming from the predictive data,
+       -   LS&T data suggest an ongoing bulltrap by way of Jorge’ s sign, with near-by
+           resolution-prompting via LT ceilings.
+       -   Turbulence and downside expected!
+
+                                             SUMMARY
+
+
+
+           The data suggest turbulence is present (by way of VoEx “disagreement”, hedging
+           heatmaps extreme delineations, and incoming profit-takers noted on LS&T) with
+           downside being the most likely overall direction (by way of VoEx-daily in bearish
+           zone, Jorge’s sign + bulltraps from LS&T) but without much evidence that this
+           downside will extend systemically or occur rapidly (by way of GS data being quite
+           stagnated, even if elevated, multiple layers of support on the LS&T data).
+
+           Thus, the outlook can best be described as: shakey-downside with intermittent
+           bursts of spot which puts the overall strategy at: expose to short and sell the
+           peaks.
+
+
+
+
+Deep Dive Stocks – Weekly Chat             for the week of                 2026-06-15 to 2026-06-19
+                                              DETAILS
+
+
+
+
+Hello all!
+Last week, we left off with ideations of bearish inclinations, and the market obliged, initially, but
+as we can see in the heatmaps below, this dip was short-lived:
+
+
+
+
+It seems $QQQ was at the mercy of hedging practices quite a bit – with the initial part of the week
+seeing a decrease in IV prompting selling pressure to enter, resulting in a the decent early-week
+drop. Overall, $SPY moved 0.57% while $QQQ’s recovery prompted a 2.28% week-over-week
+move!
+
+This week, let’s check with the data to see if bearish inclinations persist, and if so, if they’ve
+worsened and if not, if conditions are looking bullish once more.
+Let’s get started!
+Starting with VoEx, we find:
+
+
+
+
+Neither of those VoEx graphs are particularly hope-inspiring for bullish thoughts as both show
+VoEx-daily in the Bearish zone – this heralds more turbulence with a slight leaning towards
+downside.
+
+
+
+
+Deep Dive Stocks – Weekly Chat            for the week of                2026-06-15 to 2026-06-19
+Let’s check the gamma-hedging heatmaps to see if we can gauge which direction said turbulence
+might toss the market first:
+
+
+
+
+Per hedgers, it should be up-then-down as both $SPY and $QQQ have local and diffuse purchasing
+pressure located spot-down, with selling pressure located slightly above; worth noting should pre-
+market experience some $+.
+Even with such a cursory look at the data, the expectation of turbulence seems most pronounced.
+Let’s check on the foundations of the market per the market-wide gamma squeeze data:
+First up is the counts, which shows almost a whole month of stagnate GS amounts! And these
+amounts are reasonably elevated, not the typical ~600 we would expect during the market
+minimums. The growth curve suggests that this stagnation is still producing a net gain in GS
+counts, if not at least ever so marginally.
+
+
+
+
+Deep Dive Stocks – Weekly Chat           for the week of              2026-06-15 to 2026-06-19
+Next up is the predictive data:
+
+
+
+
+A similar sight: stagnation but with a net lean towards the expectation of a future with more
+gamma squeezes then present – but taken as a whole, it seems this future will arrive quite
+gradually, not all-at-once like we are used to.
+Overall, these data continue to point towards downside but perhaps a meandering, troublesome
+and turbulent downside, rather than a quick market correction we are more acclimated with.
+Let’s check in with LS&T to see if we can identify any potential targets:
+
+
+
+
+Deep Dive Stocks – Weekly Chat            for the week of               2026-06-15 to 2026-06-19
+Here we see Jorge’s sign on the 90-minute1, which suggests the LT6 level at $7,473 has a high
+potential to act as a stop-check, prompting downside to return. The same finding is also noted on
+the 144-minute.
+Zooming out we see bearish liquidity on the 987-minute and more encroaching profit-takers on
+the weekly.
+
+Overall, the expectation derived from LS&T is similar to that of the heatmaps: first up (some), then
+back down!
+So, overall, the data still point towards turbulence leaning towards downside but evidence for a
+systemic correction is not yet visible.
+
+
+Happy trading,
+
+
+Justin
+
+
+
+
+1
+ This is defined as the following: A bearish LT stack with bearish liquidity experiences a bulltrap. Once the LT
+ceiling is reached, downside usually returns and moves spot below the previously obtained low.
+
+
+Deep Dive Stocks – Weekly Chat                    for the week of                     2026-06-15 to 2026-06-19
+

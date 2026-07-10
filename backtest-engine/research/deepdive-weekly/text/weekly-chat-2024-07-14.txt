@@ -1,0 +1,130 @@
+                                  Weekly Chat 07/08/2024
+
+
+                                        Main Points
+
+
+
+
+                                         SUMMARY
+
+
+
+          The week ended up for $SPY and down for $QQQ – a consequence it
+          seems of $QQQ’s larger-than-normal IV run-up, removing purchasing
+          support from the equity.
+
+          The data now stand such that near-term downside is expected: neo-VoEx
+          looks poised to continue its oscillating pattern (for what that’s worth)
+          while encroaching evermore on the Propagation Zone.
+
+          The hedging environments are ill-poised to support the index in the event
+          of large IV+; a consequence most notable with the selling pressure located
+          on $QQQ.
+
+          DLP behavior seems moot with continued diminished-activity on $QQQ
+          and flat-line activity on $SPY.
+
+          Overall, downside suggested in the near-term but with longer-term still
+          bullish.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                     07/08/2024
+                                              DETAILS
+
+
+
+
+Heyo!
+
+
+Last week, we left off with some bullish ideologies, and they seem to have been partially fulfilled.
+$SPY, in our favor, moved ~1.00%, while $QQQ moved -0.25%ish. This discrepancy in
+directionality can be partially explained via the heatmap environment, as we can see below:
+
+
+
+
+$QQQ’s large positive IV movement worked to remove purchasing support from the market,
+whereas $SPY was maintained pleasantly therein. The consequence, it seems, is that as $QQQ’s
+IV decreased, the purchasing support helped bring things back up – ultimately ending slightly
+below where the week started.
+So, this week, with such an odd IV movement, before we blindly jump into continued bullish
+ideologies, let’s just take a quick peek around to see if there isn’t anything else brewing that might
+be worth keeping an eye on.
+Getting started!
+
+Starting as usual with VoEx, we can see immediately that, yes, perhaps there is room for pause:
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                           07/08/2024
+On the right, we see $SPY presenting with, admittedly, something that resembles a TA pattern –
+for lack of a better, more succinct description. The hesitation in calling $SPY’s VoEx-daily a
+“descending-wedge-triangle-thing” but rather that in doing so, it implies the consequence; this is
+the source of hesitation.
+Nonetheless, we can see that there is a pattern of oscillating, lower-peaks bounded below by the
+Propagation Line. Should the prior pattern of behavior continue, this does foretell a downside (the
+pattern would show first as a red day, followed by VoEx-daily moving south along with the price
+over the next few days).
+This pattern is also present on $QQQ with larger peak amplitudes of VoEx than $SPY, and is
+showing more aggression in reaching the Propagation Zone.
+Taken together, these both suggest near-term downside – perhaps extended decently (over the
+course of a week or two), should prior, similar episodes help shape our future landscape.
+Over the longer-term, VoEx is within stability for both $SPY and $QQQ, and as such, things still
+look cheery. Perhaps we’ll check back on that in a week after some rain.
+
+With VoEx suggesting near-term downside is reasonable, let’s check the hedging environments
+to see how things might respond:
+
+
+
+
+Well – I wouldn’t say well.
+$SPY’s hedging environment seems poised to offer purchasing support in the event of IV+; a
+benefit of its vanna-stable orientation. $QQQ’s, on the other hand, does not appear to be so well-
+off.
+
+The current environment suggests that the local, and immediate selling pressure will quickly give
+way into bleak nothingness should $- while IV+ (or really, any minor combination of the two).
+Perhaps the brief purchasing support located on $QQQ will accelerate things northward for the
+early part of the week – but it seems things are limited in that direction; IV can only go so much
+lower!
+Moving onwards with the data, we see the put sellers are mixed as well. Those who sell puts on
+$SPY seem reasonably well reïnvigorated with the week-end’s performance, with some behavior
+
+
+Deep Dive Stocks – Weekly Chat                                                        07/08/2024
+sprucing back up. $QQQ, on the other hand, seems reasonably, and perhaps, understandably,
+quite mute; both objectively and relatively.
+
+
+
+
+Moving to the Market-Wide Gamma Squeeze data, we see the growth-rate of gamma squeezes
+has become decently negative, suggesting a rapid decrease in gamma squeezes lately; and
+indeed, over the past week the market has lost 26% of its gamma squeezes, and over the past
+month: 35%.
+GTM is showing near-zero prints as well, suggesting this flow of gamma is likely “organic” (rather
+than due to the opening of new positions). Things in gamma-land seem calm; something one
+would expect with stable medium to longer-term outlooks, as we have now.
+During the expected near-term turbulence, it may be worth checking to ensure this stays the case,
+nonetheless.
+
+So, for now, near-term downside and turbulence expected but the overall and medium-term
+outlook remains bullish.
+
+
+Happy trading,
+
+
+Justin
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                       07/08/2024
+

@@ -1,0 +1,164 @@
+                                  Weekly Chat 2026-02-09
+
+
+                                        Main Points
+
+
+       -   VoEx & VoEx-daily for $SPY and $QQQ exist within the Propagation Zone.
+       -   Gamma-hedging environments demonstrate local purchasing support, with $QQQ’s
+           environment demonstrating IV-dependent hedging practices.
+       -   The predictive Market-Wide Gamma Squeeze data suggest more growth in the
+           future than is current present.
+       -   LS&T analysis demonstrates a contentious environment with bull-traps on the near-
+           term and bearish liquidity + weakness on the longer-term.
+
+                                        SUMMARY
+
+
+
+           Last week, visions of downside reigned supreme and this week the
+           visions are present but a tad more fuzzy.
+
+           VoEx resides in the Propagation Zone with its cousin VoEx-daily -
+           both of which foretell of downside in the near and further-out
+           futures.
+
+           VoEx’s outlook is counter-balanced by a hedging environment that
+           is poised to provide purchasing support both in the immediate term
+           and should the market dip. $QQQ presents in a slightly awkward
+           spot wherein it must experience significantly more $+ as compared
+           to 𝐼𝐼𝑉𝑉 − given its IV-dependent hedging orientation.
+
+           The predictive MWGS showcases a positive expectation for the
+           future – small in stature but positive nonetheless. This foretells of
+           a future with more gamma squeezes than currently present, and
+           thus, more instability and downside.
+
+           LS&T analysis demonstrates near-term bulltraps with significant LT
+           resistances overhead on all intervals except the 987-minute & the
+           weekly. These view would suggest that the only real supportive
+           actors in the market are the eager bids – which can be notoriously
+           fickle.
+
+           Overall, turbulence and continued downside resolutions expected.
+
+
+
+
+Deep Dive Stocks – Weekly Chat        for the week of              2026-02-09 to 2026-02-13
+                                              DETAILS
+
+
+
+
+Hello everyone
+Last week, we had visions of downside, and the market seems to have manifested as such with
+$SPY moving 2.07% to the downside before recovering on Friday for a net weekly move of -0.19%,
+while $QQQ fared slightly worse with maximal downside measured at 3.99% with Friday’s
+recovery landing the index at -1.97%. These moves and the subsequent recoveries can be noted
+in the heatmaps below:
+
+
+
+
+We almost fell off the map!
+This week, we should look at the data and determine if Friday’s bounce will be prolonged or if it is
+just another blip of activity in an otherwise sea of bearish anticipations.
+
+Let’s get started!
+Getting Started
+As usual with VoEx, we see:
+
+
+
+
+Quite bearish prints!
+
+
+Deep Dive Stocks – Weekly Chat            for the week of               2026-02-09 to 2026-02-13
+VoEx for both $SPY and $QQQ reside within the Propagation Zone, as does VoEx-daily. There’s
+some worth in mentioning VoEx-daily for $SPY which has found itself attempting to exit the
+Propagation Zone but stalling at the border.
+The take-away message here is: things are bearish! On both the near-term and the far-term. The
+most bullish interpretation of the data is “there is very slight evidence of a forming bulltrap”, but,
+as we have just read, this would be but a trap.
+
+Thus, instability is as instability does but the resolution still looks towards the downside.
+Moving onwards, let’s check out the hedging heatmaps to see if they shall augment or diminutize
+the week ahead:
+
+
+
+
+A similar set-up as last week! Not much to write home about – both indexes have purchasing
+support in the local and immediate vicinity with $SPY’s being particularly robust. $QQQ presents
+with its continued split, as dictated by IV: should IV decrease, selling pressure will enter whereas
+if IV increases, purchasing support; both are set to minimize in their magnitude as IV increases in
+its respective magnitude of movement.
+Thus, hedging is set to be supportive – but as we’ve seen, there is risk that is contingent on
+volume!
+
+Moving onwards, let’s take a peek at the gamma squeeze environment. The market saw a general
+increase   in    gamma
+squeeze counts, reaching
+a peak of 1,073 on
+Thursday    past     (not
+shown).
+The predictive models
+(right) show a just-
+positive expectation for
+the future-ahead with
+regards    to    gamma
+squeeze    growth and
+counts.
+
+
+
+
+Deep Dive Stocks – Weekly Chat             for the week of               2026-02-09 to 2026-02-13
+The take-away is that the growth rates currently being seen are expected to increase in the future
+– and thus – the future is set to be both besieged and beset by bountiful bad gamma1. This is a
+pretty bearish print but not in the immediate term, admittedly.
+Thus, so far, we’ve the data are pointing towards downside evermore on the longer-term but there
+is some pause still in the near-term given the hedging heatmaps. So let’s take a peek at liquidity
+for ES and see if we can divine anything useful:
+
+
+
+
+On the 90-minute we have a bull-trap that seems spurred by a recent, minor-to-moderate
+Aggressive Bid. So far it has only managed to overtake LT5 while getting stuck on LT6. During
+this stall, we can see LT1 & LT2 moving up towards being above spot (the classic “wave” after an
+Aggressive Bid) which represents profit-takers moving up to, well, take profits. In combination
+with LT6 resistance, this will provide additional headwinds towards overtaking LT6 & 7.
+On the 144-minute we find a similar story albeit a less organized Aggressive Bid, which helped
+bring spot up to LT5 during a bull-trap, in which we currently find present conditions.
+The 987-minute is less optimistic, with bearish liquidity failing to over-take LT7 with the help of
+some eager bid (LT1 & LT 2).
+
+
+1
+    Gamma is neither good nor bad but one mustn’t interrupt a good alliteration with the truth.
+
+
+Deep Dive Stocks – Weekly Chat                    for the week of                    2026-02-09 to 2026-02-13
+The weekly viewing shows futures having tested LT4 for support, which produced a week whereby
+the candle was nestled nicely betwixt LT5 & LT4. It’s worth noting that LT4 is currently the only
+observable eager bid present, with LT1, 2 & 3 being above spot (and thus, represent eager asks).
+Overall, these appear to be quite bearish prints with some evidence of a bounce attempting to
+bounce but with persistent overhead noted on the 90-, 144-, and 987-minute intervals and minimal
+support on the weekly. Yet, currently, as it stands, the 987-minute is the only bearish LS print; and
+thus, one must still be awkwardly poised for the week ahead to manage both a bulltrap potential
+as well as another test of LT4 on the weekly.
+Overall, the data are still pointing towards the downside, but should the hedging environment and
+the eager bids join forces, it is not unreasonable to expect a turbulent bull-trap week ahead.
+Happy Trading,
+
+
+Justin
+
+
+
+
+Deep Dive Stocks – Weekly Chat            for the week of                2026-02-09 to 2026-02-13
+

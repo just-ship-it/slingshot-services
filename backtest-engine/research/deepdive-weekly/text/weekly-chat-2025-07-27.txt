@@ -1,0 +1,215 @@
+                                   Weekly Chat 2025-07-28
+
+
+                                          Main Points
+
+
+
+    -   VoEx-daily resides betwixt Stability and the Propagation Zone while VoEx continues its
+        descent out of stability.
+    -   Gamma-hedging environments showcase a stable orientation with selling pressure
+        located spot-up and purchasing support located spot-down for both $SPY and $QQQ.
+    -   The Market-Wide Gamma Squeeze data show continued lethargy and minimal activity.
+    -   LDPM/S for ES showcase bullish configurations throughout except for the negative LL-
+        Amount and Flow seen on the 987 and 1-Week views.
+    -   Prudency suggest bullish performance while keeping an eye on VoEx.
+
+                                          SUMMARY
+
+
+
+           VoEx-divergence continues as VOEx descends while price increases.
+           Historically this behavior is associated with about a ~1 month lead before
+           VoEx exits stability, and the price follows thereafter.
+
+           For now, the road seems to go ever-onward upwards. The gamma hedging
+           environments show case the standard orientation as of late: selling
+           pressure diffusely surrounding current $/IV while purchasing support is
+           only found spot-down. Slight improvements to the hedging algorithm
+           suggests that while the orientations are the same, they are not the same
+           in magnitudes as $SPY’s purchasing support finds itself more robust than
+           its selling pressure, while on $QQQ conditions are opposite.
+
+           MWGS data show a gamma-foundation well at rest with the market
+           continuing to rotate around the GS minimum, despite GTMs negative
+           inclinations. The predictive data suggest similar environments, with the
+           predictive count curve even become negative.
+
+           LDPM/S for ES also showcase bullish skies, which the only patch of
+           thunderstorms originating in the higher timeframes (987-minute and 1-
+           Week) wherein both have negative Liquidity Levels. This suggests that the
+           market is running “on fumes” with little reserves, should the current eager
+           bid dry up. In such an even, both find bid support ~4% down.
+
+           Overall, bullish skies with expected duration ~1 month as VoEx continues
+           towards the Propagation Zone.
+
+
+
+
+Deep Dive Stocks – Weekly Chat          for the week of                2025-07-28 to 2025-08-01
+ DETAILS
+
+
+
+
+Hello all!
+For the past few weeks, there has been a general sense of “up” but “up” in the sense of when one
+is reaching near the top of a rollercoaster: an up that is tantalizing and caution-provoking. To this
+end, the market moved $SPY upwards +1.52%, while $QQQ moved 0.91% to the north. These
+moves can be visualized in the heatmaps below:
+
+
+
+
+We can see that the selling pressure did little to deter our friends from moving upwards, all the
+while the purchasing support on $QQQ seems to have had a chance to provide a small bump
+upwards for our friend.
+This week, the goal is simple: keep monitoring the up and derive some plans therefrom!
+
+Therein, Therefore, Therewith, Thereupon
+Starting as usual with VoEx:
+
+
+
+
+Here we see VoEx-daily residing (as if it were the old VoEx!) between the Propagation Zone and
+Stability. This gives neutral impressions. VoEx itself is still within stability, but we can see for both
+$SPY and $QQQ the downwards shift is well underway. In our views above, we see that journey
+
+
+
+Deep Dive Stocks – Weekly Chat              for the week of                 2025-07-28 to 2025-08-01
+from its current position until below the Propagation Zone, should all continue as in the past,
+takes about ~2 months. And so the outlook appears straightforward from VoEx: up for about two
+months and if VoEx should continue to degrade, downside should follow.
+In the near-term, this remains a bullish outlook! With this in mind, let’s take a look at the gamma-
+hedging heatmaps (as well as talk about some improvements coming their way):
+
+
+
+
+Much the same!
+And that’s boring and unhelpful! I’ve still been scratching my head with the heatmaps with regards
+to how to exactly visualize the underlying behavior occurring. In the current set up, the way the
+algorithm chooses the colors is a tad – misleading in a way. In short: the current set up doesn’t
+do a good job of 1) understanding the data in relation to itself, and 2) keeping itself sufficiently
+guarded from IV.
+To this end, I’ve been tinkering more and think I have found a reasonable solution. In short:
+
+   1- IV has become blended. There are several steps in which IV pokes its head into the mix,
+      both during the directionalization process as well as the hedging behavior algorithm but
+      not all IVs are created equal. The heatmap algorithm (shown above) currently only takes
+      in the IV surface, per strike. From this, it is used to calculate anticipated values (future
+      values such as such “how much do these values change 1 day into the future” (to mimic
+      expiry) while also being a direct input into the calculations upon those hypothetical
+      changes (by way of the x-axis IV values, which are derived from equity’s IV value, not the
+      option or vol-surface). Thus, striking the balance between “I want to know what hedging
+      will look like in this situation and here are some synthetic parameters” and “here are the
+      current, realistic parameters” becomes a tad tricky throughout the whole process.
+      Thus, in short, the IV handling has been upgraded some with a hybrid mix achieved
+      between the vol surface used to calculate the raw data (and thus, needs to be used in the
+      calculation of future anticipated raw data) and the equity’s whole IV. This achieves a better
+      bridge between the individual option and the overall hedging practices predicated on
+      equity IV.
+   2- The coloring algorithm for the graphs was also suffering from being unable to discern
+      between “significant” purchasing and selling. Originally, this problem was overcome by an
+      rudimentary algorithm designed to find the gamma-neutral zone but one of the side-effect
+      is (as we can see above) that it has a tendency to understand the options field as either
+      “red” or “blue” rather than to appreciate the nuances within each of those fields.
+
+
+Deep Dive Stocks – Weekly Chat            for the week of               2025-07-28 to 2025-08-01
+Its important to note that the underlying data has not been changed, only the manner by which
+the data are simulated for future conditions (IV blending), and how the differences between the
+data are appropriately displayed to demonstrate both the direction and magnitude of the hedging.
+To that end, here are the updated heatmaps! (These will be appearing in the upcoming dashboard
+update):
+
+
+
+
+Here we can immediately see the benefits of the changes!
+   -   More detail in $SPY can be parsed out when we utilize the IV blending to ensure the
+       hedging reflects both the change in the vol-surface on the derivatives as well as the equity
+       IV. This has worked to identify a greater amount of purchasing support than previously
+       identified, in particular in the [𝐼𝐼𝑉𝑉 −] direction (which is a nice confirmation that indeed it
+       was inappropriate IV handling causing “blanket” heatmaps), and
+   -   With better resolution between the two groups, we can see that the selling pressure and
+       purchasing support “magnitudes” are not the same, as previously suggested. In fact, we
+       can see that even those the orientation of $SPY and $QQQ are the same (that is, selling
+       pressure located spot-up while purchasing support located spot-down), the magnitudes
+       are not! $SPY seems to have more significant purchasing support with respect to its own
+       selling pressure (and in comparison to $QQQ’s) which is opposite of $QQQ’s condition
+       which showcases greater selling pressure (magnitude) than purchasing support below.
+All that to say: it looks like there is light selling pressure spot-up for $SPY with a tad more selling
+pressure spot-up on $QQQ while $SPY sees some reasonable purchasing support spot-down (and
+moreso in the 𝐼𝐼𝑉𝑉 − direction). This bodes reasonably well for continued upwards mobility but
+combined weakness between the two heatmaps suggests a [$− , 𝐼𝐼𝑉𝑉 + ] move could find itself
+without much support (by way of the diminishing purchasing support for $SPY in the IV+ direction
+and $QQQ’s more diffuse purchasing support).
+Moving onwards, let’s check on the market-wide gamma squeeze MWGS data:
+
+
+
+
+Deep Dive Stocks – Weekly Chat             for the week of                 2025-07-28 to 2025-08-01
+                                                     On the left (left) we see persistently
+                                                     increasing-but-negative GS growth curves
+                                                     while GS counts mainly hover in place around
+                                                     575-625ish. In addition, we see a continuously
+                                                     negative GTM, suggesting short-gamma is the
+                                                     net flowing force into the market currently.
+                                                     For now, this is a bullish print! Until we start
+                                                     seeing (which we thought we saw 2 weeks
+                                                     ago) sustained GS growth, then things look
+                                                     pretty decent in gamma squeeze land!
+
+
+
+
+Moving to the predictive counts, we see:
+
+Largely the same! The predictive count curve (orange) is negative and pointed downwards, telling
+us the algorithm thinks continued GS destruction is within reason.
+In combination with this is the predictive growth curve (purple) which shows negative values,
+indicating a persistent “breaking pressure” applied to GS growth.
+In short: these data agree with the traditional data! The future, for now, looks sparsely populated
+                                                   with gamma squeezes!
+                                                             Moving onwards, let’s check on
+                                                             LDPM/S for ES:
+
+
+
+
+Deep Dive Stocks – Weekly Chat             for the week of               2025-07-28 to 2025-08-01
+Bullish prints all about! And most noteworthy is the final resolution of the bear-trap, as seen on
+the weekly view! This newfound bullish candle (as per LDPS) while moving above LDPM-144 is a
+strong indicator that the overarching bear-trap has finally dissolved.
+The only hurdle between a full-blown bullish outlook for now are the negative LL-Amount and Flow
+found on both the 987-minute and the 1-week (bottom-left, bottom-right, respectively) views.
+Should the market need to rest on the liquidity within these tanks (bullish liquidity, that is) it will
+find minimal fuel to do so. In such an event, the next organic bids to “tap” into for bullish liquidity
+are about ~5% down, as seen by LDPM-L7(610) on the 987-minute (bottom-left) and LDPM-
+L6(355) on the 1-Week (bottom-right).
+Thus, it seems the outlook is set along with the signs to keep an eye out for, should conditions
+start to change:
+
+   -     VoEx suggests up is still the name of the game, and if history should be any precedent,
+         then current conditions and behavior suggest another month at least of upwards mobility
+         until VoEx starts flirting with the lower boundary of stability, but
+   -     Should:
+             → VoEx rapidly move into the Propagation Zone, or
+             → GS counts start skyrocketed, or
+         → Selling pressure (as seen from the heatmaps) work into the market and attempt to rest
+             on lingering bullish liquidity,
+
+         Then then the current minimally-bullish-liquidity-fueled (as seen on ES via LL) will be at
+         risk of failing for a ~4% drop for an organic bid.
+Happy Trading,
+Justin
+
+
+
+Deep Dive Stocks – Weekly Chat             for the week of                 2025-07-28 to 2025-08-01
+

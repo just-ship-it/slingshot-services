@@ -1,0 +1,318 @@
+                                   Weekly Chat 05/29/2023
+
+
+                                           Main Points
+
+
+    -   Bullish until proven otherwise is still the mantra.
+
+
+
+                                           SUMMARY
+
+
+           The data present in a similar fashion as last week’s.
+
+           VoEx is demonstrating its recent ascension towards free-will and jumping
+           quite erratically throughout the field. These behaviors have historically
+           been associated with near-term downside whose magnitude seems to be
+           associated with the magnitude of VoEx’s ascent into the I.Z.
+
+           Currently, we seem to be approaching a slightly concerning level of
+           instability on $QQQ – in particular, an instability that suggests the next
+           downside may be greater in magnitude than the standard “dip” we have
+           been expecting.
+
+           The hedging environments are the same as last week as well with little-to-
+           no purchasing support located $-/IV+ , and with imminent selling pressure
+           located on both $SPY and $QQQ.
+
+           MWGSC is officially bearish with the MWGSC-trend rising into positive
+           territory. The 5-day rate-of-change of the number of gamma squeezes
+           market-wide is positive, as well. GTM is also bearish as it has started
+           printing just-positive values.
+
+           DLP behavior is locally bullish but uninspiring for a full vote of confidence
+           towards a bullish outlook, when compared with prior behavior.
+
+           Nonetheless – although the data are migrating towards a bearish outlook,
+           per VoEx, until there is a VoEx Spike or Divergence, the official outlook is
+           anxiously bullish.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                         05/29/2023
+                                         DETAILS
+
+
+
+
+Hello everyone!
+
+What a wonderfully strange week – although we have become accustomed to less-than-
+normal markets, I think this week in particular was pretty unique.
+
+Last week, we left off with the idea that the music was still playing, so we should dance.
+And, well, even though we didn’t get quite as much dance time as originally imaged, the
+week did end with a nice 0.33% positive movement, thanks to Friday’s rally.
+
+For the week ahead, let’s ensure that the market’s misstep doesn’t distract too much from
+our overall bullish outlook, and then, perhaps, get ready to dance yet again.
+
+But first!
+The new dashboard is up and running! If you haven’t received your username and
+password, please let me know!
+
+The original dashboard will be going offline on 06/02/2023.
+
+Check out the Progress Notes and Patch Notes for the change list.
+
+Data for the dashboard
+
+Last week experienced an reasonable $-/IV+ move, a potential outcome we considered
+“The Influence Distributions suggest negative movements, and there isn't really any good
+purchasing support located $-/IV+ for $SPY or $QQQ – so this is some things to keep in
+mind.” but even in a $-/IV+ move, we considered it reasonably safe, claiming it to be
+“weak” and “minor”, along with some other derogatory accolades.
+
+Nonetheless,        without       any
+purchasing support in $-/IV+, we
+see that even minor selling pressure
+mixed nicely with some early-week
+market instability giving us quite the
+move.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                05/29/2023
+It is curious to note as well that on Wednesday, there was quite the introduction of
+purchasing support. To whomever or whatever provided that, that was nice, thank you.
+
+                                                    We can see to the left that $SPY
+                                                    landed right at the purchasing
+                                                    support’s boundaries, after which is
+                                                    did a pleasant about-face and turned
+                                                    northward.
+
+                                                    Its also interesting that the presence
+                                                    of at least some kind of breaking
+                                                    pressure to the market’s down-turn
+                                                    was was also observed by our DLP
+                                                    friends.
+
+
+We can see that Wednesday brought about quite the increase in put selling: an odd
+prospect considering both Tuesday and Wednesday were significantly red as well. May
+we all be blessed with such good timing:
+
+
+
+
+This is quite noticeable on $QQQ where puts were net closing since the start of the week,
+until Wednesday saw a surge in put selling – enough to push the 5-day, and 10-day
+Deep Dive Stocks – Weekly Chat                                                05/29/2023
+averages positive (crude change is 55%!).
+
+That’s quite the statement, and one the market seems to have heard, with $SPY moving
++2.17% from Wednesday close to Friday’s close, and $QQQ moving 5.05%!
+
+With the past behind us on an interesting week, let’s look ahead and peek at what our well-
+timed friends are up to now.
+
+Starting as usual we VoEx, we see that despite VoEx’s early-week dip into the Propagation
+Zone, we have now rebounded quite substantially into the Inhibition Zone:
+
+
+
+
+Admittedly an annoying development in the early part of the week1, as we last week had
+looked at the signs VoEx presents with when a bull-run is nearing its end 2. Well, if
+Thursday and Friday are any indications, it would appear as though the end arrived.
+
+Does this mean that the end isn’t near? I don’t think that is a fair statement either,
+however. VoEx shouldn’t move from the IZ to the PZ with zeal – in fact we discussed this
+exact phenomenon in 04/24’s weekly chat (go check it out!). This instability and false-
+alarms are frustrating but one can’t help but think of the expression: where there’s smoke,
+there’s fire; and it does seem that VoEx is flailing around as if there is some smoke in the
+air.
+
+
+
+1
+  Its worth noting this behavior such that we have been suggesting for awhile now that we are bullish until proven
+otherwise and that otherwise being VoEx Spikes or Divergence. Well – didn’t we experience a VoEx Spike on $SPY
+and $QQQ this week? Yup! If a trader went short on those events, I don’t think you could fault them. This time,
+however, the market seems to have other plans, and shot VoEx right back into the I.Z. Frustrating!
+2
+  If you haven’t read it yet, I definitely recommend checking out 5/22’s weekly chat – it has a nice review of VoEx
+Divergence and VoEx Spikes during bull runs.
+
+Deep Dive Stocks – Weekly Chat                                                                       05/29/2023
+I’d like to think that the erraticism of VoEx foreshadows the erraticism of the market, and
+we see that demonstrated nicely the last time we saw this kind of behavior. For those that
+may remember, that following Tuesday (04/25) saw a -1.59% move but the week ended
+over-all with a staggering 0.80% move (on $SPY).
+
+We see that $QQQ is displaying a similar behavior:
+
+
+
+
+Sudden and rapid movements all the same – just not into the Propagation Zone (and
+barely into stability).
+
+What does this mean for us? Well – volatility of course. One that will most likely lead to
+downside because an unstable VoEx begets an unstable stock, and as we should be quite
+familiar with by now, instability typically resolves on the downside.
+
+When will this occur? Its, as usual, difficult to say. However, since currently neither VoEx
+nor VoEx-trend for $SPY or $QQQ are inside of the Propagation Zone – it would seem we
+are left again in a holding pattern: bullish until proven otherwise (waiting ever-more for
+the VoEx-Spike or VoEx Divergence).
+
+Turning towards the hedging environments we find ourselves again in a similar situation
+on both $SPY and $QQQ: little-to-no purchasing support located $-/IV+, current surrounds
+are selling pressure, and negative influence distributions.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                  05/29/2023
+Not the most promising of situations and one that suggests more downside ahead.
+Perhaps we are “too zoomed in”? Are we too focused on the immediate present and
+forgetting sights of some bigger-picture-action? Maybe. To check, let’s look at ExVoEx
+(Extended VoEx) for $SPY and $QQQ and see what they say.
+
+Well – that sort of clears things up? Let’s see what we have.
+
+
+
+
+$SPY’s ExVoEx is inside of stability but has spiked several times into the IZ and PZ. You’ll
+note that this is behavior we have mentioned before on $SPY but with “normal” VoEx. Why
+is it important to point out now? Well, ExVoEx is extended which translates here to the
+idea that if something is provoking instability and one sees it on ExVoEx, they can be
+reasonably certain that it is pretty potent.
+
+$QQQ is no different – and in fact we see that instability on $QQQ is very reminiscent of
+prior local peaks: take a glance around 04/2021, 06/2021, 11/2021, 04/2022, 08/2022 –
+just to name a few. These examples describe the situation quite well – and in terms that
+we have become quite familiar with: this perpetually progressing performance is
+unstable.
+
+
+Deep Dive Stocks – Weekly Chat                                                  05/29/2023
+The proximal concern I’m starting to experience isn’t the idea itself that the market is
+unstable (something we’ve been keeping track of for quite awhile now), but rather the
+nascent angst of just how unstable is the market becoming.
+
+If we rewind the time on my rantings, we’ll remember that the predominate theme this
+year has been “bulish”, and more percicely, “bullish until proven otherwise”. This was
+simply due to the fact that the foundations of the market seemed to have “cooled off” in
+the early part of the year – but things still remained rather dicey.
+
+So the outlook has been “we go up but we will probably experience some dips along the
+way”. This has been the game we’ve been playing: timing the “dips” while keeping an eye
+out for if things were getting too rocky during the regular intermittent and expected
+downsides.
+
+There was concern, or a cautious eye, towards the idea that if, during these normal
+downsides, instability might rise significantly high enough such that it might disrupt our
+longer-term bullish outlook. If not, then we can “buy the dip” and expect a return to a
+bullish performance – but if not, or if there were data suggesting a larger-than-normal
+downside, things could get a bit rocky.
+
+The slight poke at my side is asking: Is that occurring now?
+
+Notwithstanding, I think it is reasonable to maintain a bullish-until-proven-otherwise
+stance (with our longer-term horizon still being bullish) but as things progress, and as
+VoEx treks further northward, the imminent retraction increases in its potential
+magnitude.
+
+In keeping with the more “zoomed out” and macro views, let’s quickly shift over to the
+MWGSC to see how the market-at-large is positioned and positioning.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                05/29/2023
+Some curious findings in the MWGSC data as the picture seems to be evolving even more
+towards the idea that not only is downside a reasonable expectation for our next “trend”
+                                                    but that this change may be coming
+                                                    soon.
+
+                                                      The 5-Day average of the daily
+                                                      MWGSC change is once again
+                                                                  positive, with the
+                                                                  overall trend, and
+                                                                  we can see that
+                                                                  GTM has peeked its
+                                                                  head into bearish
+                                                                  territory as well.
+
+                                                                      In taking a “local”
+                                                                      picture of these
+                                                                      data, one wouldn’t
+                                                                     be judged for saying
+                                                      “well yes, they are bearish but just
+                                                      so” and as such, may want to wait a
+                                                      tad longer before making any
+                                                      definitive statements.
+
+                                                                      Zooming       out,
+                                                                      however, we see a
+                                                                      more      dynamic
+                                                                      picture:      the
+                                                                         MWGSC-Change
+                                                                  trend hasn’t changed
+                                                      much in the past two months -
+                                                     hovering perilously at the neutral
+                                                     line (red line; and some may even
+                                                     say spending slightly more time in
+it); the typical “wave-like pattern” associated with the MWGSC-trend-of-late hasn’t
+manifested (some who are technical analysis enthusiasts may note the “higher lows” in
+this pattern since 10/2022); and GTM has been growing increasingly positive since 05/15
+– all of these point towards an impending bearish future.
+
+This imposes upon us a problem as we described above: bullish until proven otherwise
+all the while the data are becoming both otherwise and ominously otherwise.
+
+The good news is, however, that although timing may not be our specialty, we do know a
+few people that specialize in just that. Let’s take a peek at the Dealer Long Puts (DLPs),
+and by extension, those who sell put: our friendly neighborhood DLP-ers. How do they
+
+
+Deep Dive Stocks – Weekly Chat                                                05/29/2023
+assess the situation from their lofty thrones?
+
+
+
+
+Locally (5,- and 10-day averages) provide somewhat of an argument towards an
+increasing tenacity towards shorting puts – but stepping back, we see this recent
+behavior is quite moot. It inspires no awe either in magnitude nor duration; just look at
+the magnitude of difference between the up-spike in DLP behavior at the start of 03/2023,
+and the rapidity of its closure only two weeks later and that of our recent performances.
+
+Curious that March 2023 ended up 4%! Not too shabby.
+
+Is that what we have now? Hardly – we seem to have mere scraps on the table this time
+around.
+
+So – what does it all mean?
+
+Technically the data suggest bullish until proven otherwise but these same data suggest
+that the upcoming otherwise may be both proximal and significant.
+
+But until a VoEx Spike or VoEx Divergence: we wait.
+
+Happy trading,
+Justin
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                               05/29/2023
+

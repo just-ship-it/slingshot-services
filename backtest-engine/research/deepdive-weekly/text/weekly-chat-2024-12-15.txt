@@ -1,0 +1,136 @@
+                                   Weekly Chat 2024-12-16
+
+
+                                          Main Points
+
+
+
+    -   VoEx-daily has dove out of Stability with $QQQ encroaching within the Propagation
+        Zone; a sign that near-term downside is here.
+    -   Gamma environments are much-the-same: diffuse purchasing support on $SPY with a
+        more dynamic environment with $QQQ.
+    -   Put-selling is still near-zero.
+    -   MWGS data show an increase in gamma squeezes with the long-standing and
+        deepening negative GTM.
+    -   LDPS shows bearish liquidity forming with a local downside target of about -1.5% and
+        a destination-target of -4.00%.
+    -   Local bearish outlooks in the midsts of increasingly unstable but stable market
+        environment.
+
+
+
+                                           SUMMARY
+
+
+
+          This week, VoEx-daily moved rapidly out of Stability for both $SPY and
+          $QQQ with $QQQ’s VoEx breeching through to the P.Z.. This brings with
+          it near-term downside expectations.
+
+          In response, we find a gamma hedging environment on $SPY that is
+          poised to offer “directionless” purchasing support, and $QQQ poised to
+          thread the needle between selling pressure and purchasing support.
+
+          Put-selling has ceased once-more with minimal-to-zero movement noted.
+
+          MWGS-data shows an increasingly unsteady environment with an
+          increasing number of gamma squeezes along with an increasingly
+          negative GTM.
+
+          Overall, the picture paints a bearish self portrait for us and the week ahead.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                         12/16/2024
+                                              DETAILS
+
+
+
+
+Hello everyone!
+Last week, we left off with bullish outlooks that were tempered with some caution for downside
+secondary to ~mean reversion~ and its fantastical influence on the market.
+The yield of such preparations were those in which the market dipped a little and rose a little, with
+this particular incident equating `a little` to -0.59% for $SPY and 0.77% for $QQQ. Not too shabby
+– the echoes of last week’s shared thoughts regarding the potential for repeat behavior given the
+repeat hedging environments are heard below:
+
+
+
+
+A languid $SPY and an energetic $QQQ – a commonly curious citation of late. Perhaps the
+absence of a reachable gamma-neutrality is causing some mooted hedging whereas having
+bullish winds + at least a general direction towards neutrality seems to be the key towards
+directed movement.
+Truthfully not something I’ve ever thought to investigate but now I am curious – so let’s put a pin
+in this, and for now, just go “hmmm, interesting.”
+
+This week, let’s check out the data to see if the ~mean reversion~ has ~mean reverted~ and we
+can continue on our marry way, or has the ~mean reversion~ mingled with some mean
+revisionaries.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                          12/16/2024
+Reeeeeeeeee
+As usual, let’s get our starts with VoEx:
+
+
+
+
+A rapid movement out of stability and towards the Propagation Zone is an ominous outlook to
+get things started off with! In particular, one may note that $QQQ’s VoEx-daily has already entered
+the P.Z.
+This brings with it an outlook of continued near-term downside as the likely futures ahead of us.
+This outlook is tempered for now with VoEx itself remaining within stability.
+
+Thus, with near-term stormy skies noted, let’s take a peek at the weather forecasts:
+
+
+
+
+Nothing too noteworthy but minimal
+purchasing support noted on $QQQ in the event of any downside hiccups. In terms of $SPY, some
+of the purchasing support seems to have given way to gamma neutrality; predominantly in the
+IV+ direction.
+Nonetheless, should VoEx-daily prove too reactionary with its assessments, and the market’s
+instability not give-way to downside, then conditions remain much the same as last week, and so,
+it would seem reasonable to bet on a third round of meandering $SPY and an energetic $QQQ.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                         12/16/2024
+Moving onwards and upwards, we encounter our put-selling friends:
+
+
+
+
+Or not – considering their continued absence. Another non-vote of confidence for profitability in
+the $[+] and/or IV[-] direction. A slightly ominous sign for those who are bullish.
+Moving onwards evermore, we find the Market-Wide
+Gamma Squeeze data, as shown below:
+
+Here we see some signs of growing instability – an
+increase in GS-growth, supra-1,000 gamma squeeze
+count, and a deepening GTM! Quite the showing of
+instability with a 27% increase in gamma squeezes
+week-over-week!
+
+Moving onwards, a quick peek at $ES with balanced
+LDPS:
+
+
+
+
+                                                       Bearish ideations which works to extend
+price movement expectations towards LDPM-144, and 377 at ~$5970 (~-2.00%) in the near future
+with the possible move further down to $5,796.14 (-4.00%)
+So – bearish outlooks ahead with potential -2% – -4% moves ahead.
+Happy Trading!
+Justin
+
+Deep Dive Stocks – Weekly Chat                                                      12/16/2024
+

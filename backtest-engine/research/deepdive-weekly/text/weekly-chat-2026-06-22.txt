@@ -1,0 +1,104 @@
+                                 Weekly Chat 2026-06-22
+
+
+                                       Main Points
+
+
+
+       -   VoEx is not bullish,
+       -   Heatmaps showcase purchasing support located spot-up and selling pressure spot-
+           down for both $SPY and $QQQ,
+       -   GS counts are steadily rising,
+       -   LS&T data showcase bearish findings.
+
+                                       SUMMARY
+
+
+
+           More turbulence and downside expected as VoEx migrates away
+           from the bullish zone, the heatmaps showcase extreme delineation
+           between purchasing support and selling pressure, and LS&T data
+           showcase bearish liquidity, ending bulltraps and encroaching profit-
+           takers.
+
+
+
+
+Deep Dive Stocks – Weekly Chat        for the week of            2026-06-22 to 2026-06-27
+                                             DETAILS
+
+
+
+
+Hello all!
+Last week, we left off with notions of turbulence and downside with a particular emphasis to
+watch out for an early-week bump. Well, an early-week bump came and subsequently went with
+$SPY achieving a high of $756.68 on Monday and a low of $739.22 on Wednesday only to end
+the week with only 0.6% of the bump remaining. On $QQQ, the story is similar: a high of $744.76
+on Monday, a low of $720.85 on Wednesday for a week-over-week change of 2.5%.
+Thus, turbulent yet but ultimately the purchasing support we noted below spot last week appears
+to have kept things afloat (not shown). This week, the task is straightforward: will we keep going
+up, or not?
+Can one only go up?
+Starting as usual with VoEx, we find:
+
+
+
+
+Not the most bullish of VoExes! For $SPY we have a refusal of VoEx to enter the bullish zone while
+$QQQ’s VoEx seems to be migrating out of it, while VoEx-daily flirts with the Propagation zone.
+
+Overall, this continues to shade our outlooks with bearish tints while also highlighting the
+potential for turbulence.
+Moving towards the heatmaps, we find a similar sight as last week:
+
+
+
+
+Deep Dive Stocks – Weekly Chat           for the week of              2026-06-22 to 2026-06-27
+Both $SPY and $QQQ find themselves with selling pressure located spot-up and purchasing
+support located spot-down, the difference lay in where the two find themselves relative to these
+characteristics: $SPY finds itself surrounded by purchasing support, suggesting another early-
+week bump, while $QQQ is beleaguered by selling pressure. This showcase again highlights the
+increased risk of turbulence (and thus, perhaps IV is cheap currently) and shows the first signs of
+$SPY and $QQQ decoupling.
+The gamma-squeeze data are largely the same as before: a slight increase in gamma squeezes
+has been noted, and the growth rate continues to climb [not shown]. The predictive data below
+suggests this is likely to continue: a slow bobbing up-and-down as gamma squeezes steadily
+grow.
+
+
+
+
+LS&T data showcase bearish findings all around:
+
+
+
+
+Deep Dive Stocks – Weekly Chat           for the week of               2026-06-22 to 2026-06-27
+The 90-minute shows the early signs of an aggressive ask while spot tests LT6 for support with
+bearish liquidity.
+The 144-minute seems to have its bulltrap ending with the return of bearish liquidity, suggesting
+another leg down is brewing.
+
+The same sentiment is found on the 987-minute where bearish liquidity is present along with
+profit-takers as spot tests LT7.
+On the weekly, things look bullish overall but the profit-takers we have been tracking over the past
+few weeks are starting to pile-up above spot, suggesting a bounce off of the organics at LT5 may
+be in order (and beyond if LT5 is insufficient).
+Overall, turbulence and downside expected with a reasonable ceiling of $7,700-ish (LT5 on the
+987-minute and LT7 on the 144-minute) and a reasonable floor of 7,300-ish (LT7 on the 987-
+minute and LT5 on the weekly).
+
+
+
+Happy Trading!
+
+
+Justin
+
+
+
+
+Deep Dive Stocks – Weekly Chat            for the week of               2026-06-22 to 2026-06-27
+

@@ -1,0 +1,122 @@
+                                  Weekly Chat 2026-04-06
+
+
+                                        Main Points
+
+
+
+       -   VoEx-daily shows a bulltrap on both $SPY and $QQQ with early evidence of the
+           bounce terminating.
+       -   Hedging heatmaps are supportive for bullish performance with the caveat of a limit
+           to how much 𝐼𝐼𝑉𝑉 − can be obtained in pursuit of $+ .
+       -   LS&T data showcase near-term resistance, profit-takers and bear-traps while the
+           higher intervals show bearish liquidity failing to over-take ceiling.
+
+
+
+                                         SUMMARY
+
+
+
+           The bounce is underway and there does appear to be some fuel left
+           in the tank for continued $+ but should one ask just how much fuel
+           there is remaining, then the picture starts to look less optimistic.
+
+           VoEx-daily appears to have already inflexed, the first sign that a
+           VoEx-daily-bull-trap (aka VoEx spike) is terminating (and thus $− is
+           expected). The second sign of minimal fuel remaining are the profit-
+           takers noted on all time intervals in the LS&T data, along with
+           persistent bearish liquidity noted on the 987-minute and weekly
+           vantage points.
+
+           There is some supportive evidence that the tank is perhaps more
+           full than not by way of the purchasing support on the heatmaps and
+           the bullish liquidity on the 90-minute and 144-minutes.
+
+           Taken together, volatile markets and there is some evidence of a
+           “lingering bounce” but minimal evidence of a bottom having been
+           reached and so downside takes the default outlook evermore.
+
+
+
+
+Deep Dive Stocks – Weekly Chat         for the week of             2026-04-06 to 2026-04-10
+                                             DETAILS
+
+
+
+
+Hello all!
+                                           Quick Note:
+Registration occurred ! If you have had any hiccups getting your tools back, let me know!
+                                                --
+Apologies but another very short weekly chat this week – the last one, hopefully.
+
+
+We briefly discussed last week a bounce but shooed it away, only to be haunted by said decision,
+as can be seen in the heatmaps:
+
+
+
+
+For the future, let’s place LT7 on the weekly on the list of forces potent enough to move past some
+selling pressure.
+This rapid performance upwards brings to mind more equal but opposing visions (one for each
+eye, presumably) (1): greater-than-EPR price movement brings visions of dancing mean-reversion
+fairies and (2) A substantial bounce may beget more bounce. Which will it be?
+Let’s try to find out
+
+Starting with VoEx as usual we find:
+
+
+
+
+Deep Dive Stocks – Weekly Chat           for the week of               2026-04-06 to 2026-04-10
+On its own, these are bullish-adjacent prints in that it appears a VoEx-daily spike is underway but
+if one really zooms in, we can see VoEx-daily has already “pivoted” ever-so-slightly, suggesting
+the $+ has terminated. Yet – whatever happened this week seems to have been significant
+enough to nudge VoEx itself up.
+On the whole these are bull-trap-like prints with some evidence that the bull-trap is trappething
+byway of VoEx-daily appearing to have already terminated and positioned itself to point back
+downwards – but this is, admittedly, a rather tiny nodule so let’s check the hedging heatmaps:
+
+
+
+
+These are supportive heatmaps! In particular if one is interested in a nice [$+ , 𝐼𝐼𝑉𝑉 −] week! It should
+be noted that there is a “lower-limit” of sorts to the 𝐼𝐼𝑉𝑉 − potential before running into selling
+pressure, but if the “effects” of LT7 bid from the weekly are still present in the week, then this will
+mingle nicely with the purchasing support.
+Gamma squeeze data [not shown] do show a slight decrease in expectations for GS counts and
+growths for the future but are still wholly positive.
+
+
+
+
+Deep Dive Stocks – Weekly Chat              for the week of                2026-04-06 to 2026-04-10
+LS & T data (below) I think show the best “overall” view of conditions:
+
+
+
+
+Starting with the weekly we see the bounce indeed bouncing, along with some evidence of dip-
+buyers moving in (LT1, LT2) but curiously it appears the week stopped just short of over-taking
+LT5 (or was rejected therefrom) which does suggest that while there is some organic bid
+supporting spot it is not particularly interested in excelling spot upwards.
+On the 987-minute we find admittedly less support and bearish liquidity present.
+Taken together on the higher-intervals, the view very much so looks like “bounce” more than
+“recovery”.
+The lower-intervals are telling as well – despite the bullish liquidity, we find all profit-takers have
+emerged on the 90-minute, suggesting that at minimum, movement back down to LT7 is in the
+works. These bearish ideations are amplified on the 144-minute wherein we find spot, in all its
+bullish glory, failing to overtake LT7, along with the growing presence of profit-taking as well.
+Thus, overall, flat-to-down is likely in the week ahead, hopefully with slightly less volatility than the
+week prior which can allow us to see the data with some dust settled. The data suggesting a
+bounce continuing seems equally opposed by the overhead opposition, leaving the fate of the
+market in the hands of the market’s sensibilities. So downside is likely!
+Happy Trading! Justin
+
+
+
+Deep Dive Stocks – Weekly Chat              for the week of                2026-04-06 to 2026-04-10
+

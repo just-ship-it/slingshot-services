@@ -1,0 +1,94 @@
+                                   Weekly Chat 2025-12-29
+
+
+                                         Main Points
+
+
+
+       -   VoEx-Daily resides within Stability, while VoEx for $SPY exits the Propagation
+           Zone unlike $QQQ’s VoEx.
+       -   Hedging environment shows local support with near-by spot-up selling pressure.
+       -   LS&T analysis showcases modest bullish liquidity with near-by, spot-up organic
+           asks and eager asks.
+       -   Overall, a short-week ahead likely to generate flat-to-slightly up price action to
+           usher in the year ahead.
+
+                                         SUMMARY
+
+
+           See above!
+
+
+
+
+Deep Dive Stocks – Weekly Chat          for the week of               2025-12-29 to 2025-01-02
+                                              DETAILS
+
+
+
+
+Hello all!
+Last week, we held out hopes for a gentle rise northward as Santa climbed southward to deliver
+a northeasternly breeze helping usher spot up and to the left. This seems to have occurred, with
+$SPY moving 1.43% and $QQQ moving 1.11%! Not too shabby.
+We can view the gentle migration northward in the heat maps below:
+
+
+This week, the goal is straightforward: will the Santa rally have long-lasting effects? Or will
+downside resume as expected? Let’s try to find out!
+Santa’s Shadow
+Starting as usual with VoEx, we find:
+
+
+
+
+For now, it seems that Santa’s Shadow lengthens into our futures: VoEx-daily on $SPY and $QQQ
+remain within the Stable Zone (although one might take pause as to the Spike-like nature of these
+VoEx-daily excursions). To bolster this view is $SPY’s VoEx, which finds itself leaving the
+Propagation Zone (a feature not shared from within $QQQ). Taken all together, this paints a
+picture of decision: VoEx overall is still suggesting that most upside will be unstable (by-way of
+VoEx largely being excluded from stability and VoEx-daily’s spike-like behavior) but said
+suggestion is provided with an increasingly reasonable tone.
+The take-away here is either a week that is flat-to-slightly up or one in which the VoEx-daily spikes
+complete their cycle, and downside is expected. To help settle the debate, let’s check in on the
+gamma-hedging heatmaps to settle the debate:
+
+
+
+Deep Dive Stocks – Weekly Chat            for the week of                2025-12-29 to 2025-01-02
+Much like last week! Both $SPY and $QQQ showcase persistent and diffuse purchasing support
+located throughout. This gives visions of another week of gentle appreciation (in particular also
+because of the short week, as we discussed last week).
+Let’s check in with the LS&T for the week ahead to see which way the liquidity-cards lay:
+
+
+
+
+Overall, it appears there’s reasonable selling occurring on the 90- and 144-minutes with a 987-
+minute organic ask resistance to note. This highlights the idea of a flat-to-slightly-up week ahead.
+It is worth noting the eager ask that is now persistent on the weekly (LT3). This corresponds
+reasonably well to the LT6 of the 987-minute ceiling and so it seems reasonable to expect that to
+act as a resistance to any substantial price wriggling.
+
+
+
+
+Deep Dive Stocks – Weekly Chat            for the week of               2025-12-29 to 2025-01-02
+Overall, in efforts to keep the Weekly Chat short for the short week ahead, it seems that a flat-to-
+slightly-up week ahead is forming; due to much of the same conditions as last week: local and
+persistent purchasing support from the gamma-hedgers, VoEx that is sort-of-leaning bullish but
+not committing, and LS&T showcasing predominately bullish liquidity with a reasonable number
+of eager asks poking their heads up.
+Next week, we’ll talk about the webserver and API end points!
+
+
+Happy trading,
+
+
+Justin
+
+
+
+
+Deep Dive Stocks – Weekly Chat            for the week of               2025-12-29 to 2025-01-02
+

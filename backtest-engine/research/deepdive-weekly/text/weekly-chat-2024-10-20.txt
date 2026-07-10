@@ -1,0 +1,186 @@
+                                    Weekly Chat 10/21/2024
+
+
+                                          Main Points
+
+
+
+    -   VoEx is within Stability while VoEx-daily has fallen out thereof once more. Reminiscence
+        to 2024-07 continue.
+    -   Hedging environments are “light” – $QQQ exists with local and immediate selling
+        pressure.
+    -   DLP activity has dropped down to near-zero once more.
+    -   LDPM/S show some eager ask but overall bullish skies.
+
+                                           SUMMARY
+
+
+
+           The bullish outlook for the past week was mainly fulfilled and the outlook
+           this week is for similar action.
+
+           Some concern regarding VoEx-daily’s presentation on $SPY and $QQQ –
+           in that it is reminiscent of both VoEx-divergence and 2024-07, which was,
+           also, reminiscent of VoEx-divergence. A close eye will be kept on VoEx for
+           any sudden moves into or towards the P.Z.
+
+           Put-selling is moot still – we miss our friends.
+
+           LDPM/S show good bullish conditions with LDPM below price – despite a
+           full conversion of the inverted LDPMs.
+
+           Overall, continued bullish outlooks with hopes that VoEx moves northward
+           for the winter.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                      10/14/2024
+                                                    DETAILS
+
+
+
+
+Hello one-and-all1!
+
+Last week, we left off with continued bullish ideations, which, in comparison to our normal, more
+paranoid ones, are quite a reprieve.
+To benefit our sanities, the market moved 0.86% ($SPY), while $QQQ moved a casual 0.22%.
+
+Not too shabby if you were lookin’ forward to nothing happening!
+We can see the dazzling moves in the heatmap below:
+
+
+
+
+A curious reminiscence from last week wherein $QQQ’s moved ever-so-close to selling pressure
+– this week, it would seem, this casual flirting has turned into something more serious.
+So, let’s see if we can’t find out if $QQQ is about to marry some selling pressure, of if they are just
+dating.
+
+Oh – and then let’s talk about LDPM/S and co.!
+
+
+
+
+1
+    Except for those who know who I’m talking to.
+
+Deep Dive Stocks – Weekly Chat                                                            10/14/2024
+marketR: the dating app for markets
+Starting as usual with VoEx we see:
+
+
+
+
+Oo ! Things are still looking reminiscent to 2024-07! VoEx-daily has a VoEx-divergence look about
+it, and it hasn’t resumed its presence back in stability quite as robustly as before – this is true for
+both $SPY and $QQQ.
+The interpretation of this is: tentatively bullish but we might be “in the middle” of something.
+Should that be the case, that something would be VoEx moving rapidly into the P.Z. and thus,
+indicating downside!
+But – before we jump earnestly on that eventuality: let’s remember that data are as data are, not
+how we want them to be2!
+So, let’s check out the hedging environments with this in mind:
+
+
+
+
+Ok! So that’s not quite as bullish as hoped but we do see that with $QQQ, at least, an increase in
+IV will lead to purchasing pressure, so there’s that. However, and obviously, $QQQ is going to have
+to combat some local and immediate selling pressure first in order to get to the purchasing
+support.
+
+
+
+
+2
+    NOT the same for my children though.
+
+Deep Dive Stocks – Weekly Chat                                                            10/14/2024
+Influence distributions are leaning green but perhaps its not remiss to say $QQQ is leaning a tad
+more the other way.
+Our put-selling friends seem to have similar concerns with the market’s conditions. You’ll see
+below that they are continuing to not-sell puts (much to our chagrin).
+
+
+
+
+So, it seems our put-selling friends do not have any desire to capitalize on $+ or IV- in the future
+(I suspect after such a long dormant period from our friends, that IV has been persistently too low
+to really push for DLPs, but we’ll see).
+So, overall, bullish outlooks but a close eye on VoEx (the same interpretation exists for traditional
+VoEx, should it fall into P.Z., which it should if it agrees with this version of VoEx).
+
+Gamma-data is relatively moot for now as well – no real changes, so we’ll save some digital paper
+on it.
+And last up, since we’ve been starting to make a habit out of it, we see LDPM/S for ES on the daily:
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                          10/14/2024
+Oh – and the new liquidity scanner! But more on that later.
+For now we see some eager ask floating above spot but conditions are Bullish overall. Some
+indications that liquidity is decreasing at the organic ask (probably due to the eager asks present).
+Nonetheless, we see LDPM-89, -144, -233 are suggesting an eager bid is also working its way in.
+Overall: bullish!
+
+
+So – a quick chat for the week as why look a gift horse in the mouth? VoEx is bullish (but we will
+be keeping an eye out on its movement with regards to the Propagation Zone), and LDPM/S are
+in agreement. For those who wish to temper such bullish feelings amongst us, there is always the
+chance that $QQQ’s surrounding selling pressure might introduce some early-week volatility that
+might present some opportunities.
+Happy Trading,
+
+
+Justin
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                          10/14/2024
+Changes!
+Lots of changes to go over.
+Let’s group them into: Systemic and Local.
+
+
+Systemic Changes:
+Lately a lot of effort, time and energy (although not necessarily all-at-once) has been aimed at
+setting up the backend for increased processing efficiency and eventual migration to a new
+dashboard.
+The progress of this has actually been pretty good! But – some things have shifted. So, here’s
+how the future looks:
+    -    Dashboard:
+
+         I think we will be migrating back the old domain `data.deep….` but it will be the same
+         dashboard. This should occur within the month and should only entail you having to switch
+         which url you go to.
+         Once transferred, I will work to implement the new backend processing such that we can
+         get the data quicker (it should get the data online so we can update the dashboard at
+         7pm!).
+
+         From there, the initial plan was to continue the sprint into more dashboard developments,
+         but:
+Local Changes
+         The recent advancements and theory-crafting about LDPM/S has made me consider that
+         we might be better if I spent more time on ensuring:
+            o The educational material is up-to-date on LDPM/S, it is woefully out of date (as are
+                the other educational materials)
+            o More videos and explanations to go along side it,
+            o More active interactions with you guys throughout the day (via spaces or
+                streaming, etc.)
+
+         as well as implementing these changes into LTA!
+Thus, the priorities are:
+    -    New dashboard domain looks like a necessity so that’ll be done,
+    -    LTA updates
+    -    Backend processing updates
+    -    Casual progress on Dashboard
+If you would like to see DDS go in a different direction, please let me know!
+Justin
+
+
+Deep Dive Stocks – Weekly Chat                                                       10/14/2024
+

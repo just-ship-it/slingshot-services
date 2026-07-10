@@ -1,0 +1,219 @@
+                                       Weekly Chat 2025-12-01
+
+
+                                              Main Points
+
+
+
+       -   VoEx-daily has spiked into the Inhibition Zone while VoEx remains within the
+           Propagation Zone.
+       -   Gamma-hedging environments showcase proximal selling pressure on $SPY with
+           proximal purchasing support on $QQQ. Both have a “stable” orientation.
+       -   Gamma-squeeze counts have decreased substantially but the predictive counts
+           are still positive.
+       -   LS&T investigation shows bullish liquidity and evidence of continued bounce.
+           BTC/VX composite chart shows continued expectations for large VX spike.
+       -   Overall, expectation that the bounce will continue but the data do not support the
+           end to downside expectations.
+
+                                               SUMMARY
+
+
+           Last week, the overall expectation was a bounce and the same follows for this
+           week.
+
+           VoEx-daily has spiked into stability and until it returns to the P.Z., the outlook is
+           near-term price appreciation. VoEx remains in PZ, and so this near-term price
+           appreciation is likely to be followed by return-to-downside.
+
+           Gamma-squeeze environments showcase stable layouts (selling pressure spot-
+           up and purchasing support spot-down) on $SPY and $QQQ but with $SPY
+           surrounded by selling pressure and $QQQ by purchasing support.
+
+           The gamma-squeeze amounts have decreased as expected given the large $+
+           throughout the market. The predictive counts still suggest greater numbers of GS
+           in the future than presently, suggesting the market is simply “out-running” the
+           gamma squeeze lurking below.
+
+           LS&T investigation on ES shows bullish liquidity on all fronts with evidence of a
+           2% ceiling but these bullish LS prints come with additional caution by way of
+           evidence of incoming and significant profit-taking, and bulltrap LT orientations. A
+           look at BTC/VX composite chart shows continued expectation for a spike in
+           volatility.
+
+           Overall, reasonable evidence to suggest another ~2% bounce with return to
+           downside expected.
+
+
+
+
+Deep Dive Stocks – Weekly Chat              for the week of                    2025-12-01 to 2025-12-05
+                                             DETAILS
+
+
+
+
+Hello all!
+Last week, there were notions of a market ready to bounce, and bounce it did! $SPY bounced
+3.69% while $QQQ moved 2.3%. We can visualize these moves below:
+
+
+
+
+The week threaded the needle quite well on $SPY, with the right amounts of [$+ , 𝐼𝐼𝑉𝑉 −] to keep
+things moving up-and-to-the-left without running into the ridge of selling pressure lurking below.
+This is best viewed on $SPY’s heatmap (left) due to $QQQ’s purchasing support inundation.
+Kudos to the market makers and option dealers!
+This week, the plan then is straightforward: let us investigate the data d’habitude and then
+recalibrate our expectations; is the bounce a single-week entity or should we expand our bounce-
+horizons?
+To bounce is to Human
+Starting as usual with VoEx, we find:
+
+
+
+
+Deep Dive Stocks – Weekly Chat           for the week of               2025-12-01 to 2025-12-05
+VoEx-daily spikes! One might remember from last week’s chat:
+
+                                                 “
+ If we take the data on face-value, things are worsening and downside is still the predominant
+expectations. If we take the data with regard to any potential patterns that might be forming, we
+  arrive at a similar conclusion (that of downside) but one that is augmented slightly with the
+                   possibility for an incoming VoEx-daily spike and $+-bounce.
+                                “ – Last week’s chat (2025-11-24)
+And so, the pattern lives on ! The good news is this puts us in familiar territory, the bad news is
+you never know if a pattern is broken until it’s broken! You can choose which side you would like
+to take on this one.
+For now, these spikes produce visions of spot flat-to-up until VoEx-daily spikes back into the
+Propagation Zone, at which time we can be doubly-certain that the pattern has held (without much
+knowledge as to if it will hold), with subsequent downside likely to follow.
+Thus, it seems per our first viewing of the data, the bounce appears set to continue (until VoEx-
+daily moves back into the PZ), so let’s check in on the gamma hedgers to see how they might fare
+with this news:
+
+
+
+
+Its always $SPY! We see similar layouts on both $SPY (left) and $QQQ (right) whereby they are
+filled to the gills with gamma-hedging requirements, with selling pressure located spot-up and
+purchasing support located spot-down. For $SPY, this selling pressure is moreso local and
+proximate, technically placing $SPY in a slight gamma squeeze (since selling pressure is present
+on $− ). Should the two influence one another in the upcoming days then it looks like if the gamma-
+hedging has its way, the market will see wide swings (as things bounce between spot-up $QQQ
+selling pressure with current-spot $SPY selling pressure and spot-down with $SPY’s purchasing
+support and $QQQ’s current-spot purchasing support) with minimal overall movement throughout
+the week.
+In other words: choppy and flat!
+It should be noted though the full picture is choppy-and-flat with downside as the final resolution
+still.
+Moving onwards let’s check the Market-Wide Gamma Squeeze data:
+
+
+Deep Dive Stocks – Weekly Chat           for the week of                2025-12-01 to 2025-12-05
+A large reduction in
+gamma-squeeze amounts!
+Although this shouldn’t be
+too surprising to those
+keeping tabs at home,
+namely due to the regular
+observation of late wherein
+a large move in spot leaves
+many       gamma-squeeze
+behind, resulting in a topical
+net-reduction (for so long
+as the market can “outrun”
+those gamma squeezes).
+On the surface, this paints a
+picture of bullish ideations
+but for me it strikes
+reminiscences of 2025-01-
+03!
+
+Let’s check in with the
+predictive data to see what
+they say:
+
+
+                                                                             On the left, we can see
+                                                                             the brakes have been
+                                                                             applied to GS growth
+                                                                             from     last week’s
+                                                                             neutral stance (the
+                                                                             Predictive      Growth
+                                                                             Curve [purple]) is
+                                                                             negative but for now
+                                                                             the overall “velocity”
+                                                                             (predictive       count
+                                                                             curve        [brownish-
+                                                                             orange]) is positive.
+                                                                             The     interpretation?
+                                                                             The future’s GS count
+                                                                             is expected to be more
+                                                                             than present (velocity
+is positive) but less than previously expected (acceleration is negative).
+
+
+
+
+Deep Dive Stocks – Weekly Chat            for the week of               2025-12-01 to 2025-12-05
+Does this foretell bullish futures? No, not by itself – but rather it foretells of a future that’s more
+stable that present, which, given the current `stability` has prompted a 3%+ move last week, does
+beg the question regarding what such a stable future might encourage in spot’s performance.
+So overall, it appears the market is apt to continue its bounce – but before we give that outlook a
+seal of approval, let’s check in with LS&T:
+
+
+
+
+This is a messy scene!
+On the 90-minute [top-left] we find a scene of recent profit-taking during which time two candles
+of bearish liquidity were produced. This suggests said profit-taking was starting to over-take the
+available bullish supply. Nonetheless the selling ceased and bullish liquidity returned (you can see
+the lower-order LTs dipping below the second-to-last candle!). Thus, the return of bullish liquidity
+may be less of “a return of bullish liquidity” and more a function of diminished selling pressure
+(and thus, diminished introduction of bearish liquidity) resulting in a relative increase in bullish
+liquidity and thus the candles are now back to green. It is worth noting, that if one were to
+relinquish any preconceived notions on LT5’s role (namely that of being an `organic`), it might
+appear as though it is behaving as an eager: its northward bend is quite in-line and in sequence
+with the other profit-taking LTs moving up to spot.
+On the 144-minute we find a bear-stack and a bull-trap with a recent aggressive-bid cascade. Once
+more, we can see LT5 is behaving awfully similar to its lower-order counter-parts by way of
+pivoting upwards in-sequence and on-time in joining in on the “wave” occurring. The consequence
+of this is a point towards “flat” price-action as LT5 would move up to spot and provide continued
+downwards pressure on this bull-trap. The only caveat to that being the most expected outcome
+is the small kink regarding the “waves” broken-nature: namely that of spot having moved above
+one of the eager LTs already during the wave - this is typically associated with “the [scoop/wave]
+
+
+Deep Dive Stocks – Weekly Chat             for the week of                 2025-12-01 to 2025-12-05
+not being respected” which translates to: the wave is insufficient to keep spot down (or the scoop
+insufficient to bring spot back up).
+Moving onwards to the 987-minute [bottom-left], we find the bounce we expected (off of LT7) but
+recent prints have produced a bullish candle as spot moved through LT5.
+Lastly, the weekly shows bullish liquidity as LT5 holds.
+Taken together, these three print a picture of a continued bounce. This is evidenced mainly by the
+bullish liquidity on the 90-, 144-, and 987-minute occurring along side both of the profit-taking
+“waves” not being respected. In looking for a ceiling, one finds LT-6 at $6,974-ish, which sits about
+2% up still.
+Thus, it seems reasonable to expect a 2% jump in the week ahead furthermore, with special
+consideration at if price reaches towards LT6 on the 987-minute.
+Before we sign off on the outlook of a continued bounce in the presence of over-arching
+downside, let’s assure ourselves we aren’t holding needlessly onto old outlooks. What is it that
+suggests downside is still proximal?
+         -   VoEx is in the PZ,
+         -   PCC is positive,
+         -   BTC / VX is still bearish (shown below)
+
+
+
+
+These three data seem sufficient.
+Bounce of ~2% with eventual downside to follow evermore !
+Happy Trading,
+Justin
+
+
+
+Deep Dive Stocks – Weekly Chat            for the week of                2025-12-01 to 2025-12-05
+

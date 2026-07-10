@@ -1,0 +1,165 @@
+                                   Weekly Chat 2024-10-28
+
+
+                                         Main Points
+
+
+
+    -   VoEx-daily has fallen out of stability, indicating imminent downside. VoEx remains
+        within stability, however, shortening expected time-horizon for the downside.
+    -   Heatmaps are weak but technically supportive with local purchasing support.
+    -   Put-selling has seen a large increase on $QQQ.
+    -   Market-Wide Gamma Squeeze (MWGS) data shows gamma squeeze growth
+        accelerating with GTM printing negative outlooks.
+    -   Overall, downside is expected with a near-term time horizon in so long as VoEx remains
+        within Stability.
+
+                                         SUMMARY
+
+
+
+           After some awkward movement throughout the week, conditions have
+           become bearish.
+
+           VoEx-daily has moved into the Propagation Zone for $SPY, and has even
+           moved just-shy thereof on $QQQ. Hedging environments are technically
+           bullish but show diminishing purchasing support should IV rise, limiting
+           the effectiveness of an already-sparse purchasing support.
+
+           Put-selling has increased rapidly and drastically on $QQQ – however,
+           given the current data, our traditional jubilatory response is now a more
+           muted, polite, nod of acknowledgement.
+
+           Looking at ES on the daily, an aggressive LDPS shows migration towards
+           the bid. In conjunction with the data above, this gives a reasonable
+           downside target of $5,600 whereat LDPM-610 looks poised to offer its
+           organic bid as support.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                     10/28/2024
+                                              DETAILS
+
+
+
+
+Hello all!
+
+
+Last week, we left off with bullish ideologies and, apparently, without reading the Weekly Chat, the
+market did not receive the message. This miscommunication resulted in $SPY dipping slightly to
+the tune of -0.95%, while $QQQ -0.17%.
+We can see this awkward movement throughout the week below in the heatmaps:
+
+
+
+
+On both $SPY and $QQQ we see the market’s push downwards was unphased by the presence of
+purchasing support, ultimately leading to some unusual trajectories.
+So, this week, let’s check in on some items we put a tack in a while ago and see if there is anything
+potentially brewing behind this red week and odd weekly movement!
+
+Watch your step!
+Starting as usual with VoEx, we notice:
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                          10/28/2024
+Oh that is some very potent reminiscence of 2024-07! VoEx-daily has continued its descent in
+spectacular fashion on $SPY. Currently, VoEx-daily’s position on $SPY suggests that $QQQ’s will
+follow suit – a plunge into the propagation zone.
+
+And this means downside; near-term downside, in so long as VoEx itself stays within stability –
+so keeping an eye on VoEx on Monday will be very important.
+So, with near-term downside in mind, let’s see how conditions might respond within the hedging
+environment:
+
+
+
+
+From there, let’s take a quick peek at the Market-Wide Gamma Squeeze (MWGS) data; an activity
+yo we have been negligent on as of late:
+                                                  For the first time in awhile we see some
+                                                  reasonable growth in the gamma-squeeze
+                                                  counts. Over the past month, gamma squeeze
+                                                  amounts have risen ~13%, 12 of those 13%1
+                                                  manifested over the past week.
+                                                  This growth has been enough to bring the growth
+                                                  rate into positive territory overall – and, it would
+                                                  seem in conjunction GTM has printed a
+                                                  reasonable negative print.
+                                                  This suggests a flow of short-gamma heading to
+                                                  the market – these usually take about 2 – 4
+                                                  weeks to manifest.
+
+
+
+
+The result is an increase in gamma squeezes, which, as an extension of the individual
+consequence, the aggregate consequence is market downside.
+
+
+
+
+1
+ That may not be how math works; Month-over-month gamma squeeze change: 13%; Week-over-Week change:
+12%.
+
+Deep Dive Stocks – Weekly Chat                                                           10/28/2024
+Coincidentally, this 2 – 4 week timeframe coincides once again with the SNAP graphs!
+Coincidence!
+Overall, this paints a turbulent future for the market as the short gamma’s influence ramps up.
+Next up, our put-selling friends:
+
+
+
+
+Oh my! Look who has finally decided to show up – our $QQQ put-selling friends!
+
+Well – this might be awkward. Normally, we would jump at the opportunity for confluence with
+our long-lost financial overlord-friends, but alas, the data is not on their side this time!
+VoEx has indicated downside, hedging environments are “weak”, and gamma squeezes seem to
+be popping back up!
+Not the exact environment I would want to sell puts in, but, given their track-record, perhaps a
+small portion of possibility can be earmarked for their success.
+
+Lastly, we can peek LDPM and LDPS for ES on the daily timeframe with LDPS set on Aggressive.
+This paints the following picture:
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                       10/28/2024
+Of note is that LDPM-144 (neon-blue) has still refused to un-mix itself. Additionally, LDPS is
+showing transactions occurring mainly between the Mid and the Bid, with liquidity flowing
+towards the bid.
+
+These are bearish prints!
+Downside in the early part of the week to LDPM-144 and LDPM-377 would indicate, for me,
+movement rapidly towards LDPM-610 (orange line) at 5,500-ish.
+Extending from there produces a lean towards bullish resolution thereafter (given that VoEx is
+within stability) but naturally conditions would have to be monitored should said eventuality
+impose.
+So, overall, quite the showing of bearish prints a bound, and therein a spring of bearish outlooks
+is found.
+Should downside occur, the normal course of monitoring will kick in to ensure our “isolation to
+near-term downside” theory holds true (i.e.: Ensure VoEx doesn’t move into the Propagation Zone,
+LDPM/S don’t deviate from “bear trap” configuration, LDPM-610 “holds fast”, etc. etc.).
+Maybe it will get interesting !
+Happy Trading,
+
+
+
+Justin
+
+
+Also – ps: More updates are coming to LDPS, LDPM, and the Liquidity Trading Algorithm(!) in the
+next week. I’ll release patch notes when the changes come through!
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                       10/28/2024
+

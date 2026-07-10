@@ -1,0 +1,221 @@
+[
+  {
+    "file": "weekly-chat-2024-03-10",
+    "report_date": "2024-03-10",
+    "direction": {
+      "call": "neutral",
+      "confidence": "low",
+      "summary": "Patch notes and admin updates only; no market outlook or directional thesis given.",
+      "conditions": null,
+      "quote": "The next (several) week(s) will be focused on: Getting LDPM V.2 into the graphs on the Dashboard"
+    },
+    "levels": [],
+    "notes": "Admin-only report (Patch Notes & Updates dated 2024-03-11): dashboard fixes, macro report fixes, data processing updates. No market commentary at all."
+  },
+  {
+    "file": "weekly-chat-2024-03-17",
+    "report_date": "2024-03-17",
+    "direction": {
+      "call": "bearish",
+      "confidence": "high",
+      "summary": "VoEx divergence with QQQ leaving stability plus negative GTM print signal persistent near-term downside for both indexes.",
+      "conditions": "VoEx Variance still stable suggests downside should be short-lived; if data appears in Propagation Zone, time-horizon re-evaluated.",
+      "quote": "Overall, high expectations for near-term downside."
+    },
+    "levels": [
+      {
+        "value": 435.0,
+        "instrument": "QQQ",
+        "role": "support",
+        "side": "above",
+        "quote": "the purchasing support just below the 12th, 13th, and 14th rests at ~$435"
+      }
+    ],
+    "notes": "The $435 level is referenced as last week's purchasing support that Friday's red open pushed price below; only numeric level in report."
+  },
+  {
+    "file": "weekly-chat-2024-03-24",
+    "report_date": "2024-03-24",
+    "direction": {
+      "call": "bearish",
+      "confidence": "medium",
+      "summary": "Despite surprise bullish week, QQQ VoEx divergence complete and negative GTM prints keep downside the most likely outcome.",
+      "conditions": "SPY VoEx Spike hints at possible BUPO; if affirmed by QQQ or neo-VoEx, bearish stance would soften.",
+      "quote": "Overall, continued bearish outlooks abound."
+    },
+    "levels": [],
+    "notes": "Author acknowledges last week's bearish call was wrong (market rallied) and calls the data 'messy'; still maintains bearish lean."
+  },
+  {
+    "file": "weekly-chat-2024-04-07",
+    "report_date": "2024-04-07",
+    "direction": {
+      "call": "bearish",
+      "confidence": "high",
+      "summary": "VoEx in Propagation Zone for both indexes, rising gamma squeezes, negative GTM, bearish LDPM crossovers; downside expected to continue.",
+      "conditions": "Watching VoEx for forming bull-traps; spontaneous IV reductions could push price toward gamma-neutral upside path.",
+      "quote": "Overall, bearish inclinations persist and strengthen."
+    },
+    "levels": [],
+    "notes": null
+  },
+  {
+    "file": "weekly-chat-2024-04-14",
+    "report_date": "2024-04-14",
+    "direction": {
+      "call": "bearish",
+      "confidence": "medium",
+      "summary": "Medium-term downside intact but VoEx paused at Propagation Line; near-term risk of flat-to-mean-reverting bounce tempers aggressive shorting.",
+      "conditions": "If Monday looks bullish, take short profits on near-dated positions; VoEx pause raises risk of flat-to-bullish week.",
+      "quote": "some caution on “hitting the gas” on continued shorting due to VoEx’s pause for the early-part of the week, but overall the outlook remains the same: bearish"
+    },
+    "levels": [],
+    "notes": null
+  },
+  {
+    "file": "weekly-chat-2024-04-21",
+    "report_date": "2024-04-21",
+    "direction": {
+      "call": "bearish",
+      "confidence": "medium",
+      "summary": "VoEx well inside Propagation Zone and VoEx Variance printing there too; expects continued downside despite risk of a dead-cat bounce.",
+      "conditions": "Subtle VoEx Divergence and supportive hedging suggest a flat-to-greenish bounce; until VoEx leaves Propagation Zone, interpretation stays down.",
+      "quote": "Overall, increased risk for flat-bounce but overall outlook remains steady and bearish."
+    },
+    "levels": [],
+    "notes": "Latter part of report is Dashboard feature preview (admin content); market thesis anticipates navigating soft-bullish/flat waters within a bearish outlook."
+  },
+  {
+    "file": "weekly-chat-2024-04-28",
+    "report_date": "2024-04-28",
+    "direction": {
+      "call": "bullish",
+      "confidence": "low",
+      "summary": "Bounce expected to continue this week (supportive hedging, VoEx-daily moving to stability) but viewed as temporary within larger downtrend.",
+      "conditions": "Unconvinced it is more than a bounce; watch VoEx-daily and LDPM/LDPS for downside resuming; VoEx Variance still in Propagation Zone.",
+      "quote": "continuation of the bounce is prudently warranted for the week ahead, with a close eye on VoEx and LDPM/LDPS"
+    },
+    "levels": [],
+    "notes": "Main points state 'high potential for another bounce but unconvinced its anything more' — near-term bullish call inside a maintained bearish regime."
+  },
+  {
+    "file": "weekly-chat-2024-05-05",
+    "report_date": "2024-05-05",
+    "direction": {
+      "call": "bullish",
+      "confidence": "medium",
+      "summary": "Near-term bullish continuation expected (green-to-flat week) but flagged as a likely bull-trap with medium-term bearish expectations intact.",
+      "conditions": "VoEx-daily in Stability while VoEx remains in Propagation Zone equals bull-trap; benefit fades if IV rises.",
+      "quote": "Continued outlook for bullish performance in the near-term with continued expectation for longer-term downside."
+    },
+    "levels": [
+      {
+        "value": 430.0,
+        "instrument": "QQQ",
+        "role": "resistance",
+        "side": "unknown",
+        "quote": "the purchasing support only providing a narrow reprieve from more selling pressure located around ~$430"
+      }
+    ],
+    "notes": "Header is mislabeled 'Weekly Chat 04/29/2024' (same date as previous week's report) but content is clearly the following week's review. The $430 level appears in prior-week narrative."
+  },
+  {
+    "file": "weekly-chat-2024-05-12",
+    "report_date": "2024-05-12",
+    "direction": {
+      "call": "bullish",
+      "confidence": "medium",
+      "summary": "VoEx sped into Inhibition Zone with supportive hedging and positive GTM; continued local bullish performance expected, cautiously.",
+      "conditions": "neo-VoEx technically still in Propagation Zone; put-sellers not participating; full bullish call reserved until neo-VoEx exits PZ.",
+      "quote": "Overall, continued cautious bullish outlooks without full commitment to overtly bullish ideologies."
+    },
+    "levels": [],
+    "notes": null
+  },
+  {
+    "file": "weekly-chat-2024-05-19",
+    "report_date": "2024-05-19",
+    "direction": {
+      "call": "bullish",
+      "confidence": "low",
+      "summary": "More price appreciation expected but data mixed; SPY VoEx stalled at Inhibition Line and author leans toward possible bull-trap.",
+      "conditions": "If QQQ VoEx reverses to rejoin SPY, or GTM goes negative, or put-sellers stay absent, bull-trap interpretation takes over.",
+      "quote": "Overall, bullish but leaning towards bull trap."
+    },
+    "levels": [],
+    "notes": "Includes admin content on Trading Robot Beta 2.0 and dashboard patch; mixed SPY/QQQ VoEx signals (same direction call, differing conviction), not an opposite split."
+  },
+  {
+    "file": "weekly-chat-2024-05-27",
+    "report_date": "2024-05-27",
+    "direction": {
+      "call": "bearish",
+      "confidence": "low",
+      "summary": "Near-term dip expected (negative GTM, rising gamma squeezes, inactive put-sellers) within a maintained medium-term bullish outlook; buy-the-dip framing.",
+      "conditions": "Pullback seen as buy-the-dip given VoEx moving toward stability; rising DLP activity would prompt increasing long exposure.",
+      "quote": "Overall, bearish on the near-term, still tentatively bullish on all other timeframes."
+    },
+    "levels": [],
+    "notes": "Split-horizon call: coming week bearish dip, medium-term bullish. Also announces LTA release and neo-VoEx transition (admin content)."
+  },
+  {
+    "file": "weekly-chat-2024-06-02",
+    "report_date": "2024-06-02",
+    "direction": {
+      "call": "bearish",
+      "confidence": "high",
+      "summary": "VoEx turned sharply toward Propagation Zone, sell-dominant hedging, deeply negative GTM; prolonged downside now the prudent bet.",
+      "conditions": "If QQQ IV drops further it gains reasonable purchasing support; otherwise turbulence angled to the downside.",
+      "quote": "Prudency cautions for prolonged downside."
+    },
+    "levels": [
+      {
+        "value": 520.0,
+        "instrument": "SPY",
+        "role": "support",
+        "side": "below",
+        "quote": "the purchasing support doesn’t kick in until $520 (about -1.40%)"
+      }
+    ],
+    "notes": null
+  },
+  {
+    "file": "weekly-chat-2024-06-09",
+    "report_date": "2024-06-09",
+    "direction": {
+      "call": "bullish",
+      "confidence": "high",
+      "summary": "VoEx out of Propagation Zone, supportive hedging, GTM turning positive and short-gamma push exhausted; bullish outlook.",
+      "conditions": "Purchasing support diminishes if IV rises significantly; QQQ VoEx-trend flagged as concerning for Divergence.",
+      "quote": "Overall – bullish outlook."
+    },
+    "levels": [],
+    "notes": "Author notes this bullish print is 'not what we were expecting a week ago' — prior week's bearish call missed. Ends with admin note on data-processing rework."
+  },
+  {
+    "file": "weekly-chat-2024-06-16",
+    "report_date": "2024-06-16",
+    "direction": {
+      "call": "bullish",
+      "confidence": "high",
+      "summary": "VoEx in BUPO for SPY, well within Stability for both; supportive purchasing environment, calm gamma data; smooth bullish sailing expected.",
+      "conditions": "Some support diminishment if IV rises too much on QQQ; VoEx-daily could be a local peak.",
+      "quote": "Overall, calm waters and bullish outlooks abound."
+    },
+    "levels": [],
+    "notes": "Short report."
+  },
+  {
+    "file": "weekly-chat-2024-06-23",
+    "report_date": "2024-06-23",
+    "direction": {
+      "call": "bullish",
+      "confidence": "low",
+      "summary": "Medium-term bullish (BUPO in effect) but elevated near-term pullback risk from VoEx-daily spikes, weak SPY hedging support, negative DLP activity.",
+      "conditions": "VoEx-daily spiking toward Propagation Zone and minimally supportive SPY hedging could produce near-term downside turbulence.",
+      "quote": "Overall, bullish outlooks on the medium-term with bearish turbulence expected in the interim."
+    },
+    "levels": [],
+    "notes": "Deliberately short report ('practicing brevity'); split-horizon call with bullish primary stance and expected near-term pullback."
+  }
+]

@@ -1,0 +1,342 @@
+                                     Weekly Chat 01/02/2024
+
+
+                                           Main Points
+
+
+      -   The year is starting out with VoEx within the Inhibition Zone.
+      -   BUPO is maintained.
+      -   Hedging environments demonstrate continued vanna-unstable orientations with
+          no purchasing support in the $-/IV+ quadrants.
+      -   Put-selling has suddenly ramped up on $QQQ, suggesting robust anticipation for
+          $+/IV- in the week(s) a head.
+      -   GTM is showing the recent surge in short gamma is ending, and gamma flow into
+          the market appears to be net-neutral.
+      -   𝑉𝑉 2 is suggesting collapse of VoExes within the Inhibition Zone once more, with
+          $XLE already having completed the migration. 𝑉𝑉 2 maintains a medium-term
+          outlook for a market correction.
+      -   Overall, BUPO (of the Bullish variety) is maintained, however its time horizon is
+          once again brought into question.
+
+
+
+                                             SUMMARY
+
+
+          This year starts with VoEx persistently over-exposed within the Inhibition Zone, a
+          finding that is reminiscent of 2020 and 2022. Short-term VoEx suggests BUPO
+          (of the Bullish Variety), however this outlook is tempered against medium-term
+          risk of a market correction.
+
+          The hedging environment remains much the same with a vanna-unstable
+          orientation.
+
+          GTM is printing neutral-values after a detection of short gamma flowing into the
+          market. Anticipation for some growth in gamma squeezes in the near-term
+          future as the short gamma detected flows through the market.
+
+          Put-selling has ramped up on $QQQ but not on $SPY. This is associated with
+          bullish performance however some concern regarding theta-harvesting over the
+          long weekend.
+
+          𝑉𝑉 2 suggests that VoEx collapse out of the Inhibition Zone has started with a
+          single    print    re-appearing   inside    of     the   Propagation     zone.
+
+          Overall, a tenuous BUPO (of the Bullish variety) starts the year off – much like it
+          did in 2020 and 2022.
+
+
+
+Deep Dive Stocks – Weekly Chat                                                              01/02/2024
+                                           DETAILS
+
+
+
+
+Happy New Year everyone! I hope so far it has been a good one.
+
+To start the new year off right, let’s review the data as usual but once that is done, instead of
+simply doing the usual dissociating going about our day, lets instead rant and ramble about
+how the year has gone for Deep Dive Stocks and where its future sights are set!
+So, let’s get started!
+The Calm before the Rant
+Last week, anticipations were once again shaped by BUPO. Despite the overall shift in data
+pointing evermore towards the increasing likelihood of the approach of the end of BUPO; yet
+much like Zeno’s Paradox of Motion, our destination is evermore but one-half step away.
+
+
+
+
+Above, we can see the short week with little gains that has passed - $SPY drifted along at
++0.35% for the week with $QQQ lazily swimming along at +0.28%. From the Heatmaps the stall
+in price but not in IV on $QQQ can be observed quite clearly, which, coincidentally, worked to
+push $QQQ towards gamma neutrality quite well.
+Moving towards VoEx, we will remember that the week started with Divergence in mind as VoEx
+appeared to be descending out of the Inhibition Zone. Although exciting in its suggestion, the
+subsequent week found a reduction in VoEx Divergence on $SPY, with an almost full erasure of
+its presence on $QQQ:
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                      01/02/2024
+The recent VoEx behavior not only removes the budding VoEx Divergence but has instilled yet
+even higher VoEx values for us to end the year with.
+Wait – wasn’t there a pass year that ended with an OverExposed VoEx in the Inhibition Zone?–
+let’s consult ExVoEx quickly to verify:
+
+
+
+
+Ahh! 2022 started the year out with an OverExposed VoEx! (not 2023, though, it should be
+noted).
+
+But – wasn’t there another year that started out with VoEx burbling and bubbling inside of the
+IZ?
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                    01/02/2024
+Ah yes – that’s right, it was the year 2020! Of the data seen above, 2020 and 2022 both started
+the year with in a persistently over-exposed state inside of the Inhibition Zone, whereas 2019,
+2021, and 2022 didn’t! Coincidence? Perhaps.
+Although perhaps less actionable than simply a curious observation, it doesn’t clash against the
+data we’ve been peeking at ourselves over the last month. Namely, that the data has been
+writing on the wall for the end of BUPO.
+Thus, per VoEx, BUPO (of the Bullish Variety) reigns ever-more – but should historical analogues
+hold any weight, then a year starting with an unstable VoEx tends to experience downside
+relatively proximally.
+Since timing is always a difficulty within the market, the standard rules should be applied: wait
+until VoEx says jump (i.e.: rapid movement into the Propagation Zone), then jump.
+Moving onwards and upwards towards the Hedgers, we find ourselves starting the new year
+with un-interesting hedging environment: a vanna-unstable orientation with local and diffuse
+selling pressure.
+
+
+                                                     Such environments poise little threat to
+                                                     any price appreciations, and even provide
+                                                     a faint gamma neutral pathway extending
+                                                     $+/IV-.
+                                                     The downside to this arrangement,
+                                                     however, is the lack of purchasing support
+                                                     in the $-/IV+ quadrants.
+                                                     So far, this configuration hasn’t caused the
+                                                     market significant issues such that the
+                                                     market hasn’t “needed” significant
+                                                     purchasing support since the “Reign of the
+
+                                                     Vanna-Unstable Heatmaps” started.
+                                                     Fortuitous thus far for the market but
+                                                     something to keep in mind as we ponder
+                                                     data that may continue to suggest BUPO is
+                                                     nearing its end.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                      01/02/2024
+Moving from the Hedging Environments to the Market Wide Gamma Squeezes, let’s start out
+with a bit of a Frankenstein graph:
+
+
+
+
+First, let’s acknowledge that GTM seems to be done detecting negative gamma flows heading
+towards the market – perhaps a bump in gamma squeeze counts in the next few days is
+reasonable to expect, but per GTM it shouldn’t be long-lasting.
+Additionally, it appears that the market routinely experiences “spikes” of short gamma flowing
+towards the market (technically its an increase in the relative proportion of the rate of change of
+short-gamma-growth weighted by net gamma – don’t worry, there will be an update to the
+primer when the new GTM comes out).
+These spikes are interesting, namely because it seems that there is a dependency with the
+current, overall environment of the gamma-flow (GTM-EMA) and the expected outcome from
+these gamma-flow spikes.
+
+
+
+Deep Dive Stocks – Weekly Chat                                                        01/02/2024
+To analyze this, I wanted to compare moments when GTM was “spiking” and when it was
+relatively calm, as compared to itself. To do this, I took the difference of averages squared
+normalized by variance (for you nerds in the crowd:
+                                                                                 2
+                                            1
+                                                                        ������ �
+                           𝑣𝑣𝑎𝑎𝑎𝑎′ = 𝜎𝜎 −1 � (𝐺𝐺𝐺𝐺𝑀𝑀𝑡𝑡 − 𝐺𝐺𝐺𝐺𝑀𝑀𝑡𝑡−1 ) − 𝐺𝐺𝐺𝐺𝐺𝐺
+                                            2
+Where GTM is the raw GTM values, and 𝜎𝜎 is the variance. This works to capture the “up-and-
+down” present within the spikes to a greater degree than does simply looking for mean squared
+differences or simply computing the differences.
+From there, I mapped this new value onto a graph with the 20-trading day change in $SPY to see
+if we could see anything:
+
+
+
+
+And it looks like there is a difference! And it matches our observations from above. When GTM
+starts “spiking” during “bearish” conditions (above: left graph; last page: Arrow #1), the more
+“spikey” the more the anticipated future price-action is negative! But! When this occurs during
+net-bullish conditions (Arrows #2 and #3), the outcome become more positive.
+All that to say, the recent spike-like behavior in gamma flows occurred during bullish
+environments, and as such, it appears the data support a net-bullish move in the market form
+these conditions and print over the next month or so.
+Perhaps there’s more data here to be found and refined, but for now let’s take note and put this
+on the backburner.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                       01/02/2024
+It should be noted that these bullish anticipations are echoed by our put-selling friends – or, at
+least, they are on $QQQ:
+
+
+
+
+With a large increase in put-selling experienced on $QQQ, this stands to offer a bullish
+expectation for the week a head. There is some concern, however, regarding the exact timing of
+these emergent dealer long puts: despite the increase being rather substantial, this increase
+occurred just prior to a long weekend. (Note that this was the opposite finding from last week!)
+This observation doesn’t entail a complete cessation of bullish ideology but it does
+contextualize it somewhat in that it will be curious to see how these data look come Tuesday’s
+close. Should these puts rapidly disappear, then perhaps the bullish expectations were more of
+a theta expectation than delta or vega.
+
+Nonetheless, unless we should lessen our confidence in our data, which may cause a pause to
+reassess, redress, and re-compress our lessons, this increase in sold puts is a bullish print.
+So far, we have seen several interesting data prints:
+   1) VoEx is starting the year out in an over-exposed state within the Inhibition Zone. This, on
+      a more immediate timescale, suggests BUPO (of the Bullish variety) as the next likely
+      dance on our dance-card. However, this BUPO-until-proven-otherwise (BUPOUPO)
+      regime has been persistent since the start of ~11/2023.
+      This persistence, however, has been progressively and more routinely brought into
+      question – mainly due to the increasingly short gamma flows heading into the market
+      since the start of 12/2023, VoEx’s erratic nature on $SPY and $QQQ increasing, and
+      diminished put-selling behavior.
+   2) During this time, the hedging environments have maintained a tenuous vanna-unstable
+      orientation, from which, due to various and sundry forces, little-to-no purchasing support
+      will be or has been available in the event of a $- market movement.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                       01/02/2024
+Now, let’s take a peke at the market’s “overheating” problem that we have been monitoring for a
+while. This can be visualized with the progression of 𝑉𝑉 2 1 these past two months:
+
+
+
+
+A few months ago, we were observing a collapse in 𝑉𝑉 2 which was destined to be the hallmark
+indicator that the brewing-market-correction was done brewing and ready to come out of the
+oven.
+
+The main expectation at the time was that as the market would correct, 𝑉𝑉 2 would see data
+moving into the Propagation Zone and start losing energy (i.e.: “cooling off”), and then things
+would persist in a 2022-esque-like state as the market “bled off” the instability.
+
+The “we-have-𝑉𝑉 2-collapse-at-home reality was, however, that VoExes across the land rapidly
+moved back into the Inhibition Zone and decided to pick up more “energy”. This, naturally, put a
+kink in our expectations and necessitated a re-pivot from medium-term downside to the more
+contemporary BUPO (of the Bullish variety) outlook that we have experienced so far.
+Now, however, it would appear that this process is set to start again: data are starting to lose
+energy within the Inhibition Zone, and moving southward towards the Propagation Zone.
+
+This, so far, has only produced a solitary data print from within the Propagation Zone ($XLE, it
+would seem), but what is interesting is we can already see this migration for $XLE has already
+
+
+1
+ Some additional resources for looking back at the progression of 𝑉𝑉 2: Weekly Chat 2023-08-14, 2023-08-07, 2023-
+07-24, 2023-05-06, 2023-03-20, 2023-01-30, 2023-01-17, 2023-01-03, 2022-12-12, 2022-11-28, 2022-11-16 &
+2022-11-28.
+
+Deep Dive Stocks – Weekly Chat                                                                     01/02/2024
+lowered the overall energy state. In fact, let’s take a quick peek at just $XLE for the past few
+months.
+
+
+
+
+The top graph is 𝑉𝑉 2 but with only $XLE displayed (the gray line is $SPY). The bottom graph is
+the change in energy levels for $XLE.
+Notice how movement of $XLE’s VoExes into the Inhibition Zone or out of the Propagation
+Zone is marked with substantial energy increases and, conversely, the opposite is true for
+movement out of the I.Z. and into the P.Z.: energy decreases.
+And so, we can see that $XLE (and by extension, the rest of the data which appears to be
+following the same pattern, has instability pushed into it when the market pushes for a bull-run,
+and VoEx looses energy when things are positioned for the market to cool off.
+
+
+Deep Dive Stocks – Weekly Chat                                                      01/02/2024
+So, what does this mean for us today?
+Well – it suggests that stability a.k.a a calmer may well be found in the Propagation Zone!
+At this point, it might be worthwhile to look at past similar situations: moments where VoExes
+for a particular ETF move into different zones while also either shedding or gaining energy and
+then compare those moments to future price action!
+But for now, this Weekly Chat is already late (no doubt thanks to you) and as such, I’ll leave the
+above as an exercise for the reader! (or until I rant some more next week).
+So, it would seem we are stating the year out with a particularly interesting set of data.
+Historical precedence and the current macro-data suggest rough and bearish seas ahead on the
+medium-timeframe, but the more immediate data continue to remind us that the music is still
+playing, and so, we should dance!
+
+
+Happy Trading!
+
+
+Justin
+
+
+                                            Rant Time!
+
+I wanted to take this moment to say Thank You to all of you guys. You have truly made this an
+incredible year for Deep Dive Stocks.
+The year may not have been as jammed pack with new features as liked but I would like to
+supplement that slight unfortunateness with acknowledgement of the renewed sense of
+purpose that I have recent been able to re-capture.
+In that theme, I would like to share some of Deep Dive Stocks’ New Year resolutions:
+   -     Introduction of LDPS!
+         This is coming up soon! Status Update:
+            o   Rough draft of the “Proof of Concept” primer is going through its second round of
+                editing!
+            o   The LDPS Primer’s first draft is being written.
+            o   All the data has been processed! And the results are very promising.
+         From here, I just have to finish writing everything up, get a YT video out explaining
+         everything and voila! LDPS will be freed from its cage.
+         I expect about another 2 weeks and then it should be all set.
+   -     Introduction of LTA: Liquidity Trading Algorithm
+
+
+
+Deep Dive Stocks – Weekly Chat                                                         01/02/2024
+   Its no secret that I’m lazy, and as such, I have been mainly trading with a trading robot during
+   the last half of the year or so. In doing so, I have worked on refining it and generally making
+   it more accessible and easier to utilize.
+
+   Now with LDPS nearing its completion, and with LDPS being a main component of the robot,
+   why not combine the two!
+   The LTA has already been partially in ALPHA testing (thanks to you guys), and has
+   undergone 1,200 simulated backtests, and is current trading for me a live account and paper
+   account.
+   So, once LDPS is out, it will be time to buckle-up and get a real trading robot out there!
+   -     Update to Dashboard
+   Once the LTA is out, I want to go head-first into updating the dashboard: better UI, better
+   accessibility, etc. I’ve talked about this before and have started laying the foundations for
+   this rather large project.
+
+   Nonetheless, I want by year’s-end (actually sooner) for the Dashboard to be significantly
+   improved for you guys.
+
+
+So, that’s all I have for you guys – if you have any comments, suggestions or feedback, please
+don’t hesitate to let me know!
+
+
+Justin
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                         01/02/2024
+

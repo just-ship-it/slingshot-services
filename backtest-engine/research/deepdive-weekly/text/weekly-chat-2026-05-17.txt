@@ -1,0 +1,187 @@
+                                  Weekly Chat 2026-05-18
+
+
+                                        Main Points
+
+
+
+       -   VoEx for $SPY and $QQQ echo VoEx divergence with appreciating price
+       -   Gamma-hedging heatmaps demonstrate local, diffuse selling pressure with
+           purchasing support reasonably nearby.
+       -   Gamma-squeeze data showcase continued, steady growth in GS counts while the
+           predictive models showing positive expectations for the future.
+       -   LS&T data showcase near-term bearish liquidity with multi-interval supports located
+           about 2% down.
+
+                                         SUMMARY
+
+
+
+           Last week the bullish outlook was tentative, and this week it is
+           absent as bearish expectations re-join the party.
+
+           VoEx for $SPY and $QQQ showcase VoEx-divergence, indicating
+           worsening liquidity as price appreciates; this places substantial risk
+           due to the difficulty in timing the impending correction.
+
+           The hedging heatmaps show persistent and diffuse selling pressure
+           with near-by, spot-down support. Some concern exists regarding the
+           purchasing support’s role should the organic bid become the
+           liquidity source while these conditions persist.
+
+           The gamma-squeeze data show the slow-and-steady GS growth is
+           persistent, while the predictive models suggest the future will have
+           both more gamma squeezes and a greater rate of gamma squeeze
+           formation.
+
+           Overall, the market’s instability appears to be growing and has
+           obtained a level wherein prudency inhibits the adoption of a bullish
+           outlook.
+
+
+
+
+Deep Dive Stocks – Weekly Chat         for the week of              2026-05-18 to 2026-05-22
+                                              DETAILS
+
+
+
+
+Hello all!
+Last week, we left off with technically bullish ideations but felt as though those ideations were a
+tad rabid. To this end, the $SPY moved +0.21% while $QQQ moved -0.3% - not too shabby! We can
+see the dissimilar weekly trajectories via the heatmaps:
+
+
+
+
+It is interesting to see $SPY having moved up-and-to-the-left towards gamma neutrality while
+$QQQ languished in its selling pressure throughout the week! Quite different behaviors from quite
+different hedging heatmaps – pretty neato.
+This week, let’s check in with the data to see if the rabies has spread, and if so, whether or not we
+should tell anyone.
+A peek over the edge
+Starting as usual with VoEx, we find:
+
+
+
+
+For $SPY: much the same: VoEx-daily has stalled at the boundary and VoEx has slowly continued
+its ascent. This is, on the surface, is bullish but if we peek at $QQQ’s VoEx, another interpretation
+of $SPY’s VoEx comes to mind.
+
+
+
+
+Deep Dive Stocks – Weekly Chat            for the week of                2026-05-18 to 2026-05-22
+For $QQQ we see: VoEx(-daily) divergence! Concurrently, there is also a pivot noted in VoEx-
+proper, indicating that, at minimum, VoEx is starting to head back down.
+Now, if we take the VoEx-divergence noted on $QQQ and peek back over to $SPY, one might find
+reasonable ground to argue that on average $SPY’s VoEx is demonstrating VoEx-divergence as
+well (the net directional vector would be down!). Is VoEx-divergence path-dependent? This is not
+a question I’m willing1 to answer right now but perhaps the near-term future will lend its opinion
+on the matter here shortly.
+Aside:
+I was discussing this version of VoEx with someone with particular interest in the differences
+between it and the original VoEx and I thought maybe sharing some of those points, namely:
+When VoEx is moving close to 0 this indicates poor liquidity – so if VoEx (or VoEx-daily; it applies
+to both) is moving towards neutrality, it means liquidity is draining.
+Conversely, when VoEx is moving to ±∞ (either up or down), it indicates liquidity is abundant .
+
+Thus, when we see VoEx-divergence, what we are seeing is the liquidity supporting this move is
+draining which suggests two things:
+      1) Local price volatility is likely to increase,
+      2) Price is likely going to revert as the market searches for a different liquidity source (i.e.:
+         price correction down)
+So, in short, VoEx is technically bullish, but with the presence of VoEx-divergence, it seem an
+incoming price correction is likely; when? Traditionally, the price correction initiates when VoEx
+falls out of the Bullish Zone, which, in $QQQ’s case, can be a month or two, unless VoEx-daily
+drags VoEx into the bearish zone sooner.
+Let’s check with the hedging heatmaps to see if they’re going to help counter VoEx-divergence, or
+usher reality towards similar ends:
+
+
+
+
+Selling abound! Local environments for $SPY and $QQQ show selling pressure with a blanket of
+purchasing support located spot-down.
+
+
+
+1
+    able
+
+
+Deep Dive Stocks – Weekly Chat              for the week of                2026-05-18 to 2026-05-22
+Hand-waving rant:
+Initially the purchasing support feels supportive but: hedging is price insensitive, which means it
+transacts where the liquidity is, so what happens if the liquidity source is the bid ? To be more
+specific, what happens when the hedging simply blends in with the organic bid as said bid walks
+the price lower? This purchasing support, then, becomes quite unsupportive !
+Will this happen? It seems
+probable, and with VoEx
+diverging     (showing      bullish
+liquidity is draining out of the
+system somewhere), it seems to
+put the possibility on the table.
+Let’s check the market-wide
+gamma squeeze data to discern
+if this uneasy state is isolated or
+dispersed      throughout       the
+market:
+
+
+
+Counts seem to be hovering, but
+increased slightly over the past
+month, two weeks and one
+week. This is bearish and suggests the market-at-large is starting to “slide”.
+In checking with the predictive data, we find:
+                                                                   Fully positive values! This
+                                                                   indicates that the models
+                                                                   anticipate both an increase in
+                                                                   nominal    gamma squeeze
+                                                                     counts and an increase in the
+                                                                        growth rate of gamma
+                                                                         squeezes in the future!
+
+
+                                                                    In short: instability is present,
+                                                                    and it appears the future will
+                                                                    have more of it!
+                                                                    Quite bearish !
+
+
+
+
+Deep Dive Stocks – Weekly Chat            for the week of               2026-05-18 to 2026-05-22
+Before we succumb to doomsdaymanship, let’s check LS&T data for a clear view of liquidity:
+
+
+
+
+Concerning!
+Bearish liquidity is noted on the 90-minute and 144-minute, the former of which lacks any
+discernable supports while the latter shows LT-7 support ~2% down. This seems a reasonable
+spot to expect price!
+One thorn in the side of the slippery-slide of slippery-downside, however, is the early detection of
+dip-buyers (LT-1 & 2) on the 144-minute; perhaps an early-week stall is brewing but the overall
+direction still appears to be downside.
+
+On the 987-minute shows bullish liquidity with LT-7 support ~1.9ish% south, which coїncides with
+the 144-minute floor (its also worth mentioning price testing support occurs all the time with bullih
+liquidity!).
+The weekly view is similar, however, its worth noting that all LTs on this view have “flicked”
+upwards, with LT-1 & LT-2 looking poised to shoot above spot. These findings are compatible
+with a nascent aggressive ask cascade.
+
+Thus, from this view, even with the bullish longer-term intervals, a path exists for testing supports
+about 2% south of present. Thus, it seems that bearish ideations are back on the table, but for
+now, they stop at ~2% down, after which, it will likely be prudent to reconsider the data before
+taking the next step.
+Thus, the outlook for next week: choppy and down as instability grows!
+Happy Trading! Justin
+
+
+Deep Dive Stocks – Weekly Chat            for the week of                2026-05-18 to 2026-05-22
+

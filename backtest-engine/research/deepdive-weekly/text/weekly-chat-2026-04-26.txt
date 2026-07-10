@@ -1,0 +1,133 @@
+                                   Weekly Chat 2026-04-27
+
+
+                                         Main Points
+
+
+
+       -   VoEx-daily for $SPY and $QQQ are reminiscent of VoEx-daily spikes terminating,
+       -   Gamma-hedging heatmaps showcase persistent and diffuse selling pressure,
+       -   Slight increase in gamma-squeezes noted and a lifting of expectations for the future
+           as well,
+       -   LS&T showcases persistent ceilings on the 90 through 987-minute.
+       -   Near-term expectations comprise turbulence and likely downside while longer-term
+           horizons remain bullish.
+
+                                         SUMMARY
+
+
+
+           The data have the characteristic mix of “is this recovery or another
+           bulltrap” reminiscent of market-bounces. To that end, the current
+           data speak still of turbulence and weakness while some of the more
+           foundational data report the recovery is in full swing.
+
+           The data showcase near-term depressive factors such as persistent
+           selling pressure, VoEx-daily spiking, LS&T ceilings and liquidity
+           vacuums, and a modest increase in GS counts, while the proponents
+           for returning stability herald VoEx within the Stable zone for $QQQ,
+           a total collapse of the GS counts seen just weeks prior, and bullish
+           liquidity noted on all timeframes.
+
+           Overall, the turbulence speaks to turbulence and near-term
+           downside is expected once more.
+
+
+
+
+Deep Dive Stocks – Weekly Chat         for the week of               2026-04-27 to 2026-05-04
+                                              DETAILS
+
+
+
+
+Hello all!
+Last week, we left off with heightened expectations of ~mean-reversion~ and to that end, the
+market didn’t do that all that much. The week-over-week moves for $SPY netted a 0.54% move to
+the positive while $QQQ soared along at 2.35! Quite the difference between the two – we can
+visualize these moves below in the heatmaps:
+
+
+
+
+It seems $QQQ experienced a tad more of a “boost” in the later-week than did $SPY – although
+why that would be the case isn’t quite clear from this view. Thus, let’s trek on and see if our fears
+of mean-reversion (and downside in general) are dissipated or if we should still be on-guard for
+the natural conclusion to an over-heating market.
+Spring Showers may bring May Market Corrections
+Starting as usual with VoEx, we see:
+
+
+
+
+Not the most bullish of signs! True - $QQQ’s VoEx and VoEx-daily are in the Bullish zone, we see
+that for both $SPY and $QQQ (of which, $SPY’s remains within the bearish zone!) is descending
+rapidly thereout. This does look quite like the early signs of an over-zealous bulltrap getting
+
+
+
+Deep Dive Stocks – Weekly Chat            for the week of                2026-04-27 to 2026-05-04
+ready to spring but for those interested in what the data are, not what the data may be, this is,
+still, net bullish on the longer-term time-horizons.
+Thus, let’s check with the hedging heatmaps to see if they would be supportive in the event of
+any price depreciation:
+
+
+
+
+Not quite! The same predicament as last week can be seen: persistent selling pressure located
+all around with purchasing support for $SPY and $QQQ not starting until ~$700 and ~$650,
+respectively.
+Moving onwards to the gamma-squeeze data, a curious note is the slight increase over the past
+week or so:
+
+
+
+
+So much so we can see the growth curve (blue, top graph) has gone up slightly – not positive
+just yet but less negative than prior.
+
+
+Deep Dive Stocks – Weekly Chat            for the week of               2026-04-27 to 2026-05-04
+The same can be seen in the predictive data:
+
+
+
+
+Where the expectations for the future are still a greater number of gamma-squeezes than
+currently present (since PCC is positive) and the rate-of-growth of these gamma squeezes in the
+future has grown to nearly positive!
+These are still luke-warm prints – not out-rightly cold since growth is still pretty benign but there
+is a promise of another round of gamma squeezes forming and influencing the market.
+
+Moving on wards to LS&T, we find:
+
+
+
+
+Deep Dive Stocks – Weekly Chat            for the week of                2026-04-27 to 2026-05-04
+On the surface these are more bullish prints: the 90-minute shows bullish liquidity and continued
+attempts at over-taking LT5; the 144-minute has regained bullish liquidity with adequate dip-buyer
+support right below spot; the 987-minute is bullish as is the weekly.
+The only curious finding is that in the 90-minute, and 987-minute specifically, spot, despite all its
+bullish liquidity, has failed to over-take LT-ceilings (with almost a week+ of attempts on the 987-
+minute!).
+Overall, this paints a picture of a feeble but technically bullish market: downside is likely to be
+caught quickly due to the presence of dip-buyers on the 90-, 144-, and 987-minute intervals,
+despite the gamma-hedging heatmaps’ insistence to the contrary, while VoEx does show signs of
+a VoEx-daily spike progressing (and thus some near-term turbulence expected) overall VoEx
+technically sits (predominately) in the bullish zone.
+Thus, downside threat exists but seems to diminish the further out we plan – this speaks to near-
+term turbulence followed by a recovery.
+
+
+Happy trading,
+
+
+Justin
+
+
+
+
+Deep Dive Stocks – Weekly Chat            for the week of                2026-04-27 to 2026-05-04
+

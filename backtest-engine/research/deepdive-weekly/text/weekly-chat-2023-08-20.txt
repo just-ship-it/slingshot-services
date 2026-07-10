@@ -1,0 +1,409 @@
+                                   Weekly Chat 08/21/2023
+
+
+                                         Main Points
+
+
+       -   $SPY and $QQQ’s VoExes are starting the week out in the Propagation Zone once
+           more.
+       -   The Hedging Environments demonstrate similar set-ups with purchasing support
+           located $-/IV+, and positive influence distributions with left-tail risks present.
+       -   DLP behavior is in a net-closure state.
+       -   MWGS-data show increasing growth rates, increasing GS counts, and a positive
+           GTM.
+       -   𝑉𝑉 2 has turned on with a datum printing within the Propagation Zone.
+
+
+
+                                          SUMMARY
+
+
+
+           The data are much the same as last week: VoEx is starting within the
+           Propagation Zone indicating a severe and elevated risk for short-to-
+           medium term sustained downside.
+
+           The Gamma Hedging Heatmaps demonstrate bullish-leaning influence
+           distributions with persistent left-tails. The environments show themselves
+           to have persistent and available purchasing support in the $-/IV+
+           quadrant.
+
+           DLP behavior last week was strange and it left little-to-no desire to open
+           puts for the week a head, as $SPY printed a respectable negative value.
+
+           Market-Wide Gamma Squeeze data are showing a growing prevalence
+           and veracity of gamma squeezes throughout the market with current
+           counts being 38% greater month-over-month. GTM is printing positive
+           values, suggestive that the GS growth is expected to continue.
+
+           𝑉𝑉 2 has printed its first datum within the Propagation Zone – something
+           that we have been keeping an eye out for. For now, however, it is a benign
+           print as it is not accompanied by 𝑉𝑉 2 collapse in either of the 3 zones.
+
+           Overall, it seems reasonable to expected continued downside on the short
+           and medium terms.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                      08/21/2023
+                                                     DETAILS
+
+
+
+
+Hello everyone!
+
+What an exciting week, so let’s jump right in.
+
+The week started out relatively mild – that is, if you weren’t paying too much attention to the
+hedging environments:
+
+
+
+
+With surgical precision, it seems some actor within the market felt $QQQ on Monday needed a
+quick trip to selling pressure by way of drastically reducing IV – although I am not too convinced
+the goal of such large IV movements were to introduce selling pressure per se 1 but rather were
+a consequence of a large-scale put-selling excursion that quickly changed-its-mind.
+
+To unpack this idea, let’s take a quick look at the DLP data, along with a a quick review of market-
+mechanics.
+
+First, let’s investigate how selling or purchasing options affects IV. To do so, a quick example:
+
+    Suppose you sell house insurance and all-of-a-sudden a whole neighborhood knocks on your
+      office to purchase house insurance. Capitalism says where there’s demand, there’s an
+                               opportunity to increase your prices.
+The same idea applies to options – the more people that purchase puts (share insurance) the
+more the insurance premiums rise, and as such, the cost of options increases. Thus, it would
+seem: retail purchasing a put → provides dealer short gamma → I.V. increases.
+
+
+1
+ Tin foil hat time: vanna-squeeze are dependent on two things: vanna and squeezing. Functionally, this translates
+to the idea that if you have neither vanna nor squeezing (volatility) one cannot have a vanna squeeze. So it is a tad
+curious that Monday seems to have seen an attempt at removing IV, and thus, the squeeze from the vanna squeeze.
+However, we can see that as the week progressed and IV couldn’t be suppressed and the vanna squeeze persisted!
+
+Deep Dive Stocks – Weekly Chat                                                                        08/21/2023
+           From this example, lets abstract and construct some basic rules:
+
+                  -   New Long gamma decreases IV
+                  -   New Short gamma increases IV
+
+           In terms of puts, this means:
+
+                  -   Selling a put decreases IV
+                  -   Purchasing a put increases IV
+
+Action                                     Change in Dealer Gamma                 Change in IV
+
+
+Buying a put                                                   -                                     +
+
+Selling a put                                                  +                                     -
+
+Buying a call                                                  -                                     +
+
+Selling a call                                                 +                                     -
+
+
+
+
+           This becomes relevant to our conversation on Monday’s IV change when we look at the DLP
+           changes that occurred on $QQQ as well.
+
+           On Monday the number of total number of OTM DLPs rose from 412,273 to 2,206,279 – quite the
+           substantial increase! It seems it was enough long gamma to tank IV quite substantially.
+
+           That is, probably in combination of the options dealers having a go at both providing and
+           purchasing cheap volatility. Regardless of its genesis, the change in IV seems to have taken some
+           window out of the put-sellers sails as Tuesday saw an 80% decline back to a paltry 426,051 DLPs.
+           Here’s a glimpse at the numbers:
+
+Date                                       OTM Long Puts                          % Change
+
+
+2023-08-11                                                 412,273
+
+2023-08-14                                               2,206,279                               +435.15
+
+2023-08-15                                                 426,051                                -51.72
+
+
+
+
+           Deep Dive Stocks – Weekly Chat                                                        08/21/2023
+        $SPY should also be investigated to see if it experienced similar such DLP changes. If it did, this
+        would discredit the above theory as $SPY did not experience such IV changes along with the DLP
+        changes, if they did occur.
+
+        So, let’s look at the numbers for $SPY to see if this is the case:
+
+Date                                             OTM Long Puts                                    % Change
+
+
+2023-08-11                                                        5,851,813                                                -
+
+2023-08-14                                                        2,675,959                                           -54.29
+
+2023-08-15                                                        1,291,258                                           -51.72
+
+
+
+
+        $SPY experienced neither a large increase in DLPs like $QQQ but actually found itself shedding
+        DLPs throughout the week. No sudden changes in IV, and no sudden changes in anything that is
+        known to cause sudden changes in IV. This fits the idea that the “market” or our DLP friends, were
+        reasonably confident in their ability to profit from either an increase in $ or a decrease in IV
+        throughout the week, and as such, found the courage to sell puts but in doing so, the IV tanked 2,
+        resulting in a mass exodus and resumption of volatility’s loftier status.
+
+        This strange IV
+        performance
+        stands out even
+        further when $QQQ
+        is investigated with
+        LDPM-Vol 3.       In
+        doing so, we can
+        see that LDPM-Vol
+        and IV performed
+        very differently on
+        08/14:
+
+        We can see that
+        whereas         IV
+        experienced    its
+        large downside, LDPM-Vol continues its upwards trajectory! This adds evidence that the IV
+
+
+        2
+         We’ve heard of Retail Syndrome but is this the first recording of Institution Syndrome?
+        3
+         LDPM-Vol (Liquidity-Dependent Price Movement Volatility) is a restructuring of LDPM such that it gives us a view
+        of volatility, just like IV! The difference is, however, that this view of volatility is being constructed through the lens
+        of liquidity, and as such, it is not dependent on options prices or option liquidity but only on the liquidity of the
+        equity itself.
+
+        Deep Dive Stocks – Weekly Chat                                                                              08/21/2023
+movement was in fact option-dealer mediated, as we can see from a different vantage point, real
+volatility (and subsequently, liquidity) didn’t change 4.
+
+So much activity!
+
+The take-home message here I think is: someone mistimed the market in a big way, and got
+punished for it as the options dealers seemed very eager to purchase cheap volatility (which,
+mind you, they set and can set as long as there’s a willing counterparty). Worth keeping in mind
+perhaps.
+
+Moving to the more recent data prints, we see that our job is far easier than usual, as both $SPY
+and $QQQ’s VoExes are quite opinionated:
+
+
+
+
+With both major indexes starting the week even deeper into the Propagation Zone, it is safe to
+say that the outlook is that of expected, continued decline.
+
+BUPO – if you will 5.
+
+
+
+
+4
+  Let’s unpack this slightly. Premise: IV measures expected future volatility, and as such, if IV falls, it suggests that
+the future outlook for the equity is “more stable”. Traditional market wisdom would suggest that this means liquidity
+has improved. However, if liquidity had improved, this would mean LDPM (which measures liquidity directly), and
+subsequently LDPM-Vol, would change. LDPM-Vol didn’t change, and as such, this suggests that LDPM did not
+register a change in liquidity, and as such, this means liquidity did not improve! If liquidity didn’t improve, then there
+should be another explanation for a sudden decrease in IV, as the decrease doesn’t seem to be associated with
+improved liquidity, and by extension, decreased volatility.
+5
+  The convenience is almost there. This BUPO is Bearish until proven otherwise. Not to be confused with the BUPO
+we just exited which was Bullish until proven otherwise. I’ve no idea who comes up with these silly names.
+
+Deep Dive Stocks – Weekly Chat                                                                            08/21/2023
+Moving from VoEx to the Heatmaps, we see a similar situation as before with purchasing support
+in the $-/IV+ quadrants and bullish outlooks per the Influence Distributions.
+
+Although initially comforting (what with all the purchasing support), there is growing over the fact
+                                                        that the market has now chewed through
+                                                        a reasonable amount of purchasing
+                                                        support these past two weeks ($SPY has
+                                                        declined 2.31% and $QQQ has moved
+                                                        3.74%).
+
+                                                        It would seem thus far, that the purchasing
+                                                        support being provided is still insufficient
+                                                        to absorb the eager ask present and
+                                                        provide an avenue for an eager bid to form.
+
+                                                        Admittedly, not the most ideal situations
+                                                        but I suppose it is better than if there were
+                                                        selling pressure located $-/IV+ rather than
+                                                        purchasing support!
+
+The goal for the next few weeks will be to monitor the hedging environments for signs of a
+diminishing eager ask as well as an increase in eager bid.
+
+Most likely, an easier task with LDPM but the idea is that if $SPY and $QQQ should begin to
+respond bullishly (or at all, really) to the purchasing support, then it suggests that the price-
+insensitive bid (from the purchasing support) is meeting either a decreasingly-eager ask or there
+is a supportive eager bid budding with the purchasing support’s support.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                          08/21/2023
+Moving from the hedging environments to our DLP friends, we see the theme of downsizing DLP
+positions on $SPY is in full-force, whereas $QQQ is showing some initially curious behavior:
+
+
+
+
+I suspect that the persistent positive DLP prints on $QQQ are remnants of the (failed) excursion
+into put selling witnessed early in the week. To verify, I looked up the 2-day change in DLP (which
+is near-zero), and the 1-day change (which is -12%); these values closely match $SPY’s recent
+performance.
+
+It is safe to say that these numbers are very uninspiring and demonstrate little-to-no optimism for
+profiteering from either an increase in $ or a decrease in IV.
+
+Moving from the puts to the squeezes:
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                        08/21/2023
+                                 Despite an early-week
+                                 dip     into    negative
+                                 territory, GTM has
+                                 ended       the    week
+                                 strongly          within
+                                 positive-land.
+
+                                 The MWGS-counts are
+                                 also ending the week
+                                 elevated    with    our
+                                 current    counts    at
+                                 1,745, a modest 3%
+                                 (1,690) gain over the
+                                 past week, a 13% gain
+                                 over the past 2 weeks
+                                 (1,544), and a 38% gain
+                                 over the past month.
+
+                                 Along     with    the
+                                 elevated anticipated
+                                 growth and elevated
+                                 actual growth, we see
+                                 an increasing growth
+                                 rate in the MWGS-
+                                 growth chart.
+
+                                 All-in-all, quite the
+                                 bearish prints from
+                                 gamma land.
+
+
+
+
+Deep Dive Stocks – Weekly Chat              08/21/2023
+Lastly, we have 𝑉𝑉 2 . You’ll remember from recent chats, 𝑉𝑉 2 has helped us recognize that the
+market is in fact over-heating, and that there were two things that should be monitored during the
+then-upcoming downside to monitor the potential magnitude and breadth of the aforementioned
+downside. Observations were to monitor for:
+
+           -    𝑉𝑉 2 collapsing;
+           -    𝑉𝑉 2 data prints appearing within the Propagation Zone.
+
+The idea was that 𝑉𝑉 2 collapsing was indicative that the market was rearing-up to move in unison 6,
+and the data prints appearing within the P.Z. were slated to be indications that this joint-venture
+was moving towards, well, the Propagation Zone.
+
+So, with two red weeks behind us, let’s check out what 𝑉𝑉 2 has to say:
+
+
+
+
+Data! In the Propagation Zone!
+
+Now, admittedly it is a datum and not data so we shouldn’t get our horses too bunched up but it
+is worth noting that things are progressing on schedule.
+
+The overall idea was that this current market downturn is to be relatively short-lived unless the
+data start to demonstrate market-wide unraveling, at which time, the downside’s potential time
+
+
+6
+    VoEx’s of a feather flock together sort of thing.
+
+Deep Dive Stocks – Weekly Chat                                                         08/21/2023
+horizon and impact would be significantly extended and maintained pro re nata. Thus, a pre-
+requisite to being able to monitor for this potential was the presence of data within the
+Propagation Zone on 𝑉𝑉 2 . Well, now that we have that so it would seem our monitoring goggles
+are officially goggling.
+
+For now, the data are:
+
+          -   𝑉𝑉 2 isn’t decreasing for any of the three zones: that means that even the VoExes within
+              those same zones are expanding (like the universe) rather than crunching together
+              (not like the universe 7).
+
+          -   A datum, data does not make – so for now, our sole friend’s ($XLB) presence within
+              the Propagation Zone is comforting in that it shows our anticipated tool for monitoring
+              this current market downside is still working (but perhaps less comforting for $XLB),
+              but it is too early to extend this finding any more for now.
+
+Thus, 𝑉𝑉 2 is telling us that things are still evolving but the cake isn’t quite ready to take out of the
+oven just yet.
+
+Overall, the data seem rather pointed:
+
+          -   VoExes for $SPY and $QQQ are well within the Propagation Zone. This is an indication
+              for persistent and sustained downside on the short-to-medium term.
+          -   The Hedging Environments are mostly unchanged but so far, the introductory
+              purchasing support has only worked to insufficiently absorb an eager ask.
+          -   Put sellers seem to be running for the hills as their own behavior caused massive
+              movements in $QQQ’s volatility surfaces, and since then, no one seems to be eager to
+              set up to the selling-plate,
+          -   MWGS-data is wholly bearish with MWGS-growth being positive, the MWGS-counts
+              being elevated, and GTM printing a fun positive print.
+          -   𝑉𝑉 2 is activated we can say; it is demonstrating persistent over-heating but without the
+              usual signs of a market-wide correction still.
+
+Thus, it seems reasonable that an over-arching bearish outlook would be most prudent. Should
+any positive days or even a positive week manifest I am inclined to consider it a consequence of
+instability rather than a signal-of-reversal unless the green-age is accompanied by:
+
+          -   Persistent non-gamma squeeze status on $SPY and $QQQ
+          -   Drastic reduction in MWGS-counts,
+          -   Negative GTM,
+          -   DLP resurgence,
+          -   No drastic VoEx responses (such as spiking back into the Inhibition Zone).
+
+Additionally, it may be particularly insightful this week as both $SPY and $QQQ are finally testing
+LDPM-89 on the daily ($SPY’s LDPM-89 is at ~$433 [current price: $436.50] and $QQQ’s is at $353
+[current price: $358.13].
+
+
+7
+    Извините, Александр Фридман, здесь нет сжатия Вселенной.
+
+Deep Dive Stocks – Weekly Chat                                                             08/21/2023
+It isn’t too uncommon to see some leveling-out/small bounce on the major LDPM levels –
+however given the overall data prints, it seems reasonable that these levels will be heavily tested
+in the coming days.
+
+
+
+What fun we may have before us –
+
+Justin
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                        08/21/2023
+

@@ -1,0 +1,728 @@
+                                    Weekly Chat 08/07/2023
+
+
+                                           Main Points
+
+
+       -   VoEx for $SPY and $QQQ are starting the week within the Propagation Zone.
+       -   Hedging environments provide purchasing support in the event of a $-/IV+ week.
+       -   DLP growth is minimal-to-negative.
+       -   MWGS-growth is positive and GS-counts exceed the 5,- and 10-day averages.
+       -   VoEx Variance is indicating persistent over-heating but still no data appearing in
+           the Propagation Zone, suggesting the threat of an imminent large-scale reversion
+           is reduced.
+
+                                            SUMMARY
+
+
+
+           VoEx for $SPY and $QQQ both spiked from the I.Z. into the P.Z. in a
+           stronger-than-henceforth-seen move, representing the bold claim that
+           BUPO is over. Subsequently, VoEx has been eerily hovering just at the
+           Propagation Zone entrance.
+
+           Heatmaps have changed from their typical and now demonstrate
+           purchasing support in the event of a $-/IV+ week. Both indices have local
+           purchasing support, positive Influence Distributions, and left-tail risks.
+
+           DLP behavior is predominantly dead: no one is selling puts for the week
+           ahead.
+
+           MWGS-data demonstrate continued growth and persistence in gamma
+           squeezes. GTM is officially printing an undefined behavior print.
+
+           VoEx Variance continues to demonstrate just how overheating the over-
+           heating market is. However, there is no evidence from this view that a
+           market correction is brewing as 𝑉𝑉 2 and 𝑉𝑉 2-velocity are both still positive.
+
+           Overall, these data suggest a high-risk for short-, and medium-term
+           bearish performance in the market. In the event this occurs, an eye will be
+           kept on 𝑉𝑉 2 to monitor if the downside starts shifting towards larger and
+           more sustained downside.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                           08/07/2023
+                                                     DETAILS
+
+
+
+
+Hello everyone!
+There is quite a bit to do, so let’s get started!
+This Weekly Chat is going to be a bit thicc -er than normal as DDS is welcoming quite a large
+group new Premium Members! With that, I felt this would be a good time to get everyone “caught-
+up-to-speed” in a sense, so I will be doing the normal data analysis but also I will try to highlight
+some of the core concepts typically encountered in the Weekly Chats to go along with the data
+analysis, as well as some recent context, to help frame the significance of the recent data prints.
+I will also try to structure this Weekly Chat in a more formal manner, so that the division of
+thoughts and ideas are clearly demarcated.
+Please note – there is going to be a lot in this Weekly Chat – please don’t feel the need to digest
+it all at once. A nibble here, a nibble there, and eventually you will find you’ve tasted the whole
+assortment and found the data that resonate the most with you and your trading style – and that’s
+the goal.
+So – let’s jump in!
+                                         Quick Review of Last Week
+The main outlook for last week was bullish-until-proven-otherwise (BUPO1) as VoEx for $SPY and
+$QQQ had rebounded back into the Inhibition Zone. However, there has been a continued theme
+these past few months, as BUPO has reigned supreme, that this bullish performance should
+eventually give back some of its gains, a thought that was re-affirmed from the vantage point of
+VoEx Variance (discussed below):
+                                                         “
+                             … is there any reason to have a bearish outlook?
+         Naturally the answer is yes: duh. An overheating market is an unstable market; …
+                                                         “
+
+
+
+
+1
+  BUPO is a market-state in which VoEx is persistently in the Inhibition Zone. Another term for BUPO might be
+“overheating”. That is to say, VoEx entering and persisting in the Inhibition Zone is a bullish outlook but a bullish
+outlook that is predicated on instability. The consequence of BUPO is the idea that the resulting bullish performance
+can be expected to give back some of its gains as the market leaves its over-heated state. The approach of the
+cooling-off period is typically marked by VoEx Spikes [Tier II Primer, pg. 21 & Report Component Cheat Sheets] as
+well as VoEx Divergence [Tier II Primer, pg. 22 & Report Component Cheat Sheets].
+
+Deep Dive Stocks – Weekly Chat                                                                        08/07/2023
+      Along with those brief concerns, it was also noted that the hedging environment would provide
+      no purchasing support in the event of a $-/IV+ move2.With that in mind, let’s look at the movement
+      of $QQQ and $SPY throughout their hedging environments for the week (below).
+      The first thing that is obvious is wowza.
+      Movements this significant aren’t typically
+      seen so much.
+      Let’s take a moment to look at some key
+      observations:
+
+          1) These heatmaps are from 2023-07-
+             28, last Friday.
+          2) We see that there was little-to-no
+             purchasing support to the bottom
+             and right ($-/IV+) of the crosshairs.
+          3) We see gamma neutrality extended
+             $+/IV-.
+          4) As the week started, $SPY and $QQQ
+             started moving in a $-/IV+ fashion,
+             moving it further into selling pressure
+             and further way from gamma
+             neutrality / purchasing support.
+          5) It seems there was a quick graph at
+             gamma neutrality by $SPY on
+             Thursday, this failed, and IV moved
+             back.
+      With $SPY moving -2.21% and $QQQ moving
+      -2.98% throughout the week, we can see that
+      the hedging environment provided little-to-no
+      support – even when the market attempted to re-adjust towards gamma neutrality in spectacular
+      fashion on 08/03.
+
+Here we see the effects of having no purchasing support located $-/IV+ quadrant (down and to the right
+from the crosshairs). Although the hedging environments themselves aren’t price-predictive (well – that’s
+not completely true as the Influence Distributions are), we see that it does a fine job of showing us what
+forces will be introduced to the market under the four possible outcomes of price-movement and IV-
+movement.
+For instance, difference in the hedging environments have often led to differences in price movement from
+$SPY and $QQQ [Weekly Chats: 2023-07-03; 2023-07-10; 2023-07-17 as recent examples].
+
+
+      2
+       The Hedging Heatmaps show the hedging environments throughout an equity’s landscape. The crosshairs tell us
+      the current price and IV. The difference colors tell us how the options dealers will have to hedge their positions as
+      the price moves (red: sell, blue: purchasing, white: nothing). If the price moves up ($+, crosshairs move up), down
+      ($-, crosshairs move down), or if IV increases (IV+; crosshairs move right) or decreases (IV-; crosshairs move left).
+
+      Deep Dive Stocks – Weekly Chat                                                                         08/07/2023
+In spite of the Hedging Heatmap’s attempts at capturing our attentions for the week (as valiant
+as those attempts were), one would be remiss if their attention wasn’t focused on VoEx.
+So, with that in mind, let’s take a peek at VoEx and the data going forward.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                     08/07/2023
+                          Quick Recap of Significant VoEx Observations and Trends
+
+Data analysis in the market is contextual – even if you have objective data it is important to appreciate in
+which environments you find the data. So, let’s quickly re-wind the clocks and look at of the more stand-out
+behaviors from VoEx for $SPY recently, with emphasis on how those behaviors have shaped our views today.
+
+First, we have to note that from ~11/2022 until ~05/2022, VoEx had established residence inside of stability,
+with an oscillating pattern therein. This was considered to be a nice, organic and bullish state for the market
+to be in.
+
+Weekly Chat 2023-05-01: Prior to this Weekly Chat, VoExes cycle had broken, and there was a moment where
+VoEx looked to be rapidly falling into the P.Z. However, VoEx had “juked us out” after falling into the P.Z. only
+to quickly rebound back into the I.Z. It was noted that “… these data are typically associated with near-term
+bullish performance … [and] large downside in the longer-term future”.
+
+Weekly Chat 2023-05-08: Discussions on VoEx’s recent behavioral continue as VoEx begins printing definitive
+signs of altering its previously established behavior. This, at the time, simply instilled a BUPO outlook but was
+recognized as “something”.
+
+Weekly Chat 2023-05-15: With continued evidence of the behavior breaking, outlooks began to change: “Does
+this suggest that the normal “cycle” of the market is still in effect? That is, should we expect some near-term
+downside while the overall long-term movement of the market is upwards? $QQQ’s VoEx suggests that this
+may not be the case. With VoEx rising ever higher into the Inhibition Zone, without a definitive move
+downwards (such as a spike) or a migration lower (such as VoEx divergence), $QQQ’s view offers us a bullish
+outlook.”
+Weekly Chat 2023-05-22: From there, conversations began about what constitutes the end of BUPO, to which
+it was typically suggested “VoEx Spikes and VoEx Divergences”. This weekly chat gave several examples of
+VoEx Divergence, and why it was important to keep an eye out.
+
+Despite having access to definitive data prints that would give signal to the end of BUPO, the market wasn’t
+eager to let us off the hook so easily as it provided at least 1 “fake-out” of VoEx Divergence.
+
+Weekly Chat 2023-06-05: VoEx Divergence is noted on $SPY and $QQQ, indicating a nearing end to BUPO.
+
+Weekly Chat 2023-06-19: VoEx Divergence degrades on $SPY and $QQQ as VoEx turns its migration back
+northward, removing the anticipation for of BUPO ending.
+
+This wouldn’t be the last time VoEx Divergence would form, and wither away. However, the subsequent time,
+the interruption of VoEx Divergence wasn’t that VoEx started floating back up (like in 2023-06-19) but rather
+had spiked down significantly, only to rapidly recover:
+
+Weekly Chat 2023-07-03: VoEx Divergence once again forms, and recedes – this time, however, with an
+accompanying VoEx Spike to the P.Z. on $SPY and $QQQ. Signs that the mounting instability was becoming
+severe. This severity prompted direct comparisons with 2020: “… This behavior has become a main-stay
+around    highly   unstable    markets…     [infographic    of   2020    and    2021    VoExes     on    $SPY]“.
+
+
+Onwards the idea was simple: avoid rogue waves of the incoming “storm” that was brewing while maintaining
+a near-term BPO outlook.
+
+
+
+
+ Deep Dive Stocks – Weekly Chat                                                                   08/07/2023
+                                                    The data
+
+Starting as usual, let’s take a moment to appreciate VoEx [be sure to read the quick synopsis on
+the previous page!]. [Note: Typically, unless stated otherwise, when I refer to VoEx, I’m referring
+to VoEx-daily].
+
+
+
+
+We see the processes that were described above. Post 2022-10, VoEx moved and stayed within
+stability, performing its standard oscillations of a maturing market3. We can see this cycle and its
+disruption better here:
+
+
+
+
+3
+ Check out most VoExes from 2020-03 until ~2022. You’ll find the oscillating VoEx pattern quite often with rapidly
+appreciating equities!
+
+Deep Dive Stocks – Weekly Chat                                                                      08/07/2023
+Notice that at the start of Period 5 (P5), VoEx’s behavior changes, ultimately leading to rejection
+of the “cycle”4. (Its also worth noting that aside form
+P1’s arrows, all of the subsequent arrows are just
+copies of each other! A relative condition I have for
+considering something a cycle is equidistance
+periods – to provide at least some objectivity to the
+handwaving.)
+The idea here is that:
+
+    1) In 2022-10 a change in VoEx behavior lead to
+       a stabilizing market which is characterized by
+       an oscillating VoEx.
+    2) This stability broke throughout in 05/2023
+    3) The stability broke due to over-heating within
+       the market, sending VoEx higher into the
+       Inhibition Zone.
+    4) Each showing of the instability “collapse”
+       since then has been more severe.
+And its (4) that I want to spend most of our time on –
+now that we have contextualized where we find our
+current instability.
+
+
+
+
+4
+  Some things need to be said here. In general, I consider historic data good reference points, but always emphasis
+that past performance doesn’t predict future performance.
+But – past behavior does predict future behavior - especially when behavior changes. This means, its not the cycle
+itself that is worthy of note but the change in the cycle that is worth of note in as much as it represents a change in
+behavior, especially when combined with other objective changes (such as variance).
+
+Deep Dive Stocks – Weekly Chat                                                                          08/07/2023
+As suggested on the previous page, each instance of the instability “giving way” (that have all
+been rejected so far) left increased variance on VoEx – suggestive of increasing instability with
+each failed BUPO resolution.
+
+                                                   To the left we see just what we just hypothesized:
+                                                   around 05/2023, when VoEx’s “cycle” stopped, VoEx
+                                                   started becoming progressively more erratic in its
+                                                   movements (its variance increased!).
+                                                   An erratic VoEx is an unstable VoEx! An unstable VoEx
+                                                   is an unstable stock!
+                                                   All of this to say: things are getting progressively more
+                                                   unstable5.
+                                                   The take-home point: VoEx Divergence on $SPY put
+                                                   VoEx directly into the Propagation Zone and so far,
+                                                   unlike its prior contemporaries, it has stayed there.
+Things are evolving – albeit a tad slower than perhaps originally envisioned, but nonetheless, the
+data seem clear from VoEx alone: VoEx is becoming increasing erratic as it exhibits the market’s
+continued overheating. This erratic behavior comes on the tails of an interrupted “organic” market
+recovery from 10/2022 until 05/2023 – after which the market has been climbing very
+aggressively.
+This aggressive over-heating has induced several sparks that were of-kind but not of-magnitude
+to illicit the final result of BUPO – but this distinction seems to be diminishing.
+
+The end-result?
+BUPO is officially dead and VoEx is starting the week inside of the Propagation Zone.
+Per VoEx: imminent downside is expected.
+
+
+
+
+ Quick food for thought: notice that mid-06/2023 had an appreciating VoEx leading to the
+ VoEx spike while our current VoEx Spike occurred with a depreciating VoEx. I’ll leave the
+ exercise to the reader to determine the significance, if any, of that observation.
+
+
+
+
+In particular, it is a common finding market-wide that a stock in recovery should exhibit the behavior noted during
+the “VoEx Cycle” (please verify this with some VoEx searches! No - this isn’t a note I forgot to erase, I’m talking to
+you – it will be an important VoEx behavior to identify).
+Curiously this also reminds me of a Fire Department expression: “Its not a problem until it’s a problem”; a change
+in VoEx behavior represents the emergence of a problem.
+5
+  I used $SPY here as a reference but I would recommend checking out these same dates for $QQQ!
+
+Deep Dive Stocks – Weekly Chat                                                                          08/07/2023
+With that in mind, let’s move over to the Hedging Heatmaps to see what they offer the market in
+the event of a $-/IV+ week.
+
+
+
+
+                                                                          Ohh! Stability! And a lot of it! This is
+                                                                          something that has been relatively
+                                                                          absent from the market lately6.
+                                                                          This purchasing support seems
+                                                                          rather fortuitous – especially with
+                                                                          the outlook gained from VoEx above:
+                                                                          should the market start to drop; we
+                                                                          see that both $SPY and $QQQ will
+                                                                          start introducing purchasing support
+                                                                          into the market.
+                                                                          Notice the blue boxes with numbers.
+                                                                          Those indicate the purchasing
+                                                                          support that is “significant”. Its worth
+                                                                          keeping in mind that on $SPY this is
+                                                                          below the daily LDPM-55, and on
+                                                                          $QQQ it seems to be just-at it (more
+                                                                          on what “significant” might mean
+                                                                          later).
+                                                            The        Heatmaps          Influence
+                                                            Distributions are slightly unique in
+                                                            that they both offer bullish outlooks
+for the week ahead but notice that there’s no right-tail risk (the line goes flat to the right) but
+                        7
+
+there is a left-tail risk.
+Curious!
+
+
+6
+ The last time $SPY had any purchasing support was during the 06/20’s/2023! Even then it was pretty minor.
+7
+ This is slightly embarrassing but I can’t find the source for this in my files, but I do know that the influence
+distribution has statistical relevancy (p<0.05) for 5 days out. The peak of the curve tells us what that outlook is:
+bullish (if in blue), bearish (if in red), or flat (if in white).
+
+Deep Dive Stocks – Weekly Chat                                                                           08/07/2023
+Tail Risk is a term used to describe an event that has a low probability but high-impact.
+One of the influence distribution’s benefits is they show us tail risk! And here we see tail-risk is pointing at a very
+red week.
+
+      From the Hedging Heatmaps, we can see that the hedging environments for $SPY and $QQQ are
+      quite robust.
+      Does this mean the market won’t go down?
+      Not – not necessarily. The data here are simply showing us that if something is going to push the
+      market down, it is going to have to do it through a hefty amount of selling pressure.
+      For completeness sake (since we are being comprehensive with this Weekly Chat), however, we
+      can’t bypass the one of the more curious paradoxes about hedging environments:
+                    Whereas the presence of purchasing support infers robust support from bid,
+                            Moving through purchasing support infers thin support from bid.
+      By thin I mean relatively thin but objectively bad. That’s to say, suppose on Wednesday both
+      $SPY and $QQQ are testing the 1-day LDPM values indicated above: this means that that $SPY
+      and $QQQ have moved through some pretty intense purchasing support.
+      Yet – in spite of this support the market fell. This implies some hefty selling!8
+
+
+      8
+        Ok, this concept is a tad difficult (no, I’m not being facetious; it’s a liquidity topic so its worth discussing!). One can consider that
+      there are two main groups in the market: price sensitive and price insensitive. Price sensitive players want the market to move
+      in their favor (the Ask wants the price to go up [to keep selling more for a higher price-point] and the bid wants the price to go
+      down [to keep purchasing more at a lower price-point]), and price insensitive players simply want to transact.
+
+      So, what does it mean if the market is chewing through purchasing support? Well – we know that the bid being introduced into
+      the market is prince insensitive (since its being used for hedging purposes), and we know the price is dropping (which means the
+      transaction is occurring at the price sensitive bid [organic]).
+
+      Taken together: this is a precarious position! A price insensitive bid does not care about bidding into a declining price (or bidding
+      into a rising price as well) – regardless of who or what is pushing the price down, while the price sensitive bid is all too happy to
+      continue       purchasing       at    discount.    This     means      the    outcome      is    dependent        on      the    ask!
+
+      The consequence being if there is significant, eager ask and sufficient organic bid, the purchasing support may be incapable of
+      moving the price upwards. Instead, it does work to “absorb” the eager ask such that the supply of discount shares to the organic
+      bid starts to dwindle – resulting in less downwards pressure, and resumption of ask/bid balance.
+
+      Does this mean that the hedging heatmaps are useless? No, not at all – only that they only tell us one aspect of the equation.
+      Whereas we can visualize the presence of bid or ask from the hedging environment, we can’t always visualize if that bid will be
+      met        with        a        price       sensitive        ask       or         a        price        insensitive        ask.
+
+      A price insensitive bid meeting a price sensitive ask will cause robust upwards movement but an eager ask meeting only a price
+      sensitive bid whose liquidity is being augmented via the price-insensitive bid will cause almost always cause significant decline. A
+      casual reminder that understanding hedging is to understand what that hedging is interacting with. How can we determine if the
+      bid     or    ask     is   price     sensitive    or     insensitive?    LDPM       of    course!    More     on      that     later.
+
+      In these events, do the heatmaps indicate where the purchasing support would become robust enough to starve off even a price
+      insensitive ask? Kind of. Notice how the LDPM lines drawn on the map coincide nicely with the “significant” purchasing support!
+
+      Deep Dive Stocks – Weekly Chat                                                                                           08/07/2023
+This may be one thing to keep an eye out for as the week progresses, if the market starts to fall
+expediently into purchasing support.
+So, overall, the Hedging Heatmaps tell us that there will be purchasing support introduced into
+the market in the event of a $-/IV+ week, and the influence distributions suggest the most likely
+move is indeed a green week!
+I think that’s a clean strike into the “bullish” column, making our current tally 1 bearish (per VoEx)
+and 1 bullish (per Heatmaps).
+Let’s see how big we can make this tie.
+One last piece of data to look at with regards to $SPY and $QQQ specifically, are the Dealer Long
+Puts (DLPs).
+Now, DLPs deserve their own write-up but their gist is pretty straightforward:
+
+The purpose of selling puts is to profit off of either an increase in price or a decrease in I.V.
+Through both of these mechanisms, the puts that were net-sold can be re-purchased for a lower
+price, the difference which some associate with the mythical idea of a profit.
+Unlike most data prints, DLPs are pretty unique due to how they can influence the market with
+respect to their own genesis.
+
+Dealer Long Puts are predominantly sold by institutional retail. That is to say: people with money.
+In observing DLP behavior, it shouldn’t take long for you to start seeing particular patterns with
+DLP behavior and future price action as our DLP friends tend to be quite well-timed.
+
+That is to say: on a short timeframe, selling puts is en masse is usually a strong indication that
+someone with money somewhere (or groups of someones with money somewhere) think that the
+market is either going to experience a decrease in I.V. or an increase in price (or, ideally, both).
+This conviction is strong enough to sell puts; a notoriously risky asset.
+That means, large increases in DLP behavior in the short-term can be quite bullish and quite well-
+timed.
+But, DLPs aren’t without their downside. Their main issue (at least to the market) is how they
+respond to $-/IV+ movements (namely: not well9). This is uh-oh-ness is compounded as the
+number of standing DLPs increase!
+So, if the market (or equity) experiences a sudden and short-lived growth of DLPs, this is a robust
+bullish indication.
+
+
+
+
+Although not official yet (I’m still cooking up data) but in a classical hand-wavy fashion, I’m going to suggest that the significant
+bid (or significant ask) is where the bid (or ask) becomes eager. (More on what eager means later but the idea is the bid starts
+pushing the price up, as opposed to the ask).
+9
+  DLP Primer goes over some of the details but in short: an OTM DLP that becomes ITM experiences a metamorphosis, in
+particular with respect to IV, such that the new ITM DLP’s vanna [2nd order greek] will start to cause excessive selling as IV rises!
+[This was opposite when it was OTM: it caused purchasing as IV rose]. This can be particularly bad if, say, IV rose while the put
+become ITM!
+
+Deep Dive Stocks – Weekly Chat                                                                                      08/07/2023
+However, if DLP behavior remains elevated for significant periods of time – this is a strongly
+destabilizing sign10. For instance: guess which option was most involved in early 2020!
+So, with that in mind, let’s take a peek at our DLP friends:
+
+
+
+
+Here we see the week ended with continued near-zero put selling on $SPY and short put closures
+on $QQQ.
+Not the most bullish of signals!
+
+
+
+     So far, we have talked about VoEx and the Hedging Environments for $SPY and $QQQ, as well
+     as the DLP behavior.
+     VoEx gives directional insights by way of understanding an equity’s stability.
+     This directional insight was then applied to the hedging environments to better understand
+     how conditions will change should VoEx’s idea of a good week transpire.
+     And finally, we verify to see if this directional insight is consistent with our DLP-Friends who
+     are known to be very aptly timed.
+     Taken together, the first three main data prints typically discussed in the Weekly Chat allow
+     for a pretty comprehensive view of the market for the week ahead.
+
+
+
+
+10
+  The why here is slightly different than just volatility per se. Large quantities of DLPs tend to cause significant
+selling pressure as they decay (dealer short delta → decays → dealer must sell shares). In the event of large
+amounts of expiring DLPs along with significant downside causes (1) large quantities of DLPs to be abruptly closed
+(causes selling), and (2) OTM DLPs become ITM DLPs which start provoking more selling as IV rises! Indeed a
+dangerous combo.
+
+Deep Dive Stocks – Weekly Chat                                                                        08/07/2023
+We can tally this one in the “bearish” department, bringing our tally to: 2 bearish, 1 bullish. From
+the DLPs, we move to the Market Wide Gamma Squeeze (MWGS) data as we expand our views
+evermore.
+
+There are three main data prints from the MWGS data:
+   1) The MWGS-growth trend,
+   2) the MWGS-count, and
+   3) the Gamma Trending Metric (GTM).
+Let’s look at each one.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                         08/07/2023
+On the preceding page we see the MWGS data page from the Macro Report.
+The top graph is the MWGS-growth graph – it simply shows us the overall rate-of-change in the
+number of gamma squeezes throughout the market with a 5-day rolling average (gold line), and a
+calculated overall trend (black line).
+When the growth-rate of gamma squeezes is positive (above the red line), it means that the
+number of gamma squeezes throughout the market is increasing; this is a bearish finding as
+having significant quantities gamma squeezes (or being in one, if you are an individual equity), is
+associated with downturns; conversely, if growth is negative, it is a bullish finding.
+We currently have a persistently positive growth rate, which is a bearish finding.
+The middle graph is the current MWGS-counts showing us the number of gamma squeezes in the
+market along with a 5-day rolling average. You may notice that it seems like the market’s
+“minimum” is around 1,000 – this is recently true but historically not. Prior to 2020, the average
+minimum number was closer to 500 (as was the average number overall!) but for the past three
+years, this has changed in two ways.
+
+The first is that the all-time-highs have persistently scored higher values since 2020, with over
+3,000 gamma squeezes noted in 2022-09. The second is that the average “low” that the market
+can achieve anymore is just about 1,000. Exactly where we are at.
+With the counts, we can see that we are well above the average for the past 5 days (1,258 vs.
+1,016) and even weller above the average for the past 10 days (1,258 vs. 977).
+The bottom graph is Gamma Trending Metric (GTM). It’s designed to measure and predict future
+changes in the growth of gamma squeezes by keeping track of stocks that are forming gamma-
+squeeze environments, and those that aren’t. When GTM is positive (and especially GTM-ema),
+this indicates an increase in gamma squeeze growth is expected; and conversely, when it is
+negative, it means the gamma-squeeze-tap has been turned off.
+Both the MWGS-counts and MWGS-growth data showing growth (and thus, printing some
+substantially bearish prints), but what is up with GTM? Why is it printing tombstone-negative
+prints?
+Frankly – I’m not sure exactly11, but the data suggest there are times when the “incoming short
+gamma” gets “flushed” out. This is evidenced by these data prints being associated with surges
+in gamma squeezes (i.e.: the gamma squeezes that were “coming down the line” got “pushed out
+of the line and into the market”).
+Furthermore, the data suggest that this gamma-squeeze “push” typically has two different
+outcomes, with most of its dependence on the current growth-value of gamma squeezes
+throughout the market.
+
+
+11
+  The GTM Graphing algorithm takes the GTM values and if there are any greater than a certain threshold, it cuts it
+off and places a max value. This is just for graphing purposes and under-the-hood, these values are incredibly
+negative. However, the underlying math works like so: 𝑋𝑋𝑖𝑖𝑖𝑖 − 𝑋𝑋𝑜𝑜𝑜𝑜𝑜𝑜 whereby if 𝑋𝑋𝑖𝑖𝑖𝑖 → 0 because of a gamma “flush”,
+then GTM simply becomes 0 − 𝑋𝑋𝑜𝑜𝑜𝑜𝑜𝑜 → some-large-negative-number.
+
+Deep Dive Stocks – Weekly Chat                                                                           08/07/2023
+In other words: these strange GTM prints occurring during a positive MWGS-growth are typically
+met with downside, with the opposite being true for when they occur during negative MWGS-
+growth.
+
+But until that data is finalized: let’s put GTM in “neutral” and vow to keep an eye on it in the
+upcoming days.
+This puts our tally at: 3 bearish, 1 bullish.
+
+Alrighty! Almost done for now. The last metric I want to cover is VoEx Variance (𝑉𝑉 2). VoEx
+Variance is an extension of when we looked at SPY’s VoEx Variance – except this for about 500
+unique stocks, over 12 sectors for a total of 758 distinct combinations, resulting in about 17,000
+observations. Not too shabby.
+
+First, we should go over the thought process behind 𝑉𝑉 2 so we know what we are looking at, and
+then we should be introduced to the original 𝑉𝑉 2 graph, and then finally pivot over to the recent
+improvements that have been made.
+                                               Thought Process
+
+Just as we saw with $SPY, identifying when VoEx begins to behave erratically can be quite
+beneficial12, and this beneficiality is amplified as one expands their view from a singular stock, to
+many, and then eventually, to the entire market.
+These VoEx Variance data seek to measure groups of stocks (based on their respective ETF) with
+respect to how spread out each of the stocks from within their own group (ETF) are from each
+other. As seen below:
+
+
+
+
+12
+     Its even a market scan search criteria!
+
+Deep Dive Stocks – Weekly Chat                                                          08/07/2023
+With diagram in hand, let’s plot the real 𝑉𝑉 2 values and see if we find anything interesting:
+
+
+
+
+Curious!
+It would appear that prior to all three of the latest market corrections, VoEx Variance began
+collapsing across all market sectors!
+
+We can adjust our vantage point with the data to focus on the change in 𝑉𝑉 2 values and plot them,
+to ensure that 𝑉𝑉 2 is in-fact “collapsing” prior to larger-market downturns:
+
+
+
+
+And indeed! From this vantage point there are several curious findings:
+
+   1) 𝑉𝑉 2’s median velocity does start decreasing prior to market corrections, and
+
+Deep Dive Stocks – Weekly Chat                                                           08/07/2023
+   2) It would suggest healthy markets have a median 𝑉𝑉 2 that is negative, and
+   3) It also echoes our understanding of overheating: prior to market corrections, the bulk of
+      VoExes start accelerating in their variance from their counterparts!
+Why would this be?
+The initial line of reasoning was that prior to
+market corrections, VoEx across market sectors
+would be spread out within the Influence
+Distribution. This was evidenced by distribution
+maps made from the prior data. During times of
+“collapse” these distributions demonstrated
+VoExes would come together, and then rapidly
+move together, from the Inhibition Zone to the
+Propagation Zone. Graph from Weekly Chat 2023-
+06-02 (right) showcases this VoEx migration.
+And so, the idea was simple: VoExes would
+coalesce into one another prior to a joint-journey
+into the Propagation Zone (and thus, indicating
+market-wide risk for significant downside) – so all we would have to do is keep an eye out on
+VoEx Variance!
+This idea was sound but often tedious due to the static nature of both graphics – often
+necessitating at least 3 graphs for an adequate view (and once even an animated “movie”!).
+
+Thus, a solution was birthed, and despite its initial absolutely horrendous, appalling appearance,
+it really is a nice graph deep on the inside.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                       08/07/2023
+This graph shows us VoEx Variance (black lines and the dots), and the location of VoExes! The
+best of both worlds.
+Each pane can only “see” the data that present in that particular field (one of the three VoEx
+Zones), including the price data – this allows us to see not only the expansion and contraction of
+VoEx Variance but also from where and to where those events are occurring.
+With background in hand, let’s look at the data’s interpretation.
+                                      Interpretation Process
+The first statement the data allow us to make is:
+                                   The market is over-heating.
+This is evidenced by 𝑉𝑉 2 demonstrating both:
+   1) Continued increase in VoEx Variance values, and
+   2) This variance is predominantly extending into the Inhibition Zone.
+From there, we simply need to look for any evidence that this over-heating is starting to lose
+steam. This would be evidence with two main findings:
+   1) VoEx Variance begins to fall, and
+   2) VoExes (the dots) begin collecting inside of the Propagation Panel.
+
+A few weeks ago, it did appear as though that process was underway (see the quick dip in 𝑉𝑉 2 on
+the top panel of the last graph?) but this has since resolved.
+We can also see from the rate-of-change of 𝑉𝑉 2 graph that all median rates-of-change for VoEx
+Variance are still accelerating.
+Thus, the second statement 𝑉𝑉 2 allows us to make :
+In combination with the lack of data prints in the Propagation Panel(?) – there seems to be little
+                      that the eventual “market correction” is imminent.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                        08/07/2023
+                                                                     Fin
+        Oh boy – that was a lot13!
+        Let’s very quickly review what we’ve discussed:
+
+   Data Print         Main View                        Data Print               Interpretation                Timeframe
+
+
+VoEx                  An equity’s stability            VoEx is in P.Z.          Bearish until proven          Imminent
+                                                                                otherwise (BUPO?)
+
+Hedging               Future hedging                   Stable configuration     Can expect purchasing         Within the next 5
+Environments          influences                                                support assistance in the     trading days.
+                                                                                event of $-/IV+
+
+Dealer Long Puts      Riding the coat-tails of         Zero-to-negative DLP     Lack of confidence in a       Within the next
+                      ulta-rich people                 growth.                  $+/IV- week by put sellers.   several days.
+
+MWGS-data             Market-wide view of              GS-growth is             The market is becoming        Short-term onset
+                      short gamma                      increasing. Counts are   destabilized with short       with duration until
+                                                       well above recent        gamma.                        gamma environment
+                                                       averages.                                              changes.
+
+GTM                   Monitoring future                Strange GTM print        Inconclusive - Need more      Near-term
+                      gamma flow                                                data.
+
+VoEx Variance         Monitoring inter-sector          No evidence of 𝑉𝑉 2      Market-wide correction        Medium-to-Long
+                      VoEx spread and                  collapse underway.       does not appear likely.       term.
+                      location
+
+
+
+
+        Typically, neither the Weekly Chats nor the data interpretations are this intensive! But I hope the
+        various expansions on the data above are helpful to contextualize the main data prints typically
+        seen in the Weekly Chats, along with why DDS looks at them, and what they mean.
+
+        Overall, the week a head looks bearish: we can’t deny that VoEx is inside of the Propagation Zone,
+        and its persistence therein is more significant than prior “sparks” of “rapid uncooling” that the
+        market has thrown at us.
+
+
+
+
+        13
+             Imagine actually writing all this lol help.
+
+        Deep Dive Stocks – Weekly Chat                                                                        08/07/2023
+This bearish outlook is echoed with our put selling friends: with little-to-no put selling activity
+(which has been a theme lately!), there seems to be persistent and continued doubt that selling
+delta or volatility should do well in the upcoming markets.
+
+Compounding this bearish outlook are the MWGS charts that demonstrate a growing number of
+gamma squeezes and a positive growth-rate. Both of these infer bearish performance in the
+future.
+GTM, unfortunately, is neutral until these types of data prints are investigated more but do seem
+to represent something.
+VoEx Variance is confirming our suspicions that the market is over-heating (quite substantially it
+would seem), but there are few signs that this over-heating is imminently correcting: 𝑉𝑉 2 has
+resumed its positive growth; there are no data-prints within the Propagation Zone; median 𝑉𝑉 2
+velocity is positive; all prints that resemble the market kicking the can-o-correction down the road
+some.
+Taken together, the market is in a high-risk place for reasonable downside on at least the short
+and medium timeframes. Last week, I mentioned that testing the LDPM-55 looked like a
+reasonable upcoming move for the market, and this seems evermore reasonable. This represents
+a ~7% decline on $SPY and a ~-3% decline on $QQQ.
+
+As the data progressively become less “BUPO” and more “sparks of instability are popping up
+with increasing frequency and magnitude”, the overall playbook seems to be maintained:
+Short Term: high risk for downside, even with significant purchasing support, as long as VoEx is
+in the P.Z., I will expect downside.
+Medium Term: MWGS-growth and DLP performance seem to be setting the sage for short-term
+downside risk extending its time-horizon into a more significant medium-term downside.
+Longer Term: these “bearish” data prints do not seem to extend into the more macro views of the
+market just yet, despite the “stage being set”. 𝑉𝑉 2 insistence of an over-heating market is in-line
+with our views obtained from $SPY and $QQQ. However, it does not appear that the over-heating
+has “broken” just yet, as 𝑉𝑉 2-velocity and position are both still pointing upwards, and there are no
+data-prints in the Propagation Zone just yet. These data will be important to keep track of,
+however, if the market does start testing the foundations of medium-term downside potential
+(such as data starting to appear in the Propagation Pane of 𝑉𝑉 2) this would indicate a “rapid de-
+overheating” may be imminent, which is typically followed by significant market correction.
+                                                 ----
+So – all-in-all, welcome all new Premium Members! You have definitely joined at an interesting
+time in the market.
+I hope this quick introduction to the Weekly Chats has been helpful, and as always
+Happy trading,
+Justin
+
+
+Deep Dive Stocks – Weekly Chat                                                           08/07/2023
+

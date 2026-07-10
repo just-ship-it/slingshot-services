@@ -1,0 +1,273 @@
+                                   Weekly Chat 2025-03-03
+
+
+                                          Main Points
+
+
+
+    -   VoEx has return and deepened within the Propagation Zone for $SPY and $QQQ for
+        both VoEx-daily and VoEx.
+    -   Hedging environments demonstrate a vanna orientation for $SPY with local selling
+        pressure; $QQQ demonstrates a gamma-squeeze orientation.
+    -   Put-selling has increased on Friday for both $SPY and $QQQ.
+    -   MWGS data showcases an increasingly growing gamma squeeze count and a negative
+        GTM.
+    -   LDPM/S assessment showcases relative ceilings at about ~3% north and downside
+        organic bid at -10%.
+    -   Downside with a slight chance of bullish reverberance from last week.
+
+
+
+                                           SUMMARY
+
+
+
+          Last week saw substantial movements, with Friday coming to enact a
+          mean-reversion regime. The net-effect of this was to move VoEx into the
+          Propagation Zone for both $SPY and $QQQ and increase gamma
+          squeezes throughout the market.
+
+          An additional consequence of this turbulence is the production of a vanna
+          orientation for $SPY’s hedging environment and a gamma-squeeze
+          orientation for $QQQ’s environment.
+
+          Friday’s end-of-week moves prompted modest put-selling, however due to
+          the relative minimalist response, it is difficult to ascribe strong conviction
+          to these data.
+
+          MWGS data shows a 17% growth in gamma squeezes month-over-month,
+          coinciding with a rebound in the growth-curve. Additionally, these
+          increases were met with a deepening, negative GTM. In conjunction, this
+          raises the expectation for continued GS growth.
+
+          An LDPM/S assessment suggests that a mean-reversion week should
+          terminate at about 3% up, while the current downside target remains at
+          LDOM-987, which is located at approximately -10% for both ES and NQ.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                         03/03/2025
+                                              DETAILS
+
+
+
+
+Hello all!
+What a wild week!
+We left off with bearish ideations for the week ahead, mainly due to how things were and our
+subsequent data interpretations. From there, we can see below in the gamma hedging heatmaps
+$SPY’s weekly move of -0.96% and $QQQ’s move of -3.40%(!):
+
+
+
+
+[Note: $QQQ’s IV might be a bit exaggerated as of the time of this writing.]
+That’s quite the journey down for both, towards the eerie call of the void, which, in this case, is
+slightly less metaphysical in that instead of a void representing the collective unknown that we
+must all inherently face once we are absolved of our mortal coils, it instead represents the
+collective monetary burden of the options dealers; more specifically, it represents the absolution
+from said monetary burden by way of achieving not inner peace but inner gamma neutrality.
+The journey towards salvation was not without sacrifice, nay, as $QQQ shed 4.91% before its
+Friday recovery, and $SPY, for its own pilgrimage, relinquished (a slightly less enthusiastic) 2.64%
+to the financial ether. These moves are obviously quite large and exceed the EPR ranges! So, let’s
+check out by just how much:
+
+ Symbol              Anticipated Move Realized Move          Ratio (Real / Ant.) %-magnitude Dif.
+                     (±%) (T+4 | T+5) (%) (T+4 | T+5)        (T+4 | T+5)         (T+4 | T+5)
+
+ $SPY                  1.51 | 1.68         2.48 | 0.96         1.64 | 0.57        48.62 | 54.54
+
+ $QQQ                  1.92 | 2.14         4.90 | 3.40         2.55 | 1.58        87.39 | 45.49
+
+
+
+Quite the extra-ordinary numbers! On Thursday, $QQQ had moved 2.55x more than the market
+was expecting! Admittedly, these numbers aren’t quite as impressive as the other week, but they
+
+
+Deep Dive Stocks – Weekly Chat                                                         03/03/2025
+are exciting! Friday, it seems, worked to reduce this over-movement, bringing $SPY into EPR-range
+overall and $QQQ just a smidgin out of it.
+Thus, for the week ahead, it seems we have a mixed bag; on one-hand (the $SPY one) there’s no
+need to worry about the spectre of ~mean reversion~ while on the other hand (the $QQQ one),
+there is a tad bit of concern present. This raises the age-old question: doth the spectre1 haunt
+individually or is he a time-conscious entity who only comes by when both indexes can be haunted
+with one haunt? Let’s see if we can find out!
+Haunt 2 get 1 trader free
+Starting as usual with VoEx, we see:
+
+
+
+
+Slight concern!
+
+On $SPY (left), we see VoEx-daily has moved sharply back into the P.Z. along with VoEx itself,
+who has given up all of its gains towards stability achieved thus-far. On the right, we see $QQQ in
+similar fashion: both VoEx and VoEx-daily are housed well within the P.Z.
+Aside from the direct implication of this (namely, downside all around), if we look into our more-
+recent past, we see that since VoEx fell into the P.Z. (right around the start of the year), VoEx-daily
+since then has given a “Bull-trap appearance”. This, in and of itself, perhaps, is not too exciting,
+except for that during the same period, $SPY only grew 1.64%! $QQQ, admittedly, did a fair bit
+better with a 4.7% growth, but if we normalize against the 40-day EPR (from 2025-01-08) we get
+0.17x for $SPY, and 0.73x for $QQQ! In combination, this means that despite under-performing
+the market’s expectations and executing minimal bullish performance, VoEx-daily was still keen
+on calling that a distinct bull trap!
+This suggest that the indexes might be in a “stability is located on the downside” situation – a
+situation not often seen on large indexes but one characterized by “VoEx indicating instability
+whenever the price does not go down”. Essentially, it’s a situation that for, some combination of
+
+
+
+1
+    Of mean reversion
+
+Deep Dive Stocks – Weekly Chat                                                            03/03/2025
+reasons, the only time VoEx-daily won’t start spiking like its 1984 is when the price is actively
+decreasing – even a languished, nearly flat-lined existence can sate VoEx in this state.
+
+
+Thus, it appears the most prudent take-away from VoEx-land is: downside.
+How doth our gamma hedging heatmaps fare in such an environment? Let’s find out:
+
+
+
+
+Not well it would seem.
+
+In a truly never-before-seen hedging heatmap for $QQQ2, we see immediate and quite pronounced
+purchasing support with a hearty sea of selling pressure located spot-down. This is a truly chaotic
+situation and suggests that $QQQ is quite near self-promoting downside.
+
+In moving towards $SPY (left), one finds a less dimorphic situation but just as opinionated none-
+the-less. A similar situation exists as from last week’s whereby $SPY is surrounded by selling
+pressure in a vanna configuration.
+
+Of particular note, $SPY and $QQQ are both in gamma squeezes!
+In combination, this paints an eerie picture for the week ahead: $SPY is poised to offer a repeat
+of last week, which, should it be mimicked in $QQQ, is set to bring substantial selling pressure
+into the market!
+However, should, at the start of the week, see $QQQ moving northward and IV on $SPY drop (and
+thus, bring it closer to purchasing support), then perhaps a short-lived bounce; but, barring that, it
+seems conditions are set.
+With such a pronounced outlook, let’s check our put-selling “friends” and see if they are picking
+up the same ~vibes~.
+
+
+
+
+2
+    Typically you would only see this type of extreme dimorphism on stocks like $GME and $AMC!
+
+Deep Dive Stocks – Weekly Chat                                                                   03/03/2025
+                                                                    Not quite! It seems that there is
+                                                                    some expectation of profitability
+                                                                    in the [$+ , 𝐼𝐼𝑉𝑉 − ] direction but
+                                                                    given the recent hike in IV and
+                                                                    the resurgence of the week-end,
+                                                                    its difficult to know how resolute
+                                                                    these performances are.
+                                                                  So, for now, it would appear the
+                                                                  dance is starting with ourselves
+and our habitual partners on opposite foots: whereas we see a small glimmer of hope for bullish
+performance, our put-sellers see a sufficiently bright enough light to tally and place bets.
+
+But – in conjunction with the gamma-hedging heatmap being in such an opinionated state for
+$QQQ, specifically, with regards to the immediate localization of surrounding purchasing support,
+the gently shifting of the breeze starts to propel. Is the risk of a bull-trap high? If so, what can we
+do about it besides sacrificing a virgin quant to the MMs on some volcanic island in the Caribbean
+somewhere?
+The answer is difficult to locate, and not just due to the suggestion that the annual jubilee may be
+cancelled, but rather, because once the bubblings of a trap start to bubble, it usually means things
+are starting to bubble. Let’s see if the remaining bits of the macro report have any insights for us
+vis-à-vis the MWGS data:
+Au sommet, we see the gamma-
+squeeze growth curve elevating itself
+out of negativity and into positivity3,
+showcasing a market-wide movement
+towards gamma squeeze growth. This
+comes on the heels of meager growth
+(on average) overall, with the month-
+over-month growth set at 17%, the two-
+week-over-two-week growth of 8%, and
+a one-week-over-one-week growth rate
+of 0.5%. Despite these seemingly
+miniscule growths, the overall growth-
+rate appears to be growing.
+This, in and of        itself, suggests
+continued growth but to confirm, we
+can see GTM (left) is showcasing a
+negative spike; this suggests a “surge”
+of short gamma is making its way into
+the market.
+
+
+
+3
+    Lemme get his self-help podcast amirite?
+
+Deep Dive Stocks – Weekly Chat                                                            03/03/2025
+Overall, this doesn’t rule-out a bull-trap, per se, but it does suggest that any sustained bullish
+performance subsequent a “bounce” in the coming near-term is going to be working against the
+shifting gamma-foundations.
+
+
+Thus, we have a bearish outlook ahead with a slight sense of winds changing by way of a bull trap
+said winds are unaided by Anemoi as $QQQ’s provocation is rather minimal (1.58x EPR), while
+$SPYs end-week performance was less than the weekly EPR. Additionally, one might even wonder
+just how much constitution a dead spectre might have such that after its performance on Friday
+(remember, $SPY went from 1.64x EPR to 0.57 and $QQQ 2.55 → 1.58!) it remains ready for
+Monday’s bell.
+Supposing still that it does, this bullish move has the potential to be well supported via $QQQ’s
+hedging environment, but should concurrent movement be desired with $SPY, its immediate and
+local selling pressure will have to be digested while dropping IV so as to move towards the
+purchasing support. Quite the juggling act but not impossible, I suppose. Early-week moves to
+lower IV will be monitored for this but even still, any bullish performance, once weasled through
+the immediate hedging environment will find itself in a sea of rising gamma squeezes, as per the
+MWGS data.
+Continuing this, we can check LDPM/S to see if conditions appear conducive to bull traps, and, if
+so, what they may foretell regarding its ceilings. First up is $SPX on the top panel on the 987-
+minute, and $SPY on the bottom, same timeframe. LDPS is set to balance. I adjusted LDPM so
+that LDPM-1 is LDPM order 987 and colored it green.
+
+
+
+
+We can see that on both views, conditions are bearish and $SPX / $SPY are within a liquidity
+bubble separating LDPM-7 from LDPM-1 (LDPM order 987). This suggests the outlook is
+movement down about 10% towards the organic bid.
+In terms of a bounce-ceiling, here it appears that the next likely stop would be just above at LDPM-
+7, which suggests minimal juice to squeeze.
+
+Deep Dive Stocks – Weekly Chat                                                         03/03/2025
+Adjusting the view slightly, if we moving to futures using ES and NQ, we see:
+
+
+
+
+Of particular note is NQ’s LDPM! With LDPM-987 (as LDPM-1) we can see that NQ is in a full bear-
+stack! And, impressively, in the most bear stack a bear stack can get manner! The last time this
+happened was ~end of Jan, 2022!
+ES is not quite there yet, but it seems to be moving along the similar trajectory! This brings with it
+quite protracted downside expectations.
+In terms of the ceiling for a growing bull-trap, such a opinionated LDPM stack is quite helpful –
+we can expect any “paroxysmal” market lurch to hit its head on the proximal organic ceiling. In
+this case, that is represented by LDPM-5. For futures, this is about 3% above current spot.
+So, should a bull-trap manifest in the days ahead, at or around 3%, it seems we can expect a
+healthy response from the quite condensed layers of organic ask thereupon!
+
+And so, quite an extra-ordinary set of data, and one that is pointing towards protracted downside
+starting imminently; the only crosswind to this debut is the (who-should-already-be-sated-from-
+Friday) spectre of ~mean reversion~ which suggests a bounce is bubbling, bewitching bull
+believers, bemusingly, by bubbling befuddles; beckoning ‘bout +3% ub.
+Thus, downside seems neigh, near, nascently non-trivial, and not worth not keeping an eye on.
+Happy trading,
+
+
+Justin
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                           03/03/2025
+

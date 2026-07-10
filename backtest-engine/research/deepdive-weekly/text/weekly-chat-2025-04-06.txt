@@ -1,0 +1,444 @@
+                                    Weekly Chat 2025-04-07
+
+
+                                          Main Points
+
+
+
+    -   VoEx and VoEx-daily remain within the Propagation Zone.
+    -   Gamma-hedging heatmaps offer minimal purchasing support with nearby selling
+        pressure that extends in the $− , 𝐼𝐼𝑉𝑉 +.
+    -   Put-selling has modest activity on $SPY with diminishing activity on $QQQ.
+    -   LDPM/S showcase bearish liquidity with downside targets extending 7% down until the
+        first initial organic floor, followed by 20%.
+    -   Prudency suggests significant downside.
+
+                                           SUMMARY
+
+
+
+          This week finds the data continuing in their bearish pursuits.
+
+          VoEx-daily has moved back into the P.Z., along with its older sibling VoEx.
+
+          The gamma hedging environments are poised to offer little support in
+          pursuit of gamma neutrality, and instead offer an expansion of selling
+          pressure in the spot-down, IV-up direction.
+
+          Put-selling increased throughout the week on $SPY but this behaviour was
+          not matched within $QQQ, who is witnessing its continued degredation in
+          persistent put-selling.
+
+          MWGS data show the gamma-squeeze engine turning on with counts and
+          acceleration increasing significantly. This brings with it both continued
+          downside expectations but increasingly downside expectations.
+
+          LDPM/LDPS showcase a market-at-large that appears to be in the process
+          of testing the nearest organic bid located about 7% down on SPX. With
+          continued bearish liquidity and instability will see spot work to test the last
+          identifiable floor at 20% down.
+
+          A general investigation into the risk of mean-reversion following such
+          substantial downside failed to produce any significant results, and so the
+          outlook remains consistent: downside appears imminent, promising and
+          substantial.
+
+
+
+
+Deep Dive Stocks – Weekly Chat           for the week of                2025-04-07 to 2025-04-11
+                                                     DETAILS
+
+
+
+
+Hello all!
+Last week, we left off with the notion that downside was imminent, promising and substantial. In
+response to our expectations, the market offered a 9.06% reduction in $SPY, and a 9.87%
+reduction in $QQQ. With these values being slightly larger than the EPRs for the week, let’s bust
+out our handy-dandy EPR table:
+
+    Symbol              T+5 Anticipated T + 5 Realized                 T + 5 Ratio            T+5 %-
+                        Move (±%)       Move (%)                       (Real / Ant.)          magnitude Dif.
+
+
+    $SPY                   2.13                    9.06                   4.25                123.86
+
+    $QQQ                   2.73                    9.87                   3.62                113.33
+
+
+
+Now those are some numbers! In accordance with superstition, they are likely to summon ~the
+spectre of mean reversion~ and without thinking too much about it, we will simply acknowledge
+that fact and put it in our future foray fore financial foreseeing files for later.
+These outrageous moves are even more awe-inspiring when contextualized within the hedging
+heatmaps, as displayed below:
+
+
+
+
+Both indexes fell off of the map with their end-of-week moves. We can see the initial part of the
+week clustered at the start, with a curious (if but ever-so discernable) increase in IV1 during a
+relatively stagnate price gave way to migration towards gamma neutrality in the lower-right
+quadrant, only to see it overshoot gamma neutrality and the subsequent, faint purchasing support
+and land somewhere in the abyss.
+
+
+
+
+1
+ Never a good sign when [$0, 𝐼𝐼𝑉𝑉 +]! In a handwavy fashion, this implies dealer short put uptake was quite robust
+while the price wasn’t decreasing. Nothing screams confidence like running to the lifeboats before the ships even hit
+something!
+
+
+Deep Dive Stocks – Weekly Chat                   for the week of                    2025-04-07 to 2025-04-11
+With such profound market moves, our task this week is somewhat extensive and from a bottom-
+up approach, the following lines of inquiry will attempt to be explored:
+   -   Did the market sacrifice enough for the spectre of mean reversion to visit? If so, what can
+       we expect with regards to bullish performance? Are there any identifiable ceilings per
+       LDPM/S?
+   -   Is downside still expected in the near term (with or without suspected mean reversion)?
+   -   Is downside still expected on the long term?
+   -   If downside is expected, how far down does this rabbit hole go?
+   -   Will this rabbit hole be explored slowly or urgently?
+To start, prudency does suggest that assuming mean-reversion is in the near-term future does
+seem reasonable – all else not considered; 4.25x moves on $SPY and 3.62x moves on $QQQ are
+truly extraӧrdinary and so should beget extraӧrdinary considerations.
+But, before we get ahead of ourselves, let’s
+Get started with VoEx
+as usual.
+
+
+
+
+Both $SPY and $QQQ demonstrate VoExes within the Propagation Zone, and so the outlook is
+continued downside on the medium-, and long-term time horizons. VoEx-daily looks to be
+deepening its connection to the P.Z. as well, which minimizes the risk of any brewing bullish
+performances (i.e.: bull traps) and gives near-term bearish outlooks. VoEx-daily’s reactivity to any
+early-week stagnation will be paramount; should it start spiking rapidly again, then this can be
+considered a sign that mean-reversion’s conjuration was successful.
+
+Otherwise, both VoExes are adamant: downside and urgently.
+How are the hedging environments poised to handle this?
+
+
+
+
+Deep Dive Stocks – Weekly Chat            for the week of              2025-04-07 to 2025-04-11
+Curiously.
+
+$SPY and $QQQ are near identical with their configurations but if the crosshairs are to be trusted,
+$QQQ has found itself much closer to imminent selling pressure, as opposed to $SPY which has
+forged some cushion.
+Given the novelty of the markets, I tried my hand at a novel new handwavy technique of drawing
+out my expectations2:
+
+
+
+
+These represent the three pathways my gestalt is leaning towards me, and they can be broken
+into two main categories:
+      -    Either the initial part of the week sees an increase in IV (right-most lines) as the market
+           stretches towards gamma neutrality, or
+      -    The initial part of the week sees a decrease in IV as the market clings to purchasing
+           support towards gamma neutrality.
+The boundary zone between selling and purchasing support does little in my head except to
+potentially “delay” some downward movement (left-most and middle curves) but since (even with
+
+
+2
+    Completely based only on ~vibes~.
+
+
+Deep Dive Stocks – Weekly Chat               for the week of              2025-04-07 to 2025-04-11
+our well-wishes) purchasing support has been minimally effective lately, prudency suggests some
+restraint in our confidence for its the future performance.
+Thus, VoEx is signaling downside without evidence of a bull-trap or mean-reversion forming (no
+VoEx-daily spike behavior noted), and the hedging environments are poised to offer marginal
+purchasing support in pursuit of assisting mean-reversion that is flanked by diminishing existence
+spot-down or immediate selling pressure spot-up.
+
+A tricky spot to be in but one that is largely bearish.
+Moving onwards, let’s check on the put-selling activity to see if anyone has thrown their hat into
+the rink:
+
+
+
+
+On the left ($SPY) we see a curious increase in dealer long puts! This activity does suggest bullish
+anticipations but given the environment that they are being sold in, is curious. The interpretation
+of this, is, on the surface, bullish in that there is some expectation for profitability in the [$+ , 𝐼𝐼𝑉𝑉 − ]
+direction (likely a bet on IV reversion?). Nonetheless, within the scope of ~mean reversion~, one
+can’t help but tally this in the spectre’s favor ($SPY’s activity at least).
+Moving onwards, we arrive at the market-wide gamma squeeze (MWGS) data, which showcases
+a 35% increase in GS count week-over-week, along with a 55% increase biweek-over-biweek and
+somewhere between that for month-over-month (47%).
+
+
+
+
+Deep Dive Stocks – Weekly Chat                for the week of                  2025-04-07 to 2025-04-11
+In comparison, the middle graph shows us that we have reached higher gamma-squeeze counts
+                                                   since 2025-03-10, and before then 2024-04-
+                                                   ish.
+                                                     These are respectable counts!
+                                                     On the bottom, we see GTM doing –
+                                                     something. It seems the overall flow of
+                                                     gamma towards the market is either
+                                                     neutral or effectively zero, as GTM-trend
+                                                     (gold ribbon) adheres tightly to baseline.
+                                                     Checking in on our modified / improved GS
+                                                     data, we find a rising Predictive-Count
+                                                     Curve (PCC) (brownish-golden line), and a
+                                                     positive and northward-facing Predictive
+                                                     Growth Curve (PGC):
+                                                     You’ll remember that the PCC (count curve)
+                                                     is similar to a standard “count curve” but
+                                                     with a small little unsupervised learning
+                                                     algorithm sprinkled into the mix, such that
+                                                     it provides us both the relative amount of
+                                                     gamma-squeezes but also tells us the
+                                                     anticipated future for said counts. To this
+end, we can see that the current relative-amounts have reached into 2023-correction territory and
+the counts are expected to increase (since PCC is pointed up).
+
+
+
+
+Deep Dive Stocks – Weekly Chat          for the week of              2025-04-07 to 2025-04-11
+Additionally, PGC, which showcases the current and anticipated acceleration, shows a positive
+value (meaning acceleration is increasing3), and it is pointed northward, suggesting that things
+are poised to continue increasing.
+These are bearish prints! Particularly noteworthy is that are very reminiscent of 2022 !
+Thus, it would appear that the gamma-squeeze foundations of the market echo the bigger-picture
+VoEx data, namely that VoEx’s presence within the Propagation Zone confers protracted
+downside, so too does the erosion of the market’s gamma-foundations.
+These findings do reїnforce the notion of continued downside in general terms, but they do little
+to highlight (or lowlight) the potential for either a bounce (attributable to ~mean reversion~) or,
+at least, slowing down of said downside (attributable to perhaps some selling capitulation).
+To parse through data, let’s take a look at LDPM and LDPS, to see if there are any signs of an
+outreached bid that may slow, or even reverse, our current trajectory.
+Starting with our view mainly on SPX (left) and ES (right) on the 987-minute, we find:
+
+
+
+
+From this view, we see $SPX showcasing a direct descent through LDPM-L1 (LDPM-987); since
+there is no identifiable floor. Thus, I went ahead and modified the code (again) and whipped up
+LDPM-1597. Thankfully, the new algorithm can handle these relatively absurd values, and when
+applying LDPM-1597 to the chart (which is now LDPM-L1, and LDPM-L2 has become LDPM-987),
+we see:
+
+
+
+
+                                          𝑚𝑚       𝑚𝑚
+3
+  This is like saying gravity is going from 9 2 → 10 2. This means that ever second not only sees an increase in
+                                             𝑠𝑠     𝑠𝑠
+meters-traveled but it also sees the rate of meter-traveled increase such that after the first second, the velocity
+ 𝑚𝑚
+( ) will increase not just by 9 but by 10!
+    𝑠𝑠
+
+
+
+Deep Dive Stocks – Weekly Chat                    for the week of                    2025-04-07 to 2025-04-11
+No identifiable floor for $SPX noted. A curious note is that if LDPM-L5 (LDPM-144; neon-blue) had
+stayed its course leading up to 2025, conditions might well be considered a bear-trap; but with its
+                                                                            slow         migration
+                                                                            downward,        even
+                                                                            before     price   fell
+                                                                            through       LDPM-L7
+                                                                            places our current
+                                                                            situation in more of a
+                                                                            “organics          are
+                                                                            converting to ask!”4. A
+                                                                            worrying thought.
+                                                                            In terms of any
+                                                                            identifiable    eager-
+                                                                            bids     looking   to
+                                                                            `scoop` under the
+price, there does not seem to be any evidence of that on this view, either! Whereas some of the
+`lower-order` (i.e.: eager) LDPMs (LDPM-L3 [LDPM-34], LDPM-L4 [LDPM-55]) are moving towards
+the price, they are doing so in less of a `scoop` fashion (as characterized by a rapid and direct
+descent under the price) and more in a `conversion` fashion – for instance, notice how the eager
+LDPMs are acting very similar to the organic LDPMs!
+Perhaps there are no eager parties currently present!
+
+Either wave, handwaving aside, on this view, there is little showing of support.
+Moving towards the future we find the futures which are showing an ever greater response to the
+price decline: a full retraction of LDPMs!
+
+Whereas on $SPX we
+saw eager parties
+acting like organic
+parties with bids
+converting to asks,
+on ES we see a more
+direct and explosive
+change; namely, the
+organics         are
+behaving like eagers.
+Compoundingly,
+these neoëagers are
+engaged     in   an
+aggressive ask cascade! Thus, not only is there no evidence of any outreached eager bids, there
+is also no evidence of bids. All LDPMs (even if you go down to LDPM-5!) are actively and
+
+
+
+4
+    A “systemic” flipping from a bull-stack to a bear-stack.
+
+
+Deep Dive Stocks – Weekly Chat                       for the week of   2025-04-07 to 2025-04-11
+prominently retracting from the price! This represents a rapid and eager conversion from bid to
+ask.
+With such data, no downside could reasonably be identified.
+Let’s lift our spirits by moving up to the 1-Week view:
+
+
+
+
+Here, we do have some floors! Let’s investigate –
+First, one might note that price has fallen rapidly and sternly through the most recent floor at
+LDPM-L7 (LDPM-610). In addition to the currently bearish liquidity, this gives the impression that
+the next floor is likely to be tested, which is currently sitting at LDPM-L2 (LDPM-987) at $4,720-
+ish. This would represent another ~7.00% decline.
+
+Should the market continue to fall, and should society still exist in recognizable form, then we can
+expect a test of LDPM-L1 (LDPM-1597) about 20% down.
+A quick historical inquiry finds the last time LDPM-1597 was tested (and briefly dipped
+underneath) was in 2020, where it acted as the concrete floor on which the market bounced:
+
+
+
+
+Deep Dive Stocks – Weekly Chat            for the week of              2025-04-07 to 2025-04-11
+                                                                               Prior to that, the
+                                                                               market fell under
+                                                                               LDPM-1957       on
+                                                                               Nov 05, 2007,
+                                                                               after which the
+                                                                               market decided to
+                                                                               relinquish ~50%
+                                                                               of itself before
+                                                                               mounting         a
+                                                                               recovery in ~Mar
+                                                                               2009.
+
+
+
+
+Thus, these prints are quite severe in their message and intent: the market is going down, and
+likely significantly so.
+But, in these extraӧrdinary times, we should be extraӧrdinarily cautious that we aren’t missing
+anything that might result in some chaos.
+Thus, to ensure we have looked under every stone and behind every cranny, let’s form a quick list
+of things we would expect to see, if either A) a bounce were forming due to, predominately, the
+spectre of mean reversion; B) a bounce is forming such that a bull-trap is likely to follow; or C)
+downside will continue at such a pace until moral improves.
+A – Mean Revisionist’s Footprints
+What would one see if the spectre of mean reversion were about? Well, probably something like:
+   -   VoEx-daily would start spiking northwards while the price stagnates or experiences a
+       green day; ideally the VoEx-daily response would be `exaggerated` (i.e.: big),
+   -   Supportive hedging environments to help supply bid with minimal ask overhead,
+   -   Modest pause or stalling of gamma-squeeze growths,
+   -   Rapid uptick in DLP behavior
+   -   Prescence of identifiable eager-bids on moderate timeframes with LDPM
+   -   Migration from bearish liquidity to bullish liquidity per LDPS
+B – Bulltrap Suspicions (or even a slight bull-pause)
+   -   VoEx-daily again,
+   -   Decrease in GS growths (presumably rapid and `artificial` as discussed in Weekly Chats
+       2025-01-13 & 2025-01-27),
+   -   Prescence of at-least 1 organic bid on a 144+ min timeframe per LDPM with eager bids
+       present,
+   -   Bullish liquidity per LDPS
+C – Continued downside until moral improves
+
+
+
+Deep Dive Stocks – Weekly Chat           for the week of              2025-04-07 to 2025-04-11
+      -    Unsupportive hedging environment with [$− , 𝐼𝐼𝑉𝑉 +] selling pressure,
+      -    VoEx-daily migration deeper into PZ,
+      -    GS count growths and negative GTM,
+      -    Cessation of put-selling,
+      -    No identifiable floor on 144+-interval LDPM with bearish stacks, with no identifiable
+           `scoop` or out-reached eager bids
+      -    No bullish liquidity found on 144+-interval LDPM
+      -    DLP cessation
+      -    LDPM-Vol increasing
+Let’s tally!
+For the mean revisionist, the following criteria from the list hold true:
+      -    Uptick in $SPY put-selling behavior
+Welp.
+
+Let’s tally up the bulls:
+      -    No evidence of VoEx-daily moving to indicate a spike,
+      -    GS growths have increased,
+      -    No eager bids located anywhere,
+      -    Bearish liquidity per LDPS
+That doesn’t seem like a high score! Moving onwards to downside continues and, well, we can
+see that most of the data fit within said category.
+In continued efforts to refute the forming expectation that downside is local, immediate,
+significant and accelerating, perhaps VoEx Variance data
+showcases a widening of distributions, and thus,
+indicate a potential nearing of something resembling a
+market-bottom 5?
+
+
+
+
+5
+    Weekly Chat 2025-03-31 for the flow-diagram.
+
+
+Deep Dive Stocks – Weekly Chat                     for the week of          2025-04-07 to 2025-04-11
+Not in the slightest! We can see the latest behavior is reminiscent of phase 2, whereby the left-
+ward lean has started to slightly coalesce, but given the continued presence of left-tails, it seems
+conditions remain on the right (and thus, increasingly bearish) side of the bearish-distribution, as
+opposed to the left (which would showcase a flattening out with peaks on the right (inside of
+stability))
+This paints a market-wide expectation of bearish performance on a long-term scale, which
+highlights the price-points set above.
+
+
+
+
+Taken together, the data are remarkably bearish with few bullish redeeming qualities. Even with
+a competently performed summoning ritual for the spectre of mean-reversion, its presence is only
+noted in the brief sliver of purchasing-support found within the narrow range of [$+ , 𝐼𝐼𝑉𝑉 − ] for $SPY
+and $QQQ and some quirky DLP behavior on $SPY; neither of which separately or jointly, breech
+the burden of prove to stop a market-wide correction.
+Furthermore, our investigations into any available stopping-power by way of eager-bids within
+SPX or ES on the 987-minute and 1-week intervals showcase a vacant eager-bid lot as LDPM
+suggests the masses are converting to the ask camp. On SPX the eager parties were behaving
+not like an eager-bid scooping down under the price, but rather like a cautious and slow
+conversion of bid to ask and ES showcased a full-house (all LDPMs) Aggressive Ask Cascade
+underway. These paint wholly bearish prints in the immediacy and longer-term.
+The hedging heatmaps, should they be enacted in force, can only serve to protect the market as
+long as it clings purchasing support and does not dip its toes into the spot-down gamma
+neutrality.
+
+
+
+
+Deep Dive Stocks – Weekly Chat             for the week of                2025-04-07 to 2025-04-11
+The market-wide gamma squeeze data suggests growth is to be expected, bringing with it
+additional bearish ideologies.
+Thus, without much data to convince otherwise, prudency adheres to prior acclimations and
+readjusts her seatbelt for continued downside that is expected to be imminent, and substantial.
+
+
+Happy Trading!
+
+
+Justin
+
+
+
+
+Deep Dive Stocks – Weekly Chat          for the week of             2025-04-07 to 2025-04-11
+

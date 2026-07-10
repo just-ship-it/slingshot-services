@@ -1,0 +1,186 @@
+                                     Weekly Chat 09/09/2024
+
+
+                                            Main Points
+
+
+
+    -   Bull-trap has sprung.
+    -   VoEx is returning rapidly to the Propagation Zone.
+    -   Hedging environments are not poised to offer substantial support in the [$, IV-] pathway
+        with $SPY presenting with a vanna-unstable orientation.
+    -   MWGS data show an increase in gamma squeezes beginning to show; GTM is just-so-
+        negative.
+    -   Put-selling is present but not sufficiently appreciable for any respectable conclusion to
+        be derived therefrom.
+    -   Overall, downside is expected as the bull-trap has trapped.
+
+                                             SUMMARY
+
+
+
+           Overall, we’ve been monitoring a suspected bull-trap for about a month
+           now, and with the price falling below the price point where we first thought
+           the trap was starting, it seems fitting to say the trap has sprung.
+
+           In its jaws, $SPY and $QQQ moved about 75% more-than-expected to the
+           downside.
+
+           The result is that VoEx-dailies for $SPY and $QQQ have both returned to
+           the Propagation Zon. VoEx has stalled in its movement towards stability
+           and looks poised to re-enter the P.Z. with VoEx-daily.
+
+           The hedging environments see a vanna-unstable orientation for $SPY, and
+           a sparsely-supportive environment for $QQQ.
+
+           Put-selling is still near-zero, and is uninspiring.
+
+           Market-wide gamma squeeze data show some up-tick in involvement –
+           with growth in gamma squeeze counts noted, growth in the growth-rate of
+           gamma squeezes, and a once-again-negative GTM.
+
+           Overall, high risk for significant downside interspaced with choppiness.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                        09/09/2024
+                                              DETAILS
+
+
+
+
+Hello every-body!
+
+
+Last week, we held out that the performance we had been witnessing for the past few weeks was
+largely due to a bull-trap, and thus, there was expectation for eventual downside following the
+jubilations. This eventual downside expectation slowly grew to imminent downside expectation
+as the data worsened, and then, finally, the imminent downside grew to downside.
+This process tested both our patience and $SPY, who faltered (unlike us [obviously because we
+aren’t a stock index]) and lost ~2% this week while $QQQ, in a bid to not be out-done, contracted
+~3%.
+Let’s take a quick look at these percentages under the “normalization lens” to see just how much
+these moves compared to the market’s expectations. For this, let’s use the T+4 EPR from Friday.
+With that, we get something around 1.75x for $SPY and, coincidentally, 1.75x for $QQQ! In other
+words, things moved about 75% more than the market was expecting. That’s a lot of movement!
+
+This movement can be visualized below in the Hedging Heatmaps from last Friday, where we see
+that, for the first time in a long time, both $SPY and $QQQ fell off the map!
+
+
+
+
+It seems that once conditions settled inside of gamma neutrality, $SPY’s purchasing support was
+poised to stall things for a bit, and perhaps it did – but ultimately, things gave way towards [$-,
+IV+] for the remainder of the week.
+So, now that our bull-trap has trapped, the main priority will be in weaving through the data with a
+mind for if things are better off now that the market has blown off some steam, or, if the market
+is set to continue the downside expected from before the bull trap.
+So, let’s get started!
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                         09/09/2024
+Don’t tell me what to do
+
+Starting first with VoEx, we see concern en carnate :
+$SPY’s VoEx-daily is demonstrating massive movement back into the Propagation Zone, and
+VoEx itself has failed to breech Stability and has turn-coated with its tovarishch1.
+Much-the-same can be said for $QQQ.
+All-in-all, the first look at the data immediately suggests resumption of downside, as was
+promised the first time VoEx moved into the Propagation Zone mid-July.
+Next up, the hedging environments. How might the market respond to downside?
+
+
+
+
+Concerningly-not-well!
+$SPY (right) is surrounded by local and proximal selling pressure, with gamma neutrality in the [$,
+IV+] path. $QQQ (other right) fares, admittedly, slightly better but its separation from selling
+pressure is quite schrödingerish as it is both non-existent, and meagerly present (in the [$-, IV+]
+quadrant).
+
+In combination, this is a difficult hedging environment to envision sustained, positive price
+movement unless some magic happens with $SPY’s IV.
+So, with VoEx pointing south, and the hedging environments on shaky grounds, it does appear as
+though downside is still expected. Do our put-selling-friends agree?
+Sort of?
+
+
+
+
+1
+    Товарищ.
+
+Deep Dive Stocks – Weekly Chat                                                        09/09/2024
+[Note: the red dashed line is simple and only looks for the proceeding “Monday”, so its arbitrarily
+set back 1 week].
+Whereas there is little-to-no put-selling on $SPY, on $QQQ, curiously, that is not the case, as $QQQ
+is seeing a slight up-tick in put-selling!
+Perhaps there is some eagerness in profiting from a fall in IV, but, truth-be-told, this activity is far
+less enticing than previous episodes of spontaneous put-selling generation. For instance, let’s
+check out the put-selling that was happening around 2023-10 when the market was bottoming
+out from its last crash (that sent $SPY to $410! The official bottom was 2024-10-27 and this is
+what the put-selling looked like around then:
+
+
+
+
+A lot more eagerness!
+
+The current behavior is not like this behavior. That’s not to exclude its existence from our
+considerations - but - not all DLP prints are equal (I usually associate the magnitude of the change
+in put-selling with the “confidence” of the put-sellers. So, big, robust movements (like seen in
+2023) indicate robust confidence, whereas small behavior, as seen in current times, suggests
+little-to-no confidence in trade for sufficient sizing.)
+Pretty bearish still! Let’s check out the Market-Wide Gamma Squeeze data.
+
+
+Deep Dive Stocks – Weekly Chat                                                            09/09/2024
+                                                                     Of note, a 42% increase in
+                                                                     gamma squeezes over the
+                                                                     past 10-trading days, and a
+                                                                     27% over the past 5-trading
+                                                                     days.
+
+
+
+
+                                                                     This can be noted here,
+                                                                     where gamma squeezes
+                                                                     seem to be rising steadily.
+
+
+
+
+                                                                     GTM-ema didn’t make it into
+                                                                     positive territory, despite our
+                                                                     cheer-leading last week.
+                                                                     Its downward deflection
+                                                                     suggests a flux of short-
+                                                                     gamma is heading towards
+                                                                     the market, and thus, the
+                                                                     future is expected to see
+                                                                     more gamma squeezes.
+
+
+
+
+So far, things do look pretty grim for any remaining bullish ideologists out there (at least on the
+short-to-medium term).
+A close eye on LDPM/S in the coming days to navigate the market, as the prudent expectation is
+very choppy and down.
+
+
+Happy sailing!
+
+
+Justin
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                         09/09/2024
+

@@ -1,0 +1,197 @@
+[
+  {
+    "file": "weekly-chat-2023-11-26",
+    "report_date": "2023-11-26",
+    "direction": {
+      "call": "bullish",
+      "confidence": "high",
+      "summary": "Bullish-until-proven-otherwise maintained; data unchanged, VoEx in Inhibition Zone, easy bullish interpretation for the week.",
+      "conditions": "Flips if a VoEx Spike or VoEx Divergence occurs; gamma-squeeze growth turning positive is slowly eroding the outlook.",
+      "quote": "Overall, this makes for an easy week of interpretation as VoEx is suggesting BUPO is the most reasonable outlook until its not"
+    },
+    "levels": [],
+    "notes": "Internal header dated 11/27/2023 (day after email send date). No numeric price levels anywhere in report."
+  },
+  {
+    "file": "weekly-chat-2023-12-04",
+    "report_date": "2023-12-04",
+    "direction": {
+      "call": "bullish",
+      "confidence": "medium",
+      "summary": "BUPO bullish stance maintained per VoEx, but underlying conditions (put-selling lethargy, negative gamma flows) deteriorating for continued upside.",
+      "conditions": "Flips on a VoEx Spike downward or Divergence out of the Inhibition Zone; bearish GTM prints growing.",
+      "quote": "Overall, per VoEx BUPO (of the bullish.. etc. etc.) but conditions look to be deteriorating for continued upwards acceleration."
+    },
+    "levels": [],
+    "notes": null
+  },
+  {
+    "file": "weekly-chat-2023-12-10",
+    "report_date": "2023-12-10",
+    "direction": {
+      "call": "bullish",
+      "confidence": "medium",
+      "summary": "BUPO continues; QQQ put-selling surged (robust bullish indication) and little evidence to refute the bullish stance.",
+      "conditions": "Would flip if VoEx moves out of the Inhibition Zone and gamma squeeze growth ramps up.",
+      "quote": "it doesn't look like there is too much evidence to refute BUPO ... I'll take our put-selling-friends' lead and ride the BUPO wave."
+    },
+    "levels": [],
+    "notes": "Internal header dated 12/11/2023."
+  },
+  {
+    "file": "weekly-chat-2023-12-17",
+    "report_date": "2023-12-17",
+    "direction": {
+      "call": "bullish",
+      "confidence": "medium",
+      "summary": "BUPO bullish maintained despite VoEx spike-like behavior; enthusiasm tempered by put-selling reversal and bearish GTM drift.",
+      "conditions": "Flips bearish if VoEx migrates into the Propagation Zone, gamma squeeze counts increase, and GTM prints distinctly bearish.",
+      "quote": "despite VoEx's spike-like behavior, until it breeches the Propagation Zone, Bullish-until-proven-otherwise is maintained."
+    },
+    "levels": [],
+    "notes": "Internal header dated 12/18/2023. Author explicitly staging to 'pull the trigger on downside' if trigger conditions appear."
+  },
+  {
+    "file": "weekly-chat-2023-12-25",
+    "report_date": "2023-12-25",
+    "direction": {
+      "call": "bullish",
+      "confidence": "low",
+      "summary": "BUPO technically maintained but VoEx Divergence emerging on SPY and QQQ; warning signs mounting for end of the bullish regime.",
+      "conditions": "Downside trigger is VoEx-trend leaving the Inhibition Zone; divergence plus ceased put-selling and bearish GTM are converging.",
+      "quote": "BUPO (of the Bullish Variety) is maintained as the warning signs continue to mount for the end of BUPO."
+    },
+    "levels": [],
+    "notes": "Internal header dated 12/26/2023. Short holiday-week report; year-in-review postponed."
+  },
+  {
+    "file": "weekly-chat-2024-01-01",
+    "report_date": "2024-01-01",
+    "direction": {
+      "call": "bullish",
+      "confidence": "low",
+      "summary": "Tenuous BUPO bullish to start the year; short-term bullish (QQQ put-selling surge) against medium-term correction risk per V2 and 2020/2022 analogues.",
+      "conditions": "Flips on rapid VoEx movement into the Propagation Zone; historical analogues suggest downside relatively proximal.",
+      "quote": "Overall, a tenuous BUPO (of the Bullish variety) starts the year off - much like it did in 2020 and 2022."
+    },
+    "levels": [],
+    "notes": "Internal header dated 01/02/2024. Split short-term bullish vs medium-term bearish thesis; includes year-end admin/roadmap rant."
+  },
+  {
+    "file": "weekly-chat-2024-01-07",
+    "report_date": "2024-01-07",
+    "direction": {
+      "call": "bearish",
+      "confidence": "high",
+      "summary": "BUPO has ended; VoEx Divergence activated, gamma squeezes growing 30% with more expected, so downside is the expectation.",
+      "conditions": "Contrarian bullish DLP put-selling prints on QQQ/SPY could prove the bearish call wrong; author explicitly disagrees with them.",
+      "quote": "Overall, BUPO has ended. GS growth is positive ... thus, bearish expectations reign supreme, despite our DLP friend's insistence to the contrary."
+    },
+    "levels": [],
+    "notes": "Internal header dated 01/08/2024."
+  },
+  {
+    "file": "weekly-chat-2024-01-14",
+    "report_date": "2024-01-14",
+    "direction": {
+      "call": "bearish",
+      "confidence": "medium",
+      "summary": "Continued downside expectation despite the prior green week; leveraged ETFs and IWM show VoEx Divergence/Spikes supporting bearish view.",
+      "conditions": "VoEx stalled at the Inhibition Line on SPY/QQQ; a resolve back into the Inhibition Zone would restore bullish BUPO.",
+      "quote": "Overall, prudency continues to suggest downside."
+    },
+    "levels": [],
+    "notes": "Internal header dated 01/16/2024. VoEx inconclusive on SPY/QQQ; call rests on 'cleaner' leveraged-ETF views. Includes LDPS release admin."
+  },
+  {
+    "file": "weekly-chat-2024-01-21",
+    "report_date": "2024-01-21",
+    "direction": {
+      "call": "bullish",
+      "confidence": "low",
+      "summary": "VoEx back in Inhibition Zone so another round of BUPO bullish, but adopted tenuously; erratic VoEx suggests bull-trap risk.",
+      "conditions": "Bearish GTM prints and gamma-squeeze growth suggest limited longevity; watching VoEx, DLP, and MWGS for overheating.",
+      "quote": "a bullish outlook is adopted, if but only tenuously and without much confidence in its duration."
+    },
+    "levels": [],
+    "notes": "Internal header dated 01/19/2024 (two days before filename date). Author keeping longer-dated vega (hedge) positions."
+  },
+  {
+    "file": "weekly-chat-2024-01-28",
+    "report_date": "2024-01-28",
+    "direction": {
+      "call": "bullish",
+      "confidence": "low",
+      "summary": "Technically bullish per VoEx BUPO, but author calls it a mixed bag with growing instability and near-term downside signals from GTM.",
+      "conditions": "Flips on VoEx spiking into the Propagation Zone; GTM's completing positive complex is associated with 10-20 day price decline.",
+      "quote": "Overall, technically bullish per VoEx but with continued signs of growing instability."
+    },
+    "levels": [],
+    "notes": "Internal header dated 01/29/2024. Author explicitly: 'Quite the mixed bag of data!' Introduces new Liquidity Reserve metric (QQQ bearish, SPY bullish on 10-day horizon)."
+  },
+  {
+    "file": "weekly-chat-2024-02-04",
+    "report_date": "2024-02-04",
+    "direction": {
+      "call": "bullish",
+      "confidence": "medium",
+      "summary": "VoEx rebounded into Inhibition Zone maintaining BUPO; increased put-selling on SPY/QQQ and strongly positive GTM support bullish expectations.",
+      "conditions": "Caution from extended VoEx duration in Inhibition Zone and roughly monthly VoEx Spikes; flips on a 2020/2022-style move into Propagation Zone.",
+      "quote": "these data suggest bullish expectations are most prudent."
+    },
+    "levels": [],
+    "notes": "Internal header dated 02/05/2024."
+  },
+  {
+    "file": "weekly-chat-2024-02-11",
+    "report_date": "2024-02-11",
+    "direction": {
+      "call": "neutral",
+      "confidence": "low",
+      "summary": "No market commentary; document is only LDPS indicator update/patch notes with no directional thesis.",
+      "conditions": null,
+      "quote": "Several architecture changes to help LDPS determine liquidity status."
+    },
+    "levels": [],
+    "notes": "Admin-only content: 'LDPS Update Notes 2024-02-09' (indicator changelog). No weekly market chat, no direction, no levels."
+  },
+  {
+    "file": "weekly-chat-2024-02-19",
+    "report_date": "2024-02-19",
+    "direction": {
+      "call": "bullish",
+      "confidence": "low",
+      "summary": "Still technically BUPO bullish for the week, but VoEx Divergence forming and put-selling ceased shift stance to worrisome bullish.",
+      "conditions": "Flips bearish if Divergence leads to VoEx spike into Propagation Zone or DLP behavior stays dead; author taking long-gains home.",
+      "quote": "BUPO (of the Bullish variety) suggests bullish outlooks for the week ahead, however, prudency suggests more caution than usual"
+    },
+    "levels": [],
+    "notes": "Internal header dated 02/20/2024. Author preparing for a potential near-term downturn while nominally bullish."
+  },
+  {
+    "file": "weekly-chat-2024-02-25",
+    "report_date": "2024-02-25",
+    "direction": {
+      "call": "bearish",
+      "confidence": "medium",
+      "summary": "VoEx Divergence plus spikes, near-zero put-selling, and first negative GTM print; neutral-to-bearish, bracing for downside.",
+      "conditions": "Bearish lean not full BUPO-bearish until VoEx falls into Propagation Zone; return of BUPO would negate it.",
+      "quote": "In preponderance of the evidence, prudency suggests bracing for downside."
+    },
+    "levels": [],
+    "notes": "Header mislabeled 'Weekly Chat 02/20/2024' but footers/date say 02/26/2024. Author: 'very low threshold to start sizing into short positions.' Includes preview of new VoEx version and robot/admin notes."
+  },
+  {
+    "file": "weekly-chat-2024-03-03",
+    "report_date": "2024-03-03",
+    "direction": {
+      "call": "bullish",
+      "confidence": "medium",
+      "summary": "Bullish outlook returns: VoEx Divergence softened, BUPO restored, GTM positive with gamma-squeeze destruction, market cooling off within stability.",
+      "conditions": "Tempered by zero put-selling and neo-VoEx drifting toward Propagation Zone; watching DLP behavior and VoEx for change.",
+      "quote": "Overall, a bullish stance will be taken for the week a head but with a close eye on DLP behavior and VoEx."
+    },
+    "levels": [],
+    "notes": "Internal header dated 03/04/2024. Prior week's bearish call acknowledged wrong (market rallied)."
+  }
+]

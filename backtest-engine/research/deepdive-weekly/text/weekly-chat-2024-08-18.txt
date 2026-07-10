@@ -1,0 +1,146 @@
+                                    Weekly Chat 08/19/2024
+
+
+                                           Main Points
+
+
+
+    -   VoEx-daily has spiked into Stability while VoEx remains in the Propagation Zone.
+    -   Hedging environments are $SPY and $QQQ are congruent in their presentations; both
+        present with local and diffuse purchasing support.
+    -   Put-selling remains low, with near-zero levels noted on $QQQ.
+    -   Overall, indications for a bull-trap in the setting of longer-term bearish expectations.
+
+                                           SUMMARY
+
+
+
+           This week say $SPY and $QQQ move about 2-times what the market was
+           expecting.
+
+           In response, VoEx-daily has moved into Stability, and bringing with it near-
+           term bullish expectations. VoEx, however, has remained within the
+           Propagation Zone, suggesting a bullish-bounce for now.
+
+           Hedging environments have become “in sync” on $SPY and $QQQ – a rare
+           feature of late. In doing so, they have also managed to find local and
+           diffuse purchasing support.
+
+           Put-selling is curiously moot – with $SPY seeing some activity but $QQQ
+           seeing near-zero activity.
+
+           Overall, high expectations for a bull-trap-like future ahead.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                        08/19/2024
+                                                    DETAILS
+
+
+
+
+Hello everyone!
+Let’s dive right into this week’s action and then have a quick chat about the current under-goings
+on at DDS.
+Last week, we left off with continued bearish ideations, which ultimately, turned out to be a
+disastrous choice! This is evident when we look at the price changes for the week:
+    -   $SPY : +4.00%
+    -   $QQQ : +5.47%
+Big changes! Naturally, as with big changes, let’s normalize them against the weekly EPR (from
+last week). This helps us see just how much the indexes moved relative to how much the market
+was expecting them to move1. In doing so, we get:
+    -   $SPY: 2.01
+    -   $QQQ: 1.97
+Decent! Both $SPY and $QQQ moved nearly twice as much as the market was expecting! Let’s
+check out these big moves via the heatmaps:
+
+
+
+
+The orientation of the heatmaps (that is, for $SPY: red on right; blue on left; and $QQQ: red on left;
+blue on right) was largely maintained throughout the week, with $QQQ being persistently
+supported by a hefty chunk of continuously-raising-purchasing-support (shown below) .
+
+
+
+
+1
+ People pay for insurance → people will pay more if the risk of needing said insurance is higher => IV can be used
+to forecast expected price ranges via how much people are paying for “insurance” (puts mainly).
+
+Deep Dive Stocks – Weekly Chat                                                                      08/19/2024
+Curiously, despite $SPY’s more-present selling pressure, it still mounted a 2.01x move! Not too
+shabby.
+So, this week, with such exceptional moves, let’s check under the hood to ensure nothing major
+has been disrupted.
+Start as usual with VoEx:
+
+
+
+
+We see that VoEx-daily (magenta) has spiked quite excessively into the “Stability” zone –
+indicating a bullish outlook. The time-horizon of the bullish-outlook is given via VoEx (gold line),
+which is still well placed within the Propagation Zone.
+Thus, until proven otherwise, this combination suggests a bull-trap as the over-all idea and with
+bullish action as the near-term idea.
+Moving from VoEx to the heatmaps, we see:
+
+
+
+
+Reasonable environments! Solid purchasing supported noted in the [-$, +IV] quadrant (lower right),
+and purchasing support noted in the [+$, -IV] quadrant!
+Quite a conducive space the hedging environment has become for a bullish-bounce, indeed!
+
+Let’s check to see if our put-selling friends have also taken note of the fortuitous environment:
+
+
+
+Deep Dive Stocks – Weekly Chat                                                         08/19/2024
+Not quite – or, at least, with those on $QQQ.
+Perhaps they feel too-recently scorned; who knows! But the data suggest that $SPY is timidly
+aimed at profiting from a net [$+, IV-] style move, while $QQQ seems a bit less enthused thereupon
+the idea.
+Nonetheless, for now, it looks like a bullish bounce is forming; VoEx-daily has spiked into Stability
+and the hedging environments are conducive for [$+, IV-].
+However, for the medium-, and longer-term outlooks remain bearish, as VoEx is well within the
+Propagation Zone.
+
+
+Now, some updates!
+
+
+
+I’ve been stuck in a loop:
+
+
+
+
+And for the past while I’ve been stuck in this loop of wanting to update the Data Dashboard but
+feeling like it was necessary (and time) to implement the new data improvements (update VoEx,
+
+
+
+Deep Dive Stocks – Weekly Chat                                                          08/19/2024
+update graphing functionality, implement LDPS, etc.) I keep running into speed / processing
+bottlenecks!
+Then, I try to over-come those with Rust, only to confuse myself and look for something else to
+do when I realize that its time that I update the Dashboard.
+The good news, however, is this cycle has been, much like me, broken!
+DDS is now actually switching to Rust from R in that we have ~real~ programs running in Rust
+now! So, the loop is broken, and as I get more of the fundamental systems online, I will be able to
+bring the modern data to us and the Dashboard!
+Hopefully not too much longer now.
+
+That’s all for now -
+Happy Trading,
+
+
+Justin
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                        08/19/2024
+

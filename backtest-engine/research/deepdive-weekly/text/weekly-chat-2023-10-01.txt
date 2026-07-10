@@ -1,0 +1,281 @@
+                                    Weekly Chat 10/02/2023
+
+
+                                           Main Points
+
+
+    -   VoEx remains in the Propagation Zone, however both $SPY and $QQQ appear to be
+        progressing along with VoEx Coiling. This pins a near-term bearish outlook with a
+        slightly-less near-term bullish outlook.
+    -   Hedging Environments remain divided with $SPY seeing purchasing support
+        introduced in the event of a $-/IV+ move, while $QQQ sees more selling pressure.
+    -   DLP behavior remains highly elevated, however, much like last week, this behavior
+        seems somewhat perplexing given the other data prints.
+    -   MWGSC data continues to show positive growth and positive GTM prints, indicating
+        continued expectation for gamma squeeze growth.
+    -   𝑉𝑉 2 is starting to see collapse within the Inhibition Zone while more data clusters into
+        the Propagation Zone.
+    -   The Inhibition-Propagation ratio demonstrates a 20-day print that has crossed the
+        threshold into a PZ-dominated market.
+    -   LDPS is showing bearish liquidity on the daily timeframe for $SPY and $QQQ.
+    -   Overall, it is a match-up between a notoriously well-timed group of market individuals,
+        and some robust bearish data prints.
+
+                                           SUMMARY
+
+
+
+           VoEx is demonstrating persistence within the P.Z., a relatively rare feat for
+           $SPY and $QQQ. This, however, isn’t without controversy as it continues
+           to appear as though a VoEx Coiling event is occurring.
+
+           Instability can also be found within the hedging environments where $SPY
+           and $QQQ are at-odds once more. However, there is a “purchasing-route”
+           available to the market via a casual $+/IV- path that would give purchasing
+           support to $QQQ while maintaining $SPY within gamma neutrality.
+
+           DLP behavior is exceptional, with such prints rarely seen. In investigating
+           the last several incidents of similar magnitude, the subsequent market-
+           performance demonstrate wholly bullish consequences. However, the
+           surrounding data and contexts give pause – much like last week – for the
+           veracity of these claims.
+
+           𝑉𝑉 2 is demonstrating collapse within the Inhibiton Zone with more data
+           grouping within the PZ. The definitive signs given previously for the start
+           of the next market correction.
+
+Deep Dive Stocks – Weekly Chat                                                         10/02/2023
+            Overall, a highly contested market that is without a distinct outlook given
+            the muddied waters on the more immediate-terms, however, the more this
+            instability shows itself, the more confidence is gained in a proximal
+            market correction in the more-near-than-probably-expected time horizons.
+
+
+
+
+                                             DETAILS
+
+
+
+
+Hello everyone!
+A relatively exciting week, as indicated by $SPY’s glamorous moves of -0.68% and $QQQ’s 0.1%
+weekly move.
+Last week, we discussed how $QQQ’s selling pressure was balanced against $SPY’s purchasing
+support, and its seems this played out quite nicely within the markets, despite our concerns
+regarding recent purchasing-support performance:
+
+
+
+
+We can see that the market did a little loopdy-loop throughout the week, ultimately leading to our
+near-zero net move.
+This week, we have some a few topics to parse through, namely investigating the recent uniquely
+unusual DLP activity, some new LDPS updates, and of course, the routine data.
+Let’s get started!
+
+The Data!
+As usual, let’s start with VoEx:
+VoEx for $SPY and $QQQ are both demonstrating persistence within the Propagation Zone – this
+brings with it the natural downside expectation.
+
+
+
+Deep Dive Stocks – Weekly Chat                                                        10/02/2023
+An observation is that the recent flat price-action (and even occasional green day), hasn’t
+provoked any substantial instability (VoEx Spikes, rapid movement towards I.Z., etc.).
+Another observation might be that the prior remarks about VoEx appearing similar-in-nature to
+VoEx Coiling seem to be holding strong as VoEx-daily is tentatively working its way into stability.
+The consequence of declaring VoEx Coiling would be a slight pivot towards a near-term bullish
+stance (one that typically manifests rather abruptly), in particular with VoEx’s relative proximity to
+the Propagation Line.
+Thus, one of the main goals this week will be to determine if we can get a leg-up on VoEx Coiling
+and its bullish expectations due to some bullish data prints, or if we should continue to brace for
+downside as per VoEx’s location (and not “behavior”).
+
+
+
+
+Our first step will be to look at the hedging environments to see which action might be more
+“supported”.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                           10/02/2023
+As with last week, $SPY’s heatmap
+demonstrates       continued       purchasing
+support in the event of a $-/IV+, along with a
+slightly-positive bullish outlook via the
+Influence Distribution.
+$QQQ’s offers the same outlook as before,
+although it seems the market managed to
+squeeze $QQQ into gamma neutrality just
+before market-close.
+
+Both of these are, ironically, supportive of
+VoEx Coiling: should the market see an
+organic push for $QQQ into purchasing
+support, on $SPY we would also see the
+introduction of purchasing support (albeit
+much less). In fact, unless IV tanks, $SPY
+has a clear path up gamma neutrality via
+$+/IV-, which is the exact path that
+introduces to $QQQ the aforementioned
+purchasing support.
+With $SPY’s proximal purchasing support,
+Monday’s moves will be particularly telling
+for the week ahead.
+Moving forwards with the analysis, we come
+to the DLPs, which, as we will see, have been
+particularly active 1.
+
+
+
+
+1
+ Now may be a good time to remember that large amounts of dealer OTM long puts, in the event that they get
+pushed ITM while IV is rising drastically is a recipe for a 2020 repeat!
+
+Deep Dive Stocks – Weekly Chat                                                                  10/02/2023
+With $SPY-DLP activity remaining rather moot, our friends over in $QQQ-land have seen it fit to
+start a fête . With a slight increase in activity, it would appear that someone (or someones)
+somewhere (or somewheres) has some rather strong conviction on profiting from either $+ or IV-
+(or both!) in the week(s) a head.
+Last week, there was expressed concern that the DLP-friends may have been incorrect in their
+assessment; is this still the case?
+Well – to help answer that, let’s first look at when the last time such DLP behavior was noted;
+quickly scanning the data reveals 2 times in which the DLP activity for $QQQ was greater than
+150% for the 5-day data, I went a head and colored the graph based on the change in price until
+either the next +150% data-print, or until the maximum growth of that particular print.
+
+
+
+
+oooooohh.
+Someone has conviction of much the same magnitude as at least an +8% growth in the near
+future.
+
+Deep Dive Stocks – Weekly Chat                                                     10/02/2023
+Perhaps someone in the market is
+already jumping-the-gun on VoEx
+Coiling and preparing for a relative
+bottom here.
+Ordinarily, I would probably find
+sufficient reason to pause here and
+stake claim that such a showing of
+force is sufficient for me to have a
+modestly bullish outlook a head (given
+our accurate our put-selling friends
+usually are), however, there are some
+additional data points that provide
+some cause-for-pause.
+
+The first is MWGSCs, which show a
+persistent positive growth-rate for
+gamma squeezes, along with a GTM
+that has been steadily growing more
+positive (even the revised one is
+showing continued expectation for
+gamma squeeze growth).
+This is a bearish print with some
+moderate standing.
+ The second data print is from 𝑉𝑉 2 that
+shows both continued growth of data
+within the Propagation Zone, but also
+some behavior that we might be able
+to definitively point at and call “collapse” (finally?).
+
+
+
+
+Deep Dive Stocks – Weekly Chat                             10/02/2023
+The collapse initiating within the Inhibition Zone, and growing data prints within the Propagation
+Zone are both indications that were teased out over the past few months that would indicate a
+market-wide downturn was very nearby.
+The third data print that contests the put-sellers claims of a $+/IV- future is the relative ratio of
+VoExes within the Inhibition and
+Propagation Zones, a relatively
+new graph that we looked at just
+recently. Nonetheless, its pretty
+clear that net-PZ markets are
+bearish, and that’s exactly the
+situation the market seems to be
+heading into, with the 20-day
+metric having already crossed over
+the “threshold”.
+In fact, if we look at the last two
+dates from above (the two dates
+that showed large DLP prints;
+~2022-10 and ~2022-02), we see
+that those puts were sold in the
+exact opposite environment: a
+market that was moving towards a
+net-IZ environment.
+And yet there’s more!
+
+
+
+Deep Dive Stocks – Weekly Chat                                                          10/02/2023
+Way back when (Weekly Chat 2023-07-31), I showed you these images:
+                                                          These are LDPS2 (Liquidity-Derived Price
+                                                          Strength; well, it is now, back then it was LDTS),
+                                                          but these graphs back then demonstrated both
+                                                          the developing tool, as well as a bullish-
+                                                          dominant liquidity within the market.
+
+                                                          However, these same data are not quite that
+                                                          bullishly spectacular anymore:
+
+
+
+
+On the left, we see $SPY, and on the right: $QQQ. Both present with newly-formed “Strong Bearish”
+liquidity statuses.
+
+
+
+
+You may also notice, that such prints are rather rare for $SPY and $QQQ, and have only really
+occurred during large market corrections (2020’s prints), briefly before 2022, and then throughout
+2022.
+
+So, in other words, not the most bullish of prints.
+Taken together, this is quite the conundrum: typically such robust DLP prints would almost
+certainly be sufficient in truthy-ness that a bullish outlook would be easy to adopt – even if it is a
+short-lived one; the put-sellers are rather good at what they do (sell puts).
+But, we saw last week that their performance was okay – things didn’t go down (much), that’s for
+sure, but things didn’t quite go up like typically associated with such behavior.
+Additionally, much like last week, this week presents with continued bearish prints that work
+against this bullish outlook – could it be that the put-sellers are simply “doubling-down” on their
+positions?
+
+
+2
+ The quick take-away from LDPS is that it’s a transformed version of LDPM that helps “color-code” the bars (in the
+case, on the daily interval) depending on their liquidity.
+
+Deep Dive Stocks – Weekly Chat                                                                      10/02/2023
+If this is the case, and there was, somewhere, sufficient reason to double-down, why hasn’t $SPY
+joined in? $SPY had all week to start selling puts – yet it doesn’t appear as though the $SPY crowd
+is at-all interested.
+
+Overall, I think it is still prudent to bet on a medium-term decline but a modest threat exists for a
+near-term rapid appreciation – it might be that the put-sellers know something we don’t.
+But then again, it might be that we know something they don’t.
+So, for the week ahead, I’ll plan to stay nimble and capture profits where possible, but I won’t fret
+too much over my short positions (for now), should the week a head choose a more northward
+trajectory.
+I’ll keep an eye on the hedging environments to see if a VoEx-Coiling-supportive-trajectory forms,
+and from there, an eye on VoEx – if the VoEx Coiling looks like it is going to complete (keeps
+spiking its way northward), I’ll position for some quick long profits.
+Otherwise – it might be time to sit back and watch.
+
+Happy trading!
+Justin
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                          10/02/2023
+

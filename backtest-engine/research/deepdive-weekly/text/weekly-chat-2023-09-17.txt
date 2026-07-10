@@ -1,0 +1,446 @@
+                                  Weekly Chat 09/18/2023
+
+
+                                         Main Points
+
+
+    -   VoEx for $SPY and $QQQ have moved into the Propagation Zone,
+    -   The Hedging Heatmaps offer a supportive view for the market in the event of a $-/IV+
+        move,
+    -   Put-selling has continued to cease,
+    -   MWGS data shows a positive growth-trend despite a diminished MWGS-count. GTM
+        data are partially mixed with the “new” GTM suggesting continued gamma squeeze
+        flow into the market,
+    -   𝑉𝑉 2 is getting more interesting and is continuing to suggest an up coming market
+        correction is nearby.
+    -   Prudency suggests reduced long exposure for short and medium timeframes.
+
+
+
+                                          SUMMARY
+
+
+
+          VoEx for $SPY has experienced a spike which is a bearish event per the
+          VS-Tag prediction algorithm. This is accompanied by a less-flamboyant
+          performance that has nonetheless still landed it within the Propagation
+          Zone.
+
+          The Heatmaps for both $SPY and $QQQ demonstrate increased
+          purchasing support in the $-/IV+ quadrants along with positive Influence
+          Distributions.
+
+          Put-selling remains negative with little-to-no activity noted throughout the
+          week.
+
+          Gamma squeezes decreased on a week-over-week timeframe but the
+          growth-trend demonstrates continued positive growth overall. These
+          numbers are accompanied by a growing (old) GTM-ema (bearish) and a
+          negative “new” GTM print – both nodding towards the expectation of
+          continued gamma squeeze growth.
+
+          𝑉𝑉 2 has complicated itself once more but is still providing a view of the
+          market that shows the overheating is collapsing and activity is growing
+          within the Propagation Zone – signs reminiscent of prior market
+          downturns.
+
+
+
+Deep Dive Stocks – Weekly Chat                                                       09/18/2023
+                                              DETAILS
+
+
+
+
+Hello all!
+Last week, we left off with the notion that being bullish didn’t seem prudent and that the data were
+poised to offer a choppy week ahead.
+These expectations, it would seem, were well-founded as $SPY moved a total of 1.80% throughout
+the week (out-performing its week-over-week EPR by 27%) while only mustering a net move of -
+0.48%. $QQQ fared much-the-same with a week-over-week change of -0.48; albeit with much less
+price variance throughout the week.
+$QQQ’s diminished price variance as compared to $SPY looks to be a remnant of the market’s
+attempt to bring $SPY out of selling pressure on the 14th, as can be seen below in the Hedging
+Heatmaps:
+
+
+
+
+$QQQ’s more controlled oscillations seem to be a direct consequence of the relationship between
+its purchasing support and selling pressure. As the index essentially bounced between the two
+during its overall negative trajectory throughout the week like a ping-pong ball bouncing down
+between two pillars of market-influence.
+This week, our goal is going to be to investigate the magnifying bearish performance throughout
+the market, and try to determine if it is here or if we should wait a little longer or even perhaps
+we will find something new in the data as we go along to disrupt our preconceived notions.
+Who knows but let’s find out!
+What fools these mortals be!
+Naturally our first step in investigating the data for the week a head begins with VoEx –
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                         09/18/2023
+Curious.
+
+Moving on to $QQQ:
+
+
+
+
+I see.
+These VoExes are unique – a consequence of a subtle finding that may have passed unnoticed
+even to the most trained of eyes; allow me to showcase:
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                09/18/2023
+   Fret not if such nuance in VoEx’s expression was insufficiently communicative for you it is – okay
+   I’m done with the shtick.
+   Yes – that is a VoEx Spike. A very clean VoEx Spike1.
+   To interpret this VoEx behavior, the first step could be to quickly look at known data sets for such
+   behavior, such as the VoEx Spike Algorithm in the back of the VS-Tag primer2. There are a few
+   bits of information we will need first in order to investigate this VoEx Spike:
+
+Date                           VoEx                           Prior VoEx                     Spike Amount
+
+
+2023-09-14                                  2.63                           0.22                         1,1583
+
+2023-09-15                                 -1.53                           2.63                          158
+
+
+
+
+   1
+     By clean, I simply mean a VoEx Spike that occurred over exactly 2 days and that extended either
+   significantly deep (such as in $SPY’s ExVoEx) or included all three zones.
+   2
+     Say – why not use the SNAP graphs? They are right there! (on the Data Page that is). The SNAP algorithm
+   is great at interpreting VoEx during “routine” times – but during abnormal VoEx behavior, its typically better
+   to look towards the VS-Tag algorithm for such VoEx interpretations. In fact, this is the reason for VS-Tag’s
+   creation! You may have heard me say something along the lines of “the SNAP algorithm is contextless ”
+   before – and this is what I am referring to. The SNAP algorithm doesn’t account for where VoEx is, simply
+   how it is behaving. Thus, when there are times when the location of VoEx may be important (such as, rapidly
+   oscillating between the I.Z. and P.Z.), a more detail approach is warranted.
+   3
+     The Spike amounts on the Dashboard need to be multiplied by x100 to use the algorithm. I will change
+   this to be automatically done in the future.
+
+   Deep Dive Stocks – Weekly Chat                                                                  09/18/2023
+                                                                                                         09/18/2023
+These data can then be applied to the flow chart to get the estimated outlook over the next five days:
+
+
+
+
+                                                                                                         Deep Dive Stocks – Weekly Chat
+Thus, for both the large positive movement noted on the 14th, and the large negative movement
+on the 15th, both anticipate a negative outlook per the VoEx Spike Trading Algorithm!
+This provides supportive data for what should be relatively intuitive now: such VoEx Spikes are
+both unusual and bearish.
+$QQQ’s presentation is slightly different but nonetheless demonstrates an unstable VoEx that has
+once again dipped into the Propagation Zone.
+The take away here is simple: VoEx is indicating an imminent decline, once more – and this time,
+with a spicy VoEx Spike to herald its announcement.
+With persistent bearish leanings, let’s turn towards the hedging environments to see what might
+happen in the event of an imminent downside:
+A surprising amount of new purchasing
+support has appeared! And this time,
+not just for $QQQ but for $SPY as well.
+A curious development given $SPY and
+$QQQ’s VoExes: it would seem that the
+instability being showcased by VoEx will
+be     balanced      against   relatively
+supportive hedging environments (that
+even have a positive influence
+distribution!).
+This puts the construction of this week’s
+price-action-outlook into a precarious
+place: should the index appreciate, it will
+be difficult to discern if it is ”real”
+supportive flows or rather just
+purchasing support.
+In this event, it will be worthwhile to
+keep an eye on VoEx: continued
+movement or spiking back into the
+Inhibition   Zone      would    indicate
+continued instability with the price
+appreciation     (regardless   of    the
+appreciations’ source), as well as
+keeping an eye on what the market does
+should the crosshairs make their way into gamma neutrality and begin to encroach on selling
+pressure.
+
+Thus, the Hedging Environment suggests that although instability is present, it might be tempered
+some – for as long as the purchasing support lasts, that is.
+
+
+Deep Dive Stocks – Weekly Chat                                                      09/18/2023
+Moving on from our hedging environments to the environments of our illustrious friends, the put-
+sellers, we see:
+
+
+
+
+Continued lethargy! A particularly curious finding
+is that despite the week’s initial green leanings
+(with $SPY moving all the way up to $451 on
+Thursday [or +1.25% from last Friday’s close]),
+there was still minimal desire to sell puts.
+Money isn’t betting on a spot-up, IV-down future
+– a thought perhaps worth carrying with us as we
+progress.
+Moving from the put-sellers to the Market-Wide
+Gamma Squeeze (MWGS) data, we see a
+persistently positive growth-trend (top graph,
+black line), and a negative GTM to accompany the
+~7% drop in gamma squeezes throughout the
+market this week.
+This negative GTM print isn’t without controversy,
+however, as we have seen lately with the advent
+of a nascent updated-GTM, which offers a slightly
+different view4:
+
+
+
+
+4
+  This version of GTM will most likely replace the original, I just want to do a bit more analysis on it first to ensure it
+is accurate and actually an improvement. The preliminary data analysis suggests this is so, and as such, I feel
+comfortable including it in the Weekly Chats for now.
+
+Deep Dive Stocks – Weekly Chat                                                                             09/18/2023
+With an “overall flow” (the
+gold ribbon) showing short-
+gamma              (gamma
+squeezes) entering into the
+market, and near-zero GTM
+prints, it seems the market
+is still poised for a
+continued flow of gamma
+squeezes.
+
+Naturally, this provides us
+with a bearish outlook.
+
+Next up, 𝑉𝑉 2! Let’s take a
+peek to how the market is
+handling this overall:
+
+
+
+
+Deep Dive Stocks – Weekly Chat   09/18/2023
+That’s a lot of data in the Propagation Zone! And in the Inhibition zone!
+On first glance, this seems to be the signs that we were looking for: an increase in the amount of
+data within the Propagation Zone typically foreshadows a market correction. Except, there is a
+missing piece of confirmatory data: 𝑉𝑉 2 collapse! As in – its not present but rather, 𝑉𝑉 2 looks to be
+increasing still. What gives?
+But before we look into that, let’s take a quick look at the data prints appearing within the
+Propagation Zone and the relative distribution between the P.Z., and I.Z..
+To do this, suppose we take all of the stocks from mid-2019 until present and calculate the relative
+ratio of the number of stocks whose VoExes are within the Inhibition Zone and those that are
+within the Propagation Zone, along with a $SPY reference price-chart (next page).
+
+
+
+Deep Dive Stocks – Weekly Chat                                                            09/18/2023
+Deep Dive Stocks – Weekly Chat   09/18/2023
+From this view, several curious associations can be gleaned:
+    1) There seems to be a benefit to knowing the ratio of the number of stocks in the Inhibition
+       Zone as compared to those in the Propagation Zone.
+    2) This relationship seems to show a “relative overheating” state (for when there are more
+       VoExes within the Inhibition Zone as compared to the Propagation Zone), and a “relative
+       Propagation-instability” (for when there are more stocks within the P.Z. than I.Z.)5.
+    3) When there is a relative-overheating state of the market, things tend to appreciate rapidly.
+    4) When there is a relative propagation-instability state of the market, things tend to
+       depreciate rapidly.
+With this in mind, we can see that currently we are in an “relative overheated” state (which would
+be bullish [i.e.: BUPO]) but all running averages of the ratios seemed poised to change that
+environment as the ratio of the number of stocks within the P.Z. is increasing while the ratio within
+I.Z. is decreasing6.
+This increase in data within the P.Z. is reflective of the market-at-large, and these data highlight
+an association between the relative ratios of VoEx-locations and future market performance.
+Here, we see that if the current behavior continues, the market is poised to enter into a net-P.Z.
+state in about a month’s time, afterwards, per our historical analogues, downside can be
+expected.
+So – that helps explain the colorful dots but what about 𝑉𝑉 2 itself? Why isn’t VoEx Variance
+collapsing? To help answer that, let’s rewind time some and go back to the more old-school (read:
+from a few months ago) graphs of 𝑉𝑉 2, namely the “rate-of-change” graph:
+
+
+
+
+5
+ As measured by the 20-day rolling EMA of the ratio.
+6
+ I didn’t include the Stable Zone in the graph for space but the relative ratio of stocks within stability has barely
+moved for awhile. Thus, its safe to say that the movement into the P.Z. is a result of movement out of the I.Z.!
+
+Deep Dive Stocks – Weekly Chat                                                                           09/18/2023
+You’ll remember from our prior talks that the rate-of-change in VoEx Variance was associated
+with market-downturns, especially when this rate sudden plunges (similar to how it is now - with
+the large and sudden decrease in “velocity”).
+But – we need to back up some unfortunately. You see – I’m not good with physics. In fact – I
+nearly failed it in college. Not because I am bad at it, but simply because it makes no sense and
+is a made of system of made-up rules with little-to-no applicability that was simply designed to
+make me angry.
+With that in mind (and upon further review of the algorithm used to create the above graph), it
+seems that it isn’t quite fair to call it a velocity chart of 𝑉𝑉 2. Originally it kind of was – back when
+I set the title - but since then, one of the components of the algorithm changed from:
+
+                                              1            𝑉𝑉𝑡𝑡2 − 𝑉𝑉𝑡𝑡−1
+                                                                       2
+                                                 �                 2
+                                                                          7
+                                              𝑛𝑛                𝑉𝑉𝑡𝑡−1
+                                                𝑡𝑡=41→𝑛𝑛
+
+to:
+
+                                             1             2�𝑉𝑉𝑡𝑡2 − 𝑉𝑉𝑡𝑡−1
+                                                                        2 �
+                                                �
+                                             𝑛𝑛             𝑉𝑉𝑡𝑡2 + 𝑉𝑉𝑡𝑡−1
+                                                                       2
+                                               𝑡𝑡=41→𝑛𝑛
+
+
+
+
+7
+ This would simply be the percentage-derived rate-of-change or relative rate-of-change for 𝑉𝑉 2 – hence the original
+name.
+
+Deep Dive Stocks – Weekly Chat                                                                       09/18/2023
+A sneaky change! This, in fact, means that the graph doesn’t represent the rate of change in VoEx
+Variance’s values, but rather a step-wise comparison of the magnitude of the difference between
+VoEx Variance’s values. The difference is subtle but because the magnitude-difference is self-
+normalized in a step-wise manner this doesn’t actually tell us the direction of 𝛿𝛿𝑉𝑉 2 itself (such as,
+if velocity is increasing or decreasing) but rather it tells us the relative change in magnitude of
+successive VoEx Variance values.
+Ya, try saying that 10 times fast 8.
+Let’s modify the algorithm slightly to visualize this new “energetic state” of VoEx Variance within
+each of the three zones, similar to what we did above (Note: The panels on the bottom graph go
+Inhibition (top), Propagation, Stability (bottom)).
+
+
+
+
+8
+    Don’t – I tried it and now no one will talk to me anymore.
+
+Deep Dive Stocks – Weekly Chat                                                            09/18/2023
+Deep Dive Stocks – Weekly Chat   09/18/2023
+Two good date ranges exist within this graph to help conceptualize it and visualize what’s going
+on9:
+
+        Look at the top graph (The standard 𝑉𝑉 2 graph) around 2020-06. Notice that in the
+        top graph, there are a few data points present (𝑉𝑉 2 has data points within the
+        Propagation Zone). Now look at the bottom graph (The Energy Graph), middle
+        panel (the corresponding Propagation Zone panel), and notice that around 2020-
+        06 there are the same points within the P.Z. panel but that they have a negative
+        energy state (the pink line and dots are below zero).
+
+        Compare that with 2020-09 where the data points within the P.Z. of the 𝑉𝑉 2 graph
+        (top graph) correspond with both an increase in data points within the 𝑉𝑉 2 𝐸𝐸 (𝑉𝑉 2-
+        Energy graph) and these data points have significantly greater “energy levels”.
+
+        The first date (2020-06), $SPY experienced a 8% decline in price that ultimately
+        recovered 14 trading days later while in 2020-09, $SPY experienced a 11% decline
+        followed by a brief recover and a subsequent recovery over the next week or so,
+        followed promptly by another 9% decline in price in price. Ultimately, this price-
+        action didn’t recover for 39 trading days (until the data stopped appearing in the
+        P.Z. of the 𝑉𝑉 2 graph, around ~2023-11).
+
+        The higher-energy P.Z. data prints experienced a 32% greater downside, a failed
+        recovery, and lasted 94% longer than the lower-energy P.Z. data!
+So - what does this have to do with us?
+Well – we know that there are data points appearing within the Propagation Zone of the standard
+𝑉𝑉 2 graph – yet, in trying to detail these data points further, the process was confusing because
+𝑉𝑉 2 was increasing rather than the ascribed plan and expectation that it should decrease as more
+data prints appeared within the Propagation Zone.
+
+This led us to the 𝑉𝑉 2 Velocity graph which, upon further review, we discovered isn’t really a velocity
+graph at all but rather a convoluted energy graph that wasn’t being displayed properly. The data
+through this lens demonstrates a declining “velocity” within the 𝑉𝑉 2 sphere – a sign of an up-
+coming market correction.
+Tweezing these data out even further and dividing them into the three zones like we are used to,
+gives us a clearer view of this “energy state” of VoEx Variance. Here, we can see that the energy
+within Stability and the Inhibition Zones are decreasing, while the energy within the Propagation
+Zone is increasing.
+In other words, energy is flowing into the P.Z.
+
+
+
+9
+  Another example is in in pre-2020. Notice that there was a lot of energy within the 𝑉𝑉 2 data first within the
+Inhibition Zone, followed by an abrupt ending and appearance of high-energy data prints within the Propagation
+Zone. This, of course, was followed by the 2020-market correction.
+
+
+Deep Dive Stocks – Weekly Chat                                                                      09/18/2023
+Thus, the clues we have gathered in order to understand our current data are:
+     1) Energy levels within VoEx’s movements increased rapidly within the Inhibition Zone
+        around 2023-05/06 (we can see around 2023-05 data prints start appearing in the
+        Inhibition Zone and these prints rapidly expand upwards; indicating increasing energy
+        levels [i.e.: BUPO]),
+     2) These energy levels are tapering down (the pink line [running average] for the Inhibition
+        Zone, and Stable Zone),
+     3) The energy level of 𝑉𝑉 2 within the Propagation Zone increased rapidly around 2023-08/09,
+     4) The energy levels of the data within the Propagation Zone are increasing still, and
+     5) The energy levels of the data within stability are elevated since around 2023-05 and is
+        declining.
+Okay – admittedly this is a bit confusing, but consider this idea10:
+                                      High energy states are unstable11
+My fellow organic chemistry nerds will agree – a high energy state is not a desired state, and such
+states will typically collapse. I think we can see that here as well.
+
+Here’s also quick diagram to help conceptualize the relationship between 𝑉𝑉 2 energy states and
+VoEx itself:
+
+
+
+
+When energy levels are high, it means that VoEx is becoming more “energetic” with each passing
+day – and we know that an unstable or highly energetic VoEx is an unstable stock!
+Taken together these data pain the following picture: the VoExes that are within the Inhibition
+Zone are currently experiencing a decline in energy (coalescence); the VoExes within the
+Propagation Zone are “gaining” energy (erratic VoExes moving into the Propagation Zone); and
+
+
+10
+   A small footnote about myself and why this expression was difficult to write. I, being me, oftentimes joke about
+nerds applying entropy studies to the market. Well – here we are folks, a market-version of the second law of
+thermodynamics. Egg meat face.
+11
+   This is a twist of fate because I always .. comment .. on the use of “entropy” studies for the market. Well, here
+we are folks.
+
+Deep Dive Stocks – Weekly Chat                                                                         09/18/2023
+the VoExes within Stability are losing energy as well (the high-energy VoExes are exiting stability
+leaving only the stable VoExes?)
+Thus, overall, I think its fair to say: something is happening.
+
+The potential consequence of that something, it would seem, is providing data prints that are
+similar in nature to prior market corrections.
+As usual, however, the timing of it all can be difficult; for instance, we’ve been talking about the
+change in VoExes behavior being an indicator of market instability since 2023-05 – a helpful
+insight, no doubt, but one that is manifesting on the market’s time-horizon, rather than mine
+(which, admittedly, is significantly quicker as I would like to be done trading by lunch). To this
+effect, however, the data are very reminiscent, and I think its fair to say that the data suggest we
+are closer to this correction than we were in 2023-05.
+
+As such, I think, for me, I will pause all longer-term share acquisitions and prepare for the start of
+another leg down in the medium-to-longer term outlooks. For the shorter timeframe, due to VoEx’s
+Spike, DLPs, and MWGS, I find it prudent to bet against any sustained bullish performance.
+Happy trading!
+Justin
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                           09/18/2023
+

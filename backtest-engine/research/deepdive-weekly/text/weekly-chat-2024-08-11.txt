@@ -1,0 +1,166 @@
+                                  Weekly Chat 08/12/2024
+
+
+                                        Main Points
+
+
+
+    -   Downside is expected.
+
+
+
+
+                                         SUMMARY
+
+
+
+          VoEx remains in the Propagation Zone, the hedging Heatmap are set to
+          provide little-to-no meaningful response to any potential $-/IV+ moves.
+
+          The Market-Wide Gamma squeeze data show progressive involvement of
+          gamma flows – suggesting the medium-term may extend to the longer
+          term.
+
+          Overall, downside is expected until things change.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                  08/12/2024
+                                              DETAILS
+
+
+
+
+Hello all!
+Last week, we left off with continued bullish ideations all-the-while bracing for more further
+impact; and in consequence, these braces left not only our pecuniae dentes straightened but our
+portfolio’s pecuniaes as well.
+That is to say, the week-over-week move in $SPY amounted to a flat-lined 0.02% to the green and
+in $QQQ, a paltry 0.37% - nothing too exciting. Nonetheless, this is, however, quite advantageous
+for us. Despite being on the wrong side, a relatively-flat market will allow us to see some of the
+under-belly gurglings (should there be any) a little bit more clearly.
+
+So, let’s shift through the rubble to see if anything stands out.
+Rabble Rousing in Rumble
+Let’s look at week’s progress via the hedging environments first:
+
+
+
+
+Quite the movements noted! It would seem that the early-start of the week saw rapid movement
+towards gamma neutrality on both $QQQ and $SPY, only to see things raise back up.
+In taking a slight detour, I figured I would share an image I annotated for a conversation on Twitter.
+It has to do with Monday’s movements and how there may have been evidence that they were
+spurred by an “exogenous” event (rather than, say, by hedging).
+Despite the veracity of the claim, there was some evidence of someone entering/exiting within
+\ES on the 1-Minute. Have a look!
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                           08/12/2024
+The idea is that if you view LDPS as showcasing which side of the book is being “eager” (i.e.: Red
+[bearish] means the ASK is “eager” while Green [bullish] means the BID is “eager”) the in
+conjunction with LDPM, you can use this to see when/where certain liquidity pushes are
+originating from.
+Near the left of the graph, we see:
+
+   -   Red LDPS
+   -   LDPM above the price
+   -   Liquidity is “smooth” (LDPM isn’t all squiggly)
+
+This is a classic example of a smooth descent being “agreed-upon” by the eager ask (eager to
+transact) and an organic bid (naturally up-taking shares at lower price-points).
+Then, a large spike of liquidity – since it is moving away from the price and it is above the price,
+this means that the liquidity is originating from the ask; thus, we see the introduction of an
+Aggressive Ask. Aggressive ask (or price-insensitive) will transact where-ever possible – this
+inflates liquidity (artificial liquidity) and will ingest down the book – until they leave or another
+force enters to absorb (as we see at the bottom spike near 02:00 towards the left).
+I’ll let you digest the rest – but I thought this was a nice showing of LDPM and LDPS interplay.
+How does this have anything to do with us?
+Well – supposing Monday was a “liquidating event” by someone, then it stands to reason that the
+market’s response was quite healthy after-the-fact; but supposing Monday was not simply the
+
+
+
+Deep Dive Stocks – Weekly Chat                                                          08/12/2024
+product of a liquidating event, then Monday’s performance, when incorporated with the rest of
+the week’s, suggests a less-healthy market.
+Let’s move quickly to VoEx to see how things are shaping up:
+
+
+
+
+Curiously – the flat price movement did little to inspire any stability, and VoEx is still quite
+comfortable within the Propagation Zone. Easy interpretation this week: downside expected still.
+How do the Gamma Hedging Heatmaps feel about this?
+
+
+
+
+Mixed it would seem: a vanna-unstable orientation for $SPY with a surprisingly stable orientation
+for $QQQ.
+The net effect suggests downside, as do the influence distributions, who suggest flat-to-downside
+is the likely outcome in the week ahead.
+
+Is this outlook shared with our put-selling friends?
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                      08/12/2024
+Not in the traditional sense – it would seem both parties are bracing for little-to-no profitability in
+the $+/IV- sector.
+
+So, in sum, we have: VoEx suggests downside; hedging heatmaps show concern and a bias
+towards flat-to-down, and our put-selling friends showing little enthuse. Not too bullish it seems!
+Now, let’s move to the Market-Wide Gamma Squeeze (MWGS) data – something that we haven’t
+been paying too much attention to in the past few weeks prior, as we found that the gamma flows
+were being “isolated” somewhat from the surface turbulence. However, as our timeframe has
+                                                 been expanding, so too has the breadth of this
+                                                 turbulence’s influence.
+                                                    We see that on 07/15, GTM went negative, and
+                                                    since then gamma squeezes have risen 37%
+                                                    within the market, causing the overall growth-
+                                                    rate has become positive (top graph, blue line).
+                                                    Subsequently and concurrently to these
+                                                    changes, GTM has maintained its negative
+                                                    stance, suggesting that short-gamma has
+                                                    continued to flow towards the market – and,
+                                                    with GTM-ema (gold line) in sight, it would seem
+                                                    the negative gamma flows have been
+                                                    increasing in magnitude since around 07/15 as
+                                                    well.
+                                                    This paints a picture that the gamma-space is
+                                                    now being pulled towards this market-gravity-
+                                                    event. The consequence of this is a
+                                                    prolongation in the expected time-horizon and
+                                                    severity of the current downside.
+
+
+Deep Dive Stocks – Weekly Chat                                                            08/12/2024
+Is this view-point reached via some other data-avenue? Indeed! Let’s check out what VoEx
+Variance is up to:
+
+
+
+
+Putting data within the Propagation Zone is what it’s up to!
+This seems to be quite definitive for raising the downside risk to a pretty elevated space – at least
+until one of the newer data cools off (either gamma squeezes start decreasing; VoEx-daily rises
+out of P.Z. [at least], GTM goes positive, DLPs start being opened, etc.), or until reasonable
+downside is realized.
+In terms of anticipating a bounce (something that is always on everyone’s minds during these
+types of events), I’ll wait for VoEx-daily to spike into stability on $SPY (or $QQQ, dealer’s choice),
+and then ride the surge.
+Otherwise, I’ll be watching the show!
+
+
+Happy trading,
+
+
+Justin
+
+Deep Dive Stocks – Weekly Chat                                                           08/12/2024
+

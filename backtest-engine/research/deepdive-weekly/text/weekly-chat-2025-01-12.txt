@@ -1,0 +1,288 @@
+                                 Weekly Chat 2025-01-13
+
+
+                                      Main Points
+
+
+
+    -   VoEx continues its stay within the Propagation Zone, working to extend and
+        reїnforce downside prudency.
+    -   Gamma-hedging environments are slightly more supportive for $QQQ, showing
+        a wedge of purchasing support in the $− , 𝐼𝐼𝑉𝑉 + direction; $SPY sees local and
+        diffuse selling pressure.
+    -   Put-selling is mixed; $QQQ’s put-sellers have ceased while $SPY’s have
+        remained elevated.
+    -   MWGS show an erecting GTM as long gamma is being detected moving towards
+        the market along with the positive growth rate and large w-o-w increase in GS
+        counts.
+    -   LDPS/M demonstrate downside targets of ~5% and 15% on the Weekly intervals.
+
+
+
+                                       SUMMARY
+
+
+          The data are officially bearish and moves are in full-swing.
+
+          VoEx has decidedly moved into the Propagation Zone, $SPY and
+          $QQQ have developed gamma squeezes, gamma squeezes have
+          increased and put-selling has ceased; taken together this paints a
+          bearish and unstable landscape.
+
+          The only glimpse of bullish ideations are found in $QQQ’s relatively
+          robust hedging environment and a small showing of a positive GTM;
+          if these data have sufficient strength to withstand the
+          aforementioned bearish data, time will tell.
+
+          For now, prudency suggests bracing for the downside with LDPM
+          showing downside targets to monitor when the time comes.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                               01/13/2025
+                                         DETAILS
+
+
+
+
+Hello every-body!
+Last week, we left off with some ranting and ravings that suggested a bull-trap was neigh,
+and neigh it was! As the market stirred to life in the early-part of the week (namely,
+Monday), it was simultaneously preparing to un-do that. We can witness the duality and
+futility of man below:
+
+
+
+
+Conjoined movement towards gamma neutrality in the [$−, 𝐼𝐼𝑉𝑉 +] manner, leading $SPY
+away from selling pressure and $QQQ away from purchasing support.
+In terms of movements, this week saw $SPY moving -1.94% while $QQQ moved -2.20%.
+Since the week was a short week, let’s normalize these values against the Expected Price
+Range (EPR) to see how much the indexes moved with respect to the market’s
+expectations.
+$SPY’s T+4 EPR from last Friday (2025-01-03) was ±1.40% while $QQQ’s T+4 EPR was
+±1.90%. This gives us respective, normalized movements of 32% and 15%; not too
+surprising that $SPY should move ~2x that of $QQQ, given its inundation with selling
+pressure. Nonetheless, we can see that these moves were relatively well-housed within
+the week’s EPR. (Perhaps worth noting for later that IV rose 20% over the course of the
+week for $SPY and only 15% for $QQQ!).
+Now don’t go telling anyone but - technically - that was the start of the analysis for the
+data for next week (since now we can minimize the risk of ~mean-reversion~ as price
+was within EPR) which means we didn’t, as usual, start with VoEx.
+But if you don’t tell, I won’t!
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                01/13/2025
+I obviously already know and I’m not mad, just disappointed.
+In pretending that sanctity is still extant 1, let’s get started with VoEx!
+
+
+
+
+No minced words noted from VoEx! VoEx is within the Propagation Zone (and deepening),
+and VoEx-daily is also, as it were, in the Propagation Zone (and deepening). This gives
+future, bearish outlooks of the respectable variety and magnitude.
+From last month (Weekly Chat 2024-12-06), a downside target of ~$5,900 for #ES was
+placed, and with our recent arrival thereupon and with VoEx deepening within the
+Propagation Zone, it would seem that an extension of our outlooks is required; something
+to visit below.
+For now, the outlook remains bearish, on the near-term and longer-term outlooks.
+Let’s see what else we can discern in the gamma hedging environments.
+
+
+
+
+The same as last week! Except, this time, it looks like $QQQ has some reasonable
+purchasing support to prop it up in the event of a [$− , 𝐼𝐼𝑉𝑉 +] moves in the week ahead –
+
+
+
+
+1
+ If I was reading this out loud to a group of people this is where I would pause slightly and look towards you for
+moving ahead of VoEx before starting up again.
+
+Deep Dive Stocks – Weekly Chat                                                                     01/13/2025
+well, that is unless spot moves down in a non-1-to-1 manner (in this case, if spot moves
+down more than IV moves up), then $QQQ will surely fall into selling pressure.
+Also! Both $SPY and $QQQ are in gamma squeezes!
+It should be noted that both hedging environments present with a shared trajectory
+towards gamma neutrality in the 𝐼𝐼𝑉𝑉 − manner, but this will bring both through selling
+pressure and so it feels like a difficult ask 2.
+And so, one finds it difficult to suggest the hedging environments are supportive for any
+movement except for spot-down, especially without the threat of mean-reversion
+hovering around that purchasing support on $QQQ.
+Remember earlier when it was mentioned that the hedging environments had a shared
+trajectory towards gamma neutrality?
+                                              “
+     It should be noted that both hedging environments present with a shared trajectory
+                       towards gamma neutrality in the 𝐼𝐼𝑉𝑉 − manner …
+                                 “ – Weekly Chat 2025-01-13
+
+
+Well, let’s check out our put-selling friends who, I imagine, would be particularly interested
+in preparing for a 𝐼𝐼𝑉𝑉 −-week, should they share our trajectories.
+
+
+
+
+Not quite! At least for $QQQ. Perhaps the increase in $SPY’s put-selling is an effort to
+manifesting profitability (since they seem to have sold into an IV hike).
+It would seem that $QQQ’s put-selling has reversed while $SPY’s is ascending. Poor $SPY
+put-sellers; perhaps they are banking on the 𝐼𝐼𝑉𝑉 − eventualities, but, amongst ourselves,
+
+
+2
+    Pun not intended … maybe.
+
+Deep Dive Stocks – Weekly Chat                                                    01/13/2025
+the put-sellers on $QQQ have been known to be the all-stars as compared to $SPY; and
+its not too uncommon to see them out-perform $SPY put-sellers.
+And so, the net result is: likely preparation for non-profitability in the event of $+, 𝐼𝐼𝑉𝑉 − but
+for now $SPY remains hopeful (or desperate?).
+Moving onwards, we came across the Market-Wide Gamma Squeeze (MWGS) data!
+                                                                      Things are heating              up    in
+                                                                      gamma-squeeze land!
+                                                                      A 17% increase in GS count
+                                                                      week-over-week, ~20% two-
+                                                                      week-over-two-week and about
+                                                                      the same for the month-over-
+                                                                      month.
+                                                                      We can see to the left here that
+                                                                      we have breached the 1,500
+                                                                      gamma squeeze mark, a count
+                                                                      that has seen historical work as
+                                                                      a “ceiling” of sorts 3.
+                                                                      GTM is showing movement
+                                                                      towards long gamma flows,
+                                                                      suggesting, well, long gamma
+                                                                      flow into the market, and by
+                                                                      extension and consequence, a
+                                                                      reduction in gamma-squeeze
+                                                                      counts and instability.
+
+
+
+
+But – before I put too much stock into
+this newfound spring of long gamma, I
+may remember that the magnitude of
+gamma will tend to increase as an option
+moves from ITM to OTM and a good bit
+of recent price movement has likely
+caused a good number of shifts from
+
+3
+ By historical I mean 3 times since 2024 so more “by recent events” or “its been said that” than “by historical
+precedence”. We can see this if we zoom out some (bottom of this page)
+
+
+Deep Dive Stocks – Weekly Chat                                                                   01/13/2025
+ITM ⟷ OTM. Namely, there should be a good number of ITM calls that moved OTM and
+OTM puts that moved ITM.
+Although this makes reasonable sense, we can double check the data to make sure this
+assumption isn’t too far off. If we look at the top 100 equities (by volume) for the past 50
+days and look at how their 5,252788,916 options are behaving, we can see that the most
+prominent changes are OTM Puts → ITM :
+
+
+
+
+With the data above showing a relatively
+sharp increase in ITM put options (and a
+relatively appreciable decrease in calls),
+this suggests that a large majority of the
+gamma provided by the market’s puts
+likely nudged up a bit but since, as the
+market has fallen, and so too has the
+magnitude of the gamma said puts
+provide (namely the long kind).
+This suggests that the magnitude of the
+gamma provided market’s Dealer Short
+Puts (which is short gamma) has been
+decreasing in magnitude (becoming close to 0,
+in math speak this is (Δ|𝛾𝛾| < 0 → 0−). This shrinking of short gamma coincides with the
+growing of long gamma vis-à-vis the Dealer Long Calls (as they move from ITM to OTM).
+If we want to really ensure and we have access to our handy-dandy net-directinalized
+gamma, then we can check our hypothecations are correct (namely that those calls
+should be predominately dealer long and the puts dealer short), we can look at the
+normalized, net, aggregate gamma for these same 50 equities. We should see growth of
+
+
+Deep Dive Stocks – Weekly Chat                                                  01/13/2025
+long gamma gamma as the market appreciates and calls start migrating towards being
+ITM, and then a reversal as, well, the reversal occurred. Is that what we see?
+
+
+
+
+Yup! Here, we can see that net gamma rose throughout the market significantly (reaching
++17,000,000 on $SPY on 2024-12-04!) which corresponds nicely to the steady growth in
+the ITM Dealer Long calls and OTM Dealer Short Puts, only to see this “ITM-ness” work
+against the market as the price dipped slightly and then a lot!
+For instance, this loss of long-gamma by way of the options moving ITM contributed to
+the net gamma on $SPY falling to around -6,000,000 by 2024-12-19 (a 135% loss). 4
+All this to say, the long gamma flowing towards the market is likely the result of an
+artificial reduction in the magnitude of gamma brought on by the movement of OTM DSPs
+ITM, ITM DLCs moving OTM, and the combined efforts of $+ , 𝐼𝐼𝑉𝑉 −. As such, it doesn’t seem
+reasonable to put too much stake on GTM’s recent bullish moves; I would like to see how
+these data change as price and IV start to settle and the effects of the new flows aren’t
+quite as eclipsed by the market’s tugs and pulls.
+Nonetheless, growth is positive, gamma squeezes are numerous in count, and so the
+outlook is bearish with a sprinkle of potential signs of long gamma starting to flow back
+towards the market.
+At the start of the month, there was a downside target acquired by LDPM of ~$5,900:
+
+
+                                             “
+
+
+
+
+4
+    If you want to take this
+
+Deep Dive Stocks – Weekly Chat                                                 01/13/2025
+ current conditions suggest anything limited to ~$5,900 on $ES (the current LDPM-89, -
+               144 floor) will present a decent average down opportunity.
+    Extension beyond $5,900 or if VoEx indicates will likely cause another review of
+         medium-term condition but otherwise, dip-then-rip; as the kids say.
+                                 “ – Weeky Chat 2024-12-09
+And now that $ES has settled at $5,866.25 for the week-end, it seems that its time to re-
+examine conditions for the next floor. Since last time, the $5,900 benchmark represented
+the daily-LDPM “floor”, let’s not mince pie and start right at the weekly interval:
+
+
+
+
+Quite the showing! LDPS has officially become bearish on the weekly interval, an event
+that hasn’t occurred since last September (to little affair, it seems). This time, however,
+the eager bid is significantly more eager (much higher above spot), and we are already
+testing the first floor! (LDPM-5 [neon-blue]) at $5,750-ish. This sets the next downside
+target at $5,500-$5,300-ish, and should things deteriorate from there, a likely resting place
+of $5,000 at LDPM-7 (orange line).
+So, bearish data around. Minimal evidence for anticipation of $+ , 𝐼𝐼𝑉𝑉 − from $SPY put-
+sellers – not the most historically accurate put-sellers around but it is a data point
+nonetheless. The rest of the data suggest downside: VoEx is well within the P.Z., put-
+selling on $QQQ has ceased and reversed; hedging environments are mixed and
+precarious; gamma-dynamics suggests the number of ITM Dealer Short puts are the main
+factor being the seeping long gamma in the market rather than the migration towards
+new positions.
+
+Deep Dive Stocks – Weekly Chat                                                   01/13/2025
+Prudency says brace for volatility and downside!
+
+
+Happy Trading,
+
+
+Justin
+
+
+
+
+Deep Dive Stocks – Weekly Chat                     01/13/2025
+

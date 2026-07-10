@@ -1,0 +1,208 @@
+                                      Weekly Chat 2025-12-15
+
+
+                                             Main Points
+
+
+
+       -   VoEx-daily for $SPY remains in Stable Zone while $QQQ’s exits into neutrality.
+           VoEx for both remain in the Propagation Zone.
+       -   Gamma-hedging heatmaps showcase profound and proximal purchasing support
+           for $SPY. $QQQ showcases a stable but vanna-unstable orientation.
+       -   MWGS continue to cool but still show a future with a greater number of gamma
+           squeezes than present.
+       -   LS&T data showcase the predominance of LTs being tested as supports on all
+           intervals with growing evidence of a growing population of eager asks.
+       -   Overall, increased risk for erratic movement with overall resolution still expected
+           towards the downside.
+
+                                             SUMMARY
+
+
+           Last week, the outlook was erratic behavior with downside resolution and the
+           same follows for this week.
+
+           VoEx-daily for $SPY has stalled at the boundary of the Stable Zone but has not
+           committed to leaving whereas $QQQ’s VoEx-daily has. The VoEx of both remain
+           in the Propagation Zone, suggesting that VoEx-daily’s stall is merely a stall
+           towards the eventual and continued downside.
+
+           Gamma-hedging environment showcases quite significant purchasing support
+           for $SPY extending reasonably $+. $QQQ, on the other hand, shows much less
+           purchasing support available to it as well as a stable, vanna-unstable orientation
+           (since IV is the main determent in hedging direction). This suggests $QQQ is in a
+           pickle: either lower IV and encounter selling pressure or rise IV and lose
+           purchasing support.
+
+           LS&T data showcase spot testing supports on all intervals (except 987-minutes
+           which shows a recent rejection) and evidence that the bullish liquidity keeping
+           things afloat is about to encounter a renewed and robust wave of eager asks and
+           profit-taking.
+
+           Overall, these data continue to point towards downside but given the nature of
+           the hedging environment and VoEx-daily’s unusual behavior, downside may be
+           quite turbulent yet.
+
+
+
+
+Deep Dive Stocks – Weekly Chat             for the week of                  2025-12-15 to 2025-12-19
+                                              DETAILS
+
+
+
+
+                                              Updates!
+Hello once more! Some updates for you guys.
+Here is the link to the discord for you guys: https://discord.gg/KQedNXRCCU
+With this link, you’ll have perpetual access to all channels in the new server. For now, its mostly
+just the Toolkit alerts and chat but soon as the discord bot starts taking steps, VoEx graphs and
+other data will be making their ways therein!
+I’ll be shutting down the original discord server January 1st, 2026.
+
+My goal is two-pronged with the discord bot: the first is that it will help set up the data processing
+and API endpoints required for a new dashboard and two it can server as a place to gather ideas
+as to what kind of data would be most impactful and helpful on the new dashboard.
+Be sure to give your feedback! Also you should all have access to the Liquidity Toolkit, if not, let
+me know and I’ll get it sorted!
+Now back to the regularly scheduled programming!
+                                                 ---
+Hello every-body!
+
+Last week, we ended with notions of turbulence with resolution to the downside. To this effect,
+$SPY moved -0.57% while $QQQ moved -1.90%. Quite the difference! We can view the progression
+throughout the week below in the Gamma-hedging heatmaps:
+
+
+
+
+It seems $SPY was leading the charge this week: manifesting both the first and last steps into
+the week towards the purchasing support, while $QQQ seems tugged hither-and-fro within
+purchasing support.
+
+
+
+
+Deep Dive Stocks – Weekly Chat             for the week of                2025-12-15 to 2025-12-19
+To continue our saga, our goal ahead of us this weekly chat is to decide if downside shall continue
+(as expected) or if another sneaky bounce might be lurking somewhere (typically around corners).
+Let’s try to find out.
+Finding, Found, Founded
+Starting as usual with VoEx, we find:
+
+
+
+
+A strange-showing! Let’s start with the basics: VoEx is in the Propagation Zone and so ultimate-
+resolution is thusly still expected on the downside.
+Now to the less-straightforward aspects:
+
+        -   VoEx-daily on $SPY is hovering menacingly at the boundary to the Bullish zone. In
+            principal, VoEx-daily continues its stent within the green fields of the stable and bullish
+            zone and thus provides a bullish future. In theory, VoEx-daily doesn’t look healthy in its
+            current state and this begets ideas of exiting the Stable zone (very reminiscent of VoEx
+            Divergence! [Tier II Material].
+        -   VoEx itself on $SPY looks poised to exit the Propagation Zone!
+        -   VoEx-daily on $QQQ has exited stability while VoEx resides deep evermore in the
+            Propagation Zone.
+A tricky environment!
+Such environments point towards greater-than-normal instability which is to say: erratic, which is
+my way of lowering your expectations of a correct outlook for the week ahead! Nonetheless,
+things still look poised to go down, however, we should look at the other data carefully to inspect
+just how much powder might be left in a surprise pop.
+
+First up on the chopping block then are the gamma-hedging heatmaps, which showcase:
+
+
+
+
+Deep Dive Stocks – Weekly Chat             for the week of                 2025-12-15 to 2025-12-19
+An unusual environment once more! We seem to have loads of purchasing support on $SPY but
+minimal on $QQQ! Additionally, we can see that $QQQ has two areas of gamma neutrality towards
+which it can reach whereas $SPY lacks even a single; to this end, we find $QQQ in a tough spot:
+move 𝐼𝐼𝑉𝑉 + and incur the loss of purchasing support or move 𝐼𝐼𝑉𝑉 − and become introduced to selling
+pressure.
+Should $SPY have its way, up-and-to-the-left ([$+ , 𝐼𝐼𝑉𝑉 − ]) is likely the most promising outlook due
+to its abundance of purchasing support it has found surrounding itself of late. With regards to
+$QQQ, this spells trouble unless $QQQ can manage an almost vertical climb northward ($+ ) in an
+effort to avoid the selling-pressure ridge.
+Overall this speaks once more to the unusual environment, this is somewhat comforting, since
+most unusual environments tend to resolve on the downside but less so when one remembers
+even falling down a waterfall isn’t a smooth process.
+The Market-wide gamma squeeze have remained largely the same [not shown], and the predictive
+data too [shown]:
+The predictive count curve (golden-
+brown) is still positive but less so,
+indicating that the future is expected to
+have more gamma squeezes than
+present, but by a smaller margin-of-
+growth than occurred into this week.
+The predictive growth curve (purple) is
+negative, suggesting a continued
+application of the brakes towards
+gamma-squeeze growth, but an optimist
+would notice its creeping back towards
+positivity-land.
+In short these are modestly bullish prints as they showcase a gamma-squeeze foundation that is,
+admittedly, cooling off. Something to definitely keep an eye on as price stagnates to see if those
+gamma-squeezes-left-behind come back to spend the holidays.
+
+
+Deep Dive Stocks – Weekly Chat              for the week of               2025-12-15 to 2025-12-19
+Moving onwards, let’s check on the ES LS&T data:
+
+
+
+
+Up top on the 90-minute [top-left] we see bearish liquidity after 2 aggressive-ask cascades that
+occurred during the week. There is some evidence that the scoop is initiating but LT1 is still above
+price. This suggests testing LT7 at $6,811.29 is likely, during which time monitoring those profit-
+takers and the developing scoop will likely be worthwhile.
+The 144-minute [top-right] shows LT6 acting as support and, it would seem, injecting bullish
+liquidity back into the market. This is optimistic but we do find evidence of significant profit-taking
+underway by way of LT5, 3, 2, 4, and 1 being elevated quite substantially from spot. This is
+modestly bearish as any $+ expectations would be dependent on LT6 out-liquidity-ing LT1, 2, 3, 5,
+7, which seems slightly unfair.
+In a similar vein, we find the 987-minute [bottom-left] experiencing the tail-end of a LT5 rejection,
+despite bullish liquidity. The bullish liquidity suggests another test is likely to be performed but
+LS is telling us that up at the organic ask, there is no net bid flowing upwards (Neutral
+designation). Perhaps LT5 has run out of bullish reserves and is now transitioning to being an
+organic ask! This will be the most probable case, should LS start printing `Towards Bid` and
+especially if LS becomes bearish (as usual). The takeaway here: things are technically bullish but
+the longevity of said bullishness is under question.
+Lastly, we have the weekly view which showcases bullish LS while resting on quite the upwards-
+bent LT5. Its worth noting that the profit-takers are observable quite well now on the weekly
+timeframes, with LT1-LT3 above spot.
+
+
+Deep Dive Stocks – Weekly Chat             for the week of                 2025-12-15 to 2025-12-19
+If we zoom in on the Weekly, we can see just how precarious spot’s position is, as LT1, 2, 3, and
+5 look well-poised to supersede spot.
+
+
+
+
+This suggests that if the bids currently keeping price afloat (and seemingly have been since
+August!) are to fail, $6,512 is likely the next mini-stop at LT4 before a leg down to $6,337 at LT6.
+Should the bid hold and price appreciate, well, then forget everything I said and enjoy the ride.
+Otherwise and overall, it appears that the market is still quite unstable, even if price continues to
+stagnate. This instability is marked throughout by tenuously bullish data that appear to be in
+relative states of exhaustion: VoEx-daily on $QQQ is leaving stability, the gamma-hedging
+heatmap for $QQQ shows minimal purchasing support, GS prediction suggest GS growth in the
+near future, and LS&T data showcase LT supports that look quite tapped with a growing number
+of views showcasing an increase in profit-taking and eager asks.
+But, despite this, VoEx-daily for $SPY is still in the stable zone, and technically liquidity is bullish
+on the 144-, 987-, and 1-Week intervals, and $SPY has quite substantial purchasing support should
+it need it.
+Thus, high risk for large moves with, as per usual of late, overall expected resolution towards the
+downside!
+Happy Trading!
+
+
+Justin
+
+
+
+
+Deep Dive Stocks – Weekly Chat             for the week of                 2025-12-15 to 2025-12-19
+

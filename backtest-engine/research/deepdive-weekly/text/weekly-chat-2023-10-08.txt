@@ -1,0 +1,372 @@
+                                    Weekly Chat 10/09/2023
+
+
+                                          Main Points
+
+
+   -   VoEx Coiling suggest a near-term bullish run; however VoEx Coiling is itself a
+       presentation of instability.
+   -   Hedging Environments are supportive in the event of a $-/IV+ week, for both $SPY and
+       $QQQ.
+   -   DLP behavior is neutral-at-best and bearish at-worst with net negative DLP growth on
+       $SPY and a precipitous drop in DLP openings on $QQQ.
+   -   𝑉𝑉 2 shows collapse within the I.Z. with additional data prints within the P.Z., suggestive
+       of more market correction in the near-future.
+   -   Overall, the near-term data suggests near-term bullish performance in the setting of
+       overall instability and longer-term bearish expectations.
+
+                                            SUMMARY
+
+
+
+           VoEx Coiling on $SPY and $QQQ are suggestive of a near-term bullish
+           run but since coiling itself is unstable, this bullish run seems poised to be
+           itself unstable.
+
+           The hedging environments are relatively supportive of a bullish run –
+           with only minor selling pressure being introduced into the market in the
+           event of a $+/IV- week.
+
+           DLP behavior continues to bewilder with $SPY seeing a net-closure of
+           DLPs while $QQQ’s DLP behavior is positive but diminishing. A confusing
+           set of data prints.
+
+           𝑉𝑉 2 data shows collapse occurring within the Inhibition Zone with
+           continued data prints within the Propagation Zone; continued affirmation
+           of a near-term market correction brewing.
+
+           Overall, the market continues to show reasonable levels of instability and
+           confusion, but in the near-term due to VoEx Coiling it seems reasonable
+           to expect this instability to manifest with upside; however, the data
+           continue to point towards a longer-term market correction brewing.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                          10/09/2023
+                                           DETAILS
+
+
+
+
+Heyo!
+Last week, we continued our bearish expectations due to a wide-range of data that suggested
+that was the thing to do. With this week’s moves of 0.48% for $SPY and 1.79% for $QQQ, several
+curious thoughts come to mind.
+The first is: how did the market survive the selling pressure? To help answer this, we can
+visualize the overall selling pressure from the week prior’s heatmaps, as usual:
+
+
+
+
+With such a dive into selling pressure on the 3rd, it seems unreasonable that a rebound should
+happen. However, it seems in combination with $SPY’s pre-existing purchasing support, and the
+newfound local purchasing support throughout the week that developed helped usher the index
+along.
+As $QQQ tentatively held onto local purchasing support throughout the week, it seems that the
+combined efforts of $SPY and $QQQ were that of starving-off the looming downside present.
+
+This was partially planned for with the data but only in the setting of seeing $QQQ experience a
+green Monday along with a static-options field, rather than throughout the later half of the week
+due to changing environments.
+Nonetheless, last week’s closing sentiments were that even if the week were green, the short
+positions wouldn’t be fretted over:
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                      10/09/2023
+                 “
+
+So, for the week ahead, I’ll plan to
+  stay nimble and capture profits
+  where possible, but I won’t fret
+too much over my short positions
+(for now), should the week a head
+     choose a more northward
+            trajectory.
+                 “
+And so, the plan this week is to
+simply look to see if the data are
+still supportive to be supportive
+of the short positions, or if we
+can     expect     some     spicey
+surprises, suggesting succinct
+cessation of shorting $SPY.
+Let’s see what we can see.
+
+
+
+
+Deep Dive Stocks – Weekly Chat         10/09/2023
+The Sights
+Starting as usual with VoEx, we see that our suspicions of a VoEx Coiling event seem to be
+confirmed, as both $SPY and $QQQ have done so with reasonable success, demonstrating a
+spikey downside and an even-more spikey upside (yes, we get quite technical here):
+
+
+
+
+This brings with it a near-term bullish outlook as the SpiKeEy behavior has now breeched the
+Propagation Line.
+Naturally this clashes with our idea of a market correction that has been brewing lately, but not-
+so-much with the idea of an unstable market overall – the goal here is simply going to be to
+surf the turbulence with moderate success in the coming weeks.
+Thus, from VoEx, let’s suppose we can expect a near-term larger-than-expected movement in
+price, while still maintaining an outlook centered around the idea that such movements and data
+prints are themselves unstable. Do the data support this view?
+Moving towards the Hedging Environments, we see for the first time in a long time congruency
+between $SPY and $QQQ both in their orientation and stability:
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                       10/09/2023
+With both demonstrating purchasing support in the $-/IV+ quadrants, things look rather well
+supported for the week ahead. One could argue, if they so choose, that even the selling pressure
+to be introduced in the event of a $+/IV- week is relatively minor.
+For both, the influence distributions also point towards a green week ahead.
+Thus, I think we can say that a VoEx Coiling consequence (green week a head) is relatively
+supported within the Hedging environments.
+Curiously, however, this view point seems to be isolated to the Weekly Chat, as our put-selling
+friends have entered net-closure territory with $SPY and seem to be experiencing quite the
+precipitous drop in enthusiasm on $QQQ:
+
+
+
+
+A curious turn-of-events given the relatively net-positive move $QQQ experienced this week.
+
+But – then again, positive is positive, right? Shouldn’t the sign of positive growth in DLPs, even if
+just for $QQQ for some strange reason, be a bullish sign, no?
+Well – again, the whole data-picture just doesn’t add up.
+
+For instance, although $QQQ experienced a +1.79% week, IV only decreased 0.57% (and actually
+stayed mostly elevated throughout the week, as compared to Friday’s IV and since the DLPs
+have been opened (~09/20), IV has risen a total of 9.4% ). Hardly profitable for sold puts that
+were more vega heavy than delta heavy.
+That’s not the only-other oddity as well – if we pivot IV metrics and look at LDPM-Vol (an IV
+analogue that uses LDPM and liquidity to determine Volatility rather than option’s pricing), we
+see an even more drastic story to $QQQ’s recent price appreciation: continued liquidity drain.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                          10/09/2023
+So, despite the green-week overall, it would appear that liquidity on $QQQ decreased. In fact,
+this is something that we briefly discussed in Weekly Chat 2023-09-25:
+                                                 “
+But, if there is an organic ask and the bid has liquidity, then the organic ask will meet resistance
+    towards moving upwards as things only transact “smoothly” at the bid – which, if it is an
+ organic bid, will cause a “liquidity vacuum” between the two sides of the book as the organic
+        ask looks to set higher exit-points and the bid looks to set lower entry-points). This,
+consequently, works to decrease liquidity (as things are not running smoothly anymore), which
+                              manifests as an increase in LDPM-Vol.
+                                                  “
+Thus – are we seeing a liquidity vacuum? If so, what would the consequences of this vacuum
+be?
+
+                                         --- Quick Aside ---
+I tried to answer this question somewhat, but ultimately stumbled on some strange data that
+probably could use more investigating. Nonetheless, I felt like I would share the results for you
+all!
+Let’s suppose there was a liquidity drain. How could we measure it, and what should we expect
+to find?
+Perhaps the first consequence of a sudden collapse in liquidity would be large price
+movements; since poor liquidity means one-of-the-sides-of-the-book aren’t playing well with the
+other, causing one of the sides-of-the-book to have to step over a large gap to transact, and
+thus, cause greater moves in price (this is the same principal as larger IV values foretell large
+moves in price but a bit more nuanced since LDPM-Vol measures liquidity directly).
+
+
+Deep Dive Stocks – Weekly Chat                                                         10/09/2023
+So since there might be a connection with the change in price and liquidity, let’s set up a quick
+ratio to measure, well, the change in price as compared to the change in liquidity!
+To do this, I took the %-daily change in LDPM-Vol and the %-daily change in $SPY’s price and
+computed:
+                                                                  ΔLDPMvol
+                                                   𝑅𝑅𝑅𝑅𝑅𝑅𝑅𝑅𝑅𝑅 =
+                                                                   Δ𝑃𝑃𝑃𝑃𝑃𝑃𝑃𝑃𝑃𝑃
+This should show us how much LDPM-Vol it takes to move the price 1%. The greater the value,
+the less liquidity there is, and the lower the value, the more liquidity there is1:
+
+
+
+
+The graph shows a relatively benign behavioral set except for a few larger-than-normal spikes in
+behavior2. Interestingly, these spikes occur at-or-around larger downturns in price.
+Let’s map out these values directly. First let’s establish a base-line for $SPY with regards to the
+Ratio:
+
+
+
+1
+  If Δ𝐿𝐿𝐿𝐿𝐿𝐿𝑀𝑀𝑣𝑣𝑣𝑣𝑣𝑣 increases this means liquidity decreases and if Δ𝐿𝐿𝐿𝐿𝐿𝐿𝑀𝑀𝑣𝑣𝑣𝑣𝑣𝑣 increases then the ratio increase which
+means when the ratio increases, liquidity decreases.
+2
+  Note, here it is the magnitude of the Ratio that determines liquidity status – that is to say, smaller values are
+more liquidity and higher values are less liquidity (the positivity of these values is based on if price increases or
+decreases on the day of the “spike”).
+
+Deep Dive Stocks – Weekly Chat                                                                                 10/09/2023
+                                         Abs. Mean Daily Change                   Abs. Median Daily Change
+
+
+Price                                                          0.89                               0.63
+
+LDPM Vol                                                   18.92                                 14.12
+
+LDPM Vol / Price                                           87.03                                 21.74
+
+
+
+
+        And now, let’s look at the individual spikes:
+
+
+
+Ratio Spike Number             Abs. Mean Daily Change           Abs. Median Daily Change   Avg. LDPM-Vol/Price Ratio
+(Date of Spike until Max $%)   (%)                              (%)
+
+1 (2018-09-01 to 2018-10-01)                0.28                           0.27                      15.92
+
+2 (2018-10-09 to 2018-12-24)                1.17                           1.05                      24.09
+
+3 (2019-09-18 to 2019-10-03)                0.62                           0.53                      29.49
+
+4 (2021-09-01 to 2021-10-01)                0.65                           0.42                      22.89
+
+5 (2022-08-17 to 2022-10-12)                1.27                           1.05                      17.93
+
+6 (2023-07-27 to 2023-10-07)                0.60                           0.55                      20.17
+
+Averages                                                0.77                        0.65                       21.75
+
+
+
+        These results are somewhat confusing! Whereas we can see that the “LDPM-Vol Spike” seems
+        to be related in some-way to changes in price-action (with the running hypothesis that these
+        spikes demonstrate times when sudden collapses of liquidity occur, and as such, things
+        reverse), it would seem that post-these liquidity collapses, liquidity on average improves.
+        We can see this with the average daily Ratio calculations which show an average of 21.75 – a
+        120% decrease from the average daily LDPM-Vol ratio as compared to $SPY as a whole. That’s
+        a lot of liquidity! (Remember: a decrease in ratio → an increase in liquidity).
+        Initially this was confusing: if the premise was that these spikes represent sudden loses of
+        liquidity – why is it that post-spike the liquidity situation improves ? Well – it might be that its
+        because in these moments are defined by poor liquidity leading up to, and return of liquidity on
+        the consequent !
+
+
+        Deep Dive Stocks – Weekly Chat                                                           10/09/2023
+      If this is the case, let’s check out the LDPM-Vol ratio from 10 days prior to the spike, and 10
+      days afterwards:
+
+Ratio Spike Number             Avg. Ratio Before             Avg. Ratio After           %-Difference from Before
+                                                                                        and After
+
+1 (2018-09-01 to 2018-10-01)            168.33                          80.89                    -51.94
+
+2 (2018-10-09 to 2018-12-24)            195.54                         182.51                      -6.6
+
+3 (2019-09-18 to 2019-10-03)            179.54                         112.53                    -37.37
+
+4 (2021-09-01 to 2021-10-01)              61.73                        142.57                    130.95
+
+5 (2022-08-17 to 2022-10-12)              21.75                         18.45                    -15.17
+
+6 (2023-07-27 to 2023-10-07)            116.93                          59.71                    -48.94
+
+Averages                                           123.97                       99.44                       -19.79
+
+
+
+      The table above shows that on average, the 10-day prior and 10-day after the Ratio-Spike, the
+      market sees a 20% improvement in liquidity!
+
+      Nifty.
+      What did we accomplish here? Not sure just yet – but it is supportive that a liquidity-vacuum can
+      and does exist and when this liquidity vacuum pops, we typically see large downside.
+      The good news is that it seems from the prior LDPM-Vol Ratio Spike that the liquidity pop
+      happened around 2023-08, and per historical precedent, this caused a market downturn. And it
+      also seems that the current return of liquidity that has been experienced I both in magnitude (-
+      48.94%) and duration (49 days) suggestive that this local downside has run-its-course!
+
+      However, these data may be too “grand” to be able to glimpse from just the LDPM-Vol on the
+      $SPY chart shown above (which, if you’ll remember from way-back-when, is the chart that
+      suggested a potential liquidity vacuum may be forming since $+ and LDPM-Vol went up).
+      Nonetheless – perhaps something to keep an eye on if more $+ days are met with LDPM-Vol+
+      days as well.
+                                                       ---
+
+      Moving on to more established data, we see that 𝑉𝑉 2 has delighted us with a definitive data print:
+
+
+
+
+      Deep Dive Stocks – Weekly Chat                                                         10/09/2023
+No more lofty wonderings to guide us: within the Inhibition Zone we clearly see collapse !
+
+No collapse noted elsewhere for now. This suggest that although there are a larger number of
+VoExes residing within the Propagation Zone (the more dots = more VoExes), they aren’t
+“settled” quite just yet and still have quite a bit of erratic behavior to them3.
+Nonetheless: with collapse in Inhibition Zone and continued growth of VoExes within the
+Propagation Zone throughout the market it would seem as though the original trajectory is still
+towards a market correction.
+This, of course, makes interpreting VoEx’s current VoEx Coiling and the current DLP behavior
+somewhat difficult; it would be relatively easy to suggest that the two are operating on different
+time frames (that is, 𝑉𝑉 2 being a more “macro” view has an inherently “slowness” to it – macro
+things happen over larger time-periods than, say, profiteering from put-selling), and although
+there may be some truth to it, it seems like a bit of a cop-out to place the whole burden of
+support on the flimsy concept of time.
+
+3
+    Page 15, Weekly Chat 2023-08-07
+
+Deep Dive Stocks – Weekly Chat                                                       10/09/2023
+         So, when in doubt, let’s just review the data:
+
+   Data Print      Main View                  Data Print                 Interpretation                Timeframe
+
+
+VoEx               An equity’s stability      VoEx Coiling appears       Increased probability of      Near-term / Imminent
+                                              to be in progress in the   near-term rapid
+                                              setting of overall         appreciation.
+                                              unstable VoEx.
+
+Hedging            Future hedging             Stable configuration       Can expect purchasing         Within the next 5
+Environments       influences                                            support assistance in the     trading days.
+                                                                         event of $-/IV+
+
+Dealer Long Puts   Riding the coat-tails of   Zero-to-negative DLP       Lack of confidence in a       Within the next
+                   ulta-rich people           growth for $SPY, and       $+/IV- week by put sellers    several days to weeks.
+                                              rescinding put-selling     for $SPY but a strange
+                                              for $QQQ                   confidence for $+/IV- for
+                                                                         $QQQ.
+
+MWGS-data          Market-wide view of        GS-growth is               The market is becoming        Weeks to Months.
+(not shown)        short gamma                increasing. Counts are     destabilized with short
+                                              stable for the past ~10    gamma.
+                                              days and elevated for
+                                              the past 20.
+
+GTM                Monitoring future          Near-zero to Negative      Suggests few incoming         Near-term
+(not shown)        gamma flow                 GTM                        gamma squeezes.
+
+VoEx Variance      Monitoring inter-sector    Evidence of 𝑉𝑉 2           Market-Wide Correction        Medium-to-Long
+                   VoEx spread and location   collapse within IZ;        appears more likely.          term.
+                                              more data within PZ.
+
+
+
+
+         Thus it seems for the data prints that are more short-term oriented (VoEx Coiling, Hedging
+         Environments, DLPs (for $QQQ), GTM), the data are suggestive of a near-term bull-run.
+         However, the more macro and longer-duration metrics (VoEx [overall], MWGSC, 𝑉𝑉 2), it would
+         appear that the market is still quite unstable. Thus, a slight pivot to bullish gains may be in
+         order, however, continues expectation for unstable appreciation followed by more downside
+         seems prudent.
+         Happy trading! - Justin
+
+
+         Deep Dive Stocks – Weekly Chat                                                               10/09/2023
+

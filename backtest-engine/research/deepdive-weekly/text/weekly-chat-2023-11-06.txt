@@ -1,0 +1,286 @@
+                                    Weekly Chat 11/06/2023
+
+
+                                          Main Points
+
+
+   -   VoEx on $SPY and $QQQ have spiked into the Inhibition Zone,
+   -   Hedging Environments are by-and-large unsupportive in the event of a $-/IV+ week,
+   -   DLP behavior is present but not as robust as before,
+   -   MWGS data show a decrease in the number of GS, and a bullish-leaning GTM,
+   -   𝑉𝑉 2 is tentatively showing a reduction in the data-collapse.
+   -   Tentatively moving towards a Bullish-until-proven-otherwise outlook unless VoEx
+       should fall out of the I.Z.
+
+                                            SUMMARY
+
+           This week saw substantial movements in price, which puts $SPY and
+           $QQQ in the crosshairs for mean-reversion. A quick look at how this
+           normally plays out shows (for $SPY), a 95% confidence interval
+           containing a 2-week price change of ±2.5% to ±3.5%, which is currently
+           ~1% greater than the market’s expectations.
+
+           VoEx has spiked on $SPY and $QQQ into the Inhibition Zone, however it
+           is too soon to say if a BUPO outlook can be adopted or if this is a VoEx
+           Spike response due to the market’s substantially larger-than-usual price
+           movements.
+
+           DLP behavior is present but diminished as compared to before, which
+           brings with it mixed feelings with a hint of reduced confidence in further
+           bullish performance (but confidence present, nonetheless).
+
+           Curiously, 𝑉𝑉 2 is already demonstrating a flattening-out, something that
+           wasn’t expected until the market correction was nearing completion;
+           suggesting that, perhaps, the market correction is nearing completion.
+
+           All-in-all, the early part of the week will be pivotal: should VoEx fall out of
+           the I.Z., then an outlook more congruent with VoEx Spike seems
+           reasonable, whereas should VoEx continue northward, or persist within
+           the I.Z., a BUPO outlook seems reasonable.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                           11/06/2023
+                                                   DETAILS
+
+
+
+
+My friends, it is time for the real 2023-11-06 Weekly Chat. What good news.
+Last week, we left off with the notion that there wasn’t much data to forecast a forming bullish
+wave a head of us, and as such, prudency suggested continued downside.
+Apparently, the market didn’t get the memo (rude), and $SPY decided to move +5.84% and
+$QQQ decided to run 6.49% - oof. It would appear that there was , in fact, a bullish wave forming;
+and one that was quite intent on moving the market.
+We can visualize the magnitude of these moves with the hedging heatmaps from last week:
+
+
+
+
+With north-westerly expansion towards the edges of the Gamma Hedging Heatmaps, it would
+seem that the market chewed through any and all selling pressure the hedging environment
+threw at it.
+
+These moves are quite remarkable. In terms of EPR-normalized moves1, $SPY moved 2.67 this
+week – in other words, $SPY moved 2.67 times more than the market had expected. Another
+way to view these enormous moves is by calculating the magnitude difference between the T+5
+EPR and the realized move, in which case we see that $SPY’s moves were 91% larger-in-
+magnitude than expected.
+The same can be seen with $QQQ. $QQQ had an EPR-normalized move of 2.41, which translates
+to a magnitude difference of 83%.
+These greater-than-expected moves are quite substantial.
+
+
+
+
+1
+ EPR-normalized is a good way of looking at how much a stock moves with regards to its expected move. To
+calculate, take the realized move and simply divide it by the EPR of the same timeframe. So here, the T+5 move of
+$SPY was 5.84% and the T+5 EPR was ±2.17%, which gives an IV-normalized move of 2.67.
+
+Deep Dive Stocks – Weekly Chat                                                                      11/06/2023
+In fact, let’s take a peek and characterize these events quickly, to see if there is anything
+interesting. To do so, let’s take the T+5 EPR for $SPY and then calculate the EPR-Normalized
+values for week-over-week:
+
+
+
+
+Above, we see a graph demonstrating each EPR-Normalized Week-over-Week value for $SPY
+from 2020-12 to present. Of note, it is worth mentioning that the current value of 2.67 is the 4th
+highest! Not too shabby!
+In terms of distribution or probabilities, our current value of 2.67 ranks in the top 5% of the
+distribution curve! So a pretty uncommon event.
+Now, does this mean anything? Well – yes but its hard to discern exactly what it means for right
+now, but suppose we start by look at the magnitude of change over the next 2 weeks from each
+of these data prints, and then graphed how $SPY’s closing price changed. That is to say, let’s
+see what happens on a two week rolling basis after these prints2!
+
+
+
+
+2
+  The ideal analysis would include directionality – that is to say, it would be ideal to have included in the data if the
+stock moved up or down during these periods, rather than just how much (the magnitude) the price moved. With
+this directional data, it might provide an avenue for anticipating and quantifying the mysterious “Mean Reversion”
+in the market – but alas, for now, we only have magnitude, but we may well revisit this later.
+
+Deep Dive Stocks – Weekly Chat                                                                            11/06/2023
+Above we see the magnitude of price change over the next two weeks (y-axis) as compared to
+the EPR-Normalized Price Movement3.
+What does this tell us? Well – it suggests that as the market’s move expand beyond the EPR for
+that week, the resulting movement over the next two weeks grows!
+
+For us today, these data suggest that the market can expect a movement between the ranges of
+±2.5% and ±3.5%! That’s pretty substantial. In particular because $SPY’s T+5 is only 1.52% and
+its T+10 is only 2.14%.
+
+In other words, with respect to how much $SPY moved and when compared to how much $SPY
+was expected to move in the past week, it would seem that the next two weeks have a
+reasonable chance to exceed the market’s expectations. In other other words: IV is cheap!
+Since the market is expecting a T+10 of ± 2.14% for $SPY, it seems that (per this cursory
+investigation), the data suggest realized vol will be greater than implied volatility over the next
+two weeks!
+How nifty.
+But, before we get caught up in yet another distracting thread, let’s ground ourselves back in
+reality.
+
+
+
+3
+  Just to clarify this graph some more: the red line is $SPY’s current value, and the blue line is the linear regression
+curve of the data points (essentially the overall trend). The blue shaded region around it is the 95% confidence
+interval. Using this confidence interval, if we start at the red dashed line and move to the y-axis (highlighted
+region), it shows us the 95% confidence interval for the magnitude of price change that can be expected over the
+next 2 weeks.
+
+Deep Dive Stocks – Weekly Chat                                                                            11/06/2023
+We’ve seen that this week’s moves were quite notable, and that this notability comes with some
+expectations for larger notability in the weeks ahead.
+Thus, it seems the only real goal to figure out now is if that notoriety will be positive or negative.
+
+Ought knots know notoriety?
+Starting as usual with VoEx, we see some peculiar changes with $SPY and $QQQ:
+
+
+
+
+Above we see $SPY’s VoEx moving rapidly into the Inhibition Zone in response to its recent
+large movements.
+The same can be said for $QQQ:
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                           11/06/2023
+These VoEx movements echo the instability we have been tracking recently, and with VoEx’s
+rapid egress from the Propagation Zone into the I.Z., one can’t help but consider BUPO (Bullish-
+until-proven-otherwise) as a reasonable expectation.
+But - this expectation isn’t
+without its controversy either.
+For example, consider the
+Market Currents report from
+Thursday (2023-11-02):
+
+That’s a lot of VoEx Spikes!
+Throughout the entire market,
+it would seem significant
+amounts of VoEx spikes
+occurred on Thursday (with
+some appreciable amounts
+on Friday as well; Thursday
+was just more impressive in
+quantity).
+So, whereas a BUPO response seems
+reasonable here per VoEx, it also seems this
+instability was shared throughout the whole
+market. And, as we have seen, this instability
+typically resolves on the downside.
+Something to ponder as the idea of BUPO
+solidifies.
+Moving from VoEx to the Hedging
+Environments, we see that $SPY (right) is
+starting the week out with local selling
+pressure. The overall configuration has seen
+                                                    movement from a vanna-stable orientation
+                                                    towards a vanna-unstable orientation.
+                                                    This creates an environment in which
+                                                    selling pressure will be introduced, should
+                                                    the market see an overall drop in price
+                                                    (less so on $QQQ, admittedly).
+
+                                                    $QQQ is in a somewhat better position
+                                                    with its hedging environment (left).
+                                                    As with $SPY, there is local selling
+                                                    pressure, but there is at least a minor
+                                                    promise of purchasing support in the event
+
+
+Deep Dive Stocks – Weekly Chat                                                     11/06/2023
+of a spot-down week – supposing, of course, that IV doesn’t work to push $QQQ down-and-to-
+the-right, preventing it from reaching said purchasing support.
+In both cases, we see the influence distributions are pointing towards a flat-to-red week a head.
+In combination, it seems there is a high risk for mean reversion within an unsupportive hedging
+environment. VoEx is tentatively deciding between BUPO and a VoEx Spike. This sets up quite
+the anticipation for Monday’s VoEx print!
+Now, let’s move from VoEx and the Hedging Environments towards our DLP friends. Last week,
+you may remember, there was some rumblings in the wind about potentially having to re-
+evaluate the effectiveness or efficacy of our put-selling-friends. Thankfully, due to the week’s
+price-action, it would seem that this isn’t the case! Our friends are still quite well-timed.
+So, with that in mind, let’s see what they’re up to:
+
+
+
+
+It would certainly seem that, at least for the $SPY-put-sellers (to whom we may owe an apology
+for doubting their expertise), that the outlook for the week ahead isn’t quite as cheery – with a
+50% decrease in put-selling as compared to the week’s prior Friday.
+
+Not the most bullish of prints but certainly not an overtly bearish one.
+Moving onwards, we see that within the gamma arena, there was quite a precipitous drop in the
+number of gamma squeezes on Friday:
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                       11/06/2023
+With a Week-over-Week change in the MWGS-count of 35%, we can say that there was certainly
+a drop!
+GTM (both versions) are showing a modest bullish lean (not shown) with a subtle net movement
+of long-gamma into the market.
+Thus, it would seem that the market, at least from a Gamma Squeeze perspective, is tentatively
+cooling off 4.
+Thus, so far we have seen:
+    -   VoEx is suggestive of BUPO with its rapid movement into the I.Z. while still being a tad
+        too nascent to completely rule-out spike-like behavior;
+    -   The next day or so will be important to see if VoEx stays within the I.Z. or rapidly drops
+        out of it (BUPO or VoEx Spike scenario);
+    -   The Gamma Hedging Environments are unsupportive (mostly) in the event of a $-/IV+
+        move,
+    -   DLP behavior is present but not as stark as before,
+    -   Gamma squeeze are diminishing.
+Quite the mixed bag! It seems ever-more suggestive of a bullish wave forming ahead of us.
+
+Our last stop on our data-journey is 𝑉𝑉 2, let’s see what it has to say:
+
+
+
+4
+ Rant time! Anyone remember how Gamma is distributed? If not, no worries, check out the Greek Cheat Sheet on
+Gamma and check out the graph on the left. In a nut shell, its shaped sort of like the Influence Distribution curves
+but a bit more symmetrical. Now – suppose a bunch of stocks are sitting at the peak (in the middle), and are in a
+gamma squeeze. If the price moves (say, things more to the left of the peak), then the overall gamma amount
+decreases! If this decrease in gamma is a decrease in short gamma, then it would appear on the surface as though
+gamma squeezes have suddenly dried up! But is this really the case? Is the short gamma still present should the
+price fall? In other words, can we be certain that the options field has changed substantially to offset any budding
+gamma squeezes, or has the market just casually stepped out of the still-present-but-located-spot-down gamma
+squeeze? If only we could see somewhere if selling provokes more selling as that would help suggest if the gamma
+squeezes are still lurking below! *queue Halloween music*.
+
+Deep Dive Stocks – Weekly Chat                                                                       11/06/2023
+Some flattening out! This was one of the signs of a “flip” from a medium-to-longer-term Bearish
+outlook to a bullish one!
+How curious.
+
+So, overall, it would appear that the cards are becoming stacked towards a bullish week a head
+but with some heavy caveats :
+   1) VoEx hasn’t dedicated itself to BUPO just yet but has merely entered the I.Z.,
+   2) There is a substantial risk of mean-reversion with greater-than-expected movements due
+      to the Week prior’s movements,
+   3) In the event of such a mean-reverting week, there is no purchasing support available to
+      $SPY and $QQQ
+In combination, these make taking a fully bully outlook difficult, but should the early part of the
+week demonstrate a rising VoEx rather than a falling one with price appreciation, then perhaps it
+will be the outlook to adopt.
+
+
+Happy trading!
+
+
+Justin
+
+
+
+Deep Dive Stocks – Weekly Chat                                                        11/06/2023
+

@@ -1,0 +1,347 @@
+                                     Weekly Chat 2024-12-02
+
+
+                                           Main Points
+
+
+
+    -   $SPY’s VoEx has remained within stability while $QQQ’s VoEx has stalled at the
+        boundary zone.
+    -   Hedging environments are overall bullish-supportive, despite $QQQ’s proximity to
+        selling pressure, which persists into the week ahead.
+    -   Put-selling has ceased, suggesting minimal conviction for profitability in a $[+]IV[-]-
+        manner.
+    -   Overall, bullish outlooks persist with a quick side-eye to $QQQ’s cliff of selling pressure.
+
+
+
+                                            SUMMARY
+
+
+
+           Last week was marked with robust distinction between the relative
+           behaviors of $SPY and $QQQ. Investigations found that $SPY moved 67%
+           more than $QQQ did with respect to the market’s earlier expectations.
+
+           This lack-of-movement coincides with VoEx stalling at the boundary-zone
+           to Stability, suggesting that $QQQ is experiencing an isolated source of
+           instability with a noteworthy presence currently.
+
+           Concurrently, to this phantom menace is $QQQ’s persistence in proximity
+           to selling pressure via the hedging environments, a location which
+           provides amble risk in the event of a spot-down-into-selling-pressure
+           scenario. This particular proximity comes on the tails of a seemingly
+           heightened-sensitivity to hedging forces.
+
+           Thankfully, the eventualities from these risks should be easy to spot and
+           prepare for, so although it makes it on the list of considerations, the overall
+           outlook for the week ahead is continued bullish performance with a note
+           to watch $QQQ’s VoEx and hedging environments.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                           12/02/2024
+                                                    DETAILS
+
+
+
+
+Hello every-body!
+Last week, we capitulated in our struggle to keep the spectre of downside alive, and in an almost
+pavlovian manner, the market has decided to reward us with +1.18% from $SPY and +0.78% from
+$QQQ.
+Unlike most instances where we might ponder checking out our favorite indexes moves
+normalized against the expected-price-ranges (EPR) from last week to gauge just how much the
+market’s moved with respect to the market’s own, prior expectations due to significant moves,
+this week, I want to do it cause those moves are pretty tiny!
+Doing so shows that $SPY was relatively well-behaved this week, with a 0.82 realized-move-ratio.
+$QQQ, on the other hand, has only realized a realized-move-ratio of 0.41! Smashing these two
+ratios into yet another ratio tells us that $QQQ moved 67% less than $SPY with regards to their
+respective EPRs! That’s a pretty hefty difference.
+This discrepancy in RMR can be visualized with the heatmaps from last week:
+
+
+
+
+You can see $QQQ did a “loopdy-loop” while $SPY did a “~~~”. There’s a lot to consider.
+In sum, it seems that $SPY was able to benefit from its aproximity to selling pressure, with respect
+to $QQQ, whose nonaproximity, seems to have caused a lil’ Eddy current1, resulting all aqueous
+roaring with little bite for consequence (so far?).
+This is somewhat note-worthy as it implies the hedging environment might be particularly
+impactful in recent times such that the absence of steady and robust purchasing support (like the
+environment $SPY was privy to) seems to be associated with quite a remarkable difference in
+relative performances.
+So, let’s keep that in the back of our noggins as we progress and review the data, keeping an eye
+out for any spooky Halloween antics, and then afterwards, let’s talk about the Robot!
+
+
+1
+    Fancy name for “splash splash go round round instead of whooosh”
+
+Deep Dive Stocks – Weekly Chat                                                         12/02/2024
+Ask, Ask everywhere but not an Bid to eat
+Starting as usual, let’s check out VoEx:
+
+
+
+
+Au debut 2 of our investigations, we come upon VoEx in all its majesty. Today, it seems, its majesty
+is pointed towards the stable zone – mostly; $QQQ has some experienced some stalling at the
+boundary of Stability – a curious pausing of progress northward, unlike its cousin $SPY.
+It is in these moments of divergence that begs the question: but y tho?
+For now, VoEx can’t tell us that answer, instead, it seems content to be telling us that up is the
+name of the game, but, when looking upwards to the skies, it would seem they are a tad darker
+over $QQQ-land than $SPY-land at present. Perhaps we should check it out?
+Thankfully, our first view of checking-it-out demonstrates that conditions may be far from grave3
+so let’s see what the heatmaps will do, ensuring to keep in mind the potential for greater relative
+`reliance` on hedging-forces in the week ahead:
+
+
+
+
+Well! It would seem that if the market is hyper-sensitive to purchasing support currently, then up
+is indeed the name of the game!
+Once-more, $QQQ finds itself in a slightly less-filled purchasing environment than $SPY –
+something to keep in mind for both overall movement and the potential for a large discrepancy
+between indexes.
+
+2
+    What does a ghost say to start his speech? He says “ooooooo daybooo”
+3
+    The grave is a serious place.
+
+Deep Dive Stocks – Weekly Chat                                                         12/02/2024
+Overall, and taken together, it would seem that VoEx is suggesting upwards is most likely, but that
+there are some rain clouds over-top $QQQ, and those very same rain-clouds are much closer to
+becoming storm-clouds, as compared to the more sunny $SPY pastures, due to $QQQ’s proximity
+to selling pressure. In particular, as we will see below, this may complicate IV[-]-based positioning.
+Speaking of IV[-]-based-positioning-that’s-below, let’s check in on our put-selling friends:
+
+
+
+
+Well, it seems like the group of put-sellers are certainly not bête4-ing on any IV[-] profitability in
+the weeks ahead. Surprisingly, $SPY has persistently had moot put-selling activity, in large
+contrast to $QQQ.
+Taken together (but not overall how dare you), this seems to be strangely neutral. On one hand, I
+think it’s reasonable to exclude $SPY’s put-selling from analysis for now - until they wake up more.
+And so, on the other hand, we have $QQQ’s put-selling which has been more reactive to conditions
+lately. On one of the fingers on said hand, we find that this reactivity is demonstrating itself to us
+by way of disappearing from our sights.
+En (the) surface this is bearish – but, moving a bit deeper, perhaps this positioning (or lackthereof)
+is a reasonable position to take, given $QQQ’s proximity to IV[-]-induced-selling-pressure.
+Supposing the put-sellers understand, in their own way, the proximity of this risk, then it would be
+reasonable to assume that they have simply hedged against it by-way of not exposing themselves
+to it.
+Thus, is this silence a proclamation of certainty? Not quite – but perhaps it is a loud enough
+murmur of risk to notice that of the subsequent two options, one’s magnitude appears greater
+than the other’s:
+
+       A) $+
+       B) IV-
+This adds some additional spice the considerations as it brings the put-selling interpretation into
+a shrödinger’s state wherein if we can simply interpret the cessation of put-selling as simply a
+neutral-risk-off scenario, then this, at minimal, puts IV[-] as a high-risk event. Such a suggestion
+hearkens evermore the risk associated with $QQQ’s residing right next to a gamma-vanna
+squeeze (i.e.: if it falls below purchasing support and then moves down-and-to-the-right as $[-]
+
+4
+    Only a bête would bet against the put-sellers!
+
+Deep Dive Stocks – Weekly Chat                                                           12/02/2024
+and IV[+], bringing with it even more selling pressure). Perhaps VoEx pausing on $QQQ before
+moving into stability was a noteworthy decision!
+Thus, bullish seems quite bearish at the moment, and so, if we want to have bullish outlooks,
+perhaps we should have bearish thoughts, for a causal $-, IV+ would be the best way to keep
+purchasing support underneath $QQQ.
+In sum, perhaps in the spirit of Halloween, it seems that a successful conjuration of the spectre
+of downside once more; but whereas the data are bullish on the surface, it seems that $QQQ, for
+some reason, is in a high-risk environment manifesting some particularly worrisome eventualities.
+Thankfully, the consequences of said eventualities are not subtle: one only needs to look for $QQQ
+using its available purchasing support to no avail while IV drops precipitously in which case the
+price should just stagnate until it drops5. Thus, I don’t think the market is set up for a rug-pull as
+the default outcome for the weeks ahead, but the noted instability does suggest this is both an
+option and how the option would unfold.
+
+Thus, in pursuit of achieving near-perfect prescienciance, the prudent trader would likely
+acknowledge the near-by cliff’s edge but eagerly, if not albeit cautiously, continues forward.
+
+
+Happy Trading,
+
+
+Justin
+
+
+
+
+5
+  The current environment suggests that IV[-] would introduce purchasing support and so if price is stagnate while
+IV[-], this would suggest that the market is simply ingesting any bid entering. Eventually, as per the heatmaps, this
+will lead to selling pressure – after just having exhausted the potentially-majority bid.
+
+Deep Dive Stocks – Weekly Chat                                                                        12/02/2024
+Robot!
+Hello! I wanted to share some things about the robot with everyone:
+The first is that the beta is going to be extended 1 month! I’ve been hearing a lot of good feedback
+and I think 1 more month can never hurt! Thus, the beta will go until January 10th, 2024.
+The next is that there is going to be an update to the robot Monday December 2nd, 2024 at 6PM
+EST it is of note that this is a critical update so you’re going to want to reset your robots if:
+   1) The robot is using fractional share sizing.
+   2) The fractional share sizes exceed 10,000 units.
+If this does not describe any of your robots currently running then all good! But if it does, or you
+just want the latest version, then it is recommended you update. Remember to reset your alerts
+so that the TV servers have the updated version as well.
+
+Also – I wanted to share a recent technique I’ve been playing with the Robot, it mainly involves
+trading crypto on timeframes ranging between 13-minute, 34-minute, and 55-minute candles. I’ll
+describe the setups I look for below, but the process typically goes like this:
+   -     Find set-up
+   -     Go Long
+   -     Activate Robot
+   -     Exit at pre-designated point or let it keep running.
+Easy peasy! Essentially the name of the game is simply finding the set up, entering the position,
+and then just letting the robot take care of the rest, or exiting when your profits have been reached
+(either via a take-profit or manually). With some crypto currencies moving upwards of 10% to 20%
+reasonably often and reasonably quickly, this technique over the past few weeks has been pretty
+fun.
+So, let’s go through the steps:
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                          12/02/2024
+1 – Identify Potential Possibilities
+       To start we are going to want to narrow down the field for which cryptos we investigate
+       for the proper set-ups. To do this, I started using TV’s “Crypto Heatmaps”.
+                                                                 To achieve this view, notice on the
+                                                                 top, I set the `Size by` option to
+                                                                 `Market Cap / TVL`, and then set
+                                                                 the `Color by` to `Performance 1h,
+                                                                 %`.
+                                                                 This view gives us a quasi-
+                                                                 normalized/weighted view of
+                                                                 crypto that is colored by price-
+                                                                 movements.
+                                                                 The goal here is to look for things
+                                                                 that are either not moving when
+                                                                 everything else is or moving when
+                                                                 nothing else is.
+                                                                 For this example, we’ll use ¢DOGE
+                                                                 since I’ve been trading that a lot
+                                                                 lately anyways (¢CLV, ¢DOGE, and
+                                                                 ¢XRP have been fun).
+With a list of a few cryptos to check out, I then head over to their individual charts, and I set the
+following configurations:
+   -   LDPS: balanced setting
+   -   LDPM: standard LDPM-Fib with LDPM-Values & Statuses displayed with a order of 144.
+   -   Configure LTA to be fractional share sizing, balanced setting, ±additional monitoring,
+       (depending)
+The key to this set up is LDPM.
+
+   -   On the 55-minute chart, I look for anything with a recognizably bullish ceiling, these are
+       typically found during `Bull Traps`, which we can actually see on ¢DOGE
+   -   Then if it looks like the next ceiling is quite a bit aways (5-10%+) via the LDPM-values, I
+       start investigating to see if a bull trap is present.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                          12/02/2024
+Although, I will also use the 34-minute interval if it’s a prime contender.
+Once I visually see something that looks like a ceiling, I check the LDPM-values which shows that
+from the current price to the `final` ceiling, the movement that can be expected is ~9.00% in total.
+There is also note that there are lower-order ceiling at ~2.55% and some clouds at $0.42. This
+gives two opportunities for profit:
+
+   1) First leg: movement upwards +2.55%
+   2) Then exit and monitor reaction to ceiling
+   3) If data suggests movement to final ceiling is likely, go long until thereabouts ceiling.
+From here, I quickly look at the lower-order LDPS&Ms to see if there is anything hiding anywhere
+such that it shouldn’t be reasonable to expect movement up to the next ceiling once the 55-minute
+LDPS turns bullish (if it does).
+Switching to the 34-minute, we see that conditions are largely bullish but there is that pesky ceiling
+at $0.43 with bearish LDPS. Not ideal!
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                           12/02/2024
+Moving down to the 21-minute:
+
+
+
+
+We see even less resistance but continued bearish LDPS!
+
+This is almost the perfect set up!
+It looks like if we monitor the 21-minute progress through $0.42, if conditions turn bullish and
+price progresses, then movement northward ~2.55% seems likely, and, if conditions remain
+bullish, movement +~9% seems the next stop thereafter.
+
+Ordinarily this might be annoying to handle manually (for who knows when conditions will turn
+bullish and/or how quickly those conditions will evolve) but with the robot its remarkably straight
+forward!
+
+One of the ways this can be navigated:
+   -   The aggressive trader might establish an LTA to monitor conditions on the 21/34-minute
+       and go long if indicated with a take-profit at 2%.
+   -   Establish an LTA to monitor conditions on the 34-minute and go long until either the robot
+       exits automatically, or the price has exceeded the first ceiling at 2% with bullish liquidity
+       noted throughout, then transfer the position to a 55-minute robot with expectations of
+       movement upwards ~9% (switching to the 55-minute robot for me indicates `this position
+       has the potential to need a longer time-horizon for maturation`) with a 5% take-profit. If
+       met and position exited, I would revisit the 13-minute interval, check to see if conditions
+       are still bullish and the ceiling still ~+3-4% away, would likely re-enter with a 13-minute
+       LTA with “Additional Monitoring Activated” so as to exit ~aggressively~ when indicated.
+       Once profits secured, sit out and wait for next opportunity.
+   -   Set an LTA on `Aggressive` on the 55-minute with `Additional Monitoring` for the ultimate
+       hands-off approach and just assume that the aggressive 55—minute will capture the next
+       leg up while exiting promptly when liquidity is sapped at the ceiling.
+   -   A balanced LTA on the 13-minute or conservative with additional monitoring to try to
+       capitalize on the bullish lower-order LDPM states (since LTA won’t do anything until
+       conditions are bullish anyways)
+
+
+
+Deep Dive Stocks – Weekly Chat                                                         12/02/2024
+But as you can see, the goal is to essentially “leap-frog” up the ceilings as bull-traps develop (these
+seem to be the best set-ups) and just using the robot to take care of the tedium such as
+monitoring conditions and keeping tabs of things!
+
+Since there can be several of these conditions at any given time in crypto, I
+tend to end up with a lot of robots “queued up” so that, for instance, when its
+ready to switch from the 34-minute to the 55-minute on ¢DOGE’s progress,
+all I have to do is toggle the 34-minute off and toggle the 55-minute on, as
+you can see on the right:
+This means most of my day is pretty straightforward: keep an eye out for
+bull-traps, if one looks enticing with a identifiable, decently northward ceiling,
+then the only thing left to do is toggle the robot on, enter a position, and viola!
+There are some notes / observations, however, if you are planning on trying
+this out:
+    -    Be mindful of your portfolio balances with crypto if you are toggeling
+         robots on/off that can enter and exit positions but if just using LTA
+         to signal an exit, the portfolio amount doesn’t matter as the exit
+         signals are always `exit full position`.
+    -    Be sure to not mix up webhook URLs if you have multiple TradersPost
+         connections.
+    -    Don’t mix up alert titles! I use the <Ticker> - <Timeframe> system
+         mostly.
+    -    Patients is key – sometimes it might be a day or two before a nice
+         set up occurs (during these times, I typically just set the robot on BTC
+         on 90-minutes to catch any moves that might happen while
+         distracted) but with proper opportunity observing the lack of
+         frequency is made up easily with the abundance of movement.
+
+
+Anyways, I just wanted to share that with you guys in case you wanted
+something new to try this week and beyond – let me know how it works out
+if you do!
+Justin
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                            12/02/2024
+

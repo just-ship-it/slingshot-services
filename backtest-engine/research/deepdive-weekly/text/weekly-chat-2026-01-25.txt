@@ -1,0 +1,139 @@
+                                      Weekly Chat 2026-01-26
+
+
+                                             Main Points
+
+
+
+       -   VoEx remains in the Propagation Zone for both $SPY and $QQQ while VoEx-daily
+           continues its existing pattern: jagged downwards trajectory.
+       -   Hedging environments showcase persistent and full purchasing support
+           immediately surrounding $SPY and $QQQ, extending spot-down with spot-up
+           selling pressure.
+       -   Market-wide gamma squeeze data is largely unphased with recent performances.
+       -   LS&T data showcase numerous nearby LT resistances intermixed with bulltraps
+           and developing bearish liquidity on the 987-minute.
+       -   Overall, expect turbulent, flat week as the market positions for more downside.
+
+                                             SUMMARY
+
+
+           VoEx-daily’s divergence on $SPY continues and has even touched into the
+           Propagation Zone for the week, resulting in a slight recoil. This places both $SPY
+           and $QQQ’s VoEx-daily squarely in their expected behavior as they both approach
+           their final destinations. VoEx for $SPY has returned to the Propagation Zone,
+           wherein $QQQ’s has persisted.
+
+           The hedging environments showcase supportive areas for both indexes, which
+           may be beneficial to helping liquidity (as seen via LS&T) push above the LT
+           resistances noted on the 90-, 144-, 987-minute, and 1-week views.
+
+           Overall, expect turbulence as bullish liquidity attempts to push above LT organic
+           asks with hedging’s support – but VoEx is suggesting this may just be a stall
+           before continued downside.
+
+
+
+
+Deep Dive Stocks – Weekly Chat             for the week of                  2026-01-19 to 2026-01-23
+                                               DETAILS
+
+
+
+
+Hello everyone!
+Last week, we left off with ideations of downside, which the market was kind enough to deliver –
+partially. $SPY’s final weekly move was -0.35%, while $QQQ slightly bucked the trend with a 0.25%
+increase! This is, of course, not the whole story, given the early-week, bearish start whereby $SPY
+fell to the tune of -2.04%, and $QQQ suffered similarly at -1.91%. Pretty gnarly!
+We can visualize these moves in the heatmap below:
+
+
+
+
+Some pretty dramatic moves into the purchasing support to start the week! Thankfully, the market
+and purchasing support seems to have come into view and helped guide spot back up.
+This week, we’ll examine if this northward glide is indicative of stability returning to the market, or
+if conditions remain tenuously and we are just seeing tremors before the quake.
+
+The squiggles – be they squigglin’?
+
+Starting as usual with VoEx, we see:
+
+
+
+
+Deep Dive Stocks – Weekly Chat             for the week of                2026-01-19 to 2026-01-23
+In the short-term, it appears as though VoEx-daily has bounced upwards slightly – in fairness to
+the eager bulls, this could be the early signs of a new bounce but said eager bull would have to
+be quite eager, especially if one considers the overall pattern of VoEx-daily on $SPY and $QQQ
+as of late. A pattern-approach positions perceptions in familiar place: VoEx-daily is continuing its
+downwards descent on both $SPY and $QQQ, and the recent activity is testament to this fact. If
+so, this leaves a curious suggestion: the recovery might have been the bounce that we would
+normally expect to see during these VoEx behaviors / during this part of the VoEx-daily cycle.
+These bearish near-term prints are highlighted by VoEx’s location; both VoExes find theirselves in
+the Propagation Zone!
+
+This brings bearish short-term outlooks and long-term outlooks into view. Let’s check on the other
+parts of the market to see if there is any shock absorption left. First up, let’s check on the gamma-
+hedging heatmaps:
+
+
+
+
+These are quite supportive for both $SPY and $QQQ! Both exist surrounded by purchasing support
+which extends spot-down quite aggressively; conversely, both also exist with hefty selling
+pressure spot-up.
+This is certainly supportive, and in-line with the idea that perhaps there is a bounce hiding around
+here somewhere, even if it’s just fueled by hedging.
+
+Moving onwards, its worth mentioning the gamma-squeeze data [not shown], which has remained
+relatively moot throughout this week’s erraticum; this extends for both the normative data and
+the predictive data (somewhat surprisingly!)
+
+So, we can swiftly move on to the LS&T data, to see how things are shaping up in liquidity-land.
+
+
+
+
+Deep Dive Stocks – Weekly Chat            for the week of                2026-01-19 to 2026-01-23
+Up top, we have on the 90-minute timeframe a bulltrap! Currently attempting to move above LT6
+& 7 – we wish it well. There’s a good amount of profit-taking occurring there as well (by way of
+LT1-4 being above spot) which adds some concern concerning the longevity of said bulltrap.
+
+But, as we move up in intervals, to the 144-minute specifically, we find bullish liquidity yet again
+trapped against LT resistances. This time, however, we find the eager parties are below spot –
+indicative of eager buying rather than eager selling.
+Then if we move to the 987-minute on the bottom-left, we find bearish liquidity and a recently
+reaffirmed LT-7 support. The bearish liquidity suggests another test of LT7 is en-bound, but the
+encroaching eager bids suggests it might be put off until a test of LT5 at $7,002 is performed.
+
+On the weekly we see a classic “clinging bullish” showcase whereby spot has fallen officially
+below LT5, indicating a switch in LT-5’s status as an organic bid to an organic ask. Now, bullish
+liquidity is doing what it can to keep spot trending upwards despite this newfound persistent ask.
+This “clinging bullish” usually results in stagnate price and then ultimately downside.
+Thus, it appears said outlook is the most reasonable for the week ahead: likely stagnate price
+where spot attempts to work against the newfound and abundant LT resistance while the last
+remaining bullish liquidity drains. Then another retest of LT7 on the 987-minute, after which, down
+to LT6 on the weekly.
+
+
+
+
+Deep Dive Stocks – Weekly Chat            for the week of               2026-01-19 to 2026-01-23
+But – should an early week break above the LT resistances, coupled with the hedging
+environments, it isn’t unreasonable to expect the bounce to extend some before coming back
+down.
+Calendar spreads at LT6 &
+
+
+Happy Trading!
+
+
+Justin
+
+
+
+
+Deep Dive Stocks – Weekly Chat        for the week of            2026-01-19 to 2026-01-23
+

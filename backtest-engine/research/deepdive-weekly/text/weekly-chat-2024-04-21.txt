@@ -1,0 +1,304 @@
+                                     Weekly Chat 04/22/2024
+
+
+                                            Main Points
+
+
+    -   VoEx for $SPY and $QQQ have entered the Propagation Zone with possible divergence
+        noted on Friday.
+    -   Both hedging environments offer strong purchasing support and a relatively free path
+        towards gamma neutrality and $+.
+    -   Put-selling is still in “retraction” with no signs of sellers selling.
+    -   Market-wide gamma squeeze data is showing a decrease in the growth-rate of gamma
+        squeezes, and negative GTM prints.
+    -   VoEx Variance has produced data within the Propagation Zone.
+    -   Overall, increased risk for flat-bounce but overall outlook remains steady and bearish.
+
+
+
+                                            SUMMARY
+
+
+
+           VoEx ended its indecision from last week by plunging into the Propagation
+           Zone on Monday. This was followed by weekly bearish performance.
+
+           VoEx currently resides well-within the P.Z., but a subtle VoEx Divergence
+           has formed on both $SPY and $QQQ. Admittedly, this is not the ”usual”
+           VoEx Divergence but its presence suggests preparation for a bullish-
+           bounce in the week ahead.
+
+           The gamma hedging heatmaps are supportive for said bounce in-and-up-
+           to gamma neutrality, at which time the purchasing support quickly ends
+           and selling pressure rapidly replaces it.
+
+           Put-selling is still in a negative state with no put sellers selling puts by the
+           seashore – this reduces optimism for any significant $+/IV- in the times
+           ahead.
+
+           VoEx Variance has finally printed values within the Propagation Zone, an
+           indication of prolonged and sustained downside. These data will be
+           monitored for developments in the upcoming weeks to months.
+
+           Overall, increased risk for a flat-to-greenish week in the face of robust
+           bearish ideologies.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                            04/22/2024
+                                                  DETAILS
+
+
+
+
+Well, Hello everyone!
+Last week, we left off with the idea that there was a heightened risk for “mean-reversion” towards
+bullish performance, and as such, some pause in leaning fully into shorting the market appeared
+reasonable during the start-of-the-week; namely that VoEx should dive into the PZ.
+Well, time came and went, and it appears that this heightened risk never manifested and VoEx
+quickly moved on Monday, and things proceeded along the bearish route, with $SPY moving -
+3.07% for the week, along with $QQQ’s -5.39%!
+Wowzas.
+
+In comparison to what the market was projecting (as measured through IV-30), these movements
+represent a 253% greater-than-(weekly)-EPR for $QQQ, and 190% greater-than-expected weekly
+moves for $SPY. Quite the expansion from expectations!
+
+Curiously, this shows that $QQQ moved relatively significantly more than $SPY, despite its more-
+abundant purchasing support, as discussed last week. This can be visualized below with the
+weekly progression mapped out for $SPY and $QQQ:
+
+
+
+
+Despite what appears to be a valiant attempt to reign things back in on the 16th on $QQQ1 by way
+of sprinting towards gamma neutrality. This effort, it seems, was in vein.
+So – with such big movements behind us, it seems this week’s question is going to be: how deep
+does the rabbit hole go? (Oh, and also let’s talk about the up-coming Dashboard updates!)
+Let’s try to find out!
+
+
+
+
+1
+ Notice the mad-dash for gamma neutrality for $QQQ; which, perhaps worthy of consideration, is absent from
+$SPY’s performance.
+
+Deep Dive Stocks – Weekly Chat                                                                  04/22/2024
+“How strange it is to be anything at all”2
+
+Starting as usual with VoEx, we see things are both largely unchanged and changed, all at the
+same time:
+                                                                  We see that post-giant-VoEx spike
+                                                                  in late 2024-03, $SPY has steadily
+                                                                  declined, with VoEx now residing
+                                                                  within the Propagation Zone.
+                                                                  To a lesser extent, $QQQ’s VoEx
+                                                                  Spike is present, but in mid-April
+                                                                  (just a week or two ago), after
+                                                                  which,      things    progressed
+                                                                  similarly .
+                                                                  Thankfully, this move alleviates
+                                                                  us of the worry from last week
+                                                                  regarding the stagnation of VoEx
+                                                                  at the Propagation Line.
+                                                                One     would      be
+                                                                remiss, however, in
+                                                                not pointing out the
+                                                                VoEx     Divergence
+                                                                present on $SPY
+                                                                and $QQQ. This
+                                                                type     of      VoEx
+                                                                Divergence          is
+significantly less-often-seen, and it is typically seen on the reverse presentation
+(when price is going up, not down), but nonetheless, it is present in the “literature”
+(below)3.
+                                             This is a very hand-wavy nod to a
+                                             potential “bounce back”. Handy-wavy
+                                             but perhaps provocative enough to
+                                             consider as we progress through the
+                                             data more.
+                                             Overall, the interpretation lays along the
+                                             idea of continued downside but with a
+                                             hint of “bouncy-ness” to it.
+
+
+
+
+2
+    Lewis C. Caroll – Alice in Wonderland
+3
+    Tier II, Page 23.
+
+Deep Dive Stocks – Weekly Chat                                                            04/22/2024
+We can verify this outlook with neo-VoEx, which shows $SPY and $QQQ well-suited in the
+Propagation Zone.
+
+
+
+
+We also see VoEx-daily (magenta) briefly rising towards stability as well – echoing the Divergence
+noted in the original VoEx data. Neo-VoEx (as its called, for now), is helpful in that the medium-,
+and long-term outlooks are set via VoEx (old VoEx-trend), which is resoundingly bearish given
+both their locations within the Propagation Zone, while in the short-term (VoEx-daily) is suggestive
+of a bounce forming (since its [albeit very subtly] shifted towards stability).
+But, until VoEx (old VoEx-trend), leaves the Propagation Zone, the overall interpretation is still:
+down.
+But – supposing some bouncy-ness ahead, how would this bouncy-ness be responded to from
+the Hedging Heatmaps? Let’s find out.
+
+
+
+
+Very well, it would seem!
+Both $SPY and $QQQ present with very healthy down-stream purchasing support, and a relatively
+head-wind-free pathway towards gamma neutrality and beyond (dashed lines).
+Now, it is anyone’s guess how the market will handle gamma-neutrality; without its buoyant
+purchasing support behind it, will things just fall back towards the week’s start or will an organic
+bid be there to start catching things?
+
+Deep Dive Stocks – Weekly Chat                                                         04/22/2024
+The influence distribution finds the former suggestion likely with the peak-probability occurring in
+modest-bullish-blue, but with a larger left-wards tail into negative territory (and notice the little
+hump in the white-zone (flat-price action).
+
+Taken together, this seems to paint a picture of an upcoming “dead-cat-bounce” – but one that
+may not be worth participating in, given the uncertainty of the gamma-neutrality zone, anticipated
+head-winds from hedging, and VoExes’ positions.
+So, with some consideration for a bullish bounce seems reasonable – both from a “wow the
+market just moved 3%” humanistic-perspective, and from the data; do our put-selling friends share
+this outlook?
+
+
+
+
+Nope! Not yet. This suggests little-to-no expectation for profitability via $+/IV- for the time ahead.
+Moving from friends to
+gamma-squeezes, we see
+a somewhat curious sight.
+
+Despite the week-over-
+week decrease in gamma
+squeezes,    GTM     has
+started          printing
+definitively    negative
+prints.
+So, whereas growth is
+slowing, and there is even
+some     destruction    of
+gamma           squeezes
+occurring, it would seem
+that market has left the
+short-gamma hose open,
+and there is a good
+amount of short-gamma
+(and    thusly,   gamma
+squeezes), headed towards the market.
+
+Deep Dive Stocks – Weekly Chat                                                           04/22/2024
+Since GTM’s forecast is about ~2-4 weeks, should one want this to fit into the narrative of a “flat-
+dead-cat-bounce”, one would find it easily fits: near-term gamma squeeze exodus with impending
+storm clouds on the horizon (via GTM).
+
+So, overall, it seems downside is the prudent expectation I will hold, with some threat to near-term
+flat-bounce. I am not too keen on prospecting through any bounce – perhaps something here and
+something there, but should it occur, I will mainly work on finding good shorting opportunities for
+when the market regains its senses.
+Should things not bounce, well, then full-steam ahead with the prevailing paradigm and positions.
+But! Before we move on to the Dashboard updates, let’s take a peek at our friend, VoEx Variance.
+Last time we visited VoEx Variance4 it was to check if there were any data within the Propagation
+Zone; you may remember such statements as:
+                                                         “
+… near term downside that shows signs of being relatively isolated for now. Until data starts to
+appear in the Propagation Zone, it suggests that the market, by-and-large, is well suited to
+“handle” and near-term downside. Should data start to appear in the P.Z. during the anticipated
+near-term downside, then this time-horizon will have to be re-evaluated.
+                                                         “
+To that extent, let’s see if there are any data within the Propagation Zone:
+
+
+
+
+4
+    Some changes to VoEx Variance! It is now using the improved VoEx for extra oomfph.
+
+Deep Dive Stocks – Weekly Chat                                                           04/22/2024
+Yes, it would appear so! And quite a bit of it too.
+Thus, it may be reasonable to brace for prolonged downside, and to consider, for the time being,
+the idea that bullish performance will, by-and-large, be taken back by the market.
+The week-a-head’s plan for me then seems to be to anticipate navigating some soft-bullish / flat
+waters but with the overall outlook remaining on the bearish side of things.
+Now that that’s out of the way, let’s look at some new toys!
+The next round of Dashboard updates are well-under-way and I wanted to share with you guys
+some of the things I’ve been working on for you. These updates mainly have to do with the “Graph”
+page, as I feel that it is underwhelming and, in its currents state, largely redundant.
+Thus, I am in the process of adding a lot more functionality, and, perhaps more importantly, the
+page is being re-worked into a foundation that will allow for expansion of the tools available to
+you to facilitate to your research efforts.
+Okay - enough chatter, let’s take a few looks.
+
+
+
+Deep Dive Stocks – Weekly Chat                                                      04/22/2024
+Ever want to see what VoEx would look like with a 20-day Exponential moving average applied to
+it? Well now you can!
+
+
+
+
+And it looks something like this:
+
+
+
+
+Neato! It’ll be up to you to figure out what exactly that means, though!
+Or perhaps you want to see just dark-pool data for $GME with a MAD-transformation (helpful to
+see how “significantly different” something is as compared to its prior behavior), and some
+exponential smoothing?
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                    04/22/2024
+There ya go! Also, the dark pool data can be a bar graph now! Actually - any of the data can be!
+But, the graphs seem kind of --- meh right now. So, let’s
+spruce that up: let’s look at a nice blue-background and
+a classic style for $NVDA along with LDPM-Vol in bar-
+graph format, and DPI as a dot-plot with a 125 … let me
+just show you:
+But now, we’re also going to add some settings for the
+graph:
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                       04/22/2024
+This produces:
+
+
+
+
+Oooooo
+                               Ahhhhh
+                                                               How cool!
+Obviously, there is a lot to do still in the short-term before release (adding a tad more functionality
+as well as aesthetics), and even more to do in the long-term, but I am expecting the first patch
+with this functionality to be around 05/11/2024.
+If the date gets pushed back I’ll let you know – but (fingers crossed) things have been progressing
+quite nicely so perhaps, this time, it might even come early! Who knows.
+
+
+That’s all I have for you guys this week,
+
+
+Happy trading
+
+
+Justin
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                            04/22/2024
+

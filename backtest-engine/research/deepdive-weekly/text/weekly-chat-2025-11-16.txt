@@ -1,0 +1,208 @@
+                                       Weekly Chat 2025-11-17
+
+
+                                              Main Points
+
+
+
+       -   VoEx for $SPY and $QQQ remain within the Propagation Zone.
+       -   Gamma-hedging heatmaps are set to provide robust purchasing support in $− and
+           robust selling pressure in the opposite.
+       -   Market-Wide Gamma Squeeze data showcase an increase in GS counts and an
+           increase in the predictive values.
+       -   LS&T investigation for ES showcases continued bearish prints with a potential
+           floor 7% down.
+       -   Composite Chart of BTC/VX continues to paint a future of VX spiking while BTC
+           underperforms.
+
+                                               SUMMARY
+
+
+           Last week, there was concern for a bounce then downside. In the interim between
+           then and now the market did in fact bounce and then slide back down.
+
+           The data in consequence have re-affirmed their downside expectations by way of
+           placing VoEx within the Propagation Zone, increasing the GS counts, increasing
+           the predictive GS data (suggesting a future with faster GS growth than present),
+           bearish liquidity on ES up to and including the 987-minute, and finally, the BTC/VX
+           composite chart showcasing bearish liquidity.
+
+           The only dissenting voice is the gamma-hedging heatmap, which shows an
+           environment poised to offer purchasing support in the event of $−, but the relative
+           efficacy of this purchasing support in the face of a mass sell-off is, unfortunately,
+           unforeseeable by our views.
+
+           Overall, the data continue to paint expectations of downside, with some evidence
+           that a low-volume week (characterized by minimal market participants other than
+           gamma hedging and other miscellaneous, structural flows) might allow for an
+           unsteady float upwards.
+
+           In barring the exclusion of the market participants from the market, one finds
+           prudency looking down over a cliff, which stretches about 7% down to the ledge
+           at LT-6 below.
+
+
+
+
+Deep Dive Stocks – Weekly Chat              for the week of                    2025-11-17 to 2025-11-21
+                                               DETAILS
+
+
+
+
+Hello all!
+Last week, we left off with ominous ramblings about impending downside. To this effect, $SPY
+fell up 0.14% while $QQQ fell down -0.14%. What symmetry!
+We can visualize this week in the heatmaps below:
+
+
+
+
+In our discussions, we talked about the market not letting IV drop too much, should it try the
+[$+ , 𝐼𝐼𝑉𝑉 − ] route. This seems to have happened in part – the market migrated towards 𝐼𝐼𝑉𝑉 − until the
+boundary was met, after which time spot dropped and IV skyrocketed in an apparent attempt to
+move towards gamma neutrality.
+It would appear things might be getting interesting!
+
+Let’s start off this week with the data as usual and then discuss some upgrades coming your way!
+Start here
+Starting with VoEx, we see:
+
+
+
+
+Deep Dive Stocks – Weekly Chat             for the week of                 2025-11-17 to 2025-11-21
+Persistent findings!
+
+VoEx-daily remains in the Propagation Zone (one might note that the early-week moves provoked
+some instability by way of a VoEx-daily spike!) while VoEx is diving deeper therein as well.
+Bearish is as bearish does!
+These data paint a picture of near-term, imminent downside that is slated to have reasonable
+duration! (~1 Month+).
+In contrast to VoEx’s bearish prints, however, we find the gamma hedging heatmaps, which offers
+a contrarian view by way of showing the anticipated gamma-hedging practices to come in the
+weeks ahead:
+
+
+
+
+Quite substantial purchasing support! It seems the market was well-spooked enough this week
+to take out significant insurance (read: puts) to increase the amount of down-stream purchasing
+support (and upstream selling pressure).
+
+Nonetheless, this does suggest the current of hedging will be flowing quite ostensibly towards
+“stability” (selling into $+ and buying into $-) – perhaps something to keep in mind should spot
+overpower the omnipotent hedging forces.
+Moving onwards, we can check in on the market wide gamma squeeze data, which shows
+substantial growth as well as an increase in the predictive data, as seen below:
+
+
+
+
+Deep Dive Stocks – Weekly Chat          for the week of              2025-11-17 to 2025-11-21
+The changes are mounting: month-over-month sees a 26% increase in GS counts, with the past
+week accounting for 10% of said growth!
+Additionally, in the predictive data, we find continued growth in expectations as well! The
+expectations for future velocity (orange-brown line) and acceleration (purple line) are both rising,
+indicating that the future is expected to have a high rate-of-growth of gamma squeezes and a
+higher acceleration of growth of gamma squeezes!
+
+In other words: then local tide of gamma-hedging via $SPY and $QQQ is tempered robustly
+against the oceanic tide that is mounting market-wide gamma squeezes. In short: downside is
+still expected as the gamma foundations are projected to worsen, and with it, the market!
+Moving onwards, let’s check in on the LS/T environment for ES:
+
+
+
+
+I’d say those are bearish prints up-and-until the 987-minute (bottom-left), which shows LT-7
+support at $6,553 (~ -3.00%!). This seems reasonable.
+In addition, we can see that the gamma-hedgers are going to have minimal support by way of
+confluence with other supports (e.g. liquidity) but there is some agreement in where the
+resistances should lay: ~$680 on $SPY (per the gamma hedging heatmap), and $6,700 - $6,900
+on ES (per LT resistances).
+Quite asymmetric agreement!
+Overall, downside seems most likely still with some potential for gamma-hedging to support the
+markets (something to suspect if price is relatively flat/gliding up on low volume – suggesting
+that there are minimal “players” in the market and hedgers are casually fulfilling their mandates,
+
+
+Deep Dive Stocks – Weekly Chat            for the week of               2025-11-17 to 2025-11-21
+and thus, pushing spot up gradually), as VoEx is bearish (quite so) and LS/T investigations show
+bearish liquidity up until the 987-minute with supports located about 3% down.
+Prudency suggests bracing for continued downside, whose magnitude and duration increases
+evermore.
+This prudency is echoed in the composite chart of BTC vs VX1:
+
+
+
+
+These data show a persistent expectation centered on two main outcomes:
+
+    1) A large VX increase
+    2) VX out-performing BTC
+To that effect, the latter has already commenced since conditions became bearish and so now
+the only performance left is a large VX spike!
+Taken all together, this paints a picture of instability teetering on downside with downside targts
+being reasonable with 7% downside measured on ES futures until LT-6 support.
+
+Happy Trading!
+
+
+Justin
+
+
+
+
+1
+ Quick reminder: the composite charts show the relative liquidity between the chosen symbols. So with BTC / VX,
+when conditions are bullish we expect BTC to out-perform VX, while when conditions are bearish, we expect VX to
+out-perform BTC.
+
+
+Deep Dive Stocks – Weekly Chat                for the week of                   2025-11-17 to 2025-11-21
+                                   Updates and Improvements!
+
+Its no secret I’ve been hyper-focused on the TradingView side of things, and to that effect, I would
+like to discuss how you, my Premium friends, are included. In short, I am going to try to maximize
+your exposure to these new tools and developments until DDS is on the firm ground required to
+take another stab at updating and improving the Dashboard.
+I’ll start with outlining the immediate steps as well as the steps currently planned for the future!
+
+
+So, for the immediacy:
+    1) You are going to receive access to the Liquidity Toolkit this week. Sorry it has taken so
+       long.
+    2) Developing the Toolkit helped me learn lots of fun stuff about alerts and whatnot. To this
+       end, I am going to be updating the Liquidity Scanner on TradingView as well to be a, well,
+       scanner. The goal is for it to be the place where large swaths of alerts can be set for
+       multiple equities and timeframes.
+Then, on the more less-immediate term: DDS is pursuing a new dev! This dev will be like me but
+better and the good news is I already have a fantastic one in mind. The ideal is that as steps (1)
+& (2) from above are completed, by then the new dev will be well on their way to being caught up
+with the DDS tech stack to jump in to helping get together the dashboard update, TradingView
+improvements, webhooks and API for the data, and all that jazz.
+
+
+In other words, this is a bit of the same from previous pushes forward at start but DDS is taking
+on a different paradigm shortly thereafter (the start): getting a team together to push together.
+
+
+And I think this is very exciting and long over-due!
+
+
+So, keep an eye out this week for access to the Liquidity Toolkit and then I will keep you updated
+on the Liquidity Scanner. I expect ~2 weeks to complete it (ideally get the prototype up this week,
+then spend a few days thinking its bug free then a few days correcting said assumption then
+pushing it the week following!).
+
+
+Until then,
+Happy Trading –
+Justin
+
+
+
+
+Deep Dive Stocks – Weekly Chat            for the week of                2025-11-17 to 2025-11-21
+

@@ -1,0 +1,339 @@
+                                    Weekly Chat 09/30/2024
+
+
+                                          Main Points
+
+
+
+    -   VoEx is within Stability. VoEx-daily has stalled in a downwards trajectory.
+    -   Hedging environments are vanna-stable.
+    -   MWGS data show negative GTM growing in magnitude.
+    -   LDPM/S suggest a liquidity vacuum has formed.
+
+
+
+                                           SUMMARY
+
+
+
+           Outlooks remains bullish as VoEx has re-entered stability. VoEx-daily has
+           stalled in a downwards-looking-trajectory, which raises some concern for
+           a rapid movement into the Propagation Zone (and subsequent short-term
+           downside).
+
+           In protection against this, the hedging environments are poised to offer
+           some purchasing support – but this aid is limited by IV: too large an
+           increase and the purchasing support will dissipate.
+
+           The MWGS data show a deepening GTM but no real growth noted.
+
+           Some handwaving with LDPM and LDPS suggest a liquidity vacuum has
+           formed, and its resolution potentially neigh.
+
+           Overall, technically bullish but a close eye on the liquidity vacuum.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                        09/30/2024
+                                               --
+                                             Alert!
+
+                                               --
+
+
+Re: Operating Procedure 11: Notification of Processing Error – High Priority
+2024-09-30
+
+
+There is an issue affecting the directionalization process regarding the flow of Dealer Long Puts
+for $SPY and $QQQ.
+This issue currently seems to be affecting ONLY the current Dealer Long Put data and graphs
+found on the Macro Report PDFs. The issue appears to stem from the previous upgrade process
+aimed at increasing the resolution of the Gamma Hedging Heatmaps. During this upgrade, an
+inadvertent side-effect was introduced to one of the core processes causing mis-alignment of
+certain greek calculations that was not noticed until recently.
+I am starting the process of cleaning up and going back to fix the data. I will let you know when
+the data have been updated and fixed.
+I sincerely apologize for any inconvenience this may have caused, and I will work diligently to
+clear things up.
+
+
+
+
+Justin
+Deep Dive Stocks
+Justin@DeepDiveStocks.com
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                      09/30/2024
+                                             DETAILS
+
+
+
+
+Hello every-body!
+Last week, we left off with bullish ideations and that served us immensely well what with $SPY
+moving +0.57% and $QQQ taking on a mighty 0.89% to the affirmative.
+We can visualize these moves below, with the hedging heatmaps:
+
+
+
+
+Well – sort of. But the idea is that the market mainly mucked-about right about where it started
+for the week; there were some ups and some downs but mainly just a mingle around the last
+remaining hors d’oevres to see whose going to snatch the last pig-in-a-blanket.
+In response, we will see below that if we wave our hands a little bit, we might be able to take an
+educated guess as to where our blob-of-stability might wonder off to.
+Wantful Wondering (whilst Whimsically Worried) where Were-markets Woam
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                       09/30/2024
+Ever-so-frightful have the markets been of late! Up, down, then some times back up; very unusual.
+In pursuit of gathering some clarity, let’s check out VoEx:
+
+
+
+
+Bullish all around! VoEx-daily is in Stability, as is VoEx.
+
+Speaking of VoEx, VoEx-daily specifically, it might be worth observing its downward-facing-
+nature. In short: perhaps there is still room for a pull-back but overall, things look robustly bullish.
+How doth the Hedging Environments fair in said environments? Pray, let us journey forthwith to
+ascertain enlightenment thereupon ourselves.
+Here!
+
+
+
+
+A reasonable sturdy environment – albeit 1 with diminished purchasing support noted on $QQQ.
+Supposing IV rises sufficiently in the event of any downside, the current envirnoment would
+escape the introduction of additional selling pressure.
+Overall, however, as the Influence Distributions suggest, the overall outlook is a flat-to-bullish with
+such uninspiring layouts.
+No enlightenment for us today.
+
+
+
+1
+ Fun anecdote no one wants to know about: I thought, for the longest time, that “albeit” was pronounced “all-bite”
+cause, ykno’, German; but! apparently its pronounced “all-be-it” which, after some additional consideration, does
+suggest that it might be better spelled “all-be-it” if that’s how we want to pronounce it.
+
+Deep Dive Stocks – Weekly Chat                                                                     09/30/2024
+Moving on (not to the Dealer Long Puts, unfortunately), but to the Market-Wide Gamma Squeeze
+(MWGS) data, we see things look reasonably calm:
+
+
+
+
+                                                               Gamma squeezes are at a near-all-
+                                                               time-low (the pre-2020 average
+                                                               count was about ~500!) and
+                                                               although GTM seems to be negative,
+                                                               it doesn’t seem, for now, to be
+                                                               erratically so.
+
+
+
+
+Now, the take-away I have from these data is that things are overall bullish but there is still some
+weakness: VoEx-daily is moving south, hedging environments are weakish, so if there were
+exogenous sources of downside, it appears the market wouldn’t be quite too apt at handling them,
+in the near-term (medium and long-term outlooks are bullish per VoEx).
+So, let’s turn to LDPM/S to see what the liquidity conditions look like:
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                         09/30/2024
+LDPS is showing Bullish and Improving liquidity as the price stalls. Although initially this sounds
+good, there are additional bits of information that suggest some caution:
+       1) [Top panel; ES on the daily with LDPM-Fib & LDPS]: LDPM is inverted with the standard
+          LDPM-fib load-out. This means, in short, that the price appreciation is likely not going to
+          stick.
+       2) [Bottom panel; ES on the daily with LDPM-Fib with WMA2 smoothing & LDPS]: Here we see
+          that there’s been a bouncy-bounce pattern3 of sorts, and it would appear that a cresting is
+          underway. With this view, we can see there’s about 5% down until LDPM-89, and ~8% down
+          until LDPM-233.
+So, if we were to peek-between-the-lines some, or perhaps, move the tea-cup around before one
+more peek at the tealeaves, it might suggest the early signs of a local-drop.
+
+[ Hand waving time extraӧrdinaire!
+What does 𝐵𝐵𝐵𝐵𝐵𝐵𝐵𝐵𝐵𝐵𝐵𝐵ℎ + 𝐼𝐼𝐼𝐼𝐼𝐼𝐼𝐼𝐼𝐼𝐼𝐼𝐼𝐼𝐼𝐼𝐼𝐼 + 𝑆𝑆𝑆𝑆𝑆𝑆𝑔𝑔𝑔𝑔𝑔𝑔𝑔𝑔𝑔𝑔 𝑃𝑃𝑃𝑃𝑃𝑃𝑃𝑃𝑃𝑃 𝐴𝐴𝐴𝐴𝐴𝐴𝐴𝐴𝐴𝐴𝐴𝐴 = ?
+Well, let’s do some handwaving to find out. Actually – its not even that much handwaving, so you
+can put the sweatbands away.
+To start, some review.
+
+
+2
+    If you like levels, I’ve found the WMA smoothing is very nice for that.
+3
+    Yes, that is the official term.
+
+Deep Dive Stocks – Weekly Chat                                                                09/30/2024
+            First:
+
+Book Side       Classification Price Sensitivity                   Transacts at:          Consequence                Liquidity
+
+Bid             Organic         Yes | Short                                 Bid                       $-                      Provider
+
+Bid             Eager           Typically not; Occasionally                Ask                       $+                 Depends; Typically
+                                sensitive.                                                                                  Drainer.
+
+Bid             Absent          Very                                   Established         Liquidity Vacuum →                 Vacuum
+                                                                       Organic Bid                    $-
+
+Ask             Organic         Yes | Long                                 Ask                       $+                       Provider
+
+Ask             Eager           Typically not; Occasionally                 Bid                       $-                Depends; Typically
+                                sensitive.                                                                                  Drainer.
+
+Ask             Absent          Very                                       Ask             Liquidity Vacuum →                 Vacuum
+                                                                                                     $+
+
+
+
+            Now with those terms out of the way, let’s see what they mean:
+            To start, if we conceptualize LDPS within this frame work, it ends up being a reliable indicator of
+            which side of the book is eager; when LDPS is showing “Bullish” it means that the bid is the
+            dominant eager force present; and conversely, “Bearish” means that the dominant force is an
+            eager ask.
+            LDPM can be conceptualized in similar fashion, but from a slightly different perspective, as LDPM
+            tells us which side is organic. When the price is above LDPM4 (bullish configuration), we can say
+            that the organic side is the organic ask, and conversely, when LDPM is above the price (a bearish
+            configuration), it can be said that the bid is organic.
+
+            So, in that vein; we see an inverted LDPM (meaning the bid is organic) yet LDPS is telling us that
+            the ask is supplying liquidity! A paradox!
+            How can that be?
+            Well, to answer that, let’s start with a peek at some “standard” configurations, and then take a
+            walk down memory lane (i.e.: look at this month on $ES) in search of an answer.
+
+
+
+
+            4
+              This is mainly applicable only for non-smoothed; the behavior of LDPM is different with smoothing as it looses
+            various sensitivities that help identify organic; For the most part, when I am talking about “LDPM” in loose terms, it
+            is typically LDPM-89 / LDPM-144.
+
+            Deep Dive Stocks – Weekly Chat                                                                         09/30/2024
+The typical equity in the market that is experiencing long-term appreciation sees an abundance
+of eager bid and an organic ask. It works something like this:
+                                       The eager bid pushes up from the organic bid, meets the
+                                       organic ask (at the ask), and this works to drive the price up.
+
+
+                                       As this occurs, the ideal is that the organic bid will slowly
+                                       continue to migrate up with the eager bid, because, well, if
+                                       the organic bids goal is to buy low and sell high (and that’s
+                                       what they actually want to do), then they will have to move
+                                       their bid up as the price rises if they want a chance at
+                                       capturing future profits!
+
+
+This environment can also be described with respect to liquidity, let’s
+take a look (right). We can see that the eager bid is the liquidity taker
+and the liquidity supplier is the ask. To determine this, it can be helpful
+to ask “Which side needs to transact” – here, the answer is obvious:
+the eager side (or else they wouldn’t be eager).
+So, in conjunction, we have LDPM that can identify eager and organic,
+and LDPS who can identify who is supplying liquidity. Convenient!
+Now with that in mind, let’s take a peek at what happens when things become
+mixed.
+
+In the chart above, starting around 09/2024, LDPM shows the bid is the dominant organic force
+(by way of being above the price), and LDPS demonstrates an eager ask; and indeed, during this
+period, the price was decreasing as expected. Thus, this means there was an eager ask, meeting
+                                           the organic bid helping to move the price lower.
+                                           During this time, liquidity was decreasing
+                                           [Worsening], suggesting that the eager ask was
+                                           stretching quite thin!
+                                               ($ES can’t really run out of organic bid.)
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                              09/30/2024
+We can visualize this timeframe below:
+
+
+
+
+Above we see on the left the “state of things” and how conditions changed after said changes.
+
+Then [1] happens which is demonstrated by LDPM/S:
+   -   LDPM shows the recent price appreciation has met the organic ask (notice LDPM-89 and
+       LDPM-144 dip below the candle)
+   -   LDPS shows a bullish configuration suggesting the ask is supplying liquidity.
+In combination, this means the ask became the liquidity supplier to an eager bid! Neato!
+Then, price appreciated, as seen below. From the above until about the 20th when LDPM-13 shoots
+up, $ES appreciated some ~5%; afterwards (until now) it has moved about 0.70% (over a
+comparable timeframe).
+Oh – real quick; A good time to introduce the axion: there can only be 1 organic party!
+
+Now, let’s look at how conditions have changed per LDPM and LDPS after LDPM-13 crossed over
+(and then some) [2]:
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                        09/30/2024
+What a mess! So, we see that as liquidity improved, the price stagnated and LDPM-13 flashed
+above the price, suggesting some twitching in the structure of the current status quo. Namely, it
+appears that an early, and budding eager ask is forming (demonstrated with the higher-order
+LDPMs moving to rise above the price).
+But even more dangerously, it shows that the eager ask has liquidity !
+So, the big question is: what happens when the eager bid runs out (i.e.: if LDPM-89 makes a
+crossover before LDPM un-inverts). Or, conversely, what happens if the organic bid is convinced
+to join the party? Let’s take a peek:
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                      09/30/2024
+Scenario 1 (left) is that the eager bid disappears5, and the newly budding-eager ask plummets
+and grows significantly downwards in search of a bid. In this, liquidity will likely stay “Improving”
+as the eagerness of the eager ask will likely cause little hesitation in things as the price moves
+down.
+
+In scenario 2 (right), the organic bid “wakes up” in a sense, and rises to the occasion. In this
+scenario, there is an expectation that the price should dip, and liquidity will fall slightly as the two
+reconcile their separation (via the liquidity vacuum).
+How will we know which is which?
+Well, scenario 1 will present with LDPM moving rapidly towards the price as the eager ask
+accelerates in numbers while the eager bid starts to get digested. This will present with LDPM
+moving rapidly above the price. Once the eager bid is gone the eager ask will have to move to the
+organic bid who will then supply liquidity and cause LDPS to turn red.
+Scenario 2 is more languished: chop as LDPM corrects its inversion; as long as LDPS continues to show
+green (meaning that the bid is eager), then the chop should resolve on the upside.
+
+
+
+
+5
+  Reminder: eager bids can be price insensitive! Such as, say, Hedgers! Of which some have been noted to be
+increasingly thin lately.
+
+Deep Dive Stocks – Weekly Chat                                                                    09/30/2024
+So, the data have returned to a medium-bullish outlook with some potential for some near-term
+excitement baked in. To that end, unless things fall sufficiently and VoEx starts rapidly altering
+course, gamma squeezes start to grow, etc. (you know the drill by now), I’ll still consider the
+downside to be contained and a “buy-the-dip” event (with an eye on LDPM/S, of course).
+
+
+
+
+Happy trading!
+Justin
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                       09/30/2024
+

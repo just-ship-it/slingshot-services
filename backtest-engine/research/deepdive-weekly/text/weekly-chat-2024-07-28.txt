@@ -1,0 +1,210 @@
+Weekly Chat 07/29/2024
+
+
+ Main Points
+
+
+    -   VoEx for $SPY and $QQQ have moved rapidly into the Propagation Zone.
+    -   $SPY presents with a vanna-stable hedging environment while $QQQ presents with a
+        vanna-unstable environment.
+    -   LDPM and LDPS suggest bearish outlooks on the daily time frame and lack evidence
+        for a robust counter-argument from the 4-hour timeframe.
+    -   Put-selling on $SPY has increased drastically in the past week. This behavior is not
+        noted within $QQQ.
+    -   Overall, significant risk for downside.
+
+          SUMMARY
+
+
+
+          As the downside grows, so too does our time-horizons. Initially, the idea
+          was that downside would be well-isolated but as the data emerge, it
+          appears as though the downside is beginning to spread.
+
+          VoEx-daily for both $SPY and $QQQ have plunged into the Propagation
+          Zone, a sign of imminent downside. The force of this movement was
+          significant enough to move VoEx also into the Propagation Zone,
+          extending the downside anticipation from just the near-term to the
+          medium-term.
+
+          LDPM and LDPS both show bearish orientations on the daily and 4-hour
+          timeframes.
+
+          Put-selling on $SPY has increased significantly as the week progressed;
+          perhaps due to the anticipation of a falling IV. This behavior was not noted
+          within $QQQ.
+
+          Overall, prudency suggests significant caution due to prevailing robustly
+          bearish data prints.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                       07/29/2024
+ DETAILS
+
+
+
+
+Hello!
+Last week, we left off with the idea that downside was neigh, and that our prior assessment of
+localized downside was faulty (given that the initial short-term expected time horizon had passed
+already into the medium-term), and there was suspicion that this error-in-judgement may still be
+extant, and as such, we moved to investigate the data for evidence of to either repudiate or
+substantiate said suspicion.
+The week ahead (last week) worked to substantiate our suspicions by way of moving $SPY -0.83%
+and $QQQ -2.58%. These moves are within the T+5 EPR boundaries for both, with $SPY having a
+T+5 EPR ±1.65%, and $QQQ ±2.29%. These moves can be seen below in the heatmaps:
+
+
+
+
+Nothing too remarkable but perhaps there is room for appreciation that purchasing support
+existed on $QQQ.
+
+Before moving to VoEx (as usual), let’s take a peek at LDPM/LDPS on $SPY and $QQQ. Below is
+$SPY and $QQQ with LDPS (balanced setting) and LDPM (LDPM-Fib loadout with LDPM-144
+added).
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                      07/29/2024
+Above we see $SPY (top) and $QQQ (bottom) presenting with some curious features:
+   1) The week provoked bearish liquidity per LDPS for both,
+   2) Both have fallen below LDPM.
+These are quite bearish signs! We can also see that $QQQ is showing persistent bearish liquidity,
+despite $SPY’s attempt to re-capture LDPM-89 with some bullish liquidity.
+This presents with downside expectations. The ideal would be waiting until we see the start of
+“the Scoop”.
+What’s the Scoop? Let’s find out by first “zooming in some” by moving from the daily interval to
+the 4-hour.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                      07/29/2024
+In the top panel for $SPY, we see bearish liquidity via LDPS, and we see the lower-order LDPMs
+(LDPMs less than 89), are acting as a “floor” of liquidity for $SPY. The anticipation here (for bullish
+outlooks) is that the lower-order LDPMs will keep price afloat until confrontation with the higher-
+order LDPMs, at which time, one would hope liquidity has turned bullish for the “push-through”.
+
+If LDPS were saying bullish liquidity, then there could be reasonable expectation for a “successful”
+test of the high-order LDPMs (i.e.: a bullish crossover), but this isn’t the case just yet. As such,
+there is expectation that a rejection should occur after testing LDPM-89, unless the price just falls
+beforehand, of course.
+Below on $QQQ we see a similar, albeit seemingly more severe, presentation for $QQQ. In a similar
+vein, the lower-order LDPMs have moved below the price some. This usually works to stall the
+price descent (as we can see from 12:00 onwards on $QQQ for the last 6 bars). The ideal would
+be the scoop then comes along and “scoops up” the price, and with bullish liquidity, would meet
+the high-order LDPMs and initiate a bullish crossover.
+But – this is a weak scoop. What do I mean by that? Well – let’s take a peek at some other scoops!
+Below are two examples of “the Scoop” which is typically associated with the reversion-process
+of a downturn in price. The top panel shows CPRX with a Failed Scoop (and some of the
+associated before-hand-findings), and the bottom panel shows BTC futures with a successful
+scoop.
+Take a peek!
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                            07/29/2024
+To quickly cover the main points: a scoop looks like it is going to be successful when:
+   -   The lower-order LDPMs (any LDPM <55) have well defined trajectories. It should be
+       immediately down, and then immediately up.
+   -   There is usually an association with a nearing higher-order LDPM test and the presence
+       of bullish liquidity per LDPS.
+   -   During the scoop, the highest-order LDPM typically acts as the “Floor” with the lower-order
+       LDPMs supporting. Breaking “through” this “base” (the higher-order LDPM) constitutes a
+       “puncture” and suggests the scoop has broken.
+   -   The scoop ends once the price is above LDPM-144 / LDPM-89.
+So, with that in mind, let’s take another look at the 4-hour views:
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                       07/29/2024
+On this view we see no real development of “the scoop” on $SPY – which suggests, well, nothing
+really. We can leave the assessment at: bearish!
+$QQQ does show some “scoopage”, but we see there’s evidence that the scoop has already been
+broken early in the process. Since then, persistent bearish liquidity and messy rebounds.
+
+If one were looking for a robust example of scoopage-leading-to-recovery, this would not be the
+best of examples!
+Thus, per LDPM and LDPS, things are concerning! Moving back to the daily interval, we can see
+that $QQQ has presented with a “Splash”, and as the price falls, the next step to anticipate is for
+LDPM-13 to start zoomin’ down to “scoop” the price. Until then, LDPM and LDPS on the daily
+present with bearish outlooks, and this is echoed when we zoom in.
+
+Now, let’s continue with our regularly scheduled programming!
+Starting with VoEx, we see pure concern:
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                        07/29/2024
+                                               Extreme movement into the Propagation Zone
+                                               noted on $SPY and $QQQ from both VoEx (golden
+                                               line), and VoEx-daily (magenta).
+
+                                               This brings with it the traditional expectation of
+                                               downside; this time with a little bit of spice.
+                                               Short-term downside expected per VoEx with
+                                               extension into the medium-term seemingly
+                                               reasonable.
+                                               As the days progress, it may be worthwhile to keep
+                                               an eye out for VoEx-daily spiking should the price
+                                               stall and/or appreciate. This will be a continued
+                                               sign of instability.
+
+
+
+
+Moving from VoEx to the hedging environments, we see much the same orientation as last week:
+
+
+
+
+With a vanna-stable orientation on $SPY and a vanna-unstable orientation on $QQQ, it seems the
+two are poised to be opposites in the week ahead once more.
+The slight difference, however, is that both are currently sitting in purchasing support! Perhaps
+some early-week support will push things up some, but, worth noting that said movement’s
+longevity will be worked against by $SPY’s selling pressure.
+In looking at our put-selling-friends, we can see that this week produced some significant activity,
+most notably on $SPY:
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                         07/29/2024
+At first it is tempting to put this in the “extreme bullish outlook” box for our put-selling-friends, but
+I pause initially at the lack of concurrent response in $QQQ’s put-selling – do the $QQQ
+compadres just not feel the same way?
+
+Perhaps we’ll never know – and the consequence of this inevitability is that it makes discerning
+the difference in behavior difficult.
+In-sum, it seems that the $SPY put-sellers are convinced in some profitability existing in either $+
+or IV-, and have seemingly bet a good amount on that. $QQQ put-sellers, on the other hand, are
+less convinced.
+Moving from put-selling to the MWGS data we see: not much (not shown). Some GTM negative
+prints occurred but for now, gamma squeeze growth is still negative and the week experienced a
+net decrease in gamma squeezes. So, for now, it seems that the under-currents of gamma are
+seemingly isolated for the nonsense above.
+Taken together, this paints a rather dangerous picture for near-term, significant downside on the
+short-, and medium time-horizons.
+Taking a peek at VoEx Variance (not shown), there is a singular point of data within the
+Propagation Zone. We’ll check back next week to see how things have progressed.
+
+So, overall, the downside risk we’ve been monitoring does seem to have expanded, and with some
+ferocity. In the near-term, high-risk for volatile movements with overall resolution likely to the
+downside. The timeframe seems to have extended into the medium time horizon.
+Happy Trading,
+
+
+Justin
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                             07/29/2024
+

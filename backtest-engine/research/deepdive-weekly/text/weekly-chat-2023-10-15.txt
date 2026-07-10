@@ -1,0 +1,416 @@
+                                   Weekly Chat 10/16/2023
+
+
+                                        Main Points
+
+
+   -    VoEx Coiling on $SPY and $QQQ have reverted back towards the Propagation Zone,
+   -   Hedging Environments are stabilizing with a partial stable-vanna configuration
+       present,
+   -   MWGS data suggests minimal short-gamma flows into the market currently,
+   -   DLP behavior is discordant between $SPY and $QQQ with $QQQ DLPs ramping down
+       and $SPY’s stagnating in the positive territory,
+   -   𝑉𝑉 2 is demonstrating both collapse and continued growth of data within the
+       Propagation Zone, and
+   -   The I-P Ratio has become negative up to the 60-day benchmark;
+   -   Overall, a reasonable chunk of bearish prints that are of reasonable magnitude for the
+       medium and longer-terms while the shorter-term rests tentatively on shakey-bullish
+       grounds.
+
+
+
+
+                                          SUMMARY
+
+
+
+           VoEx for $SPY and $QQQ worked toward the end of their VoEx Coiling
+           this week, however, there is continued concern that the subsequent
+           BUPO typically witnessed afterwards has failed with VoEx falling back
+           into the P.Z. for $QQQ and 0.01 points away from it on $SPY.
+
+           This bearish outlook is balanced on the near-term with a tentatively
+           stabilizing hedging environment.
+
+           However, on the more medium and longer-terms things don’t look all that
+           supportive: VoEx overall continues to be erratic, DLP behavior is
+           dropping quickly on $QQQ, 𝑉𝑉 2 data is demonstrating continued migration
+           towards a market correction, and the I-P ratio shows transformation of
+           the market to a net-Propagation-Zone market on the 60-day timeframe.
+
+           Overall, expecting instability with a bearish lean into a forming market
+           correction.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                      10/16/2023
+                                            DETAILS
+
+
+
+
+Heyo everyone! Last week, we left off with the idea that the market was looking turbulent but
+bullish on the short term.
+With a Week-over-Week change in $SPY of 0.16% and a change on $QQQ of 0.83%, it certainly
+can’t be said the outlook was wrong.
+But – we can say it was a bit incomplete. On review of last week’s Weekly Chat, it stands out
+that in discussing the hedging environment, I failed to mention that the hedging environments
+for $SPY and $QQQ were in a vanna-stable orientation, and thus, failed to review the typical
+outcome of vanna-stable Hedging Heatmaps. Thus, to avoid such mistakes in the future, let’s do
+so now. From Weekly Chat 2023-08-14:
+
+
+
+
+Ta-da! That is to say, vanna-stable orientations typically resolve with near-zero movements in
+price, despite larger intra-week moves.
+Sound familiar?
+Let’s look at this week’s hedging environments to see if things fared similarly:
+
+Deep Dive Stocks – Weekly Chat                                                     10/16/2023
+Yup! Just about – the early part of the week moved up into selling pressure, only to quickly be
+turned around back down into purchasing support. Not too shabby.
+Although the week’s price action was rather moot in terms of a net-movement perspective, there
+was a good amount of activity within the data. So this week, let’s investigate if we should be on
+the look out for continued price appreciation or if the bull-trap that we suspected would be
+rather short is, in fact, going to be particularly short.
+As usual, first let’s go over some data, and then let’s ramble!
+Let’s get started
+Starting as usual with VoEx. Last week it was mentioned that VoEx Coiling was present (which
+was the rationale behind a green week a head), and indeed, it seems that VoEx Coiling was
+present and acted relatively decisively (if not but modestly).
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                      10/16/2023
+$SPY’s VoEx continued spiking into stability (as expected from Coiling) but a cursory glance
+suggests this event may be more transient than previous expected.
+
+
+This outlook may be more clear once we see $QQQ’s VoEx:
+
+
+
+
+Whereas on $SPY, VoEx Coiling rose and stalled at about the Inhibition Line, we see that $QQQ
+appears to have finished off its coiling escapades with a VoEx Spike. This spike, as it were, has
+brought VoEx into the Propagation Zone for $QQQ – a move that transects all 3 zones (sound
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                      10/16/2023
+familiar?1; also it should be noted that $SPY’s VoEx stopped just short of the Propagation Zone
+at -0.49 [the Propagation Line is defined as -0.50]).
+This places concern on the continuance of VoEx Coiling’s bullish expectations as typically you
+would like to see VoEx move into the Inhibition Zone to give a nice Bullish-until-proven-otherwise
+(BUPO) extension to
+the coiling.
+A quick example (I
+just did a quick
+market scan search
+around 6mo ago for
+erratic VoExes and
+found        $LMNR)
+shows this: Spikey
+down, spikey up 2,
+followed by BUPO:
+
+
+These data prints
+(for $PSY and $QQQ,
+that is), aren’t quite as encouraging as BUPO doesn’t typically manifest as a move into the P.Z.
+(well – not this BUPO; Bearish-until-proven-otherwise [BUPO] does. But this is Bullish-until-
+proven-otherwise [BUPO]. No, it’s not confusing. You’re confusing).
+
+In any case, this suggests bearish performance a head – or perhaps it might be better to phrase
+it as: this suggests continued bearish performance ahead.
+With that in mind, how do the hedging environments have to say about their upcoming
+involvement in the week’s price action?
+
+
+
+
+1
+  Weekly Chat 2023-09-18 & Weekly Chat 2023-08-07 for recent discussions and examples of tranzonal VoEx
+Spikes.
+2
+  Sorry for the technical jargon.
+
+Deep Dive Stocks – Weekly Chat                                                                 10/16/2023
+More agreement between $SPY and $QQQ! $QQQ seems to have a touch more vanna-influence
+within its midsts, but for now, at least it is of the supportive type.
+Both present with available purchasing support in the event of a $-/IV+ week, while both give
+modest selling pressure in the event of a contrary movement.
+Not quite as exciting as it could be, but the hedging environments seem to echo last week’s
+layout – a potential for a choppy but overall-flat-week.
+Deviating our view slightly and glimpsing at what our sneaky-put-selling-friends are up to, we are
+met with continued confusion:
+
+
+
+
+Perhaps it is that $SPY’s put-sellers are delayed in their data somehow (and thus, outlook) as
+compared to $QQQ, for it seems that $QQQ’s put-selling is falling off a cliff while $SPY’s put-
+selling seems to just be approaching the cliff.
+Quite the discrepancy! Although we’ve seen $QQQ “front-run” $SPY for VoEx, it is rather unusual
+for such a discrepancy to present within the DLPs.
+For instance, with regards to VoEx, the first such event to come to mind (or at least, the event
+that I can vaguely remember where to look for it in the Weekly Chats!) is from earlier this year.
+Weekly Chat 2023-05-15 (right) also commented on the discrepancy between $SPY and $QQQ.
+What we know now that we didn’t know then is that $QQQ was leading $SPY (and the market)
+by moving swiftly into BUPO. This was lamented on the exact following week; an except from
+Weekly Chat 2023-05-22:
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                       10/16/2023
+               “
+  And it seemed that the
+market delivered on the off-
+     chance of bullish
+ performance with a $SPY
+ move of 1.7% - which just
+breeches the 5-day EPR for
+ $SPY of 1.66% (from the
+Friday prior to last until last
+Friday). A casual reminder
+ that EPR is, for all intents
+   and purposes, mostly
+           magic.
+               “
+This     bullish    VoEx
+performance front-ran a
+rather substantial bullish
+run (22% over the next 3
+months on $QQQ!).
+
+
+
+
+Deep Dive Stocks – Weekly Chat    10/16/2023
+This discordant or front-running behavior with regards to put-selling, however, is rarely seen. If
+we quickly scan over some historical data for $SPY and $QQQ, we see that they are typically
+well in-sync, baring a few put-selling adventures from the $QQQ crowd around mid-2022-12:
+
+
+
+
+All the squiggles squiggle together! (mostly).
+Here, we can see that such divergence in agreement is rarely seen between $SPY and $QQQ (we
+also see, just how much put-selling has ramped up in recent years!).
+What does this all mean? Well – in hand-wavy fashion, I would like to posit the idea that risk-off
+performances are typically performed most strongly on the instruments that are inherently more
+risk-on . So, that’s to say, perhaps $QQQ’s basket-exposure is such that greater and more
+aggressive risk management is required!
+Or that the $QQQ team is just simply better timed - which I’m also inclined to believe.
+With that in mind, I find $QQQ’s put-closing to be foretelling of the outlook ahead, and I would
+expect $SPY’s put-selling-pact to quickly get-the-message.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                        10/16/2023
+Expanding our view somewhat, the MWGSC data offers a slight reprieve for the bulls in the
+crowd:
+
+
+
+
+                                                                    With    a     negative
+                                                                    growth-trend,     and
+                                                                    negative GTM, it
+                                                                    would seem that the
+                                                                    MWGSC-data           is
+                                                                    poised to give a
+                                                                    bullish outlook for
+                                                                    the time a head.
+                                                                    And so, it would
+                                                                    seem that the data
+                                                                    are             looking
+                                                                    predominately
+                                                                    bearish, save some
+                                                                    gamma-flows         that
+                                                                    suggest           short-
+                                                                    gamma has dried up
+                                                                    slightly for now.
+                                                                    Are there are other
+                                                                    interesting data that
+                                                                    we can peek at?
+                                                                    Well yes - actually -
+                                                                    there is!
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                10/16/2023
+Let’s take a look at our friend, VoEx Variance (𝑉𝑉 2):
+
+
+
+
+Oh my.
+Frankly – this level of collapse is a bit unprecedented. With continued expansion of data within
+the Propagation Zone, and with clear collapse noted in all three zones, it would seem that things
+are at a high-risk for entering into “market correction” territory.
+In fact, if we take a peek at the Inhibition-Propagation Ratio, we can see just how much of the
+market’s VoExes are residing within the Propagation Zone:
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                      10/16/2023
+The answer to “how many” would seem to be: enough to move the 60-day moving average of
+the Inhibition-Propagation back into negative territory (from the vantage point of the Inhibition
+Zone, top graph)! Thus, officially ending the most recent golden period.
+So, in sum, it would appear that the market is on the doorstep of another leg-down:
+
+   -   VoEx’s coiling stopped short of BUPO and seems to be returning back into the P.Z.,
+   -   DLP behavior for $QQQ is quite bearish and $SPY’s is likely to follow suit,
+   -   𝑉𝑉 2 is collapsing and more data are printing within the Propagation Zone, and
+   -   The I-P Ratio shows the 60-day moving average for the I-P Ratio has once more crossed
+       into negative territory.
+These are some pretty substantial prints, although there are some supportive prints that should
+be noted for the near-term:
+   -   Hedging environments are technically stabilizing with purchasing support located in the
+       $-/IV+ quadrant,
+   -   MWGS-data is technically bullish with negative GTM prints and a declining growth rate.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                        10/16/2023
+Thus, I think volatile times are certainly ahead; even if a large leg-down doesn’t manifest
+overnight, I don’t think this level of instability (which has, by and large, been growing for 5
+months now; albeit at a glacial pace) can be resolved in one week, even if the purchasing
+support present starves off immediate downside.
+Should VoEx find itself shooting back into IZ, I will anticipate a round of BUPO but, as mentioned
+previously, I won’t be too rattled at the short positions currently open – in fact, I might find it a
+pleasant discount given the view obtained from these data.
+Happy trading,
+
+
+Justin
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                          10/16/2023
+Rambling Section
+If you’re anything like the various voices in my head, you’ve probably been saying things like
+“Wow Justin, lots of things under development but not a lot of things developed ” or “Okay, but
+do you need a third milkshake?” or even things like “Surly you can’t come up with another
+ridiculous acronym”.
+The answers, of course, to all of those questions are: “Correct, yes, and yes”.
+Naturally the latter two questions are self-explanatorily-resonant to any self-respecting person,
+but what about the first question? Has there been any real development lately?
+
+Yes!
+Well - kind of.
+Let me fill you in: basically, I’ve had the big-sad for a while and I didn’t have much brain-space to
+be creative in the nerd-space. But lately, this seems to be shifting; much to the relief of myself
+and, I’m sure, dear reader, to you.
+To the latter point, I’d like to briefly keep you abreast3 as to what is going on and what is on my
+radar for you.
+First up is LDPS – or Liquidity-Dependent Price Stability. You’ve seen me talk about it, you may
+even have seen a tweet or two but essentially it is a way to color your bar charts on TradingView
+with various colors indicating the type of liquidity and whether or not it is improving or getting
+worse.
+
+It looks something like this:
+The orange is bearish and
+green is bullish, and the text
+shows us that in text-form
+along with if the liquidity is
+“improving” or “worsening”.
+LDPS has been a bit of an
+adventure to find – it started
+out with something called
+LDPM-LL            (Liquidity-
+Dependent Price Movement
+– Liquidity Levels) but this
+was a tad complicado so I
+spent a reasonable amount
+of time widdling it down
+some to get a more
+straightforward metric.
+
+
+3
+    This is not the time to laugh.
+
+Deep Dive Stocks – Weekly Chat                                                          10/16/2023
+The preliminary analysis and back-tests are pretty stellar for LDPS with TradingView suggesting
+~800 -1,000% returns over 3 years depending on your risk tolerance. The crux is, however, that
+these numbers are too good, and so I am spending some time manually constructing a back-
+test and various analysis methods on daily, hourly, 30min and 15min timeframes to ensure
+nothing weird is going on.
+Since the typical sequence of events for releasing a metric to you guys is:
+
+   1) Analysis
+   2) Back-test (if applicable)
+   3) Primer construction
+   4) Video construction
+   5) Release
+This places us on step 1.5ish. As long as things go smoothly, step 5 should be somewhere next
+month.
+The good news is, however, that LDPS-Beta is available for use for Premium Members. If you
+would like, please don’t hesitate to reach out and I can get you added.
+Secondly, I have heard your feedbacks regarding the Dashboard and I am in the middle of
+implementing things, with the following priority:
+   1) Better mobile friendliness
+       Things such as buttons (quick aside to the newer members: you may be confused as to
+       why some parts of the dashboard have buttons and some don’t. Well, you see, it took me
+       awhile to figure out how buttons work so. The parts the don’t have buttons are the older
+       parts) will be implemented to make mobile browsing easier.
+       This requires a modest amount of backend updating but I am in the planning stage for
+       that.
+
+   2) Completion of the Tool Tips
+
+       I just think there should be more with more descriptions.
+
+   3) Fixing $T and $F
+
+       There has been no behemoth more destructive than my inability to plan ahead R’s
+       insistence on type-casting column’s automatically resulting in $T turning into TRUE and
+       $F turning into FALSE.
+
+       I have, believe it or not, been trying to rectify this problem for ages now but bear with me
+       some, the solution appears neigh.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                        10/16/2023
+Once these things are done, I have a curious thought to make the nascent LDPS bot available
+for public use – but there are a few things I have to look into first in order to assure that’s, as the
+kids say, copasetic with them4 .
+
+Naturally the list doesn’t end there but I don’t quite want to pigeon-hole myself into too many
+things right now, truthfully, but the list includes:
+
+      1) Getting 𝑉𝑉 2 onto the Dashboard,
+      2) Getting the Macro Report onto the Dashboard as an interactive bit,
+      3) Getting more interactivity with options querying and displaying,
+      4) Getting more expansive market scan search abilities (I’ve been talking with a fellow nerd
+         about this for a few weeks now – it’ll be a bit of an undertaking but it will be worth it),
+      5) Looking into the I-P Ratio more,
+      6) Updating the Primers, and
+      7) Establishing some sort of actual schedule for YT videos (if you have any suggestions on
+         what I should talk about, let me know! I think I found an editor too, so, that’s nice).
+If you have anything on your mind that I forgot to add to the list, let me know!
+
+Justin
+
+
+
+
+4
+    That would be the SEC.
+
+Deep Dive Stocks – Weekly Chat                                                            10/16/2023
+

@@ -1,0 +1,172 @@
+                                  Weekly Chat 07/01/2024
+
+
+                                        Main Points
+
+
+    -   VoEx remains oriented towards near-term downside.
+    -   Gamma Hedging Environments offer little support in the event of IV+/$-. $SPY presents
+        with local and diffuse selling pressure.
+    -   Put-selling on $SPY is diminishing and remains near-zero on $QQQ.
+    -   Market-wide gamma squeeze data are undisturbed.
+    -   Continued near-term downside expectation.
+
+
+
+                                         SUMMARY
+
+
+
+          Last week’s downside expectations manifested (just so), but this week it
+          appears the data suggest much the same outlook.
+
+          VoEx Divergence has replaced Bullish-Until-Proven-Otherwise (BUPO),
+          bringing with it the traditional downside expectation. This sentiment is
+          echoed within neo-VoEx, wherein VoEx-daily is flirting with the
+          Propagation Zone.
+
+          Put-sellers are not selling as many puts as before – including those on
+          $QQQ; who never really started.
+
+          The MWGS data show near-zero reading for growth, and GTM. This
+          suggests that the near-term downside is well-isolated for now.
+
+          Overall, last week’s outlook is rolled to this week: localized downside
+          expected.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                    07/01/2024
+                                                DETAILS
+
+
+
+
+Hello everyone!
+Last week, we left off with bearish ideations, and, with remarkably unremarkable moves, the
+market ended week-over-week with $SPY down 0.05% and $QQQ down 0.03%! Behold:
+
+
+
+
+We can see that $QQQ became quite close to falling into the bad-lands (the selling pressure
+located spot-down; almost reached on 2024-06-24) and thereafter a sluggish market recovery
+played out for the remainder of the week.
+Last week, the l’origine of the bearish outlooks came from the evidence suggesting the market
+was going to experience a near-term dip. Well – the market technically dipped (?), so, our goal
+this week is to look for evidence that the dip is dippethed or for evidence that perhaps this week’s
+stalling action was a test of attrition, of which downside is the still-likely resolution. Let’s see what
+we can uncover.
+Aufdecken
+To start decking this puzzle auf, let’s take a peek at VoEx:
+
+
+
+
+As the market move out of Bullish-until-proven-otherwise by-way of VoEx Divergence (notice
+VoEx-trend is decreasing since mid-06/2024 while price has risen; for both $SPY and $QQQ),
+this introduces our first piece of data suggesting the near-term dip is still on-going.
+
+Deep Dive Stocks – Weekly Chat                                                             07/01/2024
+Investigating neo-VoEx suggests the same:
+
+
+
+
+$SPY’s VoEx-daily (left graph), has bounced off of the Propagation Line, whereas $QQQ’s found
+its way therein earlier in the week. Both indicate signs of “weakness”. The good news for now,
+however, is that our medium-, to longer-term outlooks remain steadfast: since VoEx is within
+stability for $SPY and $QQQ, the outlook remains bullish; despite the growing evidence for
+continued near-term downside.
+So, from VoEx, it would seem that the near-term downside risk remains prominent.
+With that in mind, let’s see how the hedging environments are poised to handle potential
+downside:
+
+
+
+
+Not particularly well!
+$SPY presents with local and diffuse selling pressure, along with the only gamma-neutral zone
+being reachable with a rather drastic decrease in IV (good luck); $QQQ conversely has local
+purchasing support, however, gamma neutrality is gulfed by either reasonable selling pressure (in
+the event of IV-), or diminishing purchasing support (in the event of IV+).
+So – the hedging environments seem well poised to accelerate any downside brewing in the
+markets.
+
+
+Deep Dive Stocks – Weekly Chat                                                      07/01/2024
+What about our put-selling friends? What do they think?
+
+
+
+
+                                                                   Theta certainly helped the $SPY
+                                                                   crew out in the week prior, and
+                                                                   this seems to have incurred
+                                                                   some loss-of-confidence in the
+                                                                   put-selling     paradigm,    as
+                                                                   evidenced by the behavior
+                                                                   latter-half reduction.
+
+
+
+
+                                                                   Our $QQQ friends demonstrate
+                                                                   once more that not all put-
+                                                                   sellers are the same. The $QQQ
+                                                                   put-sellers were unphased with
+                                                                   the week’s lack of moves, and
+                                                                   they continue to remain
+                                                                   inactive for preparation for the
+                                                                   week ahead.
+
+
+
+
+Taken together, this suggests reduced confidence in put-selling-profitability (via $SPY’s behavior),
+and continued lack-of-confidence overall (via $QQQ’s behavior).
+
+A nod towards downside.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                         07/01/2024
+We can try to peek at how systemic this weakness appears to be via the Market-Wide Gamma
+Squeeze data, since it surveys the gamma-land of all stocks in the market. In doing so, we find:
+Not much!
+Gamma-growth (top graph), is still near-
+zero, and although GTM is negative, its
+pretty “just-so”.
+So, for now, it appears that in aggregate, the
+market appears well insulated from any
+gamma-mediated shocks, but, should the
+week dip, it will be worth keeping an eye out
+as market participants may be apt to start
+purchasing puts (and thus, adding negative
+gamma to the stack).
+So, all-in-all, it appears that the downside-
+expectation is extant, but there is minimal
+evidence to suggest a prolonged or
+significant downside.
+Now, let’s talk about DDS!
+So, basically: I tried to avoid it, but I can’t.
+Things have to be written in Rust.
+This will extend the time somewhat on the
+next round of processing, but I very much
+so think you’ll be pleased with the results.
+I will keep you updated!
+
+
+Happy Trading –
+
+
+
+Justin
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                     07/01/2024
+

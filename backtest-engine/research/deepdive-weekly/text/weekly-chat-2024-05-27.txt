@@ -1,0 +1,186 @@
+                                   Weekly Chat 5/28/2024
+
+
+                                          Main Points
+
+
+    -   VoEx is mixed; bullish on the medium term, and bearish on the short-term.
+    -   Hedging environments are in a vanna-stable orientation for both $SPY and $QQQ.
+    -   Put-selling remains minimal, with some agonal twitching present.
+    -   Market-Wide Gamma Squeeze data forecast more short gamma heading towards the
+        market.
+    -   Overall, increased risk for near-term downside with medium-term bullish outlook
+        maintained.
+
+                                          SUMMARY
+
+
+
+          VoEx did not resolve as much as desired this week, but overall conditions
+          look to be resolving towards the bullish side – at least on the medium-
+          term. The shorter-term is littered with data suggestive of a slight pullback.
+
+          The Gamma Hedging environments show a vanna-stable orientation for
+          both $SPY and $QQQ.$QQQ has a noticeable reduction in purchasing
+          support in the event of a $+. This has the potential to exacerbate any
+          downside movements.
+
+          In the theme of minimally-viable-bullish-near-term-outlooks, put-sellers
+          have once-more continued their non-action. This lack of decisiveness is
+          suggestive of a lack of confidence in near-term bullish performance.
+
+          The MWGS-data show a monthly, bi-weekly, and weekly increase in
+          gamma squeezes in the market. This increase has been met with a
+          suddenly negative GTM. Together, this points towards an incoming
+          increase in gamma squeezes, and with it, bearish expectations.
+
+          Overall, bearish on the near-term, still tentatively bullish on all other
+          timeframes.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                        05/28/2024
+                                             DETAILS
+
+
+
+
+Hello everyone!
+
+
+This week was fascinating, in particularly if you are interested in not much happening. Then it was
+quite a show.
+This week, $SPY moved essentially 0%, while $QQQ performed impressively with +1.37%. This
+startling movement can be seen below:
+
+
+
+
+It would seem $QQQ performed what I believe the astronauts-of-today call “a loopdee-loop”, while
+$SPY simply fell and bounced back up.
+Uneventful, but annoyingly choppy.
+This week, let’s see if the indecisive market has at least provided some decisive data. Then, let’s
+have a chat about the Liquidity Trading Robot and the next steps for DDS.
+So, let’s get started.
+The week ahead
+Starting as usual with VoEx, we see:
+
+
+
+
+Pure, unadulterated, disrespect.
+
+
+Deep Dive Stocks – Weekly Chat                                                        05/28/2024
+$SPY’s VoEx seems to have bounced directly off of the Propagation Line, while $QQQ’s VoEx is -
+stalled. The end result is: nothing has changed. VoEx is still just-so within the Inhibition Zone, just
+as before.
+
+Neo-VoEx, thankfully, although, as you will see offers some reprieve from our belabored minds
+with a pretty reasonably bullish print!
+
+
+
+
+Neo-VoEx for $SPY (remember, in this version, VoEx is gold1) is technically still within the
+Propagation Zone, but its journey northward is quite apparent. This brings with it renewed
+medium-to-longer term bullish outlooks.
+
+An even more bullish print for $QQQ on the right – with VoEx and VoEx-daily situated well within
+Stability, this is indicative of continued bullish performance.
+On the near-term, it’s not unreasonable to expect some pullback (as VoEx-daily for both $SPY and
+$QQQ seem poised to take a quick dip back into P.Z.), this, should it happen, appears to be a “buy-
+the-dip” sort of move, given VoExes movement towards stability on $SPY and VoEx’s current loci
+in stability on $QQQ.
+So, with tentative medium-term bullish ideologies with some short-term turbulence perhaps. Let’s
+see how the hedging environments are poised to handle this:
+
+
+
+
+1
+    More on the transition process below.
+
+Deep Dive Stocks – Weekly Chat                                                            05/28/2024
+Much the same set up as last week – a vanna-stable orientation for $SPY and (to a lesser extent)
+$QQQ. Perhaps much-the-same price action should be expected then: flat-to-green, unless IV
+moves reasonably up, in which case $QQQ will start seeing loss of purchasing support.
+
+Is this the outlook of our put-selling friends? Is there any hope for some profitability a là price
+appreciation or IV reduction?
+                                               If you squint, and I mean, really get in there, you
+                                               can see the tiniest of bumps of growth in DLP
+                                               activity.
+                                               But, if you’re like me and detest headaches, you
+                                               probably won’t have the constitution to squint long
+                                               enough to even consider if this is a worthwhile print
+                                               or not.
+                                               However, despite its immediate significance, it
+                                               does warrant monitoring over the next few days to
+                                               see if this is the start of a larger trend.
+                                               If so, and there’s a nice upwards movement in DLP
+                                               activity, then I think increasing long exposure
+                                               would be my next consideration.
+                                               Moving from just our friends to the market-at-large,
+                                               we come across the Market-Wide Gamma Squeeze
+                                               data!
+
+
+
+
+The growth in gamma squeeze has become
+officially positive, with a modest 10% increase in
+gamma squeezes week-over-week (a 14% over
+the past 10 days, and 7% over the past month!).
+Coinciding with this increase in current gamma
+squeezes is GTM’s dive into negative territory.
+This tells us that there is even more short-
+gamma on its way to the market - this flow will
+work to push gamma squeezes into the market.
+
+These data do seem to point towards an increase
+threat for near-term downside (which would
+seem to fit the potential for VoEx-daily to dive
+into the PZ on neo-VoEx).
+So – a reasonable mix of data.
+
+Deep Dive Stocks – Weekly Chat                                                         05/28/2024
+On one hand, VoEx (of all varieties) is technically bullish but (if we embrace the forbidden arts of
+data forecasting, then VoEx ) looks poised to enter into the Propagation Zone, despite the overall
+more bullish outlook.
+This is hand-wavingly supported by our put-sellers, who also seem to think there’s at least
+reasonable risk for unfavorable conditions status post long puts, as well as with the MWGS-data
+that indicate incoming turbulence, which typically moves things to the downside.
+The current hedging environments seem well suited to weather some downside but on $QQQ its
+noted that should IV rise too much, the purchasing support will quickly diminish.
+So, other than VoEx’s overall behavior and location on the medium-to-longer terms, things look
+reasonably suited for a near-term dip!
+Quick word!
+Few things:
+   -     To get stated:
+            o LTA has been released! You should have been added. If not, please let me know
+                and I’ll get you added (email me with your TV username also).
+                     LTA comes with a Get Started guide. It should be included in this week’s
+                         Weekly Chat email. If not, let me know!
+            o I am in the process of phasing neo-VoEx into being just “VoEx” but, you know me,
+                I can’t spell in any language, including R, so the research/validation portion is
+                taking a bit longer than usual. I apologize for the constant needing to switch back
+                and forth – but, for what it is worth – it has been relatively nice seeing in it action
+                these past few months. This implementation also includes getting it on the
+                Dashboard, which will be included in the next round of updates.
+            o Which, speaking of which, I am expecting the next big update to be around July
+                12th-ish, should all things go well. I’ll keep you updated.
+            o Also – I switched out the heatmaps in the reports. Forgot about those!
+
+
+Happy Trading –
+
+
+Justin
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                            05/28/2024
+

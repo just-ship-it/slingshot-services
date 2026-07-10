@@ -1,0 +1,154 @@
+                                   Weekly Chat 2024-11-11
+
+
+                                          Main Points
+
+
+
+    -   VoEx-Daily has spiked back into stability for both $SPY and $QQQ. VoEx remains within
+        stability.
+    -   Hedging environments are supportive but $QQQ presents with selling pressure located
+        spot-down.
+    -   Put-selling behavior has reverted back to near-zero.
+    -   Market-Wide Gamma Squeeze data show baseline prints as well.
+    -   LDPM and LDPS show bullish liquidity and bullish LDPM orientation.
+    -   Overall, bullish data prints abound.
+
+                                          SUMMARY
+
+
+
+
+          Last week, there was concern for downside given VoEx-daily’s entrance
+          into the Propagation Zone. This did not happen. As a consequence, the
+          data seem to have erased any evidence of bearish outlooks:
+
+          VoEx-daily has spiked into Stability; although there is risk for a VoEx-Spike
+          response (in conjunction with mean-reversion), given VoEx’s placement
+          within Stability, this lowers the risk thereof, resulting in a net bullish
+          outlook.
+
+          The hedging environments offer no resistance to continued appreciation;
+          $QQQ’s environment does present with the introduction of spot-down
+          selling pressure, adding a slight risk for “exaggerated” downside, should
+          mean-reversion creep into the markets. However, given the data above,
+          this is contextualized as a potential opportunity to average down.
+
+          Overall, the data seem quite bullish and so too then do the outlooks!
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                        11/11/2024
+                                              DETAILS
+
+
+
+
+11-11 make a wish!
+Ha-ha just-joking, after last week, we can’t even afford to wish.
+After a painful week, and a healthy reminder of the magnitude of the market’s alacrity, $SPY ended
+up 4.75% while $QQQ moved 5.48%! Those are some big numbers, so let’s bust out the math:
+SPY’s EPR from last week was 2.12% and $QQQ’s was 2.65%. This means the market moved
+2.24x more than was expected! We can visualize this movement below:
+
+
+
+
+With a casual move in the $+, IV- direction, we can see both indexes moved (perhaps for the first
+time ever, if memory serves) to the upper limits of the heatmap (usually it’s the lower limits or far
+off to the right).
+These moves, do, I believe, constitute a worthwhile story to send home – so, in that, at least, there
+was some truth.
+This week, the investigation is relatively straight forward: did the market just snap to a new beat
+or should we consider this an interlude to the bearing data we had been tracking? Or should we
+worry about a mean reversion shaking things about? Let’s take a look and find out.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                          11/11/2024
+If you look longer than 3 seconds you’re staring at it.
+Starting as usual with VoEx, we see that perhaps our answer is quite straightforward:
+
+
+
+
+VoEx-daily has violently moved into Stability while VoEx itself rests therein as well – this suggests
+low probability of a “VoEx Spike”, and simply rapid move back into bullish outlooks. Nonetheless,
+a low threat for a VoEx Spike but worth observation over the next week or so (i.e.: look at VoEx
+just before 2024-09-01).
+So, per VoEx, the anticipated downside has all-but vanished, leaving in its stead a healthy dose of
+bullish enthusiasm.
+This incurs a medium-, and long-term bullish outlook, but perhaps before putting our hat on the
+near-term post as well, let’s take a quick look that there isn’t any evidence for a nasty mean-
+reversion to occur (seeing as the market moved 2x and all).
+Thus, let’s take a peek at the hedging environments to see how they are poised.
+
+
+
+
+Both seem reasonably supportive for continued bullish outlooks, and their influence distributions
+share a positive view for the week ahead as well. It should be noted that $QQQ does present with
+a tad bit more risk given its close proximity to spot-down selling-pressure, suggesting that any
+~casual~ mean-reversion might lead to a healthy dip-to-buy.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                          11/11/2024
+Moving onwards, we can confer with our put-selling friends to see what they hold in-store for the
+weeks ahead1.
+
+
+
+
+Perhaps much like us, they are in a bit of a concussive period – as they show no eagerness to
+rejoin the party just yet. Perhaps the balance of IV and potential downside does not merit the
+risks, currently.
+
+Moving onwards to the Market-Wide Gamma Squeeze data [not shown] we see that the data has
+essentially gone back to “baseline” as well – the growth rate is still slightly climbing, but for now,
+GTM is starting to print positive values, and the nominal amounts of gamma squeezes is low
+(800ish).
+Lastly, we see with LDPM and LDPS that ES (aggressive setting) has reverted back to bullish, and,
+we don’t see any particular evidence of an eager ask rising drastically to meet this appreciating
+price:
+
+
+
+
+So, in other words, thoughts are moving towards a rebounding bullish outlook with the hesitance
+of a newborn fawn.
+Unsteady, uncomfortable, and doesn’t feel quite right, but, bullish data are bullish.
+
+
+1
+ I’m taking a humblizing solace in connecting with the put-sellers over the past two weeks – they were human two
+weeks ago and so too did we err last week.
+
+Deep Dive Stocks – Weekly Chat                                                                    11/11/2024
+And so, with fresh lessoned learned; loudly looming over ourselves offering objective opines, let’s
+let learning-lessons leap forward: foremost, we witnessed wild waffs while perceiving, principally,
+projections pertaining to bearish behaviors but, by-and-large, that just didn’t happen – so the
+lesson is: well, there is no real lesson. Sometimes that’s just how the ball bounces.
+Perhaps some lessons left looming but those will come with more time and inspection.
+Til then!
+Oh -
+Quick note!
+I am mostly off of X for now! So, all updates will be going back to the Discord and Email.
+With LDPM, LDPS completed and with LTA in the beta stage, DDS is now shifting focus back to
+the Dashboard! I hopefully will have an update in the next week or two regarding that.
+Also – DDS is full again!
+
+
+Happy Trading -
+
+
+Justin
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                        11/11/2024
+

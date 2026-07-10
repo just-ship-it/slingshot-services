@@ -1,0 +1,172 @@
+                                  Weekly Chat 2026-04-20
+
+
+                                        Main Points
+
+
+
+       -   VoEx continues to rise dramatically into Bullish zone
+       -   Gamma-hedging heatmaps showcase persistent selling throughout.
+       -   Market-wideg amma squeeze data showcase rapid GS destruction and the
+           predictive models expect continuation.
+       -   LS&T data highlight the encroaching profit-takers and liquidity vacuums formed in
+           response to these recent price appreciations.
+
+                                        SUMMARY
+
+
+
+           Expectations were for bullish performance and so did the market
+           deliver in full, with $SPY and $QQQ drastically exceeding their
+           expected-price ranges from last week. A consequence of this is the
+           ever-growing threat of mean-reversion.
+
+           VoEx for $SPY and $QQQ continue to rise dramatically, $SPY’s it
+           should be noted is somewhat more conservative as VoEx-proper for
+           $SPY is the only family member continuing its residence within the
+           Bearish zone.
+
+           The gamma-hedging environment has been inundated with
+           persistent and diffuse selling pressure, offering non-stop selling
+           pressure to any $+ attempts in the week ahead. The predictive data
+           continue to show a gamma-foundation that is cooling.
+
+           LS&T data showcase near-term profit-takers and liquidity vacuums,
+           some as extreme as -5% (on the 144-minute) while the higher
+           intervals content with traps, bullish on the lesser and bearish on the
+           greater.
+
+           Taken together, the risk of mean-reversion is substantial and so the
+           immediate expectation is a rocky road down.
+
+
+
+
+Deep Dive Stocks – Weekly Chat        for the week of              2026-04-13 to 2026-04-17
+                                                       DETAILS
+
+
+
+
+Hello all!
+Last week, we left off with notions of bullish performance and a dwindling expectation that said
+performance is merely a bulltrap but rather may represent the first start of a recovery. The market,
+seemingly inspired by this news, decided to move quite robustly in the affirmative, with $SPY
+moving a staggering 4.5% while $QQQ moved 6.17%! Quite startling moves.
+We’ll bypass checking out these moves on the gamma-hedging heatmaps since, well, its basically
+just straight up in a sea of blue, so let’s take the time instead to check in on our mean-reversion
+data, to see just by how much the market exceeded our expectations.
+        Stock                         Expected Price        Realized Price     % Magnitude
+                                      Range (T+5)           Range              Difference
+
+        $SPY                            1.77                     4.50                 87%
+
+        $QQQ                            2.02                     6.17                101%
+
+Those are some pretty remarkable numbers! If last week we were concerned with the spectre of
+you-know-who1, then this week, these data suggest his apparition next week is all but decided.
+This week, let’s check in with the data, weigh the risks of mean-reversion and see if we can pierce
+the veil to answer definitively: are we recovered?
+
+Recovery, recovery everywhere but not a bull in sight
+
+Starting as usual with VoEx, we find:
+
+
+
+
+1
+    The spectre of ~mean reversion~
+
+
+Deep Dive Stocks – Weekly Chat                  for the week of              2026-04-13 to 2026-04-17
+These remarkable VoEx movements give a clear sign: the bottom seems to be in! The market is
+positioned to keep going up! Well, particularly for $QQQ - $SPY’s VoEx seems a tad more
+conservative in its impressions – let’s hope we don’t fall back into past paradigms whereby $SPY
+and $QQQ start disagreeing with each other endlessly!
+But, on the surface, this speaks to two main themes: 1) Instability is quite high (by way of just how
+remarkable those VoEx-daily moves are), and 2) Overall, the outlook is up!
+
+Moving along to the Gamma-hedging heatmaps, we see our first indication that the spectre of
+mean reversion is already in the room with us:
+
+
+
+
+From a sea of purchasing support to a sea of selling pressure, the hedging heatmaps look well-
+poised to provide steady headwinds in the event of any $+ . Thus, it seems we have found the first
+weapon in our spectre’s weapon arsenal.
+Moving along to the gamma-squeeze, let’s check to see if the market’s gamma-flows have
+continued to calm down.
+
+In terms of raw-counts, we see the gamma-squeeze destruction is quite pronounced! Down from
+the most recent peak of ~1,500 to 715, the market’s unstable gamma squeezes have been
+severed in half (almost to the baseline!).
+
+
+
+
+Deep Dive Stocks – Weekly Chat            for the week of                2026-04-13 to 2026-04-17
+The predictive data is also rejecting future instability – sort of. The PGC (purple) tells us that the
+destruction of gamma squeezes next week will be greater than it was this week but the PCC (the
+counts) are not too convinced yet – it still suggests a greater number next week than currently
+present.
+
+
+
+
+In short, these data are mixed but the PGC tends to be the forerunner: once it dips into negative
+territory, the GS destruction is typically quite uniform and robust. Perhaps if the spectre of mean-
+reversion visits us next week, we can check in on these models to see how things fare: if we do
+mean-revert and these data go undisturbed, additional credence is given to their outlooks but if
+we mean-revert and these data rapidly oscillate, or swap back, then we may have to consider that
+the extreme price action is mucking up predictive prowess.2
+Moving onwards to LS&T data, we find:
+
+
+
+
+2
+    You’ll remember from a while ago our rant about ‘artificial GS destruction’ during rapid price appreciation.
+
+
+Deep Dive Stocks – Weekly Chat                      for the week of                    2026-04-13 to 2026-04-17
+Some curious findings!
+Starting with the 90-minute:
+       -   We have the second-half of an aggressive bid cascade starting by way of the “wave”
+           starting. LT-1 is moving above spot, indicating that profit-takers are beginning to be
+           detected.
+               → This typically results in re-testing the local support (namely LT-5 currently) and
+                   if bearish conditions form, down to the next, currently at LT-6 (-2.75%).
+On the 144-minute we have largely bullish skies but it is curious to note the liquidity vacuum
+between LT-5 and LT-6, which currently stands at a 5% difference.
+The 987-minute shows:
+       -   A bulltrap testing LT-7! No evidence of profit-takers (LT-1 through LT-4) moving above
+           spot just yet but it appears LT-7 was not keen on letting spot through just yet.
+Lastly on the weekly interval, we see an aggressive bid (albeit a tiny one for now) working to push
+spot back above LT-5 as apart of its bear-trap recovery process.
+Overall, these data don’t showcase the clearest of skies for continued price appreciation, and
+thus, they set the stage for our comrade to visit the market. Mean reversion looks very probable
+with a downside stop at LT-6 on the 90-minute but if conditions deteriorate further, LT-6 on the
+144-minute (-5%) seems probable.
+
+
+
+Deep Dive Stocks – Weekly Chat           for the week of               2026-04-13 to 2026-04-17
+In terms of if the bottom has indeed been reached – for now, it does appear to be the case! The
+upcoming mean-reversion, should it happen (and even moreso if it doesn’t) will shed light on this
+as we will get to see the market in its first “stress test” since the recent correction.
+For now, let’s expect a dip as mean-reversion, hedging heatmaps and profit-takers have their way
+while positioning for longer bullish expectations.
+
+
+Happy Trading,
+
+
+Justin
+
+
+
+
+Deep Dive Stocks – Weekly Chat          for the week of               2026-04-13 to 2026-04-17
+

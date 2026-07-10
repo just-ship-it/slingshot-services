@@ -1,0 +1,412 @@
+                                  Weekly Chat 08/28/2023
+
+
+                                         Main Points
+
+
+    -   VoEx-daily persists within the Propagation Zone while VoEx-Trend for $SPY and $QQQ
+        are pointed northward.
+    -   Hedging heatmaps demonstrate continued expectation for the introduction of
+        purchasing support in the $-/IV+ quadrant.
+    -   DLPs have re-opened with force from our DLP-friends.
+    -   MWGS-data is predominantly bullish.
+    -   Most criteria for reversal have been met.
+    -   Tentative bullish outlook with expectations of the dip having dipped.
+
+
+
+                                          SUMMARY
+
+
+
+          Last week, there were several data points that suggested continued
+          bearish performance with the small caveat that should there be greenage
+          throughout the market-land, it would be expected to be short-lived unless
+          several criteria were met.
+
+          These criteria, by-and-large, have been met: negative GTM values, DLP
+          resurgence, and no drastic VoEx responses have all accompanied this
+          week’s net-positive moves in reinforcement of the idea that the bottom
+          has been reached.
+
+          An outlook not without controversy, however, is VoEx-daily’s persistence
+          within the Propagation Zone – a position which is gingerly balanced
+          against VoEx-trends more positive outlooks.
+
+          The hedging environments offer similar support as in the past few weeks
+          but with the added observation that last week, the purchasing support was
+          sufficient to absorb any remaining eager ask – but it would seem that that
+          bullish support withered quickly without the price insensitive bid.
+
+          Overall, these data support a tentatively bullish outlook with the idea that
+          there is little evidence of more contagious downside a head by way of 𝑉𝑉 2.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                       08/28/2023
+                                              DETAILS
+
+
+
+
+Well – what a week!
+We left off last week with predominate and persistent bearish leanings due to VoEx’s location,
+MWGS data, and some other stuff.
+As the week progressed, $SPY saw upwards mobility from Friday’s close to heights of +1.99%
+($455.22 reached on 08/24/23), and staggering lows of -0.34% ($435.00 low on 08/25/23), with
+a net resulting move of 0.79% for the week.
+
+$QQQ in similar, but exaggerated fashion, saw heights of +4.08% ($372.74 on 08/24/23) and lows
+of 0.12% ($358.58 on 08/25/23) with a net move of 1.64% for the week!
+All-in-all, not a very bearish week and one that can’t readily be described as “standard” or “normal”
+or even “stable”. Besides VoEx giving us this impression, we can glimpse this erratic outlook via
+the price behavior on $QQQ.
+
+Last Friday (08/18/2023), $QQQ had a 5-day EPR of ±2.24%, which was exceeded nicely with its
+4% move on Thursday; a 2x EPR move which resulted in a 3.79% drop down to the week’s low on
+Friday of $358.58! Not the most stable of times, for sure.
+The greenage for the week wasn’t entirely unexpected, as there were several nods to the idea that
+things might bounce.
+The first was acknowledgement of LDPM-89’s particularly fortified defenses:
+
+
+           “
+Additionally, it may be
+ particularly insightful
+    this week as both
+  $SPY and $QQQ are
+ finally testing LDPM-
+      89 on the daily
+($SPY’s LDPM-89 is at
+ ~$433 [current price:
+ $436.50] and $QQQ’s
+   is at $353 [current
+     price: $358.13].
+           “
+
+
+Deep Dive Stocks – Weekly Chat                                                          08/28/2023
+On the daily timeframe with $SPY we can see this bouncey-bounce played out quite nicely.
+
+In preparation for a potentially green week, there were some signals indicated that would help
+identify if the bounce would be a bounce or the start of the recovery. These signals were:
+
+                                                 “
+       -   Persistent non-gamma squeeze status on $SPY and $QQQ
+       -   Drastic reduction in MWGS-counts,
+       -   Negative GTM,
+       -   DLP resurgence,
+       -   No drastic VoEx responses (such as spiking back into the Inhibition Zone).
+                                                 “
+This means that this week, all that needs to be done is to check the data for these criteria, weigh
+their relative presence (or absence), and work on the question: is the dip dipped or shall we
+continue?
+
+Let’s get started!
+Last Week’s Moves
+As usual, let’s quickly get a glimpse at last week’s moves via the hedging heatmaps:
+
+
+
+
+You’ll remember from last week, it was noted that “…The goal for the next few weeks will be to
+monitor the hedging environments for signs of a diminishing eager ask as well as an increase in
+eager bid.” , and it would seem the evidence for an ever-growing eager-bid and/or ever-diminishing
+eager-ask is present.
+Unlike the past two weeks, the purchasing support provided by the hedging environments seems
+to have been robust and effective! Perhaps there is evidence that an eager bid is entering the
+scene.
+
+
+Deep Dive Stocks – Weekly Chat                                                         08/28/2023
+[Extra handwaving edition:
+One might well notice that $SPY’s and $QQQ’s price sort of “ping-ponged” back and forth this
+week. In particular, note how on the 23rd, $SPY
+rose an appreciable 1.11% (37% greater than its
+1-day EPR) placing $SPY in close proximity to
+selling pressure both per Friday’s Heatmap and
+the 23rd’s (right).
+This introduction of selling pressure (and/or
+loss of purchasing support – depending on
+your persuasion) was then met with a -1.39%
+day (exceeding its 1-day EPR by 65%).
+
+The difficulty is deciding if this is “standard”
+mean reversion, or an ominous sign that the
+eager bid present is still rather weak. That is,
+without the additional benefit of the price-insensitive bid (from hedging) meeting the ask with the
+eager bid, as small as it may be currently, there is insufficient bid to continue any upwards
+trajectory.
+
+With the price insensitive bid present in the market, the price moves upwards - but instead, replace
+that price insensitive bid with some light selling pressure (price insensitive ask), it would seem
+the price the price insensitive ask chews threw any eager bid present and quickly drops down to
+the organic bid, resulting in mean-reversion and a slightly uneasy feeling towards any developing
+idea that there is sufficient eager bid present.
+Signs of weakness in the bid or signs of weakness from the ask?
+Decisions!
+].
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                         08/28/2023
+Today’s Data for Tomorrow’s Future
+
+Before the excitement that bullish performance is expected (as might be gleaned from just LDPM-
+89’s and the purchasing support’s robustness), it is worth mentioning that VoEx has still taken-
+up-shop in the Propagation Zone for both $SPY and $QQQ:
+
+
+
+
+One would be remiss, however, to not notice VoEx-trend starting its ascent upwards1. A tricky
+situation: one in which the current data are planting VoEx squarely within the Propagation Zone
+(and thus, bring with it continued bearish outlooks) but one in which the very same data2 is
+anticipating movement out of the Propagation Zone (via VoEx-Trend/’s northward persuasion).
+A classic now-versus-the-future battle of data.
+
+Let’s quickly look at some of the other data to help us pick a side.
+
+
+
+1
+  If one wanted to really rock the boat, they might suggest that VoEx on $QQQ is reminiscent of VoEx Coiling. But
+you didn’t hear it from me.
+2
+  Terms and some conditions apply.
+
+Deep Dive Stocks – Weekly Chat                                                                       08/28/2023
+First up, are the hedging environments for $SPY and $QQQ:
+
+
+
+
+                                                                 On $SPY (left) we see robust purchasing
+                                                                 support, and a stark bullish outlook per
+                                                                 the Influence Distributions (albeit with
+                                                                 still an annoying left tail). All-around a
+                                                                 familiar sight.
+
+
+
+
+On $QQQ (right), we see the
+same but with a distinctly
+stable-vanna-squeeze
+orientation3. The data also
+suggest a bullish Influence
+Distribution accompanied by
+an even-more aggressive left-
+tail (as compared to $SPY’s).
+
+
+
+
+With the robust response to
+the market’s purchasing support last week, it seems more reasonable than in the prior several
+weeks to anticipate continued efficacy of said purchasing support.
+
+Moving towards the outlook of our friends-with-money, a feeling emerges akin to how I imagine
+a parent feels seeing their child hit their first home run in little-league:
+
+
+
+
+3
+  The vanna-squeeze interpretation comes from the fact that whether or not purchasing support (blue) or selling
+pressure (red) is introduced to the market is determined mainly by IV, not by the price! It is considered stable
+because purchasing support is to the right (IV+) and selling pressure to the left (IV-). See Weekly Chat 2023-08-14
+for examples.
+
+Deep Dive Stocks – Weekly Chat                                                                      08/28/2023
+Now, that is some hefty put selling! For those watching at home, it might be worthwhile to review
+the 2023-08-14’s extended view of DLP behavior for $SPY :
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                      08/28/2023
+                                                              This view (left) was crafted due to
+                                                              the idea that our DLP-friends’
+                                                              behavior lately had been rather
+                                                              moot :
+                                                                                “
+                                                               Yet – lately there has been moot
+                                                                   performance. The lack of
+                                                                    confidence seems very
+                                                                  pronounced – however it is
+                                                               uncertain as to which aspect of
+                                                              put-selling is dubious: is IV too low
+                                                                      or is price too high?
+                                                ”
+Combining these two views into one gets us:
+
+
+
+
+Quite not the moot behavior!
+
+Its good to finally see our DLP friends back – and with such conviction (although its curious that
+it seems there is some excess caution on $QQQ – I couldn’t imagine why!).
+These data are quite the bullish endorsement.
+Moving towards the MWGS-data, there are similar such bullish sentiments with the MWGS-
+growth-trend and 5-day-growth-rate (top graph; black line and gold line, respectively) printing
+negative values (thus indicating that the market is starting to remove gamma squeezes). These
+data are associated with bullish performance.
+
+
+
+Deep Dive Stocks – Weekly Chat                                                        08/28/2023
+GTM started the week with a reverse Uno card and printed a substantial positive print – and now
+may be a good time to review these types of GTM prints. From the Footnote #11 on 2023-08-07’s
+Weekly Chat:
+                                                       “
+The GTM Graphing algorithm takes the GTM values and if there are any greater than a certain threshold,
+ it cuts it off and places a max value. This is just for graphing purposes and under-the-hood, these values
+    are incredibly negative. However, the underlying math works like so: 𝑋𝑋𝑖𝑖𝑖𝑖 − 𝑋𝑋𝑜𝑜𝑜𝑜𝑜𝑜 whereby if 𝑋𝑋𝑖𝑖𝑖𝑖 → 0
+     because of a gamma “flush”, then GTM simply becomes 0 − 𝑋𝑋𝑜𝑜𝑜𝑜𝑜𝑜 → some-large-negative-number.
+                                                       “
+Reversing said logic brings us to some-large-positive-number → 𝑋𝑋𝑖𝑖𝑖𝑖 − 0 where 0 ≔ 𝐺𝐺𝐺𝐺𝐺𝐺𝐺𝐺𝑎𝑎 𝑜𝑜𝑜𝑜𝑜𝑜 →
+all of the stocks leaving their gamma squeezes have left. In other words, it’s a reverse “gamma
+flush”.
+Now, admittedly, this is a bit convoluted. The main issue is that I didn’t anticipate, or see in the
+data, these “flushes” (or perhaps, I just didn’t apply significance to the extreme values that GTM
+can produce. For instance, the GTM values printed on the recent “flat-top” were 89! This is an
+unintended hole in the view provided by GTM and it is currently under investigation.
+So overall, in focusing in on the MWGS-growth data, it would appear there are predominately
+bullish inclinations.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                                    08/28/2023
+Deep Dive Stocks – Weekly Chat   08/28/2023
+                                                ---
+                                           Quick Aside
+To continue on the GTM-visual-hole that has been discovered, I did do some re-arranging under
+the hood in an attempt to over-come this. Admittedly, the GTM algorithm was a tad more
+complicated than I remembered, but I have identified several areas that appear to be good
+candidates to over-come this situation. The situation that is attempting to be over-come is:
+
+   1) GTM’s undefined behavior should be, well, defined.
+   2) GTM’s interpretation shouldn’t require mental gymnastics due to how potential “flows”
+      might operate. Instead, the interpretation of GTM should be readily available on the
+      surface.
+In this vein, some re-configurations were done to eliminate these two hiccups. First, I’ll present a
+quick analysis of the work, and then I’ll present the work.
+The quick analysis is relatively straightforward: I reconfigured some of the raw GTM values and
+converted them into 5-, 10-, and 20-day rolling averages, and mapped these values to the change
+in the number of gamma squeezes going into the future 5-, 10-, and 20-days. The goal is to ensure
+that the current (and new-ish) GTM values are still associated with future changes in gamma
+squeeze counts. The results are here:
+
+
+
+
+These data show a nice association still with an increase in GTM values corresponding with an
+increase in future gamma squeeze counts. Although not an exhaustive analysis, it does supply
+sufficient confidence to show case the augmented GTM graph:
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                         08/28/2023
+The first thing to note is that there are indeed no undefined behaviors! That’s exciting. The other
+demonstrates that the 60-day EMA (gold ribbon) is positive once-more, an association with future
+gamma squeeze counts, along with the 5-, 10-, and 20-day GTM values. Some bearish prints from
+this GTM version!
+However, before we can put too much stock on these data, I will be investigating this version of
+GTM a bit more in the weeks ahead.
+To quickly review what these data indicate:
+
+GTM here is telling us that when a comparison is made between the incoming gamma-squeeze-
+  flow and the outgoing gamma-squeeze-flow, there is a greater amount of incoming gamma
+                           squeezes than outgoing gamma squeezes.
+
+
+Naturally, this interpretation suggests bearish outlooks a head – however this outlook should be
+paired with a slight grain of salt as I think there is some more work to be done on the way the
+algorithm calculates the “momentum” of the gamma flows.
+Always improvements to be had!
+                                                ---
+
+So far, we’ve seen:
+
+
+Deep Dive Stocks – Weekly Chat                                                        08/28/2023
+   1) For $SPY and $QQQ, VoEx-daily is in the Propagation Zone while VoEx-trend pointing
+      northward,
+   2) DLP behavior is quite decisive and it would appear our DLP friends are quite happy making
+      some bullish bets for the week ahead,
+   3) GTM data is overall mixed with MWGS-growth and MWGS-growth-trend being negative
+      while GTM is printing negative values – keeping in mind that GTM’s EMA is positive. Our
+      experimental GTM data suggest growth is in the future.
+And so, to move on, let’s see if 𝑉𝑉 2 offers us any solace or directional insights. Last week, 𝑉𝑉 2 had
+titillated us with a singular datum within the Propagation Zone, and it would seem that this week
+offered little company for our wayward friend:
+
+
+
+
+With no new data within the Propagation Zone, and no apparent collapse in 𝑉𝑉 2 noted throughout
+any of the 3 zones, it would appear that the anticipation that the current market dip was going to
+be self-limiting is gaining evermore traction.
+Last week, there were several criteria noted that would help gauge if a green week should herald
+the incoming end of the dip or should simply be registered as a signal of instability. These criteria
+can now be assessed:
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                            08/28/2023
+Criteria                                                   Status
+
+
+Persistent non-GS status on $SPY and $QQQ                                             No
+
+Drastic reduction in MWGS-counts                                  Eh - 3.62% reduction over the past 5 days.
+
+Negative GTM                                                                         Yes
+
+DLP resurgence                                                                       Yes
+
+No drastic VoEx Response                                                             Yes
+
+
+
+
+    Thus, it would appear the majority of our criteria have been met. The result? A tentatively bullish
+    outlook – this outlook will rest on:
+           1) Bullish performance on $SPY and $QQQ (duh ) but like before, I would like to see VoEx
+              either calmly move back into stability (to suggest a more medium-long-term bullish
+              outlook) or eject itself back into the Inhibition Zone (to place us back in BUPO). The least-
+              ideal is if it stubbornly hangs around the Propagation Line (see 03/2023).
+           2) Continued decrease in MWGS counts along with $SPY and $QQQ exiting their gamma
+              squeeze and maintaining a non-gamma squeeze state.
+           3) DLP behavior continues to be robustly bullish.
+           4) Hedging environments continue to be supportive with evidence of an eager bid being
+              present and growing (i.e.: the market can withstand some selling pressure without tanking
+              like it did this week).
+
+    Overall, I think things have been going rather well so far.
+
+              -   Since introduction to the Propagation Zone, $SPY has moved 3.61% towards the
+                  downside, having bounced off of the LDPM-89 target discussed in 08/14/2023’s chat;
+              -   𝑉𝑉 2 has kept us abreast to any changes that might signal a more significant downside;
+              -   MWGS-counts and growth metrics have done a good job of showcasing anticipated
+                  market moves (GTM has faltered a tad this cycle, admittedly);
+    Thus, without any significant data prints to suggest extension of this downside is in order (with a
+    slight side-eye to VoEx), I think it would be prudent to take a tentatively bullish stance – but since
+    things aren’t completely bullish (looking at you, GTM and VoEx), a readily-available-pivot will be
+    kept nearby.
+
+    Happy trading!
+    Justin
+
+
+
+
+    Deep Dive Stocks – Weekly Chat                                                              08/28/2023
+

@@ -1,0 +1,356 @@
+                                 Weekly Chat 2025-01-06
+
+
+                                      Main Points
+
+
+
+    -    VoEx has entered the Propagation Zone, putting Bearish Until Proven Otherwise
+        into effect.
+    -   Hedging environments for $SPY and $QQQ are diametrically opposed with
+        atypic vanna-neutral hedging orientations.
+    -   Put-selling on $QQQ remains present with new activity noted on $SPY.
+    -   Market-Wide Gamma Squeeze Data suggests flows remain negative, despite
+        recent casual reductions in gamma squeeze counts.
+    -   A look at recent VoEx behavior suggests the market is in a fleeting window of
+        recovery, but continued downwards movement of VoEx will pass the window by,
+        leading to predominately bearish outlooks.
+    -   Overall, prudence suggests both bearish outlooks overall and while respecting
+        the put-sellers indications; likely forming bull-trap leading back into downside.
+
+
+
+                                       SUMMARY
+
+
+          Last week, there was concern for downside and this downside did
+          arrive but whether it concerned is debatable. The data responded by
+          moving VoEx into the Propagation Zone which immediately sets
+          future outlooks towards the downside as the default.
+
+          This default downside is down but in an almost in a goonish manner,
+          the market is seemingly withholding the satisfaction of realization
+          thereupon by way of presenting data of a bull-trap. This is evidenced
+          predominately by DLP activity and a non-inhibitory hedging
+          environment.
+
+          Market-wide gamma squeeze data show a slightly decreasing
+          population of gamma squeezes but a persistently negative GTM.
+
+          Overall, it seems BUPO (of the Bearish variety) has returned just in
+          time for a bulltrap.
+
+
+Deep Dive Stocks – Weekly Chat                                                01/06/2025
+                                           DETAILS
+
+
+
+
+Hello every-body and Happy New year!
+Last week, we left off with bearish ideations and, baring the last day this week, things
+worked out pretty well! If we include the last day of the week, begrudgingly, I might add, it
+still works out to a relatively successful week, with $SPY moving -0.51% and $QQQ
+moving -0.76%; not quite as spicey as our destination target of -4.00% but if -I-we huff
+some cope-ium, then images portraying the market before the-last-that-shall-not-be-
+named day of the week should start to appear with the general shapes of -1.74% and -
+2.24%, respectively.
+These numbers please, as do the hedging heatmaps (well, before you know, that is):
+
+
+
+
+Leading into then, we see a steady march downwards for $SPY (left) and $QQQ (right).
+This progression worked to lead $SPY towards gamma neutrality, and $QQQ into selling
+pressure until Friday (there I said it), at which time it looks like the market caught a bit of
+purchasing support and conditions rebounded.
+It might be worth mentioning (so that the math I did above seems less like a daily self-
+affirmation ritual and more like data) that $QQQ’s introduction to that tiny square of
+purchasing support (on Thursday’s close) occurred in the setting of mean reversion as
+well (seen below) – causative? No but a nice confluence of forces.
+Last week, the EPR for $SPY for Thursday was ±1.12% and for $QQQ it was ±1.43% - this
+means that by the-day-before-the- .. on Thursday, the market had moved 43% more than
+expected for $SPY for the week (and thus, overshooting the previously-established
+weekly outlooks quite a bit and a day), and in a stunning display of synchronicity, $QQQ
+had mustered a 44% overshoot by Thursday as well!
+And so, it seems that with the spectre of ~mean-reversion~ and a pinch of purchasing-
+support, and the market happily rebounded.
+Deep Dive Stocks – Weekly Chat                                                     01/06/2025
+Thus, let us investigate how we stand with the market and look into what future we might
+have; perhaps the market has moved on without us (and our nascent bearish inclinations),
+or perhaps this is a quick fling before returning back to us. Who knows!
+Then once we’re done prying, some notes about the state of things!
+Despite that which is included below being notes pertaining to the current state of things,
+they are, in fact, not the aforementioned notes about the state of things, that will come
+after.
+Starting as usual with VoEx, we see, frankly, a wild sight:
+
+
+
+
+VoEx itself has finally made an entrance into the Propagation Zone! And with zeal – we
+like.
+This, of course, does several things, all at the exact same time:
+      -    It initiates BUPO 1 (of the Bearish variety)
+      -    It greatly increases the time-horizon for the expected downside,
+      -    It turns all VoEx-daily movements into stability “Bull Traps” rather than signs of
+           stability returning,
+       -   Expectation for downside moves to be over a longer time-period rather than rapid
+           movements (i.e.: a grind-down rather than a fast correction, similar to 2023-08 to
+           2023-11-like).
+As it turns out, these actions directly shape the interpretation of VoEx for this week:
+       -   Downside is nearby,
+       -   Bullish performance is bull-trap-until-proven-otherwise, and
+       -   Downside targets from last week should be re-examined!
+
+
+1
+    Bullish Until Proven Otherwise or Bearish Until Proven Otherwise, depending.
+
+Deep Dive Stocks – Weekly Chat                                                     01/06/2025
+A key-note here is that with VoEx moving into the Propagation Zone, means that the
+~default behavior~, as it were, is to the downside, but that does not preclude the market
+from expressing some individuality, should it find the reserves and inclination (such as
+on Friday). Thus, before we become bound to the cozy, bearish bed beckoning our stay,
+let’s do a quick round-about to make sure nothing is poised to disrupt our winter
+hibernation.
+The first step in doing this is ensuring the ground we’ve chosen to sleep on is sound and
+free of any hills one might roll down inadvertently whilst scheming sleeping. Let’s
+accomplish this with the Gamma Hedging Heatmaps:
+
+
+
+
+Well – it would seem our little plot of cave is divided squarely into a vanna-unstable
+orientation on the left ($SPY’s side), and a vanna-stable-but-technically-not 2- orientation.
+The gist of this is that for $SPY, an increase in IV will bring about selling pressure (albeit
+diminishingly so), while in $QQQ, this increase in IV will being about purchasing support
+(albeit diminishingly so).
+Although the directionality of their hedging are opposite, the two do share a general
+heading towards gamma neutrality, with the two likely suspects for the week ahead being
+the classic [$+ , 𝐼𝐼𝑉𝑉 −] or [$− , 𝐼𝐼𝑉𝑉 +] pairings; both paths poised to offer their respective clients
+individual strife and collective neutrality 3.
+
+
+
+2
+  The official definition of a vanna unstable orientation is one in which “selling pressure increases as IV increases”;
+but this doesn’t preclude the equivalent expression that vanna unstable is an orientation in which “purchasing
+support decreases as IV increases”. Is an increase in selling pressure synonymous with a decrease in purchasing
+support? Doth one require purchasing support to have selling pressure? Can one be certain one isn’t purchasing
+simply because one is selling, or vice versa? Should I only eat half of one of these gummies next time? Perhaps. But
+for now: no; vanna unstable should be strictly “IV increase increases selling directly” and so this orientation is more
+of a vanna-neutral orientation.
+3
+  That’s to say, [$+ , 𝐼𝐼𝑉𝑉 − ] will bring about selling pressure on $SPY (which is “neutralized” via $QQQ’s purchasing
+support), and [$− , 𝐼𝐼𝑉𝑉 +] will bring about selling pressure on $QQQ (which is “neutralized” via $SPY’s purchasing
+support).
+
+Deep Dive Stocks – Weekly Chat                                                                          01/06/2025
+Taken together, this suggests a collective “neutral” environment with a few quirks: should
+$QQQ perform [$+ , 𝐼𝐼𝑉𝑉 −], then monitoring its $: 𝐼𝐼𝐼𝐼 relationship will be important; too much
+𝐼𝐼𝑉𝑉 − will introduce selling pressure. In the event of a [$− , 𝐼𝐼𝑉𝑉 +]-centric early-week, then I
+would expect downside to continue to kick in, and $QQQ’s diminishing purchasing
+support to, well, diminish.
+Moving right along, we encounter our put-selling friends, who, if we are being honest,
+seem way too good at this:
+
+
+
+
+One may well note the sudden burst of energy on $QQQ’s put-selling during the week
+(after the red dashed line) on $QQQ. This increase corresponds with 2024-12-31’s data;
+after which, spot on $QQQ has increase a casual 1.43%, and IV 5% (although admittedly,
+that isn’t that much for $QQQ, it reїnforces the notion of how good our overlord’s timing
+is! The consistency almost provides credence towards their ordained overlordshipness).
+$SPY has finally joined the party, with an increase in put-selling only showing up on Friday
+– better late than never, I suppose!
+Taken together, its more messy data! Ideally, one wants to entrust their personhood fully
+to the put-sellers, and as such, one feels a strong pull to agree with their outlooks. Thus,
+from the put-sellers, its would seem a near-term bullish performance is brewing.
+Thus, so far, we see overall conditions have become “Default: Bearish” while put-selling
+suggests heightened risk for profitability on the near-term in the general [$+, 𝐼𝐼𝑉𝑉 − ]
+direction, which is a direction supported by the current hedging environments and
+represents a means towards gamma neutrality.
+In other words: it looks like a bull-trap is forming!
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                       01/06/2025
+Moving ever-so swiftly onwards, we see the market-wide gamma squeeze data (MWGS
+data) showcasing yet another reprieve in overall activity, despite a continued negative
+GTM (standard set-up of late it seems)
+                                                                        At the very top, we see the raw-
+                                                                        counts, which suggest a 1.01%
+                                                                        increase in gamma squeezes over
+                                                                        the past 20 days, and a recent
+                                                                        12.70% decrease in gamma
+                                                                        squeezes in the recency – this
+                                                                        echoes our sentiments from last
+                                                                        week regarding a lightening-up of
+                                                                        the gamma flows, as it were.
+                                                                        Despite these reductions in
+                                                                        gamma squeezes, the growth
+                                                                        curve (top graph), is still positive
+                                                                        that growth is, overall, still
+                                                                        positive.
+                                                                        This outlook is supported via
+                                                                        GTM, which is suggesting that,
+                                                                        despite the recent reprieve in
+                                                                        short-gamma flows towards the
+                                                                        market, things are still flowing in a
+                                                                        net-short direction.
+                                                 On the surface, this seems like a
+                                                 strange combination of data –
+how can the flow of gamma towards the market be net-negative yet gamma squeezes
+are diminishing?
+Perhaps the recent gamma-squashing affects of an increasing IV over the past month
+has worked to “reduce” some gamma squeezes throughout. We shall see! If so, this
+provides an interesting situation where a decrease in IV (say over the next week)
+associated with an increase in gamma squeezes would indicate that the gamma
+squeezes are, in fact, still there! Just be suppressed by IV for now 4. Something to keep
+an eye out for.
+
+
+
+4
+ This is a bit of a long story but supposing the recent price decreases have put a lot of dealer short puts ITM, then
+an increase in IV would work to reduce gamma’s magnitude, which could then artificially offset the net gamma
+balance and make things appear net long gamma when perhaps it’s actually short-gamma-suppression (this would
+also cause selling in the event of neutral spot movement! [Almost like 2024-12-06 – 2024-12-13!]).
+
+Deep Dive Stocks – Weekly Chat                                                                         01/06/2025
+Now, before we leave for this week, let’s take another look at VoEx 5! Ever wonder what
+the future looks like when VoEx does things? Well, to elucidate on this illumination, I took
+$SPY and $QQQ from ~2008 or so until present, and calculated VoEx, and then calculated
+the future price change over 20 days.
+Then, the location of VoEx was placed on the X-axis and the change in future price was
+placed on the Y-axis, and I colored the data to show where VoEx-daily was as well, the
+results are pretty nifty! Take a look:
+
+
+
+
+Pretty cool! This shows us that when VoEx is in the Propagation Zone, the future outlook
+is quite bearish, and conversely, when VoEx is inside of Stability, the skies are bullish! But,
+what about if conditions are changing, that is, what if, for instance, we live in a place where
+VoEx has just moved significantly into the Propagation Zone? What does that future look
+like?
+To map that out, I took the same data but in stead of putting just VoEx on the X-axis, we
+can calculate its daily %-change and put that. In this way, we can get a look at how the
+change in VoEx correlates to future changes in price. In doing so, I kept the colors the
+same except instead of coloring based off of VoEx-daily, it is based off of VoEx itself (so
+we can keep track of where it was after it changed).
+
+
+
+
+5
+  Note: for some of the new members (hello!), VoEx in the Weekly Chat refers to the VoEx Graphs in the Weekly
+Chat, which is an upgraded version of VoEx not included in the Dashboards or PDFs yet (I can’t figure out how), and
+the only visual difference to keep track of is mainly that VoEx on this version is VoEx-trend (although both are the
+gold line) on the older version, while VoEx-daily on this version is simply referred to as VoEx on the older version
+(although both are magenta).
+
+Deep Dive Stocks – Weekly Chat                                                                       01/06/2025
+This produces a graph that shows us on the Y-Axis what the average future change in
+price is for a given %--change in VoEx, based on where it changed to.
+Let’s see the results!
+
+
+
+
+Pretty neato! In the left box, we see that almost any changes (big or small) of VoEx doesn’t
+affect future outlook much: in-so-long as VoEx is, itself, inside of stability, the data proport
+positive pastures.
+On the far right, on the other hand, we see something a tad different: when VoEx is within
+the Propagation Zone, most moves except for casual growth of VoEx infer future bearish
+outlooks 6, but it looks like a steady movement up of VoEx out of the P.Z. is the key to
+future bullish outlooks.
+To look at our current data, it show us just inside of the thin-window of recovery offered
+by VoEx within the Propagation Zone! The ideal, then, would be for VoEx to essentially
+start flattening out now if we are to have a somewhat neutral month.
+But – overall, the data look particularly bearish. From here on out, it looks like BUPO has
+been achieved (of the bearish variety this time; Bearish Until Proven Otherwise) is in
+effect, and as such, any rogue bullish waves are treated as such: rogue and bullish.
+The put-sellers have sent up the flairs of bullishness, and so given their historic
+prescience, I think considerable width should be given to their insights but these flares,
+
+
+6
+  The ears of those of you who have been around for awhile should be ringing some! I’m always going on about
+“things looking too spikey for a recovery”. Here it is in the data!
+
+Deep Dive Stocks – Weekly Chat                                                                01/06/2025
+for now, remains the sole reminder of the bullish ways, casting long shadows against the
+walls in our cozy bearish cave as they ascend the skies.
+Happy Trading! Justi
+State of Affairs
+Ayyye, I got’s lots goin’ on ova’ here ‘kay?
+I was thinking of leaving it at that, which would be hilarious, but, there’s unfortunately
+some things to discuss!
+Namely:
+Bugs:
+There’s a growing list of bugs that I’m aware of so please stop sending and I just wanted
+to give you guys an update on them:
+   -    Data Dashboard: Watchlist
+        I am still working on this! I have reached out to someone for assistance so
+        hopefully we will learn how just non-detail-oriented I am soon.
+
+   -    Data Dashboard: Delayed Data
+        Recently there’s been a strange delay in the processing of some of the data – and
+        I can’t blame these ones on NASAQ like usual. I’ve narrowed it down to a network
+        issue. This is good and bad. Good because it means its not my code (which we all
+        knew ahead of time, right? ) nor the hardware but the bad news means its
+        someone else’s hardware. I’m still digging into it and it is a top priority.
+
+   -    Data Dashboard: Short Ratio
+        A bug I can blame on someone else (not that acausality is inhibitory here) is the
+        short-ratio fiasco happening. You’ll notice some short-ratios are through the roof.
+        These data is being sent to me this way – but I think I have figured out at least why
+        the bug is occurring on my providers side, maybe. If these abnormal values can’t
+        be patched with my initial hunch, I’ll likely remove aberrant values until I find
+        another source for the values. Thankfully it seems isolated to a handful of equities
+        and tenures.
+Non-bugs!
+   -    LTA Robot: The LTA Trial is over! Those who have Premium membership with LTA
+        will maintained, and those who do not along with the beta testers, will be removed
+        and will receive an E-mail with further instructions.
+        Thank you again for your help with beta testing the robot and I hope it was helpful!
+
+
+Deep Dive Stocks – Weekly Chat                                                   01/06/2025
+   -     YT Videos
+         I had another filmed and then deleted it accidentally from the camera while I
+         thought I was transferring it. I’ll have another one out shortly. I am trying to get a
+         good “flow” (read: competent enough not to delete a video after hours of filming)
+         before I start diving into the thicker educational / DDS-centric material.
+
+   -     Dashboard Upgrade:
+         If you are dis-satisfied with this version of the Dashboard’s bugs and are looking
+         forward to new, improved bugs, then I am pleased to let you know that the
+         upcoming, improved Dashboard is well underway in its progress.
+
+         I am working on trying to tie the new Dashboard into the current one somehow
+         such that as features “on alive”, the updated version can be played with by you
+         guys, then, once everything has met “Version 1.0.0” status, the swap can occur and
+         everyone will have already been acclimated!
+
+         I’ll keep you posted – ideally it can just be like another tab on the current dashboard
+         but we’ll see if that’s possible.
+
+
+Okay, I think that’s it for now –
+
+
+Have a good week!
+
+
+Justin
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                      01/06/2025
+

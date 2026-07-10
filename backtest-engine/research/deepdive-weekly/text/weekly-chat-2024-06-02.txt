@@ -1,0 +1,223 @@
+                                  Weekly Chat 06/03/2024
+
+
+                                         Main Points
+
+
+    -   VoEx for $SPY and $QQQ have moved rapidly towards the Propagation Zone in a move
+        against expectations.
+    -   Hedging Environments find themselves more conducive to downside with imminent
+        and local selling pressure for both indexes.
+    -   Put-selling remains near-zero.
+    -   MWGS data show a increasingly negative GTM with positive growth-rates once-more.
+    -   Prudency cautions for prolonged downside.
+
+                                         SUMMARY
+
+
+
+          After an overall-red week, the data are not improved. The idea going into
+          the week was that the budding downside was occurring in a tenuously
+          stable environment, and as such, the dip could be bought.
+
+          After this week’s showing, however, the data no longer suggest tenuous
+          bullish ideologies but rather a more distinct turn to prior expectations of
+          prolonged downside.
+
+          VoEx for $SPY and $QQQ have turned sharply southward; almost entering
+          into the Propagation Zone for both (and on both versions).
+
+          The Hedging Environments are poised to offer immediate and diffuse
+          selling pressure (unless $QQQ can manage even more IV-depreciation)
+          with the consequence being predominately more selling pressure.
+
+          The MWGS data show a modest decrease in gamma squeezes week-over-
+          week but growth-rates are now positive again and GTM is printing deeply
+          negative values; both indicative of incoming short-gamma, gamma
+          squeezes, and ultimately, downside.
+
+          VoEx Variance was clear of data from the Propagation Zone, however
+          these data are returned, echoing sentiment from last month of a bull-trap.
+
+          Taken together, these data suggest downside caution along with
+          resumption of elevated risk for prolonged downside.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                      06/03/2024
+                                             DETAILS
+
+
+
+
+Hello everyone!
+Last week, we left off with an ominous side-eye aimed at the market due to VoEx’s indecision,
+growing gamma squeezes, and continued lethargy from the put-sellers.
+Well, the week passed, and although it was a short, week, there were some reasonable
+movements with $SPY and $QQQ, who moved -0.39% and -1.58%, respectively.
+These moves can be visualized below:
+
+
+
+
+On somewhat of a note-worthy note, we can see $QQQ experienced a rather unique spot-down,
+IV-down end-of-week move (30th to the 31st). If we get a little nerdy and crunch some numbers, it
+would be found that spot decreased 0.18% while IV decreased 7.93%. Not only a reasonable
+decrease in IV but also a reasonable decrease in IV coinciding with an unusual spot-IV
+performance.
+
+Perhaps worth keeping in mind as we peek at the data for next week.
+So, whereas last week there was a budding, longer-term, bullish outlook that was being tentatively
+nurtured within turbulent bearish waters, and after this week’s performance, perhaps it is a good
+idea to do a quick review of the data with particular emphasis on the longevity of said outlook in
+mind, and to see if it needs any adjustments.
+The new
+Starting as usual with VoEx, we see some concerning signs regarding our preëminent Bullish-
+until-proven-otherwise (BUPO) ideology. Namely, the drastic movement outside of the Inhibition
+Zone (which is, decidedly, not staying within the Inhibition Zone):
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                       06/03/2024
+There was a subtle sense of “dip then return to BUPO” in the air with last week’s chat, however,
+this is now being brought into question with VoEx here, as for both $SPY and $QQQ, VoEx has
+returned, quite rapidly, towards the Propagation Zone.
+These movements erase our more confident stances towards $SPY joining $QQQ within the
+Inhibition Zone, and makes way for a nascent $QQQ joining $SPY in the Propagation Zone (from
+our conversation in 2024-05-20’s Weekly Chat: “Should VoEx for $SPY join $QQQ, then another
+round of BUPO (of the Bullish variety) is all but confirmed, whereas if $QQQ’s VoEx reverses
+course and re-join’s $SPY, then a bull-trap seems the reasonable interpretation.” )
+These near-term downside expectations resonate through neo-VoEx as well:
+
+
+
+
+With VoEx moving rapidly out of the Stable Zone the only remnants of bullish outlooks are the
+just-so pause at the Propagation Line and VoEx being in stability (for $QQQ at least).
+Otherwise, these data suggest near-term downside risk is both prominent and potentially growing
+beyond initial considerations.
+In continuing the discussion about the equivalency between “near-term dip” and “buy the dip”
+diminishing, we can turn to the hedging environments who provide additional caution towards
+increased downside:
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                     06/03/2024
+                                                       On top here, we have $SPY, presenting a
+                                                       very sell-dominant hedging environment
+                                                       for the week ahead. With the crosshairs
+                                                       being placed within immediate and all-
+                                                       encompassing selling pressure, we can
+                                                       see that the purchasing support doesn’t
+                                                       kick in until $520 (about -1.40%).
+                                                       The influence distribution for $SPY is
+                                                       quite spread out – showing the greatest
+                                                       probable outcomes for the week-to-be is
+                                                       either large upside or large downside.
+
+                                                       $QQQ, in a similar but more opinionated
+                                                       boat, finds itself also with selling
+                                                       pressure located all around (shame its
+                                                       IV didn’t drop even more right before
+                                                       close!) but rather than an identifiable
+                                                       floor of purchasing support, $QQQ
+                                                       presents only with diminishing selling
+                                                       pressure.
+
+                                                       The influence distribution for $QQQ is
+                                                       much more congealed in its outlook:
+                                                       with almost a completely negative
+                                                       outlook.
+However, should IV drop even more, $QQQ will be supplied with reasonable purchasing support
+– for what its worth (and for as long as IV can maintain any decreased state).
+Taken together, the two heatmaps almost “cancel” each other out – whereas $+/IV- brings selling
+pressure on $SPY, it brings purchasing support on $QQQ; and whereas $-/IV+ (eventually) brings
+purchasing support for $SPY, it brings only selling pressure and neutrality for $QQQ.
+Sounds like quite the turbulent landscape – with said turbulence angled towards the downside.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                     06/03/2024
+Moving on, let’s see if our put-selling friends have noticed anything we haven’t and begun selling
+anything:
+
+
+
+
+Nada! Zilch! Nichts!
+Looks like our put-selling friends are
+still busy doing other things –
+something to take note.
+Zooming out some, the Market-Wide
+Gamma Squeeze (MWGS) data
+suggests continued influx of short
+gamma:
+GTM     has     deepened     in    its
+expectations of short-gamma flowing
+towards the market (bottom graph);
+and despite the overall decrease in
+gamma squeezes noted throughout
+the week (-9%-ish), we can see the
+growth plot is still showing positive
+growth rates (top graph).
+This brings with it short-to-medium-
+term bearish outlooks (remember:
+GTM forecasts future MWGS-growth
+which forecasts future price action;
+so, it’s like a double-forecast, and as
+such, extends into the 2-week to 1-
+month time horizons).
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                       06/03/2024
+Taken together, these aren’t quite the data prints I would expect for a “lets buy the dip”-dip, as the
+data have turned quite bearish now. The data as we see them now:
+   -   VoEx has begun moving rapidly towards the Propagation Zone;
+   -   Hedging environments are very opinionated and pointed towards the downside;
+   -   Put-sellers are not acting as though this is the bottom; and
+   -   MWGS data is showing continued growth and an even deeper, more negative GTM.
+Thus, it seems like downside is the prudent bet for the week ahead, with emphasis on turbulence
+as the, quite different and distinct, hedging environments between $SPY and $QQQ bleed into and
+contest with one another.
+Before moving on, let’s look at VoEx Variance –
+You’ll remember from our last visit (2024-05-06), that the latest development was “where’d the
+data in the Propagation Zone go?”. This question lead to the (then) budding idea of bullish
+performance, where it was suggested that this data-disappearance was :
+                                                  “
+… Perhaps another nod towards bullish performance, but I am not wholly convinced that this
+disintegrates prior anticipations (namely that of prolonged downside).
+                                                  “
+So, perhaps now it is time to re-evaluate the idea of “prolonged downside”. To do that, let’s take
+a peek at VoEx Variance:
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                           06/03/2024
+Data has returned back into the Propagation Zone! Another nod towards downside and one that
+resonates with the aforementioned idea that prolonged downside may not yet be out of the
+cards1.
+
+So, all-in-all, potentially protracted downside plans with a tediously unstable market.
+
+
+Happy trading!
+
+
+Justin
+
+
+
+
+1
+ Admittedly tedious to constantly keep talking “the impending doom and gloom downside” but – for as long as the
+data are messy and keep bringing that option into view, it seems prudent to talk about it!
+
+Deep Dive Stocks – Weekly Chat                                                                   06/03/2024
+

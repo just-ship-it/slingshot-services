@@ -1,0 +1,225 @@
+                                   Weekly Chat 2025-05-26
+
+
+                                         Main Points
+
+
+
+    -   VoEx remains within stability along with VoEx-daily giving bullish impressions.
+    -   Hedging environments are filled with purchasing support for both $SPY and $QQQ, with
+        a hefty selling-pressure overhead located spot-up.
+    -   The MWGS data showcases stagnant data except for GTM which is still printing
+        substantially negative prints.
+    -   DLP activity remains subdued.
+    -   LDPM/S investigations suggest near-term weakness.
+    -   Prudency suggest preparing for downside in the midst of calm seas.
+
+                                          SUMMARY
+
+          Overall the data appear to be pleasant on the surface, which VoEx residing
+          within stability (despite VoEx-daily’s seemingly rapid move to the
+          boundary line), and the MWGS data showcase continued GS remittance.
+
+          These data, and their resulting bullish outlook, are over-shadowed by the
+          prospect of bubbling turbulence below the surface, which can be seen via
+          the lack of DLP activity, and the near-term weakness noted via LDPM/S on
+          $ES and $VX.
+
+          Taken together, these paint a bullish picture that is being hung up onto the
+          wall by a small tac.
+
+          Outlook is up but prudency suggests bracing for turbulence.
+
+
+
+
+Deep Dive Stocks – Weekly Chat          for the week of              2025-06-02 to 2025-06-06
+                                              DETAILS
+
+
+
+
+Hello every-body! Last week, we left off with bearish ideations and it would seem this week had
+other plans! The week-over-week moves for $SPY stand at 1.78% while for $QQQ they stand at
+1.93%. Not too shabby but definitely not bearish moves.
+Let’s take a peek at these moves through the lens of the heatmaps:
+
+
+
+
+Here, we can see $QQQ nuzzled nicely into the enclave of purchasing support in the [$+ , 𝐼𝐼𝑉𝑉 −]
+direction but found itself seemingly without anywhere else to go, and so things stalled. $SPY
+seems to have bounced serendipitously off of the purchasing support on its journeys in similar
+fashion. Overall, not too exciting of a week, and let’s hope the data are that way as well!
+Let’s get started and see what we can find.
+The data
+Starting as usual with VoEx, we see:
+
+
+
+
+Here we see things are still within stability! And so, let’s not fuss about the details too much as
+we have been keen to do lately. Things are in stability and so the outlook is up!
+
+
+
+Deep Dive Stocks – Weekly Chat           for the week of               2025-06-02 to 2025-06-06
+Moving onwards to the gamma-hedging heatmaps, we find:
+
+
+
+
+Here we see a very vast sea of purchasing support for both $SPY and $QQQ! Both present, as a
+counter-balance to this offence-of-nature, with a ceiling of selling pressure located spot-up in all
+directions. This gives wholly bullish impressions for the week ahead as the purchasing support
+looks poised to scoot things along quite handsomely.
+Do our put-selling neighbors agree?
+
+
+
+
+Still no! A very strange silence from the Dealer Long Put crowd1. This suggests there is still too
+much risk in taking large inventories of dealer long puts, and so they simply don’t. To have such
+freedom!
+Moving onwards, so far we have seen pretty bullish sights, despite the continued lethargy from
+our financial overlords. Given the recent bullish moves, this seems a reasonable expectation – so
+can we find data elsewhere that might contradict this? Let’s keep looking.
+First up, let’s check the Market-Wide Gamma squeeze data for any signs of anything:
+
+
+
+
+1
+    I even double checked the algorithms and data for any bugs! But nope. Things seem eerily quiet still from them.
+
+
+Deep Dive Stocks – Weekly Chat                     for the week of                   2025-06-02 to 2025-06-06
+                                                   On the left we see on the top
+                                                   graph a small increase in
+                                                   the growth curve towards
+                                                   zero. This coincides to a
+                                                   casual increase in gamma
+                                                   squeezes over the past 2
+                                                   weeks of: 2.
+                                                   Overall, these data seem
+                                                   relatively mild, until you
+                                                   arrive at GTM, which is
+                                                   showcasing      a     pretty
+                                                   persistent negative outlook.
+                                                   This suggests there is still
+                                                   quite the surge of short
+                                                   gamma making its way to
+                                                   the markets.
+
+                                                   A     frustratingly   mixed
+                                                   position! Quiet on the
+                                                   surface but there seems to
+                                                   be bubbles rapidly rising up
+                                                   ready to make some waves.
+
+                                                   Let’s check in on the slightly
+                                                   updated MWGS data to see
+                                                   if any of these bubbles have
+                                                   made their way into the
+                                                   predictive systems:
+
+
+
+Not quite! We see the PCC
+(Predictive Count Curve;
+brown line) is still facing
+downwards while the PGC
+(Predictive Growth Curve;
+purple     line)     hovers
+menacingly just below the
+surface.
+For now, it appears GTM is
+alone         in       its
+measurements.
+
+
+
+
+Deep Dive Stocks – Weekly Chat   for the week of   2025-06-02 to 2025-06-06
+Moving on wards, let’s check on LDPM/S to ensure they don’t hold any surprises for the
+developing bullish expectations:
+
+
+
+
+It would seem that in the upper-left corner, we have near found bearishness (90-minute, top-left,
+LDPS on balanced).
+Zooming out and arriving at the 144-minute, we see an admittedly strange sight as it appears as
+though LDPM-L5(144) has kept its position as a persistent organic ask, even as the price has
+migrated from LDPM-L6. If LDPM-L5 had, instead, stayed along the dashed-line trajectory (i.e.:
+stayed above LDPM-L6) then this configuration would have leaned slightly towards the bullish but
+with the inversion of LDPM-L5, things start looking like the start of a bearish LDPM stack with
+LDPM-L7 looking like the only bid in town.
+
+To that extent, should one want to impose some excitement in our expectations, we can see that
+the recent movements against LDPM-L5 have pushed liquidity bearish along with a general
+weakening of bullish liquidity since around the 29th.
+In our handy-dandy hand-drawn view in the lower-right corner (987-minute) we see continued
+enforcement of the organic ask at LDPM-L7(610). Current the outlook is still bull-trap as the first
+anticipated “junction” of LDPM-L6 and LDPM-L7 approach. It may be worth noting that the LDPM-
+L7 floor on the 144-minute is the LDPM-L6 floor on the 987-minute.
+With that in mind, we zoom up to the 1-Week view, which showcases an eager bid moving up
+through the organic ask at LDPM-L6. This is still technically a beartrap as LDPS is still painting
+conditions bearish.
+
+
+
+Deep Dive Stocks – Weekly Chat           for the week of               2025-06-02 to 2025-06-06
+Much like the start of last week, this paints a bearish picture for the time ahead as both the 90-
+minute and the 144-minute show signs of resistance against a fully bullish regime.
+Let’s check on VX to see if this sentiment is echoed:
+
+
+
+
+Now, these data excite!
+We see a wholly bullish outlook on the 90-minute, with LDPS printing bullish prints while being in
+a newly established bullish LDPM stack.
+From there, we zoom out to the 144-minute (top-right) where we see two (2!) layers of organic bid
+that have now oriented themselves under spot. However, despite this, its seems that transactions
+are being heavily pushed down to this organic bid (traditionally you would see a eager distance
+between the organic layer and spot grow as the eager parties supply liquidity further up and up).
+This is a headscratcher but made slightly more clear as we move over to the 987-minute.
+
+On the 987-minute (bottom-left) we see a bullish LDPM configuration holding very strong all-the-
+while it appears transactions are being pushed down to the bid! Such significant push-to-the-bid
+is often only shorting and the fact that LDPM refuses to acknowledge this bearishness (in both
+price action and liquidity) with inversion of its bullish stack (which then, keeps this all as a
+beartrap!).
+Moving upwards more to the 1-week view, we arrive at a strange sight: a magic trick of sorts as a
+bulltrap looks to be resisting l’appel du vide of returning back to and below the bearish LDPM
+stack. To this end, we can see LDPMs have started bending northwards, suggesting the ask is
+
+
+
+Deep Dive Stocks – Weekly Chat           for the week of              2025-06-02 to 2025-06-06
+getting quite aggressive in trying to pull things further down (LDPS is even printing `Eager Ask`
+for us!).
+This is … strange. I’m not sure why such shorting would be necessary or wise when, relatively
+speaking, $VX is already quite low.
+In any case, it is not for me to understand but to contextualize: $VX looks to be being suppressed.
+For now, it appears this suppression has been successful but LDPM’s resistance towards
+converting away from a bear-trap on the 987-minute while bullish configurations appear on the
+shorter timeframes suggests that the current regime might have an upcoming test of portfolio
+management skills on the horizon.
+All together, this paints again a market of bullish steam that’s coasting along a slight precipice:
+whereas VoEx is within stability (we should check out VoEx Variance soon), there is minimal DLP
+activity; whereas MWGS data appear calm on the surface, GTM has printed substantial warning
+signs of an encroaching short-gamma wave; whereas the $VX seems well subdued this
+subduction appears persistently forced with diminishing returns.
+Thus, the outlook is technically bullish but with substantial caution as to the risk nearby.
+Happy trading!
+
+
+Justin
+
+
+
+
+Deep Dive Stocks – Weekly Chat            for the week of               2025-06-02 to 2025-06-06
+

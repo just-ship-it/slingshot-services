@@ -1,0 +1,170 @@
+                                   Weekly Chat 06/10/2024
+
+
+                                          Main Points
+
+
+    -    VoEx on $SPY and $QQQ are not in the Propagation Zone.
+    -   Hedging environment is supportive but with diminished support in $-/IV+.
+    -   DLP behavior is raising but still near-zero.
+    -   Market-Wide Gamma Squeeze data show growth rates leveling out and GTM is moving
+        into positive territory.
+    -   Overall – bullish outlook.
+
+                                          SUMMARY
+
+
+
+          This week is met with VoEx not within $SPY and $QQQ’s Propagation
+          Zone, this doesn’t bring with it bearish outlooks, ergo, we can settle on
+          bullish outlooks per VoEx.
+
+          Gamma Hedging Environments show a conducive environment for $+.
+          The only concern presented here against bullish outlooks is the
+          diminished purchasing support if IV raises significantly.
+
+          Put-selling is gradually rising but no definitive show-of-force from the put-
+          sellers.
+
+          MWGS data show a positive but flat-lining growth-rate while GTM moves
+          into positive territory – suggestive that the recent short gamma push has
+          run its course through the market, with minimal affect.
+
+          Overall, bullish outlooks.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                        06/10/2024
+                                             DETAILS
+
+
+
+
+Hello everyone!
+
+
+Last week started off with cautionary tales of impending downside, and, as luck would have it,
+$SPY moved +1.26% and $QQQ moved 2.72%! So, no downside for us.
+Of note is the difference in movements between $SPY and $QQQ, when compared to the market’s
+expectations (per EPR); $SPY’s T+5 EPR from last Friday was ±1.28%, and $QQQ’s ±1.68%. In
+doing the standard standardization-scheme we’ve seen before, we can look at the price
+movements normalized against their EPRs – or, against how much the market was expecting
+                           1.26                2.72
+things to move ( For $SPY: 1.28, and for $QQQ: 1.68). Doing so, we get ~1.00 for $SPY and 1.62 for
+$QQQ.
+So, we see that even when we normalize against the market’s own pricing (via EPR), it looks as
+though $QQQ moved 62% more than “was priced in”. In essence, it moved “more than it should
+have” (per the market; or in market speak: realized volatility [RV] > implied volatility [IV]).
+Again, if we look for a source of this difference, our investigations reach an initial suspect with
+acumen: the hedging environments.
+
+
+
+
+Last week, the pathway to bullish weekly performance would be paved ”…should IV drop even
+more …” and it would seem that IV did drop (for $QQQ at least), pushing it across the threshold
+and up into purchasing support on the 5th, catapulting things upwards (and it seems, dragging
+$SPY with it some).
+Besides the superficial neat-ness, there’s two take-aways here that are worth highlighting:
+1 – The market ingested a fair amount of selling pressure and still managed to “break through”.
+2 – The market stalled after the “break through”.
+
+
+
+Deep Dive Stocks – Weekly Chat                                                        06/10/2024
+So, it would seem our job this week is to try to discern which of these two mental notes has the
+greatest weight: should we rejoice that the market ingested such selling pressure and survived to
+tell the tale; or, should there be a slight pause due to the “break through” stalling once the
+purchasing support began to minimize (the market stalled after the 5th). Let’s try to find out!
+Finding out
+Before I get carried away and forget we look at the aforementioned question, let’s take a
+moment to see how the rest of the data look. Starting as usual with VoEx:
+
+
+
+
+In pursuit of not over-complicating things, let’s stick to the superficial: VoEx for $SPY and $QQQ
+are not in the Propagation Zone. Hence: not downside is expected.
+Convenience!
+(Notes for the completionist: VoEx-trend on $QQQ is concerning for Divergence, and technically
+things aren’t BUPO [of the bullish variety] yet, so there is at least one identifiable source of
+caution).
+Neo-VoEx agrees: everything is not in the Propagation Zone!
+
+
+
+
+Easy-peasy.
+Moving onwards with pretty robust bullish ideologies, let’s check out the hedging environments:
+
+
+
+Deep Dive Stocks – Weekly Chat                                                       06/10/2024
+Supportive! Local and diffuse purchasing support is noted – but so too is the lack of this
+robustness in the event of spot-down, IV-up.
+
+Notwithstanding this observable kink-in-the-armor, the influence distributions are neutral-to-
+bullish, and, so too am I.
+Is anyone else bullish?
+
+
+
+
+Maybe?
+There seems to be some activity brewing in the put-selling-land - perhaps in a day or two their
+resolve may enthuse more.
+For now, we leave with a neutral impression, and a promise to check back on our friends
+throughout the week.
+
+Lastly, let’s look at the gamma flows for the market. Last week we left off with GTM printing pretty
+negative prints, which extended our downside expectations into the “medium” time horizon. Are
+conditions the same?
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                         06/10/2024
+Not at all it seems!
+Growth-rates have stalled out at slight-above-zero, and despite the negative GTM prints preceding
+a ~50% increase in gamma squeezes, the translation of this growth to price-action / market-
+influence has been minimal.
+
+Now, it seems GTM is moving northward into positive territory, and in conjunction with the growth-
+rate stalling, I think this short push of short-gamma looks to have dwindled.
+So, all-in-all, reasonably bullish data prints all around. This comes with a side of “not what we
+were expecting a week ago” which will always hang in the air like a spectre haunting our past
+selves but – what can one do; the data do as the data do.
+
+
+Deep Dive Stocks – Weekly Chat                                                       06/10/2024
+Now, let’s chat about the behind-the-scenes goin’-on’s here at DDS.
+
+Goin’ on’s
+I am in the process of updating the Data Page on the Dashboard. But, to do this, I need to expand
+data processing into new territory. And, as much as I try to work with the existing architecture I
+keep running into areas of potential improvement.
+And, after encountering quite a several amount of these throughout the past few weeks, I’ve
+decided to simply re-work a lot of the key systems from scratch.
+The goal is that a renewed foundation will allow for greater speed, efficiency, and, ultimately,
+capability for data processing. This, then, will allow the Data Page to be drastically improved!
+
+
+That’s the goal at-least.
+
+
+So, if it seems quiet from my end over here, its only because I’m groveling in the dusty code-
+basement of DDS and the walls are too thick to hear my sobs jubilations.
+Hopefully I’ll have a more concrete update for you guys shortly!
+
+
+Happy Trading –
+
+
+Justin
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                       06/10/2024
+

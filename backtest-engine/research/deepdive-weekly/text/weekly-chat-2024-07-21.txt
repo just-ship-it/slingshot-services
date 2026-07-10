@@ -1,0 +1,215 @@
+                                  Weekly Chat 07/22/2024
+
+
+                                        Main Points
+
+
+    -   VoEx has moved significantly towards the Propagation Zone.
+    -   Hedging Environments are not supportive in the event of downside pressure.
+    -   Put-selling has ceased and reversed.
+    -   VoEx Variance data show coalescence and collapse throughout the market.
+    -   Short-term expectations of increased price variance towards the downside with
+        growing expectation of extension to medium-term.
+
+                                         SUMMARY
+
+
+
+          Recent outlooks have focused on short-term downside with medium and
+          longer-term upside. The current data suggests that the medium-term is
+          now in-view for inclusion in bearish ideologies.
+
+          VoEx has plummeted into the Propagation Zone, indicating a significant
+          risk for near-term, greater-than-expected downside. The magnitude of the
+          move also suggests prolonging of the time-horizon for downside.
+
+          Hedging environments are poised to offer little support, should the market
+          need a reliable influx of bid in the coming days.
+
+          Put selling has both stopped and reversed, indicating little-to-no
+          expectation for profitability via selling puts.
+
+          VoEx Variance has shown the long-awaited “coalescence and collapse”,
+          further bringing the exclusion of the medium-term horizon for downside
+          into question.
+
+          Overall, the data seem to have shifted in severity, and, along with that,
+          downside is both expected on the near and medium time horizons.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                     07/22/2024
+                                              DETAILS
+
+
+
+
+Hello everyone!
+Last week, we left off with some ominous feelings of downside, with thoughts to monitor the
+situation for “extension”.
+Well – with this week’s performance (as measured via $SPY’s weekly move of -1.96% and $QQQ’s
+moves of -3.96%), it seems wise to do a rather thorough look-through of things; just to ensure
+nothing wonky is going on.
+Starting first, and as usual when we have big moves, let’s look at the changes in these prices
+“normalized to” the market’s expectations (as measured via last week’s 5-day EPR). This will tell
+us just how much these moves extended beyond the market’s expectation (and, as such, its
+pricings).
+We can see these values below:
+
+              Stock                 T+5 EPR             T+5 Realized             Ratio
+                                      (%)                 (abs. %)
+
+     $SPY                            ±1.63                   1.96                  1.63
+
+     $QQQ                            ±1.82                   3.96                  2.17
+
+
+
+With a value of 2.17, it tells us that the market underpriced $QQQ’s future volatility (via IV) by a
+whole week, and then some!
+
+For us, thankfully, there was some suggestion that this may occur, as last week there was
+consideration for the “…bleak nothingness…” that was present in the $-/IV+ quadrant of $QQQ’s
+hedging environment. We can see how this unfolded below:
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                           07/22/2024
+$QQQ’s swift departure from any hopes of purchasing support was noted by the 16th, whereupon
+it appeared the index did not have sufficient bid to absorb the ask present or bring IV lower. The
+consequence was capitulation to selling pressure, bringing things right on down.
+If we “zoom in” to conditions on the 17th, to see what things looked like from within, we see that,
+well, things had not improved as the market shifted towards it early-established gamma-neutrality
+destination. It appears the journey was met with ever-more introduction of selling pressure! We
+can glimpse this journey with Monday and Tuesday’s heatmaps, below:
+
+
+
+
+Thus, it seems reasonable to say that the introduction of persistent and wide-spread selling
+pressure to $QQQ was not ideal for those looking for bullish returns to the end of the week. It also
+suggests, perhaps more concerningly, that there is very little bid in the market!
+Note that on Monday, the market fell into purchasing support, which worked to stall price action
+somewhat (Tuesday moved ~0.80%, within EPR), but when the data was measured at the end of
+Tuesday, we see all off that purchasing support had been digested and recycled as selling
+pressure.
+
+Deep Dive Stocks – Weekly Chat                                                         07/22/2024
+The main goal this week, seems to be that since the market was unable to find a bid this week,
+let’s see if we can find one for next week in the data.
+So, let’s get started!
+
+Hello?
+Let’s first get a feel for the overall conditions with VoEx (neo-VoEx, that is):
+
+
+
+
+Well – quite the dramatic showing from VoEx. Occasionally, we lament that VoEx is not as
+opinionated as one may like, but it seems such a complaint cannot be levied so easily now!
+VoEx-daily has moved remarkably quickly and robustly into the Propagation Zone – a sign of near
+and imminent downside. Of particular note, the downwards trajectory of VoEx-daily was quite
+sufficient on both $SPY and $QQQ to move VoEx just as dramatically towards the Propagation
+zone.
+The significance here is that, you’ll remember from last week (and the 2 weeks prior), we’ve been
+measuring this expected downside for signs of “extension”, or, signs that it would last longer than
+just an event for the “short-term”. One of the considerations that said short-term outlook was a
+reasonable outlook was that VoEx was well-housed within stability – regardless of VoEx-daily’s
+short-term activities.
+Well – now we see this isn’t the case! Or, at least, the argument is less strong. As VoEx nears its
+exit from stability, the threat of the downside extending from the short-term into the medium-term
+time-horizons corporealizes.
+Thus, VoEx seems opinionated for significant risk to downside. Let’s move to the hedging
+environments to see how this might be handled in the days ahead.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                        07/22/2024
+Mixed bag – but not the most promising for any looking for robust support.
+$SPY and $QQQ seem to have swapped places somewhat, but with $QQQ showing less wide-
+spread purchasing support in the lower-left quadrant than did $SPY last week. This leaves
+conditions poised against bullish performance in the week ahead.
+$SPY’s diffuse selling pressure appears poised to offer a $-/IV+ week, one which would work to
+remove purchasing support from $QQQ. Additionally, $QQQ’s pathway towards gamma-neutrality
+via IV- is impeded by selling pressure.
+Thus, it seems as though the hedging environment will offer little support against downside, and
+may even contribute to it as the week progresses.
+So, the data seem pretty robustly bearish. Let’s take a peek at if our put-selling friends are also
+seeing bearish futures ahead.
+
+
+
+
+Quite the drop in put-selling behavior! Some up-tick in behavior for the weekend-ahead on $QQQ,
+but we can see that the near-zero behavior is maintained and $SPY’s increase in put-selling has
+ceased entirely.
+This is a pretty stark point towards anticipated downside for the week ahead.
+So far, the data point towards continued downside on the near-term, which naturally works to
+extend our prior anticipation from short-term to medium-term, but do the data suggest that from
+now the downturn is still expected to be short-term, or do we need to extend our current views to
+the medium-term as well? To determine that, let’s continue on.
+
+Our next stop would be the MWGS data – but frankly, there’s not much going on there right now!
+So let’s move onwards to a less-viewed piece of data: VoEx Variance.
+A quick recap: the graphs you are about to see are strange – this is by design, as the view the
+VoEx Variance provides is pretty cool. The idea is that we look at every stock in the market, and
+then group those stocks by their respective index. Then, for each index, we measure how different
+all of the VoExes are behaving, and, where they are performing this behavior.
+This gives us a intra-index view; the idea is that when the value of this intra-index view is high, this
+means that within the index, there’s a lot of “turbulence”, as a lot of the VoEx values are very
+distinct from one another and very “erratic”. The converse is when all of the VoEx values within
+
+
+Deep Dive Stocks – Weekly Chat                                                            07/22/2024
+an index are similar (i.e.: all in Stability or all in Propagation Zone), then the value for the intra-
+index variance is low, and it means all of the VoExes are “in agreement” within that sector.
+Additionally, each of the three panels represents each of the three zones (Stability, Middle, and
+Propagation Zone). If there are dots, this means that the average VoEx value for that index
+(specified by color), is within that zone.
+
+On the graph, these values are the y-axis for each of the three graphs. Let’s take a look:
+
+
+
+
+Those familiar with VoEx Variance might well give a very large head-tilt to the current data. Long-
+ago through the mists of time, VoEx Variance was monitored for “ coalescence and collapse of
+𝑉𝑉 2 values” (see Weekly Chat 2023-10-16). Now, admittedly, this version is updated. The
+consequence of this update is that this collapse seems rather more remarkable and well defined
+than did the collapse noted in 2023-10-16.
+The consequence of these data? Well, the first is that perhaps we (and by we I mean you),
+shouldn’t have taken so long to look at these data again, and the second, is that I think these are
+sufficiently robust to extend the downside from the short-term, to the medium-term with these
+data.
+The data show that VoExes throughout the market are becoming more in-agreement (the VoEx
+Variance values are decreasing), and they are doing so in remarkable unison and local! This
+means that the market is, by and large, starting to behave as a singular unit.
+Deep Dive Stocks – Weekly Chat                                                            07/22/2024
+The traditional interpretation is, well, let’s take a peek at the data from 2020 in the middle panel.
+The anticipated trajectory is “collection and decrease in 𝑉𝑉 2values until data appears in
+Propagation Zone, at which time, significant downside”. It would appear that we are encroaching
+on step two: data appearing within the Propagation Zone.
+So, for now, it’s unfortunate these data take so long to calculate – but it something to definitely
+keep an eye on in the coming days and weeks.
+The take-away this week is that downside is expected, review of the data suggest that the
+extension of this downside may well be appropriate from the short-term to the medium-term.
+Close inspection of VoEx and LDPM/LDPS for the short-term maneuvers with a closer eye on
+VoEx, MWGS and VoEx Variance to help guide future planning throughout the week(s) ahead.
+
+
+It may get interesting!
+
+
+Happy trading,
+
+
+Justin
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                          07/22/2024
+

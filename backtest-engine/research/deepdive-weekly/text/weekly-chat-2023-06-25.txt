@@ -1,0 +1,626 @@
+                                 Weekly Chat 06/26/2023
+
+
+                                         Main Points
+
+
+    -   The longer-term outlook remains in effect.
+    -   $SPY and $QQQ’s VoEx, however, suggests that the rough waters typical of unstable
+        markets are arriving.
+    -   This weeks outlook demonstrates an elevated risk for bullish performance.
+
+
+
+
+                                         SUMMARY
+
+
+          This week, the data suggest that the longer-term outlook for downside is
+          still viable, but the classic rocky-waters associated with turbulent markets
+          are here.
+
+          VoEx on $SPY stopped short of entering into the P.Z., while $QQQ’s did
+          the same but within Stability. This maintains $QQQ in BUPO, in-spite of its
+          developing VoEx Divergence. $SPY’s resistance to the P.Z. also serves as
+          a gentle pause towards committing to the market-correction fully just yet
+          and elevates the risk for near-term upside.
+
+          In response to this week’s downside, the market has started taking
+          protective positions, ultimately leading to a stabilization in the hedging
+          environments for $SPY and $QQQ. Both large indexes now have
+          purchasing support in the event of a $-/IV+ move.
+
+          MWGS-counts and growth are positive with the 5-day GTM printing
+          positive values while the 10-day GTM prints negative values.
+
+          In combination, the data are supportive for a bullish run in the near-term
+          but still suggest longer-term downside.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                       06/26/2023
+                                                         DETAILS
+
+
+
+
+Last week, we left off with the idea that the market was undergoing some changes, and
+it was best if a bullish outlook was put on the back burner for now.
+
+This served us well, with $SPY experiencing a decline of 1.42% while $QQQ fell 1.46%.
+
+This week, as usual, we will take some looks at how the market progressed throughout
+the week, turn out sights towards loftier, more future times, and then finally, ruminate on
+hypotheticals.
+
+The data-that-were
+
+The review of the data this week is pretty quick, as most things progressed as planned.
+
+Visualizing $SPY’s movements through its hedging environment this week1, Tuesday and
+Wednesday stand out somewhat:
+
+
+
+
+1
+ The benefit of knowing the Influence Distribution is statistically significant 5 days into the future is that it allows
+us to visualize an equities moves through the hedging environment from 5 days ago! Pretty nifty.
+
+Deep Dive Stocks – Weekly Chat                                                                             06/26/2023
+On Tuesday (06/20/23), $SPY’s price and IV rose – an unusual combination. This was
+followed by another unusual combination of $-/IV- on Wednesday (06/21/23). Curious!
+
+And that’s about it for the review!
+
+Before we get into the data and how it might treat us in the week ahead, it might be
+worthwhile to remind ourselves of some recent history so that we can review our current
+trajectory with a bit of context.
+
+Per VoEx, since ~10/2022, the data were suggestive of longer-term bullish performance
+due to VoEx-trend residing predominately inside of stability. However, come April 2023,
+signs began to appear that this stability was eroding:
+
+The first evidence that something was amiss came from 04/24/2023’s weekly chat. Prior
+to this weekly chat, the market was in the middle of its normal “cycle 2”, but VoEx was
+beginning       to     behave
+erratically:
+
+                 “
+… First, we’ll start with some
+    general observation:
+    1) VoEx is indicating
+          instability
+
+Before we continue, let’s go
+through each of the points
+          above:
+
+VoEx is indicating instability
+              “
+
+
+This behavioral change started to extend in such a way that by 05/15/2023’s Weekly Chat,
+there was concern that the cycle was indeed broken, and a period of overheating was
+about to occur:
+
+
+
+
+2
+  This can be visualized in $SPY’s VoEx between 10/2022 and ~04-05/2023. Notice that during this time, VoEx was
+predominately inside of stability, but it was oscillating every several months between the Propagation Zone and
+the Inhibition Zone. This behavior provided a good honing-rod for overall market moves while still providing a
+longer-term bullish outlook (since VoEx-trend was predominately inside of stability the entire time).
+
+Deep Dive Stocks – Weekly Chat                                                                    06/26/2023
+                                                 “
+Does this suggest that the normal “cycle” of the market is still in effect? That is, should
+  we expect some near-term downside while the overall long-term movement of the
+                                market is upwards?
+                   $QQQ’s VoEx suggests that this may not be the case …
+                                             “
+
+These observations were weighed against the current longevity of the cycle thus far but
+as VoEx on $QQQ definitively rose into the Inhibition Zone, followed by $SPY, the
+remaining doubts of a “second wind” bull-run were deteriorating.
+
+VoEx’s developments were natural extensions of the perceived growing instability, and by
+05/22/2023’s Weekly Chat BUPO was officially established, resulting in a review of how
+this instability typically ends:
+
+                                             “
+The take-home message here is that now that both VoEx for $SPY and $QQQ are in the
+ Inhibition Zone, we should consider it bullish until VoEx Divergence or a VoEx Spike
+                    occurs. Now, let's take a peek at VoEx Spikes
+
+                                             “
+
+So, since then, we’ve been patiently waiting for either VoEx Divergence or VoEx Spikes to
+demonstrate the end of this unstable-bull-run and bring about the market dip that’s been
+expected for the last 2 months.
+
+The growing concern, however, is that the longer this instability reigns, the more
+significant the downside tends to be.
+
+And since we have seen $SPY’s VoEx Spike and $QQQ’s VoEx Divergence, it seems
+reasonable to expect that the current price-action, or the price-action to-come, should be
+results of instability – and instability always resolves on the downside.
+
+All this to say, we’ve been watching this storm brew for the past two months and the
+definitive signs are here that we are approaching the outer walls of this as we sail on
+through the market, and with storms, come rough waters.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                  06/26/2023
+The data
+
+Starting as usual with VoEx, let’s take a peek at what we were treated to this week:
+
+
+
+
+If I were amendable to putting memes in Weekly Chats, I most certainly would. But we are
+civilized here – we don’t do that 3.
+
+$SPY’s VoEx Spike started on 6/18/23 (last Thursday) and continued throughout the week
+– a sign of an ending BUPO. As the spike progressed, the outlook was that VoEx would
+fall rapidly into the Propagation Zone, whereby we could expect initiation of the
+anticipated market correction.
+
+So naturally, VoEx stopped right at the Propagation Line.
+
+This leaves me with the thought we had from last week regarding the discrepancy
+between $SPY and $QQQ’s VoEx:
+
+                                                       “
+Ideally, much like last week, we would want to see one of these VoExes capitulate: either
+  $SPY’s VoEx rebounds into the Inhibition Zone (which would place it back into BUPO
+along with $QQQ, providing evidence for yet another bull run), or VoEx on $QQQ resolves
+  quickly towards the downside (which would place it in a more bearish position, much
+                                       like $SPY).
+                                                       “
+
+Without commitment into the Propagation Zone, one must worry of a rebound in SPY’s
+
+3
+    https://tenor.com/view/skeptical-futurama-fry-hmmm-i-got-my-eyes-on-you-gif-17101711
+
+Deep Dive Stocks – Weekly Chat                                                             06/26/2023
+VoEx 4 and a resultant bullish run as VoEx in stability is bullish (but, to be fair, “stable”
+bullish, which the market is most certainly not), as well as VoEx climbing back into the
+I.Z.
+This concern is echoed in $QQQ’s VoEx which failed to do, well, much of anything other
+than stay inside of the Inhibition Zone:
+
+
+
+
+Well, that and start VoEx Divergence once again – but shall we allow ourselves to be
+fooled yet again? Probably.
+
+And this is where the parabole comes into play: with an approaching storm, it is
+unreasonable to suddenly expect the clouds to clear, and the gentle waves of a calm
+ocean to carry us on and upwards – but it isn’t unreasonable to expect large waves during
+a storm to also carry us on and upwards suddenly. And although the plan may not be to
+weather the storm’s waves, but the storm itself, one cannot take on too much water in
+the interim.
+
+Thus, with apparent verification that the storm is in-fact here, the recent VoEx turbulence
+also suggests there may be a rogue wave approaching.
+
+To try to navigate more local waters, let’s move towards the Hedging Environments to see
+if they can help.
+
+
+
+
+4
+ A good example of what I mean is from $SPY at 12/2021. Notice how VoEx rapidly dove into the Propagation
+Zone, only to rapidly rebound into the Inhibition Zone. An unstable VoEx is an unstable stock.
+
+Deep Dive Stocks – Weekly Chat                                                                  06/26/2023
+It has been quite a while, but it appears its finally re-emerged: congruence between $SPY
+and $QQQ’s hedging environments! This congruence tells of a rather stable hedging
+environment – an interesting development.
+
+Although not an exact 1:1 with regards to the options flows and the hedging environments
+ultimate “form” 5, we can see there are some signs of protective movements in the market:
+namely Dealer Long OTM Calls and Dealer Short OTM Puts on both $SPY and $QQQ:
+
+
+
+
+These are options flows consistent with more stable, mature markets. Perhaps our put-
+selling friends have switched gears!
+
+In combination, having a hedging environment on $QQQ and $SPY that is supportive in a
+$-/IV+ event, along with more stable options flows, suggests that the market,
+paradoxically, may be anticipating downside.
+
+The benefit that we have with this insight, is that we know what happens typically when
+the market braces for a move: typically, the opposite occurs; and this isn’t too hard to
+
+5
+ Gamma hedging is rather dynamic and doesn’t follow the same rules as delta hedging. Namely, the addition of
+options and its effects on the subsequent delta hedging can actually be reverse from the expected hedging
+direction. In a gamma hedging paradigm, it isn’t unreasonable to expect a dealer short call (providing short delta)
+to actually cause selling instead of purchasing with the price rises!
+
+Deep Dive Stocks – Weekly Chat                                                                        06/26/2023
+reason.
+
+Risk-on markets are typically raging-bull-markets wherein participants are eager, and keen
+to participate in high-risk, high-reward plays because any loss can be made whole by the
+net movement of the market; lost $1 million on a bearish outlook for an earnings play? It’s
+okay – the current bull market will help alleviate that with little to no work, just buy some
+shares and let time handle the rest.
+
+This creates a market wherein everyone is jubilee-ing, causing the foundations to start to
+crack: hedging becomes aggressive and lop-sided, liquidity becomes a mess, etc 6. Then,
+when the house of cards starts to fall, everyone is risk-on and very much so unprepared.
+
+The opposite is true for perceived risk-off markets where caution reigns supreme: one
+typically isn’t too keen to sell puts when there is no guarantee of recovery when there is
+no money-making-bull-market around.
+
+The effect, of course, of this risk-off behavior is that this actually stabilizes the market.
+Not only does it introduce cautious options plays (selling calls, buying puts), which in turn
+stabilizes the hedging environments, providing a nice passive bid on the market
+throughout; gamma squeezes diminish, liquidity becomes balanced, it also minimizes
+unnecessary and difficult-to-manage exposure throughout the market.
+
+Now, some of you may feel like this story is similar – so similar, in fact, that you may
+remember that DDS even has a name for this phenomenon: Retail Syndrome. Without
+starting a new rant (there’s only 1 allowed per Weekly Chat), Retail Syndrome is the idea
+that the market will invariably always move opposite of what the retail market expects.
+
+This phenomenon has some psychology to it (buy the rumor, sell the news, etc.), and it
+appears to also have foundational support with regards to hedging influences
+specifically. So much so, that the 𝐸𝐸 3 Algorithm is designed to capture that alpha 7!
+
+All this to say, I think that’s what we are observing in the market currently. The recent
+downside seems to have spurred some protective measures from market participants.
+These protective measures are now poised to provide purchasing support on $SPY and
+$QQQ should they experience a $-/IV+ move.
+
+It should also be noted that the Hedging Environment’s influence distributions are
+anticipating positive gains for the next five days as well.
+
+Skipping over the DLP data prints (as they are the same; decreasing), we can move over
+to a slightly curious development in the Market-Wide Gamma Squeeze (MWGS) data.
+
+6
+ A classic example of this is $MSFT vs. $TSLA! I even did a video on it.
+7
+ The E3 Algorithm, or Earning an Earning with Earnings, is a prototype algorithm designed to capture the benefits
+of identifying RS. Although not deployed, its recent beta testing within DDS showed very promising results.
+
+Deep Dive Stocks – Weekly Chat                                                                      06/26/2023
+The MWGS-growth (gold line,
+and black line, top graph)
+demonstrate the net-positive
+growth in gamma squeezes
+– not an unsurprising
+development.
+
+This is echoed in the middle
+graph, showing that we are
+now currently above the 20-
+day average (1,480 vs.
+1,376).
+
+Curiously, however, GTM is
+still printing negative values,
+suggesting that the future
+gamma-squeeze            counts
+should decrease, which is an
+odd outlook considering the
+recent increase        in their
+growth – and in particular
+when GTM was printing
+negative values all-the-while
+MWGS-counts                were
+growing..
+
+Can this be reconciled?
+Perhaps – if we zoom in on
+the data some, we do start
+seeing positive GTM values:
+
+
+
+
+                                  Perhaps in these more turbulent
+                                  markets, a closer eye on GTM is
+                                  warranted.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                         06/26/2023
+So, in sum, we started the weekly chat briefly looking at our past trajectory and how it has
+landed us with the paradigm that a market-wide correction was brewing. This was
+evidenced early by changes in VoEx’s behaviors, followed thereafter by Persistent
+Exposure in the Inhibition Zone, expanding VoEx Variance, VoEx divergences, and a few
+other markers letting us know we were still headed in the right direction (towards the
+storm!).
+
+But now that we are nearing the storm we’ve been watching brew, the winds and waves
+are picking up. We’ve navigated these waters before, but it is always a cautionary journey.
+Having a distinct and clear outline for what you expect or don’t expect to happen
+depending on one’s given outlook is paramount.
+
+So, with these more recent bullish data prints, is the course re-charted for around the
+market-storm? No – not quite. I don’t take these data points to suggest the market
+downside has been halted, even with the heightened expectation for bullish performance
+in the week ahead but merely that there seems to be a rogue wave approaching.
+
+Physics
+
+Anyone who knows me, knows me. And they also know that I hate physics – with a
+passion. Something about treating mathematics with so little respect such that its
+acceptable to put constants into expressions for balancing irks me, but that isn’t to say
+that a fumbling physicist doesn’t find an interesting concept once and awhile.
+
+The last one to do so was Newton – the man who spent his life going crazy in his attic
+trying to create Alchemist’s Gold, raving about the occult: an academic in the truest sense.
+
+With Newton in mind, I’ve been turning my attention to LDPM where I’ve been crying
+racking my brain with how to extract more concise information from our understanding
+and measuring of liquidity.
+
+Well, I’m pleased to say that the fruits 8 of this labor seem to be …. fruiting. Let’s take a
+look!
+
+
+
+
+8
+    A sad pun about how few apples hit Newton’s head.
+
+Deep Dive Stocks – Weekly Chat                                                   06/26/2023
+Deep Dive Stocks – Weekly Chat   06/26/2023
+What is this, you cry?
+
+Well, let’s suppose it is beneficial to know if price is being predominately moved by the
+bid or the ask.
+
+Traditional metrics would have you simply look at the price-action and deduce therefrom
+the answer: if the price is going up, obviously the bid is meeting the ask, and as such, it is
+the dominant force; conversely, if the price is going down, obviously the ask is meeting
+the bid, and as such, it is the “aggressor”.
+
+But is this always true?
+
+What if the ask is handing away shares – not in an aggressive kind of way but rather in a
+“no, I think it’s better that you hold onto this for the next few months” kind of way. What if
+we could see when trades are being traded eagerly or passively? In less theatrical words,
+is it possible to ascertain bid/ask dominance regardless of the underlying price
+movement?
+
+I think you can! And to a reasonable degree, I think. To do so, we turn to our beloved LDPM.
+
+Let’s start by considering two situations: an equity that experiences many LDPM
+crossovers (let’s say, on the daily timeframes but it ultimately doesn’t matter) and one
+that has few LDPM crossovers.
+
+Here, it would appear that the equity with many LDPM crossovers (LDPM-COs) is
+experiencing poor liquidity: sometimes when there’s a bid present, the price gets pushed
+up, the equity experiences a bullish CO but as soon as that bid is absent, liquidity is
+removed, the ask has to move down to the next bid, a bearish crossover occurs, and the
+cycle repeats9.
+
+In contrast, an equity with good liquidity should have fewer LDPM-Cos because, well,
+things are running smoothly – there isn’t concern that the absence or presence of a
+handful of bid or ask will fundamentally alter the stock’s price-action 10.
+
+So then, with this in mind, let’s construct the following rule-set for any crossover ℂ, and
+its respective cross-over-type (bullish or bearish) as ℂ𝑡𝑡 , where ℂ𝑡𝑡 > 0 is bullish, and
+ℂ𝑡𝑡 < 0 is bearish.
+
+
+9
+  This is the standard concept of liquidity: in lower liquid environments, smaller volume will cause larger price
+movements and conversely, in highly liquid environments, larger volumes can trade without affecting the price
+much. We are just viewing this relationship through LDPM Crossovers.
+10
+   It’s akin to running a group project: in a group where things are organized and running smoothly, the absence of
+a single member may be “overcome”, whereas if the group is disorganized and not running smoothly, than it may
+be less flexible in the event of a particular member’s absence.
+
+Deep Dive Stocks – Weekly Chat                                                                       06/26/2023
+Rule                                    Expression                            Significance
+
+
+LDPM Crossover frequency increasing                   𝛿𝛿ℂ > 0                        Poor liquidity Status
+
+LDPM Crossover frequency decreasing                   𝛿𝛿ℂ < 0                        Good liquidity status
+
+
+
+
+       Reasonable so far.
+
+       Given the number of crossover events, to start our investigation we just need to find the
+       velocity of LDPM – we can do that. But this doesn’t tell us anything about the probable
+       price-action: an equity with an aggressive bid and poor liquidity will move substantially
+       up, not down. That is to say, the mere presence or absence of poor or good liquidity
+       doesn’t infer price-direction.
+
+       To help cover this blind-spot, suppose we expand our view to include the type of LDPM
+       crossover. That is to say, suppose for some cross-over event ℂ, if the crossover is bullish,
+       we can consider ℂ > 0 and if the crossover is bearish, we can consider ℂ < 0.
+
+       Let’s fill out the table some more with this knowledge:
+Rule                                          Expression                         Significance
+
+
+LDPM Crossover frequency increasing and the          𝛿𝛿ℂ > 0 𝑎𝑎𝑎𝑎𝑎𝑎 ℂ𝑡𝑡 > 0         Poor liquidity Status with
+net cross-over type is bullish                                                            dominant ask
+
+LDPM Crossover frequency increasing and the          𝛿𝛿ℂ > 0 and ℂ𝑡𝑡 < 0             Poor liquidity status with
+net cross-over type is bearish                                                             dominant bid
+
+LDPM Crossover frequency is decreasing and           𝛿𝛿ℂ < 0 and ℂ𝑡𝑡 > 0            Good liquidity status with
+the net cross-over type is bullish                                                       dominant bid
+
+LDPM Crossover frequency is decreasing and           𝛿𝛿ℂ < 0 and ℂ𝑡𝑡 < 0            Good liquidity status with
+the net cross-over type is bearish                                                       dominant ask
+
+
+
+
+       What does the table mean by “dominant bid” and “dominant ask”?
+
+       Well, suppose I go to the local market and I want to buy an apple to pelt at Newton. J’arrive
+       at the market, and I proclaim: “I want an apple! I’ll spend $5”.
+
+       Upon hearing this, let’s suppose 𝛿𝛿ℂ > 0, that is, we have poor liquidity (the number of
+       Deep Dive Stocks – Weekly Chat                                                           06/26/2023
+       crossover events is increasing). This means things aren’t going to go all that well for me.
+
+       Suppose this un-smoothness is because there is only 1 apple seller that day – Rob. Rob
+       assess the situation, and understands that, in the hour of my need, he is willing to part
+       with an apple for a mere: $10. But – I refuse.
+
+       I know my worth – and I can eat apples anytime of the day, I can wait. And so I wait – all
+       the while, as it turns out, Rob really needs to sell this Apple or Mr. Risk-Compliance is
+       going to have a Mr. Word with Mr. Rob.
+
+       Thus, Rob walks over, and transacts the apple exchange for $5.
+
+       Now suppose that after I j’arrived at the market, proclaimed my need, and noticed that
+       liquidity is good (𝛿𝛿ℂ < 0)! So, I can expect things go smoothly! I walk in, buy an apple for
+       $5, and go about my day.
+
+       Who was “controlling” the market’s in these two examples? Who was the dominant party?
+
+       In the first it was the bid – they, in a low liquidity-state – had little recourse but to go to
+       the bid due to extrenuous demand, despite being the only ask. In the second case, it was
+       also the bid, as with so many sellers about (liquidity is good), there is little reason to
+       haggle: a bid comes, an ask comes, and the are transacted.
+
+       Let’s expand this further: what if we could look at the change in velocity? What if we could
+       see if there were moments of sudden shifts in the relative dominance being asserted?
+       That is, consider that:
+
+
+       In combination, we get the following table:
+
+Rule                                    Expression                        Significance
+
+
+LDPM Crossover frequency’s frequency                 𝛿𝛿 2 ℂ > 0                 The dominant force is
+is increasing                                                                 becoming more aggressive
+
+LDPM Crossover frequency’s frequency                 𝛿𝛿 2 ℂ < 0               The non-dominant force is
+is decreasing                                                                 becoming more aggressive
+
+
+       Now, let’s look at these data again but on one chart:
+
+
+
+
+       Deep Dive Stocks – Weekly Chat                                                     06/26/2023
+Rule                                        Expression                       Significance
+
+
+LDPM Crossover frequency’s frequency             𝛿𝛿 2 ℂ > 0 𝑎𝑎𝑎𝑎𝑎𝑎 ℂ𝑡𝑡 > 0     Bid is becoming increasingly
+is increasing and the net cross-over type                                               aggressive
+is bullish
+LDPM Crossover frequency’s frequency             𝛿𝛿 2 ℂ > 0 and ℂ𝑡𝑡 < 0        Ask is becoming increasingly
+is increasing and the net cross-over type                                               aggressive
+is bearish
+LDPM Crossover frequency’s frequency             𝛿𝛿 2 ℂ < 0 and ℂ𝑡𝑡 > 0        Ask is becoming increasingly
+is decreasing and the net cross-over type                                               aggressive
+is bullish
+LDPM Crossover frequency’s frequency             𝛿𝛿 2 ℂ < 0 and ℂ𝑡𝑡 < 0        Bid is becoming increasingly
+is decreasing and the net cross-over type                                               aggressive
+is bearish
+
+
+
+
+       With these data, we can now assess:
+
+          -   Who is the dominant force in the market: bid or ask
+          -   Who is becoming the more dominant (aggressive) force: the bid or the ask,
+
+       and by extension:
+
+          -   Who is the non-dominant force, and
+          -   Is the dominant force weakening
+
+       That would be pretty handy, no?
+
+
+
+
+       Deep Dive Stocks – Weekly Chat                                                       06/26/2023
+So now, let’s officially introduce this plot. Using the table on the last page, we can start
+making some observations:
+
+
+
+
+The top shows the raw-count change in the number of LDPM crossovers on a 40-day
+rolling basis, with the dots representing the median cross-over type: blue for bullish, red
+for bearish.
+
+The middle graph shows the frequency, or velocity, of LDPM crossovers, colored in the
+same way.
+
+The bottom graph shows the frequency of the frequency, or acceleration, of LDPM
+crossovers, colored the same way.
+
+The middle plot is where the meat-and-potatoes of this discussion lay but I definitely
+
+
+Deep Dive Stocks – Weekly Chat                                                  06/26/2023
+recommend peeking through all three as there seems to be a good bit of data packed into
+these (these data may warrant another primer so, I’m sure there will be more rants, don’t
+you worry).
+
+I am going to mull these data over for now, but I wanted to introduce them to you now as
+I think this is the formation of yet another tool for DDS.
+
+Our current situation per these data suggest that we are experiencing a decreasing in the
+frequency of LDPM crossovers (since ~12/2022) with mostly bearish crossovers
+prevailing (except for that one blotch of blue ~04/2023) which suggests a pretty
+consistent dominant bid on the market.
+
+The current data prints for the type of LDPM crossover, however, show a positive change:
+i.e.: currently we see 𝛿𝛿 2ℂ < 0 and ℂ𝑡𝑡 < 0 and it appears ℂ𝑡𝑡 < 0 → ℂ𝑡𝑡 > 0, in other words,
+the crossovers are becoming less bearish and thus, more bullish.
+
+What’s also most curious to me, however, and why I really enjoy the data presented like
+this, is it shows when the market is buying the dip or not.
+
+For instance, notice how in early 2022, the until 06/2022, all market dips were met with
+𝛿𝛿 2ℂ > 0 and 𝛿𝛿ℂ < 0 : indicating that there was no real pause to the ask’s aggression even
+during the local dips occurring in the overall larger market-downturn, whereas during
+10/2022 that a definitive 𝛿𝛿 2ℂ > 0 and 𝛿𝛿ℂ > 0 occurred during a dip!
+
+That’s an aggressive bid on a dip!
+This also happens to be the dip!
+And it also happens to occur at the same time as VoEx Variance’s behavioral change!
+
+How very exciting.
+
+There will be more on this, but I think my ranting has lived on long enough today –
+
+
+Happy trading,
+
+Justin
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                    06/26/2023
+

@@ -1,0 +1,111 @@
+report_date,week,value,instrument,role,side,series,quote,dist_pct,hit_1w,hit_4w,respected
+2023-07-30,2023-07-31,433,SPY,support,below,SPY,Testing an LDPM crossover would occur at ~433 (~ -5.0%).,-5.25,False,False,
+2023-07-30,2023-07-31,430,SPY,support,below,SPY,should it look as though the market is starting to test LDPM-55 at ~$430 (for $S,-5.91,False,False,
+2023-08-13,2023-08-14,439.7,SPY,support,below,SPY,LDPM-55 for $SPY is only sitting a paltry -1.34% away at $439.70,-1.36,True,True,False
+2023-08-13,2023-08-14,363.65,QQQ,support,below,QQQ,$QQQ is sitting even close at -0.76% at $363.65,-0.74,True,True,False
+2023-08-13,2023-08-14,431.48,SPY,target,below,SPY,$SPY’s LDPM-89 is sitting at $431.48 (-3.17%),-3.2,False,False,
+2023-08-13,2023-08-14,362.09,QQQ,target,below,QQQ,$QQQ’s is at $362.09 (-3.86%),-1.16,True,True,
+2023-08-20,2023-08-21,433.0,SPY,support,below,SPY,$SPY’s LDPM-89 is at ~$433 [current price: $436.50],-0.72,False,False,
+2023-08-20,2023-08-21,353.0,QQQ,support,below,QQQ,$QQQ’s is at $353 [current price: $358.13],-1.44,False,False,
+2023-09-04,2023-09-04,434.35,SPY,target,below,SPY,"keeping an eye on LDPM-89 for $SPY on the daily, which is currently sitting at $",-3.58,False,True,
+2024-03-17,2024-03-18,435.0,QQQ,support,above,QQQ,"the purchasing support just below the 12th, 13th, and 14th rests at ~$435",0.25,True,True,False
+2024-05-05,2024-05-06,430.0,QQQ,resistance,unknown,QQQ,the purchasing support only providing a narrow reprieve from more selling pressu,-1.39,False,False,
+2024-06-02,2024-06-03,520.0,SPY,support,below,SPY,the purchasing support doesn’t kick in until $520 (about -1.40%),-1.52,False,False,
+2024-09-02,2024-09-02,414.0,QQQ,target,below,,a potential price-target for $QQQ is nearly $414(!) where LDPM-144 currently sit,,,,
+2024-10-13,2024-10-14,5670,SPX_ES,support,below,ES,"Downside resolution to organic bid would occur at (presently) $5,670ish.",-3.13,False,False,
+2024-10-27,2024-10-28,5600,SPX_ES,target,below,ES,"a reasonable downside target of $5,600 whereat LDPM-610 looks poised to offer it",-4.13,False,False,
+2024-10-27,2024-10-28,5500,SPX_ES,support,below,ES,"movement rapidly towards LDPM-610 (orange line) at 5,500-ish",-5.85,False,False,
+2024-11-03,2024-11-04,6000,SPX_ES,target,unknown,ES,"downside with a reasonable target of $6,000 for ES",4.18,True,True,
+2024-11-03,2024-11-04,5600,SPX_ES,floor,below,ES,LDPM-610 showing a reasonable floor now at $5.6k still – and that feels reasonab,-2.77,False,False,
+2024-12-08,2024-12-09,5900,SPX_ES,floor,below,ES,"anything limited to ~$5,900 on $ES (the current LDPM-89, -144 floor) will presen",-3.23,False,True,
+2024-12-15,2024-12-16,5970,SPX_ES,target,below,ES,"price movement expectations towards LDPM-144, and 377 at ~$5970 (~-2.00%) in the",-1.34,False,True,
+2024-12-15,2024-12-16,5796.14,SPX_ES,target,below,ES,"the possible move further down to $5,796.14 (-4.00%)",-4.22,False,False,
+2024-12-22,2024-12-23,5800,SPX_ES,floor,below,ES,LDPM-610 is still present at ~5.8k (currently about -3% away from us),-4.39,False,False,
+2024-12-22,2024-12-23,5000,SPX_ES,floor,below,,"a floor all the way at LDPM-144 (neon-blue) at ~$5,000! That’s a hefty ~20% drop",,,,
+2024-12-29,2024-12-30,5851,SPX_ES,support,below,ES,"LDPM-610 as a respectable test-of-stability at $5,851, which is currently about ",-2.96,False,True,
+2024-12-29,2024-12-30,5600,SPX_ES,target,below,ES,"movement down towards ~$5,600 seems reasonable; which is an appreciable 7% remov",-7.12,False,False,
+2025-01-12,2025-01-13,5750,SPX_ES,floor,below,ES,"we are already testing the first floor! (LDPM-5 [neon-blue]) at $5,750-ish",-1.9,False,False,
+2025-01-12,2025-01-13,5500,SPX_ES,target,below,ES,"This sets the next downside target at $5,500-$5,300-ish",-6.17,False,False,
+2025-01-12,2025-01-13,5300,SPX_ES,target,below,ES,"This sets the next downside target at $5,500-$5,300-ish",-9.58,False,False,
+2025-01-12,2025-01-13,5000,SPX_ES,target,below,,"should things deteriorate from there, a likely resting place of $5,000 at LDPM-7",,,,
+2025-01-20,2025-01-20,6100,SPX_ES,ceiling,above,ES,"it seems reasonable that bullish performance persists a tad more, perhaps to abo",1.12,True,True,False
+2025-01-20,2025-01-20,6070,SPX_ES,ceiling,above,ES,"it appears that $6,070-ish is an established ceiling of sorts",0.62,True,True,False
+2025-02-09,2025-02-10,5400,SPX_ES,target,below,ES,"bracing again for downside with a potential target of $5,400 per LDPM on the Wee",-10.74,False,False,
+2025-02-16,2025-02-17,5900,SPX_ES,support,below,ES,The weekly is ostensibly bullish with LDPM-5 providing organic bid for ES at ~$5,-3.81,False,True,
+2025-02-23,2025-02-24,6000,SPX_ES,support,above,ES,"ES having crashed through the organic bid at LDPM-7 at $6,000-ish",-0.49,True,True,False
+2025-02-23,2025-02-24,22250,NDX_NQ,resistance,above,NQ,its bull-trap appears to have sprung with a final test attempt of LDPM-6 at ~$22,2.72,False,False,
+2025-02-23,2025-02-24,5440,SPX_ES,floor,below,ES,"The next organic bid lays about 8% down at $5,440-ish",-9.78,False,False,
+2025-02-23,2025-02-24,19000,NDX_NQ,floor,below,QQQ,we can also see that the organic bid lay at ~19k (-10%),-11.83,False,False,
+2025-03-09,2025-03-10,5400,SPX_ES,target,below,ES,the price point as LDPM-987 on the daily! About $5.4k (about -6.00% down),-6.44,False,True,
+2025-03-23,2025-03-24,5350,SPX_ES,target,below,ES,"degradation of the ""cling"" will result in movement to LDPM-6 at $5,350-ish (-5.0",-5.05,False,True,
+2025-03-30,2025-03-31,5370,SPX_ES,support,below,ES,"should the current stalactite-close debase, it will find support at $5,370-ish, ",-4.15,True,True,False
+2025-04-06,2025-04-07,4720,SPX_ES,floor,below,ES,"the next floor is likely to be tested, which is currently sitting at LDPM-L2 (LD",-7.39,False,False,
+2025-04-13,2025-04-14,5590,SPX_ES,resistance,above,ES,"a potential to test the organic ask at LDPM-L5(144) at $5,590-ish (+4% ish)",3.6,False,True,
+2025-04-13,2025-04-14,5490,SPX_ES,resistance,above,ES,"bull-trap with upcoming organic ask test at ~5,490 (~+2%)",1.75,True,True,True
+2025-04-27,2025-04-28,480,QQQ,resistance,above,QQQ,$QQQ’s obscene wall of purchasing support appears to max out around $480-$482ish,1.48,True,True,False
+2025-04-27,2025-04-28,482,QQQ,resistance,above,QQQ,$QQQ’s obscene wall of purchasing support appears to max out around $480-$482ish,1.91,True,True,False
+2025-04-27,2025-04-28,5860,SPX_ES,ceiling,above,ES,"a nearby ceiling at LDPM-L6(377) at $5,860ish, which gives an upwards breadth of",5.54,False,True,
+2025-04-27,2025-04-28,5800,SPX_ES,ceiling,above,ES,"committing to the next leg up at $5,800 at LDPM-L6(377)",4.46,False,True,
+2025-04-27,2025-04-28,501,QQQ,ceiling,above,QQQ,"a ~soft bearish~ presentation on the 987-minute (with a ceiling noted at $501, +",5.92,False,True,
+2025-05-04,2025-05-05,5350,SPX_ES,target,below,ES,"then the next downwards target is $5,350ish at LDPM-L6(377)",-6.31,False,False,
+2025-05-04,2025-05-05,5800,SPX_ES,ceiling,above,ES,"approaching a ceiling, as defined by LDPM-L6 at ~$5,800ish",1.57,False,True,
+2025-05-04,2025-05-05,5300,SPX_ES,target,below,ES,"Rejection from said ceiling would see price move back to LDPM-L5 at about $5,300",-7.19,False,False,
+2025-05-11,2025-05-12,500,QQQ,ceiling,above,QQQ,$QQQ starts the week with a ceiling of selling pressure located at $500 and onwa,2.47,True,True,False
+2025-05-11,2025-05-12,5500,SPX_ES,floor,below,ES,Both of these near-term views offer a floor at $5.5k as the most likely next-sto,-3.24,False,False,
+2025-05-11,2025-05-12,5800,SPX_ES,resistance,above,ES,the bounce itself is slated to meet resistance at LDPM-L6 ($5.8k),2.04,True,True,False
+2025-05-18,2025-05-19,587,SPY,support,below,SPY,"poised to offer significant and substantial selling pressure, down to about $587",-0.62,True,True,False
+2025-05-18,2025-05-19,517,QQQ,support,below,QQQ,down to about $587ish on $SPY and $517ish on $QQQ (~-1%),-0.06,True,True,False
+2025-05-18,2025-05-19,5900,SPX_ES,target,below,ES,"downside targets at about $5,900-5,700ish (~-4.00%) as the first step down",-0.82,True,True,
+2025-05-18,2025-05-19,5700,SPX_ES,target,below,ES,"downside targets at about $5,900-5,700ish (~-4.00%) as the first step down",-4.18,False,False,
+2025-05-18,2025-05-19,5500,SPX_ES,floor,below,ES,"the 144-minute interval showing the next floor being at $5,500 (~-7.50%)",-7.54,False,False,
+2025-05-25,2025-05-26,5600,SPX_ES,target,below,ES,"a near-term expectation of testing LDPM-L7(610) at $5,600ish",-3.69,False,False,
+2025-05-25,2025-05-26,5660,SPX_ES,target,below,ES,"points the outloks back down towards a retest of LDPM-L7, at about $5,660",-2.66,False,False,
+2025-06-08,2025-06-09,6022.46,SPX_ES,ceiling,above,ES,"we see ES testing the LDPM-L6 ceiling at $6,022.46 with bullish liquidity",0.21,True,True,True
+2025-06-08,2025-06-09,6078.69,SPX_ES,resistance,above,ES,"On the 144-minute l’oppression d’ask finds itself located at LDPM-L6 $6,078.69",1.14,False,True,True
+2025-06-22,2025-06-23,500,QQQ,resistance,above,QQQ,purchasing support located all around (the crosshairs) with selling pressure loc,-5.14,False,False,
+2025-06-22,2025-06-23,5790,SPX_ES,support,below,ES,"the next support would be located at LDPM-L6 ($5,790-ish; ~-4.00%)",-3.69,False,False,
+2025-07-06,2025-07-07,6235,SPX_ES,target,below,ES,"the next expected movement as down to LDPM-L6(377) at $6,235 (~<1.00% down)",-0.77,False,False,
+2025-07-06,2025-07-07,6271,SPX_ES,support,below,ES,"we see bearish liquidity testing LDPM-L5(144) at $6,271ish",-0.2,True,True,True
+2025-07-06,2025-07-07,6200,SPX_ES,support,below,ES,"This support happens to also be placed at LDPM-L5(144) at $6,200-ish",-1.33,False,False,
+2025-07-06,2025-07-07,5830,SPX_ES,target,below,ES,"we see $5,830 at LDPM-L6(377) as the next target (-7.80%ish from current spot)",-7.22,False,False,
+2025-07-06,2025-07-07,6032,SPX_ES,target,below,ES,"places LDPM-L6(377) as the next target for said beartrap at $6,032 (-3.75%ish)",-4.0,False,False,
+2025-07-06,2025-07-07,5810,SPX_ES,target,below,ES,"should this fail, a test of LDPM-L7(610) at $5,810 seems within view (-7.00%ish)",-7.54,False,False,
+2025-10-19,2025-10-20,675,SPY,resistance,above,SPY,inhibitive starting about $675-ish as the selling pressure kicks in,1.47,True,True,False
+2025-11-02,2025-11-03,6776,SPX_ES,support,below,ES,"testing L5 for support is in the works, currently located at $6,776-ish, about 1",-1.4,True,True,False
+2025-11-02,2025-11-03,700,SPY,ceiling,above,SPY,"movement of the market in the $+ , IV− manner until about $700 for $SPY",2.62,False,False,
+2025-11-02,2025-11-03,650,QQQ,ceiling,above,QQQ,until about $700 for $SPY and $650 for $QQQ,3.32,False,False,
+2025-11-02,2025-11-03,670,SPY,support,below,SPY,purchasing support is set to `significantly` kick in around $670 for $SPY,-1.78,True,True,True
+2025-11-02,2025-11-03,610,QQQ,support,below,QQQ,purchasing support is set to `significantly` kick in around $670 for $SPY and $6,-3.04,True,True,True
+2025-11-02,2025-11-03,656,SPY,support,below,SPY,which shows evidence of profit-taking kicking in with support at L7: at $656!,-3.83,False,True,
+2025-11-16,2025-11-17,6553,SPX_ES,support,below,ES,"the 987-minute (bottom-left), which shows LT-7 support at $6,553 (~ -3.00%!)",-3.14,True,True,True
+2025-11-16,2025-11-17,680,SPY,resistance,above,SPY,~$680 on $SPY (per the gamma hedging heatmap),1.09,False,True,
+2025-11-16,2025-11-17,6700,SPX_ES,resistance,above,ES,"$6,700 - $6,900 on ES (per LT resistances)",-0.96,True,True,False
+2025-11-16,2025-11-17,6900,SPX_ES,resistance,above,ES,"$6,700 - $6,900 on ES (per LT resistances)",1.99,False,True,
+2025-11-23,2025-11-24,6713,SPX_ES,ceiling,above,ES,"This places a tentative ceiling at LT6 ($6,713; ~1.2%) and LT7 ($6,778; 2.2%)",1.23,True,True,False
+2025-11-23,2025-11-24,6778,SPX_ES,ceiling,above,ES,"This places a tentative ceiling at LT6 ($6,713; ~1.2%) and LT7 ($6,778; 2.2%)",2.21,True,True,False
+2025-11-23,2025-11-24,6678,SPX_ES,ceiling,above,ES,"These ceilings are $6,678 (~2.5%ish) and $6,856 (~3.4%)",0.7,True,True,False
+2025-11-23,2025-11-24,6856,SPX_ES,ceiling,above,ES,"These ceilings are $6,678 (~2.5%ish) and $6,856 (~3.4%)",3.39,True,True,False
+2025-11-23,2025-11-24,6588,SPX_ES,support,below,ES,"LT7 at $6,588 tends to be a hefty support, and it seems to be supporting spot we",-0.66,False,False,
+2025-11-30,2025-12-01,6974,SPX_ES,ceiling,above,ES,"In looking for a ceiling, one finds LT-6 at $6,974-ish, which sits about 2% up s",1.7,False,True,
+2025-12-14,2025-12-15,6811.29,SPX_ES,support,below,ES,"This suggests testing LT7 at $6,811.29 is likely",-0.33,False,False,True
+2025-12-14,2025-12-15,6512,SPX_ES,support,below,ES,"$6,512 is likely the next mini-stop at LT4 before a leg down to $6,337 at LT6",-4.7,False,False,
+2025-12-14,2025-12-15,6337,SPX_ES,support,below,ES,"$6,512 is likely the next mini-stop at LT4 before a leg down to $6,337 at LT6",-7.27,False,False,
+2025-12-22,2025-12-22,6919,SPX_ES,ceiling,above,ES,"The 90-minute (top-left) shows a ceiling at $6,919 at LT6 which is quite a bit n",0.79,True,True,False
+2025-12-22,2025-12-22,6900,SPX_ES,target,above,ES,"Between the 90-, 144-, and 987-minute, it seems ~$6,900 (~1.5%+) reasonable",0.51,True,True,
+2026-01-18,2026-01-19,700,SPY,resistance,above,SPY,$SPY’s inundation with purchasing support allows for $+ until selling pressure k,1.19,False,False,
+2026-01-18,2026-01-19,6951.01,SPX_ES,support,below,ES,"likely movement to LT7 on the 144-minute ($6,951.01) currently",-0.38,True,True,False
+2026-01-18,2026-01-19,6883,SPX_ES,support,below,ES,any failure thereof will likely see spot free to move to LT7 on the 987-minute (,-1.36,True,True,True
+2026-01-18,2026-01-19,6462,SPX_ES,support,below,ES,"and ultimately down to LT6 on the weekly ($6,462)!",-7.39,False,False,
+2026-01-25,2026-01-26,7002,SPX_ES,resistance,above,ES,"it might be put off until a test of LT5 at $7,002 is performed",0.98,,,
+2026-02-01,2026-02-02,6485.2,SPX_ES,floor,below,,"said floor sits currently at $6,485.20 (-8ish%)",,,,
+2026-02-22,2026-02-23,7005,SPX_ES,target,above,,"I don’t think $7,005 is unreasonable, as it is the ceiling found on the 987-minu",,,,
+2026-03-01,2026-03-02,6500,SPX_ES,support,below,,LT4 & 6 are likely to be tested here shortly on the weekly – at $6.5k and $6.2k ,,,,
+2026-03-01,2026-03-02,6200,SPX_ES,support,below,,LT4 & 6 are likely to be tested here shortly on the weekly – at $6.5k and $6.2k ,,,,
+2026-04-26,2026-04-27,700.0,SPY,support,below,,"purchasing support for $SPY and $QQQ not starting until ~$700 and ~$650, respect",,,,
+2026-04-26,2026-04-27,650.0,QQQ,support,below,QQQ,"purchasing support for $SPY and $QQQ not starting until ~$700 and ~$650, respect",-2.04,False,False,
+2026-05-03,2026-05-04,7184.92,SPX_ES,resistance,below,,"spot has punctured ever so slightly therethrough ($7,195.50 vs $7,184.92)",,,,
+2026-06-07,2026-06-08,7200.0,SPX_ES,target,below,,"downside looks imminent with a target around $7,200 on ES",,,,
+2026-06-14,2026-06-15,7473.0,SPX_ES,resistance,above,,"the LT6 level at $7,473 has a high potential to act as a stop-check, prompting d",,,,
+2026-06-22,2026-06-22,7700.0,SPX_ES,ceiling,above,,"a reasonable ceiling of $7,700-ish (LT5 on the 987-minute and LT7 on the 144-min",,,,
+2026-06-22,2026-06-22,7300.0,SPX_ES,floor,below,,"a reasonable floor of 7,300-ish (LT7 on the 987-minute and LT5 on the weekly)",,,,
+2026-07-05,2026-07-06,7632.0,SPX_ES,ceiling,above,,"The 144-minute shows a bulltrap with a ceiling at $7,632 (which represents the n",,,,

@@ -1,0 +1,323 @@
+                                   Weekly Chat 12/11/2023
+
+
+                                         Main Points
+
+
+   -   VoEx remains as a proponent for Bullish-until-Proven-otherwise as it resumes its
+       northward trajectory on $SPY and $QQQ.
+   -   Hedging Environments remain in a vanna-unstable orientation.
+   -   Put-selling on $QQQ has experienced a surge in activity with a >100% 5-day print.
+   -   MWGS data shows continued gamma squeeze reduction and a bullish GTM print.
+   -   Overall, BUPO until proven otherwise continues.
+
+
+
+                                          SUMMARY
+
+
+
+           So far, BUPO has reigned supreme and there is little evidence by-way of
+           VoEx to suggest the end of BUPO.
+
+           In relative support of this view, the hedging environments offer little
+           resistance to a $+/IV- week, even providing a gamma neutral pathway
+           extending $+/IV-. However, these very same hedging environments only
+           offer selling pressure in the event of a $-/IV+ week.
+
+           Put-selling has ramped up significantly on $QQQ for the week ahead.
+           This outlook is not shared (yet?) with the $SPY folk.
+
+           The Market-Wide Gamma Squeeze data show continued decline in the
+           number of gamma squeezes market-wide, and both versions of GTM are
+           showing long gamma flowing towards the market.
+
+           Overall, there is little evidence to replace BUPO with BUPO.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                       12/11/2023
+                                                      DETAILS
+
+
+
+
+Hello gang!
+Last week, we left off with the notion of BUPO but with a side-threat of a forming BUPO.
+As luck would have it, $SPY moved an abundant 0.24% Week-over-Week, while $QQQ managed
+a 0.57% W-o-W move; w-o-w indeed.
+With such little market-movements, our goal this week is simple: investigate if BUPO is still the
+safe bet, or are some of the more bearish data prints (the one’s observed last week) growing in
+strength, and thus, indicating a switch to BUPO?
+Pretty straight forward! Let’s get started.
+
+OPUB
+Starting as usual with VoEx, we see that both $SPY and $QQQ’s VoExes have bounced back into
+the Inhibition Zone, rather than continuing with migration into the Propagation Zone 1. We can
+see their youthful gaïety below:
+
+
+
+
+Although predominantly seen as behavior that is, well, a bit unstable, surly we can’t begrudge
+some gleeful merry-making in the merry holiday seasons – I suppose . But, one must wonder:
+Does this merry merry-making interrupt the trajectory that we had outlined to spell the end of
+BUPO (of the Bullish variety)? Yes.
+Does this merry merry-making disrupt the short positions that I – er – we opened after seeing
+VoEx nose-dive towards the Inhibition Line? Why, Yes. Yes, it does.
+Does this merry merry-making once again serve as a reminder of Weekly Chat 2023-12-04 Page
+3§4-10? Yes, and apparently not soon enough.
+
+
+1
+    This is one of the key findings for the end of BUPO! VoEx Spikes and VoEx Divergence.
+
+Deep Dive Stocks – Weekly Chat                                                              12/11/2023
+But what this merry merry-making doesn’t frustrate us with is a difficult interpretation: BUPO is
+BUPO (of the Bullish variety). Until a VoEx Spike or VoEx moves out of the I.Z., there’s nothing
+left to interpret.
+Moving on from the jubilee of gay merry-making and towards something that’s not that, we
+encounter the Hedging Environments (below).
+
+
+
+
+Bleak and destitute – which, not only was it my nickname in high school, is also the general
+state in which we find $SPY and $QQQ’s hedging environments.
+A vanna-unstable orientation with local selling pressure – a sight that is becoming more
+common in recent times!
+Speaking of which! Here’s two quick interesting observations about $QQQ’s landscape.
+The first is below. Check out $QQQ’s Heatmap from earlier this week, say around, 2023-12-06 if I
+had to guess (below). Not too shabby! A vanna-stable orientation with local purchasing support.
+How nifty!
+
+
+
+
+                                           Now, let’s check out $QQQ’s heatmap from 2023-12-
+                                           07 (below):
+
+
+
+
+Quite the difference! Despite both being a vanna
+orientation, we see that on 2023-12-07, the
+orientation switched from stable to unstable!
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                      12/11/2023
+What could have caused this? Perhaps it was the (checks notes) 1,000%+ increase in OTM
+DLPs! (below)
+
+
+
+
+That’s a lot of puts! Its also worth noting that this introduction of the OTM DLPs disrupted
+things sufficiently to cause the end-of-week VoEx bounce back into the Inhibition Zone!
+Furthermore, and onwards to observation #2, we can even see more consequences of these
+dealer long puts in the heatmap, if you know what to look for.
+
+                                              – Review Time! –
+To see the obscure data in the heatmap, three key pieces of information are needed. See if you
+can answer these questions below:
+
+    Dealer OTM Long puts will supply ________ (long or short) gamma.2
+
+    Dealer OTM Long puts will supply ________ (long or short) delta.3
+    Gamma’s magnitude increases as an option moves more ________ (ITM / OTM). 4
+
+    Vanna will cause ITM delta to ________ (grow or shrink) if IV increases. 5
+Got it? Nice.
+
+Now that we have the pieces, let’s quickly review how they interact:
+If I purchase a put, and obtain short (negative) delta, while simultaneously wanting to be delta
+neutral, I would neutralize this short delta with long (positive) delta. I would obtain this long
+delta by purchasing shares from the market.
+The delta-neutrality that is obtained from purchasing the shares, however, does not last forever.
+If the price of the asset starts to increase, and the long puts become further out of the money,
+the short delta decrease in magnitude6.
+
+2
+  Hint: Greek Cheat Sheet : Gamma
+3
+  Hint: Tier I – Introduction to DDS, pg10.
+4
+  Hint: Greek Cheat Sheet : Gamma
+5
+  Hint: Greek Cheat Sheet : Vanna
+6
+  Quick clarification what of “decrease in magnitude” means: both delta A that is moving from 1.0 → 0.5, and delta
+B that is moving from −1.0 → −0.5 are moving closer to 0, and as such, are decreasing in magnitude.
+
+Deep Dive Stocks – Weekly Chat                                                                     12/11/2023
+Since the delta is moving from a more-negative number to a less-negative number (in math for
+you nerds: 𝛿𝛿 → 0−), this means there is less short delta that needs to be hedged. Since there is
+less short delta that needs to be hedged, there is less long delta needed to neutralize the long
+puts. Thus, shares are sold back to the market.
+In essence, this means that as the price rises, we can expect selling, and as the price falls, we
+can expect purchasing (when only really considering the delta of a single position).
+
+This bring us to our first cool observation!
+This delta-dynamic can be glimpsed on the Gamma Hedging Heatmaps, even with the vanna-
+orientation “obscuring” things. Notice that if we keep IV the same, and just move up and down
+the Y-axis (indicated by arrows; below), the price decline moves $QQQ out of selling pressure
+and towards gamma neutrality (indicating a “balance” of forces), whereas the price increasing
+only introduces continued selling pressure7.
+
+
+
+
+“Nifty!”, I imagine you might be saying right now8. And indeed, I also think its nifty. Another
+curious artifact of these new OTM DLPs can be seen, but this time a vanna and gamma
+relationship.
+To peek this interaction, a quick reminder about the antagonistic relationship between gamma
+and vanna might be warranted: gamma and vanna are antagonistic.
+Both gamma and vanna affect delta. Gamma controls how quickly delta changes, and vanna
+controls both how much and in which direction delta changes. Gamma is sensitive to the
+change in price of the underlying equity, and vanna is sensitive to changes in IV.
+
+7
+  I used the heatmap from the PDF versus the Dashboard because its lower resolution at times can help delineate
+some boundaries better than the Dashboards.
+8
+  If you’re not, please do. I protest to being incorrect.
+
+Deep Dive Stocks – Weekly Chat                                                                   12/11/2023
+Gamma is traditionally much more significant in terms of its magnitude and influence on delta.
+Under certain orientations and circumstances, vanna can start “overtaking” gamma. This is
+what we see when a Hedging Environment is in the “vanna orientation”, as it were.
+
+So, consider a situation wherein dealer long OTM puts are opened in mass and provokes a
+vanna-unstable orientation, similar to what’s seen in $QQQ’s heatmap.
+As the equity’s price rises, this pushes the OTM puts further OTM cause the long gamma from
+these newly-acquired dealer long puts to expand. As this expansion occurs, eventually gamma
+will “regain control” of delta, minimizing the effects of vanna.
+What were vanna’s effects? Well – an OTM DLP will introduce purchasing as IV increases9!
+What does that mean? Well, if we draw a jagged-broken-box thing around the selling pressure
+blob in the upper-right-hand corner, a curious trend emerges! Let’s check it out (below):
+
+
+
+
+“Neato!”, I imagine you might be saying right now.10 And indeed, I do think its neato. We can
+peek an area of the hedging environment where the control-boundary between gamma and
+vanna can be glimpsed11.
+                                           – Review Time Over! –
+
+
+
+
+9
+  Since delta is negative, if hedging is done via purchasing, this means there was more short-delta that required
+neutralization. This means that delta moved towards -1 (for the math nerds: 𝛿𝛿 → −1− )! In other words, delta’s
+magnitude has increased as IV increased!
+10
+   Don’t make me request again.
+11
+   In nerd speak we can see the boundary-zone delineating relative hedging directionality such that net selling
+pressure is removed in a 𝛾𝛾: 𝑣𝑣-dependent manner however with confounding influences, despite this reduction in
+𝛾𝛾 −influence, the net hedging direction remains in the ask.
+
+Deep Dive Stocks – Weekly Chat                                                                    12/11/2023
+Moving on from whatever that was, we can peek at our DLP friends to see if there’s been any
+activity (below):
+
+
+
+
+                                                                      In a long-awaited show-of-force,
+                                                                      put-sellers on $QQQ seem to have
+                                                                      returned to their former glory with
+                                                                      a large increase in Dealer Long
+                                                                      Puts12.
+                                                                      $SPY, on the other hand, has
+                                                                      experienced a slight increase in
+                                                                      DLPs, but nothing to write home
+                                                                      about really.
+                                                                      Taken together, it would seem that
+                                                                      there is reasonable confidence
+                                                                      being shown via put-selling on
+                                                                      $QQQ. This is typically a robust
+                                                                      bullish indication.
+                                                                      In the brief future, should similar
+                                                                      behavior be observed on $SPY, I
+                                                                      will consider it a full vote of
+                                                                      confidence by our Financial
+                                                                      Overlords.
+
+
+
+
+So far, there seems little to refute the maintenance of BUPO in lieu13 of BUPO: only some brief
+selling pressure to halt a price appreciation (and should IV fall, gamma neutrality!), and a robust
+showing from our put-selling friends.
+Let’s check the other data to ensure we aren’t missing anything important.
+
+
+
+
+12
+   We haven’t really talked much about DLPs, hedging, or gamma, lately, in particular how wonky vanna can make
+things. Perhaps I’ll include in the next Weekly Chat.
+13
+   French for lieu.
+
+Deep Dive Stocks – Weekly Chat                                                                   12/11/2023
+First up is the MWGS data. Last week, there was chatter about the growth-trend moving into
+positive territory and GTM (of Both varieties) measuring short gamma headed towards the
+market. This week, we see much the same, shown below:
+
+
+
+
+                                                       Despite a week-over-week reduction
+                                                       in gamma squeezes from 998 to 976
+                                                       (-2.204409%), growth is still inching
+                                                       northward for gamma squeeze
+                                                       production.
+                                                       GTM switched polarities some this
+                                                       week, moving back southward
+                                                       (bullish in the original GTM).
+                                                       In the (admittedly more intuitive) new
+                                                       GTM, a similar scene is seen: flow
+                                                       reversal and net long delta flowing
+                                                       now towards the market (GTM above
+                                                       zero in the revised version is positive
+                                                       gamma, i.e.: long gamma, not the
+                                                       gamma squeeze kind). Shown
+                                                       below.
+
+
+
+
+With a quick surge of
+long gamma, it would
+seem that GTM is now –
+actually, after consulting
+with Weekly Chat 2023-
+12-04 Page 3§4-10, I
+have been advised not to
+discuss where it looks
+like GTM is headed.
+
+
+Deep Dive Stocks – Weekly Chat                                                   12/11/2023
+So, in short, it doesn’t look like there is too much evidence to refute BUPO, and only a smidgen
+of evidence hinting at the eminency of the end of BUPO.
+So, until VoEx moves out of the Inhibition Zone (in dramatic fashion, hopefully), and gamma
+squeeze growth ramps up, I’ll take our put-selling-friends’ lead and ride the BUPO wave.
+
+
+Happy trading,
+
+
+Justin
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                     12/11/2023
+

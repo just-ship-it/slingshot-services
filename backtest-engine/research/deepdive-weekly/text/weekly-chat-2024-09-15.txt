@@ -1,0 +1,208 @@
+                                   Weekly Chat 09/16/2024
+
+
+                                          Main Points
+
+
+
+    -    VoEx-daily has risen rapidly back into stability on $SPY and $QQQ. VoEx itself no longer
+        resides within the Propagation Zone.
+    -   Hedging environments are supportive and in a vanna-stable orientation.
+    -   Put-selling is present but uninspiring once-more.
+    -   Gamma squeezes are decreasing but GTM remains negative.
+    -   LDPM/S suggest bullish conditions but with worsening liquidity.
+    -   Overall, reversion back to bullish outlook, tempered with caution about sparse liquidity.
+
+                                           SUMMARY
+
+
+
+           Last week saw VoEx-daily move into the Propagation Zone for $SPY and
+           $QQQ once-more, and unlike last time, VoEx itself has joined them by
+           exiting the Propagation Zone. This is against expectations!
+
+           Nonetheless, the hedging environment seems well-poised to offer a gentle
+           up-draft in the market, unless IV should get too low. This vanna-stable
+           orientation has a traditionally choppy-to-flat week associated with it,
+           should IV move around too much.
+
+           Put-selling remains near-zero, with some activity noted throughout the
+           week. Perhaps worth keeping an extra eye on this week, as IV may play a
+           reasonable role in the price-action.
+
+           Gamma squeezes have decreased, suggesting some stability returning to
+           the market; despite this, GTM is negative.
+
+           So, all-around it seems things want to be bullish, but all have some
+           tempering associated with them.
+
+           Cautious bullish outlooks abound, sprinkled with some disappointment in
+           the aspect of an enticing downside slowly fading away.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                       09/16/2024
+                                            DETAILS
+
+
+
+
+Hello everybody!
+Last week, some crazy person suggested going short (something about VoEx), and, unfortunately
+for them (definitely not us, heh) the week disobliged by way of $SPY moving categorically in the
+opposite direction to the tune of 4.01%, while $QQQ moved a casual 5.94%.
+Again, with large moves, let’s check out the percentages as a function of EPR. The numbers are
+impressive, so let’s pay the respect they deserve with a table:
+
+
+
+       Stock           Realized Move (%)       Expected Limit (%)      Ratio
+
+
+       $SPY                      4.01            1.81                          2.21
+
+       $QQQ                      5.94            2.77                          2.14
+
+
+
+Wowza! The market moved twice as much as that very-same market was expecting to move!
+Let’s check out these moves with the heatmaps:
+
+
+
+
+Curious!
+Of note, it seems that $SPY was able to absorb the local and diffuse selling pressure quite well.
+In fact, $SPY absorbed so much selling pressure, let’s, for the first time ever, start our
+investigations not with VoEx!
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                        09/16/2024
+How dare you
+We will do no such thing.
+Starting as usual with VoEx:
+
+
+
+
+Of particular note is VoEx-daily’s rapid movement back into Stability. This time, unlike last, we see
+VoEx itself has risen out of the Propagation Zone therealongside, rather than continue to reside
+therein.
+This has the ring of a “bull trap” as before, but less-so now that VoEx is done mopping around.
+Some continued caution as VoEx reaches for Stability - but it seems that already the data look as
+though our initial assessment of continued downside might be off, and conditions have
+sufficiently changed.
+Let’s keep looking; next up, $QQQ:
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                          09/16/2024
+Much-the-same! VoEx-daily has moved very rapidly into Stability, just like on $SPY. Yet, just-like-
+not-on-$SPY we see VoEx is still hovering at the Propagation Zone-line.
+For now, it seems that things are starting to look bullish!
+In that vein, let’s extend our anticipations tentatively into the bullish direction, and see where that
+might land us within the hedging environments:
+
+
+
+
+Poised to offer a nice updraft it would seem!
+This updraft looks promising – except if $QQQ lowers its IV too much. In which case, things look
+slightly less promising. This vanna-stable orientation has a propensity of producing little “eddy-
+current” markets. In technical fashion, I illustrate:
+
+
+
+
+Given the market’s inclination to pair [$+] with [IV-], the usual “flow” to this pattern is an initial [$+,
+IV-], then a bit of [$-, IV+] as selling pressure enters, which works to [$-, IV+], and round-and-round
+the market goes.
+With the market’s current weakness, I would venture that during the [$-, IV+] part of the cycle
+(should it manifest) will be the most likely to test our confidence in reducing our view further from
+a “bull-trap likely” mindset.
+Calendar spread into a short iron condor? Maybe!
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                               09/16/2024
+Moving on to our friends, we see that little put-selling is occurring again (vis-à-vis à data reports;
+the macro report is slightly broken right now for some reason! So, no graphs for now. I’m working
+on figuring out where the DLP functionality suddenly went off to).
+
+$SPY’s weekly dealer long put was up a modest 16% this week, with $QQQ trailing slightly at 15%.
+These numbers exist but they are not quite titillating, as we discussed before.
+However, so-far, it would seem that our put-selling friends have either moved-on to other
+strategies (without consulting us, aggravatingly) or they continue to find the overall market-
+conditions unappealing to selling puts.
+Do you agree? I think I agree. I wouldn’t sell any puts at the present.
+Moving on slightly, let’s look at LDPS and LDPM.
+First up, is a look at $SPY on the Daily with LDPM set to WMA (weighted-moving average). This
+view I like when I want a simple “support-line” style of LDPM.
+
+
+
+
+With this, we can see that the latest bearish bounce tested LDPM-89 and since, conditions have
+become bullish while liquidity has worsened.
+With some handwaving, this suggests an eager bid moving northward to meet an organic (or
+strategically distant) ask1.
+
+
+
+
+1
+ Consider the situation of [$+] where the eager bid is meeting an organic ask. If at first liquidity is said to be “good”,
+then the price movement upwards should be well sustained and gentle. Conversely, if price is appreciating and we
+can see liquidity decreasing, this suggests that the organic ask is wearing thin against an eager bid. Ideally this might
+seem all-fine-and-dandy, but it begs the question “what happens when the eager bid stops being eager”? Or more
+specifically: what happens when the organic bid becomes the liquidity supplier?
+
+Deep Dive Stocks – Weekly Chat                                                                            09/16/2024
+If we take a peek at the Dashboard, and toggle the Short-Ratio and the Volume, we should be able
+to see this in these data as well. If the market is essentially being “moved” via either an organic
+ask, then as the price moves up, we should see relative shorting increase as the shorts work to
+move the price up.
+Below is just that, with a simple-moving-average applied with a lookback of 5:
+                                                       And so here we see the relative amount of
+                                                       shorting increasing on $SPY as the market
+                                                       was inundated with purchasing support
+                                                       from the hedging environments.
+                                                       Curious! If we toggle the data to “Percent-
+                                                       difference” we can see that the rate-of-
+                                                       change for the short-ratio (with the same
+                                                       5-day lookback) was 0.0514, whereas
+                                                       volume was 0.0007.
+                                                       This suggests that the short ratio grew
+                                                       ~15% faster than the volume fell.
+
+                                                       The concern this brings up is “what
+                                                       happens when the eager bid stops being
+                                                       eager”?
+
+                                                       Supposing those shorting $SPY presently
+                                                       are still short when the ask is no longer
+                                                       supplying the liquidity, then the ask will
+                                                       have to move down to the bid for liquidity!
+                                                       Convenient for those who may wish to re-
+                                                       purchase at a lower price point!
+
+
+But – all of this may not transpire; should purchasing support still be readily supplied via the
+hedging environment, then those shorting will have continued liquidity to do so.
+The ideal, for them at least (the shorters) is that eventually the bid stops coming to their door-
+step – but if they keep doing such a good job of it, that might not happen!
+The take away? These data also suggest tenuously bullish outlooks (but offer a slightly different
+rationale).
+An aggressive trader might jump on the early signs of a large upwards move, while the prudent
+watcher may wait for VoEx to settle, and, ideally, for put-selling to return!
+A complicated market-of-late.
+Happy trading,
+Justin!
+
+Deep Dive Stocks – Weekly Chat                                                        09/16/2024
+

@@ -1,0 +1,375 @@
+[
+  {
+    "file": "weekly-chat-2025-11-16",
+    "report_date": "2025-11-16",
+    "direction": {
+      "call": "bearish",
+      "confidence": "high",
+      "summary": "Downside expected with growing magnitude and duration; VoEx in Propagation Zone, gamma squeezes mounting, bearish ES liquidity; ~7% downside to LT-6.",
+      "conditions": "A low-volume week dominated by gamma-hedging flows could allow an unsteady float upwards.",
+      "quote": "Overall, the data continue to paint expectations of downside"
+    },
+    "levels": [
+      {
+        "value": 6553,
+        "instrument": "SPX_ES",
+        "role": "support",
+        "side": "below",
+        "quote": "the 987-minute (bottom-left), which shows LT-7 support at $6,553 (~ -3.00%!)"
+      },
+      {
+        "value": 680,
+        "instrument": "SPY",
+        "role": "resistance",
+        "side": "above",
+        "quote": "~$680 on $SPY (per the gamma hedging heatmap)"
+      },
+      {
+        "value": 6700,
+        "instrument": "SPX_ES",
+        "role": "resistance",
+        "side": "above",
+        "quote": "$6,700 - $6,900 on ES (per LT resistances)"
+      },
+      {
+        "value": 6900,
+        "instrument": "SPX_ES",
+        "role": "resistance",
+        "side": "above",
+        "quote": "$6,700 - $6,900 on ES (per LT resistances)"
+      }
+    ],
+    "notes": "Second half of report is admin content (Liquidity Toolkit rollout, new dev hire plans). The '7% down to LT-6' target has no numeric price attached."
+  },
+  {
+    "file": "weekly-chat-2025-11-23",
+    "report_date": "2025-11-23",
+    "direction": {
+      "call": "bullish",
+      "confidence": "low",
+      "summary": "Small bounce underway off 987-minute LT7 support, but overall data still expect downside to resume after the bounce.",
+      "conditions": "Bounce dissolves if IV decreases too much; downside accelerates if LT7 support on the 987-minute fails.",
+      "quote": "Overall, prudency suggests a slight breather might in the works but its longevity is in question postwhich downside is likely to continue"
+    },
+    "levels": [
+      {
+        "value": 6713,
+        "instrument": "SPX_ES",
+        "role": "ceiling",
+        "side": "above",
+        "quote": "This places a tentative ceiling at LT6 ($6,713; ~1.2%) and LT7 ($6,778; 2.2%)"
+      },
+      {
+        "value": 6778,
+        "instrument": "SPX_ES",
+        "role": "ceiling",
+        "side": "above",
+        "quote": "This places a tentative ceiling at LT6 ($6,713; ~1.2%) and LT7 ($6,778; 2.2%)"
+      },
+      {
+        "value": 6678,
+        "instrument": "SPX_ES",
+        "role": "ceiling",
+        "side": "above",
+        "quote": "These ceilings are $6,678 (~2.5%ish) and $6,856 (~3.4%)"
+      },
+      {
+        "value": 6856,
+        "instrument": "SPX_ES",
+        "role": "ceiling",
+        "side": "above",
+        "quote": "These ceilings are $6,678 (~2.5%ish) and $6,856 (~3.4%)"
+      },
+      {
+        "value": 6588,
+        "instrument": "SPX_ES",
+        "role": "support",
+        "side": "below",
+        "quote": "LT7 at $6,588 tends to be a hefty support, and it seems to be supporting spot well currently"
+      }
+    ],
+    "notes": "Bounce-then-downside call: near-term bounce is the coming week's lean, but framed inside continued overall downside expectations (bulltrap environments)."
+  },
+  {
+    "file": "weekly-chat-2025-11-30",
+    "report_date": "2025-11-30",
+    "direction": {
+      "call": "bullish",
+      "confidence": "medium",
+      "summary": "Bounce expected to continue roughly 2% more toward LT-6 ceiling, with eventual return to downside once VoEx-daily re-enters Propagation Zone.",
+      "conditions": "Bounce ends when VoEx-daily returns to the Propagation Zone; VoEx still in PZ so downside remains ultimate resolution.",
+      "quote": "Overall, reasonable evidence to suggest another ~2% bounce with return to downside expected"
+    },
+    "levels": [
+      {
+        "value": 6974,
+        "instrument": "SPX_ES",
+        "role": "ceiling",
+        "side": "above",
+        "quote": "In looking for a ceiling, one finds LT-6 at $6,974-ish, which sits about 2% up still"
+      }
+    ],
+    "notes": "Author also warns hedging heatmaps imply choppy-and-flat action; downside still the final resolution."
+  },
+  {
+    "file": "weekly-chat-2025-12-07",
+    "report_date": "2025-12-07",
+    "direction": {
+      "call": "bearish",
+      "confidence": "low",
+      "summary": "Chop expected for the week while remaining bullish liquidity drains, with ultimate resolution still toward the downside.",
+      "conditions": "Bullish liquidity on 144-, 987-minute and weekly plus SPY purchasing support could stave off imminent downside (more chop instead).",
+      "quote": "Overall, expected chop until the last of the bullish liquidity is siphoned away, leaving only downside as the only path forward"
+    },
+    "levels": [],
+    "notes": "Includes admin content (new webserver/API, new Discord migration). LS&T described as unusually messy/complex; the only dollar figure ('$5.00 north at LT5') is a distance, not a level, so excluded."
+  },
+  {
+    "file": "weekly-chat-2025-12-14",
+    "report_date": "2025-12-14",
+    "direction": {
+      "call": "bearish",
+      "confidence": "low",
+      "summary": "Erratic, turbulent week expected with high risk of large moves; overall resolution still toward the downside.",
+      "conditions": "SPY VoEx-daily still in Stable Zone, bullish liquidity on higher timeframes and substantial SPY purchasing support could keep price afloat.",
+      "quote": "Thus, high risk for large moves with, as per usual of late, overall expected resolution towards the downside!"
+    },
+    "levels": [
+      {
+        "value": 6811.29,
+        "instrument": "SPX_ES",
+        "role": "support",
+        "side": "below",
+        "quote": "This suggests testing LT7 at $6,811.29 is likely"
+      },
+      {
+        "value": 6512,
+        "instrument": "SPX_ES",
+        "role": "support",
+        "side": "below",
+        "quote": "$6,512 is likely the next mini-stop at LT4 before a leg down to $6,337 at LT6"
+      },
+      {
+        "value": 6337,
+        "instrument": "SPX_ES",
+        "role": "support",
+        "side": "below",
+        "quote": "$6,512 is likely the next mini-stop at LT4 before a leg down to $6,337 at LT6"
+      }
+    ],
+    "notes": "Author explicitly lowers expectations of a correct outlook ('erratic, which is my way of lowering your expectations'). Includes Discord-migration admin section."
+  },
+  {
+    "file": "weekly-chat-2025-12-22",
+    "report_date": "2025-12-22",
+    "direction": {
+      "call": "bullish",
+      "confidence": "medium",
+      "summary": "Santa rally expected: low-volume short week lets gamma-hedging purchasing support drift the market up roughly 1.5% toward LT resistances.",
+      "conditions": "VoEx still in Propagation Zone so downside remains the overall expectation after the rally; thesis depends on low holiday volume.",
+      "quote": "Overall, likely drift upwards ~1.5% for a santa rally"
+    },
+    "levels": [
+      {
+        "value": 6919,
+        "instrument": "SPX_ES",
+        "role": "ceiling",
+        "side": "above",
+        "quote": "The 90-minute (top-left) shows a ceiling at $6,919 at LT6 which is quite a bit north"
+      },
+      {
+        "value": 6900,
+        "instrument": "SPX_ES",
+        "role": "target",
+        "side": "above",
+        "quote": "Between the 90-, 144-, and 987-minute, it seems ~$6,900 (~1.5%+) reasonable"
+      }
+    ],
+    "notes": "SPY expected price range for the week cited as ~1.5% (percentage, not extracted as a level)."
+  },
+  {
+    "file": "weekly-chat-2025-12-28",
+    "report_date": "2025-12-28",
+    "direction": {
+      "call": "bullish",
+      "confidence": "low",
+      "summary": "Short holiday week expected to be flat-to-slightly-up on persistent diffuse purchasing support; VoEx leaning bullish but not committing.",
+      "conditions": "If VoEx-daily spikes complete their cycle and return to the Propagation Zone, downside is expected instead.",
+      "quote": "Overall, a short-week ahead likely to generate flat-to-slightly up price action to usher in the year ahead"
+    },
+    "levels": [],
+    "notes": "Deliberately short report ('SUMMARY: See above!'); no numeric price levels given, LT resistances referenced only by ordinal name."
+  },
+  {
+    "file": "weekly-chat-2026-01-11",
+    "report_date": "2026-01-11",
+    "direction": {
+      "call": "neutral",
+      "confidence": "low",
+      "summary": "Data technically bullish (flat-to-up drift) but worrying patterns: either drift-and-flat continues or downside starts; author explicitly two-sided.",
+      "conditions": "An influx of volume would erode hedging's outsized support; rising VoEx-daily descent into PZ would confirm downside.",
+      "quote": "Overall, the data are currently saying “likely flat-to-up” but with a bit of a smirk"
+    },
+    "levels": [],
+    "notes": "Large digression into volume Z-score analysis (low volume amplifying hedging impact). Main Points say 'conditions look bullish but said rigor is brought into question'; no numeric price levels."
+  },
+  {
+    "file": "weekly-chat-2026-01-18",
+    "report_date": "2026-01-18",
+    "direction": {
+      "call": "bearish",
+      "confidence": "high",
+      "summary": "Downside expected and near: SPY VoEx re-entered Propagation Zone with VoEx-daily divergence; rising volume erodes hedging support; near-term bearish liquidity.",
+      "conditions": "Hedging heatmaps are bullish on their face if the volume drought persists and lets hedgers float price up.",
+      "quote": "Downside expected and perhaps some excitement to follow!"
+    },
+    "levels": [
+      {
+        "value": 700,
+        "instrument": "SPY",
+        "role": "resistance",
+        "side": "above",
+        "quote": "$SPY’s inundation with purchasing support allows for $+ until selling pressure kicks in at around ~$700"
+      },
+      {
+        "value": 6951.01,
+        "instrument": "SPX_ES",
+        "role": "support",
+        "side": "below",
+        "quote": "likely movement to LT7 on the 144-minute ($6,951.01) currently"
+      },
+      {
+        "value": 6883,
+        "instrument": "SPX_ES",
+        "role": "support",
+        "side": "below",
+        "quote": "any failure thereof will likely see spot free to move to LT7 on the 987-minute ($6,883 currently)"
+      },
+      {
+        "value": 6462,
+        "instrument": "SPX_ES",
+        "role": "support",
+        "side": "below",
+        "quote": "and ultimately down to LT6 on the weekly ($6,462)!"
+      }
+    ],
+    "notes": "Includes extended volume-vs-price regression digression supporting the volume/hedging thesis."
+  },
+  {
+    "file": "weekly-chat-2026-01-25",
+    "report_date": "2026-01-25",
+    "direction": {
+      "call": "bearish",
+      "confidence": "low",
+      "summary": "Turbulent, flat week expected as market positions for more downside: stagnant price against LT resistances, then retest of 987-minute LT7 and lower.",
+      "conditions": "Early-week break above LT resistances plus supportive hedging could extend the bounce before coming back down.",
+      "quote": "Overall, expect turbulent, flat week as the market positions for more downside"
+    },
+    "levels": [
+      {
+        "value": 7002,
+        "instrument": "SPX_ES",
+        "role": "resistance",
+        "side": "above",
+        "quote": "it might be put off until a test of LT5 at $7,002 is performed"
+      }
+    ],
+    "notes": "Report ends mid-sentence ('Calendar spreads at LT6 &') — truncated content."
+  },
+  {
+    "file": "weekly-chat-2026-02-01",
+    "report_date": "2026-02-01",
+    "direction": {
+      "call": "bearish",
+      "confidence": "high",
+      "summary": "Turbulence and continued downside expected: VoEx in Propagation Zone, gamma-squeeze growth accelerating, widespread bearish liquidity with multiple LT ceilings overhead.",
+      "conditions": "Hedging heatmaps are the only bullish reprieve, partially dependent on QQQ's IV not dropping too much.",
+      "quote": "Overall, turbulence and continued downside is expected"
+    },
+    "levels": [
+      {
+        "value": 6485.2,
+        "instrument": "SPX_ES",
+        "role": "floor",
+        "side": "below",
+        "quote": "said floor sits currently at $6,485.20 (-8ish%)"
+      }
+    ],
+    "notes": null
+  },
+  {
+    "file": "weekly-chat-2026-02-08",
+    "report_date": "2026-02-08",
+    "direction": {
+      "call": "bearish",
+      "confidence": "medium",
+      "summary": "Continued downside resolution expected, though fuzzier than last week: bearish VoEx and predictive gamma data versus near-term bulltrap potential.",
+      "conditions": "If the hedging environment and eager bids join forces, a turbulent bull-trap bounce week is possible instead.",
+      "quote": "Overall, turbulence and continued downside resolutions expected"
+    },
+    "levels": [],
+    "notes": "Author says visions of downside are 'a tad more fuzzy' this week; LT levels discussed only by ordinal name, no numeric prices."
+  },
+  {
+    "file": "weekly-chat-2026-02-16",
+    "report_date": "2026-02-16",
+    "direction": {
+      "call": "bearish",
+      "confidence": "high",
+      "summary": "Wholly bearish: VoEx deepening in Propagation Zone, local gamma-squeeze hedging conditions, bearish liquidity on all timeframes except weekly, minimal supports below.",
+      "conditions": "If IV increases drastically, hedging may re-introduce some purchasing support (more so on SPY than QQQ).",
+      "quote": "Prudence suggests downside is most expected"
+    },
+    "levels": [],
+    "notes": "Downside supports quoted only as percentages (LT4 -5%, LT6 -5%/-8%, LT7 -8.5%) with no numeric prices, so none extracted."
+  },
+  {
+    "file": "weekly-chat-2026-02-22",
+    "report_date": "2026-02-22",
+    "direction": {
+      "call": "bullish",
+      "confidence": "medium",
+      "summary": "Quick bounce of roughly 1% expected toward $7,005 LT resistance, supported by diffuse purchasing support and bulltraps; longer-horizon outlook remains bearish.",
+      "conditions": "If SPY IV drops too far in pursuit of upside, selling pressure enters; re-evaluate at the ~$7,005 ceiling for profit-takers.",
+      "quote": "in the interim, the market looks poised for a quick bounce around ~1% northward"
+    },
+    "levels": [
+      {
+        "value": 7005,
+        "instrument": "SPX_ES",
+        "role": "target",
+        "side": "above",
+        "quote": "I don’t think $7,005 is unreasonable, as it is the ceiling found on the 987-minute (LT7) and the weekly (LT5)"
+      }
+    ],
+    "notes": "Explicit bounce-within-a-bearish-longer-term framing; the $7,005 level doubles as target and ceiling."
+  },
+  {
+    "file": "weekly-chat-2026-03-01",
+    "report_date": "2026-03-01",
+    "direction": {
+      "call": "bearish",
+      "confidence": "medium",
+      "summary": "Downside expectations renewed: continued turbulence with downside resolution; bearish liquidity and profit-takers on all intervals except weekly; supports 2% and 5% down.",
+      "conditions": "QQQ's VoEx-daily could be starting a bullish-zone journey (near-term bulltrap); purchasing support exists but IV reduction limits apply.",
+      "quote": "Downside expectations renewed –"
+    },
+    "levels": [
+      {
+        "value": 6500,
+        "instrument": "SPX_ES",
+        "role": "support",
+        "side": "below",
+        "quote": "LT4 & 6 are likely to be tested here shortly on the weekly – at $6.5k and $6.2k respectively (-2%, -5%, respectively)"
+      },
+      {
+        "value": 6200,
+        "instrument": "SPX_ES",
+        "role": "support",
+        "side": "below",
+        "quote": "LT4 & 6 are likely to be tested here shortly on the weekly – at $6.5k and $6.2k respectively (-2%, -5%, respectively)"
+      }
+    ],
+    "notes": "Levels given in shorthand '$6.5k and $6.2k'; converted to 6500 and 6200."
+  }
+]

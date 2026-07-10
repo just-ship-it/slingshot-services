@@ -1,0 +1,219 @@
+                                   Weekly Chat 2024-12-09
+
+
+                                          Main Points
+
+
+
+    -   VoEx demonstrates Bullish-until-proven-otherwise for both $SPY and $QQQ.
+    -   Hedging environments are similar to last week’s with $SPY showcasing diffuse
+        purchasing support while $QQQ’s diminishes.
+    -   Put-selling has ceased – even from the $QQQ put sellers.
+    -   Market-Wide Gamma Squeeze data show a trend of deepening GTM values with recent
+        growth noted.
+    -   Heightened risk of mean-reversion-like behavior from $QQQ due to its extra-ordinary
+        movement last week.
+    -   Overall, bullish outlooks remain but potential risk-adjusted down-side target set.
+
+
+
+                                           SUMMARY
+
+
+
+          Last week, $QQQ under-performed $SPY while this week it over-performed
+          it quite significantly.
+
+          The immediate consequence of this is the introduction of mean reversion
+          into our potential factors in the week ahead.
+
+          VoEx shows minimal enthusiasm for said risk with VoEx and VoEx-daily
+          well housed within stability. This brings with it and re-inforces the longer-
+          term bullish outlooks.
+
+          Hedging environments are reflective of last week’s; $QQQ’s configuration
+          of minimal purchasing support continues, as does $SPY’s quagmire of
+          purchasing support.
+
+          Put-sellers have ceased for the week ahead; perhaps content with their
+          recent earnings or in a showing of risk-off; either way, this minimizes the
+          sharèd-ness of a shared, bullish outlook.
+
+          Overall, the environment is bullish with some risk identifiable and relatively
+          easy to track.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                         12/09/2024
+                                              DETAILS
+
+
+
+
+Hello every-body!
+Let’s start by taking note of one of the curious notes we noted from last week’s last week, which
+was something along the lines of “[wow]… $QQQ moved 67% less than $SPY …”, and this week,
+not to be outdone, showcased the opposite!
+Week-over-week, $SPY mustered a 0.87% move but while $QQQ zoomed along at mach 3.28(%)
+– resulting in a 2.01x move over what the market was expecting from $QQQ! (Last week’s T+5
+EPR was ± 1.63% for $QQQ); $SPY, on the other hand, and frankly, sort of embarrassingly, falls
+well short within the aforementioned omnipresent shadow of $QQQ’s success with only a ~0.75x
+for $SPY.
+
+Keeping in line with tradition of placing ratios upon ratios, in comparing movement-as-compared-
+to-the-market’s-expectations-ratios between $SPY and $QQQ produces a comparison-of-
+movement-normalized-against-the-market’s-expectations; this value is 0.90. In other words,
+whereas last week, $QQQ moved 67% less than $SPY, this week, it moved 90% more than $SPY
+(when controlling for EPR).
+And, well, one can’t simply stop building ratio-blocks. If we look at the relative ratio between the
+extra-ordinary movement of this (0.90) to yester-week’s (0.67), we get 1.34! Astonishing. Maybe.
+Not sure the significance but it seems that $QQQ’s relative under-performance was immediately
+met with a relative over-performance of almost double the magnitude!
+I simply refuse to do more ratios, and you can’t make me but at least on the surface, one can’t
+help but think it feels like a sort of “catch-up” on $QQQ’s behalf. Now – this outlook demands
+substantial rational and, well that’s not here so take that as you will.
+Let’s take a peek at the situation with the heatmaps below:
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                         12/09/2024
+On the left, we can see $SPY spent the week in some sort of quagmire of indecision, while $QQQ
+moved quite rapidly along towards gamma neutrality in an almost purely [$+] fashion. Quite
+impressive!
+
+So, this week, the task seems straightforward, we simply need to put our ears to the floor and
+determine if the music is still on based on which footsteps we hear, when we hear them, and
+trying to connect them to the patterns of feet movements on this old dance-card, all-the-while
+keeping a particular ear out for the Mean Reversion Quartet.
+After that, some quick updates about the goin’ ons and then I’ll let you be!
+
+A
+Starting as usual with VoEx, we spot VoEx in an excited state within stability:
+
+
+
+
+VoEx is quite high and sound within stability – and no concerning VoEx-daily movement suggests
+that overall, the expectation remains bullish and well situated within Bullish-Until-Proven-
+Otherwise (BUPO) territory.
+The `otherwise` component of BUPO are the features we are relatively used to keeping an eye out
+for: rapid movements of VoEx-daily (and to a more severe event, VoEx itself) into the Propagation
+Zone, or environmental changes such as rapid increases in gamma squeezes throughout the
+market, IV-unstable hedging environments, etc.
+But, taken together, VoEx paints a bullish picture for us.
+
+Moving southwards, we find in their usual habitat, the Gamma Hedging Heatmaps:
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                      12/09/2024
+Inspection reveals a very similar environment as compared to last week: a quagmire of
+purchasing support on $SPY with a more dynamic (albeit also more diffuse) purchasing support
+environment.
+As compared to last week, $QQQ’s separation from selling pressure has grown, but the cost
+appears to be at the expense of significant “depth” or purchasing support (compare how light this
+week’s purchasing support is as opposed to last week’s!).
+On the surface, this suggests bullish movements will be well-supported once more (at least for
+$QQQ, who once more is the only index showing an obtainable gamma neutrality) but the risk of
+an ill-response following any potential need for $QQQ to rely on the aforementioned, diffuse
+purchasing support seems ever preset (such as, say, during a mean reverting event).
+Nonetheless, conditions are similar to those found last week, and without any obvious additional
+risks, the outlook appears similar as well (now, should $QQQ mean revert however …!)
+Moving once more because we get too anxious standing in one place for too long, we arrive at
+our put-selling friends’ house. Peering into their windows1 we can see what they are up to:
+
+
+
+
+A bunch of nothin’! A curious sight, given their success lately (especially on $QQQ). This cessation
+of put-selling does nod a bit towards the put-sellers also have at least some sort of hesitation
+regarding more full-throttle-upwards market performance (is it the same as ours [i.e. basic ol’
+mean reversion]? Who knows!).
+
+
+
+1
+    Nah they don’t mind promise.
+
+Deep Dive Stocks – Weekly Chat                                                         12/09/2024
+But – worth keeping an eye out; especially if mean-reversion happens early within the week, and
+subsequent hedging environments are still “weak” – then perhaps things will get spicy.
+Moving onwards into Gamma-land, we
+encounter a mixed sight:
+On one hand growth rates have become
+decidedly negative once more, although it
+looks as though that is about to change with
+the current data pointing straight up.
+The market has experienced an increase
+week-over-week in GS counts of about ~15%
+(756 → 861).
+
+Even more curioser is the deepening GTM –
+particularly noteworthy since 2024-09-02.
+Since then, it seems that there has been a
+progressively increasing amount of short
+gamma making its way into the market.
+
+The suggestion from this is that the number
+of GS’ should be expected to increase, likely
+at a similar rate its doing now, but should this
+add some instability to a mean-reverting and
+sparse-hedging-environment market, then it
+may present with a reasonable downside
+opportunity.
+For me, this slightly decreases the height to which I will raise my eye-brows at the sight of $QQQ’s
+experiencing a small and then a big dip (as the mean-reversion accidentally exhausts the sparse
+purchasing environment and pushes a bit close to selling pressure in the setting of a growing GS
+environment), but current conditions suggest anything limited to ~$5,900 on $ES (the current
+LDPM-89, -144 floor) will present a decent average down opportunity.
+Extension beyond $5,900 or if VoEx indicates will likely cause another review of medium-term
+condition but otherwise, dip-then-rip; as the kids say.
+
+
+Happy Trading!
+
+
+
+
+Justin
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                         12/09/2024
+Updates
+!
+So, we’ve officially switched to `dd.deepdivestocks.com` for the Dashboard and there has been a
+partial fix to the watch list issue.
+From here, I’ll mostly continue with the work getting the new Dashboard up to snuff – currently
+it’s a full rewrite and truthfully, I’m not rushing terribly on it, as I want it to be highly scalable and
+robust so I’m being particularly cautious with some design choices (fingers crossed!).
+My current goal is to have a working prototype of the `Data Page` that I can add to the current
+dashboard so that you can play around with it and give feedback and whatnot while the rest of
+the Dashboard finishes up.
+Some of the features the new Dashboard will have with its first release:
+
+    -    Super customizable and interactive graphs.
+    -    An AI bot to chat with about DDS stuff and will even be able to offer some analysis help.
+    -    Modeling and forecasting capabilities / correlation studies data processing capabilities.
+    -    Watchlist & Alert capabilities for user-defined alerts (i.e.: alert me if X has an average of Y
+         or if the forecast of X is above Z).
+    -    Much more customizable and dynamic market scans.
+    -    Save-able searches / data pages / etc for easier repeat analysis.
+
+
+So, yeah – it’s a decent step forward and I am excited to have at least a prototype of the new
+system out for your testing and feedback on within a few months!
+
+
+
+Justin
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                              12/09/2024
+

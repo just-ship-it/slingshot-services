@@ -555,6 +555,15 @@ export class TradeSimulator {
           return this.exitTrade(trade, bar, 'max_hold_time', bar.close);
         }
 
+        // Wall-clock max hold (entry-relative, spans halts/weekends).
+        // Used by lt-gex-path-race: time-in-trade is measured in real hours,
+        // not traded minutes, so the time-stop fires on the first bar past
+        // the deadline even across the maintenance hour or a weekend.
+        if (trade.signal?.maxHoldWallMs > 0 && trade.entryTime &&
+            bar.timestamp - trade.entryTime >= trade.signal.maxHoldWallMs) {
+          return this.exitTrade(trade, bar, 'max_hold_time', bar.close);
+        }
+
         // Check Zero Gamma early exit conditions (every 15 minutes)
         // Only breakeven protection enabled (forced exit removed - insufficient sample size)
         const gfAction = this.checkGFEarlyExit(trade, bar.timestamp);
@@ -925,6 +934,12 @@ export class TradeSimulator {
         if (debug) {
           console.log(`    ⏰ [TRADE ${trade.id}] MAX HOLD BARS (${trade.maxHoldBars}) reached - forcing exit`);
         }
+        return this.exitTrade(trade, candle, 'max_hold_time', currentPrice);
+      }
+
+      // Wall-clock max hold (entry-relative; see 1s path for rationale).
+      if (trade.signal?.maxHoldWallMs > 0 && trade.entryTime &&
+          candle.timestamp - trade.entryTime >= trade.signal.maxHoldWallMs) {
         return this.exitTrade(trade, candle, 'max_hold_time', currentPrice);
       }
 

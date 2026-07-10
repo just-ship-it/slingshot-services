@@ -1,0 +1,226 @@
+                                     Weekly Chat 2025-09-29
+
+
+                                            Main Points
+
+
+
+       -   VoEx-daily for $SPY, $QQQ, $VOO and $VTI have returned to the Propagation Zone
+           after recent Spike-like behavior. VoEx remains elevated within stability.
+       -   Hedging Heatmaps show persistent and robust selling-pressure located spot-up
+           with minimal downside purchasing support noted except for on $VTI.
+       -   MWGS data showcase minimal changes.
+       -   LDPM/S data show a mixed environment with near-term bearish outlooks amongst
+           longer-term weak bullish outlooks.
+       -   Prudency suggests bracing for another leg down, approximately 3.5%
+
+                                             SUMMARY
+
+
+           The market shook a little this week and the consequences can be noted. VoEx-
+           daily for $SPY, $QQQ, $VOO and $VTI have returned to the Propagation Zone,
+           highlighting the risk we brushed aside weeks prior regarding the apparent VoEx-
+           daily spikes noted throughout. $TLT’s VoEx and VoEx-daily have been elevated to
+           stability.
+
+           The Gamma-Hedging Heatmaps show an environment filled persistent and
+           robust selling pressure located spot-up. $VTI showcases some purchasing
+           support (the only one) located spot-down with a transitory and slightly gamma-
+           neutral zone located in the $− , 𝐼𝐼𝑉𝑉 + direction.
+
+           The MWGS data [not show] are still moot.
+
+           LDPM/S investigation into ES futures showcases another round of weakened
+           bearish near-term prints with weakened bullish long-term prints painting an
+           environment that is both uncertain and flimsy. LDPM support suggests ES futures
+           have grace to fall 3.5% until LDPM support comes into view. A quick investigation
+           into a composite chart of $PSY/$GLD suggests $GLD is expected to out-perform
+           in the coming months.
+
+           Overall, prudency suggests the market is itself quite uncertain and this is
+           manifesting currently in uncertain data. These data point towards downside as
+           the locus of stability.
+
+
+
+
+Deep Dive Stocks – Weekly Chat             for the week of                 2025-09-22 to 2025-09-26
+ DETAILS
+
+
+
+
+                                                ---
+                                           Quick Note:
+There’s an issue with the Deep Dive Stocks domain being kicked back by gmail. I am working with
+them to get this undone but for now, that seems to be the issue with some members not receiving
+the Weekly Chat in their emails.
+I’ll keep you updated!
+                                                ---
+Hello!
+
+Last week, we left off with bullish ideations and in response to this, the market decided to move
+-0.28% ($SPY) while $QQQ moved -0.56%. Not bullish at all!
+Taking a peek at the heatmaps for the week, we see:
+
+
+
+
+A week defined by slow and lethargic migration down to purchasing support, only to experience
+a slight bounce, and by bounce I mean IV decreased a bit after coming into contact with said
+purchasing support. Nothing too exciting.
+But, this week, let’s take a look at the data with some additional caution: we’ve been toiling for a
+while now on anticipated downside being neigh until recently and so it might behoof us to ensure
+that the market isn’t just in the process of breaking our ankles.
+Ankle Braces
+Starting as usual with VoEx, we see:
+
+
+
+
+Deep Dive Stocks – Weekly Chat            for the week of               2025-09-22 to 2025-09-26
+Oh my.
+It seems the market might just be in the process of something devious after all.
+Recent prints show VoEx-daily spiking back into the Propagation Zone on both $SPY and $QQQ:
+this brings immediate downside expectations. For now, this behavior hasn’t compromised VoEx’s
+admittedly renewed interest in returning to stability ! If one were interested in parallels, it looks as
+though this is reminiscent of 2025-07-ish, but with a more contracted time-period.
+All-in-all, this is very suspicious for continued downside.
+
+In checking with some additional VoExes, we see:
+$VOO:
+
+
+
+
+Recent VoEx-daily behavior appears very chaotic with a consistently decreasing VoEx. This is
+usually not a good sign for future (bullish) stability.
+
+
+
+
+Deep Dive Stocks – Weekly Chat             for the week of                 2025-09-22 to 2025-09-26
+$TLT:
+
+
+
+
+In figuring we might need a break from the potential onslaught of bearish views, we can take a
+peek at $TLT which is showing quite the opposite! The data here are very bullish! We have VoEx
+moving into stability and VoEx-daily is, at least for now, not moving into the Propagation Zone.
+Moving onwards, let’s take a peek at $VTI (Total Stock Market ETF):
+
+
+
+
+Similar scene to above: VoEx-daily has entered the Propagation Zone and VoEx-proper is has been
+slowly descending out of stability.
+
+Taken together, there seems consensus that near-term downside appears very likely given VoEx-
+daily’s unanimous movement into the Propagation Zone but there is, for now, still a decent
+amount of room between current VoEx-proper and the Propagation Zone on most ETFs (opposite
+for TLT).
+
+
+
+Deep Dive Stocks – Weekly Chat          for the week of               2025-09-22 to 2025-09-26
+Thus, it seems reasonable per VoEx to expect continued downside.
+
+Let’s take a peek at the hedging environments to see how things look:
+
+
+
+
+Not the most conducive environments for any spot-up expectations! We have selling-pressure
+located spot-up for both $SPY and $QQQ and minimal purchasing support located spot-down
+(sort of the opposite form last week!).
+This is a relatively bearish print once more!
+Let’s check in on TLT and VTI:
+
+
+
+
+On this view we see $TLT has some head-winds as well, like its equity contemporaries but with a
+bit more ceiling above spot before the selling-pressure really kicks in.
+
+$VTI is in a similar boat but we see that the purchasing support found therein is just as robust as
+the selling pressure – unlike its contemporaries.
+Taken together, this is another field of bearish data prints: in the land of the hedging heatmaps
+we find it filled with local and substantial selling-pressure located spot-up with minimal
+purchasing support found (except for $VTI).
+
+Moving onto the market-wide gamma squeeze data (not shown) we find: not much still! Let’s
+check in on it next week if there is any exciting downside.
+Moving onwards once more, let’s check out liquidity environments via LDPM/S:
+
+
+
+
+Deep Dive Stocks – Weekly Chat            for the week of              2025-09-22 to 2025-09-26
+A few interesting findings:
+       -   On the 90-minute (top-left) we see LDPM-L5 acting as a resistance to spot-
+           appreciation with 4 consecutive failed attempts, despite the bullish liquidity.
+       -   The 144-minute (top-right) is wholly bearish despite a recent ABC (lower order LDPMs
+           not shown). There is no evidence yet of the “Wave” occurring, indicating that the profit-
+           taking hasn’t kicked in yet, but one can see that the aggressive bid cascade failed to
+           do two important things one might hope from an ABC:
+               o It failed to convert liquidity to bullish,
+               o It failed to move spot
+       -   The 987-minute finds itself back in the previous spot we had just praised it for breaking
+           out of: its fallen back under LDPM-L5 and finds said LDPM resistance once-again
+           perplexingly difficult to over-take.
+       -   The 1-Week view shows spot still struggling to raise above LDPM-L5 support and we
+           see the tiniest evidence of an Aggressive Ask Cascade forming (LDPM-L5, 6 & 7 all
+           have the [albeit slightest] unanimous upwards bend characteristic of such events).
+So, this is just a strange environment: we see bullish LDPS liquidity failing to provide bullish spot
+performance, either due to LDPM-resistances that theoretically should provide amble support to
+an aspiring spot or even in just failing to raise spot without said resistances (as in the 144-
+minute).
+These data paint weakness and, at minimal, either a reluctance for the market to move spot higher
+or the inability to do so, even with the predominate forces being bullish (90-, 987-minute & 1-
+Week).
+
+Now, let’s check in on a composite chart of $SPY / $GLD:
+
+
+
+Deep Dive Stocks – Weekly Chat            for the week of                2025-09-22 to 2025-09-26
+Composite Charts work by combining to symbols in X / Y form. These have been a recent
+discovery and have only become more interesting!
+
+On this view, we see $SPY/$GLD and the key points are:
+       -   When LDPS prints bullish candles, then we expect the top symbol ($SPY) to out-
+           perform, while
+       -   When LDPS is bearish, then we expect the bottom symbol ($GLD) to out-perform.
+
+The recent history of these data show that:
+       -   From 2024-12-31 to 2025-05-01 [approx. 5 months] LDPS printed bearish prints and
+           $GLD rose 23% while $SPY declined 4%.
+       -   From 2025-05-01 to 2025-08-15 [approx. 3 months] LDPS printed bullish prints and
+           $GLD rose 2% while $SPY rose 14%.
+These are pretty compelling data! Recent data show bearish liquidity since 2025-08-15 during
+which time, so far, $GLD has risen 11% while $SPY has risen 2% - and this trend is expected to
+continue as LDPS continues to print bearish prints!
+Thus, in this view, we see that the market’s flow is definitely centered towards moving into $GLD
+at a greater magnitude than into $SPY, and as such, although this isn’t bearish per-se for $SPY it
+does suggest bearish ideations are becoming ingrained in market behavior.
+
+
+
+
+Deep Dive Stocks – Weekly Chat           for the week of              2025-09-22 to 2025-09-26
+And so, before this becomes overly daunting with data, I think for now there is sufficient evidence
+to maintain a bearish outlook going forward.
+In investigating a potential downwards floor, the 987-minute gives us a space between spot and
+LDPM-L6 support of about 3.5% down. This seems a reasonable downwards target to set as the
+step before things start really getting spicey.
+Happy Trading,
+
+
+Justin
+
+
+
+
+Deep Dive Stocks – Weekly Chat           for the week of               2025-09-22 to 2025-09-26
+

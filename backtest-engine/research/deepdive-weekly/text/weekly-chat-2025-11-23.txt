@@ -1,0 +1,224 @@
+                                      Weekly Chat 2025-11-24
+
+
+                                              Main Points
+
+
+
+       -   VoEx remains in the Propagation Zone for $SPY and $QQQ with some evidence of
+           a forming VoEx-daily spike underway.
+       -   Gamma-hedging environments showcase a tenuous but supportive environment
+           for $SPY with a wholly supportive environment for $QQQ.
+       -   The Market-Wide Gamma (MWGS) squeeze data showcase increasing counts
+           (generally) with an increase in the predictive data as well.
+       -   The LS&T liquidity investigation for ES showcases forming bull-traps on the 90-,
+           and 144-minutes as the 987-minute LT-7 support facilitates a small bounce.
+       -   Expectations are a small bounce followed by return to downside.
+
+                                              SUMMARY
+
+
+           Last week, the outlook was downside and the eventual outcome was downside
+           as well. This week, the data suggest a small bounce might be underway but the
+           data still show continued, overall expectations for downside.
+
+           VoEx-daily for $SPY appears reminiscent of its recently-acquired VoEx-daily spike
+           behavior, suggesting that a small $+ accompanying a VoEx-daily spike is in the
+           works; this is not noted on $QQQ. Despite the potential for this pattern the overall
+           data still show VoEx (and VoEx-daily) well within the Propagation Zone, and so
+           downside represents the overall expectation and the ultimate anticipated
+           resolution, small bounce or not.
+
+           The gamma-hedging environments showcase purchasing support for both $SPY
+           and $QQQ with $SPY showcasing the need to be judicious with any 𝐼𝐼𝑉𝑉 − in the
+           week ahead, lest selling pressure be introduced into the market. $QQQ on the
+           other-hand finds itself inundated with purchasing support as spot falls below the
+           largest dealer-short put strike (which is now ITM).
+
+           The market-wide gamma squeeze (MWGS) data shows an overall increase in GS
+           counts (notwithstanding Friday’s decrease) along with an increase in the
+           predictive data, which forecasts a future containing a greater amount of gamma
+           squeezes than currently present.
+
+           LS&T investigation showcases near-term (90-, and 144-minute) bulltraps with
+           ceilings located ~2-3% up for ES futures. This corresponds to the 987-minute
+           which showcases LT7 acting as a robust support, provoking a bit of a bounce in
+           spot.
+
+           Overall, the data look prepared to off a week of bounce then downside to follow.
+
+
+
+
+Deep Dive Stocks – Weekly Chat              for the week of                   2025-11-24 to 2025-11-28
+                                                       DETAILS
+
+
+
+
+Hello all!
+We are back! Last week, we left off with notions of downside to be followed by more downside.
+Armed with such anticipations, the market found itself with like mind and ended -1.92% down for
+$SPY and -3.00% down for $QQQ.
+We can visualize these moves with the hedging heatmaps below:
+
+
+
+
+Last week, we talked about how the market might see more influential purchasing support with
+minimal influence from non-hedging personnes, but if we look at $SPY’s 5-day running average
+for volume on the dashboard, we see this is not what happened at all!
+
+
+
+
+In fact, we see a 50% increase in average volume from Friday the 14th until Friday the 21st! This
+hints at something particular important: 1) I was correct in the assumption1 and 2) the hedging
+most likely did enter the market and had minimal impact!
+So whereas the hedging was supportive it was too minimal in its impact in comparison to the 50%
+increase in volume ! Something to keep in mind, perhaps, as next week approaches.
+
+
+1
+    The logisticians arguing 𝑎𝑎 ← 𝑏𝑏 ≠ 𝑎𝑎 ← ¬𝑏𝑏 can go read a different Weekly Chat.
+
+
+Deep Dive Stocks – Weekly Chat                     for the week of                     2025-11-24 to 2025-11-28
+Speaking of next week, let’s check out the data:
+
+The data
+Starting as usual with VoEx, we find:
+
+
+
+
+Deepening of VoEx-daily and VoEx into the Propagation Zone! This foretells continued downside
+expectations with expanded scope. Some, more eager pattern-matchers, might argue that the
+recent behavior of VoEx-daily moving down, spiking up during a small $+ , and then falling back
+down (i.e.: VoEx-daily spikes) of late might constitute a pattern, and, should said pattern be
+reconstituted, one might become suspicious of the start of another cycle. To said pattern-seeker,
+I say: maybe!
+If we take the data on face-value, things are worsening and downside is still the predominate
+expectations. If we take the data with regard to any potential patterns that might be forming, we
+arrive at a similar conclusion (that of downside) but one that is augmented slightly with the
+possibility for an incoming VoEx-daily spike and $+ -bounce.
+Let’s check on the heatmaps to see what might be most facilitated by the gamma-hedgers:
+
+
+
+
+Oh my!
+On $SPY, we find a gamma-squeeze orientation (since the majority of purchasing support is $+
+while selling pressure is $− with current [$, 𝐼𝐼𝐼𝐼] pairings on the ridge separating the boys
+(purchasing support) from the men (selling pressure). This creates another scenario whereby any
+
+
+
+Deep Dive Stocks – Weekly Chat           for the week of              2025-11-24 to 2025-11-28
+combination of $− and/or 𝐼𝐼𝑉𝑉 − will be met with selling pressure! This gives the market a thin line
+to walk if it wishes to appreciate in price – it must do so without significant reduction in IV,
+otherwise selling pressure will be introduced.
+The good news is that this gives a bit of a controlled environment for $− , 𝐼𝐼𝑉𝑉 + to occur, since both
+of those potentials will result in an increase in purchasing support.
+On $QQQ, however, such divisions do not exist: the sea is filled with purchasing support in all
+directions. A testament $QQQ’s spot having dropped below the largest (then-) OTM put strike:
+
+
+
+
+In spot-up, we have the (now) large bank of ITM dealer-short puts which are prone to cause
+gamma squeezes (since they are short-gamma) while on spot-down we have a bed of OTM
+dealer-short puts as well causing the exact same phenomenon if spot decreases. The net effect
+of both of these combined in a sea of purchasing support!
+It is worth noting that large sums of ITM dealer-short puts is not ideal and can often cause
+volatility issues (namely via vanna-squeezes). These are similar to the gamma counter-parts
+except instead of an ipsilateral price-hedging relationship its an ipsilateral IV-hedging
+relationship: as IV increases, more selling pressure occurs while when IV-decreases, sell selling
+pressure occurs. Currently, it seems IV is too low for this in general but we can see the starts of
+the vanna-squeeze poking out on the $QQQ heatmap in the upper-left corner! At extreme IV
+increase we can see vanna starting to poke through the gamma with a single light-red square!
+Overall, it seems the markets are poised to receive a healthy amount of purchasing support from
+the gamma-hedgers, and it seems their goal is going to be navigating a $+ environment without
+causing 𝐼𝐼𝐼𝐼 to decrease too substantially.
+
+
+
+Deep Dive Stocks – Weekly Chat             for the week of                 2025-11-24 to 2025-11-28
+Thus, to contextualize the VoEx and heatmap data: it seems that the pattern-watchers have some
+hope in the near-future for a small bounce as VoEx-daily looks ready to continue in its pattern of
+behavior while the hedging heatmaps are poised to offer purchasing support (for the most part).
+This suggests that keeping an eye out for a pre-week/-market $− move which might interrupt the
+delicate balance the S&P is currently navigating.
+Moving on, let’s check on the Market-Wide Gamma squeeze data:
+
+
+
+
+Curiously, although this week was slated for an increase in GS counts, it would appear that Friday
+interrupted this trend with a 34% reduction in GS counts, which brings the weekly %-change to -
+22% as opposed to 34%
+increase up until Thursday.
+In moving to the predictive data,
+we find that things are largely
+the same: the Predictive Count
+Curve    (PCC;     orange)     is
+continuing to rise, indicating
+that future GS count is
+expected to grow faster than it
+currently is. The Predictive
+Growth Curve (PGC; purple) has
+moved to ~0, indicating that the
+overall growth-rate will stay the
+
+
+
+Deep Dive Stocks – Weekly Chat           for the week of               2025-11-24 to 2025-11-28
+same (the acceleration is 0 of the growth rate).
+
+In other words, the gas-pedal-of-expectation isn’t being pressed anymore but neither are the
+breaks and we are traveling faster than we were last week! This paints a picture of a market with
+more gamma squeezes then currently present which begets a picture of increased instability
+throughout the market which itself also begets pictures of downside.
+In peeking at the LS&T data, we find:
+
+
+
+
+Evidence of a forming bounce indeed!
+The evidence is as follows:
+
+       -   Bullish liquidity has emerged on the 90-mintue [top-left] within a bulltrap environment
+           (LTs are in a Bear Stack while LS is bullish!) This places a tentative ceiling at LT6
+           ($6,713; ~1.2%) and LT7 ($6,778; 2.2%).
+       -   The 144-minute [top-right] is in similar effect: bullish liquidity has emerged with a
+           budding bull-trap underway. These ceilings are $6,678 (~2.5%ish) and $6,856 (~3.4%).
+       -   The 987-minute [bottom-left] isn’t presenting with bullish liquidity but LT7 at $6,588
+           tends to be a hefty support, and it seems to be supporting spot well currently, and in
+           addition to LT7’s support, we find LT1 starting the `scoop` indicating that dip-buyers
+           are starting to be observed moving in.
+       -   This is in conjunction with the still-bullish liquidity on the 1-Week [bottom-right] that
+           we find clinging onto LT5 as a stalactite.
+
+
+
+
+Deep Dive Stocks – Weekly Chat           for the week of                2025-11-24 to 2025-11-28
+In sum, these data do also paint a picture of unstable upside, one that is likely best monitored and
+observed via the 987-minute as spot is likely to bounce off of LT7 before re-attempting another
+breakthrough (supposing liquidity remains bearish).
+It seems the plan for the week is a slight bounce which is set to dissolve once and if IV decreases
+too much. Keeping tabs on the bulltraps noted on the 90-, 144-minute liquidity chart will likely
+prove useful in the days ahead.
+
+Overall, prudency suggests a slight breather might in the works but its longevity is in question
+postwhich downside is likely to continue, especially if the LT7 support on the 987-minute fails.
+Happy Trading!
+
+
+Justin
+
+
+
+
+Deep Dive Stocks – Weekly Chat            for the week of               2025-11-24 to 2025-11-28
+

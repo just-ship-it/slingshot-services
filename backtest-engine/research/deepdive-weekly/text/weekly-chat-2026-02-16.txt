@@ -1,0 +1,147 @@
+                                      Weekly Chat 2026-02-16
+
+
+                                              Main Points
+
+
+       -   VoEx for $SPY and $QQQ are wholly bearish with both variants deepening their
+           presence within the Propagation Zone.
+       -   Gamma-hedging heatmaps showcase a local gamma-squeeze environment for
+           both $SPY and $QQQ.
+       -   Market-Wide Gamma Squeeze data showcase persistent growth and continued
+           expectations for an upcoming rapid expanded.
+       -   LS & T data showcase bearish prints on all timeframes except the Weekly, with
+           minimal downside support locatable.
+
+                                              SUMMARY
+
+
+
+           VoEx and VoEx-daily for $SPY and $QQQ are well within the
+           Propagation Zone, suggestive of near-term and long-term bearish
+           outlooks.
+
+           Hedging environments showcase proximal ipsilateral hedging
+           requirements which sum to a local gamma-squeeze. A silver lining
+           exists with these options and their corresponding arrangements
+           exists whereby if (for the most part) IV increases too drastically,
+           hedging is liable to re-introduce some purchasing support (more
+           liable on $SPY than $QQQ).
+
+           Gamma-squeeze data showcase modest growth with the predictive data
+           indicating a future filled with augmented growth rates and gamma-squeeze
+           counts.
+
+           LS&T data showcase bearish prints on all intervals except the weekly with
+           minimal evidence of nearby supports. The only substantial support observable
+           from this view is on the weekly interval – LT4 acting as the first stop-gap (-5%ish)
+           while LT6 exists as a more robust, organic bid (-8%).
+
+           Prudence suggests downside is most expected.
+
+
+
+
+Deep Dive Stocks – Weekly Chat              for the week of                  2026-02-16 to 2026-02-20
+                                               DETAILS
+
+
+
+
+Hello everyone!
+Last week, we left off with bearish thoughts and outlooks, which the market politely indulged upon
+for us to the tune of -1.28% (for $SPY) and -1.27% (for $QQQ). We can visualize the moves in the
+heatmaps below:
+
+
+
+
+Down-and-to-the-right – them most opportune direction for the market to move if the market was
+interested in relying on purchasing support!
+Now that downside has been around and amongst us, let’s take a peek at the data to find out just
+how far the rabbit hole may go!
+Liquidity, Liquidity everywhere but not a drop (for the bulls) to drink!
+
+Starting as usual with VoEx, we find:
+
+
+
+
+Quite ominous prints! Both $SPY and $QQQ have VoExes that are falling deeper into the
+Propagation Zone while VoEx-daily joins!
+This foretells of near-term and long-term bearish performance.
+
+
+
+Deep Dive Stocks – Weekly Chat             for the week of                 2026-02-16 to 2026-02-20
+Let’s check in on the gamma-hedging heatmaps to see if we have anything that might stall this
+foreshadowing:
+
+
+
+
+Quite different from usual ! For $SPY and $QQQ we find quasi-gamma-squeeze like-conditions
+whereby (in the local environment) if spot moves up, purchasing support will be encountered
+while if spot moves down, selling pressure will be introduced.
+Additionally, there is some “protection” by way of [$− , 𝐼𝐼𝑉𝑉 + ] introducing purchasing support – at
+least for $SPY:
+
+
+
+
+We can see this is a nice little rescue-blanket for the market but it is more fluffy and readily
+available for $SPY than it is for $QQQ.
+Thus, for now, it seems the straits are dire since selling pressure is located immediately proximal.
+Thus, it seems hedging is apt to accelerate any downside but in exchange, it is willing to provide
+some re-assuring measures under the right combination of $ and 𝐼𝐼𝐼𝐼.
+Moving onwards, let’s check on the market-wide gamma squeeze data to see how the
+~foundations~ are doing:
+
+
+
+
+Deep Dive Stocks – Weekly Chat            for the week of                2026-02-16 to 2026-02-20
+A modest increase over the week – only an 8% increase week-over-week but we can see the
+growth curve is indeed positive and growing!
+Turning to the predictive data, we find a similar showing:
+
+
+
+
+Deep Dive Stocks – Weekly Chat           for the week of      2026-02-16 to 2026-02-20
+Positive values that are positioned to increase! These data suggest that the future will see a larger
+growth rate and bigger GS count than is present.
+Bearish prints!
+Since most prints so far are bearish, let’s check the LS&T data to ensure we aren’t seeing the
+market through bear-tinted glasses, as well as try to identify some floors, should we need them.
+
+
+
+
+Quite the picture!
+On the 90-minute we see what-was a recent aggressive bid cascade that has been already
+engulfed with what appears to be a developing aggressive ask cascade – this along with bearish
+liquidity suggests that near-term stability is neigh-existent and downside is already underway.
+The 144-minute is not any better: bearish liquidity and LT1 has failed in its support-role, placing
+LT2 up to bat. With bearish liquidity this appears most likely!
+The 987-minute is particularly concerning! No dip-buyers present and no organic bids to find at
+this level! It would seem that after the past several LT7 support-meetings, spot has finally broken
+through with full-bearish liquidity. This suggests downside as well !
+Lastly, on the weekly, we find bullish liquidity yet but a likely incoming test of LT4 once more –
+accompanied without an unreasonable expectation for spot to continue downwards to LT6 (-5%)
+and if conditions are dire, down to even LT7 (-8.5%)!
+
+
+
+
+Deep Dive Stocks – Weekly Chat            for the week of                2026-02-16 to 2026-02-20
+In sum, it would appear that the market is looking quite grim and the cure is located somewhere
+in the ground – leaving the market with little option but to drill down!
+Happy Trading,
+Justin
+
+
+
+
+Deep Dive Stocks – Weekly Chat          for the week of             2026-02-16 to 2026-02-20
+

@@ -1,0 +1,205 @@
+                                 Weekly Chat 03/25/2024
+
+
+                                        Main Points
+
+
+    -   VoEx for $SPY experienced a VoEx Spike, while $QQQ’s VoEx continued with
+        Divergence. This places both in the bearish category for interpretation.
+    -   Hedging environments have shifted with $SPY showing diffuse, local selling pressure
+        and $QQQ showing respectable purchasing support in the $-/IV+ quadrant.
+    -   Gamma Squeeze data show a minor decrease in GS throughout the week, but GTM is
+        continuing to print negative values.
+    -   DLP behavior is present but quite minimal.
+    -   Overall, continued bearish outlooks abound.
+
+                                        SUMMARY
+
+
+
+          Last week, there was concern for imminent downside given VoEx’s
+          behavior, and $SPY’s hedging environment.
+
+          Despite these expectations, the market experienced a robust bullish event
+          with $SPY exceeding the market’s expectations by 3.59 times. During this
+          period, $SPY’s, VoEx spiked and $QQQ’s continued with divergence.
+
+          Current data is supportive for a continued bearish outlook: VoEx behavior
+          is messy and neoVoEx remains steadfast in its trajectory into the
+          Propagation Zone (wherein it already resides for $QQQ).
+
+          $SPY’s hedging environment being filled with selling pressure. $QQQ’s
+          environment, on the other hand, shows a stable orientation with downside
+          purchasing support present.
+
+          DLP behavior is present but extremely muted, especially when compared
+          to previous episodes of anticipating profit-producing-proximals.
+
+          Gamma squeeze data show continued bearish GTM prints, despite a
+          minor decrease in gamma squeezes seen throughout the market.
+
+          Overall, bearish inclinations are present despite the surprise bullish
+          performance.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                    03/25/2024
+                                              DETAILS
+
+
+
+
+Hello every-body!
+Last week, we left off with the notion that downside was imminent, and everyone should run for
+the hills.
+Well, I’m not too sure who came up with that idea, but, with a weekly move on $SPY of +2.23%,
+and an-equally-impressive-bull-run for $QQQ resulting +2.87% for the week, it would seem this
+outlook was partially incorrect1.
+So, this week, let’s look at the data to see if we can located a party to blame for our misfortunates,
+and in the meanwhile, maybe take a glimpse at how things went wrong, and try to determine if
+things are still going according to the overall plan.
+Vaminos!
+Progression through the heatmaps last week is more unusual than normal – partially in part due
+to $SPY’s unusual environment. The whacky movement can be visualized below:
+
+
+
+
+One of the more curious findings to me is that on the 21st, $SPY and $QQQ had opposing views
+of volatility for the month ahead. Notice that on the 21st for $SPY, IV increased significantly while
+on $QQQ, IV increased quite sign. I thought this might be an interesting finding but – it seems to
+just be a hiccup of sorts.
+We’ll see next that this hiccup is a part of a slightly larger display of unusual market-behavior. To
+see this, let’s observe a graph of LDPM-Vol, IV-30, and Price.
+
+
+
+
+1
+    Mainly in the direction aspect.
+
+Deep Dive Stocks – Weekly Chat                                                           03/25/2024
+With $QQQ as an example, we can see the overall unusual trend: concurrent increases in price, IV,
+and LDPM-Vol. This concurrent increase in IV and LDPM-Vol suggests decreasing liquidity as
+volatility increases.
+Curiously, this is occurring during spot-up, and, an additional point of curiosity is that it is
+occurring with some duration. That is to say, most episode of spot-up, vol-up are usually relatively
+short-lived and typically represent an “eager bid” munching up the ask. This episode, however, is
+quite different as it is quite prolonged!
+For instance, since about Mid-December, IV-30 has risen about 20% and LDPM-Vol is up 67%
+during the same period. During said period, $QQQ has risen about 25%. The meaning? For right
+now – not much without an unreasonable amount of hand-waving. But perhaps keeping an eye
+out for changes in this pattern may be fruitful in the future.
+So, with our weekly interruption in profits reviewed, let’s take a peek at the current data.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                          03/25/2024
+Inturruptions intrurrupting interims
+
+Starting with VoEx, it would appear there is already evidence to suggest this perturbance was
+disruptive.
+
+
+
+
+$SPY experienced a VoEx Spike in the later-half of the week, causing VoEx-trend to re-evaluate
+past contemplations and came to the decision that VoEx-Divergence may not be appropriate.
+This, however, doesn’t nullify the previous data interpretations and trends for me; especially given
+$QQQ’s persistence in its Divergence plans (which, it should be noted, is admittedly delayed
+somewhat).
+Moving slightly ahead of schedule to neo-VoEx, we see this week’s activity was less worrying for
+resumed bullish performed, as the VoEx Spike didn’t breech the “Stability” zone, suggestive that
+it does not herald future price appreciatory outlooks:
+
+
+
+Deep Dive Stocks – Weekly Chat                                                         03/25/2024
+An even more bearish view is gleaned from $QQQ whereby VoEx is now within the propagation
+Zone, and the recent VoEx excitement did little to move VoEx-daily:
+
+
+
+
+Overall, the data are messy and that is usually a sign of a messy market. Although $SPY’s VoEx
+is suggestive of a potential BUPO, until this is affirmed with $QQQ or with neo-VoEx, the data
+suggest downside is still the most likely outcome.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                    03/25/2024
+From VoEx to the Hedging Environments, we can see the week has left $SPY in a unfortunate
+state (once more) with diffuse selling pressure located throughout, while blessing $QQQ with a
+stable hedging orientation along with purchasing support located $+/IV-.
+
+
+
+
+This configuration gives the Influence Distribution a net-bearish outlook for $SPY (with a
+reasonably long right-tail) and gives $QQQ a pretty predominantly bearish outlook, also with a
+reasonable tail, also right.
+Perhaps this is another greater-than-EPR set-up for $SPY on the downside while $QQQ might
+experience some cushion? Time will tell.
+Moving from the hedging environments to the environment of hedging, we see a near-zero GTM-
+EMA along with negative GTM prints this past week from all with the GTM family:
+
+
+
+
+The effect of this does not seem to have been witnessed by the market yet, since the market
+experienced a net decrease in gamma squeezes this week of about ~3%. Nothing to write home
+about, perhaps, but definitely not growth.
+
+
+Deep Dive Stocks – Weekly Chat                                                    03/25/2024
+Speaking of growth, it would seem our little buddy-pal-friends are starting to re-awaken from their
+hithertofore flaccid state.
+
+
+
+
+With ever-modest growth, it would seem that some action was taken on $SPY and $QQQ
+throughout the week to secure profits in the $+ environment, but it would seem the week’s (and
+beyond, as seen above) continued growth in IV is tempering any vivacious displays of
+anticipation.
+
+So, for now, this reads as luke-warm without sufficient gumption for me to seriously consider the
+combined movement of $+/IV- for the week ahead.
+
+
+
+Deep Dive Stocks – Weekly Chat                                                        03/25/2024
+So, in total, we have a messy market:
+   -     VoEx on $SPY has experienced a VoEx Spike with the recent price appreciation. This has
+         disrupted Divergence but still represents instability.
+   -     $QQQ’s VoEx is “cooking” as the kids say; with Divergence completed, downside is
+         expected.
+   -     neoVoEx suggests much the same, as this week prompted neither VoEx nor VoEx-Daily to
+         rescind much from the established trajectory.
+   -     Hedging Environments offer some resistance to downside for $QQQ but offer diffuse
+         selling pressure for $SPY.
+   -     Put-selling is present but vastly diminished and not indicative of a full-fledge bullish
+         outlook.
+   -     All-the-while, the indexes have been experiencing a persistent spot-up, vol-up (or, spot-up,
+         liquidity-down, we should say), a sign of diminishing liquidity.
+
+So, in sum, bearish inclinations abound as I wait sitting on my hands until a more moves occur,
+or until my hands get numb. Either one.
+Happy Trading,
+
+
+Justin
+
+
+P.S.: I’ll be disappearing for a week after next Friday. I’ll still check my email once a day for
+anything urgent, I still plan on getting next week’s weekly chat out, but I’m afraid I won’t be very
+active elsehow!
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                          03/25/2024
+

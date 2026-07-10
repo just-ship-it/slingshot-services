@@ -1,0 +1,287 @@
+                                  Weekly Chat 2025-01-27
+
+
+                                        Main Points
+
+
+
+    -   VoEx remains within stability, VoEx-daily looks to be completing its ascendency.
+    -   Gamma environments demonstrate immediate gamma-squeeze oriented selling on
+        $QQQ with a stable environment on $SPY.
+    -   Put-selling has ceased and is back to zero.
+    -   Market-Wide Gamma Squeeze (MWGS) data show decreasing GTM, GS counts, and
+        growth rates.
+    -   VoEx movement throughout the market has placed many indexes in the Bearish window
+        and bearish data.
+    -   Overall, prudency suggests bracing for downside.
+
+
+
+                                         SUMMARY
+
+
+
+          Recently, the discussion has been on monitoring the active bull-trap for
+          signs of the trap springing and it would appear that this is coming to
+          fruition.
+
+          VoEx-daily appears to have stopped ascending, gamma hedging
+          environments are supportive of larger-than-expected movements, with
+          $QQQ’s heatmap being in a true-gamma squeeze orientation with selling
+          pressure located spot-down.
+
+          Put-selling has ceased, bringing $SPY and $QQQ into agreement.
+
+          Aggregate VoEx data show $XLF, $XLB, $XLC, $XLE in the bearish window
+          of their respective bullish locals, while $QQQ, $XLY, $XLRE, $XLK, $XLP,
+          $XLV, $SPY, $XLU, and $XL are situated well within bearish data.
+
+          Thus, the outlook before us looks quite bearish.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                   01/27/2025
+                                                     DETAILS
+
+
+
+
+Hello all!
+Last week, if memory serves, last week we said something along the lines of “Taken together, it
+seems a bull run to $6,100 followed by resumption of bearish action seems highly likely” and it
+seems that our outlook was well-heeded by the market with $SPY moving 1.74% to the upside,
+while $QQQ saw a modest 1.51% move1.
+These moves are reasonable and so let’s normalize them against the week prior’s T+4 EPR2 of
+±1.32% for $SPY and $QQQ’s was ±1.80%. To that end, we result in 1.31 for $SPY and for $QQQ
+we get 0.83!
+This means, unlike last week, $SPY moved more in both nominal and EPR-normalized amounts.
+I’m not sure if that means anything but from working memory this is the first time this has
+happened!
+We can see the environment in which this momentous occasional was birthed:
+
+
+
+
+Nothing too remarkable – it looks like the purchasing support moved things up and to the left but
+$QQQ’s gamma neutrality seems to have been more oppressive than $SPY’s indeed! From last
+week, it was mentioned that $SPY’s gamma neutrality blob was present “..but with less
+oppression than its counterpart-blob on $QQQ”.
+
+It seems this gamma neutrality provided quite the free-fall that $SPY was more so partially kept
+from. Neato!
+Thus, the work we have before us this week is straightforward; check the status of BUPO (of the
+bearish variety) and the suspected trap (of the bullish variety). Not too shabby!
+
+
+
+1
+    That’s two weeks in a row that $SPY has moved more than $QQQ in nominal terms, if anyone is keeping tracking!
+2
+    Since Monday had no trading, we use T+4.
+
+Deep Dive Stocks – Weekly Chat                                                                     01/27/2025
+How hard could this be
+Starting as usual with VoEx, we find much-the-same as last week:
+
+
+
+
+VoEx itself remains within the Propagation Zone while VoEx-daily is spiking. There is some
+evidence that VoEx is finishing its upwards trajectory, and thus, the second-half of the VoEx-spike
+is incoming (and with it, resolution of the bull-trap price action).
+This will be something to look out for, but in the event VoEx-daily un-inverts and zooms back up,
+then continuation of the bull-trap seems likely.
+Overall, conditions are much the same per VoEx: BUPO! (of the bearish variety).
+Perhaps looking towards gamma hedging environments will produce more insights into the way
+the winds are blowing:
+
+
+
+
+Well! That is quite the unsupportive hedging environment for $QQQ! Immediately, we can see that
+there is not only local and immediate selling pressure in all configurations where you would likely
+not want that (namely in the [$− , 𝐼𝐼𝑉𝑉 + ] direction) and (if one is interested in stoking the bearish
+flames more) one can’t help but notice l’appel du vide set to pull the market in that direction in
+the lower-left hand corner!3
+
+
+
+3
+    The call of the void being the gamma blob in the $− , 𝐼𝐼𝑉𝑉 +.
+
+Deep Dive Stocks – Weekly Chat                                                            01/27/2025
+In the event of such activity, $SPY seems poised to step in and digest some of the ask, but this
+very same purchasing support also diminishes the more the market would require it.
+A silver lining, however, is that should step first into the purchasing support located [$+ , 𝐼𝐼𝑉𝑉 − ], then
+both environments will provide concurrent purchasing support with presumed general migration
+towards the band of gamma neutrality).
+Taken together, it seems VoEx and the hedging heatmaps are showing the market on the verge
+of a big decision! Thankfully, at least, from the hedging heatmaps, we can presume that when it
+does make said decision, it will be quite pronounced (since bullish performance will be met with
+purchasing support on both $SPY and $QQQ, likely moving things supra-EPR and since bearish
+performance will find $QQQ in selling pressure and eventual nothingness, and this too should
+produce supra-EPR movements).
+Thus, let’s take a peek at our put-selling friends to see if they have any indications on profitability
+for the future ahead:
+
+
+
+
+Oh – okay then! It would seem that the disagreement between outlooks from $SPY and $QQQ
+have converged: no evidence of actions taken to profit in the event of [$+ , 𝐼𝐼𝑉𝑉 −]. This is a rather
+robust indictment of the situation and shades in the outlook ahead as “bull trap is over!”.
+Taken together, it seems that the future has a very cloudy aspect to it and those clouds look to
+be in the form of bears.
+VoEx is within the Propagation Zone, gamma hedging heatmaps show $QQQ in a gamma-
+squeeze orientation with immediate and local selling pressure, $SPY’s heatmap is slightly better
+but finds itself with diminishing obligation to provide purchasing support in the [$− , 𝐼𝐼𝑉𝑉 + ], and even
+though the very same gamma hedging heatmaps provide purchasing support in the [$+ , 𝐼𝐼𝑉𝑉 − ],
+direction, when turning to the put-sellers to gauge their assessments of this likelihood, and we
+see the answer is: zero.
+And it would appear as though the conclusion from these data are readily apparent: brace for
+downside.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                                01/27/2025
+Next up, a quick look at the MWGS data showcases some still-curious sites: namely, how the data
+are. Take a look:
+First we see the gamma-squeeze growth has
+decreased but what is actually what I’ll classify as
+wild is that I’ve never noticed this before.
+You might be saying “what? What didn’t you notice”
+– and you would be just for doing so, as I haven’t
+told you yet but now, I am, take a look at this.
+Suppose my ranting from Weekly Chat 2025-01-13
+wasn’t entirely nonsense, then it seems reasonable
+that any time the market moves in such a way that
+“out paces” the option dynamics, it seems to lead to
+a decrease in GTM – but it should have more direct
+impacts, right? Instead of just GTM being affect, the
+current state of gamma squeezes should be
+affected right? If this is true, then by reflecting the
+same process onto gamma squeezes, we should
+see that they decrease.
+If they decrease, it should look like their growth rates
+are plummeting! Is that so?
+
+
+
+
+Ya! It seems (nevermind the big negative growth post 2020’s dip, I have a theory on that) that
+whenever the market moves such that gamma squeeze get removed too quickly, it seems this is
+a precursor to downside.
+
+
+Deep Dive Stocks – Weekly Chat                                                     01/27/2025
+But what is cool is, we found this after the hand waving! So, this definitely looks like something
+to look into – and it does bring more questions and nuances into the study of gamma squeezes!
+For now, this means: we are shedding gamma squeezes, GTM is pointed negative, and from our
+prior discussion, it seems reasonable to contextualize this decrease in gamma squeezes as a
+foundational / structural change from the derivatives space itself rather than a change in
+positioning / sentiment from the higher-ups.
+In other words, MWGS is quite ominous!
+Moving right along, let’s check out the VoEx positioning data. I wanted to expand my view some
+and thought that a good way to do it would be to look at the VoEx-change data we have been
+investigating for the past few weeks, and I added the indexes listed on the Market Currents report
+in order to get a wider view. Then I mapped their specific values so we could gauge where
+everyone is at, here are the values!
+[Note: I actually did a whole analysis and then upgrade the original algorithm and so I’m going to
+present the updated algorithm and the data here, but I’ll leave the what-would-have-been-the-
+analysis below. It essentially is the same but the lack of congruency between the graphs would
+drive me insane.]
+
+
+
+
+This view shows almost complete bearish ideations; whereas the VoEx on $XLF, $XLB, $XLC, nor
+$XLE are within the Propagation Zone, their behavior places them in what I am affectionately
+going to refer to as the “Pit of Despair” – the part of the data that include the negative future
+outlooks.
+
+
+
+Deep Dive Stocks – Weekly Chat                                                       01/27/2025
+So – yeah! It seems overall the prudent action is to prepare for downside, as all of the warning
+signals are going off.
+Next week, I will have some more updates about the state of affairs within DDS-land. Until then,
+
+
+Happy Trading!
+
+
+Justin
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                       01/27/2025
+                                      [Pre-emptive but abandoned look]
+The bullish VoExs are found with $XLE, $XLF, $XLB, and $XLV – placing the indexes in the Bullish
+curve with their respective values, we see that they are resting in the bearish window4
+predominately.
+$XLC is found within neutrality and that is about what we can say for $XLC.
+Moving to the bearish VoExes, we see $XLY resides still within the window of bullish-futures but
+$SPY, $XLI, $XLK, $XLP, $QQQ, $XLRE, and $XLU are to the left of it; suggesting migration past
+the window has occurred (the previous values I was showing were $SPY’s).
+But, perhaps these data aren’t very convincing unless we have some evidence of their efficacy –
+so, let’s just do a quick look at what these values look like at various times.
+I tried to randomly pick times but settled on these few that consisted of a rocky period in ES’s life,
+and so it would could help showcase how responsive these data are to conditions (naturally a
+more formal work through will occur but for now, let’s check it out).
+First up the 22nd of March 2024 – I chose this period because it is just after a sustained bull run
+and it precedes downside but not immediately so – thus, it can help us see what these data look
+like during those “steaming right along” moments. This is what we find:
+
+
+
+
+4
+ So whereas the curve itself doesn’t go below zero, we can see that the clustering of future with negative price
+action (the green dots that are below 0) are well clustered at this dip – this is the inverse to the bullish window
+found in the bearish VoExes (right-most panel).
+
+Deep Dive Stocks – Weekly Chat                                                                          01/27/2025
+Stock       20 anterioday Outlook                                         20 posterioday       These      are     pretty
+            % Chg.                                                        % chg                impressive outlooks!
+$SPY            2.63      In bearish data within bullish window                -5.00           Besides from         the
+                                                                                               directional       acuity,
+$QQQ             2.33      Bearish                                               -7.10         there      is      some
+                                                                                               indications that this
+$XLB             5.60      In bullish data within the bearish window             -2.64
+                                                                                               has some nice meat on
+$XLC             2.91      In bearish data within bullish window                 -2.88         its bones. For instance,
+                                                                                               notice the data that
+$XLE             8.36      In bullish data in bearish window                      2.78         were bullish but in the
+                                                                                               window ($XLB, $XLI,
+$XLF             3.16      Bullish within bearish window                         -2.51         $XLE, $XLF), all but
+                                                                                               $XLF        experienced
+$XLI             4.47      In bullish data in bearish window                     -3.87         downside movement
+                                                                                               and they did so at a
+$XLK             2.42      In bearish data within bullish window                 -8.28         less-severe rate than
+                                                                                               those found within the
+$XLP             1.89      Bearish                                               -1.59
+                                                                                               bearish data (-3.00%
+$XLRE            0.42      Bearish                                               -7.14         vs.              -5.21%
+                                                                                               respectively.) 5
+
+$XLU             3.91      In bearish data within bullish window                  2.45
+                                                                                               Thus, those within the
+$XLV             -1.28     Bearish                                               -4.46         bearish window were
+                                                                                               less bearish than those
+$XLY             1.00      Bullish within bearish window                         -7.10         that were in bearish
+                                                                                               data overfall! Neato.
+
+
+
+
+        5
+         This is not a complete analysis but is a rough draft that shows that there may be a future predictive value in
+        determining if bearish behavior is preceded by either VoExs entering the “bearish window” and those already in it –
+        even a month out! To make this a complete analysis, the equities should be compared with their EPR-normalized
+        price movement but for now, we’ll leave that to future Justin.
+
+        Deep Dive Stocks – Weekly Chat                                                                      01/27/2025
+

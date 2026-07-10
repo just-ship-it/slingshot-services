@@ -1,0 +1,233 @@
+                                  Weekly Chat 2025-06-23
+
+
+                                        Main Points
+
+
+
+    -   VoEx-daily has exited stability for both $SPY and $QQQ.
+    -   Gamma-hedging environments are diffusely supportive for $SPY and remain in a purely
+        dichotomous state for $QQQ with purchasing support located spot-down and selling
+        pressure spot-up.
+    -   The Market-Wide Gamma Squeeze data are showcasing GS activity ramping up. The
+        modified MWGS predictive curves are showing anticipated growth and acceleration.
+        GTM has renewed its negative vow once more.
+    -   Per LDPM/S, ES shows weakness with the next support located about 4% down.
+
+                                         SUMMARY
+
+
+
+          Last week’s minimal movements left the market worse-off by way of
+          moving VoEx-daily out of stability (and almost into the PZ), and worked to
+          shift VoEx towards more grounded aspirations. The consequence of these
+          data-changes is near-term downside expectation.
+
+          The gamma-hedging heatmaps show a divergence in homogeneity
+          between $SPY and $QQQ’s hedging environment: whereas $SPY shows a
+          more normal environment with a ridge of purchasing support set to assist
+          the index up-and-to-the-right, $QQQ’s presents with the two-layer
+          environment with purchasing support located in the immediate vicinity
+          and downwards while selling pressure sits up top.
+
+          MWGS data showcase nominal and predictive metrics pointing towards
+          growth. GTM has deepened its negative aspirations as well, suggesting
+          that the current GS-growth has a mounting wave of short-gamma support
+          heading towards it from the distance. This provokes even more thoughts
+          of GS growth.
+
+          LDPM/S studies show a VX structure ripe for springing upwards, with a
+          potential downside support target on ES at about 4.00% down.
+
+          Prudency suggests bracing for downside !
+
+
+
+
+Deep Dive Stocks – Weekly Chat         for the week of              2025-06-23 to 2025-06-27
+                                              DETAILS
+
+
+
+
+Hello all!
+Last week, we left off with bearish leanings for the short week ahead and to that end, $SPY moved
+-0.45% and $QQQ moved -0.02% for $QQQ!
+We can visualize these stunning moves below, in the hedging heatmaps:
+
+
+
+
+Mostly moot moves!
+
+The benefit of these whimsical wiggles is that we can keep the spectre of ~mean reversion~
+tightly bound to its effigy as these moves are, well, you can see what they are.
+For the week ahead, the task before us is straightforward – do the data continue to spell
+downside? If so, are there any identifiable targets, and if not (as in, if the future does not appear
+to be downsideladen), why?
+
+“To be ladened with the ladle of life” – chef proverb
+Starting as usual with VoEx, we find:
+
+
+
+
+Deep Dive Stocks – Weekly Chat            for the week of               2025-06-23 to 2025-06-27
+For both $SPY (left) and $QQQ (right) we see VoEx-daily rapidly exiting from stability! In similar
+behavior, VoEx itself has turned and is now decisively pointed downwards. Taken together this
+paints a picture of near-term turbulence (with resolution to the downside the most likely outcome)
+and should VoEx become enticed and fall from grace as well, then our downside expectations will
+have to be expanded.
+For now, however, this is a pretty clear showing that something is removing stability from the
+markets, and VoEx-daily is, in traditional fashion, seeking shelter deep below ground within the
+Propagation Zone.
+How might our markets handle such instability with regards to the hedging heatmaps?
+
+
+
+
+Mixed!
+On $SPY (left) it seems that conditions have cleared somewhat and we can see a stable and
+supportive environment with gamma neutrality located predominately in the [$+ , 𝐼𝐼𝑉𝑉 +] and [$− , 𝐼𝐼𝑉𝑉 −]
+directions. Neither of which the market tends to enjoy all that much!
+$QQQ, on the other hand, still remains gamma-neutral-less with local and diffuse purchasing
+support located all around (the crosshairs) with selling pressure located spot-up at just shy of
+$500. In isolation, this suggests to the author1 that suggests something along the lines of
+“[$+ , 𝐼𝐼𝑉𝑉 −] until $QQQ around $500 then likely return to downside”.
+Taken into view with VoEx, it suggests the potential for said upside but tempered against VoEx’s
+indictment of near-term downside, the narrative shifts more to “should the purchasing support
+not be sufficient on $QQQ to withstand [whatever VoEx is detecting that is prompting downside
+expectations] then $SPY’s movement into selling pressure via [$− , 𝐼𝐼𝑉𝑉 +] seems highly likely”.
+In either hallucination, we can see downside is still the ultimate outlook – but the path to get there
+will either be distinct and direct, or haphazard and wander around a bit due to hedging practices.
+Moving onwards to the DLP data [not shown again] we see you are told that the activity is still at-
+zero! Thus, for now it would seem that there is still minimal desire to onload long puts for
+profitability with the assumption being that this is because of the inherent market risk the
+
+
+
+1
+    Me
+
+
+Deep Dive Stocks – Weekly Chat              for the week of                2025-06-23 to 2025-06-27
+financial overlords are detecting which is prohibitive from taking on such exposure. This
+translates to: money ain’t gambling at the moment!
+Moving onwards from the long gamma to the short gamma, we find the Market Wide Gamma
+Squeeze data showing continued ~rumblings~:
+                                                    Continued growth! Although the GS amounts
+                                                    experienced a slight dip from the peak seen
+                                                    last week, we can see that growths are still
+                                                    appreciable:
+                                                    20-Day :      7.3% increase
+                                                    10-Day :      11% increase
+                                                    5-Day :       2% increase
+
+                                                    Coinciding with these subtle gamma
+                                                    squeeze growth numbers, we see GTM is
+                                                    diving once-more into negative territory!
+
+                                                    This suggests that even as these gamma
+                                                    squeezes are emerging into the market, the
+                                                    flow being detected is still very short. The
+                                                    consequence is an expectation of a gamma-
+                                                    squeeze laden future (and thus, a bearish
+                                                    future).
+
+
+
+
+In checking with the predictive GS growth curves, we find:
+The Predictive Count Curve (PCC;
+brown line) is officially pointing up!
+This is a reflection of both the
+current growth but also the
+anticipated, future growth. This
+means that in combination (the first
+part being the real growth rates and
+the second being the anticipated,
+future growth rates) the outlook is:
+growth.
+This sentiment is echoed with the
+Predictive Growth Curve (PGC; purple
+line, which is the “predicted acceleration”
+of GS growth) which is showing positive values once-more! This means that the acceleration of
+GS growth is now positive!
+
+
+
+Deep Dive Stocks – Weekly Chat           for the week of             2025-06-23 to 2025-06-27
+Should both continue to pivot northwards, this paints an ever-growing image of market-downside.
+
+So, taken together, the future looks bearish – fitting for the last week of June.
+VoEx-daily has exited stability rapidly and it appears that VoEx is having a change of heart itself;
+this paints downside expectations as proximal but not “significant”, per se. To that end, we find a
+gamma-hedging environment that is technically poised to offer support in the event of any over-
+arching downside pressure – well, at least for $QQQ as $SPY’s environment is more airy and
+dependent on the combination of $ and IV movements (that is to say: is not as supportive on
+paper as $QQQ). Along with all of this, we find that the gamma squeeze data is indeed starting to
+wake up.
+Thus, downside looks proximal indeed! Does it look promising? Well – maybe not yet but let’s
+gauge potential downside targets with LDPM/S. First up, $ES:
+
+
+
+
+Those are some bearish looking flows!
+On the 90-minute [top-left], we see a tenuously forming bulltrap that looks to have already gotten
+snagged on LDPM-L5. Liquidity Levels at this stage show a positive amount but negative flow –
+an appreciable combination for bullish ideations but the negative flow suggests the resistance at
+LDPM-L5 has already “tapped” the underlying of any bullish oomph that may be bubbling to the
+surface.
+Moving onwards to the 144-minute [top-right] we see bearish flows all around! LL-, Amount and
+Flow are both bearish-leaning as well. This view shows downside expectations without any
+identifiable support!
+Thankfully if we “zoom out” some to the 987-minute [bottom-right], we find support! The bad news
+is, however, that this support is already being called upon to, well, support the current situation
+on ES. The bad news with this bad news is that we can see that tapping this support has not done
+
+
+Deep Dive Stocks – Weekly Chat            for the week of               2025-06-23 to 2025-06-27
+much to increase the bullish flows of liquidity (as measured via LL-Flow). In fact, despite the
+LDPM-L5 & LDPM-L7 support, it would seem that bearish liquidity is continuing to increase! To
+this end, we see the next support would be located at LDPM-L6 ($5,790-ish; ~-4.00%).
+Zooming out even more, we arrive at the 1-week view, which shows the ever-persistent beartrap
+in its full glory. Since the price appreciation started, LDPS has had ~10 opportunities to switch to
+bullish, and it has refused every occasion! This suggest the bear trap is indeed still trapping. With
+that in mind, we can see that reaching up to LDPM-L5 was unsuccessful, and now conditions are
+resting once-more on LDPM-L6. Despite this support, we can see LL-Amount and LL-Flow are
+negative. This suggests failure of LDPM-L6 is forthcoming, with the subsequent downside target
+being at about $5,790ish as well (-4.00%ish).
+Taken together, it would seem bearish ideations are strong with the next appreciable support
+located at ~$5,790!
+Let’s take a peek at the volatility environment via $VX to see if this is reflected therein as well:
+
+
+
+
+All-in-all: yes!
+Of note is the 987-minute [bottom-left] which showcases the end of the recent bear-trap (as we
+saw last week) but as price has tested the LDPM-L6 ceiling and failed (so far), we can see that
+flow of bullish liquidity has continued to increase! To this end, LL-Amount is already positive and
+LL-Flow seems not-too-far-behind. This is an incredibly bullish view and suggests that movement
+above LDPM-L6/5 could spark substantial upwards mobility (in particular given how low LL-
+Amount is! Remember: the lower the liquidity, the higher the expected future price volatility!).
+Another curious view of a non-ending trap is on the 987-minute which showcases the persistent
+bulltrap underway! Much like #ES, we can see that LL-Amount and LL-Flow are still both positive
+– despite the recent “price-decay” the bulltrap has experienced. Given that bullish liquidity is still
+
+
+
+Deep Dive Stocks – Weekly Chat             for the week of                2025-06-23 to 2025-06-27
+abundant and flowing, and that LDPS hasn’t changed it outlook to bearish, the outlook is: bulltrap
+is still trapping!
+All-in-all, the future looks bearish with an approximate downside target of ~4.00% as seen from
+LDPM/S.
+Happy trading!
+Justin
+
+
+
+
+Deep Dive Stocks – Weekly Chat           for the week of              2025-06-23 to 2025-06-27
+

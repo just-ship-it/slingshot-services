@@ -1,0 +1,87 @@
+                                 Weekly Chat 2026-07-06
+
+
+                                       Main Points
+
+
+
+       -   VoEx continues its overall descent but VoEx-daily speaks of near-term bullish
+           action.
+       -   Hedging heatmaps show purchasing support throughout so long as IV doesn’t cool
+           off quite as much.
+       -   LS&T study shows mixed data but support for a bounce.
+
+                                        SUMMARY
+
+
+
+           The anticipated bounce is underway with evidence that it is likely to
+           continue into the start of the week.
+
+           Signs of an impending end to the bounce are IV dropping and price
+           struggling against one of the LT ceilings.
+
+
+
+
+Deep Dive Stocks – Weekly Chat        for the week of            2026-07-06 to 2026-07-10
+                                               DETAILS
+
+
+
+
+Hello all!
+Last week, the idea was a bounce but likely return to downside. Well, the bounce did bounce but
+downside has yet to resume. $SPY moved 2.1% while $QQQ moved -0.50%; quite the discrepancy!
+This week, the goal is simple: should we expect downside to resume still or did the bounce have
+enough juice to prompt another bounce? Let’s try to find out.
+VoEx
+Starting as usual with (see above), we find:
+
+
+
+
+The overall trend of VoEx migrating sourthwards but, it seems, with a slight detour towards the
+end of the week, as VoEx-daily for both $SPY and $QQQ have shot upwards, suggesting the
+bounce might have some legs. This stance is augmented even more on $QQQ specifically as
+VoEx has yet to take the plunge officially into the bearish zone. Combined, this points towards a
+continued bounce.
+Checking in with the hedging heatmaps, we find:
+
+
+
+
+Quite bullish findings! Purchasing support located all around both $SPY and $QQQ, yet, not
+without its pitfalls, as both are limited (with $QQQ to a greater extent) in how much IV can drop,
+
+
+Deep Dive Stocks – Weekly Chat           for the week of              2026-07-06 to 2026-07-10
+should they choose a [$$+ , 𝐼𝐼𝑉𝑉 − ] path ahead. Should IV drop too much the now-supportive
+purchasing support will quickly dissolve into selling pressure.
+Thus, the week looks primed for a continued bounce, but should IV drop substantially, then risk
+for the bounce ending increases as too does the selling pressure.
+Moving on to the LS&T data, we find:
+
+
+
+
+Mixed but overall somewhat bullish findings:
+         -   The 90minute is not bullish as liquidity is bearish but LT5 has positioned itself as a
+             support, along with LT6 & 7.
+         -   The 144-minute shows a bulltrap with a ceiling at $7,632 (which represents the next
+             likely “stop”),
+         -   The 987-minute is a bear trap-esque with LT7 & 6 acting ready to act as supports (and
+             all of the eager parties are dip-buyers currently),
+         -   The weekly still shows bullish liquidity with LT5 as a support.
+Thus, overall, the bounce looks like it intends to continue for awhile, at least until IV prompts
+selling pressure or one of the LT ceilings is reached. Until then, bullish is the word!
+
+
+Happy Trading,
+Justin
+
+
+
+
+Deep Dive Stocks – Weekly Chat            for the week of               2026-07-06 to 2026-07-10
+

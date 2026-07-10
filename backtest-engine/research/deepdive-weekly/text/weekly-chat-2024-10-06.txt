@@ -1,0 +1,295 @@
+                                   Weekly Chat 10/07/2024
+
+
+                                         Main Points
+
+
+
+    -   VoEx retains its Bullish-until-proven-otherwise sentiment, with VoEx maintaining its
+        position within Stability.
+    -   The hedging environments demonstrate diffuse purchasing support; some downside
+        weakness noted but a reasonable amount of blue before then.
+    -   DLP activity has spiked, with $SPY showing ~50% growth rates; $QQQ lags slightly
+        around 10%.
+    -   LDPM demonstrates the liquidity vacuum is still present with an inverted daily LDPM on
+        $ES, but for now, LDPS remains bullish.
+    -   Bullish sentiments abound.
+
+                                          SUMMARY
+
+
+
+           Last week, there was concern that the “bottom might fall out”, but that
+           didn’t happen!
+
+           In response, VoEx is maintaining its BUPO stance, while the hedging
+           environments offer little resistance to this view.
+
+           Some put-selling activity noted in $SPY (and to a lesser degree $QQQ) ,
+           which nods towards our put-selling friends being in-agreement with us.
+
+           A curious look at the SNAP graphs suggests some weakness about a
+           month out.
+
+           More curious handwaving suggests that with the liquidity-vacuum still
+           present, some magic lines on a chart suggest that within the month,
+           several major LDPMs are going to start crossing. Ideally LDPM-89 crosses
+           over LDPM-144 on the daily and we can start putting these pesky bearish
+           concerns to rest for the winter.
+
+           Overall, bullish outlooks abound!
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                   10/076/2024
+                                               --
+
+                                            Update
+                                               --
+
+
+Re: Operating Procedure 11: Notification of Processing Error – High Priority
+2024-09-30
+
+
+
+Fixed!
+
+
+The old data has to be re-calculated but going-forward the DLP data is working as intended.
+
+
+
+
+Justin
+Deep Dive Stocks
+
+Justin@DeepDiveStocks.com
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                    10/076/2024
+                                             DETAILS
+
+
+
+
+Hello every-body!
+Last week, we had some consternations regarding our overall bullish outlook. These concerns
+stemmed mainly from VoEx-daily being weird1, and LDPS suggesting a liquidity vacuum was
+present below spot.
+To this end, it appeared there were two options ahead of us: a rapid closure of said liquidity
+vacuum, or, in a more languished and volatile week [but admittedly more bullish overall], things
+would chop then end slightly down.
+Well, part of that was true! But - $SPY managed to squeeze out a 0.26% positive move for the
+week, while $QQQ moved 0.12%. (It could be noted that the overall movement for the week for
+$SPY was 2.4%, while $SPY moved 3.05! Tres2 Choppy).
+Can’t win them all.
+Let’s go ahead and look at these moves through the lens of the gamma hedging heatmaps:
+
+
+
+
+On the left we see $SPY, floating through purchasing support throughout the week, while $QQQ
+(on the right) cradled back-and-forth, cresting the ceiling of the boundary of ~the danger zone~.
+Thankfully, it seems that in the latter-half of the week, thanks to IV rising some, things drifted
+northward towards bleak gamma neutrality (but away from the red, at least).
+Who could ask for more?
+Since this week was relatively in-line with projections, our job is pretty straightforward: ensure
+that things are still vroomin’ and if so, prepare to vroom (or not to vroom)!
+
+
+
+
+1
+    My nickname in highschool.
+2
+    A very spanish word for three.
+
+Deep Dive Stocks – Weekly Chat                                                      10/076/2024
+Vroom
+Starting as usual with VoEx, we see:
+
+
+
+
+Some healthy looking VoExes!
+VoEx-daily did indeed dip some, but so far, nothing to write home about.
+So, with VoEx and VoEx-daily looking healthy, the outlook remains: Bullish-until-proven-otherwise
+(BUPO).
+Thus, with bullish inklings, let’s check out the current gamma hedging environments:
+
+
+
+
+Not too shabby! Some concern should spot drop too much on $QQQ presently, but there’s at least
+some good purchasing support from hither to tither.
+IV won’t play too much of a role with the hedging environments unless the market sees some very
+large moves (at current spot, IV on $QQQ would have to drop 30% before it reached selling
+pressure).
+Not too shabby, but lets move on! As noted above, the DLP data is working, and, just in time!
+
+
+
+Deep Dive Stocks – Weekly Chat                                                     10/076/2024
+Okay – so its not too terribly exciting, but at least there’s some activity now! (We’ll see how it
+compares once the back-data is fixed).
+But, at least our bullish outlooks are seeing some bipartisan support.
+Up next are the gamma squeeze data, but they aren’t too exciting so we’re skipping them; gamma
+squeezes are steady-ish, and GTM is still floating slightly negative.
+
+Up next but for real this time, is a not too-often-included metric: the SNAP graphs!
+
+
+
+
+                                                                Nothing too special but I thought
+                                                                it was interesting that both SNAP
+                                                                graphs are noticing something in
+                                                                VoEx suggesting that about 1-
+                                                                month out suggesting that there’s
+                                                                some weakness to be had.
+
+
+                                                                On the next page, we’ll see that
+                                                                with sufficient hand-waving, this
+                                                                timeframe over-laps another
+                                                                timeframe.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                         10/076/2024
+Before we get to the lines3, let’s review the elephant in the room: namely, #ES still hasn’t resolved
+its liquidity vacuum and what that means for you and me. Some observations:
+[Daily] – Standard Observations.
+
+      -    LDPM-233 and LDPM-89/144 are the same distance from one another as they were (i.e.:
+           the liquidity vacuum is approximately the same size),
+      -    LDPM-89 is refusing to over-take LDPM-144. The week of chop hasn’t even worked to un-
+           invert the LDPMs, and
+      -    Also note the “Splash” pattern! LDPM-21 is completing its “crest”.
+
+[Daily] – Disconcerted Observations
+
+As I pondered the SNAP graphs, I couldn’t help but notice that LDPM-89 appeared to be shifting
+towards LDPM-233 (as previously noted) but I thought “huh, let’s project” and, in a stunning turn
+of events, instead of that being a you-issue, it’s a way of looking where LDPM is going to go.
+In doing so, we notice that!:
+      -    LDPM-89 and LDPM-233 are set to cross between the next 2 days (if LDPM-89 really goes
+           zooming up) or the next 25 days4
+      -    If we then project that timeframe southwards onto the Weekly interval, this also
+           coїncidences with LDPM-89 crossing the weekly bars!
+
+
+
+3
+    A review of how I draw these lines can be found in Weekly Chat 2024-08-26.
+4
+    That’s about a month!
+
+Deep Dive Stocks – Weekly Chat                                                        10/076/2024
+In this potential reality, as the cards stand, LDPM is also painting a turbulent picture within the
+month! Furthermore, if we use LDPM-144 (gold line) as a potential target should this turbulence
+really “give way”, we see its sitting at a casual ~9% down.
+
+Not terrible but perhaps worth considering as we monitor these LDPMs and VoEx.
+Or it could be nothing!
+
+Well even so – I would really like to see the daily LDPM for ES un-invert. Then, truthfully, I think
+would stop potentially looking for issues.
+But until then! It seems BUPO with an eye on the daily LDPM for ES.
+Happy Trading,
+Justin
+
+
+P.S.: Let’s talk a bit more about LDPM/S from last week. I’ll try to make this a more practical-
+focused review.
+First up, let’s quickly review the two “distinct” showings from LDPM (the Aggressive Bid Cascade
+[ABC for short] and the Aggressive Ask Cascade! [AAC for short]) and next week, we can relate
+them to our discussions from last week (hopefully) 5.
+
+
+
+
+5
+    Originally referred to as “The Dunk” and “The Scoop” respectively.
+
+Deep Dive Stocks – Weekly Chat                                                        10/076/2024
+Firstly up of the two showings, ABC (Ψ𝑏𝑏 ):
+
+
+
+
+Its presentation is pretty straight-forward:
+   1) A big dip in LDPMs occurs,
+   2) The lower-order LDPMs are to rapidly spike above the price in order. They then fall
+      suddenly and “rejoin” the group.
+      Some things to note:
+
+   -   Often-times this signals a bull-trap with the rapid rising of the lower-order LDPMs a
+       reasonable indicator of when the peak has been reached. Notice that in the example, the
+       peak of price-action was when LDPM-13 spike northward.
+   -   Ultimately, there are times when this is “survived” (as I put it in my noggin), but this is also
+       usually when at step (3), conditions remain bullish.
+   -   The ceiling for the price is typically established by the most-recent LDPM as it descends
+       to join the group.
+
+
+Overall, this pattern shows up pretty frequently but can take on different general “forms”. Below
+is another ABC on $ZM:
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                          10/076/2024
+Notice here, the first step is minimal, but we can see that, unlike the previous example, this
+aggressive bid was potent enough to invert the LDPMs! This would be a “non-survived” ABC.
+
+Up next, is the opposite of ABC, AAC!
+[JK, here’s another example of ABC, but a DOUBLE!
+
+
+
+
+] 6.
+
+
+
+
+6
+    More examples of ABC can be found in Weekly Chat 2024-07-29
+
+Deep Dive Stocks – Weekly Chat                                                  10/076/2024
+Up next, AAC (Ψ𝑎𝑎)!
+
+
+
+
+Essentially the opposite of ABC:
+    -    Upwards “splash” of LDPMs,
+    -    Lower-order LDPMs rush down and typically indicate the “floor”
+    -    This lasts for as long as the LDPMs don’t get broken as they rise
+The consequences of AAC are more mixed than ABC (which, admittedly, typically is “survived”
+unless LDPS turns bearish), and I’ve found there are two main indicators as to the “strength” of
+AAC’s development:
+
+         1—LDPS remains Bullish
+         2 — The lower-order LDPMs are “well-obeyed” by the price. That is to say, as the LDPMs
+         rise, they act as successive support levels for the price. If this gets broken (like we can
+         see in the example above), it is likely that the AAC will be “unsuccessful” (in attempting to
+         turn things bullish).
+
+So overall, those are two of the main patterns that LDPM can present with.
+Next week, we’ll go on about how these patterns line-up with our framework from last week.
+Til then!
+
+Justin
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                         10/076/2024
+

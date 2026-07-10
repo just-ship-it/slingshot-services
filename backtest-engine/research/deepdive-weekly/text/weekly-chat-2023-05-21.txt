@@ -1,0 +1,344 @@
+                                   Weekly Chat 05/22/2023
+
+
+                                          Main Points
+
+
+    -   The data are bullish until proven otherwise (again)
+    -   VoEx, GTM, MWGSC, and DLPs are bullish pointing
+    -   Hedging environment has no support currently for $-/IV+, should it occur, however the
+        selling pressure present is “weak”
+
+
+
+                                           SUMMARY
+
+
+           Last week we erred on the side of caution with respects to where we
+           thought the data should go – this presented the outlook for price
+           appreciation but with a more definitive stance in the contrary.
+
+           This week, we make no such follies and strictly stick to interpreting the
+           data on where it is – not where we think it might go! (Attempt #5).
+
+           VoEx for $SPY and $QQQ are now both in the IZ which is bullish-until-
+           proven-otherwise and leaves us waiting for either a VoEx Spike or VoEx
+           Divergence before we can have bearish inklings.
+
+           GTM is still printing negative value while MWGSC and its overall trend are
+           also giving bullish prints by way of a decreasing number of GS production
+           throughout the market.
+
+           DLPs aren’t robustly bullish but their behavior isn’t strictly bearish so they
+           occupy some state in the middle – the cold-hard-data suggests a lean
+           towards bullishness.
+
+           In the event of a downside, we see no purchasing support in $-/IV+
+           quadrants for $SPY or $QQQ but the selling pressure present is relatively
+           minor in comparison to more unstable hedging environments.
+
+           Overall it seems the music is still playing, so we ought to dance.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                          05/22/2023
+                                           DETAILS
+
+
+
+
+Heyo everyone!
+
+Last week, we left off with the idea that there was
+                                             “
+           … a slight chance for bullish performance (via the right-tail on the
+           hedging environments as well as $QQQ’s VoEx) but the data seem
+                            predominately bearish-leaning.
+
+                                             “
+And it seemed that the market delivered on the off-chance of bullish performance with a
+$SPY move of 1.7% - which just breeches the 5-day EPR for $SPY of 1.66% (from the
+Friday prior to last until last Friday). A casual reminder that EPR is, for all intents and
+purposes, mostly magic.
+
+Throughout the week there were some interesting developments in the data, and I think
+these developments continue to demonstrate that we (read: me) should really stop
+anticipating where data will go and simply be happy with interpreting where it is (this is a
+one of my self-affirmation that some of you may be familiar hearing - but this time we
+[read: me] mean it).
+
+So, without further ado let's jump into the data.
+
+The data
+
+Starting with VoEx, last week, there were some lamentations that VoEx on $SPY and
+$QQQ were becoming quite divergent in their behavior – with $SPY's VoEx inside of
+stability (but, as we [read: me] hyperfocused on, it looked like it should be headed
+southwards) and $QQQ's inside of the Inhibition Zone. Last week, we placed our bets not
+on the continuance of the bullish performance (as suggested by $QQQ's VoEx) but rather
+on a bearish outlook since it looked like $SPY's VoEx was more likely to move into the P.Z.
+(see what I mean about anticipating data movements?).
+
+In hindsight – VoEx for $SPY was in stability and $QQQ's was zooming higher into the I.Z.;
+these are bullish prints.
+
+With that in mind, where are VoEx's for $SPY and $QQQ?
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                    05/22/2023
+                                              Both are in the Inhibition Zone now! What
+                                              does that mean? Bullish until proven
+                                              otherwise – this is quite the dance we have
+                                              gotten used to lately. With that, perhaps its
+                                              good to briefly review what we mean by
+                                              “otherwise” so that we can sleep easily at
+                                              night.
+
+                                              The first we will look at VoEx Divergence.
+                                              To do so, I went to the market scan and
+                                              selected a random date about 2 months
+                                              ago (ended up being 3/14/2023) and
+                                              searched for VoEx Divergences. A quick
+                                              recap: VoEx Divergence is when:
+
+
+
+
+   1) VoEx is in the Inhibition
+      Zone
+   2) The    stock's price    is
+      appreciating
+   3) VoEx trend has started
+      moving south.
+
+
+
+
+[Note: there is a more subtle VoEx Divergence that is more prominent during significant
+price movements; for more information check out the Tier II Material for an example].
+This search produced 9 findings, and the one that is the most “prototypical” was $LABD,
+so let's look at that.
+
+Here is $LABD's VoEx from 3/14/23 [Quick Note: Historical VoEx-trend on the Dashboard
+is acting up when searching through the records – apologies I am looking into it. For the
+VoEx prints I will be using the reports].
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                 05/22/2023
+We see the classic findings of VoEx Divergence:
+  1) $LABD has been appreciating in price since the start of 02/2023
+  2) VoEx subsequently moved drastically into the IZ
+  3) VoEx-trend is now moving southwards as the price continues to appreciate.
+
+This type of VoEx Divergence typically sees a decline in price once VoEx leaves the IZ. Is
+that was happened here?
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                05/22/2023
+Indeed it appears so!
+   – VoEx entered the IZ at $14.55
+   – On 3/14, $LABD was $18.77 (+29%)
+   – VoEx left IZ at $20.09 (+38% from $14.55)
+   – A few days later the price experiences a high of $23.37 (3/22)
+   – Over the next month the price drops down to $13.29 after VoEx had moved into the
+      P.Z.
+
+A classic development. Here's the current print-outs for $LABD, zoomed in on the relevant
+dates:
+
+
+
+
+The take away here is that one of the ways we can foresee that a price-run is ending (and
+even about to reverse) is when we see VoEx Divergence presenting itself. In this, we look
+for when VoEx leaves the I.Z., and for when VoEx enters the P.Z.
+
+Let's pick another random date and see if there are any other good examples. I repeated
+the process above but for a more proximal date of 04/03/2023 which led to $KR:
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                               05/22/2023
+We see the classic signs of VoEx Divergence again: price appreciation with VoEx in IZ
+while VoEx-trend is starting its southwards trajectory. The price on 04/03/2023 for $KR
+was $49.94. What happened afterwards?
+
+Over the next 10 days, the price fell to $46.65 for a 5.73% decline!
+
+The take-home message here is that now that both VoEx for $SPY and $QQQ are in the
+Inhibition Zone, we should consider it bullish until VoEx Divergence or a VoEx Spike
+occurs. Now, let's take a peek at VoEx Spikes.
+
+VoEx Spikes are, well, spike complexes – these complexes can be either positive
+(meaning the point is upwards facing) or negative (meaning the point is downwards
+facing). VoEx Spikes in and of themselves can be more dynamic than VoEx Divergence.
+The price outcome of a VoEx Spike is dependent on the amount (how much VoEx
+changed), the direction of the VoEx Spike, and also its origin-value.
+
+This is exemplified in the Market Scan PDF that showcases the change in price
+experienced by an equity over the next 5 days after a VoEx Spike, depending on if VoEx
+was originally positive (VoEx started near or in the Inhibition Zone) or negative (VoEx
+started near or in the Propagation Zone). The initially-positive VoExes are represented by
+the gray line, and the initially-negative VoExes are represented by the blue line:
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                05/22/2023
+Below the graphs, we see the Market Scan Algorithm taking the Initial VoExes' positions,
+how large the VoEx Spike was and combining those values into the “Prediction”, which is
+derived from the graphs above.
+
+Thankfully, we don't typically need to consult this graph when we are looking at VoEx as
+most VoEx Spikes that we are interested in will occur from the Inhibition zone and be
+negative into the stability – which places the majority of them in this area here:
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                               05/22/2023
+In other words, the majority of them result in negative price movement! Exactly that what
+we would want to know in these situations.
+
+We can see an example of that with some searching – if we take a peek at $NS in
+02/2023. We see that it had an OverExposed VoEx in the Inhibition Zone. Let's take a look:
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                05/22/2023
+VoEx then experienced a spike complex down into stability, during and after which the
+price ultimately dropped from a height of $17.25 down to $15.96 (-7.54%) at the end of
+the Spike Complex, followed by a continued decline to a low of $14.62 (-15.24%).
+
+Although here we see a VoEx complex that evolved over the period of 3 days (ending once
+VoEx was inside of stability), each individual day registered a VoEx Spike with the
+following amounts:
+
+2/13 : 1.56
+2/14 : 0.97 : Spike Amount: 378 : Prediction : Negative price movement
+2/15 : 0.78 : Spike Amount: 196 : Prediction : Negative Price Movement
+2/16 : 0.42 : Spike Amount: 461 : Prediction : Negative Price Movement
+
+So, we see in this example, VoEx Spiked out of the IZ over the course of 3 days down into
+stability. This was accompanied by a decline in price and the price continued to decline
+pretty substantially afterwards.
+
+Here's another quick example:
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                               05/22/2023
+In this case, however, VoEx did not stop moving rapidly southwards after entering into
+stability – and we see that the price followed suit.
+
+Thus, after reviewing the two main ways that VoEx can indicate that the price is going to
+stop its unstable (as VoEx is in the IZ) northward price appreciation, we can re-emphasize
+that the current VoEx environments suggest upward and onward – until proven otherwise.
+
+Moving towards the hedging environments, we notice that we are in a similar boat as last
+week:
+
+
+                                                           With little-to-no purchasing
+                                                           support, this is not the most
+                                                           supportive heatmap for a
+                                                           bullish outlook. It should be
+                                                           noted, however, that the
+                                                           selling pressure is pretty
+                                                           minor and there is only
+                                                           significant selling pressure
+                                                           (where the numbers are) if the
+                                                           price moves northward quite
+                                                           substantially with IV+.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                05/22/2023
+We encounter the same landscape with $QQQ:
+
+
+The Influence Distributions
+suggest negative movements,
+and there isn't really any good
+purchasing support located $-
+/IV+ for $SPY or $QQQ – so this
+is some things to keep in mind.
+
+Moving towards the macro
+scene, we see that DLPs are
+pretty neutral: puts are being
+sold on $SPY but not many puts
+are being sold on $QQQ:
+
+
+
+
+                                             Not too much here but it
+                                             seems as though there may be
+                                             some bullish inclinations but
+                                             they aren't quite as profound
+                                             as the olde days.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                 05/22/2023
+                                                       Moving towards the MWGSC,
+                                                       we see predominately bullish
+                                                       outlooks: MWGSC growth trend
+                                                       is negative, and GTM is still
+                                                       printing negative values –
+                                                       despite our insistence that this
+                                                       shouldn't be happening (or,
+                                                       rather, should have changed by
+                                                       now and started moving into
+                                                       positive territory).
+
+                                                       So – in short, it would appear
+                                                       the data are supportive for a
+                                                       bullish move. The hedging
+                                                       environments don't provide any
+                                                       support for a $-/IV+ move but it
+                                                       would seem that perhaps there
+                                                       is a relatively low risk of that
+                                                       occurring as per VoEx, GTM,
+                                                       MWGSC, and DLPs (slightly).
+
+                                                       In other words – we dance until
+                                                       the music stops!
+
+
+
+                                                       New Dashboard Notes:
+
+                                                       Things are still going very nicely
+                                                       on the backend. The upcoming
+                                                       week is mostly going to just be
+                                                       ironing out some of the wrinkle
+                                                       here and there but everything is
+                                                       still on track for a migration of
+                                                       5/27.
+
+In the upcoming week, credentials will be Emailed out with everyone's new username and
+passwords for the new dashboard.
+
+Be sure to check out the new dashboard notes, included in the Weekly Chat Email!
+
+Until then,
+Happy Trading -
+Justin
+
+
+Deep Dive Stocks – Weekly Chat                                               05/22/2023
+

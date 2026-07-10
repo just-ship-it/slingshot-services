@@ -1,0 +1,311 @@
+                                          Quick-Start Guide
+                                        LDPS Trading Robot
+
+
+
+
+       The Liquidity Trading Algorithm (the Robot) is only for educational and
+     research purposes. Any signals or indications produced by the Robot only
+      serve to hypothetical trades as determined by algorithmic review of the
+                                underlying security.
+    Although possible, it is neither recommended, encouraged, suggested, nor
+       permissible to provide this robot with access to a non-paper-trading
+                                       account.
+    Deep Dive Stocks is both unable and unwilling to provide any assurances or
+    guarantees to the veracity, eﬃcacy or validity of the output provided by the
+                                     Robot.
+
+
+                                               DISCLAIMER
+
+   Deep Dive Stocks is not an investment advisor. The information contained in this primer is
+   intended only for educational purposes to highlight the applicability of VoEx in a variety of
+   hypothetical portfolio styles. No information here is intended to be offered or construed as
+   individual investment advice, targeted investment advice, or any investment advice aimed at any
+   one person or persons, portfolio or portfolios, objective or objectives. It is important to remember
+   that past performance does not beget future performance and there is always risk in investing in
+   the market.
+                                      Deep Dive Stocks, LCC © 2023
+
+
+
+
+LDPS Trading Robot – Quick Setup Guide                                                                    1|9
+                                           Getting Started
+                                    Adding LTA Robot to Chart
+    To add the LTA Robot to a TradingView Chart, go to Indicators → Invite-only Scripts and
+    select LDPSD Robot – ALPHA.
+       -   When you add the LTA Robot to the chart, you will see the “Strategy Tester” tab
+           pop up on your chart.
+
+
+
+
+           This will display the information about your robot’s performance throughout the
+           trading interval (which can be changed in the settings, described below). There
+           are three tabs on this part of the screen:
+
+              o Performance Summary: this will give you various metrics about the robots
+                performance
+              o List of Trades: lists the trades, you can click on the crosshair image to
+                show that trade on the chart.
+              o Properties: lists the variables that are set for the robot.
+                                       Initial Conﬁgurations
+    Several initial conﬁgurations need to be input in order to calibrate the robot.
+    Initial Conﬁgurations - Share-Sizing
+    There are two share-sizing algorithms / trading styles.
+       -   Fixed-Share: this technique trades a set-amount of shares. The value is set with
+           the “Maximum Contract Count” setting.
+              o This technique does not require a “Initial Capital” to be entered other than
+                  to keep track of performance.
+       -   Fixed-Percent: this technique uses a user-supplied ﬁxed-percentage of available
+           balance in order to determine the number of shares to trade.
+
+
+
+LDPS Trading Robot – Quick Setup Guide                                                        2|9
+               o Setting the “Activate a Share-Max” setting with the Fixed-Percent algorithm
+                 will set a maximum number of shares / contracts that can be open at any
+                 given time.
+    The ﬁxed-share technique is a ﬁxed-risk technique while the ﬁxed-percent technique is a
+    variable-risk technique.
+    Initial Conﬁgurations – Activate a Share-Max
+    Select an appropriate maximum share amount for the trading strategy. If not desired,
+    uncheck the “Activate a Share-Max” box within Settings.
+       -   This is required for the Fixed-Share trading algorithm – it will be the number of
+           shares that the robot can use to trade.
+       -   If activated for the Fixed-Percent trading algorithm, it will impose a maximum
+           number of shares / contracts that are allowed to be open at any given time.
+    Initial Conﬁgurations – Initial Capital & Portfolio Utilization
+    Set an appropriate initial capital and how much of the available capital to use when
+    determining position sizing.
+       -   Not required for the Fixed-Share trading algorithm unless you want to keep track
+           of hypothetical portfolio’s performance.
+       -   Required for the Fixed-Percentage trading algorithm and will determine how many
+           shares can be traded. This value does not include margin.
+    Initial Conﬁgurations – Stop Loss
+    Sets up the Stop Loss. If not desired, uncheck the “Include Stop-Loss” box within Settings.
+       -   There is an estimated stop-loss amount from the Parameter Data Table.
+
+           The trading robot has an algorithm that determines a reasonable stop-loss for
+           the given equity and timeframe under investigation. This value is displayed in the
+           Parameter Data Table in the “Est. Stop-Loss” row.
+
+
+
+
+LDPS Trading Robot – Quick Setup Guide                                                          3|9
+    Initial Conﬁgurations – Trailing Stop Losses
+    Sets up a Trailing Stop Loss. If not desired, uncheck the “Include Trailing Stop Loss” box.
+       -   Set the Trailing Stop Loss Activation Amount (%) to a value slightly above the Stop-
+           Loss Amount.
+
+       -   Trailing Stop Trail Loss Amount is the percent of proﬁt that can be lost, not
+           percent-move of the underlying or percent-move of the position. The higher the
+           value, the more proﬁts can be “given back” prior to activating the exit-order.
+    Initial Conﬁgurations – Backtesting Start Date
+    Select the date for which you want the trading Robot to start operating.
+       -   Future dates can be selected.
+
+       -   Note: in setting up new Robots, it takes 3 bars of the given chart before the Robot
+           has suﬃcient data to make a determination.
+
+
+                                            Creating Alerts
+    Setting up an alert is helpful for:
+       -   Alerting (duh) the trader to the Robot’s activities
+       -   Connecting the Robot to external brokers.
+    Some important notes about alerts:
+       -   To send the Robot’s activity to an External Broker, there are two pieces of
+           information that need to be placed in the alert upon creation:
+               o Message (JSON Message)
+                 Within the “Message” ﬁeld, place (for TradersPost):
+
+                  {
+                      "ticker": "{{ticker}}",
+                      "action": "{{strategy.order.action}}",
+                      "quantity": "{{strategy.order.contracts}}",
+                      "price": "{{close}}", "time": "{{timenow}}"
+                  }
+
+               o Webhook URL
+                 This is obtained from TradersPost. It is the address that Robot will send its
+                 activities to. Ensure it is updated and correct.
+
+
+LDPS Trading Robot – Quick Setup Guide                                                            4|9
+       -   Once an alert is set, if any changes are made to the Robot’s settings /
+           conﬁgurations, you must remove the alert and add a new one.
+
+       -   If you are using alerts with Webhooks, and alerts without Webhooks, ensure that
+           the “Webhook URL” is blank in the non-robot alerts without Webhooks, and ﬁlled
+           out for the alerts with Webhooks.
+
+       -   If you set an alert with a connection to an external broker, it is highly recommended
+           that you “Save Layout” the chart that you created the alert with. This will save the
+           settings that you activated the robot for retrieval via “Load Layout” functionality if
+           you need it.
+
+       -   Each alert is a robot. If you have multiple alerts active using the LTA Robot: you
+           have multiple robots running. Ensure you only have as many alerts running as
+           Robots you want sharing their activities.
+
+
+                                 External Account Conﬁgurations
+    External accounts that are connected to the LDPS Trading Robot will require
+    conﬁguration. This is only applicable for TradersPost connections. There are three main
+    items that TradersPost needs ﬁlled out in order to connect with the LTA Robot: Webhooks,
+    Strategies, and Subscriptions.
+    External Account Conﬁgurations – Webhooks
+    The Webhook URL is the URL that TradingView will send LTA Robot’s orders. Do not share
+    this URL.
+    Note: it is good practice to have a different webhook address for each different LTA Robot
+    connected.
+    Once in TradersPost, go to Webhooks → New Webhook. Here are some recommended
+    settings:
+       -   Basic Settings:
+              o If you select “Allow any ticker”, be sure the “Tickers” ﬁeld below is blank.
+       -   Security Settings:
+              o Check “Limit to Trading View” : this will ensure that TradersPost only
+                  accepts orders from TradingView.
+    Click save, and copy the Webhook URL from the upper part of the page for later use.
+
+
+
+
+LDPS Trading Robot – Quick Setup Guide                                                           5|9
+    External Account Conﬁgurations – Strategies
+    Below are some of the recommended settings.
+    Go to Strategies → New Strategies to create a new strategy.
+       -   Basic Settings
+              o Select the Webhook you made.
+       -   Strategy Details
+              o Not required.
+       -   Subscription Defaults
+              o Basic Settings
+                      Sides: set to Both
+              o Asset Class
+                      Select the Asset class for which the Robot is being applied.
+              o Position Size Settings
+                      Check: Use Signal Quantity
+                      Check: Subtract Exit Quantity from Signal Quantity
+                      Check: Use Signal Stop Loss
+              o Entry Settings
+                      Check: Allow Add to Position
+                      Check: Entry market
+              o Exit Settings
+                      Check: Exit Market
+    Once the Strategy’s settings are conﬁgured, select Save.
+    External Account Conﬁgurations – Subscriptions
+       -   Basic Settings
+              o Check Auto Submit
+              Note: the Auto Submit feature requires 2-Factor Authentication.
+              o Sides: Both
+       -   Broker Settings
+              o Broker: Select your broker.
+              o When using a Paper Account, do not select “Use Live Broker Account”.
+       -   Asset Class:
+              o Ensure the Asset class here matches the Asset class within the created
+                  Strategy.
+       -   Position Size Settings
+              o Check: Use Signal Quantity
+              o Check: Subtract Exit Quantity from Signal Quantity
+       -   Stop Loss Settings
+              o Check: Use Signal Stop Loss
+
+LDPS Trading Robot – Quick Setup Guide                                                6|9
+       -   Entry Settings
+               o Check: Allow Add to Position
+               o Check: Entry Market
+       -   Exit Settings
+               o Check: Exit Market
+    Once created, click Save.
+    If everything is set up correctly, you will be told the save was completed but that the
+    Subscription is not enabled.
+    If you are ready to enable to Subscription (turn the robot on), click Enable.
+                                           Overall Steps
+    With all of the steps combined, setting up the LDPS Trading Algorithm follows the general
+    steps below:
+       1) Set up LTA Robot on desired timeframe and interval on Tradingview.
+       2) Conﬁgure appropriate LTA Robot settings.
+       3) Create and conﬁgure a Traderspost Webhook, Subscription, and Strategy.
+       4) Connect Traderspost to broker.
+       5) Create an Alert on Tradingview with the appropriate JSON message and Webhook
+          URL.
+       6) Monitor & Troublehshoot
+                                         Troubleshooting
+       -   Trade alerts are being generated but do not appear on the chart and/or trades are
+           appearing on the chart without alerts being generated.
+
+              o Ensure that the Alert and the Chart are operating on the same version of the
+                LTA Robot.
+              o Ensure that the LDPS Robot that was used has the same conﬁgurations as
+                the Robot used to create the alert.
+
+       -   I added the LTA Robot Alert and now when I try to add new alerts, things are
+           messed up.
+               o Remove the Webhook URL from the Non-LTA Robot Alerts.
+
+       -   TradingView is generating alerts but the trades aren’t appearing in my paper
+           account.
+              o Ensure your alert has the appropriate JSON message content.
+              o Ensure your alert has the appropriate Webhook URL
+           If these are valid:
+LDPS Trading Robot – Quick Setup Guide                                                         7|9
+             o Log into TradersPost.
+             o Go to Webhooks and select the Webhook being used or go to
+               Subscriptions → Trades.
+             o Look for any trades labeled “Rejected”. Select one of those trades.
+             o Within the “Trade Plan Message”, an error should be present to point you
+               in the right direction:
+
+
+
+
+              o If there are no rejected trades listed:
+                      Ensure you are using the correct Webhook URL
+      -   I am getting a “Maximum number of trades exceeded” when I add the indicator /
+          when I try to do a backtest.
+          Your time-interval is too small as compared to your Backtesting start date. You can
+          either:
+              o Use the “Deep Backtesting” if you are a paid TradingView user
+
+             o Either increase your trading interval, or decrease your backtesting length.
+                    This can be done within the Settings.
+      -   The Webhook requests failed / keep failing.
+             o Ensure there are no non-LTA Robot alerts with the Webhook URL ﬁlled out
+               (unless they have their own webhook URLs).
+
+             o Ensure that the LTA Robot alert has the following in the message ﬁeld:
+
+
+
+
+LDPS Trading Robot – Quick Setup Guide                                                       8|9
+                               {
+                                   "ticker": "{{ticker}}",
+                                   "action": "{{strategy.order.action}}",
+                                   "quantity": "{{strategy.order.contracts}}",
+                                   "price": "{{close}}", "time": "{{timenow}}"
+                               }
+
+      -   I added the indicator but it says “There were no trades indicated during the trading
+          period”
+              o If you are using the Fixed-Percentage sizing method, ensure you have
+                 appropriate starting capital.
+              o Ensure you have an appropriate Portfolio Utilization percentage.
+              o Ensure the start date isn’t set for a future date.
+
+      -   I added the indicator and set it to start at some future date and time. Now its past
+          that date and time, but there are no trades.
+
+          The robot takes 3 bars of data before completing its assessment. If more than
+          three bars have past since the start date and time, then proceed to more
+          troubleshooting, else, wait for three bars to complete (the ﬁrst trade should occur
+          at the end of the 3rd bar after the start date and time).
+
+
+
+
+LDPS Trading Robot – Quick Setup Guide                                                           9|9
+

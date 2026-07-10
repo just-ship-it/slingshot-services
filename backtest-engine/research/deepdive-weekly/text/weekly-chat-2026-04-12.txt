@@ -1,0 +1,177 @@
+                                  Weekly Chat 2026-04-13
+
+
+                                        Main Points
+
+
+
+       -   VoEx-daily has experienced a massive spike on both $SPY and $QQQ.
+       -   Hedging environments have cooled and demonstrate persistent purchasing support
+           spot-down.
+       -   MWGS data demonstrate a endothermic GS environment with the predictive data
+           concurrently demonstrating a chilled future.
+       -   LS&T showcase support for mean-reversion on the near-term with long-term
+           stability seemingly returned.
+
+                                        SUMMARY
+
+
+
+           Overall, this week’s substantial increase in spot may have
+           threatened sanctity of a mean-reversion-less future, and so the
+           primary expectation rests thereupon a foundation of profit-takers,
+           and LT ceilings (by way of LS&T data) conjoined via the grout of
+           purchasing support (provided by the gamma-hedging heatmaps).
+
+           The environment overall is showing signs of changing, however,
+           such that the mean-reversion is likely not to be a return-to-downside,
+           but, if the data are to be believed, may represent a small hiccup in
+           the overall, and larger, return to bullish paradigm.
+
+           Thus, downside is expected but not as before, merely as a
+           byproduct of the bulls awakening.
+
+
+
+
+Deep Dive Stocks – Weekly Chat        for the week of             2026-04-13 to 2026-04-17
+                                                 DETAILS
+
+
+
+
+Hello all!
+                                             Quick Note:
+Registration has completed ! Remember as Premium members, you have access to thew hole of
+DDS’ repertoire, so if there is anything you don’t have access to, let me know! Here’s a quick list:
+        -     TradingView Indicators: LS (old LDPS), LT (old LDPM), Liquidity Toolkit
+        -     Discord server
+Just let me know and you’ll be added forthwith! After our chat, I’ll include the next stage of plans
+for DDS and you!
+
+Back to regularly scheduled programming:
+                                                   --
+Last week we eyed the potential for a bounce but considered downside as the persistent and
+prominent threat. To this end, the market ($SPY) moved 3.60%, while $QQQ moved 4.45%! These
+are quite the opposite of downside.
+
+Such significant spot sublimation suggests a statutory investigation into the spectre of mean
+reversion would be salient, so let’s start:
+      Stock                     Expected Price          Realized Price     % Magnitude
+                                Range (T+5)             Range              Difference
+
+      $SPY                         2.25                    3.67                    47%
+
+      $QQQ                         2.65                    4.30                    47%
+
+Curiously both moved 47% greater than their magnitudes suggested! You love a co-ordinated
+market. These values are definitely within the threat-range for invoking the spectre of ~mean
+reversion~ and so let’s be sure to keep him in mind.
+
+The market moved quite curiously this week, as we can see in the heatmaps below:
+
+
+
+
+Deep Dive Stocks – Weekly Chat             for the week of               2026-04-13 to 2026-04-17
+Namely by way of its early-week decision to crank IV way up in order to seemingly reposition for
+later-week 𝐼𝐼𝑉𝑉 − excursions, ultimately leading to a pronounced and strong $+ future.
+Thus, this week, our job is not too straightforward but I suppose it can’t deviate too much from
+“is the future up or down” but we have to be particularly sensitive to the idea that the bottom of
+this little market downturn may have been reached – a bold statement which requires some bold
+data, so let’s dive in!
+Boldness begets
+Starting as usual with VoEx, we see:
+
+
+
+
+Substantial VoEx-daily spikes! This is a bit more than usual, and is most reminiscent to end-of-
+downside VoEx-daily spikes than your typical bulltrap ones. This, is one point to house the-
+bottom-is-in!
+In the near-term this gives us bullish inclinations and a strong indication that the paradigm is
+switching but let’s not forget about mean-reversion in the otherwise bullish showing.
+Moving onwards to the hedging heatmaps we find:
+
+
+
+
+Deep Dive Stocks – Weekly Chat           for the week of              2026-04-13 to 2026-04-17
+The heatmaps have reverted to a boring state! It would seem the market has settled with regards
+to the options dealers which has produced some nice purchasing support below spot (at the cost
+of the selling pressure above). Current conditions show the market ever-so slightly dipped within
+the purchasing support already.
+Moving onwards to the market-wide gamma squeezes, we find:
+
+
+
+
+Growth seems to have decreased quite substantially this week, with the growth-curve moving into
+negative territory – this is usually another sign of the bottom having been reached!
+If we check with the predictive data, they tell a similar story:
+
+
+
+
+Deep Dive Stocks – Weekly Chat             for the week of            2026-04-13 to 2026-04-17
+The PGC (expected future growth rate) is negative! This tells us that the expectation is that there
+will be a greater magnitude of GS destruction in the future than was just recently experienced –
+this is also usually the sign of a bottom.
+So, it seems that on-the-whole, conditions look as though a bottom has been found – although
+the definitive conclusion thereof will come by way of VoEx moving into stability, but should
+present conditions continue, this looks to be the most likely eventuality.
+Moving lastly onwards to the LS& data, we find:
+
+
+
+
+Deep Dive Stocks – Weekly Chat           for the week of               2026-04-13 to 2026-04-17
+Starting with the highest-vantage point at the weekly, we find the LT7 support held quite robustly,
+and liquidity has returned to bullish while spot rises to meet LT5. Concurrently, we find LT1 & 2
+moving in (dip-buyers) to help move spot up.
+If we zoom in some to the 987-minute, however, we find the inverse is prominent: a bulltrap
+reaching to LT6 with LT1 demonstrating profit-takers kicking in.
+On the 90-, and 144-minute, we find bullish liquidity but a healthy dose of profit-takers, and in
+particular, on the 90-minute, we find spot having already fallen below LT5. This is a relatively
+classic “post aggressive bid cascade” showing whereby we would normally expect liquidity to
+slowly turn bearish as spot enters the liquidity vacuum between LT5 and LT6 (or LT7 on the 144-
+minute).
+
+Thus, taken together, and in remembrance of the sepctre of mean-reversion, it seems likely that
+the combined ceilings of LT5 on the weekly, LT6 on the 987, L5 on the 90-minute, and the myriad
+of profit-takers moving in, that a near-term reunion of spot and LT6 (90-minute) is likely. This
+reunion is currently slated to meet about 3.5% down for current spot.
+However, the data do suggest that even in spite of this near-term downside expectation, there is
+sufficient reason, and cause, to suspect the current market downturn may be over – as hard a pill
+as that may be to swallow! It may be time to loosen our grips on the short positions built up over
+the past month and expect a pivot nearby – perhaps this week will provide just the opportunity
+therefor!
+Happy Trading, Justin
+
+
+
+Deep Dive Stocks – Weekly Chat           for the week of               2026-04-13 to 2026-04-17
+                                 Quick Word about the Future!
+
+I haven’t forgotten about you, premium members! The good news is the live data is now actually
+live – although it is presently confined to the discord, the foundation and abilities are
+transferrable!
+I am working on a new framework for a new dashboard – finally ! I think I am slowly morphing
+into a programmer with all these tools. Anyways, the goal is to bring the dashboard up to modern
+sensibilities as the first round of improvements and updates, followed by the addition of long-
+awaited data and abilities (which are now quite within view since now I know how databases
+work!).
+For now, development on new indicators and tools (and even fixing the broken ones, i.e.: DLP
+measurements) is on hold as I bring DDS up to modernity and bring in new subscribers to further
+fund our excursions into liquidity.
+If you have any comments/thoughts/concerns/snide remarks, please don’t hesitate to throw
+them my way as I start laying the blueprints for the next stage.
+
+
+Justin!
+
+
+
+
+Deep Dive Stocks – Weekly Chat          for the week of              2026-04-13 to 2026-04-17
+

@@ -1,0 +1,135 @@
+                                     Weekly Chat 2025-10-27
+
+
+                                            Main Points
+
+
+
+       -   VoEx is within the Propagation Zone while VoEx-daily has spiked.
+       -   Gamma-hedging heatmaps are support with robust purchasing support located
+           spot-down.
+       -   Gamma-squeeze environment has reduced its counts to baseline levels.
+       -   LS/LT investigation on ES shows minimal overhead resistance and bullish liquidity.
+       -   Composite chart of BTC/VX suggests a repeat cycle with downside resuming near
+           the end of the month.
+       -   Until then, turbulent appreciation expected.
+
+                                             SUMMARY
+
+
+           Despite soft suggestion given to the market for downside, the week ran sideways
+           and then moved to the upside. In response, VoEx has entered the Propagation
+           Zone on $SPY and $QQQ while VoEx-daily has spiked.
+
+           In combination these paint a near-term price appreciatory environment that will
+           resolve back towards the downside (i.e.: not a time for month+ long positions).
+           This is supported by the gamma hedging heatmaps which show near-term
+           purchasing support and LS/LT investigations, in particular with the BTC/VX
+           composite chart.
+
+           Overall, the current environment looks eerily similar and so we should expect the
+           outcomes to be as well.
+
+
+
+
+Deep Dive Stocks – Weekly Chat             for the week of                  2025-10-27 to 2025-10-31
+                                             DETAILS
+
+
+
+
+Hello!
+Last week, we left off with notions of being range-bound but with an overall expectation of
+resolution towards the downside.
+D’habitude, the market then decided to move 1.93% (for $SPY) and 2.18% (for $QQQ) – quite the
+opposite! There is some solace that the Monday until Friday close range was near 0% for both but
+the “resolution towards the downside” part was ignored.
+We can visualize the week’s progress in the heatmaps below:
+
+
+
+
+It seems the week started with movement directly to the selling pressure located spot-up and
+thereabouts stagnated until Friday, whenupon it pushed through.
+This week, let’s take a look at the data once more to see how our downside expectations are
+forming and see if we can get timing on our sides.
+I heard time likes shiny objects so I’ve left some buttons out
+
+Starting as usual with VoEx we see:
+
+
+
+
+Deep Dive Stocks – Weekly Chat            for the week of            2025-10-27 to 2025-10-31
+In short, if we add a small notation, I think the whole of the weekly chat will be summed:
+
+
+
+
+In short – it appears we have started a VoEx(-daily) spike – much like how things started at the
+started of the year. This gives us about 1 month of turbulent upside until things get spicy. In the
+meantime, if VoEx leaves the Propagation Zone, this will just revert to a bullish outlook but VoEx
+usually isn’t in the habit of moving from one zone to the other without some consequence.
+Thus, for now, it appears one more unreasonable climb is underway.
+Checking in with our hedging heatmaps we find that a bullish outlook is supported on the near-
+term:
+
+
+
+
+With pronounced purchasing support on both $SPY and $QQQ, it appears that any significant
+downwards push would have to carve through some significant pressure. To counter this buoyant
+force we find (on $QQQ at least) immediate and quite intense selling pressure. This paints a week
+of back-and-forth with a slight lean towards “resolve on towards the upside”1.
+It should be of no surprise then that the MWGS data have reverted and more gamma squeezes
+have diminished (not shown) to base-line counts of ~600. This also pushes back the downside
+deadline. Over the next month, any price stagnation should spur a look at the gamma-squeeze
+counts; if my hunch from last week holds true then several days of price stagnation or even a day
+of moderate (within EPR) $− should be met with quite the spike in GS counts.
+
+1
+    Fool me once.
+
+
+Deep Dive Stocks – Weekly Chat           for the week of                2025-10-27 to 2025-10-31
+Moving onwards to liquidity, we find:
+
+
+
+
+The skies are clear!
+For both near-term (90-minute and 144-minute) charts we find spot with bullish liquidity pushing
+above all LS resistances. This is accompanied by the longer-term charts (987-minute and 1-week)
+presenting also with bullish liquidity above LS resistances.
+Thus, from this view, things appear to be rosy! Such an outlook would be maintained until LS
+switches back to bearish (I’d keep an eye on LT5 on the 90-minute moving above spot as the first
+indication!).
+In checking to make sure all of this isn’t too out of the ordinary, we can check the BTC/VX
+composite chart, which agrees with VoEx on two fronts:
+
+
+
+
+Deep Dive Stocks – Weekly Chat          for the week of               2025-10-27 to 2025-10-31
+   1) The first is that downside is still expected (LS is producing bearish candles), and
+   2) It is about a month out.
+If we map the time between LS switching to bearish and the VX spikes, we find ~40 days. In
+extrapolating this to current times we see that this places a VX spike expectation at or around
+Friday 11/22/2205! So, indeed, about a month out.
+In the mean time, its likely that things will progress in a bullish fashion and appear bullish but so
+long as VoEx remains within the Propagation Zone and LS on BTC/VX remains bearish, the
+outlook will remain: this is just an intermission to the main show, which will be commencing
+around the end of November.
+So, a quick chat but things seem to be pretty familiar and so there’s no reason to beat a dead
+horse more than you have to!
+
+Likely turbulent upside for the next month or so with return to downside on the horizon.
+Happy Trading,
+Justin
+
+
+
+
+Deep Dive Stocks – Weekly Chat            for the week of                2025-10-27 to 2025-10-31
+

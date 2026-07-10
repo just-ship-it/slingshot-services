@@ -1,0 +1,162 @@
+                                 Weekly Chat 2026-03-16
+
+
+                                       Main Points
+
+
+
+       -   VoEx deepens within the P.Z. on $SPY and $QQQ
+       -   Heatmap environment (for $SPY) demonstrates a local gamma squeeze once more.
+       -   Market-Wide Gamma-Squeeze data showcase current positive growth and positive
+           future expectations.
+       -   LS&T analysis shows bearish liquidity throughout, and a faltering LT6 support on
+           the weekly.
+
+
+
+                                        SUMMARY
+
+
+
+           Last week, visions were placed on the downside and so it came to
+           be.
+
+           This week, visions are renewed on downside due to VoEx, the
+           gamma-squeeze orientation on the heatmaps, GS-growth and LS&T
+           bearish liquidity.
+
+           Some risk exists for the classic “bounce” – in support of which, we
+           have only found LT6 on the weekly as a potential instigator.
+
+           Overall, downside expectations have been affirmed and continue to
+           grow!
+
+
+
+
+Deep Dive Stocks – Weekly Chat        for the week of             2026-03-16 to 2026-03-20
+                                               DETAILS
+
+
+
+
+Hello all!
+                                        -    Important note at end! -
+Last week, we had visions of downside and the market delivered quite nicely with $SPY moving
+-1.15% and $QQQ moving -1.01% in the midst of lots of volatility. We can visualize the journey
+below:
+
+
+
+
+As we inferred last week, the purchasing support noted on $QQQ was likely only going to soften
+to downside rather than prevent it completely, and this appears to be have been the case!
+Thus, this week, our task is straightforward: are there any signs of a bounce or are our downside
+expectations steeled against any such negative thoughts?
+
+Let’s try to find out!
+Steele
+
+Starting as usual with VoEx, we find:
+
+
+
+
+Deepening within the Propagation Zone! Keeping things straightforward and simple this infers
+downside on the near-term and long-term. There is currently no evidence of a VoEx-daily spike
+
+
+
+Deep Dive Stocks – Weekly Chat              for the week of             2026-03-16 to 2026-03-20
+forming, and thus, no expectations from VoEx that a quick spot-burst is incoming. Only more
+downside.
+Checking in with the gamma-hedging heatmaps (excluding $QQQ due to some data issues), we
+find:
+
+
+
+
+The same orientation as we’ve seen in the recent few weeks! As with last week, the market is set
+to start with selling pressure – a concerning initialization given the local gamma-squeeze
+environment currently surrounding it!
+This is a bullish sign overall but we should keep an eye out for particularly robust [$+ , 𝐼𝐼𝑉𝑉 −] in the
+early-part of the week in attempts to keep the
+market within purchasing support.
+Abstracting out some, we find the Market-Wide
+gamma squeeze data showcasing a substantial
+increase this week! We can see this by comparing
+last week’s weekly average of 958 with this week’s
+weekly average of 1,377 – a 44% increase! This is
+quite foreshadowing and foretelling of an
+infortuitous future.
+
+
+
+
+                                                         Additionally, in checking with the predictive
+                                                         data, we find:
+                                                             Substantial increase as well! This tells
+                                                           us two things:
+                                                         1)    The future is expected to have a
+                                                         greater number of gamma-squeezes than it
+                                                         currently does, and
+
+
+
+
+Deep Dive Stocks – Weekly Chat              for the week of                 2026-03-16 to 2026-03-20
+   2) The future is expected to have a great gamma-squeeze growth rate than is present!
+
+Both of these combine to a pretty bearish picture, without much hope for a spontaneous bounce.
+Another avenue we can check in on for evidence of a brewing bounce is the mean-reversion arena.
+To that end, we find last week’s EPR (Expected price range) for $SPY was 2.62% - quite below the
+realized move – and thus, there is minimal expectation for a mean-reversion driven event!
+Moving onwards and upwards to checking in on liquidity, we find:
+
+
+
+
+Some more incredibly bearish prints! On the whole, we find bearish liquidity on all timeframe and
+the only evidence of support are:
+         -   The already-failed scoop on the 987-minute wherein LT2 is attempting to perform what
+             LT1 couldn’t, and
+         -   LT6 on the weekly.
+Admittedly, LT6 is quite robust in general, but we see that liquidity has already turned bearish on
+the weekly and after testing LT6, we didn’t get much of a bounce! This begs the question as to
+the robustness and longevity of LT6 – but doesn’t dismiss it completely.
+Overall, the data are bearish and so too are the expectations,
+Happy Trading!
+
+Justin
+
+
+
+
+Deep Dive Stocks – Weekly Chat            for the week of              2026-03-16 to 2026-03-20
+                                               Note!
+
+                                           Update time!
+There is an upcoming Registration Event planned for next week. The RE is planned to consolidate
+the various user-groups of Deep Dive Stocks to allow for better on-boarding and cohesiveness
+throughout the ecosystem.
+To do this, everyone is going to be removed from everything and in order to regain access you
+must register. Its pretty straightforward – the process will be as follows:
+         -   You will receive an email from `mail.deepdivestocks.com` in which there will be a
+             registration code and a link to the registration website.
+         -   Once at the website, you can enter in your email, TradingView username and Discord
+             username (if you would like to be apart of the discord) and you will be registered to
+             the appropriate services again.
+Thus it is important that next week you plan on losing and regaining access to your TV scripts
+(except for LTA). The scripts that you will be re-added to will not be the same as the ones you
+currently have access to.
+I apologize for any inconvenience but this is a necessary step for future improvements! If you
+have any questions, please don’t hesitate to reach out.
+
+
+Justin
+
+
+
+
+Deep Dive Stocks – Weekly Chat            for the week of              2026-03-16 to 2026-03-20
+

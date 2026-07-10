@@ -1,0 +1,224 @@
+                                 Weekly Chat 02/20/2024
+
+
+                                       Main Points
+
+
+          -   VoEx on $SPY and $QQQ are in Bullish-Until-Proven-Otherwise configuration
+              with VoEx Divergence forming.
+          -   Put-selling on $SPY and $QQQ has ceased.
+          -   The Market-Wide Gamma Squeeze (MWGS) data show weekly and monthly
+              net-closures and a positive GTM.
+          -   Hedging Environments remain in a vanna-unstable configuration for $SPY and
+              $QQQ.
+
+
+
+
+                                        SUMMARY
+
+
+
+          VoEx remains in BUPO (of the Bullish variety) on $SPY and $QQQ; on
+          close inspection, however, it would appear that both have formed
+          Divergence, with $QQQ’s VoEx-trend nearing the Inhibition Zone.
+
+          Put-selling has ceased on $SPY and $QQQ, particularly interesting given
+          the long-weekend. This suggests that there is little confidence in future
+          profitability that is dependent on $+ or IV- (or both).
+
+          MWGS data show decreasing GS amounts with an erratically positive
+          GTM print. Another quick investigation into these large GTM prints adds
+          additional evidence that these are associated with future market
+          downturn over the course of 40-trading days.
+
+          BUPO (of the Bullish variety) suggests bullish outlooks for the week
+          ahead, however, prudency suggests more caution than usual, as there
+          are several signs that suggest this bullish performance is nearing its
+          relative end.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                    02/20/2024
+                                           DETAILS
+
+
+
+
+Hello everyone, and welcome back!
+Last week, we left off with bullish inclinations for the week a head, which, kind of panned out …
+maybe? Eh – not really.
+The week started off with the markets moving lower only to rebound in the latter half of the
+week. $SPY experienced an exciting first-half with a 1.42% drawdown, only to recover 1.11% by
+week’s-end, leaving $SPY with a net -0.34% move. $QQQ fared much the same but overall worse
+with an early-week drawdown of 1.94%, only to be followed by a 1.37% recovery leading into
+Friday, with the week ultimately ending in a net move for $QQQ of -1.48%.
+These moves can be visualized below, as usual, with the Gamma Hedging Heatmaps:
+
+
+
+
+Noticeable observation is that no large IV fluctuations were noted with these price movements,
+despite the larger downside experienced at the start of the week. Another observation is that
+this week, on Tuesday specifically, at the week’s most significant drawdown, no spontaneous
+purchasing support genesis was noted within the hedging environments!
+Does this mean anything?
+Who knows – perhaps we’ll try to crack that nut this in this Weekly Chat.
+Perhaps not.
+You’ll have to find out.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                      02/20/2024
+If you stay finding out you don’t got to get finding out
+Starting as usual with VoEx, let’s see how things are brewing:
+
+
+
+
+VoEx on $SPY remains within BUPO (of the Bullish Variety), but if one were to enhance, then one
+might be predisposed to noting a potential VoEx Divergence forming on $SPY.
+Two-fold is the benefit of moving on from $SPY towards $QQQ: the first fold is that enhancing
+to observe divergence is no longer necessary, and the second is the augmented confidences
+one could infer from $QQQ’s VoEx divergence.
+
+
+
+
+$QQQ is indeed (and, once again) demonstrating VoEx Divergence, with VoEx-daily already
+teasing the Inhibition Zone. Overall, this removes us slightly away from BUPO (of the Bullish
+
+Deep Dive Stocks – Weekly Chat                                                     02/20/2024
+variety) as it serves as a keen reminder of the two main ways that BUPO (of any variety) ends:
+either VoEx Spikes, or VoEx Divergence (or VoEx Coiling, in the BUPO [of the Propagation Zone
+variety]).
+This moves the overall interpretation of VoEx from a carefree bullish to a worrisome bullish.
+Hopefully, the remaining data shall alleviate this newfound worry.
+
+To seek relief, let’s move directly towards the
+Gamma Hedging Heatmaps, where the view
+remains much the same (right).
+With no purchasing support located in the $-/IV+
+quadrant, and no purchasing support local in the
+local vicinity, $SPY and $QQQ once-more find
+themselves in a vanna-unstable orientation with the
+only available move towards gamma-neutrality
+extending in the $+/IV- direction; or in other words,
+quite the precarious position.
+This, as we have seen, is an orientation that isn’t
+bearish outright, but one that will not provide any
+bullish assistance in the event of a $-/IV+ week.
+Moving from the Hedging Environments to those
+that literally make the hedging environments, our
+Financial Overlords, we see a long-awaited answer
+to our inquiry last week wherein it was debated if
+the $SPY put-sellers would re-unite with the $QQQ
+put-sellers or would the $QQQ put-sellers recognize
+their folly and re-unite with the $SPY put-sellers?
+The answer:
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                    02/20/2024
+Capitulatio reperit infirmos – and so it would seem that the $SPY put-sellers may have realized
+that their foray into put-selling-land was mis-timed, as the put-selling activity on $SPY has
+reduced to near-zero, while the activity on $QQQ has reduced to below-zero.
+This is a bearish print for the week ahead; there is no more concern for scrutinizing if the put-
+selling behavior is “reminiscent of the jubililious jubilee-ing of yester-year”, as the message is
+quite clear: there is little-to-no reason to expect profitability from $+/IV- in the week(s) ahead.
+It should be noted, that the week ahead is a short week – which means that put-sellers have left
+quite a good amount of theta decay on the table rather than have the exposure for the weekend
+ahead.
+Moving from the put-sellers to who-put-all-these-gamma-squeezes-here, we see that, oh wait –
+what’s that?
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                        02/20/2024
+    The new GTM on the Macro Report1? Why, yes. Yes, it is.
+
+                                                       Reminder!
+The old and new GTMs are relatively the same except they are flipped.
+When this version prints positive values, it means that it is detecting long (positive) gamma “flowing
+towards” the market, and as such, the expectation is that gamma squeezes will start diminishing over the
+next 20 trading days. This is a bullish expectation.
+The opposite is true for when GTM prints negative values. This means that the algorithm is detecting short
+(negative) gamma flowing towards the market, which suggests an increase in the number of gamma
+squeezes should be expected. This is a bearish expectation.
+
+
+    And so, over the past month we have seen a persistently positive GTM along with a decrease in
+    the number of gamma squeezes from the monthly average of 11%, and a decrease from the
+    past two trading-weeks of 17%.
+    Despite these changes being prima facia bullish, I can’t help but reminisce about our discussion
+    regarding large GTM prints. In Weekly Chat 2024-01-19, there was discussion about how these
+    large positive movements were correlated with future downside. Is this still the case? Should we
+    be concerned about this large print?
+    The answer to that is … frankly: I am not sure!
+
+    Depending on how you look at the data, determines which answer you get. And this, my friends,
+    is not how it is supposed to work. Typically, this suggests there might be something hiding in
+    the data, and the relative good news, is that if it can be found, I think it might serve quite useful.
+    Even so, I do think there’ still merit in simply look at the basic relationship between these large
+    GTM prints and future price changes on $SPY.
+    So, let’s do that:
+
+
+
+
+    1
+        (Don’t worry about the legend misplacement.)
+
+    Deep Dive Stocks – Weekly Chat                                                           02/20/2024
+This graph shows the average future daily change in $SPY’s price over the next 40-days with
+coloring based off of if the GTM-ema (gold band) was Bearish or Bullish and the location (x-
+axis) being the GTM-5. Big positive spikes in GTM would occur on the right, while negative ones
+would occur on the left.
+We see that over on the right, we have identified the zone in which we exist (please do not
+disturb), and we see that some large GTM-5 movement is just off to our left (which we have
+surpassed currently) shows both positive and negative future performance (the dots are both
+above and below the red dashed line).
+
+This suggests that it might be a bit of a mixed bag until the data can be parsed out some more,
+which, based on how the data are laying out, should be in the future.
+So, the take home? I think a few definitive things about GTM can be said:
+
+   1- This large, positive movement is the most large and positive movement recorded per
+      GTM,
+   2- The most recent large print has been met with a GS reduction throughout the market,
+      suggesting that even if this is an “anomalous” print, it still seems to have impact on the
+      gamma flows to some regard, and
+   3- These large GTM prints are associated with both future positive and negative returns
+      over the next 2-months (40 trading days).
+
+So, for now, let’s monitor it. Point (2) suggests we can keep watching GTM for any updates
+without having to worry about missing out on any of the finer details; all-the-while I look to
+expand upon the finer details.
+Thus, overall, it would appear that per VoEx we are technically in BUPO (of the Bullish variety),
+but the VoEx Divergence, and DLP-selling cessation give serious pause to said’s longevity and
+
+
+Deep Dive Stocks – Weekly Chat                                                      02/20/2024
+suggests that although an overtly bearish outlook may not be prudent just yet, it would appear
+the durability of the hitherto persistent Bullish outlook is being tested.
+As the week progresses, I’ll be keeping an eye out on DLP behavior (to make sure it doesn’t
+skyrocket back up) as well as monitoring VoEx to see if Divergence leads to a VoEx spike into
+the PZ. To a lesser degree, I’ll keep an eye on GTM to see if it suddenly switches course and
+starts noting negative gamma flowing into the market, which is more in-line with out prior
+expectations.
+Until then, I’ll probably sit back and slowly start taking some long-gains home and preparing for
+a potential downturn in the market in the near-term future.
+
+
+Happy Trading,
+Justin
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                      02/20/2024
+

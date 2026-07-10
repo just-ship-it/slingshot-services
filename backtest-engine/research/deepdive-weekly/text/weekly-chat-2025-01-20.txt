@@ -1,0 +1,244 @@
+                                    Weekly Chat 2025-01-20
+
+
+                                            Main Points
+
+
+
+    -   VoEx persists within the Propagation Zone, while VoEx-daily moves rapidly towards stability for
+        both $SPY and $QQQ.
+    -   Hedging environments showcase diffuse purchasing support with a thin ridge spot-down made
+        thereof separating $SPY and $QQQ from selling pressure.
+    -   Put-selling on $SPY is decreasing but remains elevated, $QQQ put-sellers are continuing to
+        cease activities.
+    -   Market-wide gamma squeeze data show a rapid reduction in growth rates, counts with a growing
+        GTM.
+    -   Additional VoEx studies suggest the market is currently in a “window” of bullish outlooks.
+    -   LDPM showcases multi-interval bull traps with LDPM ceilings noted at $6,100.
+    -   Overall, risk for bull trap but overall outlook remains in BUPO (of the bearish variety).
+
+
+
+
+                                            SUMMARY
+
+
+           Last week ended with extra-EPR price movements for both $SPY and
+           $QQQ. In response, VoEx-daily has moved out of the P.Z., indicating a
+           forming bull trap.
+
+           The gamma hedging heatmaps showcase diffuse purchasing support and
+           no objection to a [$+ , 𝐼𝐼𝑉𝑉 −] week but are poised to provide selling pressure
+           if either move too much in the spot-down direction.
+
+           Put-selling has decreased slightly on $SPY and remains near-zero on
+           $QQQ. Thus, mixed reviews for the week ahead but the next day or so
+           should officiate if $SPY’s outlooks have changed to be in-line with $QQQ’s.
+
+           MWGS data showcase bullish data and additional VoEx analysis shows
+           the market is still within the window of bullish outlooks but we may be
+           migrating out of it.
+
+           LDPM shows a ceiling at $6,100 in a multi-interval manner.
+
+           Taken together, it seems a bull run to $6,100 followed by resumption of
+           bearish action seems highly likely.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                             01/20/2025
+                                                      DETAILS
+
+
+
+
+Hello all!
+Last week, we left off with bearish leanings, and it would seem those leanings weren’t
+quite the leanings to lean with but rather leanings from which we should have leaned!
+Frankly, I’m not sure what that means, what with the lean meanings about what leaning
+with a lean means so we should probably move on.
+Despite our requests, the market opted to move in a positive direction with $SPY heading
+a defiant march of 2.94% northward while $QQQ, heading from the opposing side,
+marched at a click of 2.87% 1. The immediate response to this is disgust, and once that
+passes, curiosity at $SPY having moved more than $QQQ takes its stead as it is not often
+the case! Let’s see if this finding holds up with normalizing the price movements against
+the market’s EPR.
+$SPY’s EPR from last week was ±1.86%, while $QQQ’s was ±2.42% - these values
+normalize the week’s moves to 1.58 for $SPY and 1.86 for QQQ.
+So – whereas $SPY moved more than $QQQ in nominal terms, with respect to who moved
+more than the market was expecting, that remains squarely within $QQQ’s court. This
+extra-QQQ movement seems to align nicely with our view of liquidity from last week
+whereby $QQQ’s journey up and to the north was largely devoid of selling pressure, unlike
+$SPY’s:
+
+
+
+
+1
+    If these two indexes left the market at the same time, how long until they would meet?
+
+Deep Dive Stocks – Weekly Chat                                                               01/20/2025
+And so, this week, we have our assignment and (frankly) it’s not the easiest of tasks. The
+main goal is to ensure the overall outlook (of continued downside) is still a reasonable
+outlook, and then and even if not, we have to investigate the market’s response to the
+extra-EPR moves so as to discern if that strange feeling of being watched is the spectre
+of mean-reversion lurking over our shoulders, or just an in-law.
+Let’s get started.
+Let’s get started.
+As usual, let’s take a peek at VoEx:
+
+
+
+
+VoEx is still within the Propagation Zone, while VoEx-daily moves rapidly towards
+stability. As we discussed last week, or a week or two ago (it’s getting hard to track, time
+keeps adding up), the benefit of VoEx being within the P.Z. is that it allows for heuristics,
+namely, bearish ones, and so, any bullish performance is prefixed with the ”trap”
+designator so as to remind us that the overall outlook remains downtrodden.
+That is to say, VoEx-daily is giving us bullish butterflies in our bellies, while VoEx is
+cautioning the the wisdom of this diet.
+Or, in other words, a bull trap looks like its forming.
+Or, said differently, in the future, the prudent outlook per VoEx-daily is bullish performance
+but VoEx-trend’s persistence within the P.Z. foretells a shortened lifespan thereof.
+Or even said as: down then up, innit?
+Ok enough of that.
+Moving onwards, we step right into the past.
+
+
+Deep Dive Stocks – Weekly Chat                                                    01/20/2025
+You’ll remember from last week:
+
+
+                                              “
+
+
+
+
+                                 “-Weekly Chat 2025-01-13
+Well, as we saw in the preamble, that is exactly what the week pushed for. The
+interpretation at the time was that this was an unlikely eventuality, given the selling
+pressure, and overall market positioning.
+Boy were yowe wrong! In pursuit of no repeats, lets investigate the gamma environment
+for the week ahead:
+
+
+
+
+Identical orientations – sort of. With respect to the shared directionality, it’s difficult to
+discern, mainly because $QQQ’s current vast gamma neutrality is quite extensive, leaving
+only thin ridges of purchasing support and selling pressure. $SPY sees an equal “blob” of
+gamma neutrality in the [$+, 𝐼𝐼𝑉𝑉 +] direction, but with less oppression than its counterpart-
+blob on $QQQ.
+All-in-all, the hedging environments seem benign should spot rise but in general, spot
+decreasing will see selling pressure and gamma neutrality; and woe is the market who
+finds itself without hedging!
+
+
+Deep Dive Stocks – Weekly Chat                                                    01/20/2025
+Moving along, let’s take a peek at the put-selling:
+
+
+
+
+With renewed obstinance, $QQQ put-sellers have continued their inaction while $SPY’s
+put-selling has been maintained in the interim. Current $SPY data looks to show put-
+selling decreasing, but it is still quite
+elevated, so perhaps a day or two is needed
+to ensure the trend downwards is true.
+If it is to pass, then this would put $SPY and
+$QQQ in a put-selling cessationary situation
+– the outcome for us from that is that for the
+foreseeable future, the probability of
+profitability of the general [$+, 𝐼𝐼𝑉𝑉 −] -direction
+seems to be diminishing quite extensively!
+Next, up we see the Market-Wide Gamma
+Squeeze data showcasing a substantial
+decrease in gamma squeezes, with a 31%
+decrease        week-over-week!       This
+impressiveness extends from the 10-, and
+20-day anchors as well with a 32% and 35%
+decrease in market squeeze counts
+therefrom, respectively.
+In our last chat about MWGS, we talked
+about how the flow of long gamma from the
+market seemed to have less to do with
+options flows and more to do with the dynamics of gamma and spot, and it would seem
+that after a 1.5x week for $SPY and a 1.8x week for $QQQ (with respect to spot), it seems
+this process is in overdrive (using $SPY and $QQQ as quick references, we see the
+decrease in IV was reasonable as well with a 21% decrease in IV for $SPY and a 16%
+reduction in IV for $QQQ) pushing GTM straight up, well into positive territory.
+
+Deep Dive Stocks – Weekly Chat                                               01/20/2025
+Nonetheless, all the handwaving in the world can’t alter the data as they stand: MWGS
+counts have decreased, GTM is positive, and growth is decreasing! This suggests a
+bullish future ahead!
+So – its quite the mixed environment.
+At the start, we saw VoEx with its bearish data, namely, VoEx being within the Propagation
+Zone. This places the default outlook as: BUPO (of the bearish variety) and so the default
+outlook is down.
+VoEx-daily, however, for $SPY and (to a lesser extent) $QQQ are moving out of the P.Z.
+with vigor which brings about bullish outlooks. However, since its BUPO season (of the
+bearish variety), this bullish outlook becomes “bull trap”. And so, VoEx-daily suggests
+there may be a bull-trap forming.
+In trying to discern if VoEx-daily is onto something, a look at the gamma hedging
+heatmaps showcases a reasonably stable environment - $QQQ’s purchasing support is a
+bit thin but there doesn’t seem to be anything stopping a [$+ , 𝐼𝐼𝑉𝑉 −] week.
+In looking to see if the put-sellers have a similar outlook, we see mixed and dynamic
+reviews; $SPY’s put-selling seems to be decreasing, but its current state is still quite
+elevated whereas $QQQ’s behavior is still near-zero. Thus, no shared opinion for us to
+lean on here (for now?).
+Expanding our view from the put-sellers to the market-at-large by-way of the Market-Wide
+Gamma Squeeze (MWGS) data, we find less ambiguous data whereby GS growth seems
+to be officially in negative territory (which shouldn’t be too surprising given the recent 20%
+decline in counts), and GTM is positive - but even this isn’t without controversy as the
+Growth-trend is still quite elevated, teasing growth to join it back up in the lofty heights.
+Taken together, these are surprisingly bullish data – perhaps VoEx-daily’s suspicion for a
+bull-trap is reasonably supported in the data.
+Moving onwards with the data analysis, you’ll remember from Weekly Chat 2025-01-06,
+there was discussion regarding the relationship between (neo-)VoEx and future price
+changes. This analysis produced the three-panel graph (next page) which showcased that
+there was a narrow window of casual VoEx ascension out of the Propagation Zone back
+into stability (and thus, resumed bullish performance). Last time, we were just within the
+window, suggesting bullish performance ahead for the next 20-days.
+Let’s see where we are now!
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                    01/20/2025
+Still within the window but migration has us leaning towards the left and thus out of the
+window for sustained bullish performance.
+Perhaps this data will be telling in a week, but for now, it still puts us in the window, and
+thus, tentative bullish outlooks!
+Thus, before we ask prudence for their outlook, let’s ourselves look out for what LDPM/S
+look like. But – just to add some fun into our lives, let’s do so with some ~whacky~
+intervals, namely, the 144-, 377-, and the 610-, and the 987- minute charts for ES futures.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                   01/20/2025
+Bull-traps abound! The highest view at 987-minutes showcases bearish liquidity despite
+the bullish performance, and a nearing test of LDPM-5.
+Additionally, its worth noting that in all views except for the lowest (144; top-left), it
+appears that $6,070-ish is an established ceiling of sorts; LDPM-7 on the 377-minute,
+LDPM-6 and LDPM-7 on the 610-minute, and LDPM-5 on the 987-minute!
+That’s quite the confluence, as the kids say.
+Taken together, it seems reasonable that bullish performance persists a tad more,
+perhaps to about $6,100 on ES or so, but with the multi-interval LDPM ceilings, the spectre
+of ~mean-reversion~, the thin purchasing support and VoEx, manifesting robust bullish
+dreams is difficult at present.
+
+
+Quick Note: !
+TradingView wasn’t happy with the last version of LTA that I put up. I switched everyone
+over to the old beta version. If you haven’t been re-added to the old beta version let me
+know.
+I am re-doing another official LTA and will let it sit for a week to ensure TV “accepts” it.
+More to come –
+Happy trading,
+Justin
+
+Deep Dive Stocks – Weekly Chat                                                    01/20/2025
+

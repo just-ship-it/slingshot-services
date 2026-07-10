@@ -1,0 +1,198 @@
+                                    Weekly Chat 10/14/2024
+
+
+                                           Main Points
+
+
+
+    -   VoEx is within stability.
+    -   Hedging environments are in a stable orientation with diffuse selling pressure locally
+        and selling pressure west and south-west of current location.
+    -   Market-Wide Gamma Squeeze (MWGS) data show an ever-persistent negative gamma
+        flowing into the market but this hasn’t resulted yet in either the growth-rate or the growth
+        of gamma squeezes.
+    -   Put-selling ceased at the end of this week on $SPY. Its activity throughout the week on
+        $QQQ was minimal.
+    -   LDPM/S suggest the down-side liquidity vacuum is still present with LDPM being
+        inverted.
+
+
+
+                                            SUMMARY
+
+
+
+           Overall, the market seems to be realizing the weakness noted from SNAP-
+           10 last week but, in aggregate, the data are still pointing towards the up.
+
+           VoEx is within stability (but truth-be-told, it is reminiscent of 2024-07 just
+           prior to the last correction but you didn’t hear that here). Nonetheless, on
+           its own, and in its current position, the outlook is bullish until VoEx-daily
+           moves out of stability.
+
+           The hedging environments are supportive for a bullish week, should IV not
+           drop too much, but they are poised to offer little-and-diminishing suppose
+           in the event of [$-, IV+].
+
+           Put-selling on $SPY has decreased back to near-zero after just a week of
+           activity. On $QQQ, put-selling never really picked up.
+
+           LDPM/S is showing LDPM-89 persistently below LDPM-144, and thus,
+           LDPM maintains its inverted status, indicative of a bull-trap. Liquidity
+           seems to be worsening as the Aggressive Bid Cascade send LDPM-55
+           upwards. Downside resolution to organic bid would occur at (presently)
+           $5,670ish.
+           Technically bullish but a watchful eye still until LDPM corrects.
+
+
+
+Deep Dive Stocks – Weekly Chat                                                          10/14/2024
+                                                     DETAILS
+
+
+Hello every-body!
+Last week, the outlook was bullish, and the market, in hearing of our expectations, no doubt,
+provided a bountiful week of $SPY delivering 1.15% unto us, while $QQQ blessed our endeavors
+with a meager, but impactful, 1.24%.
+Let us rejoice in their movements below:
+
+
+
+
+A slight close-call with selling pressure at the start of the week for $QQQ but overall, it would
+seem things floated along just nicely.
+But will that continue?
+Will it??1
+
+I suppose we should find out; in doing so, let’s form a vision for our explorations. Over the past
+few weeks, we have become bullish, naturally, but there are some signs that things aren’t “full
+bullish” yet. However, not to beat a dead horse before its dead, we didn’t dwell too much on those
+thoughts, because, well, the music is playing!
+However and unfortunately, as our weekly penance dictates, dwelling on those thoughts is what
+we must do herein and therewith; just to make sure nothing is sneaking around the corner (looking
+at you SNAP-10!).
+So, let’s get started!
+
+
+
+
+1
+ Has anyone noticed that whenever I ask a question its me that has to also answer it? You’d think I’d either not have
+to ask the question due to already knowing the answer or, if I didn’t already know the answer but know that I’m the
+one that would have to answer the question anyways, I wouldn’t ask the question; what is the utility in it? If a
+question is asked, and no one is around to hear it, do I still think that person is wrong?
+
+Deep Dive Stocks – Weekly Chat                                                                        10/14/2024
+Absolutely
+
+Starting as usual with VoEx:
+
+
+
+
+We see after a dip out of stability, VoEx-daily looks keen to rejoin VoEx therein. A pattern-
+recognizer might suggest that this looks similar to 2024-07 but it can be difficult to know who is
+a pattern-recognizer and who is high2.
+Nonetheless, your potentially recreational drug use doesn’t alter the outlook: BUPO3! (of the
+bullish variety).
+So, with future outlooks in mind, how do the hedging environments suggest they will respond:
+
+
+
+
+It seems hedging is relatively moot – with a pathway towards [$+, IV-] for both $SPY and $QQQ.
+That being said – selling pressure is close and IV+ doesn’t see any real increase in purchasing
+support. Perhaps I just have bears on my mind but combined with the left-tail on the distribution
+graphs, I’d like some more purchasing support!
+
+
+2
+ I assume it’s you.
+3
+ BUPO is an expression meant to convey “things are bullish, don’t look the gift horse in the mouth”. But there are
+key things to look out for when in BUPO: VoEx-daily falling into the Propagation Zone mainly, and with the original
+version of VoEx, VoEx-divergence was a sign of ending BUPO. There’s also bearish-until-proven-otherwise (aka
+BUPO), which is essentially the opposite.
+
+Deep Dive Stocks – Weekly Chat                                                                      10/14/2024
+Nonetheless, VoEx says bullish and so if we project onto the heatmaps said outlook, we see the
+hedging environment is quite conducive.
+Moving onwards, we encounter: the Market-Wide Gamma Squeeze (MWGS) data! Namely, GTM
+which is showing persistent negative gamma flows into the market lately:
+                                                The amounts aren’t staggering but it is worth
+                                                noting that we’ve gone quite awhile without a
+                                                good long-gamma burst.
+                                                Gamma squeeze amounts have remained
+                                                relatively flat throughout and growth is still near-
+                                                zero.
+                                                But thought it might be worth an observation –
+                                                that short gamma has to be going somewhere!
+Also – what’s been hedging all this and when does it expire?
+
+Moving northward to our friends in put-selling land, we see a lack of respect being put on $SPY
+name this week:
+
+
+
+
+$SPY sees a sudden cessation of put-selling while $QQQ’s remains minimal.
+Not the most bullish of signs!
+Moving towards LDPM/S, we see:
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                        10/14/2024
+Endless torment!
+
+                                                                    − !
+                                               < 𝑂𝑂, �𝐴𝐴𝑔𝑔, 𝐴𝐴𝑏𝑏 � >+   4
+
+
+LDPM is still inverted suggesting that there is an Absent bid (likely hanging out around LDPM-89
+at 5.67) being over-shadowed by an Aggressive Bid (current spot).
+LDPS is showing bullish, meaning that the ask is supplying liquidity.
+However, liquidity is worsening suggesting that the liquidity supplier is diminishing. I.e.:
+
+                                < (𝑂𝑂, �𝐴𝐴𝑔𝑔, 𝐴𝐴𝑏𝑏 � >+                              +
+                                                      − ~ < (𝑂𝑂~𝐸𝐸), �𝐴𝐴𝑔𝑔 , 𝐴𝐴𝑏𝑏 � >−
+
+But if liquidity is worsening this means that the budding eager ask is having difficulty getting
+transactions! I.e.: realizing profits is becoming difficult!
+
+In other words: the liquidity vacuum is still here; we’ve been waiting 2(!) whole weeks for it to
+resolve but LDPM-89 is persistently staying below LDPM-144 and evidence that profit-taking is
+ramping up.
+This is concerning for a bull-trap!
+Speaking of bull-trap, last week I pointed out SNAP-20, although I think it was really supposed to
+be SNAP-10 (typo) but what is interesting about that typo is SNAP-10’s prediction in price-
+
+4
+    Read the LDPM/S Addendum!
+
+Deep Dive Stocks – Weekly Chat                                                           10/14/2024
+weakness would be “in affect” this week (as this Friday would be the end of SNAP-10’s jurisdiction
+from 2024-10-07).
+So – some handwaving suggests turbulence while LDPM-55 works above price. If LDPM-89 starts
+to move up to follow (i.e.: LDPM starts to un-invert) and VoEx stays within stability, I’ll be
+tentatively happy.
+But should LDPM-55 start to move up, LDPM-89 not make it above LDPM-144 at least before price
+re-tests LDPM-144 and/or if at any point VoEx-daily moves south, I will anticipate the weakness
+to be realizing and position accordingly! (Remember where those organic bids might be?).
+VoEx is suggesting that even this scenario will resolve on the upside, but the near-term turbulence
+(and resulting recovery) may present some opportunities.
+
+
+Overall, a messy environment but nothing that we can’t handle.
+
+
+Happy trading,
+
+
+Justin
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                        10/14/2024
+

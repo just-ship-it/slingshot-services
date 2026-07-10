@@ -1,0 +1,448 @@
+                                   Weekly Chat 06/05/2023
+
+
+                                          Main Points
+
+
+    -   $QQQ is demonstrating VoEx Divergence
+    -   GTM is positive
+    -   VoEx Variance is suggestive of a near-term correction
+    -   Bullish-until-proven-otherwise has been replaced with “waiting for the imminent
+        otherwise”
+
+
+
+                                           SUMMARY
+
+
+           The markets are becoming quite turbulent!
+
+           VoEx on $QQQ is demonstrating Divergence – a sign that would tell us
+           when this bull run is nearing its local maximum. Although the downside
+           hasn’t been indicated just yet, as VoEx hasn’t migrated out of the Inhibition
+           Zone, it may not be much longer.
+
+           DLP behavior is rather moot again with an almost complete flattening of
+           put selling heading into the week ahead.
+
+           The hedging environments are unsupportive as before but we are starting
+           to find ourselves moving quick from a bullish environment. This might
+           make the lack of $-/IV+ purchasing support more apparent in the weeks
+           ahead than the previous few weeks.
+
+           MWGS data offer slightly conflicting views but GTM is printing positive
+           values, a bearish finding; despite a recent reduction in gamma squeeze
+           counts.
+
+           VoEx Variance is demonstrating variance values ~1 which is historically
+           associated with near-future market downsides. In looking at the
+           distribution of VoEx throughout the market, we see that since 03/2023,
+           VoExes throughout the market have predominately been moving
+           northward into the I.Z.
+
+           Overall the data suggest that our long anticipated downside may be fast
+           approaching – and with VoEx Divergence on $QQQ it seems largely
+           unreasonable to have an outright bullish stance.
+
+Deep Dive Stocks – Weekly Chat                                                         06/05/2023
+                                           DETAILS
+
+
+
+
+Hello everyone!
+
+Last week we nervously left off with the notion that we should be bullish-until-proven-
+otherwise, and with $SPY up 1.89% and $QQQ up 1.80%, it seems that we weren’t too far
+off the nose.
+
+Most of this overall was due to Thursday and Friday so it may be useful to take a quick
+beep at and around those dates to see what the data were up to.
+
+Starting out with the hedging
+environment for the week, on first
+inspection we see that our fears
+about local selling pressure being
+present     weren’t      completely
+unwarranted as the index started out
+the week red.
+
+This downwards pressure seems to
+have been handled relatively well by
+the market, such that it caused
+negligible increases in IV, which kept
+the hedging environment from
+moving very far from gamma
+neutrality and purchasing support.
+
+The reduced effect of the selling pressure on price action along with the exaggerated
+response to purchasing support suggests the hedging environment wasn’t “setting the
+pace” for the market this week: the market, in its overall bullish state, quickly digested the
+selling pressure but was strongly boosted by the purchasing support. This week, it would
+seem, the hedging environment was performing less of a central role and more of a
+support role.
+
+This obviously leads us with the question: if it wasn’t the hedging environment, what was
+it?
+
+And to that I say: who knows! Sometimes it is nice to get a clear picture of what is going
+on via the hedging environments but sometimes its just simply not the hedging
+environment that is leading the charge.
+
+However, when the hedging environment is clearly not the one in charge – where can we
+
+Deep Dive Stocks – Weekly Chat                                                    06/05/2023
+look to see what is? I mean, certainly we can find it in the data somewhere, right?
+
+Nope! Not in DDS’ data at least – but I’d argue that’s just the point. DDS’ is designed to
+provide contextless data about the market. There are times where through a combination
+of data, a reasonable cause can be identified. These occasions are enjoyable, but they
+are not prerequisite to the benefits of the data. To see this, lets look at the data for
+Wednesday 5/31.
+
+The first up is $SPY’s VoEx:
+
+Despite         Tuesday’s      and
+Wednesday’s downside, we see
+that VoEx decided not to do much
+about it: no dips into the
+Propagation Zone or erratic
+movements. In other words, there
+was little by way of VoEx
+suggesting on Wednesday that our
+bullish-until-proven-otherwise
+(BuPo) should be altered.
+
+Were there data elsewhere that might have suggested so?
+
+Not in the DLPs:
+
+
+
+
+The DLPs, unlike VoEx, do not just simply suggest that BuPo should be replaced but the
+rather significant up-tick in DLP performance suggests the put sellers were emboldened
+in their bullish outlooks, come Wednesday.
+
+As counter points, however, the 31st also saw the MWGS (Market-Wide Gamma Squeeze)
+data continue to print bearish prints for the future with positive 5-day GS growth and a
+
+
+Deep Dive Stocks – Weekly Chat                                                 06/05/2023
+positive GTM. Would this alone have been enough to change the outlook?
+
+I don’t think so – I think it more reinforces BuPo as these data simply highlight the
+instability found in the foundations of the market; something that we have also been
+aware of already (and these data prints are largely the same as before).
+
+Nonetheless, all without knowing anything about anything that’s happening in the market,
+we can see that by looking at VoEx’s lack-of-response to early-week downside, DLPs
+renewed vigor in selling volatiltiy, and MWGS data being mostly the same as before,
+although Wednesday’ data may not have re-invigorated a outright bullish outlook, I think
+it did little to disrupt BuPo.
+
+So, with that out of the way – let’s look towards our futures.
+
+$ES_F1
+
+
+
+
+Starting as usual with will take a peek at $SPY and $QQQ’s VoExes:
+Hmm.
+
+Hmmmmm.
+
+HMMMMMMMMMMMMMMM
+
+Okay enough of that.
+
+There is a finding in one of these VoExes that I think is relatively important that one use
+who uses VoEx should be able to identify. Take a moment and look at the VoEx graphs
+above and see if you agree.
+..
+..
+..
+
+1
+    heh. get it?
+
+Deep Dive Stocks – Weekly Chat                                                 06/05/2023
+Starting with $SPY on the left, we see a relatively decent VoEx spike into the Inhibition
+Zone. If is worht nothing perhaps that this large VoEx movement occurred on a day that
+$SPY moved greater than its EPR. What does this mean for us? Well, a stock (or index)
+that moves greater than its Expected Price Range is typically at-risk for mean reversion
+(in this case: downside). In combination with VoExes response to the price appreciation
+(VoEx Spike) it suggests that not only is $SPY at-risk for mean reversion but it is being
+placed at-risk while already in a high-risk-state of downside (per VoEx). Quite the combo!
+
+But it isn’t $SPY’s VoEx that has caught my attention but rather $QQQ’s. Let’s look a little
+closer.
+
+Enhance!
+
+
+
+
+Hark! For VoEx Divergence is upon us!
+
+What does this mean? A quick recap: VoEx Divergence is typically associated with near-
+term corrections 2 that tend to be rapid and significant. In our case, it would indicate to
+use the start of the next “dip”.
+
+2
+ I recommend checking out Weekly Chat 05/22/2023 as it has some recent examples of VoEx Divergence, as well
+as the Tier II Material.
+
+Deep Dive Stocks – Weekly Chat                                                                 06/05/2023
+In the typical course of events, the price will stagnate as VoEx continues its descent out
+of the Inhibition Zone whereby once it reaches the boundaries of stability, the price
+correction will commence. We can see this process (albeit on a smaller scale) in 02/2023
+and 04/2023 (coincidentally we are at 06/2023!) on $QQQ’s VoEx.
+
+[Quick rant: notice how in 04/2023, shortly after VoEx-trend touched stability, $QQQ
+experienced that large downwards VoEx spike? If you indulge some hand-waving – to me
+it appears as though the natural downside that should have followed was interrupted.
+This interruption (or the lack of subsequent continued downside) provoked substantial
+instability, sending VoEx rapidly back into IZ where it has continued to climb ever since!].
+
+The presence of VoEx Divergence on $QQQ definitively invalidates BuPo philosophy.
+Although the timing of the initiation of the downside may be difficult (we have to wait until
+VoEx leaves the Inhibition Zone), its inevitability is quite persistent.
+
+With the prospect of rather-strong downside becoming ever-more present, we can take
+some solace that at least the hedging environments aren’t terrible ? They are by-and-large
+the same as we have grown accustomed to: light immediate selling pressure with little-
+to-no purchasing support located $-/IV+:
+
+
+
+
+The last few weeks with this orientation have been relatively unaccosted by downside,
+despite the lack of purchasing support $-/IV+. Per VoEx, this isn’t too surprising as
+although we have been in a purchase-less $-/IV+ environment, the market has done so in
+while maintain an overall bullish stance; thus, it isn’t too surprising that selling pressure
+was well tolerated and purchasing support well received.
+
+Now, however, we find that this bullish stance is weakening – in particular since BuPo has
+been rejected. Will the selling pressure be as well-tolerated as before? It might be prudent
+to suspect that the answer is no.
+
+
+
+Deep Dive Stocks – Weekly Chat                                                   06/05/2023
+The absence of purchasing support located $-/IV+ may find itself readily apparent in the
+near future as it may be that the bid from the purchasing support may (as it has before)
+find itself as the only bid in the market!
+
+But before we get a head of ourselves and before self-subjugation to the might of VoEx
+gloomy outlook commences, perhaps our DLP friends offer a different view.
+
+
+
+
+It doesn’t appear so! With an almost complete cessation of DLP activity on $QQQ (the 5-
+day average percent change has dropped to near-zero) and $SPY’s not-far-behind
+behavior, it would seem those-who-sell-puts haven’t the zeal as before.
+
+(Or they could simply be sipping mojitos on the beach after their takings last week, who
+knows.)
+
+These data suggest that volatility sellers and price-prospecteurs aren’t too keen on a
+continued bullish outlook. To be fair, they should be quite happy with their takings from
+last week!
+
+The DLP data don’t scream downside just yet but I will be keeping an eye on them as the
+week progresses. Continued decline (and especially the start of negative growth) will be
+a strong indicator that our DLP friends are also concerned about near-term market
+downside.
+
+Oh, to have the same outlook as the put-sellers’ outlook sounds just dreamy!
+
+Moving towards the Market-Wide Gamma Squeeze data (MWGSC) we find a bit of a mix
+bag – a zone of transition if you will.
+
+
+Deep Dive Stocks – Weekly Chat                                                 06/05/2023
+                                                            Why a zone of transition?
+                                                            Consider the following:
+
+                                                            1) The 5-Day MWGSC growth
+                                                            rate (gold line, top graph) is
+                                                            negative. This means that the
+                                                            past 5 days have seen a
+                                                            increase in the rate of gamma
+                                                            squeeze destruction. This is
+                                                            bullish
+
+                                                            2) The MWGSC-Growth Trend
+                                                            (black line, top graph), is
+                                                            negative. This is also bullish.
+
+
+                                                            3) GTM is printing positive
+                                                            values. This is bearish.
+
+
+                                                            So 2/3 bullish and 1/3
+                                                            bearish; can these data be
+                                                            rectified?
+
+                                                           Well – whereas the MWGSC-
+                                                           Growth Trend and the 5-day
+                                                           MWGSC growth rate are
+                                                           associated       with     future
+                                                           market performance, they are
+                                                           by-and-large        backwards-
+                                                           facing. That is, they are based
+                                                           on events that have occurred
+                                                           (each MWGSC-growth metric
+includes past gamma squeeze change data) in order to forecast what will occur based
+on the premise that, well, once something starts it tends to keep going – until it doesn’t
+(5-day GS-growth rate is negative  gamma squeezes are decreasing  market typically
+goes up when gamma squeezes are decreasing  market should go up as long as this
+continues).
+
+This is why when these data are observed, they provide a “[bullish/bearish] until proven
+otherwise” (sound familiar?) outlook because these data simply reflect what is – not
+necessarily what will be.
+
+GTM, on the other hand, is forwards-facing. It takes in today’ s data (no prior data) and
+uses that to forecast future movements not based on what GTM has been doing or what
+
+Deep Dive Stocks – Weekly Chat                                                 06/05/2023
+it might do, but strictly in terms of what it is doing and on what we know about what this
+means for future market conditions (i.e.: GTM is positive  gamma squeezes will
+increase  markets tend to go down during gamma squeeze increases  market will go
+down).
+
+Here, we see that GTM doesn’t provide “[bullish/bearish] until proven otherwise”
+statements because of its known and calculated relationship with the future market’s
+changes: A positive GTM is associated with negative market movements 5-days out.
+
+In other words, I’m inclined to lean towards GTM here: I think it is reasonable to see the
+MWGSC start to move up some, and thus, the rest of the MWGS data start to mimic GTM’s
+outlook. Lastly, let’s take a peek at a metric we haven’t looked at in quite awhile. VoEx
+Variance! 3
+
+The idea behind VoEx Variance is that if we measure the intra-sector variance of VoEx 4
+values it might tell us something. But, before we get too “in-the-weeds”, let’s just stare at
+VoEx variance for a minute and see what we can come up with.
+
+
+
+
+Our first graph (above) is the raw 40-day rolling median for VoEx Variance. There are a
+few interesting associations between VoEx Variance, intra-sector behavior, and market
+
+3
+  For those who haven’t met VoEx Variance yet, check out Weekly Chats 2023-03-20, 2023-01-30, 2023-01-
+17, 2023-01-03, 2022-12-12, 2022-11-28, and 2022-11-06 as good places to start getting familiar with it.
+4
+  This means that all of the stocks for all of the sectors ($XLF, $XLB, $SPY, $QQQ, .etc) have their VoEx
+values calculated. Then, we see how spread out these values are (we measure their variance). The more
+spread out, the higher the variance inside of that sector is the more spread out the VoEx values within
+that sector are, and conversely, if the VoEx values within these sectors are clustered together, we would
+see low variance values.
+
+Deep Dive Stocks – Weekly Chat                                                             06/05/2023
+performance. Notice how when variance suddenly drops (2018-09-01, 2020-03-01, 2022-
+01-01), the market tends to experience large downsides very shortly afterwards.
+But, aside from all that, lets take a closer look. The raw data can be a bit much at times
+with all of its squigglies, so let’s make things nice and smooth, and see what we see:
+
+
+
+
+That’s a little better! With a slightly clearer picture, some trends become more observable.
+
+
+Well – the first, and perhaps most obvious, behavior is that since 2018, all major market
+downturns occurred after:
+  1) A rise in VoEx variance across the market to a value of ~1
+  2) A market-wide decline in VoEx Variance
+  3) Market corrects
+
+Thus, on the surface, it would appear that the market is at the end of step (1) in the
+aforementioned steps, suggesting that a decline in VoEx Variance should be next,
+followed by a decline in the market. Okay – but can this be backed by any kind of intuition,
+or should the colorful lines be simply taken at face-value?
+
+Since VoEx Variance tells us how spread out VoEx Values are within a sector, why don’t
+we simply map out where the distribution of VoExes are themselves; if the VoEx groupings
+can be visualized directly, perhaps this well help contextualize step (2), and ultimately,
+step (3).
+
+
+
+Deep Dive Stocks – Weekly Chat                                                  06/05/2023
+In doing so we produce the above graph.
+
+The top graph shows the distribution of VoEx Values per Sector as of 06/02/2023, and
+the bottom graph shows the same but for 03/13/2023 (at or around the bottom of the
+last dip).
+
+The red dashed line on the left represents the Propagation Line, and the line on the right,
+the Inhibition Line.
+
+Starting with 03/13/2023’s graph. The last dip started around 02/2023 whereafter in the
+subsequent month, the $SPY fell 7%. In such an environment it is very likely that the
+majority of VoExes were well positioned inside of the Propagation Zone – and that is
+exactly what we see with the distribution of VoExes: the majority of the lines and their
+peaks are within the Propagation Zone.
+
+Since then, the market has appreciated 12% ($SPY), during which time one would expect
+VoExes by-and-large to move out of the Propagation Zone and into stability. In a robust
+bullish environment, on might even expect a few stocks to start peaking their heads into
+the Inhibition Zone, as growth accelerates in a post-dip bullish environment. In this type
+of environment, we’d expect the majority of the peaks of the distributions to be within
+stability (between the two red dashed lines), with a few tails extending into the P.Z., and
+I.Z.
+
+
+Deep Dive Stocks – Weekly Chat                                                 06/05/2023
+Is that what we see currently?
+
+Kind of but not really. Here we see VoEx values throughout the market are split (the curves
+are spread out and extend into all 3 zones! This is what is printing the high variance
+values) in thirds: 1/3 of the market is in the P.Z., 1/3 in stability, and 1/3 in the Inhibition
+Zone.
+
+This is not ideal as it suggests the market’s stability is surrounded by equal-amounts of
+instability: one in the form of already-present-downwards-instability (all of the VoExes that
+are in the P.Z.), and one in the form of about-to-be-downwards-instability (all of the VoExes
+that are in the I.Z.).
+
+A precarious market to be in!
+
+So, how does step (1) proceed to step (2)? VoEx Divergence and VoEx Spikes! The stocks
+that represent the VoExes that are to the right of the Inhibition Line are Persistently
+OverExposed VoExes (i.e.: the same type of VoEx that $QQQ has). This VoEx behavior, as
+we have mentioned, typically resolves with VoEx Divergence or VoEx Spikes into the P.Z.
+
+As this occurs, the distribution or grouping of VoExes will bunch together as all of the
+market’s VoExes move into the P.Z. (and the market’s distribution starts to move towards
+3/13’s); as this happens, VoEx Variance drops, and since VoExes throughout the market
+are grouping within the P.Z., this spells downside.
+
+In sum,
+
+   1) VoEx on QQQ showing divergence,
+   2) Positive GTM values,
+   3) Unstable hedging environments, and
+   4) VoEx Variance reaching values of ~1 market-wide,
+
+seem to suggest that the otherwise is quite near.
+
+So, for the week ahead I am going to sit back a tad and watch to see who flinches first:
+the market or VoEx.
+
+Happy trading,
+
+Justin
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                     06/05/2023
+

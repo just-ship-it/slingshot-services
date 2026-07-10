@@ -222,3 +222,31 @@ Alternate v2 presets (saved JSONs `data/gold-standard/gex-level-fade-v2-{max,low
 **GEX-only Pareto reference** (separate config, not in v2 family): `--glf-levels NONE --glf-include-gex` → `data/gold-standard/gex-level-fade-gexonly.json` (200 trades / WR 28% / PF 1.97 / Sh 3.26 / DD 3.92% / $55,355). Use when small-account DD ceiling is the priority — trade count is much lower (~12/mo).
 
 Research log: `backtest-engine/research/gex-level-fade-improve/SUMMARY.md` — 1s-honest walks, exit sweeps (1,500+ configs), feature analysis, filter sweep, market-aware exits tested and rejected, train/test stability.
+
+---
+
+## LT-GEX-Path-Race — v1 / v1-ES (2026-07-07, NOT live)
+
+1m timeframe, hourly composite: GEX barriers block/clear the path to the nearest LT level on each side; trade toward the GEX-clear LT with the GEX-shielded opposite LT as stop. From the LT magnet-race study (`research/deepdive-weekly/REPORT-LT-MAGNET.md`).
+
+```bash
+cd backtest-engine
+# v1 (ungated)
+node index.js --ticker NQ --strategy lt-gex-path-race --timeframe 1m --raw-contracts \
+  --start 2023-03-28 --end 2026-06-16 \
+  --gex-dir data/gex/nq \
+  --commission 4 --allow-overnight-holds
+
+# v1-ES sleeve (ES-15m clear-path confluence gate)
+node index.js ... (same) --lgpr-es-gate
+```
+
+**v1 gold standard (2026-07-07):** **549 trades / $209,277 / WR 71.0% / PF 2.04 / Sharpe 4.22 / MaxDD 4.73%** over 38.5 months. Per-year PF 2.56 / 2.27 / 2.05 (2023/24/25); 2026 −$7.4k on n=16 (GEX-thin window — known watch item). Trades: `data/gold-standard/lt-gex-path-race-v1-trades.csv`.
+
+**v1-ES gold standard (2026-07-07):** **113 trades / $97,451 / WR 83.2% / PF 5.10 / Sharpe 3.15 / MaxDD 3.22% (261pt)** — per-year PF 9.60 / 5.80 / 3.82, ~0.7 trades/week. ES race data walls at 2026-01 (live ES LT feed exists, so backtest-only limitation). Gate state file: `data/features/es15_clearpath_states.csv`. Trades: `data/gold-standard/lt-gex-path-race-v1-es-trades.csv`.
+
+Config (defaults baked into the strategy): every 4th fresh LT-feed row (~hourly, drifts with the feed grid); nearest LT above/below spot (0.05% < d < 8%); GEX snapshot ≤45 min; composite = no GEX resistance between spot and target-LT (0.15%-of-spot epsilon) AND GEX support between spot and stop-LT (mirrored for shorts); limit entry at 10% pullback of the spot→stop range, cancelled if target touches first (`cancelOnPreFillExtreme`); target/stop = the LT levels themselves (no fixed points); **8h wall-clock time-stop** (`maxHoldWallMs` — spans maintenance/weekends; NOT `maxHoldBars`). No entry window, holds overnight (`--allow-overnight-holds` required), no EOD cutoff.
+
+Research parity (1s-honest research sim: 632 tr / WR 70.9 / PF 2.28 / +14,429pt): engine WR matches exactly; n −13% / PF −10% from (a) LT row-grid phase drift (engine misses rows with no candle within 20 min), (b) research's signal-minute fill optimism, (c) engine stop slip 1.5 vs research 0.5 (kept for book-comparability). Exit agreement on shared signal instants: 96.5%. Grid-phase robustness confirmed (off-phase 2024: PF 1.96). Diff tool: `research/deepdive-weekly/diff-engine-vs-research.py`.
+
+Rejected in research (do NOT re-sweep): stop caps, breakeven stops, near-target rejection exits, sentiment/IV/LS/DDS signal filters, stop-on-wall exclusion (marginal, DD gain evaporates under slot re-sequencing). Wide-geometry (stop-LT >0.8% away) is a SIZE-UP tilt (PF 3-5 every year), not a filter — portfolio phase.

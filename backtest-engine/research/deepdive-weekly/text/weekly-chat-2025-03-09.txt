@@ -1,0 +1,369 @@
+                                   Weekly Chat 2025-03-10
+
+
+                                         Main Points
+
+
+
+    -   VoEx deepens within the Propagation Zone while VoEx-daily stalls therein for both $SPY
+        and $QQQ.
+    -   Hedging environments showcase a vanna-orientation with $SPY experiencing local
+        selling pressure, as opposed to $QQQ’s purchasing support.
+    -   Put-selling has ceased on $SPY and remains steady on $QQQ.
+    -   LDPM/S configurations demonstrate bearish outlooks with a significant downside
+        target.
+    -   The Market-Wide Gamma Squeeze data (MWGS) showcase acceleration of GS growth
+        and negative GTM values.
+    -   VoEx Variance Distribution graphs showcase a progression in the market towards the
+        Propagation Zone.
+
+
+
+
+                                          SUMMARY
+
+
+
+           VoEx for $SPY and $QQQ has deepened into the Propagation Zone while
+           VOEx-daily has stalled; $SPY’s pointing downwards, $QQQ’s (curiously)
+           pointing upwards. These VoEx-daily stalls are accompanied with an
+           elevated risk of mean reversion.
+
+           This risk is elevated furthermore via $QQQ’s hedging heatmap, which
+           showcases local purchasing support; however, $SPY’s vanna-orientation
+           is set to provide immediate selling pressure.
+
+           Put-selling on $SPY has returned to near-zero while $QQQ’s has
+           maintained a steady flow, despite recent [$− , 𝐼𝐼𝑉𝑉 + ].
+
+           These bearish data accompany LDPM and LDPS, which showcase bearish
+           liquidity and the near-by organic bid located at about 6% down.
+
+           MWGS data showcases the GS-growth rate increasing significantly, and
+           along with the recent increase in gamma squeezes and the negative GTM
+           values, this suggests continued GS growth is likely.
+
+           Overall, these data are exceptional and suggest downside is likely.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                     03/10/2025
+                                                          DETAILS
+
+
+
+
+Hello all!
+Last week, we left off with continued bearish ideations, and this week was kind enough to
+facilitate our goals. To this end, $SPY moved -3.07% while $QQQ moved -3.22%. As impressive as
+these numbers are, they do not represent the breadth of this week’s moves. For that, we can take
+a peek at Thursday’s prices, which provide us -3.61% for $SPY and -3.92% for $QQQ – some
+substantial moves! Pulling out the handy-dandy-EPR-normalization, this gives us:
+
+    Symbol                  Anticipated Move Realized Move                  Ratio (Real / Ant.) %-magnitude Dif.
+                            (±%) (T+4 | T+5) (%) (T+4 | T+5)                (T+4 | T+5)         (T+4 | T+5)
+
+    $SPY                       1.58 | 1.76             3.61 | 3.07             2.28 | 1.76      78.00 | 54.00
+
+    $QQQ                       2.18 | 2.44             3.92 | 3.22             1.80 | 1.32      57.05 | 27.56
+
+
+
+In short, the market moved ~2x as much as the market was expecting (from last Friday) by
+Thursday, and then on Friday, with help of some reversion, the market was brought back towards
+the market’s prior expectations with some bullish performance.
+Some hefty numbers! At first glance, it demonstrates quite the extensive under-appreciation for
+the upcoming risk with respect to $SPY1! It seems this week’s moves on $SPY were well beyond
+expectation with a week-end ratio of 1.76 (larger than $QQQ at 1.32!).
+Such moves put the risk of ~mean reversion~ back on the table for the week ahead, and so, we
+should consider that going forward – but before we get too embroiled with going forward, let’s
+go backwards to ensure our pasts are well secured with a review of the hedging heatmaps:
+
+
+
+
+Last week, we commented on how the orientations were severe and, as such, severe price
+movement could be expected, and indeed with the heatmaps above we can see this is the case.
+
+
+
+1
+    IV is a terrible indicator of future price ranges but its what the market insists we use!
+
+Deep Dive Stocks – Weekly Chat                                                                       03/10/2025
+Curiously, it seems the purchasing support on $QQQ (as opposed to its absence on $SPY)
+coїncided with $SPY’s larger-than-$QQQ’s weekly move.
+Starting with VoEx
+
+
+
+
+We see VoEx has continued its descent into the Propagation Zone for both $SPY and $QQQ while
+VoEx-daily has stalled slightly in place (each stall seems to have its own lean; $SPY’s is leaning
+down while $QQQ’s up). The outlook from this is clear: protracted downside, likely punctuated
+with bull-traps; developments that we can monitor via VoEx-daily.
+With the spectre of ~mean reversion~ suspected to be nearby, VoEx should be checked after any
+green moves in the early part of the week to see if a VoEx-Spike2 complex starts forming,
+indicative of, well, a bubbling bull-trap.
+Thus, with downside in mind, despite the bothersome presence of phantasmus reversus meanius,
+let’s take a peek at the hedging heatmaps:
+
+
+
+
+On the left we see $SPY has local and immediate selling pressure, much like the last few weeks.
+$QQQ finds itself in a nook of purchasing support, semicircumventially flanked by selling
+
+
+
+2
+  An early sign of a VoEx Spike complex forming is when VoEx’s responses to small price appreciations seems
+“exaggerated”. Such as 2023-10-01 on $SPY – note that just before the bull trap formed just after 2023-10-01, small
+moves of the price sent VoEx-daily from the P.Z. to Stability versus the price movements versus the price:VoEx
+relationship in, say, 2024-01 where the price consistently rose and VoEx just vibrated around the neutral zone.
+
+Deep Dive Stocks – Weekly Chat                                                                      03/10/2025
+pressure. In terms of the shared paths towards gamma neutrality, the two indexes seem to share
+a general heading for gamma neutrality: either [$+ , 𝐼𝐼𝑉𝑉 −] or [$− , 𝐼𝐼𝑉𝑉 +]!
+In recent history, the relative “strength” of these indexes has seen them migrate towards the
+down-and-to-the-right more than up-and-to-the-left, but one cannot deny the relative “ramp” of
+purchasing support available to both $QQQ and $SPY, should the market find the footing to act
+on it.
+
+So, thus far we’ve seen that conditions remain on quite rocky grounds (as per VoEx and the
+hedging heatmaps) but no real definitive answer yet as to how robust the spectre of you-know-
+what is, who may be poised to inhibit further downside. Although VoEx-daily looks “poised” to
+spring upwards (and such an assumption would lend itself towards supporting a bull trap as a
+early sign of a VoEx Spike complex), it simply hasn’t (and from many learned lessons, I shall
+refrain from anticipating in such anticipatory endeavors) and the hedging heatmaps, while
+supportive in a modest sense for $QQQ, show anti-support for $SPY, bringing about ambiguity in
+the contemplation of the two jointly.
+
+Thus, let’s take a peek at our put-selling friends and see if they have any insights; are they
+preparing for a bull-run?
+
+
+
+
+Mm no not quite – at least not on $SPY definitively (as the put-selling has decreased drastically).
+$QQQ’s activity remains elevated but not increasing; this is of no effect to us, however, as we are
+interested in knowing if things have changed for the bullish, not if they are in any sense, and as
+such, this gives us our first conjoined answer! No.
+It would appear as though neither party actively took a role in selling puts with bullish ideations
+in hand for the week ahead, despite the robust [$− , 𝐼𝐼𝑉𝑉 + ].
+Does this slay our spectating spectre? Not quite – but it certainly doesn’t give him much hope,
+I’m told.
+Let’s take a quick look at a few LDPMs throughout the land to see if there are any bull-traps
+underway and, if so, if they might have identifiable ceilings:
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                        03/10/2025
+For ES futures, on the top graph (the daily) we can see ES with bearish liquidity is approaching
+LDPM-987! (labeled as LDPM-1, pink line). This is not suggestive of a bounce (yet) as there seems
+to still be a reasonable amount of room between price and the organic bid (i.e.: has the organic
+bid been “tapped” yet? LDPM suggests there’s still some room to go). Additionally, there is
+minimal evidence of an “scoops” forming or being underway from the eager parties; rather the
+eager parties seem to be persisting as eager asks, even as the price declines! You can note this
+via the lower-order LDPMs keeping just above the candles as the price declines.
+On the bottom we see ES on the weekly also showcasing minimal risk for reversion, however, it is
+worth noting that oftentimes, these “breakthrough” candles tend to “cling” (as I call it) to the LDPM
+they fell through for awhile (note the same style of breakthrough and cling to LDPM-7 on the
+Weekly chat at the start of 2022). In envision these potentials, one sees a future in which a
+lethargic bounce occurs, as price clings to an ascending LDPM, but, despite realism, it is difficult
+to deny the stronger pull of both the imagination and liquidity towards the downside at LDPM-6
+for the weekly view – which, as it turns out, is the price point as LDPM-987 on the daily! About
+$5.4k (about -6.00% down).
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                          03/10/2025
+Zooming        into       lower
+timeframes for ES (605), we
+can see a curious sight (right):
+no scoop!
+Whereas one would expect
+some form of scooping to be
+underway with the lower-
+order LDPMs, this does not
+seem to be present! In fact,
+we see the eager LDPMs are
+maintain their role as eager
+asks!
+The presence of a scoop
+pattern would give credence
+to the idea that a bounce may be in the works (the “scoop” pattern representing the presence of
+an eager bid moving in); without the presence of the scoop, there’s little to support a near-term
+bounce.
+So, overall, it would appear that the spectre of mean-reversion, should it be present, is in a rather
+lethargic state; one which will have to fight through several layers of LDPM in order to revert back
+towards the hitherto supportive LDPMs.
+Are there any other head-winds in the market that might help usher things along? Let’s check the
+MWGS data to see if the foundations are tilted towards bullish horizons.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                          03/10/2025
+                                                                        No, not quite!
+                                                                        Growth is well-elevated (top graph,
+                                                                        blue line) with the trajectory being
+                                                                        well established upwards. This
+                                                                        growth curve erects on the heels of
+                                                                        only a modest increase in gamma
+                                                                        squeezes of 27% month-over-month,
+                                                                        and nearly no change for the more
+                                                                        near-term averages.3
+                                                                        As logic dictates, the outlook is
+                                                                        continued gamma-squeeze growth,
+                                                                        which brings with it expectations of
+                                                                        continued market downside!
+
+                                                                        Let’s briefly check GTM to make sure
+                                                                        nothing wonky is making its way
+                                                                        through the pipes, headed towards
+                                                                        the market with a splash:
+
+
+
+
+Nope! Well – at least no long-gamma splashes seem to be headed our way but rather it looks as
+though GTM is remaining in its negative state,
+giving us yet more suggestive nods towards
+market downturn.
+Thus, the lay of the gamma-land suggests the
+ground may be far too muddied and slippery
+to support the shaky legs of recovering
+market.
+
+Taken together, the view seems dismal for
+any prospects of a bullish return-to-service
+from the market, and reasonably dismal for
+any prospects of even just a near-term
+bounce. And so, the outlook appears
+relatively straightforward: downside!
+Ordinarily we would likely leave off there, but I felt like it was time to look at the ol’ VoEx Variance
+distributions again. The VoEx Variance data is not something that comes out often; namely
+because it takes forever and a day to calculate even when multithreaded!4 Thankfully, the wait is
+
+
+
+3
+    You’ll remember that ~2025-01-ish the growth curve was modified slightly to have a touch of predictiveness!
+4
+    You get the subtle impression that that’s your fault.
+
+Deep Dive Stocks – Weekly Chat                                                                        03/10/2025
+well worth it, as it gives a very wide and deep view of all of the equities in the market (that VoEx
+can be calculated on).
+There are several ways to view these data but the most straight-forward way is via the distribution
+plots. Essentially, each line represents the amount of something per x-axis. The higher the line,
+the more of that something there is. In our case, the something is the number of VoEx values –
+and so the curves show us (essentially) the population of each VoEx value, as shown on the x-
+axis. Before we look at the real data, let’s just take a peek at an example to explain how these
+data are cooked and what to look for.
+
+
+
+
+Above is the general scheme on how the following
+graphs are produced.
+From this, we can infer the two main “leans” that
+we might find, showcased on the right: either the
+data are leaning towards the right (a bullish lean
+(shown on the left), as it shows the majority of the
+population living within stability), or a bearish lean
+(leaning to the left (but shown on the right)) that
+shows the majority of VoExes residing within the
+Propagation Zone.
+
+Another characteristic to keep track of with the VoEx Variance distribution graphs is the width of
+the distribution; when the curve is spread out, it means VoExs are “distributed” throughout, or in
+transit, but if the distribution curves are narrow, then this indicates that the VoExes are “clustered”
+in the same spot (and thus, share a common outlook!).
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                            03/10/2025
+Before we continue on towards the inevitable (seeing the current data), let’s take a peek at what
+these distributions looked like during some prior market moments by way of a big spread. Below
+are the data grouped by year (into the boxes) and the colored by month. Definitely take a moment
+to look at things, there’s a lot here!
+
+
+
+
+Next week (with more time available) we can poke apart these data a bit more but for now, let’s
+move on to the current data to see what they look like. For 2025, I broke the data up into the
+individual days, in 2-month chunks. On the left, the graph shows the data from 2024-12-27 until
+2025-01-28, and on the right, the data are from 2024-01-28 to present.
+I overlaid three “general curves” onto the graphs to give a sense for the overall movement of the
+data:
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                      03/10/2025
+Above we can see that by the end of 2024 and the start of 2025, the data were predominately on
+the left (in the Propagation Zone), and some migration towards stability occurred between those
+two intervals whereby towards the end of January, we can see the data started leaning into stable
+territory. However, on the right panel, we can see this eroded as February approached and passed,
+such that, by Mid-February, the data had started to lean towards the right again (just ahead of
+time for the downside)5.
+From this adventure, we arrive on the current data, indicated by the “Start of March” designator,
+which shows the data for the market leaning quite to the left, and with a wide distribution. This
+suggests that the majority of the VoExes in the market are spread out but are predominantly found
+within the Propagation Zone.
+This sounds like a fractured market! For instance, take another peek above at the distribution
+graphs for 2021 versus 2023! Whereas they both show the predominance of the data (throughout
+the year) being above the Propagation Zone, 2023 showed a much more diffuse sprinkling of
+VoExes, suggestive that the market was “fractured” in 2023 then in 2021. We can see this with
+the overall performance difference in ES for these time periods; with 2021, the bullish data was
+united and so the price action was too (right) in 2023, we can see significantly more turbulence:
+
+
+
+
+5
+    You’ll be sure to cross-check these with the price-charts.
+
+Deep Dive Stocks – Weekly Chat                                                      03/10/2025
+And so, this brings us to the final thoughts on the VoEx Variance distributions; the data currently
+show migration towards the Propagation Zone, along with a widening of VoEx distribution
+suggestive of a “fragmented” market of sorts. In combination, the migration towards the
+Propagation Line shows evidence for a market-wide bearish future, while the widening out
+suggests a market prone to sporadic and spontaneous shifts.
+
+In monitoring these data, the expectation is that the distribution curves should coalesce in the
+Propagation Zone as the market capitulates, followed by an eventual re-widening out of the
+distributions with migration, this time, towards stability.
+
+Thus, in short, the likelihood of a mean-reversive week is present but has few supporters found
+within the data. Historical analogues with LDPM and Price relationships suggest there may be
+some “clinging” happening before the price and LDPM finally separate, sending price down into
+the void to meet the organic bid, currently located ~6.00% down on ES. Supportive evidence for
+this outlook is found within $QQQ’s hedging environment, which shows a col-de-sac of purchasing
+support.
+Without many hopes of a bullish bounce basking before us, the only other option is a bearish
+bounce. To support this, we find VoEx for $SPY and $QQQ existing in the P.Z., $SPY’s hedging
+environment eager to supply selling pressure, a cessation of put-selling on $SPY and a lack of
+put-indulgence on $QQQ, LDPM and LDPS showing that are wholly bearish and supportive of a
+6% decline, extremely excited expressions emerging ex the MWGS data, with the gamma-squeeze
+growth accelerating along with GS counts increasing, and finally we have the VoEx Variance
+Distributions that showcase a market leaning ever-more to the left and into the Propagation Zone.
+Taken together, these paint some extraӧrdinary data and markets ! The view currently suggests
+downside is likely, imminent and potentially significant.
+
+
+Happy Trading!
+
+
+Justin
+
+
+Deep Dive Stocks – Weekly Chat                                                        03/10/2025
+

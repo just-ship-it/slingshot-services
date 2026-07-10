@@ -1,0 +1,365 @@
+                                 Weekly Chat 01/29/2024
+
+
+                                       Main Points
+
+
+      -   VoEx maintains its Bullish-until-proven-otherwise stance on the market.
+      -   Hedging environments are vanna-unstable.
+      -   Put-selling on $QQQ remains elevated while selling remains diminished on $SPY
+          with near-zero levels.
+      -   GTM is still engaged with its large complex, and is printing positive values.
+      -   Overall, BUPO (of the Bullish variety).
+
+
+
+                                        SUMMARY
+
+
+
+          VoEx for $SPY and $QQQ have remained in a persistently elevated state
+          within the Inhibition Zone, which qualifies them both for Bullish-until-
+          proven-otherwise (BUPO). This stance will be maintained until VoEx exits
+          the Inhibition Zone.
+
+          Hedging environments remain in a vanna-unstable orientation, with
+          $QQQ presenting with greater selling pressure than its compatriot $SPY.
+          No purchasing support is available for either in the event of a $-/IV+
+          week.
+
+          DLPs remain high on $QQQ but not on $SPY, who is starting the week
+          with near-zero DLP activity.
+
+          GTM is completing its large positive complex and is printing near-zero
+          but positive values. The market experienced a 10% reduction in GS’ the
+          week prior. The expectation is a growth in gamma squeezes in the
+          future.
+
+          A potential new tool, Liquidity Reserves, suggests that $QQQ is
+          experiencing a reduction in liquidity reserves while $SPY is doing okay.
+
+          Overall, technically bullish per VoEx but with continued signs of growing
+          instability.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                    01/29/2024
+                                         DETAILS
+
+
+
+
+Hello everyone!
+Last week, we left off with the notion VoEx had returned to the Inhibition Zone after a brief
+pause, and as such, ideologies switched back to BUPO (of the Bullish variety).
+This outlook served well, as $SPY experienced a 1.03% week-over-week gain while $QQQ moved
+a staggering 0.62%. $QQQ’s relative weak performance (which was 100.83% lower than max-
+EPR, as opposed to $SPY’s which was only 23% less than max-EPR) can be seen in the
+heatmaps below as a consequence of a rapid introduction of selling pressure, as we will
+observe even belower.
+
+
+
+
+Notice that the 22nd, 23rd, and 24th all saw a general movement of $+/IV-, when thereupon
+touching selling pressure, $QQQ was seemingly jettisoned backwards (IV+) and down ($-). This
+progression is seen with even more detail if we look at $QQQ’s heatmaps in depth on the next
+page.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                   01/29/2024
+                                 The week opened up to an
+                                 introduction of a significant
+                                 quantity of new OTM DSCs and
+                                 OTM DLPs for $QQQ. It should be
+                                 noted that both of these types of
+                                 positions will provoke reasonably
+                                 potent influences on the market,
+                                 such as:
+                                 1 – Immediate purchasing via the
+                                 initial hedging required (OTM DSCs
+                                 are short delta, thus require
+                                 purchasing to hedge, and OTM
+                                 DLPs are also short delta and so
+                                  they also required purchasing).
+                                   Some might even say “these two
+                                   positions can help create an
+                                   eager bid”), and
+
+                                  2 – The introduction of
+                                  purchasing-hedge requirements
+                                  in the event of an IV+ move, with
+                                  the converse introduction of
+                                  selling in the event of a IV- move.
+
+                                  A interesting consequence of
+                                  these two forces, it would seem,
+                                  is    that      $QQQ     became
+                                  “landlocked” away from gamma
+                                  neutrality in a sense – unable to
+                                  reach gamma neutrality due to
+                                  the inability to drop IV without
+                                  causing concurrent selling to into
+                                  the market.
+                                   The delta component of this
+                                   dynamic can be visualized nicely
+                                   with the Delta Hedging table for
+                                   the 24th and 25th:
+
+
+
+
+Deep Dive Stocks – Weekly Chat                          01/29/2024
+This dynamic situation reminds me of the ranting I did discussion from a few weeks ago
+(Weekly Chat 2024-01-19) wherein we investigated the relative changes in liquidity and hedging
+requirements. It was noted that several large tickers appeared to be in a situation where the
+there was an eager bid that was supplying liquidity. This configuration begged the question:
+“what happens when the bid stops being eager?” (such as, the removal of substantial eager bid
+from high-delta, high-gamma options).
+The idea is that if the eager bid is either no longer present, or not supplying liquidity, then
+liquidity would worsen, price variance would increase, and then the price would drop (since
+there’s no eager bid, the ask would have to drop down to the organic bid to transact). This
+process would unfold and create a liquidity vacuum, as can be seen below:
+
+
+
+
+Now, what if the market had a reasonable amount of selling pressure floating about (as per the
+Heatmaps), which is introducing an eager ask, while also experiencing a liquidity-providing
+eager bid? Well, it would be the same as above, except the spread would be much smaller: in
+fact, it would be so small, we should probably see a decrease in price variance throughout this
+process1.
+So, let’s check out price variance on
+$QQQ with a 10-day rolling window:
+And, indeed! That’s what we see: a
+decrease in price variance!
+Kind of.
+It seems more fair to say “variance has
+stalled its ascent” from this view than
+to say variance has decreased, no? (It
+should be noted that this stalling is
+
+1
+ Suppose two parties are eager to trade at any price, what would happen? Well – they would trade at any price!
+They would effectively introduce transactions into the market without affecting the price. This would work to
+decrease price variance and increase volume variance!
+
+Deep Dive Stocks – Weekly Chat                                                                    01/29/2024
+significantly more apparent on the 20-day rolling variance graph!).
+So, it would seem that liquidity has been improving overall in the markets since about the start
+of the year. And, if our handwaving is to be believed, this is mainly due to a persistent and robust
+eager bid that has been absorbing both selling pressure, and the organic ask within the market.
+To look at this one step further before moving on, remember how above it said “This
+[configuration] would work to decrease price variance and increase volume variance!”? If that’s
+so, let’s check out a similar graph but this time, let’s normalize the variance of price against the
+variance of volume to see just how “smoothly” things are running when we account for how
+many interactions are occurring.
+                                                        ---
+Nerd time real quick, just so we can understand what is happening in the graph below.
+So, we took the variance of the change in price with a 10-day rolling window. The change-in-
+price (or Δ𝑆𝑆) variance tells us how much the change-in-price changes from one day to the next,
+as compared to the prior values (in this case, the prior 10 values). A high variance means things
+are much different “than normal”, and a low variance means things are “much the same” as
+compared to normal.
+The same applies for the variance of volume. The idea is that when there are eager bids and
+asks present (such as dynamic hedgers, or ETF rehypothicators, etc.), then volume will tend to
+fluctuate more than it normally does as more participants enter the market. This fluctuating
+participation is expected to:
+      1) Be more extreme during “rapidly changing” market conditions, and
+      2) Be most pronounced during low liquidity states.
+
+Thus, there should be a way to see just how well the market is able to handle these fluctuations.
+To do so, let’s craft a rudimentary Liquidity Reserve (LR) metric to investigate this idea.
+(Remember, this all has to do with the idea that “what if the large, eager bid on $QQQ (that is
+probably being driven by large DLP and DSC openings) disappears while $QQQ is still
+surrounded by selling pressure”.)
+
+
+                                                              𝜎𝜎|Δ𝑆𝑆|
+                                               𝐿𝐿𝐿𝐿 = −               2
+                                                              𝜎𝜎|Δ𝑉𝑉|
+
+Should the variance of the absolute change in volume (𝜎𝜎|Δ𝑉𝑉| ) increase (representing more
+“activity” than normal) while the variance of price remains the same, then it would appear that
+the market is well-suited to “absorb” this erratic market participation via good liquidity, and thus,
+LR will increase towards -1.00; conversely, if things are not running well, the LR should decrease.
+Now with that out of the way, let’s check out the graph.
+
+2
+    Full disclosure: not the full algorithm, just a key component.
+
+Deep Dive Stocks – Weekly Chat                                                          01/29/2024
+                                               ---
+So, despite the decrease in price
+variance (suggesting an improvement
+in liquidity), we can see that when we
+account for the volume variance, things
+don’t look so peachy! (Perhaps this is
+why “decrease in price variance” really
+means “price variance stopped
+increasing for a second”: there’s
+diminishing reserve liquidity!
+With a steadily falling LR, it would
+seem the market is becoming
+progressively less apt at handling changes in volume without it affecting the change in price.
+
+Something to consider should the market (i.e.: $QQQ) stop seeing such gregarious eager bid.
+Let’s expand on this metric some and look at the change in $QQQ versus its LR, grouped by
+year:
+
+
+
+
+But – do these values actually mean anything? Let’s take a quick peek at this FQ throughout
+time:
+There are some notable trends during which time after an increase in the FQ that have some
+curious findings. For instance, notice the liquidity reserve drain prior to the 2020 collapse, and
+the early 2021 market correction, and note the persistently low LR throughout the whole of
+2022!
+
+(Worth mentioning that our current environment just became LR < 1 as well).
+
+
+Deep Dive Stocks – Weekly Chat                                                       01/29/2024
+Taking a bit more of a look, let’s assume that LR does help anticipate future market ability to
+absorb “sudden erratic changes” in volume (i.e.: investor behavior). This should imply that the
+future price variance increases as LR decreases – if the market is becoming less apt at handling
+sudden change, and then sudden change does occur, we should expect the market to, in its
+poorly liquid state, respond with significant price variance. Is this the case?
+To view this, let’s map LR against the 20-day rolling future price variance:
+
+
+
+
+Oh my! That’s nice.
+Let’s check out the non-absolute value to see if there is directional insight as well:
+
+
+
+
+Very, very cool!
+It would appear this little tool of ours is able to show 10-day correlations with both price
+variance (volatility) and price direction!
+
+
+Deep Dive Stocks – Weekly Chat                                                           01/29/2024
+The current value for $QQQ is -1.5 for the LR, which is associated (just so) with 10-day future
+negative returns!
+Before we move on, let’s check out $SPY’s Liquidity Reserve behavior as of late:
+
+
+
+
+With a value >-1.0, it would seem that $SPY is expecting positive returns over the next 10-days!
+We literally can’t seem to get $SPY and $QQQ to agree on anything anymore.
+Next, with all of the pieces of the puzzle together, let’s put it together and let’s take a peek at
+$SPY’s LR through time:
+
+
+
+
+Very cool! It would seem that current LR are decreasing! Maybe worth keeping in mind as we
+start the Weekly Chat!
+
+Deep Dive Stocks – Weekly Chat                                                        01/29/2024
+Oh, you thought we had already started
+Starting as usual with VoEx, we see continued persistence within the Inhibition Zone.
+
+
+
+
+This is BUPO (of the Bullish variety) still. $QQQ greets the week with the same:
+
+
+
+
+Moving from the Bullish expectations per VoEx (of course, with the usual caveats that this is
+unstable bullish behavior, and as such, we should be on the look out for Divergence and VoEx
+Spiking into the Propagation Zone) to the Gamma Hedging Environments, we meet, once again,
+bleakness.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                      01/29/2024
+With local selling pressure, and a vanna-unstable orientation, it would appear that the market
+will be heavily dependent on the presence of any eager-bid this week as selling pressure is
+located all throughout.
+This is a relatively bearish orientation but there is still a gamma-neutral pathway for $QQQ (and
+maybe for $SPY but things are kind of “murky” there) in the $+/IV- trajectory.
+
+Moving from this to the Dealer Long Puts, we see $SPY and $QQQ diverging once more in their
+anticipations for the week a head:
+
+
+
+
+The cautious $SPY put-sellers have closed their positions it would seem, while the $QQQ put-
+sellers, it would seem, are entirely unphased.
+This brings with it a bullish inclination, at least for $QQQ, It would seem the $SPY put-sellers are
+forevermore forlorn.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                         01/29/2024
+                                       Moving from put-sellers to Gamma squeezes, its noted
+                                       that there was a ~10% reduction in gamma squeezes
+                                       throughout the week, a testament to GTMs large positive
+                                       print it would seem. This large print, as we investigated in
+                                       Weekly Chat 2024-01-22, however, suggests that
+                                       downside is proximal (left: graph from Weekly Chat 2024-
+                                       01-22 showing future returns per GTM).
+
+
+
+
+So, with that in mind, let’s take a peek at GTM to see how this is faring:
+
+
+
+
+GTM is still in the middle of its large positive spike – indicating that there is still a net flow of
+long-gamma towards the market. This spike, however, seems to be winding down, and with it,
+the expectation of near-term downside draws closer.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                          01/29/2024
+So, overall, this week we’ve seen:
+         -   VoEx suggest BUPO (of the Bullish variety) – unstable bullish performance expected.
+         -   Hedging environments are vanna-unstable and off no purchasing support unless $+
+             but the raw-delta-hedging metrics suggests this will work to increase IV. This seems
+             similar in configuration to the week that just passed.
+         -   DLP behavior is incongruent across $SPY and $QQQ once more: $QQQ put sellers
+             are starting the week out with grand expectations of $+ or IV-. This pre-disposes the
+             market to a instability.
+         -   GTM is continuing along its anticipated trajectory as it completes is large, positive
+             print. The data suggest this is associated with 10-20 day decline in price as the
+             number of gamma squeezes begins to grow rapidly.
+         -   Some hand waving about a Liquidity Reserve metric which suggests that things are
+             tentatively okay currently, but that $QQQ’s and $SPY’s LR are decreasing; this
+             decrease is associated with future increase in price variance as well as future
+             direction price changes (downside).
+
+
+Quite the mixed bag of data! Thankfully, per VoEx, things are easy for me: I will take a tentatively
+bullish outlook but with a close eye on VoEx (for VoEx Spiking into the P.Z. mainly), as well as
+GTM/MWGS to monitor the flow of gamma.
+So, that’s about it!
+
+
+Happy trading –
+
+
+Justin
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                         01/29/2024
+

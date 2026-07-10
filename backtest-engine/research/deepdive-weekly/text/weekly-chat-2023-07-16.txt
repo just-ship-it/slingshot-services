@@ -1,0 +1,250 @@
+                                  Weekly Chat 07/17/2023
+
+
+                                          Main Points
+
+
+    -   VoEx on $SPY and $QQQ rose steadily into the Inhibition Zone throughout the week,
+        officially marking another round of bullish-until-proven-otherwise.
+    -   Put sellers don’t seem particularly thrilled for the week a head but put selling is in a
+        net-positive state giving a soft-bullish print.
+    -   Hedging environments are much-the-same as last week except $QQQ’s diminished
+        available purchasing support.
+    -   MWGSC data is bullish with GTM printing negative values and the MWGS-growth in
+        negative territory as well.
+    -   VoEx Variance is showing market-wide drops in VoEx Variance values for all sectors
+        except for $KRE.
+    -   LDPM Crossover data is suggestive of an increasingly aggressive ask throughout the
+        market.
+    -   LDPM-LL shows robust liquidity on the S&P 500 suggesting that a successful LDPM-
+        55 crossover on the daily timeframe may be brewing but is not proximal.
+
+
+                                          SUMMARY
+
+
+           The data are predominantly “bullish-until-proven-otherwise” due to VoEx’s
+           behavior on $SPY and $QQQ.
+
+           Hedging environments have significantly less purchasing support in the
+           event of a $-/IV+ move but isn’t restrictive in the event of a $+/IV- week
+           due to the $+/IV- extension of the gamma neutral zone.
+
+           VoEx Variance, and the LDPM-Crossover data are all suggestive that
+           something is indeed unstable in the market: the ask is becoming a bit
+           more aggressive, and VoEx Variance values are falling in unison (except
+           for $KRE for some reason). Data consistent with BUPO.
+
+           LDMP-Liquidity Levels show robust liquidity levels between $SPX and the
+           LDPM-55, suggestive that in the event of a bearish-crossover attempt,
+           there is reasonable expectation that it would fail, given how much liquidity
+           there is present currently.
+
+           Overall, another round of BUPO with a side-eye towards VoEx (VoEx
+           Spikes, and VoEx Divergence), GTM, and LDPM throughout the week
+           weeks ahead.
+
+Deep Dive Stocks – Weekly Chat                                                        07/17/2023
+                                               DETAILS
+
+
+
+
+What a week!
+Last week, we left off with the idea that the data were still pointing bearish but that “I want[ed] to
+see some commitment from VoEx before I put a ring on some puts.” And indeed, with VoEx
+returning back into the Inhibition Zone on for $SPY and $QQQ, it seems some caution on VoEx’s
+behalf was warranted.
+So now, the data analysis is rather straightforward: since we are in BUPO, we simply need to look
+to see if there are any rogue waves in bound and/or if there are any signs that BUPO is ending.
+If not – then the music seems to have resumed and up is the name-of-the-game.
+Let’s dive in!
+The sea: she be green
+This week started off slow but quickly progressed to a +2.45% week for $SPY and +3.50% week
+for $QQQ. We can visualize the progress throughout the week below:
+
+
+
+
+Quite the curvy moves through the relatively light selling pressure throughout the week! It is
+curious to note, as well, that the other week we discussed how $QQQ’s and $SPY’s hedging
+environments were producing noticeable differences in their movements, and this week seems
+to be no different with $QQQ having proximal purchasing support (unlike $SPY) resulting in a
+move that was 30% more than $SPY in relative terms.
+That’s quite the boost from some purchasing support!
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                           07/17/2023
+Moving towards this week’s VoEx prints, since we are in BUPO again (because, as we will see
+below, VoEx is back in the Inhibition Zone), things should progress relatively smoothly baring any
+VoEx Spikes or VoEx Divergences.
+
+                                                                  VoEx on $SPY is showing
+                                                                  continued presence in and
+                                                                  movement into the Inhibition
+                                                                  Zone, this gives us the “Bullish-
+                                                                  until-prove-otherwise” stance
+                                                                  that has served us rather well
+                                                                  so far (well – except for the
+                                                                  one fake-out at the start of the
+                                                                  month).
+                                                             Despite     this      relatively
+                                                             straightforward assessment of
+                                                             $SPY’s VoEx, it is worth noting
+                                                             that the VoEx’s behavioral
+change that was first mentioned in late 05-2023’s weekly chats seems to be worsening and
+progressing.
+Truthfully, there are no hard-and-fast rules for when
+VoEx changes in its behavior overall but there are
+some prior examples that come to mind when looking
+prior episodes of such VoEx Changes1:
+There’s $CHPT from 09/16/2022 (right), which
+promptly fell 46% over the next 67 days. Then there’s
+$PLTR from 07/13/2023 (below, left) and $GME
+(below, right): that underwent quite a drastic change in
+VoEx behavior following a VoEx Spike following an
+episode of BUPO.
+
+
+
+
+1
+    These are all sourced from prior Tweets about VoExes.
+
+Deep Dive Stocks – Weekly Chat                                                        07/17/2023
+$QQQ’s VoEx is similar in both
+location and behavior.
+What does this have to do with us?
+Well – just a nod to the idea that we
+are in-deed in BUPO but an
+increased awareness of unstable
+VoEx is an unstable stock.
+But enough of that unpleasant talk
+- we are in bullish country now, so
+let’s try to keep up the bullish vibes.
+To do so, let’s quickly turn over to
+the hedging environments:
+
+
+
+
+Just the same as before, except that $QQQ finds itself with diminished purchasing support in the
+$-/IV+ quadrant but with a reasonable path towards gamma neutrality with a $+/IV- move.
+Last week we did some fancy calculations in looking at how the price would have to drop relative
+to IV for $QQQ to run into purchasing support, and we found that if the movements needed to be
+1:1, $QQQ accomplished that about 8% of the time.
+It stands that the odds may be less in our favor that should $QQQ need the purchasing support
+or the week ahead, it will reach it. Nonetheless, with a rather well-defined $+/IV- path onwards
+and upwards provided by gamma neutrality, perhaps the chances of needing said purchasing
+support are minimal.
+Do our put-selling friends agree?
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                     07/17/2023
+They don’t seem to disagree, per se
+as there is still net selling of puts
+going on, but it does seem rather
+lackluster ; especially from our more
+flamboyant friends.
+It can be easy to fall into the trap of
+reasoning “why” the put-selling is so
+low: could the week’s greater-than-
+EPR movements throughout the
+week be threatening to the put
+sellers due to the increased risk of
+mean-reversion? Is IV simply too low
+to sell puts for profit?
+Perhaps the world may never know -
+but for now, it would seem that the
+put-sellers, for whatever reason,
+aren’t too thrilled to be selling puts
+en masse but are comfortable with
+small sizing.
+The Market-Wide Gamma Squeeze
+Data (MWGS-data) also point to
+some rather hefty gamma squeeze
+closures over the past 10 days,
+despite the most recent Friday
+seeing a slight up-tick.
+With GTM printing negative values,
+and with the MWGS-growth values
+
+
+
+Deep Dive Stocks – Weekly Chat            07/17/2023
+showing persistent destruction, these are squarely bullish prints.
+So – it would seem there isn’t that much to interrupt the BUPO outlook for the week ahead.
+However, we should still look at the second half of BUPO to verify that 1) the suggestion of
+downside is still in our futures; and 2) if we can try to time it some.
+To see just how the post-BUPO behavior might look like, let’s take a peek at a few data.
+The first is VoEx Variance!
+
+
+
+
+It would seem that the sudden decline of VoEx Variance (the same one we noted last month) is
+continuing with all but $XLRE showing steadily decreasing values over a 40-day rolling period.
+That’s a pretty strong data-print: you’ll notice that all of the VoEx Variance values dropping is
+typically what occurs before a market downturn!
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                       07/17/2023
+Moving from VoEx, let’s look at the market from the vantage point of LDPM. Starting with the
+LDPM Crossovers:
+
+
+
+
+It seems that:
+    1) The dominant force is bid [top graph, dots are blue]
+    2) Velocity has stalled and if you squint – perhaps its going up some (if you don’t want to
+       squint, that’s fine. The more granular data do show it is increasing!)
+    3) Acceleration is negative!
+Quiz time: what’s all this mean?
+
+It means: the ask is becoming increasingly aggressive! (𝛿𝛿 2 ℂ < 0 𝑎𝑎𝑎𝑎𝑎𝑎 𝛿𝛿ℂ𝑡𝑡 > 0).
+Thus – per VoEx and per LDPM it would seem that things are, in fact, still on rocky grounds!
+Continuing with our theme of LDPM, let’s look at LDPM-LL to gauge how liquidity levels on the
+daily time-frame are.
+
+Deep Dive Stocks – Weekly Chat                                                          07/17/2023
+We see that $SPX is well-above the LDPM-55 (purple line) but it would seem that LDPM-LL is in
+the process of decreasing2:
+
+
+
+
+LDPM-LL peaked on the 15th of June, and has been diminishing ever since.
+However, as with all trend-lines, they work until they don’t, so it’ll be worth keeping an eye on –
+especially since this amount of liquidity being present typically infers a good “buffer” before an
+LDPM crossover (with the LDPM-55) occurs and is successful (for instance, check out Dec 2022
+an LDPM crossover without the corresponding LDPM-Liquidity Level is almost always reversed)3.
+Thus, what do we make of these new data?
+Something seems to be brewing through all of this bullish performance: VoEx Variance is starting
+to fall (except for $KRE for now); LDPM Crossovers are showing an increasingly dominant ask;
+and LDPM-LL is showing a possible start to liquidity decline on the S&P 500 but with quite the
+nice “buffer” standing between the current environment and a successful LDPM-55 crossover.
+All that to say: bullish-until-proven-otherwise!
+Happy trading,
+
+
+Justin
+
+
+2
+  I don’t want to hear it. Yes – that green line is a trend line. Yes - I, me, Justin, applied it to my chart without
+coercion. Although I am typically not a fan of trend lines, one of the strange things about LDPPM-LL is that once its
+trajectory is “set”, it rarely seems to deviate. So, if it ain’t broke – don’t fix it!
+3
+  The work on the primer information and back-testing is starting on LDPM-LL and it should be ready here shortly!
+It should be noted that although LDPM-LL is from LDPM, it will only be available to you, my dear readers, the
+premium members.
+
+Deep Dive Stocks – Weekly Chat                                                                         07/17/2023
+

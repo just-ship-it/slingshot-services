@@ -1,0 +1,319 @@
+                                    Weekly Chat 2025-04-28
+
+
+                                          Main Points
+
+
+
+    -   VoEx-daily has spiked into stability while VoEx remains within the Propagation Zone.
+    -   Hedging environments are conducive for bullish performance with $QQQ
+        demonstrating no discernable gamma-neutral zone.
+    -   Dealer Long Put activity remains at zero.
+    -   MWGS data showcase substantial and rapid removal of gamma squeezes throughout
+        the market. GTM is printing persistently low-positive values.
+    -   LDPM/S assessment suggest ceilings at 5% - 10% for ES / $QQQ along with substantial
+        room for $VX to descend in pursuit of an organic bid.
+    -   VoEx Variance graphs suggest the market is still migrating towards instability, despite
+        appearances.
+
+                                           SUMMARY
+
+
+
+           The market’s bull run has picked up steam, but the data are insufficient to
+           instigate a metamorphosis to pure bullishness.
+
+           VoEx-daily has spiked into stability on $SPY and $QQQ, bringing with it a
+           bullish-until-proven-otherwise framework (with otherwise being VoEx-
+           daily’s return to the Propagation Zone). VoEx remains within the P.Z.,
+           highlighting expectation for a transient nature to this bullish performance.
+
+           Hedging environments find themselves supportive for more bullish
+           performance, despite $QQQ’s apparent lack of gamma neutrality, the
+           absence of which sets the stage for the rapid introduction of selling
+           pressure a few steps northward.
+
+           MWGS data showcases an abrupt and reminiscent destruction of gamma
+           squeezes as the price exceeded EPR the week prior. On the surface this
+           suggests bullish performance but this is contingent on the gamma
+           squeezes actually having dissolved rather than simply moved away from.
+
+           LDPM/S showcase bullish outlooks for ES and $QQQ on the lower-
+           timeframes with mixed outlooks on the higher timeframes. $VX, through
+           the same lens, looks poised to offer substantial relief as bearish liquidity
+           has taken hold up to the 987-minute.
+
+           Prudency suggests bull-trap performance, but the data highlight
+           continued and persistent caution for the return of downside.
+
+
+Deep Dive Stocks – Weekly Chat           for the week of              2025-04-28 to 2025-05-02
+                                             DETAILS
+
+
+
+
+Hello all!
+Last week, we left off with notions that the market looked primed for a ~2.00 – 4.00% rise, after
+which some downside should follow. In part, things progressed as expected, with $SPY moving
+4.60% week-over-week and $QQQ moved 6.40% itself.
+These are reasonably larger than our expected-price-ranges, as calculated from last week, which
+found $SPY was expected to move ±3.04% while $QQQ’s expected range was ±3.55%. An
+immediate consequence of these extra-moves is that we get to use our EPR-table! So, let’s do
+that, let’s check on how these moves compare with the market’s expectations in number format.
+
+ Symbol             T+5 Anticipated T + 5 Realized         T + 5 Ratio         T+5 %-
+                    Move (±%)       Move (%)               (Real / Ant.)       magnitude Dif.
+
+
+ $SPY                  3.04               4.06                1.35              28.73
+
+ $QQQ                  3.55               6.40                1.83              58.71
+
+
+
+These are some hefty exceeding-numbers! $SPY seems to have outgrown its expectations by
+1.35x and $QQQ by 1.83x – this places both indexes well within reach for ~mean reversion~.
+
+But – before we get too ahead of ourselves, let’s take aim at how the market maneuvered through
+the gamma hedging heatmap for the week prior:
+
+
+
+
+A bit of a dip at the start of the week, but progression up the ridge of purchasing support along
+with a reduction in IV seems to have been supported quite nicely by the hedging environment. A
+curious consequence of this view, however, is that the week was ending in somewhat a precarious
+position with regards to IV ! Any more reduction thereof and the ridge of purchasing support might
+have been crested.
+
+
+
+
+Deep Dive Stocks – Weekly Chat           for the week of              2025-04-28 to 2025-05-02
+So, taken together, the market did indeed bounce, and that bounce was bouncy, but now we are
+left with a bit of a conundrum: on one hand lays the question regarding the longevity and health
+of the over-arching downside expectations we’ve forged, and on the other hands, lays the question
+regarding the longevity and health of the current bull-trap we are experiencing. The downside to
+reality is that the more one grows in strength the more the other demunitizes and withers.
+Thus, we should spend the remaining time we have together in our chat deciding which one ought
+turn to dust and which one shall reign supreme.
+Let’s get started!
+Highlander Quote
+Starting as usual with VoEx, we see $SPY and $QQQ have reacted to the recent performance and
+find it to be quite spikey (in their own words), as we can see below:
+
+
+
+
+Both VoEx-dailies have spiked significantly into the Stable Zone – this immediately tells us some
+bullish oomph is well underway but when looking to see how long this might last (i.e.: is it going
+to be permanent for a while or not), we find VoEx suggesting that its longevity might be short –
+as VoEx is still within the Propagation Zone.
+Nonetheless, one’s monkey brain can’t help but side-eye this VoEx performance as reminiscent
+of VoEx’s performance at the start of March, where VoEx-daily spiked so significantly it moved
+VoEx with it, suggestively suggesting an abrupt end to the downside expectations.
+So, to this end, it seems bullish performance is expected on the near-term but per VoEx, this
+performance is still a bull-trap. The name of the game here will be to monitor VoEx as the bull-
+trap progresses, in particular if we can find any organic-ask ceilings in our investigations below
+while watching for VoEx-daily to spike back into the Propagation Zone (or VoEx leaving it!)
+
+With near-term bullish sights set, let’s take a peek at the hedging heatmaps to see how they might
+improve or impede these outlooks for the week ahead.
+
+
+
+
+Deep Dive Stocks – Weekly Chat           for the week of              2025-04-28 to 2025-05-02
+Quite supportive! One might even say too supportive (for $QQQ at least). Both indexes look
+surrounded by purchasing support. $QQQ’s obscene wall of purchasing support appears to max
+out around $480-$482ish, and so we should keep this value in mind as the week progresses and
+as we check on LDPM/S below, to see if there are any identifiable ceilings thereabouts.
+But taken together, it appears as though the market is well prepared to handle a continued bull
+run for the week ahead, as seen by the hedging heatmaps.
+
+Are our overlords’ ambitions aligned accordingly also? Let’s check the Dealer-Long Puts to find
+out:
+
+
+
+
+Nope! Perhaps surprisingly (to our mortal minds) there seems to be no evidence or desire in DLP-
+hood. This does dampen the party a bit – as it would have been quite a boost to moral if we knew
+the cool kids were joining us in the dance. But for now, they appear to be sat on the sidelines.
+Does this speak to the overall outlook that this performance is a bull-trap? Perhaps. But let’s not
+presume the ability to manifest concepts on the same level as the Goldmen and the Sachs.
+
+
+
+
+Deep Dive Stocks – Weekly Chat           for the week of               2025-04-28 to 2025-05-02
+All we can say is it appears (per VoEx-daily) that a bull trap is underway, and this is an event that
+is supported by the gamma hedging environment; but, despite how enticing it looks to us, for
+some reason, DLP behavior suggests minimal confidence in $+ , 𝐼𝐼𝑉𝑉 − style profitability.
+Moving along, let’s expand outwards and onwards to the Market-Wide Gamma Squeeze data.
+Quite the robust moves! The market saw a week-over-week decline in gamma squeezes of 22%(!),
+                                                    a two-week-over-two-week decline of 34%,
+                                                    and a month-over-month decline of 36%.
+                                                    One might well think that the end is neigh
+                                                    (the bearish performance end)!
+                                                         These are some hefty gamma-squeeze
+                                                         destructions! This destruction has left the
+                                                         growth count curve starkly negative (hey
+                                                         this is starting to look reminiscent) while
+                                                         the overall growth is positive. A curious
+                                                         mix of data!
+                                                         Nonetheless, GTM is suggesting that
+                                                         there is a steady flow of long gamma
+                                                         coming into the market – no robust
+                                                         positive GTM movements noted so far,
+                                                         but rather a steady climb.
+                                                         Perhaps DLPs are moot in lieu of DSPs!
+                                                        This paints a robustly bullish picture in the
+                                                        short-term, and if history is to set any
+                                                        precedence, then from the last time we
+                                                        investigated such rapid destruction of
+                                                        gamma squeezes (Weekly Chat 2025-01-
+13) then it suggests a rebound in growth is likely to follow (since the destruction of the gamma
+squeezes was more a product of “moving past” them rather than actual GS destruction. This of
+course caught up with the market as price stalled and the hitherto left-in-the-dust short gamma
+started creeping back up). In fact, this
+was the onus for the creation of the
+updated MWGS we’ve been looking at!
+So, let’s look at that.
+From this view, we can see that the
+breaks are being applied to the GS
+growth (the purple line is negative,
+telling us that acceleration is negative
+which means the breaks are being
+applied) and we can see this has in fact
+worked to turn the growth-curve (gold
+line) towards the negative.
+
+
+Deep Dive Stocks – Weekly Chat             for the week of              2025-04-28 to 2025-05-02
+Taken together, this suggests continued destruction of gamma squeezes and continued
+application of the breaks towards their growth.
+But – one can’t help but see more reminiscence as with 2025-03-17!
+Taken together, the skies seem painted with a bull-run hue but in the distance, we can see the
+clouds are still present.
+VoEx-daily has spiked, suggesting bullish-until-proven-otherwise (with the otherwise being VoEx-
+daily moving back into the Propagation Zone) in the setting of a bull-trap (as evidence by VoEx
+itself). These short-term bullish moves are expected to be supported by the hedging environments
+which showcase local purchasing support.
+Some cracks do appear in the foundations of this framework, however. In the short-term, it is the
+DLPs raising concern, namely because there is concern that none have been raised. Although
+DLPs are “sentiment” in a way (as they are based off of the activity of others and thus the
+perception of others), one can’t argue a more robust view could be crafted if there were a rise in
+DLP activity for the short-term. In the long term (the bull-trap term), the MWGS data suggests
+there is at least some evidence that the bull-trap may convert to a non-bull-trap (just bullishness)
+as recent data show a rapid unwinding of gamma-squeezes.
+So – with general pathways in mind, let’s take a peek at LDPM/S to see if we can identify an up-
+and-down pathway.
+First up, let’s take a peek at ES futures:
+
+
+
+
+On the lower timeframes (90-minute and 144-minute, top panels) we see a fully bullish view. On
+the 987-minute we see a bull-trap, with a nearby ceiling at LDPM-L6(377) at $5,860ish, which gives
+an upwards breadth of 9.0%. The 1-Week view shows price having tested the organic bid at LDPM-
+L2(987) and is now testing LDPM-L7(610) with bearish liquidity.
+
+
+Deep Dive Stocks – Weekly Chat               for the week of           2025-04-28 to 2025-05-02
+Oddly, this weekly view brings into question the near-term bull-trap outlook (of course) as it
+suggests the near-by ceilings at LDPM-L6, and LDPM-L7 may face some difficulties.
+This suggests we may at least have time to gather data as price tests LDPM-L7 (which is only
+~1% away from current spot) before committing to the next leg up at $5,800 at LDPM-L6(377).
+As this test occurs, we can check the data to see how things are progressing.
+For more clarity (hopefully), let’s check on VX to see if there are any ceilings or floors to highlight:
+
+
+
+
+On the 90-minute, we see bearish with little reprieve, with a similar view on the 144-minute. The
+only caveat is we can see LDPM-L5(144) has recently bent its trajectory quite robustly in a way
+that’s reminiscent of a reasonably rapid conversion of ask to bid.
+Zooming out, we see a 987-minute showcases bearish liquidity, and with the current spot at
+$23.50, the nearest organic bid is placed at $21.28 (-10%ish), which a secondary floor at $13.66
+(-42%ish).
+On the maximum view, we see a bull-trap with downside potential to LDPM-L2, located at $13.18
+(-44%ish), along with the presence of an inspiring eager ask.
+Thus, a reasonable outlook seems bearish performance with an optimistic goal of $13-ish, along
+with the opportunity for re-assessment at $23.50.
+Before moving on, let’s check on $QQQ’s robust purchasing support and how it vibes with
+LDPM/S:
+
+
+
+
+Deep Dive Stocks – Weekly Chat             for the week of                2025-04-28 to 2025-05-02
+The view is very reminiscent! Bullish attitudes on the lower-timeframes, with a ~soft bearish~
+presentation on the 987-minute (with a ceiling noted at $501, +6%), and a bear-trap on the 1-Week
+view 1. With regards to the abrupt boundary between purchasing support and selling pressure (as
+seen in the heatmaps on $QQQ), LDPM doesn’t appear to have much to say around $480, other
+than the ceilings at ~$501ish; but this is, admittedly, a rather large range.
+
+Thus, similar outlooks for $ES and $QQQ – whereas $SPY sees a potential ceiling at 1% and again
+at 9.0%, $QQQ sees a ceiling 6%, while VX sees a floor at around -10%. Overall, it appears bull-trap
+continueth seems the likely outlook in the near-term, with return of downside to come.
+
+With regards to the long-term view, let’s take a peek at the VoEx Variance distribution graphs to
+see if we can identify which phase we are in. First up, let’s check on the past 2 months. A bullish
+view is seeing the distributions spreading out and moving to the right, whereas if that isn’t
+happening, a bearish outlook.
+
+
+Starting first with the recent distributions for VoEx-daily, we find:
+
+
+
+
+1
+ Tradition dictates that the bear-trap designation doesn’t become obsolete until either price is above LDPM-
+L5(144) (the first organic bid) or until LDPS turns back to bullish.
+
+
+Deep Dive Stocks – Weekly Chat                  for the week of                   2025-04-28 to 2025-05-02
+Continued migration to the left (the older trend is the smaller, lighter dashed lines, and the newer
+trend/data are the bigger, darker dashed lines)!
+That’s not quite the direction one would expect
+if one were expecting a stabilizing market. If
+you’ll remember from the cycle that the sign of
+bullishness really returning to the market is the
+start of the 3rd-transition phase, where the
+distributions flatten out with peaks starting to
+form within stability – but here, we see
+continued migration towards the P.Z., with
+additional peaks showing up further down to the
+left (not right).
+These data suggest the bull-trap’s metamorphosis to an outright bullish outlook is still quite
+young, even with the prospects of a 9% bull-run on the horizon.
+And so, thusly stands our view for the week ahead: bullish winds with the near-by spot-ceiling (per
+LDPM) 9% up for ES, and 6% up for $QQQ, which should coincide to around a -10 to -40ish percent
+drop in VX.
+Quite the bullish outlook!
+As with all traps, this one may be unstable and since these data seem almost too good, let’s keep
+in mind some signs of an unstable trap (i.e.: if it looks like the aforementioned ceilings might not
+get reached): VoEx-spiking back into the P.Z. would indicate the bullish run is over; VX finding
+robust support at LDPM-L5 may give room for pause, along with any of the lower-timeframes’
+LDPS turning bearish (or bullish for $VX). The presence of these data would likely encourage
+prudency to take profit.
+
+
+
+Deep Dive Stocks – Weekly Chat            for the week of              2025-04-28 to 2025-05-02
+Thus, all together, bullish-skies abound with lofty sights of +5%+ but the data are still objectively
+bearish for the long-term. This equates to a bull-trap outlook with all of the excitement derived
+therefrom.
+Happy trading,
+
+
+Justin
+
+
+
+
+Deep Dive Stocks – Weekly Chat            for the week of               2025-04-28 to 2025-05-02
+

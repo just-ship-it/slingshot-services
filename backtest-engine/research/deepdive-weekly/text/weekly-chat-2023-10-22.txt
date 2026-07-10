@@ -1,0 +1,170 @@
+                                  Weekly Chat 10/23/2023
+
+
+                                        Main Points
+
+
+   -   VoEx resumed its location in the Propagation Zone for $QQQ and $SPY,
+   -   Hedging Heatmaps are vanna-stable once more for $QQQ and $SPY with positive
+       influence distributions and left-sided tails,
+   -   DLP behavior remains uninspired despite recent increases in IV, and
+   -   𝑉𝑉 2 is demonstrating robust collapse.
+   -   Thus, prudency seems to be on the side of continued downside.
+
+
+
+                                         SUMMARY
+
+
+
+          After a failed break-out into the Inhibition Zone after a Coiling event for
+          $SPY and $QQQ, VoEx has found itself in the Propagation Zone once
+          more, indicative of continued downside.
+
+          On the near-term, there may be some resistance to the downside byway
+          of the vanna-stable hedging environment, however, despite this potential
+          support, it would seem our put-selling friends are not betting too much of
+          their reputations on selling volatility; suggestive of diminished
+          confidence in a $+/IV- week a head.
+
+          On the macro-side, MWGS data is largely moot with a continued
+          elevation to the gamma-squeeze growth and an almost-positive GTM, it
+          would appear gamma flows offer little influence with the recent
+          instability.
+
+          𝑉𝑉 2 is showing continued collapse which has now spread into all three
+          zones. This is indicative of a proximal market correction.
+
+          All-in-all, the data appear to be quite severe and suggestive of continued
+          downside and instability.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                      10/23/2023
+                                               DETAILS
+
+
+
+
+Hello everyone! Last week, we left off with the idea that the market was leaning into bearish
+performance with a pinch of market-correction. This week, perhaps unrelatedly, $SPY moved -
+2.39% and $QQQ moved -2.92%.
+The force behind these moves can be gleaned from the Hedging Heatmaps in which we can see
+that the market chewed through a reasonable amount of purchasing support on its way down:
+
+
+
+
+Quite the moves!
+Even with available purchasing support, $SPY moved 25% more than its weekly EPR (EPR T+5
+±1.86%) while $QQQ moved 20% greater than its EPR T+5 (2.38%).
+With these large moves in mind, one can’t help but wonder if they will continue into the long-
+anticipated market correction or if we should expect a near-term bounce, as would be explained
+by the mysterious and omnipresent “mean reversion” phenomenon.
+Thus, this week, let’s try to pin a reasonable answer to an unreasonable question: is the market
+correction here?
+Reasonabilabuddy
+Our first pit stop is VoEx. Last week, upon review of VoEx, there was some concern for VoEx
+Coiling’s continuance into the Inhibition Zone
+                                                    “
+ This places concern on the continuance of VoEx Coiling’s bullish expectations as typically you would like
+to see VoEx move into the Inhibition Zone to give a nice Bullish-until-proven-otherwise (BUPO) extension
+                                             to the coiling.
+
+                                                    “
+
+
+
+Deep Dive Stocks – Weekly Chat                                                               10/23/2023
+This week, VoEx was kind enough to answer definitively after two days of stagnation at the
+Inhibition Line, it retook its former locus within the Propagation Zone:
+
+
+
+
+                                                             $SPY’s VoEx has moved further
+                                                             southward back into the Propagation
+                                                             Zone.
+                                                             For now, this is bearish as usual.
+
+
+
+
+$QQQ’s VoEx is much the same with
+VoEx back inside of the Propagation
+Zone.
+
+This, as well, is bearish as usual.
+
+
+
+
+It may be tempting to anticipate VoEx’s movements, but most-often-than-not I have found this
+usually doesn’t end well – it simply does to simply read VoEx for what it has printed, not for
+what it looks like it will.
+So, with that in mind, it seems like VoEx’s current behavior is erratic and its current location is in
+the Propagation Zone; a prime recipe for an easy-to-read and straight-forward interpretation:
+downside-until-proven-otherwise.
+
+In terms of how the market might respond to this, the Hedging Heatmaps for $SPY and $QQQ
+demonstrate much-the-same as last week, with purchasing support located in the bottom right:
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                           10/23/2023
+This purchasing support, however, has lately proven itself to be less-than-sufficient to starve off
+the lack of an eager bid.
+Perhaps the early part of the week will give more information as to if the dynamics of the market
+have shifted: should the market progress through selling pressure without a robust rebound
+back down, then perhaps an eager bid is entering the market and thereby strengthening the
+nascent support.
+Despite this potential support, it seems our put-selling friends over at $SPY and $QQQ remain
+relatively un-enthused with any long-put-profitable positions:
+
+
+
+
+                                                    Despite a reasonable increase in IV on $SPY,
+                                                    we see no increase in prospecting, but rather
+                                                    a near-persistent, near-zero 5-day average.
+
+
+
+
+$QQQ (right) finds itself in much the same
+position, despite a week-end increase in
+DLPs, throughout the week, DLPs saw a
+persistent decrease.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                        10/23/2023
+So, overall, despite a 62% increase in IV, IV-sellers haven’t seen any reason to sell IV. Not the
+most bullish of anticipations!
+The MWGS data is relatively moot – a positive growth and a near-positive GTM, it would seem
+that gamma flows aren’t a particularly potent part of this recent movement.
+
+Moving towards 𝑉𝑉 2 data, we see the collapse is progressing and still quite remarkable:
+
+
+
+
+With a continued drop in 𝑉𝑉 2 in all three zones, it seems reasonable to say collapse is underway.
+Thus, all-in-all, a rather short weekly chat as it appears there are quite the few data prints to
+point us away from any views that might include reasonable risk of a modest downturn in the
+market. Any bullish-rogue-waves that come will simply be rode as guided by VoEx. Overall, until
+VoEx stabilizes, MWGS counts decrease, and DLP activity increase once-more, it seems rough
+waters are ahead.
+Happy trading,
+
+
+Justin
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                        10/23/2023
+

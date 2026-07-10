@@ -1,0 +1,120 @@
+                                   Weekly Chat 08/05/2024
+
+
+                                         Main Points
+
+
+
+    -   VoEx has remained within the Propagation Zone for $SPY and $QQQ.
+    -   Hedging environments are poised to offer conflicting reactions to a $-/IV+ event.
+    -   Put-selling has ceased on $SPY.
+    -   Overall prudency suggests continued downside expectations.
+
+                                          SUMMARY
+
+
+
+           The downside has manifested and the data suggest there is a high risk for
+           more ahead.
+
+           VoEx-daily for $SPY and $QQQ remains within the P.Z. with VoEx deepens
+           therein as well.
+
+           Hedging environments are at odds between $SPY and $QQQ; the net
+           effect is little-to-no support in either direction.
+
+           Put-selling has ceased on $SPY, and despite a small uptick on $QQQ, this
+           lends itself to bearish ideologies.
+
+           Overall, the data continue to point towards continued downside.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                      08/05/2024
+                                            DETAILS
+
+
+
+
+Hello all!
+What a week, so let’s jump right in -
+Last week, there was concern for growing downside, and this week seems to have delivered in
+full with $SPY experiencing a week-over-week move of -2.12% (T+5 EPR: ±1.64%; exceeded by
+25%) and $QQQ moving -3.07% (T+5 EPR: ±2.24; exceeded by 31%).
+We can visualize these moves below with the Hedging Heatmaps:
+
+
+
+
+The early-part of the week worked to keep things afloat, but ultimately it appears the purchasing
+support was insufficient, and the market fell back into the lower-left quadrant for gamma
+neutrality.
+In particular, we can see any purchasing support that was introduced into the market had mostly
+dissolved and replaced with selling pressure by the 31st, thus suggesting an end to the run up.
+
+
+
+
+Concurrently, and moving right along to the present, we find VoEx extended its stay within the
+Propagation Zone, despite an early-week attempt to move out:
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                      08/05/2024
+Above we see just that: VoEx’s (and VoEx-daily’s) persistence within the Propagation Zone. The
+outlook from this is clear: imminent and persistent downside.
+With a bearish outlook in hand, let’s move to the gamma hedging environments to see how the
+market may respond.
+
+
+
+
+A tricky spot – vanna-unstable orientation on $SPY with a vanna-stable orientation on $QQQ; both
+beset between gamma neutrality. Given the overall market performance and VoEx, it suggests
+that in the (likely) event of $-/IV+, $SPY will see the weening introduction of selling pressure, and
+$QQQ purchasing support, ultimately leading into gamma neutrality.
+A situation to monitor throughout the week for sure!
+Moving to monitoring situations but from the perspective of our put-selling friends, let’s see what
+how the dealer-long put data look.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                          08/05/2024
+A changing of the guard for our two friends; on $SPY (left) we see rapid cessation of selling OTM
+puts on $SPY and a slight up-tick of the behavior on $QQQ.
+
+Difficult to interpret – but lack of congruency in put-selling (given how high IV is!) is not the most
+confident (confidently bullish, that is) of data prints.
+                                                        Next up is the Market Wide Gamma
+                                                        Squeeze (MWGS) data, in which we find
+                                                        some curious changes.
+                                                        Up top, we see the market has gone into a
+                                                        positive-growth period (blue line is above
+                                                        dotted red).
+                                                        Along with this positive growth, we see
+                                                        GTM has been negative for about a week
+                                                        now.
+                                                        This suggests continued gamma squeeze
+                                                        growth, which itself suggests more market
+                                                        downside.
+                                                        Overall, continued high-risk for downside.
+                                                        VoEx Variance (𝑉𝑉 2) is still showing minimal
+                                                        involvement / extension into the
+                                                        Propagation zone, so for now, at least, the
+                                                        downside expectation is limited to the
+                                                        medium-term.
+
+
+
+
+An active market!
+Happy trading –
+Justin
+
+
+Deep Dive Stocks – Weekly Chat                                                           08/05/2024
+Deep Dive Stocks – Weekly Chat   08/05/2024
+

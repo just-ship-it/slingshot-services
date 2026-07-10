@@ -1,0 +1,318 @@
+                                   Weekly Chat 2025-02-17
+
+
+                                         Main Points
+
+
+
+    -   VoEx for $SPY and $QQQ have spiked into stability with this week’s positive moves.
+    -   The Gamma hedging heatmaps showcase a stable orientation with diffuse and local
+        purchasing support for both $SPY and $QQQ.
+    -   Put-selling is increasing slightly on $QQQ with no activity noted on $SPY.
+    -   MWGS data showcases a growing but still negative growth rate and minimal month-
+        over-month performance.
+    -   GTM is showing continued neutrality.
+    -   Market-currents showcases mixed data.
+    -   LDPM/S for ES and NQ both show a persistent and robust bull trap.
+    -   Prudence suggests continued downside overall with continued risk of bull trap
+        performance.
+
+
+
+                                         SUMMARY
+
+
+
+          This week’s performance was erratic in the details despite appearing
+          gentle on the surface.
+
+          The consequence of this is a VoEx-spike performance on $SPY and $QQQ
+          while VoEx itself remains within the Propagation zone. This gives
+          continued “bull trap” interpretations.
+
+          Gamma hedging heatmaps have calmed and showcase diffuse
+          purchasing support for both indexes, with $QQQ’s being less populated
+          than $SPY’s. Put-selling remains at-zero for $SPY with a small revival of
+          performance on $QQQ. MWGS data showcases a steadily rising GS-
+          growth rate but one that is still decidedly negative. This corresponds with
+          a modest month-over-month increase in gamma squeeze count. During
+          this, GTM has remained neutral and shows no conclusive preferences to
+          the gamma flows heading towards the market.
+
+          LDPM/S showcase bull-traps for both $SPY and $QQQ.
+
+          Overall, outlook remains the same: in the midsts of a bull trap.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                      02/17/2025
+                                              DETAILS
+
+
+
+
+Hello all!
+As with the usual spirit of Valentine’s day, the spectre of disappointment hangs low as the week
+ends in contrast to our expectations – namely with respect to its price action. Specifically, I am
+referring to $SPY’s +1.40% move along with $QQQ’s 2.91% move! Prety big numbers, so let’s
+compare them with the expectations from last week.
+
+ Symbol             Anticipated         Realized                   Ratio           Difference
+                    Move (±%)           Move (%)                   (Real / Ant.)   (%-magnitude)
+
+ $SPY                  1.62                1.40                      0.86           14.57
+
+ $QQQ                  2.10                2.91                      1.38           32.34
+
+
+
+Not only did $QQQ move more than the market was expected, as opposed to $SPY’s under-
+performance, it did so with a pretty respectable 33% over-shot. We can visualize this movement
+in the hedging heatmaps below:
+
+
+
+
+These images conjure even more images, in an almost alarmingly sentient way, of last week’s
+Weekly Chat, in which someone of questionable foresight suggested:
+                                                  “
+
+  Before we get too comfortable with jumping to the conclusion that this implies our futures
+ should be similarly planned, let’s keep in mind that should IV drop substantially on $QQQ, this
+                         will introduce some good purchasing support.
+                                      “ – Weekly Chat 2025-02-10
+
+After which, with emboldenment, the following:
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                          02/17/2025
+                                                          “
+                                  The most likely outcome? Probably not …
+                                               “- Weekly Chat 2025-02-10
+
+Well, jokes on past me, because that appears to be what happened! Although admittedly, as the
+week progressed, I was less confident that the reduction in IV was going to be sufficient, only to
+be reminded of the range of the market’s surprises, as Thursday gave way to a paultry ~10%
+reduction in IV.
+This brings up a thought: For how much finance folk enjoy comparing the present to the past, I’m
+surprised there’s never been an investigation into IV’s movements as there have been with IV, for
+instance, what is the standard deviation for a 10% reduction in IV on $QQQ? At least, if there are
+those that do this, I have not seen it. So, let’s take a quick peek! I went ahead and calculated the
+percent-change from day-to-day for $QQQ’s IV, and then smoothed the data with a 5-day rolling
+EMA. From there, I just plotted the distribution of values.
+The benefit of doing this is we can very quickly see just how much this week’s IV reduction is with
+regards to $QQQ’s previous performance. This can help us answer if the statement “paultry ~10%
+reduction in IV” is even valid – perhaps a 10% reduction in IV is quite significant! Below are the
+distributions:
+                                                          On the left is $QQQ’s data in aggregate, from
+                                                          2019-10-14 to present, while on the right is
+                                                          $QQQ’s data with the distributions calculated on
+                                                          a yearly basis.
+
+                                                          The vertical green line is $QQQ’s current
+                                                          aggregate value and the red line is $QQQ’s current
+                                                          value when the data are grouped by year.
+                                               With this view, we see that the weekly IV move
+                                               (smoothed via EMA) was -0.67 for the aggregate
+                                               data and -1.25 for the data grouped by year. This
+shows us that these moves were pretty smol : in the aggregate data, we can expect a |0.67|-move
+about 60% of the time, and for the data grouped by year, we can expect up to a |1.25|-z move
+about 90% of the time, with only 10% of the data surpassing the current magnitude-of-change in
+magnitude.
+So, nope! Perhaps the idea of “significant IV movement needed” was faulty from the start – for if
+you I had looked at this kind of distribution prior, perhaps the true magnitude needed would have
+been better discerned1.
+
+
+
+1
+ It is worth keeping in mind when analyzing the put selling data as well! Perhaps there has been a hidden association
+not just with the directionality of the put-seller’s expectations but also with the anticipated magnitude of IV change.
+For instance, suppose this might help differentiate if or when the put-sellers are ramping up with both a directional
+outlook but also perhaps there is discernment with the magnitude-of-[𝐼𝐼𝑉𝑉 − ] anticipated.
+
+Deep Dive Stocks – Weekly Chat                                                                          02/17/2025
+All this to say,
+
+Let’s get started with VoEx
+
+
+
+
+We see a similar sight as from two weeks ago: VoEx-daily has risen sharply into Stability for both
+$SPY and $QQQ. This gives a short-term bullish outlook.
+The term is short in this case because VoEx itself, both $SPY and $QQQ, are still within the
+Propagation Zone, and as such, VoEx-daily’s performance is interpreted as bullish, but of the trap
+variety. This outlook will be maintained until either VoEx-daily falls out of stability (suggesting the
+end of said bull-trap is neigh) or until VoEx moves out of the Propagation Zone (suggesting the
+previously-unstable bullish performance has started to solidify and thus outlooks are bullish).
+Thus, we leave to meet the gamma-hedging heatmaps below with renewed senses of BUPO ( of
+the bearish variety ) tempered with near-term bull-trap-like VoEx performance. What do we
+encounter?
+
+
+
+
+Bullish skies abound! $SPY and $QQQ have shed their dissimilarities and have convened in
+agreement on a stable hedging environment with diffuse, local purchasing support.
+
+In terms of shared-pathways towards gamma neutrality, the two share a general [$− , 𝐼𝐼𝑉𝑉 − ]
+pathway, with $SPY’s gamma neutral zone harkening hardest for that directionality. The most
+proximal and abundant area of gamma neutrality for $QQQ appears to be in the opposite direction,
+namely the [$+ , 𝐼𝐼𝑉𝑉 +] direction. Movement in said direction for $QQQ would do little except for
+effectively thin out the already-diffuse purchasing support.
+
+
+
+Deep Dive Stocks – Weekly Chat                                                            02/17/2025
+Taken together, a likely compromise is formed: the hedging environment seems well suited for a
+[$+ , 𝐼𝐼𝑉𝑉 −] as long as no one gets too ornery about achieving gamma neutrality and pushes IV into
+selling pressure.
+Speaking of IV and prices and pushing, let’s see what our put-pushing, put-pushers’s put-pushing
+percentages be, perchance:
+
+
+
+
+Uh oh! $QQQ has sprung to life! This is in-line with the expectations for a bull-trap to be underway.
+$SPY’s reluctance, as we have seen in the prior iteration, is to be expected. These data suggest
+                                                                          𝑎𝑎𝑎𝑎𝑎𝑎
+that $QQQ put-sellers are at-least in-part expecting some form of [$+ 𝑜𝑜𝑜𝑜 𝐼𝐼𝑉𝑉 − ] .
+
+Thus, it seems the seas are still rocky (per VoEx in the Propagation Zone), but the waves seem to
+be pushing, yawing us towards the bullish (as per VoEx-daily, a supportive hedging environment
+and the inception of put-selling). Let’s take a peek at the MWGS data to see to which depths these
+waves can be felt.
+On initial glance, the
+answer is: not very deep!
+Whereas once there was
+hope for a rapid increase
+in     gamma      squeeze
+growth, there is now no
+real evidence of that
+occurring. While it is true
+that has been a 15%
+increase      in   gamma
+squeeze over the last
+month, this has done little
+to produce a net-positive
+growth rate overall (top
+blue line is ~0).
+For now, it would appear growth has accelerated sufficiently to continue the current level of
+anticipation regarding a resurgence in growth (as thus, downside). Is the anticipation completely
+gone? Not quite – but it is certainly not as forte as before.
+
+Deep Dive Stocks – Weekly Chat                                                          02/17/2025
+Another near-zero measurement is GTM:
+Since ~2025-01-20, GTM has maintained its neutral stance, indicating no real changes in the
+                                                directionality of the net gamma. This pre-
+                                                standing stance, now being echoed in the
+                                                growth rates, suggests a future of casual
+                                                inclination and declination.
+                                                              Thus, the waves do not seem to have
+                                                              extended into the foundational currents just
+                                                              yet, but it does appear as though said currents
+                                                              seem still.
+                                                    In illuminating the room with these data, an
+obvious character is revealed before us; a metaphorical elephant representing a concept, in this
+case, the concept of a question. What is the question? Likely this one: “shall we abandon our long-
+lived anticipation of big downside”? Or something similar.
+While convenience dictates that our response should be to simply deїlluminate the room, it would
+seem the light switch to do that hasn’t, itself, been illuminated. So, let’s address the elephant: are
+the markets turning? How close are we to the boundary of “things are still a bull trap” to “okay,
+things look to be improving such that the trap concern itself is diminishing”? To help answer, let’s
+expand our view more.
+First up, a quick feel of the market overall through the lens of VoEx. This is accomplished with the
+Market Currents. But first, let’s hypothecate. Can we generalize any expectations before we look
+at the data for the two main directionalities? Sure, why not. Evidence and their relative meanings:
+
+    Indicator              Expected Finding                                    Expected Finding
+                              Bull Trap                                       Bull Trap → Bullish
+
+    VoEx        Evidence of Over-exposure in the Predominance of stable-bound VoExes and/or
+                Inhibition Zone                     minimal VoExes within the Propagation Zone
+                VoEx Spike abundance and generation
+                                                    Minimal VoEx spike population and production.
+                when $+
+
+    Gamma    Increase                                 Decrease2
+    Squeezes
+    LDPM     Minimal changes (during the              Modest increase and persistence in bullish
+             bullish run) followed by a surge of crossovers
+             bearish spikes
+             (indicating the nearing end of the trap)
+
+
+
+
+2
+  Since the burden of truth here is placed on the claim that the trap aspect of Bull Trap is the faulty aspect, then it
+feels better that we should see gamma squeezes decreasing (as opposed to simply just not increasing) as a definitive
+showing of data.
+
+Deep Dive Stocks – Weekly Chat                                                                          02/17/2025
+Which do we see?
+
+
+
+
+At first glance, the data do not appear to be in one direction or the other. The VoEx for the indexes
+are showcasing over-heating (by way of the 8/13 indexes having VoExes within the Inhibition
+Zone), while their constituents (whose data are within the Avg. VoEx column) appear to be well
+housed within stability. As for VoEx Spikes, it appears there is minimal evidence for more-than-
+usual VoEx Spikes ($XLF, $XLI, $XLP, and $XLRE showcasing a small burst of activity but since it
+only has 1 `+`, the burst itself does not seem to be very bright). Gamma squeezes show little
+activity and LDPM crossovers have demonstrated a relatively small showing of LDPM crossovers
+(although, it should be noted, of those, they are predominately bearish).
+
+Thus, the market currents is not quite the smoking that was hoped for; instead, it only
+demonstrated the confusion present.
+Thus, let’s look at one more data: LDPM/S.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                          02/17/2025
+On the longest timeframe (987-minute 3) we see that ES (right), conditions have been indicative of
+a bear trap since about 2025-01-18ish (when LDPS turns from bearish to bullish after LDPM
+becomes a bearish stack), and currently this bull-trap has been testing the organic-LDPMs (5, 6,
+7) with the assistance of some lower-order, eager bids. The consequence of this, however, is it
+would appear that an ask has started moving in (as evidenced via the simultaneous pointing
+upwards of LDPMs). The outlook derived from these data is: bull trap. Frustratingly, however, we
+can see that liquidity conditions have not change much despite the price appreciations; the price
+is going up but liquidity does not seem to be inverting towards the bullish.
+On NQ (right), the data present slightly differently, and which this distinction, comes unfortunate
+ambiguity; or, at the very least, disagreement. Whereas LDPS is showcasing bullish liquidity on
+NQ, its doing so after LDPMs became “mixed”. LDPM-5 (neon-blue) has sandwiched itself
+between LDPM-6 (below) and 7 (above) producing a mixed stack. Had it continued its journey just
+a smidgen more, one could be confident in declaring another bull trap – but, since things are
+mixed, its more like a “soft” bull trap.
+
+Taken together, LDPM/S4 continue the motto: why won’t you go down?!
+Thus, the prudent outlook appears to be that of bearish-with-a-side-of-bullish-action. However,
+there does not appear to be sufficient data currently to adopt a fully bullish outlook (or rather, one
+that encompasses the notion of a bull trap converting to full bullishness), and so, it appears the
+week is left with a purgatory outlook: bullish by way of the trap but bearish by way of providence.
+Hopefully the data will clear up in the next day or so and a clearer image forms.
+
+
+Happy Trading,
+
+
+Justin
+
+
+
+
+3
+ This is ~16.50 hours.
+4
+ Quick note on other timeframes: The daily is similar; mixed stack with bullish liquidity for ES, NQ on the daily
+shows a fuller conversion to a true bull trap showing. The weekly is ostensibly bullish with LDPM-5 providing
+organic bid for ES at ~$5,900 (
+
+Deep Dive Stocks – Weekly Chat                                                                         02/17/2025
+

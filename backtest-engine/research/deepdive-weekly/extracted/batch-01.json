@@ -1,0 +1,249 @@
+[
+  {
+    "file": "weekly-chat-2023-08-13",
+    "report_date": "2023-08-13",
+    "direction": {
+      "call": "bearish",
+      "confidence": "medium",
+      "summary": "VoEx in Propagation Zone means continued near-term downside toward LDPM-89 liquidity levels; will scale into larger shorts if bearish data persists.",
+      "conditions": "VoEx skyrocketing back into the Inhibition Zone would flip to quick long gains; QQQ vanna-stable squeeze could stagnate prices instead of decline.",
+      "quote": "As long as VoEx remains within the Propagation Zone, downside is to be expected."
+    },
+    "levels": [
+      {
+        "value": 439.70,
+        "instrument": "SPY",
+        "role": "support",
+        "side": "below",
+        "quote": "LDPM-55 for $SPY is only sitting a paltry -1.34% away at $439.70"
+      },
+      {
+        "value": 363.65,
+        "instrument": "QQQ",
+        "role": "support",
+        "side": "below",
+        "quote": "$QQQ is sitting even close at -0.76% at $363.65"
+      },
+      {
+        "value": 431.48,
+        "instrument": "SPY",
+        "role": "target",
+        "side": "below",
+        "quote": "$SPY’s LDPM-89 is sitting at $431.48 (-3.17%)"
+      },
+      {
+        "value": 362.09,
+        "instrument": "QQQ",
+        "role": "target",
+        "side": "below",
+        "quote": "$QQQ’s is at $362.09 (-3.86%)"
+      }
+    ],
+    "notes": "Report header dated 08/14/2023 (Monday). Ends with long dashboard/dev admin section."
+  },
+  {
+    "file": "weekly-chat-2023-08-20",
+    "report_date": "2023-08-20",
+    "direction": {
+      "call": "bearish",
+      "confidence": "high",
+      "summary": "VoEx deeper in Propagation Zone plus bearish MWGS/GTM and first V2 datum in PZ: continued downside expected short-to-medium term; LDPM-89 to be tested.",
+      "conditions": "Green week only credible if non-gamma-squeeze status, MWGS count reduction, negative GTM, DLP resurgence, and no drastic VoEx response all appear.",
+      "quote": "it seems reasonable that an over-arching bearish outlook would be most prudent"
+    },
+    "levels": [
+      {
+        "value": 433.0,
+        "instrument": "SPY",
+        "role": "support",
+        "side": "below",
+        "quote": "$SPY’s LDPM-89 is at ~$433 [current price: $436.50]"
+      },
+      {
+        "value": 353.0,
+        "instrument": "QQQ",
+        "role": "support",
+        "side": "below",
+        "quote": "$QQQ’s is at $353 [current price: $358.13]"
+      }
+    ],
+    "notes": null
+  },
+  {
+    "file": "weekly-chat-2023-08-27",
+    "report_date": "2023-08-27",
+    "direction": {
+      "call": "bullish",
+      "confidence": "medium",
+      "summary": "Most reversal criteria met (negative GTM, DLP resurgence, no drastic VoEx response); the dip has likely dipped, so tentatively bullish with pivot ready.",
+      "conditions": "VoEx must exit the Propagation Zone (into stability or Inhibition Zone); continued MWGS-count decline and robust DLP behavior required, else pivot back bearish.",
+      "quote": "I think it would be prudent to take a tentatively bullish stance"
+    },
+    "levels": [],
+    "notes": "LDPM-89 values ($433 SPY / $353 QQQ) are quoted only retrospectively from prior week's report to describe the bounce, so not extracted as forward levels."
+  },
+  {
+    "file": "weekly-chat-2023-09-04",
+    "report_date": "2023-09-04",
+    "direction": {
+      "call": "bearish",
+      "confidence": "low",
+      "summary": "VoEx erratic despite Inhibition Zone move; unsupportive heatmaps, cooling DLPs, mean-reversion risk. Downsizing longs, leaning short if downside develops.",
+      "conditions": "A calm, stable VoEx and supportive hedging environments would restore the bullish/BUPO outlook; author explicitly notes the data are messy and mixed.",
+      "quote": "conditions don’t seem robust enough to starve off a reasonable movement to the downside"
+    },
+    "levels": [
+      {
+        "value": 434.35,
+        "instrument": "SPY",
+        "role": "target",
+        "side": "below",
+        "quote": "keeping an eye on LDPM-89 for $SPY on the daily, which is currently sitting at $434.35"
+      }
+    ],
+    "notes": "Author flags 'The data are quite messy this week!'; technically a BUPO (bullish-until-proven-otherwise) VoEx print, but author distrusts it and positions bearish."
+  },
+  {
+    "file": "weekly-chat-2023-09-10",
+    "report_date": "2023-09-10",
+    "direction": {
+      "call": "bearish",
+      "confidence": "medium",
+      "summary": "Choppy week expected from competing hedging environments, but bearish prudence maintained: MWGS increasingly bearish, V2 points to larger correction nearby.",
+      "conditions": "Substantial and maintained data changes (stable VoEx, bullish MWGS/DLP prints) needed before switching back to a bullish outlook.",
+      "quote": "prudence placed on bearish outlooks until substantial and maintained data changes"
+    },
+    "levels": [],
+    "notes": "SPY vs QQQ hedging heatmaps explicitly opposite (SPY unsupportive, QQQ supportive), but overall directional call is one-sided bearish, not a split call."
+  },
+  {
+    "file": "weekly-chat-2023-09-17",
+    "report_date": "2023-09-17",
+    "direction": {
+      "call": "bearish",
+      "confidence": "high",
+      "summary": "VoEx Spike on SPY plus both indexes in Propagation Zone signal imminent decline; pausing long acquisitions, betting against sustained bullish performance.",
+      "conditions": "Purchasing support in heatmaps could temper downside while it lasts; VoEx re-spiking into Inhibition Zone would signal continued instability, not recovery.",
+      "quote": "The take away here is simple: VoEx is indicating an imminent decline, once more"
+    },
+    "levels": [],
+    "notes": "Large V2 'energy' methodology digression; $451 SPY mention is a retrospective intraweek high, not a forward level."
+  },
+  {
+    "file": "weekly-chat-2023-09-24",
+    "report_date": "2023-09-24",
+    "direction": {
+      "call": "bearish",
+      "confidence": "high",
+      "summary": "Deeply negative VoEx in Propagation Zone, bearish MWGS/GTM, V2 growth in PZ; brace for continued downside despite huge QQQ put-selling spike.",
+      "conditions": "Completion of nascent VoEx Coiling into stability would flip near-term bullish; QQQ DLP surge could mark a bottom but author thinks put-sellers are wrong.",
+      "quote": "Overall, I think it is still prudent to bet against any long gains."
+    },
+    "levels": [],
+    "notes": "Author explicitly bets against the historically well-timed QQQ put-sellers (1,815% DLP increase) this week."
+  },
+  {
+    "file": "weekly-chat-2023-10-01",
+    "report_date": "2023-10-01",
+    "direction": {
+      "call": "bearish",
+      "confidence": "medium",
+      "summary": "Medium-term decline still favored (net-PZ market, V2 collapse starting, bearish LDPS), but VoEx Coiling and huge DLP prints pose near-term rapid-appreciation risk.",
+      "conditions": "If VoEx Coiling completes (keeps spiking northward), will position for quick long profits; elevated DLP behavior historically preceded +8% moves.",
+      "quote": "I think it is still prudent to bet on a medium-term decline but a modest threat exists for a near-term rapid appreciation"
+    },
+    "levels": [],
+    "notes": null
+  },
+  {
+    "file": "weekly-chat-2023-10-08",
+    "report_date": "2023-10-08",
+    "direction": {
+      "call": "bullish",
+      "confidence": "medium",
+      "summary": "VoEx Coiling confirmed on SPY and QQQ plus supportive hedging environments suggest a near-term bull run, inside a still-unstable, longer-term bearish market.",
+      "conditions": "Coiling-driven upside is itself unstable; V2 Inhibition Zone collapse and PZ growth keep a medium-term market correction expectation intact.",
+      "quote": "the near-term data suggests near-term bullish performance in the setting of overall instability and longer-term bearish expectations"
+    },
+    "levels": [],
+    "notes": "Explicit two-horizon split: bullish coming week, bearish medium/long term. Coming-week lean labeled."
+  },
+  {
+    "file": "weekly-chat-2023-10-15",
+    "report_date": "2023-10-15",
+    "direction": {
+      "call": "bearish",
+      "confidence": "medium",
+      "summary": "VoEx Coiling failed to extend into BUPO and fell back toward Propagation Zone; V2 collapsing, I-P ratio negative to 60-day: bearish lean into forming correction.",
+      "conditions": "VoEx shooting back into the Inhibition Zone would set up a BUPO bounce; stabilizing heatmaps and bullish MWGS prints could starve off immediate downside.",
+      "quote": "Overall, expecting instability with a bearish lean into a forming market correction."
+    },
+    "levels": [],
+    "notes": "Long 'Rambling Section' of product/dev updates (LDPS beta, dashboard) after the market content."
+  },
+  {
+    "file": "weekly-chat-2023-10-22",
+    "report_date": "2023-10-22",
+    "direction": {
+      "call": "bearish",
+      "confidence": "high",
+      "summary": "VoEx back in Propagation Zone after failed coiling breakout, V2 collapse in all three zones, put-sellers absent: continued downside and instability expected.",
+      "conditions": "VoEx stabilizing, MWGS counts decreasing, and DLP activity increasing would be required to change the outlook; bullish rogue-waves to be ridden via VoEx only.",
+      "quote": "Thus, prudency seems to be on the side of continued downside."
+    },
+    "levels": [],
+    "notes": "Notably short report by author's own admission."
+  },
+  {
+    "file": "weekly-chat-2023-10-29",
+    "report_date": "2023-10-29",
+    "direction": {
+      "call": "bearish",
+      "confidence": "high",
+      "summary": "VoEx stalled in Propagation Zone, bearish MWGS/GTM, V2 collapse continuing: downside expected on most timeframes with minimal bull-trap threat.",
+      "conditions": "VoEx moving rapidly toward the Inhibition Zone (BUPO) or gradually into stability would pivot the view; bull-traps to be spotted via VoEx.",
+      "quote": "the data suggest continued downside on most timeframes"
+    },
+    "levels": [],
+    "notes": "File dated 2023-10-29 but report header erroneously says 'Weekly Chat 11/06/2023'; the following week's report opens 'it is time for the real 2023-11-06 Weekly Chat', confirming this header is a misdate for the Oct 30 week. (This call preceded the +5.84% SPY rally week.)"
+  },
+  {
+    "file": "weekly-chat-2023-11-06",
+    "report_date": "2023-11-06",
+    "direction": {
+      "call": "bullish",
+      "confidence": "low",
+      "summary": "After SPY +5.84% week, VoEx spiked into Inhibition Zone and V2 is flattening; cards stacking toward a bullish (BUPO) week, but with heavy caveats.",
+      "conditions": "VoEx falling out of the Inhibition Zone early in the week would invalidate BUPO; substantial mean-reversion risk with no purchasing support available.",
+      "quote": "it would appear that the cards are becoming stacked towards a bullish week a head but with some heavy caveats"
+    },
+    "levels": [],
+    "notes": "Opens 'it is time for the real 2023-11-06 Weekly Chat', acknowledging the prior file's misdated header. The ±2.5%–±3.5% figures are expected-move percentages, not price levels."
+  },
+  {
+    "file": "weekly-chat-2023-11-12",
+    "report_date": "2023-11-12",
+    "direction": {
+      "call": "bullish",
+      "confidence": "low",
+      "summary": "VoEx moved further into Inhibition Zone: technical bullish BUPO, ride the wave; but vanna-unstable heatmaps, weak DLPs, and V2 imply a tenuous, reversal-prone run.",
+      "conditions": "VoEx spiking out of the Inhibition Zone (ideally into the Propagation Zone) or VoEx Divergence would end the bullish stance and resume downside.",
+      "quote": "Overall, a technical BUPO (of the bullish variety) is indicated but only tenuously so."
+    },
+    "levels": [],
+    "notes": "Medium/long-term view remains bearish (V2 collapse reminiscent of pre-2022); coming-week lean is the tenuous bullish BUPO. Ends with LDPM/LDPS robot product updates."
+  },
+  {
+    "file": "weekly-chat-2023-11-19",
+    "report_date": "2023-11-19",
+    "direction": {
+      "call": "neutral",
+      "confidence": "low",
+      "summary": "Not a market report: file is the LDPS Trading Robot quick-start/setup guide with no market commentary or directional thesis.",
+      "conditions": null,
+      "quote": "The Liquidity Trading Algorithm (the Robot) is only for educational and research purposes."
+    },
+    "levels": [],
+    "notes": "File contains no Weekly Chat at all — it is a 9-page LDPS Trading Robot setup guide (TradingView/TradersPost configuration). No market data, no levels, no directional call."
+  }
+]

@@ -1,0 +1,220 @@
+                                     Weekly Chat 5/20/2024
+
+
+                                           Main Points
+
+
+    -   Mixed VoEx responses: $SPY’s has stalled at the Inhibition Line, whereas $QQQ’s has
+        entered Bullish-until-proven-otherwise territory.
+    -   Hedging environments are predominately supportive for a $+/IV- week. $QQQ presents
+        within a vanna-stable hedging environment.
+    -   Put-sellers have continued to reduce their exposure in the past week.
+    -   Market-Wide Gamma Squeeze data suggests a local decrease in growth within a larger-
+        scale growth period.
+    -   Overall, bullish but leaning towards bull trap.
+
+                                           SUMMARY
+
+
+
+          VoEx for $SPY has maintained its stay within the Inhibition Zone, however,
+          it has stalled at the Inhibition Line. A similar but distinct tale for $QQQ this
+          week, as VoEx has both moved into the Inhibition Zone, and seemingly
+          spiked there, bringing with it BUPO. The mixed interpretations of VoEx
+          extend to neo-VoEx as well, overing a tenuously bullish outlook.
+
+          This outlook is paired nicely with the current hedging environments, who
+          are providing reasonably diffuse and present purchasing support for $SPY
+          and $QQQ. $QQQ, in contrast slightly to $SPY, does find itself within the
+          purchasing support section of a vanna-stable orientation.
+
+          Market-Wide Gamma Squeeze (MWGS) data is mixed – the overall
+          growth-rate of gamma-squeezes in the market is experiencing a local low,
+          while the larger-scale rate is moving towards a local peak. Throughout
+          this, GTM has been progressively moving back towards negative territory.
+
+          Put-sellers are unconvinced for profitability in the near future as the put-
+          selling activity continues to decline.
+
+          Taken all together, it offers a picture of a market that is becoming quite
+          mixed, with the more immediate expectation being bullish-with-additional
+          -dose-of-prudency, and hesitation that this bullish performance might still
+          be a trap.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                           05/20/2024
+                                              DETAILS
+
+
+
+
+Hello everybody!
+Some updates before we get started:
+There are some updates about the recent Dashboard Patch:
+   -   The “data processing issue has been fixed” part of the Patch Notes wasn’t completely
+       correct. This functionality has been disabled for now. Apologies.
+On the Trading Robot:
+   -   The current beta version will be updated on 2024-05-24
+       This is going to be a completely new version of the robot, and as such, all alerts / current
+       processes will need to be re-configured and re-implemented.
+       This is going to be Beta 2.0 as the new insides for this robot are quite different. I want to
+       observe it for a few weeks before officially bringing the final version out to everyone.
+       Speaking of the final version: this doesn’t really apply to you guys, per se, but the trading
+       robot will no longer be included in the Premium Membership from 2024-06-01 onwards.
+       Naturally, you guys will still have access to this and all updated versions.
+Next Updates
+
+   -   The next set of updates are being planned and are focused mainly on the Data and Market
+       Scan page of the Dashboard.
+       If you have any suggestions / comments / ideas for features or quality-of-life
+       implementations, please let me know!
+Okay, back to the regular programming:
+Over the past week or so, the data have been becoming increasingly bullish, and, to our benefit,
+so have we. This week provided no exception, with $SPY moving 1.65%, and $QQQ: 2.19%.
+Ordinarily, this alignment between bullish expectations and bullish performance would be met
+with blind faith for its continuance, but, seeing as we are fresh-off the heels of quite bearish
+expectations, the confidence in its perpetuality is significantly reduced.
+So, this week, let’s look at the data as usual, but with particular attention focused on finding any
+signs that might be hiding about before putting on the blinders.
+
+
+Let’s get started!
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                         05/20/2024
+Starting
+Last week’s movements were fairly standard, as can be seen from $SPY’s and $QQQ’s heatmap
+below.
+
+
+
+
+These movements were, by-and-large, uncontested throughout the week, despite a few pre-
+market suggestions.
+These movements kept VoEx within the Inhibition Zone for both $SPY and $QQQ, as can be seen
+below:
+
+
+
+
+The main difference between $SPY (left) and $QQQ (right) is the appearance of the more “spike-
+like” presentation on $QQQ – denoting a touch more instability in comparison.
+Ordinarily, VoEx surviving within the Inhibition Zone for a week would likely meet the qualifications
+for “BUPO” (of the Bullish variety), however with the aforementioned spike on $QQQ, and along
+with VoEx’s stall at the IZ for $SPY, we here at DDS remain ever-skeptical.
+On the surface, this VoEx presentation is bullish, but given that VoEx is within the Inhibition Zone,
+it makes it an unstable bullish. Thus – with two slight anomalies, prudency suggests emphasis
+on the unstable.
+
+Neo-VoEx is sort of in agreement – just from a slightly different angle, I suppose. For neo-VoEx,
+that angle is the continued discrepancy between $SPY and $QQQ:
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                          05/20/2024
+Whereas $SPY’s VoEx is within the P.Z. still, $QQQ’s has definitely entered the “Stable Zone”. The
+difference this makes is in the interpretation of the current VoEx-daily behavior.
+For $SPY, since VoEx is within the P.Z., VoEx-daily’s current behavior is still a VoEx Spike, which
+translates to “this is a bull-trap”, whereas VoEx-daily’s behavior on $QQQ is simply “bullish1”.
+Perhaps it will only take a day or two at the start-of-the-week for either of the VoExes to decide
+definitively – and I’ll take the opportunity to look forward to that.
+With VoEx interpreted, we have narrowed down the possible future market-moves as either “up”
+or, even possibly, “down”. Let’s see what other insights we can craft.
+Moving on to the Heatmaps, we see that both $SPY and $QQQ are reasonably surrounded by
+purchasing support for the week ahead.
+
+
+
+
+Once could argue that $SPY seems to have a tad more, as compared to $QQQ, and one would
+probably be correct.
+Coincidentally, there does seem to be a bit of a “lower-limit” with regards to how low IV can go,
+for $SPY and, to a greater extent, $QQQ, IV decreasing is liable to activate the “stable-vanna
+configuration” present on both, wherein more IV-decreasing will introduce selling, which typically
+pushes IV up, which will then introduce purchasing support, thus pushing IV down, and around it
+goes.
+Thus, the heatmaps seem well poised to offer an appreciatory week, but perhaps, with the modest
+expectation for turbulence should IV drop too much.
+
+
+
+1
+ VoEx-daily’s “spike-like” behavior when VoEx is within Stable is more akin to “buy the upcoming dip” than “go
+short for the upcoming dip”, which is the VoEx for $SPY’s interpretation.
+
+Deep Dive Stocks – Weekly Chat                                                                     05/20/2024
+Next up, let’s take a peek at the gamma squeeze data!
+Note: I updated the MWGS Growth Graph, check it out:
+Ta-da! The new MWGS Growth Graph (top graph) is hopefully much clearer and easier to interpret.
+                                                      It shows the change in the growth-rate
+                                                      of gamma squeezes on a more
+                                                      “granular” timescale (light blue), and a
+                                                      more prolonged timescale (gold).
+
+                                                             Coincidentally, this shows that
+                                                             although we are in a local decrease in
+                                                             gamma squeezes (with a weekly
+                                                             decrease of about 10%), overall we’ve
+                                                             been trending upwards in our gamma
+                                                             squeeze growth rates!
+                                                             So, near-term bullish thoughts and
+                                                             longer-term unstable thoughts.
+                                                             Moving on some more, below we see
+                                                             GTM is positive but, as it would
+                                                             appear, not too convinced with said
+                                                             locale.
+                                                             Another item to keep a close eye on as
+                                                             the week starts: GTM. Should GTM
+                                                             continue south into negative territory,
+                                                             it would be a nod towards the “bull
+                                                             trap” camp.
+
+
+Next up, in our crosshairs are the put-sellers, who, even after quite a fortuitous week for them, did
+not see fit to place
+more bets on the
+market
+undergoing $+ or
+IV- in the week(s) a
+head.
+Although
+quantitatively this
+print is relatively
+minor (as there’s
+still net growth on
+$SPY), qualitatively said data are spooky. And that, my dear readers, makes me feel somewhat
+spooked. Why aren’t they selling puts in such a put-selling-friendly environment? Why?
+WHYYYY?
+
+
+Deep Dive Stocks – Weekly Chat                                                          05/20/2024
+So, all-in-all, it seems reasonable to bet on more price appreciation in the times ahead but with a
+cautious eye on VoEx, hedging heatmaps, and DLPs.
+Should VoEx for $SPY join $QQQ, then another round of BUPO (of the Bullish variety) is all but
+confirmed, whereas if $QQQ’s VoEx reverses course and re-join’s $SPY, then a bull-trap seems
+the reasonable interpretation.
+The heatmaps show diminishing purchasing support in the IV- direction – in particular, $QQQ,
+who also has diminished purchasing support overall (in comparison to $SPY). In the event of any
+$- or IV+, I expect the heatmaps to start becoming quite dynamic. Otherwise, if the week is $+ /
+IV-, I think they will remain largely the same.
+
+The DLP observation is straightforward: the longer the put-sellers sit-out on the music, the more
+anxious (but also confident) I will become that we are living through a bull-trap.
+Quite the dynamic market a head of us!
+
+
+Happy Trading and Good Luck!
+
+
+Justin
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                        05/20/2024
+

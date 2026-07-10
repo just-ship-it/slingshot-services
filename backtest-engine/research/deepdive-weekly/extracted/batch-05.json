@@ -1,0 +1,332 @@
+[
+  {
+    "file": "weekly-chat-2024-10-13",
+    "report_date": "2024-10-13",
+    "direction": {
+      "call": "bullish",
+      "confidence": "medium",
+      "summary": "Data still point up; technically bullish week ahead despite inverted LDPM bull-trap warning and liquidity vacuum concerns.",
+      "conditions": "Bull-trap realized if LDPM-89 stays below LDPM-144 or VoEx-daily moves south; then weakness expected.",
+      "quote": "Technically bullish but a watchful eye still until LDPM corrects."
+    },
+    "levels": [
+      {
+        "value": 5670,
+        "instrument": "SPX_ES",
+        "role": "support",
+        "side": "below",
+        "quote": "Downside resolution to organic bid would occur at (presently) $5,670ish."
+      }
+    ],
+    "notes": null
+  },
+  {
+    "file": "weekly-chat-2024-10-20",
+    "report_date": "2024-10-20",
+    "direction": {
+      "call": "bullish",
+      "confidence": "medium",
+      "summary": "Continued bullish outlook with similar action to last week expected; VoEx watched closely for divergence reminiscent of 2024-07.",
+      "conditions": "Flips bearish if VoEx moves into the Propagation Zone; QQQ's nearby selling pressure may cause early-week volatility.",
+      "quote": "Overall, continued bullish outlooks with hopes that VoEx moves northward for the winter."
+    },
+    "levels": [],
+    "notes": "Second half is admin content (dashboard migration, LTA/education roadmap); market section is short."
+  },
+  {
+    "file": "weekly-chat-2024-10-27",
+    "report_date": "2024-10-27",
+    "direction": {
+      "call": "bearish",
+      "confidence": "high",
+      "summary": "Conditions turned bearish; near-term downside expected toward $5,600 ES while VoEx stays within stability, then bullish resolution afterwards.",
+      "conditions": "Downside stays near-term only while VoEx remains within Stability; lean bullish resolution thereafter if LDPM-610 holds.",
+      "quote": "Overall, downside is expected with a near-term time horizon in so long as VoEx remains within Stability."
+    },
+    "levels": [
+      {
+        "value": 5600,
+        "instrument": "SPX_ES",
+        "role": "target",
+        "side": "below",
+        "quote": "a reasonable downside target of $5,600 whereat LDPM-610 looks poised to offer its organic bid as support"
+      },
+      {
+        "value": 5500,
+        "instrument": "SPX_ES",
+        "role": "support",
+        "side": "below",
+        "quote": "movement rapidly towards LDPM-610 (orange line) at 5,500-ish"
+      }
+    ],
+    "notes": "Internal inconsistency: summary places LDPM-610 support at $5,600 while details say 5,500-ish."
+  },
+  {
+    "file": "weekly-chat-2024-11-03",
+    "report_date": "2024-11-03",
+    "direction": {
+      "call": "bearish",
+      "confidence": "high",
+      "summary": "Maintained near-term downside expectations; VoEx-daily in Propagation Zone, bear-trap forming, dip to ~$5.6k ES expected then normal programming.",
+      "conditions": "Downside stays near-term while VoEx itself remains in Stability; watch for VoEx entering the Propagation Zone.",
+      "quote": "So – bearish through and around with expectations of a dip to ~$5.6k on ES followed by resumption of normal programming"
+    },
+    "levels": [
+      {
+        "value": 6000,
+        "instrument": "SPX_ES",
+        "role": "target",
+        "side": "unknown",
+        "quote": "downside with a reasonable target of $6,000 for ES"
+      },
+      {
+        "value": 5600,
+        "instrument": "SPX_ES",
+        "role": "floor",
+        "side": "below",
+        "quote": "LDPM-610 showing a reasonable floor now at $5.6k still – and that feels reasonable"
+      }
+    ],
+    "notes": "Summary states 'target of $6,000 for ES' — likely a typo; details consistently give ~$5.6k downside target/floor."
+  },
+  {
+    "file": "weekly-chat-2024-11-10",
+    "report_date": "2024-11-10",
+    "direction": {
+      "call": "bullish",
+      "confidence": "medium",
+      "summary": "Bearish evidence erased after outsized up week; bullish data prints abound, though embraced with newborn-fawn hesitance.",
+      "conditions": "Low but nonzero risk of a VoEx-Spike / mean reversion; QQQ spot-down selling pressure could exaggerate any dip.",
+      "quote": "Overall, the data seem quite bullish and so too then do the outlooks!"
+    },
+    "levels": [],
+    "notes": null
+  },
+  {
+    "file": "weekly-chat-2024-11-17",
+    "report_date": "2024-11-17",
+    "direction": {
+      "call": "bearish",
+      "confidence": "high",
+      "summary": "Point system favors 'extension' over mean-reversion: prolonged downside expected, roughly 3% down through LDPM organic bids toward LDPM-610.",
+      "conditions": "Timeframe extends to medium-term only if VoEx-daily enters the P.Z. and gamma squeezes increase; VoEx still within stability.",
+      "quote": "Overall, bearish outlooks abound as the data show a high prejudice thereto."
+    },
+    "levels": [],
+    "notes": "Downside target given only in percent terms (~3% to LDPM-610), no numeric price. Long dashboard/infrastructure rant appended."
+  },
+  {
+    "file": "weekly-chat-2024-11-24",
+    "report_date": "2024-11-24",
+    "direction": {
+      "call": "bullish",
+      "confidence": "high",
+      "summary": "Downside threat faded; VoEx-daily rebounded into Stability with omnidirectional purchasing support — a return to bullish outlooks.",
+      "conditions": "If price dips and VoEx with it, near-term bearish reconsidered — but expected to be buy-the-dip, not prepare-for-more.",
+      "quote": "Overall, bullish ideations reign supreme."
+    },
+    "levels": [],
+    "notes": "Includes dashboard migration announcement; no numeric index levels given."
+  },
+  {
+    "file": "weekly-chat-2024-12-01",
+    "report_date": "2024-12-01",
+    "direction": {
+      "call": "bullish",
+      "confidence": "medium",
+      "summary": "Continued bullish performance expected, with a wary side-eye at QQQ's proximity to selling pressure and isolated VoEx instability.",
+      "conditions": "QQQ falling below purchasing support while IV drops precipitously would signal stagnation-then-drop; watch QQQ's VoEx and hedging environment.",
+      "quote": "the overall outlook for the week ahead is continued bullish performance with a note to watch $QQQ’s VoEx and hedging environments"
+    },
+    "levels": [],
+    "notes": "Large appendix on crypto robot trading; DOGE price levels ($0.42/$0.43) excluded as non-equity-index."
+  },
+  {
+    "file": "weekly-chat-2024-12-08",
+    "report_date": "2024-12-08",
+    "direction": {
+      "call": "bullish",
+      "confidence": "medium",
+      "summary": "Bullish outlook maintained; mean-reversion risk flagged, but dips limited to ~$5,900 ES seen as average-down opportunities — dip-then-rip.",
+      "conditions": "Extension beyond $5,900 on ES or a VoEx signal would trigger a review of medium-term conditions.",
+      "quote": "Overall, the environment is bullish with some risk identifiable and relatively easy to track."
+    },
+    "levels": [
+      {
+        "value": 5900,
+        "instrument": "SPX_ES",
+        "role": "floor",
+        "side": "below",
+        "quote": "anything limited to ~$5,900 on $ES (the current LDPM-89, -144 floor) will present a decent average down opportunity"
+      }
+    ],
+    "notes": null
+  },
+  {
+    "file": "weekly-chat-2024-12-15",
+    "report_date": "2024-12-15",
+    "direction": {
+      "call": "bearish",
+      "confidence": "high",
+      "summary": "VoEx-daily's dive out of Stability signals near-term downside of -2% to -4%, toward $5,970 then possibly $5,796 on ES.",
+      "conditions": "Tempered by VoEx itself remaining within stability; if VoEx-daily proves too reactionary, conditions repeat last week's meandering.",
+      "quote": "So – bearish outlooks ahead with potential -2% – -4% moves ahead."
+    },
+    "levels": [
+      {
+        "value": 5970,
+        "instrument": "SPX_ES",
+        "role": "target",
+        "side": "below",
+        "quote": "price movement expectations towards LDPM-144, and 377 at ~$5970 (~-2.00%) in the near future"
+      },
+      {
+        "value": 5796.14,
+        "instrument": "SPX_ES",
+        "role": "target",
+        "side": "below",
+        "quote": "the possible move further down to $5,796.14 (-4.00%)"
+      }
+    ],
+    "notes": "Main Points state local downside target of about -1.5% but details say ~-2.00% ($5970)."
+  },
+  {
+    "file": "weekly-chat-2024-12-22",
+    "report_date": "2024-12-22",
+    "direction": {
+      "call": "bearish",
+      "confidence": "high",
+      "summary": "Strong bearish leanings; ~3% decline to LDPM-610 expected, with a potential 20% correction scenario if conditions worsen.",
+      "conditions": "Downside limited to ~-3% while VoEx stays within Stability; VoEx abandoning post opens the -20% monthly-floor scenario.",
+      "quote": "Overall strong bearish leanings with potential for market correction brewing."
+    },
+    "levels": [
+      {
+        "value": 5800,
+        "instrument": "SPX_ES",
+        "role": "floor",
+        "side": "below",
+        "quote": "LDPM-610 is still present at ~5.8k (currently about -3% away from us)"
+      },
+      {
+        "value": 5000,
+        "instrument": "SPX_ES",
+        "role": "floor",
+        "side": "below",
+        "quote": "a floor all the way at LDPM-144 (neon-blue) at ~$5,000! That’s a hefty ~20% drop!"
+      }
+    ],
+    "notes": "Two-tier downside framing: -3% (daily LDPM) as base case, -20% (monthly LDPM) if VoEx leaves Stability."
+  },
+  {
+    "file": "weekly-chat-2024-12-29",
+    "report_date": "2024-12-29",
+    "direction": {
+      "call": "bearish",
+      "confidence": "medium",
+      "summary": "Continued bearish lean; VoEx in P.Z. across major ETFs plus liquidity drain; ~4% drop to LDPM-610 targeted, possibly ~$5,600.",
+      "conditions": "Only non-bearish pathway is an IV-down push toward gamma neutrality requiring substantial purchasing support; liquidity drain implies volatility regardless.",
+      "quote": "Overall, prudency suggests increased volatility with likely realization towards the downside."
+    },
+    "levels": [
+      {
+        "value": 5851,
+        "instrument": "SPX_ES",
+        "role": "support",
+        "side": "below",
+        "quote": "LDPM-610 as a respectable test-of-stability at $5,851, which is currently about -3.7% away"
+      },
+      {
+        "value": 5600,
+        "instrument": "SPX_ES",
+        "role": "target",
+        "side": "below",
+        "quote": "movement down towards ~$5,600 seems reasonable; which is an appreciable 7% removed from us currently"
+      }
+    ],
+    "notes": null
+  },
+  {
+    "file": "weekly-chat-2025-01-05",
+    "report_date": "2025-01-05",
+    "direction": {
+      "call": "bearish",
+      "confidence": "medium",
+      "summary": "Default bearish (BUPO) with VoEx entering the Propagation Zone, but a bull-trap rally likely forms first before downside resumes.",
+      "conditions": "Put-sellers signal a near-term $+/IV- pop; a steady VoEx ascent out of the P.Z. would restore bullish outlooks.",
+      "quote": "Overall, it seems BUPO (of the Bearish variety) has returned just in time for a bulltrap."
+    },
+    "levels": [],
+    "notes": "Bearish regime call with explicit near-term bull-trap expectation; downside targets deferred for re-examination, no new numeric levels. Long admin section on bugs/LTA/dashboard."
+  },
+  {
+    "file": "weekly-chat-2025-01-12",
+    "report_date": "2025-01-12",
+    "direction": {
+      "call": "bearish",
+      "confidence": "high",
+      "summary": "Officially bearish and in full swing; weekly LDPS turned bearish, testing $5,750 floor with targets $5,500-$5,300 then $5,000.",
+      "conditions": "QQQ's relatively robust hedging support and a tentatively positive GTM are the only bullish glimpses; time will tell.",
+      "quote": "The data are officially bearish and moves are in full-swing."
+    },
+    "levels": [
+      {
+        "value": 5750,
+        "instrument": "SPX_ES",
+        "role": "floor",
+        "side": "below",
+        "quote": "we are already testing the first floor! (LDPM-5 [neon-blue]) at $5,750-ish"
+      },
+      {
+        "value": 5500,
+        "instrument": "SPX_ES",
+        "role": "target",
+        "side": "below",
+        "quote": "This sets the next downside target at $5,500-$5,300-ish"
+      },
+      {
+        "value": 5300,
+        "instrument": "SPX_ES",
+        "role": "target",
+        "side": "below",
+        "quote": "This sets the next downside target at $5,500-$5,300-ish"
+      },
+      {
+        "value": 5000,
+        "instrument": "SPX_ES",
+        "role": "target",
+        "side": "below",
+        "quote": "should things deteriorate from there, a likely resting place of $5,000 at LDPM-7 (orange line)"
+      }
+    ],
+    "notes": "Prior ~$5,900 ES target (from 2024-12-09) noted as reached (ES settled $5,866.25), prompting the extension to lower targets."
+  },
+  {
+    "file": "weekly-chat-2025-01-20",
+    "report_date": "2025-01-20",
+    "direction": {
+      "call": "bullish",
+      "confidence": "medium",
+      "summary": "Near-term bull-trap rally to ~$6,100 ES seen as highly likely, followed by resumption of bearish action under BUPO-bearish regime.",
+      "conditions": "Rally capped near $6,100 multi-interval LDPM ceiling; VoEx still in P.Z. (BUPO-bearish), so bullish move treated as bull trap.",
+      "quote": "Taken together, it seems a bull run to $6,100 followed by resumption of bearish action seems highly likely."
+    },
+    "levels": [
+      {
+        "value": 6100,
+        "instrument": "SPX_ES",
+        "role": "ceiling",
+        "side": "above",
+        "quote": "it seems reasonable that bullish performance persists a tad more, perhaps to about $6,100 on ES or so"
+      },
+      {
+        "value": 6070,
+        "instrument": "SPX_ES",
+        "role": "ceiling",
+        "side": "above",
+        "quote": "it appears that $6,070-ish is an established ceiling of sorts"
+      }
+    ],
+    "notes": "Two-phase call: near-term rally to ~$6,100, then bearish resumption; labeled bullish for the coming week with the bearish regime in conditions."
+  }
+]

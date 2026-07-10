@@ -1,0 +1,327 @@
+                                   Weekly Chat 04/29/2024
+
+
+                                          Main Points
+
+
+    -   VoEx has returned northward and has paused at the Propagation Line for $SPY and
+        $QQQ.
+    -   Hedging environments are opposite for $SPY and $QQQ, with $QQQ showing robust
+        purchasing support in any $- direction, while $SPY sees diffuse selling pressure locally.
+    -   Put-selling is present but minimal despite the recent $+.
+    -   Market-Wide Gamma Squeeze data show a slight reduction in gamma squeezes but
+        GTM is mainly printing negative-to-zero values.
+    -   VoEx Variance shows data propagating still within the Propagation Zone, and barren
+        Stable Zone.
+    -   In sum, high potential for another bounce but unconvinced its anything more.
+
+                                           SUMMARY
+
+
+
+           Last week, it would seem that the expectation of flat-to-greenish was
+           usurped for “just green”.
+
+           Since then, VoEx has returned to the Propagation Line in a calculated-
+           fashion. Like the week prior to last, this brings a hesitance towards re-
+           committing to shorting but rather suggests the bounce bounceth still.
+
+           Hedging environments are divergent on $SPY and $QQQ, with the former
+           showcasing a vanna-unstable orientation and the latter showcasing a
+           stable orientation with robust purchasing support located $-.
+
+           Put-selling is present but uninspiring, especially considering the recent
+           price-appreciatory and IV-depreciatory environment.
+
+           GTM data is lukewarm with a decrease in gamma squeezes noted over
+           the past 5-days but without a concurrent GTM print to favor sustained
+           destruction.
+
+           Overall, prudency suggests continuation of the bullish performance but
+           the data is not robust enough to discredit the idea that this movement has
+           a short lifespan to look forward to.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                       04/29/2024
+                                               DETAILS
+
+
+
+
+Last week, we left off with the notion that there might be a “flat-to-greenish” bounce in the week,
+as evidenced by some VoEx Divergence and a supportive hedging environment.
+That outlook proved to be … technically correct, but truthfully, it doesn’t feel like it! The week took
+the inch of a bull-bounce and gone to the moon with it, as evidenced by $SPY moving 2.65% for
+the week, along with $QQQ’s 3.94%
+With such big moves, it can be worthwhile to normalize them into a number that helps us
+understand the relative magnitude of these moves. So, like usual, let’s check out the price-change
+normalized against the EPR for the week to see just how big these moves were.
+Doing this, we get 1.36 for $SPY, and 1.60 for $QQQ – so $SPY moved 136% more than the market
+was expecting from last Friday, while $QQQ moved 160% more! Not too shabby.
+Looking at these moves through the gamma hedging environments shows a pretty interesting
+story.
+
+
+
+
+The start-of-the-week for $QQQ saw the initiation of a robust push into selling pressure, after
+which it seems the index mostly floated back towards gamma neutrality, only to end the week
+with one final push.
+For $SPY, on the other hand, it seems a similar route was attempted , but didn’t quite manage to
+get past the selling pressure as well as $QQQ – perhaps contributing to the 20% difference in
+overall weekly price movement between the two indexes.
+Thus, it would seem this week provided a bounce and, on the surface, a reasonable-enough show-
+of-force to warrant a pause and re-investigation as to how long this dip is expected to dipeth.
+So, let’s get started!
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                            04/29/2024
+Getting started
+As usual with VoEx, we see frustration:
+
+
+
+
+The month was started with VoEx’s hesitation at the Propagation Line, and it would seem that
+the month shall end similarly as the waters may be too cold still for VoEx.
+$QQQ sees much the same performance as well.
+
+
+
+
+Ideally, if this were in response to price-appreciation-provoking-instability, I would expected to
+be presented with a tad more of a “spikey” VoEx– but this more luke-warm return to the
+Propagation Line heightens the risk for a prolonged appreciation (but still, for the time being, a
+bounce nonetheless).
+This outlook is echoed in neo-VoEx as well, where we can see VoEx-daily has begun spiking into
+the “Neutral Zone”.
+
+
+Deep Dive Stocks – Weekly Chat                                                         04/29/2024
+Where $SPY’s neo-VoEx stops in its resolution, however, $QQQ makes up for by-way of sending
+VoEx-daily quite directly into Stability:
+
+
+
+
+This echoes previous times when VoEx was in the Propagation Zone while VoEx-daily moved
+northward, and as such, the outlook is reminiscent of past outcomes: bounce until downside is
+continued (the start of which one need simply keep an eye on VoEx-daily).
+As we saw above, Neo-VoEx for $SPY and $QQQ may have some differences but the hedging
+environments between the two are substantially different. Take a peek:
+
+Deep Dive Stocks – Weekly Chat                                                    04/29/2024
+With robust purchasing support on $QQQ (again!) and the opposite on $SPY, it seems like quite a
+potential stall. Another nod to a stall-week is the robust purchasing support located $- for $QQQ,
+the Influence Distribution is showing a net red-to-flat week as the most likely outcome.
+
+This is, of course, not to mention the counter-balancing being performed via the right-ward tail on
+both – indicating a low probability of a significantly bullish move.
+Clearing through the conflicting data is some-what easier if we narrow the focus down to “are
+these hedging heatmaps conducive to a continued-bounce?”, and to that query I think it is
+reasonable to say “yes”.
+Despite the local selling pressure on $SPY, it is quite diffuse, and should conditions continue as
+we observed last week, then $SPY’s relative “weakness” should be supported nicely via $QQQ’s
+recent appetite for selling pressure, and in combination with its robust response last week to
+purchasing support, the stage appears set for a similar week of right-ward tails.
+In sum, this seems like a conducive hedging environment for a bounce.
+
+In pondering the idea of a bounce, I thought it might be interesting to look at if there was any
+general evidence of poor liquidity prior-to, during, or even after a bounce. To do this, I went over
+to the new Dashboard Graphing page (!) and looked at the daily percent-change in price for $QQQ
+along with the daily percent-change in LDPM-Vol, with both variables undergoing an EMA of 20 to
+smooth things out some.
+The idea was straightforward: if there was anything associated with “$+/LDPM-Vol+” or “$-
+/LDPM-Vol-“ 1, such as the initiation of bounces or the ending of them, or even as a sign of
+something.
+Well, let’s take a peek at what the graph shows us!
+
+
+
+
+1
+ Since the “typical” association in the market is that price appreciation = low volatility = high liquidity (and
+conversely), I was interested in seeing if there was any evidence of the contrary anywhere.
+
+Deep Dive Stocks – Weekly Chat                                                                            04/29/2024
+       Above is the bar-graph of price (blue) and LDPM-Vol (yellow) with the boxes surrounding the
+       moments that were mentioned: either $+/LDPM-Vol+ or $-/LDPM-Vol-.
+
+       In investigating if these moments were pre-cursors to things (just visually for now), the (possibly
+       real but not verified ) trend that I observed was sort of what I was after but not what I expected.
+
+       For instance, take a peek at the moves outlined in the boxes above: you’ll see the two positive
+       times outlined show a 12% and ~10% gains, whereas the negative moves in the market show a
+       5.28%, 7.83%, and 1.54%. That’s somewhat curious, no? Why are the positive moves larger than
+       the negative moves?
+       So, I went to look at the EPR before these events occurred, and found the following:
+
+Date                   Price | LDPM-Vol     ~|EPR |              ~|Actual|            ~% Difference
+                       Change
+
+02/23 – 03/23            -|-                   5.6                        5.3                  -7.0
+
+05/23 – 07/23           +|+                    6.0                       12.0                 67.0
+
+09/23 – 10/23            -|-                   6.0                        8.0                 28.0
+
+01/24 – 03/24           +|+                    4.0                       10.0                 85.0
+
+03/24 – 04/24            -|-                   5.0                        2.0                 -85.0
+
+
+
+
+       Deep Dive Stocks – Weekly Chat                                                         04/29/2024
+Admittedly, the observations are sparse (and only limited to the visible time period above) but, in
+short, it appears that there’s a general trend of:
+                          $+ with LDPM-Vol+ with often exceed EPR, and
+
+                          $- with LDPM-Vol- will often underperform EPR
+That seems nifty! In terms of being able to identify “bounces”, I think this pass of the data
+showcases that that should be possible with maybe some continued tweaking – for instance,
+notice that after the brown boxes, the price-action tends to switch! (i.e.: the blue bars switch to +
+or – shortly after the brown boxes). Those would be the bounces!
+With this in mind, the current performance in the market appears to be $- and LDPM-Vol+, which
+is not fun for those of us looking for $- & RV > IV as the main vehicle of profitability in the future.
+I could have stopped there, as that finding is already nifty, but I dug too deep and something
+looked back2.
+You see, I had, for a while now, thought “Justin, those voices aren what if LDPS can help identify
+“liquidity zones ?”. These would be price-spots or price-intervals, where there seems to be a
+spontaneous showing of “good” liquidity, along with price-spots that show “poor” liquidity. This
+was a budding idea from watching LDPS for quite awhile and noticing that liquidity seemed to
+often disappear or re-appear at specific “spot-ranges”.
+Thus, this idea was always on the “sketchpad” of ideas, waiting for me to get around to it – and,
+well – it might be time for it to be pushed up the list some!
+Let’s take a closer look at the data above for the 2024 boxes. In the graph, we can see LDPM-Vol
+spikes up rapidly at the start of the 01/24-03/24 interval. Throughout the interval, we can see that
+LDPM-Vol starts decreasing in its growth, ultimately showing a reduction in LDPM-Vol at the start
+of the 03/24 – 04/24 interval.
+But! Then notice that LDPM-Vol spikes back up again – right at the end of the 03/24 – 04/24
+interval.
+Now – please do not be too alarmed at the next graph. I promise I don’t do lines often, but this is
+a special occasion.
+
+
+
+
+2
+    Queue spooky music.
+
+Deep Dive Stocks – Weekly Chat                                                            04/29/2024
+LDPM-Vol ramps up suddenly and ramps down suddenly at about the same price point!
+
+What does this all mean? Something, and I’m destined to find out what. It seems too good to be
+true to see, at the start of price-action change, something that can tell us (LDPM-Vol) if the
+resulting price-action is going to be less-than or greater-than EPR with reasonable accuracy, along
+with what might happen after the fact!
+Pretty cool, so let’s bump this up a few notches on the to-do list and move along to the other data
+in the Weekly Chat before getting too distracted.
+The hedging environments seem favorable for a continued bullish move, but it wouldn’t be a party
+without our put-friends joining, so let’s see what their plans are:
+
+
+
+
+It would seem that our put-selling-friends are, and pardon the French here, commencent à danser
+mais peut-être seulement les ivrognes semble-t-il. Or in other words, much like a little turtle
+hatching from its lil’ egg on the lil’ beach, our put-selling friends seem to be emerging into this
+turbulent world, slowly, cautiously, but emerging nonetheless. The hesitance of our dear friends
+can be seen from $SPY’s DLP activity on 10/27/23 (the last “bottom” the market has had):
+
+
+Deep Dive Stocks – Weekly Chat                                                        04/29/2024
+                                                       Now that is a declaration of existence! If I
+                                                       am to wave my hands around, the current
+                                                       behavior seems fitting for a bounce: try to
+                                                       capture some gains but with a reasonable
+                                                       amount of caution.
+
+                                                       Let’s see if there are any foundational
+                                                       reasons that we can find to explain the
+                                                       cautionary stance seen by out put-sellers by
+                                                       checking the MWGS data (below).
+
+
+
+
+A neutral-ish week for gamma squeeze amounts,
+the current data show a slight up-tick in gamma
+squeeze growth along with a possible positive-
+move for GTM.
+
+This showing of GTM is still predominately
+bearish for me, as there have been several
+moments of long gamma “boluses” since the
+overall decline in GTM that started in 02/2024.
+So, until GTM moves significantly into positive
+territory, I’ll consider things to be progressing as
+they have been, and so, I consider this GTM print
+mostly negative.
+
+So, overall:
+    -   VoEx has stalled again at P.Z,
+    -   Hedging environments are poised to offer support for a bounce,
+    -   Put-sellers don’t seem too convinced of robust bullish moves are long-lasting but do see
+        some profitability with a $+/IV- outlook,
+    -   MWGS data is hinting that more gamma squeezes are inbound as growth grows and GTM
+        is still mostly negative.
+
+It would seem that the data are in agreement for a bounce! But, before we declare victory over
+establishing an outlook for next week, let’s “zoom out” some, and take a peek at VoEx Variance;
+if this is a bounce, then we should expect to still see data within the Propagation Zone. Is that the
+case?
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                          04/29/2024
+Yup! Sure is! And, its worth
+noting that, no new data
+within “Stability” zone (the
+top zone; the middle-zone
+should should be labeled
+“Neutral”).
+Data continuing to show up
+within the Propagation
+Zone definitively embeds
+the     current     market
+performance in the context
+of a bounce.
+Lastly, before moving on
+with life, let’s take a peek at
+LDPM/LDPS                 from
+TradingView for $SPY and
+$QQQ on the 1-Day, and 2-
+Day intervals:
+
+
+                                                                           All   things look
+                                                                           bearish still! $SPY
+                                                                           (top graphs) seems
+                                                                           to be hanging onto
+                                                                           LDPM-144       (gold-
+                                                                           line) for dear life,
+                                                                           while $QQQ has
+                                                                           already         long-
+                                                                           abandoned       such
+                                                                                      frivolous
+                                                                           attachments.
+
+
+
+
+Thus, continuation of the bounce is prudently warranted for the week ahead, with a close eye on
+VoEx and LDPM/LDPS to help guide the turbulent waters until downside is announced once more.
+Happy Trading,
+Justin
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                     04/29/2024
+

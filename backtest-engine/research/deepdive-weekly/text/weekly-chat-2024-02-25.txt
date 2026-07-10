@@ -1,0 +1,258 @@
+                                   Weekly Chat 02/20/2024
+
+
+                                          Main Points
+
+
+           -   $SPY and $QQQ have VoEx Divergence with VoEx-Trend encroaching on the
+               Inhibition Line.
+           -   Gamma Hedging Heatmaps are in a vanna unstable, orientation with diffuse
+               selling pressure.
+           -   Put-selling is near-zero on $SPY and $QQQ.
+           -   Gamma-Trending Metric has started to print negative values.
+           -   In preponderance of the evidence, prudency suggests bracing for downside.
+
+                                           SUMMARY
+
+
+
+          Divergence on $SPY and $QQQ has continued to progress, along with
+          recent VoEx-Spike behavior.
+
+          This divergence prevents renewed adoption of BUPO (of the Bullish
+          Variety) which highlights the unstable component of BUPO’s bullish and
+          unstable paradigm.
+
+          Hedging Heatmaps provide little insight into changing conditions as they
+          have, in fact, not changed much: vanna unstable orientation with mild and
+          diffuse selling pressure; the standard du jour of the day.
+
+          Put selling remains low-to-zero for $SPY and $QQQ, suggesting little
+          confidence in profitability with a $+/IV- future. Or perhaps rich people
+          don’t do 4-day weeks. Monday will tell; but for now, these prints do little to
+          inspire bullish confidence.
+
+          GTM has broken away from its obsessively large prints-of-late and
+          produced the first showing of a negative GTM; a telling of short gamma
+          starting its flow towards the market.
+
+          All-in-all, prudency suggests there is reasonable downside risk and, as
+          such, a neutral-to-bearish outlook for the week ahead.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                         02/26/2024
+                                             DETAILS
+
+
+
+
+Hello one and all!
+Another week in the market has passed. Last week, there was some concern regarding this week
+with regards to growing concern for bearish price-action, and it appeared the start-of-the-week
+was in agreeance with us somewhat, with $SPY experiencing an early-week downturn of ~-0.4%
+and $QQQ experiencing a downturn of 1.15%.
+Overall, the week ended green, however, with $SPY finishing 1.67% for the week, and $QQQ, 1.44%.
+The short-week can be viewed in an even shorter graph below:
+
+
+
+
+A quick tease with luke-warm selling pressure only to rebound in the later-half of the week.
+An uninspiring week which, perhaps thankfully, leaves our inquires things straightforward for us
+this week: to BUPO (of the Bullish variety) or not to BUPO1? That is the question we shall try to
+answer forthwith.
+After trying to answer said question, we will also take a quick detour to look at some new VoEx
+graphs!
+So, let’s get started.
+
+
+
+
+1
+    Of the bullish variety.
+
+Deep Dive Stocks – Weekly Chat                                                       02/26/2024
+This is us getting started
+Starting as usual with VoEx, we see that our weekend-market-warrior life is made somewhat more
+straightforward with BUPO (of the Bullish variety) still present on both:
+
+
+
+
+$SPY’s VoEx[-trend] Divergence is still present, and thus, there is increased risk of downside and
+the end of BUPO [of the Bullish variety]. A more nascent conundrum of recent times is the
+purgatory of “Not BUPO” [of the Bullish variety] but also “Not BUPO” [of the Bearish variety] which
+creates a zombie-like state of NUPO (neither until proven otherwise?) until BUPO returns or VoEx
+falls into the P.Z., which would start off a round of BUPO.
+Moving onto $QQQ, much the same:
+
+
+
+
+Divergence with a side of VoEx Spike.
+
+
+Deep Dive Stocks – Weekly Chat                                                        02/26/2024
+In sum, it doesn’t seem quite fitting to call this BUPO (of the Bullish variety) but we might be
+kicking ourselves next week for playing “where do we want the data to be” versus “where is the
+data”.
+Nonetheless, it can’t be denied that VoEx-Divergence and VoEx Spiking are the hallmarks of near-
+term spaß2, so a close eye will be kept on VoEx in the coming days.
+Moving on from VoEx towards the Hedging Environments (not pictured) we see: the same, so I’ll
+skip their inclusion this week to save some digital trees but you can take my word for it: vanna
+unstable with staunch lukewarm selling pressure all around us like Neo in the vat.
+
+Moving towards perhaps something more tantalizing, we see a small twinge of activity within the
+put-sellers on $QQQ:
+
+
+
+
+A curious showing this week from them, given how bullish things performed in the later-half of
+the week. This curiosity extends naturally towards next week with an equally-absent showing of
+put-selling.
+
+Bullish? Not quite. Bearish? Kinda. Enough to hang my hat on? Not quite.
+In other news, a development over in the Market-Wide Gamma Squeeze neighborhood of DDS has
+left its residents in quite the state, as you can see below:
+
+
+
+
+2
+    German for: exclusionary criteria for bullish performance.
+
+Deep Dive Stocks – Weekly Chat                                                     02/26/2024
+A tiny negative gamma print! Quite the stir.
+
+Alone, perhaps not much, but one could argue that this is, by-and-large, another small stream of
+bearish data that is starting to coalesce into a reasonable river: VoEx Divergence on $SPY and
+$QQQ with recent VoEx Spiking; near--zero put-selling despite an even more reasonable green
+week; GTM is printing negative prints (suggesting that gamma squeezes in the market are going
+to start to increase), right after the large positive complexes that we investigated last week, and
+the week prior, and that were associated with 1-Month future market downturns.
+This reminds me of what we used to say in the fire department:
+                                                 “
+
+                                Where there’s smoke, there’s fire.
+                                                 “
+And in sniffing around, things just smell smokey.
+And with that, I will mostly be observing the market on Monday with a very low threshold to start
+sizing into short positions as the overall trend in the data appears to be priority downwards.
+Happy Trading –
+
+
+Justin
+
+
+Oh wait,
+
+New VoEx?
+Perhaps it is a bit early but I wanted to share a budding new version of VoEx that has recently
+been cooked up. Officially, the jury is still out with regards to its efficacy as the investigations
+aren’t quite complete but, even still, it doesn’t hurt to peek sometimes!
+
+
+
+Deep Dive Stocks – Weekly Chat                                                         02/26/2024
+In comparison with the original VoEx, these are much the same but with several key differences.
+To highlight these similarities and differences, let’s start with an example from $SPY:
+
+
+
+
+Two of the three zones have so far survived die Verwandlung: the Stable and the Propagation
+Zone. The Stable Zone has been shifted up into where the Inhibition Zone used to be and is no
+longer “BUPO” but rather just strictly “B”.
+The old Stable Zone is more akin to the “Inhibition Zone” in function but “Inhibition” is much too
+large to put into text so, the name is still up in the air.
+“VoEx” now exclusively refers to VoEx-Trend within this version, and it is the main determiner of
+overall price movement. This version of VoEx adheres much more strictly to the three zones: if
+VoEx-trend is in the Stable Zone, the stock is likely to go up, and when it is in the Propagation
+Zone, it is likely to go down.
+
+But, what about VoEx-daily? Well, it operates much the same, but better. Now, VoEx Spikes end
+where they mean to end. That means, if a VoEx Spike from the Propagation Zone only moves into
+the Stall Zone(?) [middle area], then whatever price movement caused that movement is likely to
+“stall out”. No more having to check some complicated graph to determine the expected
+outcomes!
+This newfound specificity is highlighted in the $SPY chart above in 2023-08 and 2023-10: VoEx is
+in the Propagation Zone which means those VoEx Spikes were, from their very inception,
+hallmarks of a bull trap since either the price was going to revert or VoEx would move into stability,
+and VoEx was moving down in mid 2023-08 during the first VoEx(-Daily) Spike.
+Any-who, that should be enough of me yappin’ for now. Let’s just look at some nice pictures.
+
+
+Deep Dive Stocks – Weekly Chat                                                           02/26/2024
+First up, $NVDA:
+
+
+
+
+Another change with this version of VoEx is that VoEx Divergence exists in spirit, but now, things
+don’t seem to get “spicy” until VoEx-Daily or VoEx falls into the Propagation Zone. This means
+that we have an ever-greater heads up most of the time!
+That’s kind of what we see here: $NVDA’s VoEx-daily has spiked into the “stall” zone after it and
+VoEx have been falling towards the Propagation Zone. The Spike tells us of the instability that the
+recent price action is unstable, and the spike’s ending location (in the Stall Zone) tells us the likely
+future moves: not up (the price should stall).
+A curious observation: what fortune that earnings happened just as VoEx-Daily dipped its toes
+into the Propagation Zone!
+Next up, we see $GME with VoEx-daily within the “Stall Zone” while VoEx is rapidly falling towards
+the P.Z:
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                            02/26/2024
+We see that after some erratic VoEx-Daily behavior in 2023-10, and beyond, sent things into the
+Stable Zone, ever since, things have progressed back towards the Propagation Zone. As VoEx
+falls we see VoEx-daily, residing within the “Stall Zone”. The interpretation? Stall-to-down.
+
+Next up, a curious sight: $JPM, who was sporting quite the bullish VoEx, but much like $GME,
+things seem to be cooling off:
+
+
+
+
+Perhaps things will rebound back into Stability – as it is still technically a bullish print, but for now,
+if one were to conjecture, it looks like a reunion in the Propagation Zone is in view.
+
+
+
+Deep Dive Stocks – Weekly Chat                                                              02/26/2024
+I’ll leave things off there – take some times and look through these and let me know what you
+think! There’s still a good bit to do but it might not hurt to keep an eye on things with this new
+VoEx occasionally until things get finalized.
+
+Also, real quick!
+There’s going to be a bit of a delay in the normal data updating time – I am trying to integrate the
+new LDPM into the dashboard and market scan but I under-estimated the processing time issues
+with the new Algorithm.
+The next step of progress is focused on three main things: The Robot, the Dashboard, and
+Educational Materials. The next steps for the Dashboard include updating the market scan to
+include the new LDPM, incorporating the new LDPM into the graphing functionality, some UI
+changes, and a data verification / update for the new/removed/modified tickers out there.
+
+Concurrently, the educational material is going to get renewed, starting with the LDPM Primer and
+Market Scan Primer. These, obviously, need a nice boost. I also put together an LDPS Primer that
+I will release soon. Down-the-line, more revisions will be performed on the other Educational PDFs.
+
+The Robot is coming along well – just needs some code refactoring for the trailing stop. Other
+than that, the upgrades are going well and the Beta version should be available, hopefully, within
+the month. I plan on having the Beta version out and update-free for 6-months, during which time
+you will all have access. As the 6-Month mark approaches, we will begin discussing the next
+steps.
+
+Overall, things are happening, I suppose.
+‘Til next time,
+
+Justin
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                         02/26/2024
+

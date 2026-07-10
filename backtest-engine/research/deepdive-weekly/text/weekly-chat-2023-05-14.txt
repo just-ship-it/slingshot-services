@@ -1,0 +1,237 @@
+                                  Weekly Chat 05/15/2023
+
+
+                                         Main Points
+
+
+    -   Data prints demonstrate bearish outlooks,
+    -   $QQQ’s VoEx has risen higher into the I.Z. but has not experienced a VoEx Spike or
+        Divergence back into the PZ.
+
+
+
+                                          SUMMARY
+
+
+           Last week, we had bearish leanings, and with some good graces, $SPY
+           moved -0.25%.
+
+           This week, the data are much the same and mostly unimproved.
+
+           $SPY’s VoEx (particularly VoEx-Trend) seem southward bound while
+           $QQQ’s VoEx has risen higher into the IZ.
+
+           The hedging environments show selling pressure $-/IV+, and both of their
+           influence distributions have negative outlooks for the week ahead.
+
+           MWGSC is creeping back up again, along with a slightly-greater-than-zero
+           growth in GS; GTM is printing negative (bullish) values for now.
+
+           DLP behavior is not reminiscent of bullish expectations for the week
+           ahead, and the 10-day growth rate of DLPs is near-zero.
+
+           Overall, a slight chance for bullish performance (via the right-tail on the
+           hedging environments as well as $QQQ’s VoEx) but the data seem
+           predominately bearish-leaning.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                       05/15/2023
+                                           DETAILS
+
+
+
+
+Hello all!
+Some weeks are delightfully boring, and others are dreadfully boring – which of the two
+did the week bring to you?
+Last week, we left off with the idea that downside is likely due to a variety of reasons, and
+with $SPY down -0.25%, we can see that we hit the nail on the head ... right?
+In any case, this week we will go over the new data, and then finally talk about the new
+dashboard in more concrete terms.
+Calm seas beget anxious sailors
+We can visualize the monolithic movements of last week with $SPY’s heatmap:
+
+
+
+
+If moving all around the heatmap keeping track of $SPY’s movements is making you
+dizzy, I don’t blame you.
+Since this is a pretty boring heatmap, let’s look at a slightly more interesting heatmap by
+mapping out the highs and lows throughout the week:
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                   05/15/2023
+With the early part of the week quickly
+diving into selling, it seems that
+Wednesday’s sudden decrease in IV
+helped bring $SPY out of the selling
+pressure and closer to gamma
+neutrality.
+You have to love when IV does that.
+
+
+
+
+In keeping with the hedging environments, we see a similar set-up for $SPY this week. We
+have some decent selling pressure all throughout our current location, and selling
+                                                   pressure located $-/IV+.
+                                                   In this regard, should we consider
+                                                   last week to be a common example
+                                                   of these set ups, it will be important
+                                                   to monitor IV throughout the week –
+                                                   a diminishing IV puts us closer to
+                                                   gamma neutrality, whereas an
+                                                   increase in IV pushes us closer to
+                                                   selling pressure; regardless of what
+                                                   the price is doing.
+                                                   It is worth mentioning that the
+                                                   influence distribution is printing a
+bearish print for the week ahead.
+We see a similar hedging
+environment      with    $QQQ:
+influence distribution suggests
+bearish returns; profuse selling
+pressure located throughout.
+These bring with it bearish/flat
+sentiments for the week ahead.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                               05/15/2023
+Moving towards VoEx, we see that $SPY’s seems to have started its downward trajectory:
+
+
+
+
+Although we are still inside of stability, one cannot help but notice that VoEx trend is
+mostly still on track for the normal “cycle”; that is, it is headed towards the P.Z., despite
+VoEx-daily’s quick diversions last week.
+Does this suggest that the normal “cycle” of the market is still in effect? That is, should
+we expect some near-term downside while the overall long-term movement of the market
+is upwards?
+$QQQ’s VoEx suggests that this may not be the case:
+
+
+
+
+With VoEx rising ever higher into the Inhibition Zone, without a definitive move downwards
+(such as a spike) or a migration lower (such as VoEx divergence), $QQQ’s view offers us
+a bullish outlook.
+
+Deep Dive Stocks – Weekly Chat                                                   05/15/2023
+Would I hang my hat on $QQQ’s outlook? Not particularly. Even with a few green days
+ahead, I think $QQQ is mostly expressing that appreciation right now is provoking
+instability; and we all know how that usually ends (down).
+From VoEx, then, it seems less a matter of “is near-term downside expected” but more
+“when is this near-term downside expected”?
+Had $QQQ’s VoEx started moving south (as $SPY’s), I think the answer would be “soon”;
+however, with $QQQ being
+obstinate as usual, this
+muddies       the    timing
+somewhat as once VoEx is
+in the IZ it can be hard to
+predict when the instability
+will surface.
+Zooming out to ExVoEx
+(Extended VoEx 1), we see
+that the ambiguity between
+$SPY and $QQQ diminishes
+somewhat. $QQQ’s ExVoEx
+is very reminiscent of local
+peaks and $SPY’s already
+seems to have started its
+decent.
+Thus, its seems reasonable
+that VoEx is suggesting
+downside is likely.
+In keeping with more macro
+views, we see that those-
+who-shant-be-named-but-
+we-talk-about-all-the-time-
+beause-they-always-sell-
+puts have continued their
+less-than-zealous peddling:
+
+
+
+
+1
+ Extended VoEx incorporates an extended data set! It can help us get a much more macro-, or long-term view of
+the markets.
+
+Deep Dive Stocks – Weekly Chat                                                                   05/15/2023
+With near-zero 10-day growth in DLPs, it would seem that those-that-shant-… (you get the
+jist) are not too keen on betting for $+ or IV-.
+We can pile this in the “bearish data print” pile.
+Our last macro view for this week is the
+MWGSC and GTM, which offer
+somewhat of a conflicting views again.
+We have been experiencing a mostly-
+flat MWGSC change over the past
+month!
+The 5-day growth (gold line, top graph),
+is peeking positive again suggesting
+that the current rate of gamma
+squeeze formation is becoming positive
+again, but GTM is still printing negative
+values (suggesting future gamma
+squeeze counts will be lower than
+current values).
+The most-recent data print for GTM
+shows a slight upwards trajectory – so
+perhaps GTM will not be bullish for long.
+So – what does all this mean? To
+summarize my main thoughts:
+   -   I think downside is likely still,
+   -   There appears to be a small
+       chance of “upside instability” as
+       described by $QQQ’s VoEx,
+
+
+
+Deep Dive Stocks – Weekly Chat                                               05/15/2023
+   -   Should $QQQ’s VoEx spike downwards or start diverging, the timeframe for this
+       downside shortens,
+   -   ExVoEx is more suggestive of near-term downside,
+   -   Hedging environments are not supportive in a $-/IV+ and the influence
+       distributions are predominately negative; unless IV drops enough to move the
+       indexes into gamma neutrality, upside will be worked against via hedging; with the
+       market in a relatively unstable state, this may have exaggerated effects,
+   -   MWGSC is creeping north
+   -   GTM is bullish but for how long?
+So, overall, I am still convinced of a near-term retraction and continuation of the normal
+cycle. I would be more emboldened in saying it is starting next week but $QQQ’s VoEx
+hasn’t given the “downside” signal quite just yet – and that is making me slightly hesitant.
+That means, I will expect a flat/down week unless IV drops significantly, in which case, I
+will position to capture some very quick gains.
+Dashboard?
+Dashboard!
+After a few more months than anticipated, the new dashboard and all of its main
+functionalities are completed! That means migration is planned for Friday 05/27! From
+now until then I will be sending out everyone’s username and passwords along with the
+new URL.
+What are the main changes to the dashboard? I will include a patch note in next week’s
+weekly email but here are some highlights:
+   1) Around 50% faster; able to handle larger data requests / loads easier;
+   2) Able to handle the growing user base
+   3) More secure;
+   4) Data is shared more efficiently;
+   5) The “foundations” have been re-worked to allow for future expansions that
+      require/utilize:
+         a. API access
+         b. Live data feeds
+         c. Notifications/alerts
+         d. Intra-day data updating
+It should be noted that for now the UI is predominately the same, however I am planning
+on having a robust UI overhaul planned for June 5th . So if you have any suggestions/ideas,
+please let me know!
+Well, that’s all I have for you guys this week,
+Happy trading! - Justin
+
+Deep Dive Stocks – Weekly Chat                                                  05/15/2023
+

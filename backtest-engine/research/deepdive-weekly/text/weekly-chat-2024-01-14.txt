@@ -1,0 +1,307 @@
+                                   Weekly Chat 01/16/2024
+
+
+                                         Main Points
+
+
+       -   VoEx is inconclusive on $SPY and $QQQ but not on $SPXL, $TQQQ and $IWM which
+           show continued VoEx Divergence development.
+       -   Hedging Environments are predominately unsupportive in the event of a $-/IV+ week
+           and they are particularly conducive to a $+/IV- week.
+       -   Put-selling has largely ceased and was inactive during the later-half of the week.
+       -   Overall, continued expectation for downside despite a green preceding week.
+
+
+
+                                          SUMMARY
+
+
+
+           VoEx on $SPY and $QQQ have “stalled” at the Inhibition Line, provoking
+           concerns for a renewed round of BUPO (of the Bullish variety) but
+           inspection of the leveraged ETFs, along with $IWM, show a “cleaner” views
+           that are congruent with past observations of $SPY and $QQQ’s VoExes.
+           Extending this posterior congruency into its anterior provides evidence
+           that VoEx Divergence and VoEx Spikes are still both present and
+           developing, suggestive of continued downside as VoEx moves towards
+           the P.Z.
+
+           The Hedging Environments are unsupportive overall with local and
+           immediate selling pressure found on $SPY, $QQQ, $SPXL, and $IWM. Only
+           $TQQQ is showing both local purchasing support and purchasing support
+           in the event of a $-/IV+ week. Additionally, these heatmaps do not promote
+           a $-/IV+ week but do provide tentative pathways for such a direction
+           through gamma neutrality.
+
+           Put-selling for the week a head is minimal; despite the green week overall
+           put-selling has largely ceased.
+
+           MWGS data shows week-over-week growth and continued negative GTM
+           prints, suggestive that more gamma squeeze are incoming.
+
+           Overall, prudency continues to suggest downside.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                      01/16/2024
+                                               DETAILS
+
+
+
+
+Hello everyone!
+Last week, we left off with lofty ambitions of making a profit on the downside in the week to
+follow.
+Well, the week was followed, and downside did in fact occur! The market, on the other hand,
+experienced quite the upside with $SPY moving 1.87% and $QQQ moving 3.23%. This can be
+visualized below:
+
+
+
+
+Of particular note, $SPY’s 5-day EPR for the week ahead was ±1.38%, which puts its movements
+30% ahead of the market’s expectations. QQQ’s EPR on the other hand was ±1.80%, putting its
+movements 57% a head of the market.
+I suppose having purchasing support was quite beneficial to $QQQ.
+
+And, I suppose, I have to somewhat acknowledge that our financial overlords were, in fact, correct
+this time.
+Guess that’s what I get for trying to be different.
+But moving on, this week we will look at if this serendipitous bullish performance shook things
+up, and if so, just how up things were shook.
+Then, some words from our sponsor1.
+
+
+
+
+1
+    me
+
+Deep Dive Stocks – Weekly Chat                                                       01/16/2024
+The data
+
+Last week was strange – a large movement followed by mostly blaséness (at least as far as price
+action is concerned). VoEx, on the other hand, continued to shake a bit throughout the week, as
+can be seen below in $SPY:
+
+
+
+
+This unfortunate complex is irksome, and becomes even more so when we peer over to $QQQ:
+
+
+
+
+In both cases, the week started off with a bang and this seems to have reverberated through VoEx
+quite a bit.
+
+
+
+Deep Dive Stocks – Weekly Chat                                                     01/16/2024
+Ordinarily, I might start ranting and raving and making graphs trying to dissect this seismologic a
+VoEx complex but this week I was reminded: leveraged ETFs exist!
+Here’s what I’m thinking: leveraged ETFs are, by-nature, more risk-on than the unleveraged ETFs.
+With this in mind, one could assume that most investors will be more risk-off while positioning
+inside of these leveraged ETFs. Reasonable? I think so.
+A potential consequence of this is that perhaps this creates an inherently “cleaner view” of how
+things are operating since these more risk-on positions are predicated on more confidence, and
+fewer players.
+In any case, let’s check out $SPXL and $TQQQ:
+
+
+
+
+The benefit is this week’s chaotic performance on $SPY doesn’t seem to have translated as much
+to $SPXL where a more defined VoEx Spike can be seen. In addition, we see that it is exhibiting
+VoEx Divergence, much like its less-leveraged-little-lrother2 $SPY.
+
+These observations are echoed in $TQQQ:
+
+
+
+
+2
+    It turns out English has no words that begin with an “L” and mean “sibling” or “brother”.
+
+Deep Dive Stocks – Weekly Chat                                                                  01/16/2024
+The recent VoEx Divergence and VoEx spiking are more well-defined in $TQQQ, while $SPXL
+offers a very clear view of when BUPO began, as well as the recent signs that it is ending (via
+VoEx Divergence and VoEx Spikes)!
+
+I think I like these views.
+I will look into this more and try to figure out why exactly it seems VoEx is “cleaner” on these ETFs
+than others cause, heck, even the view $IWM offers right now is incredibly clear:
+
+
+
+
+Besides just being easier to interpret, these examples do help clarify what was a heretofore
+forming concern: was the market back in BUPO (of the Bullish variety)? Since VoEx had “stalled”
+right at the Inhibition Line, it was technically encroaching on another bout of BUPO.
+
+These additional views, however, echo and extend our previous interpretations of VoEx for $SPY
+by showing confluence with VoEx Divergence and recent VoEx Spike behavior, while also
+demonstrating that BUPO is not indicated on any of the leveraged ETFs or $IWM.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                          01/16/2024
+As such, despite the overall against-the-flow
+movement for the week past, per VoEx, downside is
+still expected.
+
+Moving from VoEx to the Hedging Environments, a
+curious change is noted from the week before: the loss
+of purchasing support on $QQQ (below).
+This purchasing support, in spite of my dubiousness
+the week prior, seems to have influenced the market
+quite nicely (by way of helping $QQQ move ~57% more
+than the market was expecting), and, as such, the
+potential consequences of lacking said influence in the
+week ahead is worrisome.
+No purchasing support to be found for either $SPY or
+$QQQ, and only selling pressure found in the event of a
+$-/IV+ move.
+But – wait a minute. If VoEx above seemed “cleaner”
+for the leveraged ETFs et al., could the hedging
+environment be similar?
+Let’s see:
+
+Well – there is some good news I suppose.
+On $SPXL (top) we see that there is some purchasing support, oddly arranged in a $-/IV+ manner
+(mostly flanking gamma neutrality it seems).
+This purchasing support evolves in $TQQQ (middle) into more consistent purchasing support in
+the event of a $-/IV+ move – but notice that as IV increases, spot, the purchasing support
+diminishes3.
+This quasi-supportive purchasing support is not present on $IWM (bottom). $IWM contains
+nothing but pure selling pressure in the $-/IV+ quadrant.
+
+
+
+
+3
+    Vanna says hi!
+
+Deep Dive Stocks – Weekly Chat                                                    01/16/2024
+Additionally, all of the Heatmaps we’ve reviewed thus far (except for $TQQQ) have their crosshairs
+touching red – suggesting that there is immediate and local selling pressure, no matter which
+direction the price or IV goes for these ETFs.
+
+                                                           All-in-all, this isn’t a very supportive
+                                                           environment in the event of a $-/IV+ move but
+                                                           its also not the worst in the event of
+                                                           additional $+: notice that $IWM’s $+/IV-
+                                                           quadrant has robust purchasing support;
+                                                           $TQQQ has a gamma-neutral path extending
+                                                           $+/IV-; and $SPXL has only some light selling
+                                                           pressure separating it from purchasing
+                                                           support in the event of a $-/IV+ move.
+                                                           A curious set of circumstances, and one that
+                                                           I still believe favors downside (both due to
+                                                           the inherent instability of these hedging
+                                                           environments and VoEx). A fun observation
+                                                           through the week will be if $IWM moves more
+                                                           than its compatriots, given its positive-
+                                                           feedback-loop-ready orientation (PFLRO)4.
+                                                           Moving on from hedging environments, let’s
+                                                           check on what my Ever Gracious and
+                                                           Glorious Sellers of All that is Good (and Also
+                                                           Puts) are up to:
+                                                           Some moot performance starting the week
+                                                           out – the little activity seen on $SPY seems
+                                                           to have dwindled back to zero.
+
+                                                           $QQQ put-selling ramped up slightly –
+                                                           perhaps some of our theta-gang friends
+                                                           theta-ing some gains over the weekend.
+                                                           Nonetheless, in comparison to the just-
+                                                           recently-passed performance, this behavior
+                                                           is not inspiring. Of note, the put-selling didn’t
+                                                           even increase during the week’s earlier and
+                                                           substantial climb; perhaps there wasn’t
+                                                           sufficient confidence in continued growth.
+
+
+
+
+4
+ Since in the event of a $+/IV- week, $IWM will meet purchasing support and in the event of a $-/IV+ week, $IWM
+will meet selling pressure, there’s a reasonable expectation that in both cases ($+ or $-), $IWM will move more
+than the market is expecting (considering most of the market isn’t aware of its hedging environment).
+
+Deep Dive Stocks – Weekly Chat                                                                   01/16/2024
+If so, this lack of confidence seems to
+have extended itself throughout the week
+and into preparing for the short week
+ahead.
+Moving tangentially to the Market Wide
+Gamma Squeeze data, we see a 15%
+growth in gamma squeezes Week-over-
+Week (951 → 1,093). This follows for our
+projections from the few weeks that a
+persistent growth of gamma squeezes
+should be expected given GTM’s prints.
+This week, the same expectation is
+extended as GTM continues to print
+negative values (left), suggesting a
+continued flow of short-gamma heading
+towards the market. This comes as the
+GTM-ema (gold band) becomes officially
+negative.
+Essentially, short gamma has now been
+steadily flowing towards the market and
+the recent upticks in gamma squeezes
+are likely the first few to present, and it appears more is on the way.
+Overall, the data do not suggest that this week’s movements were sufficient to change conditions
+to warrant switching stances from “imminent downside” to BUPO (of the Bullish Variety).
+
+Despite VoEx’s indecision on $SPY and $QQQ, a quick review of the leveraged ETFs and $IWM
+help collaborate the initial outlook (incoming downside). In addition, the Hedging Environments
+see an overall presence of local selling pressure in a sea of near-by selling pressure. All-the-while,
+                                                                  the Put-Sellers have not come
+                                                                  out in force (just like they
+                                                                  recently did), despite a green, IV-
+                                                                  lowering week.
+                                                                   All-in-all, I think downside is still
+                                                                   a reasonable and prudent
+                                                                   outlook.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                            01/16/2024
+Words from our Sponsor!
+
+Okay – so, LDPS is mostly done and is set to release on 01/23/24. Most things are packaged and
+ready to go. You should have received access to LDPS on TradingView (link here). If you haven’t
+received access, be sure to send me an E-mail and I’ll get you added!
+The Research Paper is completed, and I will include that in this E-Mail, and the Primer will be out
+shortly.
+Additionally, there are a few bugs that have popped up while I wasn’t paying attention that I want
+to tackle as soon as LDPS is out. I just want to mention them here so that you guys know I’m
+aware of them:
+         -   The Dashboard is flipping to the next date earlier than it should. This causes a host of
+             downstream issues that ends up producing erroneous error messages. This requires
+             manually resetting the server and whatnot. It’s a pain. I’m aware of it and a fix is
+             incoming!
+         -   The Dashboard Reports section is glitching out such that it doesn’t always display all
+             of the reports.
+         -   The Dashboard isn’t loading all of the Market Current Reports.
+         -   The Dashboard will process data but then forget that it did that.
+As such, I plan on taking the Dashboard down for a good bit of the day on Saturday, the 20th of
+January 2024.
+The goal is to fix these and a few other bugs so that the time between now and the new dashboard
+(yes, by the way, I’ve decided on making a new dashboard) will be more comfortable.
+And so, that’s about it! When the YT Video and Primer are out, I will be sure to send them your
+way.
+If you have any questions on LDPS, please don’t hesitate to reach out –
+Happy Trading,
+Justin
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                          01/16/2024
+

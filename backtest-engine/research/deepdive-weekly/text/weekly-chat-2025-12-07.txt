@@ -1,0 +1,214 @@
+                                      Weekly Chat 2025-12-08
+
+
+                                             Main Points
+
+
+
+       -   VoEx remains in the P.Z., while VOEx-daily appears to be terminating in its spike’s
+           apex.
+       -   The gamma-hedging heatmaps showcase a stable environment with $SPY
+           surrounded by selling pressure and $QQQ by purchasing support in similar fashion
+           to last week.
+       -   The MWGS data show minimal GS growth with continued expectations of future
+           abundance.
+       -   LS&T analysis is complex and shows minimal supportive evidence for bullish
+           outlooks but sufficiently supportive evidence for spot-support which curtails
+           downside expectations but does not remove them.
+       -   Overall, the week ahead seems filled with more chop and the ultimate resolution
+           still appears to be towards the downside.
+
+                                              SUMMARY
+
+
+           Last week the overall outlook was bullish along with a high risk of chop. In
+           response, $SPY chopped while $QQQ experience bullish flows.
+
+           In response, VoEx-daily appears to have terminated its VoEx-daily spike,
+           suggesting we should await its return into the Propagation Zone. VoEx has
+           remained largely unphased with VoEx-daily’s excursion as it maintains its
+           relatively deep place in the P.Z., indicating medium-and-long term outlooks
+           remain bearish.
+
+           The gamma-hedging heatmaps show a similar set up to last week: stable
+           orientations without evidence of a gamma-neutral zone. $SPY has once again
+           local selling pressure while $QQQ experiences local purchasing support. A
+           reasonable showing of anticipated chop.
+
+           The predictive market-wide gamma squeeze data are cooling off slightly but still
+           indicate a future with a greater number of gamma squeezes than present which
+           is a bearish finding.
+
+           LS&T analysis showcases a more-complex-than-usual picture that showcases
+           numerous organic LT resistances and evidence of diminishing bullish support.
+           Despite this, liquidity remains bullish and LT supports, diminished as they may be,
+           are still present.
+
+           Overall, expected chop until the last of the bullish liquidity is siphoned away,
+           leaving only downside as the only path forward.
+
+
+
+Deep Dive Stocks – Weekly Chat              for the week of                  2025-12-01 to 2025-12-05
+                                              DETAILS
+
+
+
+
+Hello all!
+Before we dive into the weekly chat, some exciting news to share with you!
+    1- The webserver is completed! Remember way back when, when we were reminiscing about
+       API and data access? Well – it’s coming! I’m going to test it with initially handling just VoEx
+       graphs, which will be accessible at (2).
+    2- New discord! There’s a new, better and improved discord, whose admittance I am only
+       sharing with you, my dear premium members. In this new discord there are:
+           a. alerts that come from the Liquidity Toolkit (which you should have been given
+               access to – if not, let me know!) [TV Link],
+           b. a VoEx channel to request VoEx graphs in (!), and
+           c. a growing and vibrant community.
+       I don’t have the link for you just yet – I am setting up the bots and whatnot so that when
+       you get added, you get all the fun permissions. As soon as I have the link, I’ll send it on
+       your way.
+    3- Old discord : the other side of the coin is that the old (current) discord will be put out of
+       commission. I’m not sure yet about the date but it is going to be reasonably soon / after
+       you all receive your new links.
+The best news from all this is that things are moving forward nicely! This new webserver / api
+server is the bridge that takes us across many currently impassable rivers. I’ll keep you all
+updated!
+
+Hello all, again!
+Last week, we had net bullish ideations with soft temperaments of “choppy and flat” – well, on
+average (between $SPY and $QQQ) only. The reason behind the “on average” qualifier may seem
+reasonable if we consider that $SPY moved 0.34% while $QQQ moved 1.01% but it becomes
+obvious when we look at the gamma-hedging heatmaps below:
+
+
+
+
+Deep Dive Stocks – Weekly Chat             for the week of                2025-12-01 to 2025-12-05
+The week started out, it seems, with both indexes capitulating to the $SPY selling pressure,
+bringing things down to purchasing support, after which both recovered but with noticeable
+differences in both total-amount-recovered and the environment through which the indexes
+traveled. Pretty neat!
+This week, we should look around us to see if it looks like more ~bounce~ is incoming or if
+downside is starting to look evermore promising.
+
+Looking down on promise
+Starting as usual with VoEx, we find:
+
+
+
+
+That’s quite the VoEx-daily spike on both $SPY and $QQQ! Well – almost, technically (and I
+suppose we should be technical) there should be some evidence of VoEx-daily returning back to
+the P.Z. for it to be really considered a VoEx-daily spike but its pretty close to this step it seems!
+This brings into question any continued bullish expectations on the near-term. On the not-near-
+term, VoEx has so far failed to leave the Propagation Zone, despite VoEx-daily’s recent and
+multiple instances. This brings with it visions of downside.
+Thus, it seems the first-pass answer to our question is straightforward: near-term expectations
+are back towards the downside, ajoining the longer-term outlooks therein.
+Moving onwards, let’s check in on the gamma-hedging heatmaps to see to which direction the
+scales might be tipped by our friendly, neighbor-hood options dealers:
+
+
+
+
+Deep Dive Stocks – Weekly Chat             for the week of                2025-12-01 to 2025-12-05
+Very similar set up to last week!
+
+$SPY and $QQQ both have up-stream ($+ ) selling pressure and down-stream ($− ) selling
+pressure, yet, in solidarity with their predecessors, $SPY has elected to surround itself with said
+selling pressure whereas $QQQ has chosen purchasing support. In sum it appears downside wins
+again, especially if we consider last week to be of any precedent ourselves.
+The good news is that the threat of substantial downside might be mitigated some given the
+robust, down-stream purchasing support.
+Moving onwards to the market-wide gamma data, we find [not pictured] minor growth in the
+gamma counts. The predictive data show a continued expectation of a larger-than-present
+amount of gamma squeezes in the future due to the PCC being positive (The Predictive Count
+Curve; brown-orange). The purple line (the Predictive Growth Curve) remains negative, suggesting
+that the expected change in the PCC for the future is downwards.
+
+
+
+
+In other words: there is still an expectation of a greater number of gamma squeezes in the future
+than today, but the amount increase is slated to be less than the amount increase we are currently
+seeing.
+Overall, not bullish per-se but it does give us our first macro-print that the threat of upcoming not-
+near-term downside is diminishing somewhat.
+Moving onwards, let’s check in on the LS&T data. And – well. It’s messy! I annotated the key parts,
+and let’s dissect each one.
+
+
+
+
+Deep Dive Stocks – Weekly Chat             for the week of                2025-12-01 to 2025-12-05
+First up, the 90-minute chart in the upper-left. To note, the recent performance showcases the
+development of an organic ask (LT5[144]). From this view, we can see recent attempts at over-
+taking LT5. When looking to see what is fueling these failed attempts at over-taking LT5, we only
+see an under-current of eager bid keeping price afloat (and eager parties are notoriously
+ineffective against organics!). This, in the near-term, is bullish in that LS is bullish but the proximal
+ceiling is $5.00 north at LT5, which is an organic! Thus, expect choppy action until break away
+from LT5 from this view.
+
+On the 144-minute (top-left) we see the remains of an aggressive bid cascade that helped usher
+along the then-on-going bulltrap. This seems to have provided enough oomph to get through LT6
+but insufficient to overtake the combination of the wave (profit-taking) and the LT7 organic
+ceiling. Since attempting to overtake LT7, liquidity has deteriorated and become bearish. LT5
+looks to be acting essentially as the support and the eager-bids have collapsed suggesting that
+bullish liquidity is unlikely to find much continued support (the collapsed eager bids down to the
+organic suggest the tank of bids “reaching up” to the ask is essentially empty. This paints LT5’s
+recent upwards trajectory as a transition from an organic bid to an organic ask rather than
+movement towards spot for support (that’s to say – LTs movement towards spot is in itself
+already a sign of robust support. As the organic bid is siphoned to support spot, and the organic
+measured at LT5 diminishes, it starts migrating towards the organic ask! Thus, by the time it
+arrives under spot, its already “given” all of its available bullish liquidity and thus will simply walk
+over spot as its metamorphosis to an organic ask is complete).
+By the time we arrive at the 987-minute [bottom-left], we can already see things are quite weakly
+bullish but not definitively bearish per se – whereas the signs of significant resistance is present,
+the net result is still a bullish liquidity on the 90-minute and allegedly-supportive LTs below spot
+
+
+Deep Dive Stocks – Weekly Chat              for the week of                 2025-12-01 to 2025-12-05
+on the 144-minute (although slightly neutralized given the bearish liquidity, which tells us a test
+of the LT supports is incoming).
+It is at the 987-minute that things start to get interesting, as we start seeing competing aggressive
+agents (very unusual!) starting to battle it out. This is first observed with the interruption of the
+“scoop” following the Aggressive Ask Cascade that occurred in mid-novemeber. The interruption
+came by way of an aggressive bid cascade, who, much like its 144-minute counterpart, sufficed
+only to bring spot up to the LT resistance (this time LT5, not LT7) without a successful crossover.
+This is relatively bearish as well! Aggressive bid cascades are known for their, well, aggressive
+tactics in absorbing the underlying. If we assume this to be true here, then it suggests that the
+aggressive bid (the most willing party to move up to the ask to transact) entered and was
+observable on the 987-minute interval and still was insufficient to over-take the already-present
+organic ask measured by LT5. That suggests LT5 has quite the ask present to absorb all of the
+aggressive bid! As this is occurring, we can see the tug-of-war within LS as well, with the 987-
+minute LS oscillating back and forth between bullish and bearish.
+Again – not normal!
+The take-home here is much like before: the main evidence for bearish downside is the absolute
+lack of overt bullish LS&T data and the significant headwinds being noted on all intervals.
+On the 1-Week view, we see bullish liquidity resting on LT5 (as it has been for awhile now!) with
+evidence of a growing take-profit crowd (note LT4’s sudden and rapid turn northward! This is
+highly indicative of a rapid conversion from a bid to an ask). Overall, liquidity is bullish on the
+weekly view, and so we can say “current bullish liquidity is withholding” but this begs the question:
+for how much longer?
+That’s difficult to say but we can certainly observe that there is growing evidence of a growing
+ask in the market (via the onset of organic ask LT ceilings and bearish liquidity), with potentially
+more to come (via the gamma-hedging heatmap’s identification of $+ selling pressure).
+Thus, the name of the game seems to be: the music is still playing, but if you look closely, it looks
+like the DJ just smirked – so it might be time to start eyeing up your target chair for when the
+music stops!
+In short, still looks rocky, no super-overt signs of bullish anticipations but sufficiently present
+supportive indications to starve off imminent downside. This gives way to continued visions of
+chop for the week, with ultimate, longer-term resolution still pointing towards the downside.
+Next week, we’ll talk more about the new discord and VoEx-query capabilities!
+Happy Trading,
+
+
+Justin
+
+
+
+
+Deep Dive Stocks – Weekly Chat            for the week of                2025-12-01 to 2025-12-05
+

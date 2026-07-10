@@ -1,0 +1,377 @@
+                                  Weekly Chat 2024-11-18
+
+
+                                         Main Points
+
+
+
+    -   VoEx-daily is rapidly moving towards the Propagation Zone for $SPY and $QQQ.
+    -   The Gamma-Hedging Heatmaps show persistent, local, and proximal selling pressure
+        throughout $SPY and $QQQ.
+    -   SNAP graphs show negative outlooks for both $SPY and $QQQ on all timeframes.
+    -   Put-selling has ceased.
+    -   Market-Wide Gamma Squeeze data show a deterioration in the future outlooks for the
+        market with a growing GS count and negative GTM.
+    -   LDPM and LDPS show bearish liquidity with a afore-tested organic bid separating the
+        market from ~3% decline.
+    -   Overall, bearish outlooks abound as the data show a high prejudice thereto.
+
+                                         SUMMARY
+
+
+
+          Last week, the expectation was overall bullish but with an increased
+          awareness for the risk for mean-reversion. It was discussed that if this
+          mean-reversion was to happen, a consequence would be an investigation
+          regards its effectiveness in preventing any continued bullish performance.
+
+          Now that we are here, we see that the bullish performance may have been
+          quite apt in the completion of said inhibitive task, as the data are now
+          showing robustly bearish prints throughout.
+
+          VoEx appears to be completing a VoEx-Spike that was initiated last week;
+          the Gamma-Hedging Heatmaps are largely inundated with selling
+          pressure; put-selling has ceased; all SNAP graphs show negative outlooks;
+          the MWGS data show a more unstable future than present; and finally,
+          LDPS/M is showing an empty space separating us from a potential 3%
+          downwards move.
+
+          All-in-all, our recently forlorn bearish outlooks seem to have unsupplanted
+          itself as the nascent bullish craze seems to have shifted conditions
+          sufficiently back towards the red.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                      11/18/2024
+                                                  DETAILS
+
+
+
+
+Well, hello everyone!
+Last week, we left off with bullish ideations in-tact and an appreciation for the consequences of
+`a slight risk of mean reversion`.
+This seems to have panned out well-enough as $SPY fell about 2% along with $QQQ moving
+about 3.52%. In pursuit of refinement, we can adjust these movements by their prior week’s T+5
+EPR (which were 1.43%, and 1.9, respectively) to obtain their relative movements with respect to
+the market’s own expectations. To this end, we arrive at 1.39 and 1.85, respectively – suggesting
+that $QQQ outperformed its cousin $SPY towards the downside in both nominal and normalized
+terms.
+This seems to be a reasonable outcome, given the hedging heatmaps from yesterweek:
+
+
+
+
+We can see at the tail-end of the week, $QQQ fell a-tad-too close to the edge of the abyss, and
+found out just how much the market is attracted towards gamma neutrality. As mentioned
+previously, it seems reasonable that the subsequent introduction to selling pressure pushed
+$QQQ 30% further down than $SPY.
+And so, this week our task is simple 1: monitor the data to ensure this downside is reasonably
+expected to be of the `mean-reversion` variety (i.e.: this is still just a lil’ hiccup in the overall bullish
+outlooks) so we can go about our bullish-ways, or if not, do we need to embrace for more
+prolonged downside (and perhaps mean-revert ourselves back to naught but a few weeks ago!).
+Let’s find out and then, if I may, I’ll be indulging in a rant!
+
+
+
+
+1
+    Spanish for simple.
+
+Deep Dive Stocks – Weekly Chat                                                                 11/18/2024
+If you stay found you don’t have to get found
+
+Starting as usual with VoEx, we see VoEx-daily reacting quite extensively once more!
+
+
+
+
+With VoEx-daily moving rapidly out of Stability once-more, this works to extend our appreciations
+from simplement2 `mean-reversion` to a more global expectation of downside (once again).
+Additionally, we may not that from last week, there was concern that the VoEx-daily movement
+may be that of a VoEx-Spike:
+                                                   “
+       VoEx-daily has violently moved into Stability while VoEx itself rests therein as well – this
+     suggests low probability of a “VoEx Spike”, and simply rapid move back into bullish outlooks.
+    Nonetheless, a low threat for a VoEx Spike but worth observation over the next week or so (i.e.:
+                                 look at VoEx just before 2024-09-01).
+                                                   “
+And considering that it has now been over the next week or so, I think it is fair to say that the VoEx
+performance does now resemble a VoEx Spike! Although not reїntroduced just-yet into the
+Propagation Zone, should conditions persist, this eventuality seems likely within the next day or
+so, thus fully completing the VoEx-spike (which brings with it anticipated downside!).
+Until then, however, we can see VoEx is within stability and VoEx-daily hasn’t officially met the
+propagation zone; and so, the outlook is default bullish with local downside likely, but of the
+minimal-relative-share variety of potential directions – however, a close eye over the next day or
+so should clear up the need for relative potential directions (i.e.: by Monday hopefully VoEx-daily
+will either have moved into the P.Z. or not).
+
+Thus – the default interpretation is bullish with local instability noted. In terms of our goal this
+week, this is a point towards the `mean-variety` outlook more than the `maybe-this-will-lead-to-
+more` camp. So, let’s take a look at the rest of the data.
+Now – before we get ahead of ourselves, let’s take a moment to engage in a handy-dandy
+paramedic trick3 and consider what things might look like if the market does get hit by a car does
+
+2
+    French for simplemente.
+3
+    No not that one.
+
+Deep Dive Stocks – Weekly Chat                                                           11/18/2024
+       extend its outlook from a shorter-term `mean-reversion` downside to a more extended version.
+       This way, we can go into the scene market with a pre-established list of things to look for and
+       things to (essentially) ignore.
+       To do this, let’s consider what data we might expect from our analysis that will help us distinguish
+       between `this is still likely mean-reversion / local downside` versus `this is starting to look like
+       prolonged downside` (one may notice that there has been an absence of inclusion so far of any
+       bulls).
+
+`Mean-Reversion`                                            Extension
+
+
+VoEx: Near-term unstable VoEx with long-term stability.     Completion of VoEx Spike, movement of VoEx-daily
+                                                            into the P.Z., loss of VoEx stability.
+
+Heatmaps: Good purchasing support, preferentially Poor to little purchasing support or the introduction of
+without selling pressure located IV+. $SPY and $QQQ additional selling pressure in the event of IV+. Gamma
+without gamma squeeze.                              neutrality located spot-down.
+
+Put-Selling: Actionable increase in put-selling as          Cessation or declination of activities.
+compared to recent behavior.
+MWGS data: Largely unaffected and should be relatively      MWGS data showing an accelerating growth curve,
+stable; minimal GS growth, preferentially some loss, GTM    GS counts increasing, GTM printing negative values.
+near-zero and/or positive.
+LDPS/LDPM showing bullish layout.                           LDPS/LDPM suggesting downside on the daily
+                                                            interval with lower-order intervals showing bearish
+                                                            outlooks.
+
+
+
+       The main idea in the creation of this table was “should things fall on the ‘this is still mean-
+       reversion territory’ then we should see stability, quasi-stability or the continued movement
+       towards stability, whereas, on the contrary, if things are moving towards this-might-be-more-than-
+       mean-reversion then we should expect the opposite.
+       So far, we can say that our first check-box (VoEx) shows `mean-reversion` as the main outlook
+       still, given that VoEx is technically within stability. Perhaps on Monday we can re-check this point
+       – but for now it stands that `mean-reversion` has a point in its court.
+       Moving onwards and upwards to the heatmaps:
+
+
+
+
+       Deep Dive Stocks – Weekly Chat                                                         11/18/2024
+Si l’on examine the hilarious heatmaps higher-up, on may very well see that there is indeed no
+aide à l’achat available to our friends $SPY and $QQQ in the local, distant, proximal, circumvential,
+lateral, contra-lateral or even ipsi-lateral loci – indeed there exists but aide à la selling.
+Well – admittedly, there is un peu d’achat support in the IV[-] direction for both, one may very well
+also see that there’s a hefty chunk of selling pressure betwixt said support and $SPY and $QQQ’s
+current locations – and so – it begs the question: if there exists something that I can never get
+to, does it still exist? A silly question for sure, but we live in silly times.
+Additionally, the influence distributions are showing a rather pessimistic outlook as well. It should
+be noted that if the market does manage to break free of its current Schwarzschild radius and
+gain entry into purchasing support, then the potential upside movement would be well-
+encouraged with a surge of purchasing support!
+Ultimately, we move on from our heat-map excursion with a solid point to award towards dem
+erweiterungslager4 bringing our overall totals to 1 for the ` Mittelwertumkehr`-lager5 and for the
+`Extension Group` now also to 1.
+Now, let’s indulge in some additional queries and take a peek now at the SNAP graphs! Last time
+we peeked at them, we were (also) looking at judging the anticipated downside, but it was only
+on the 10-day outlook (the downside of which really never came6!). But now, behold thee:
+
+
+
+
+4
+  I mean Germans not really that hard, I’m sure you can work it out.
+5
+  Exercise left to the reader.
+6
+  This was the downside that was recently “disrupted” and is essentially what I consider in my head to be what we
+may be `mean-reverting` back to.
+
+Deep Dive Stocks – Weekly Chat                                                                      11/18/2024
+                                                                         With present memory what it is, I
+                                                                         can say I don’t remember a time
+                                                                         since early-early DDS that all SNAP
+                                                                         graphs for $SPY and $QQQ were
+                                                                         solidly in the negative7.
+                                                                         This shows that the SNAP algorithm
+                                                                         is detecting some significant
+                                                                         downside-associated behavior from
+                                                                         VoEx right now on all timeframes: 1-
+                                                                         day, 5-day, 10-day, and the 20-day
+                                                                         (these are trading days, so 20-day is
+                                                                         1-month).
+                                                               The SNAP algorithm was designed
+                                                               to help quantize timing with VoEx!
+                                                               And so, although not on the table, I
+                                                               think this is sufficiently decisive to
+                                                               allow     awarding     our     groupe
+d’extension a point, bringing our totals to: `mean-reversion`: 1 ; `extension`: 2.
+Moving right along, let’s check in on our put-selling friends – who, in retrospect – did deserve
+more than a causal, acknowledging head-nod (but publicly, we’ll just allude to that fact in our
+annual Christmas card as a means of spiritual recompense).
+
+
+
+
+That is not an increase!
+For sure – it looks as though our put-selling friends have ceased all activities in the past week,
+moving the 5-day put-selling-activity average to negative values on $SPY and near-zero-to-almost-
+negative values on $QQQ.
+
+This suggests that there is, at least, no big brains thinking that the market go brr in the near-term
+futures. In this, I think we can not award a point to the `mean-reversion` camp, but rather, award
+it to the group of extension instead.
+
+7
+  Reminder: when the two black lines cross below the gold line, then the outlook is negative (bearish) over the next
+stated timeframe (in trading days) and when it is above the gold line, the outlook is positive (bullish).
+
+Deep Dive Stocks – Weekly Chat                                                                       11/18/2024
+Moving onwards, we encounter the Market-Wide Gamma Squeeze Data (MWGS):
+
+
+
+
+Oh boy! Although these data don’t scream downside per-se, they are curious.
+First up, and on top, we see that over the past 20-days, the average number of gamma squeezes
+has grown almost 10%, and we may also note that this trend has been pretty consistent (as we
+can glean from the middle graph, since ~2024-09-23 the average count [orange line] has been
+steadily growing). This growth is has become sufficient to push the overall growth-rate into
+positive territory8, suggesting that momentum is very much so moving towards positive gamma-
+squeeze growth.
+Additionally, we can see that GTM has returned back into negative territory, after only spending
+the briefest of times within positivito-land.
+
+
+8
+ Remember from the other week that there has been a sprinkle of predictiveness baked into the top-graphs
+growth calculations to help capture the behavior of gamma in the market.
+
+Deep Dive Stocks – Weekly Chat                                                                  11/18/2024
+Taken together, this paints a somewhat disconcerting future: if one were interested in having the
+current market instability resolve sooner rather than later, one may well be interested also in
+having a future outlook of stability, preferably stability sufficiently robust that the current
+instability can dissolve without further propagation.
+Now, should one instead, upon review of said future prospective environments, find the
+anticipated future has begun to fill with short gamma, then perhaps one should reconsider the
+certainty of a sufficiently-robust future environment in which the current instability can dissolve
+without further propagation.
+Hey! It turns out, that’s exactly where we find ourselves presently: although the data aren’t
+particularly bearish just yet (no big negative GTM spikes or ~large~ surges in GS amounts), the
+direction of the data is squarely pointed in the less-stable-than-present direction. To this end, it
+seems that the point system is becoming quite stacked:
+                                     `Mean-reversion` :      1
+                                     Extension:             4
+
+
+Perhaps LDPM/S can settle the score, let’s find out:
+
+
+
+
+Well… also maybe not and not just because I am not good at math.
+We see that with LDPS on Aggressive on the daily timeframe that ES has regained bearish
+inclinations, and the price is resting squarely on the combined orangic-bid support provided by
+LDPM-144 [neon-blue] and LDPM-377 [neon-yellow] with a large 3% chasm until the next organic
+bid.
+
+
+Deep Dive Stocks – Weekly Chat                                                         11/18/2024
+This is a similar situation! You can see the similarities in this situation with our recent episode of
+price-sitting-on-LDPM-144-and-LDPM-377 – it’s the last clustering of bearish LDPS prints right
+before the egregious green bar9!
+In short: this situation rhymes and so too do the expectations: movement past the organic bid
+provided by LDPM-144 and LDPM-377 with continued downside towards LDPM-610, about 3%
+down.
+
+Thus, the point system declares the outlook to be: prolonged downside, as the recent bullish
+performance seems to have done little to alter our aforementioned outlooks (from ~3 weeks ago).
+However, this vacillation is uncomfortable as it still does little to help with an overall timeframe
+or time-horizon on which this should play-out. For instance, I usually will refer to things as “short-
+term” (usually things <1-2 months), “long-term” (~6mo +), and “medium-term” (everything in-
+between), but I think LDPM’s efficacy allows for another way to quantize timeframes: price-
+horizons.
+For instance, suppose we consider classifying expected downside or instability based on the
+anticipated depth of the organic bid that is digested:
+    -    Emergent Downside: Movement from a local peak to LDPM-144
+
+    -    Extended Downside: Movement from peak through LDPMs down to the last organic bid
+         (in this case, we are using LDPM-610).
+
+    -    Exacerbated Downside: Movement below last organic bid with evidence of a bearish
+         LDPM inversion.
+Thus, the time-horizon systems can be paired with price-horizon systems (and even `triangulated`
+with EPR if you wanted!).
+
+In this, we see that we are currently experiencing `emergent downside` with expectation of
+advancing to `extended downside`, however, the risk for `exacerbated downside` seems minimal
+as of now. The associated time-frames are limited to the short-term as VoEx is still well-within
+stability but extension into medium-term is likely should VoEx-daily move into the Propagation
+Zone and stay there while GS’ increase over the next week.
+So, all-in-all, the recent weeks’s bullish activities seemed to have mere been a stop-gap between
+us and our afore-anticipated downside. The crucial points to watch will be VoEx and GS for time-
+horizon estimates and LDPM for overall price-targets.
+
+Could be fun!
+Happy Trading –
+Justin
+
+
+
+9
+  Without getting too into it – notice that the ABC that marked the large, green bar wasn’t sufficiently large to
+include the LDPM-677 crowd. Curious!
+
+Deep Dive Stocks – Weekly Chat                                                                         11/18/2024
+Rant
+
+Progress has been admittedly slow on the Dashboard lately – but I am here to tell you that that is
+changing!
+You see, about a year ago, if you’ll remember, I discussed the outlooks for the Dashboard but also
+discussed how my skill-set, frankly, wasn’t up to par to make our dreams of quicker processing,
+API endpoints and even live-data feeds a reality.
+
+So, despite a few months of ~the big sad~, I’ve been hard at work acquiring this skill set; besieged
+with `rust_game_43` files as I clanked together endless tower-defense game after endless tower-
+defense game for working on my Rust skills in order to eventually tackle the R code-base (which,
+update on that front, is well under-way (there are Rust processes that I am monitoring for
+completeness that finish well over 10x quicker than the equivalent R process! For now, however,
+these translations have mostly been pats of the system that aren’t quite directly related to you;
+so, their effects are somewhat mostly likely un-noticed for now).
+
+All-in-all, it was (and still is) a very long process but things are coming to a head and I want to
+share that with you.
+You see, the Dashboard currently utilizes a service that helps with its load balancing,
+authentication, general upkeep, IT support, etc. This service, however, quadrupled its price. Last
+year, I was able to negotiate a year’s extension before conversion to the new price (which is out
+of DDS’ price range), and thus, the goal quickly became: find or make a replacement. At first, I was
+fretting but then I realized the silver lining! In learning how to replace this service, I would
+effectively be learning the skill set I would need anyway to bring the dashboard updates to life!
+
+And so, that’s what I did. From the ground up. What a fun little adventure! I had to learn Lua, server
+configurations, networking stuff, nginx, openresty, authentication pathways, auth0 integration,
+user-management and session persistence, aws stuff, DNS troubleshooting; the whole kit-and-
+kaboodle (it’s fun to remember that 3 years ago about when I created Deep Dive Stocks, I literally
+didn’t know what a website was!).
+
+The result? Deep Dive Stocks is now completely independent in terms of its web-architecture and
+so now that real fun begins!
+The immediate consequence is that we will be moving soon to `dd.deepdivestocks.com` for the
+Dashboard. The Dashboard itself should be largely the same - although you should see some
+speed improvements, that’s just because the server itself is beefier (and it needs to be beefier for
+the not-so-outlandish-future-outlooks it thereof!).
+So, that’s all. In part I apologize this has taken so long, and I am thankful for your patience, and
+look forward to fulfilling my part of the bargain with imminent and useful updates.
+
+I’ll let you know when the switch happens – most likely within a week or two.
+
+
+Justin
+
+
+
+Deep Dive Stocks – Weekly Chat                                                           11/18/2024
+

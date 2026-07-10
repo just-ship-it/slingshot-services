@@ -1,0 +1,254 @@
+                                  Weekly Chat 2025-02-10
+
+
+                                        Main Points
+
+
+
+    -   VoEx remains within the Propagation Zone and VoEx-daily for both indexes has
+        retracted back into the neutral zone.
+    -   Gamma Hedging Heatmaps show immediate and local selling pressure on $QQQ with
+        a thinly populated hedging environment on $SPY.
+    -   Put-selling remains below zero.
+    -   MWGS data showcase a resurgence of gamma squeezes.
+    -   LDPM/S suggest a liquidity vacuum with bearish liquidity is present on #ES.
+    -   Overall, prudency suggests bracing for continued downside.
+
+
+
+                                         SUMMARY
+
+
+
+          Last weeks neutral movement was met with an increase in GS’ and VoEx
+          deepening within the Propagation Zone. This, in turn, deepens the bearish
+          outlooks ahead.
+
+          VoEx was briefly rising into stability but this ascent has halted for both
+          $SPY and $QQQ. Put-selling remains at-zero. Gamma squeezes are
+          increasing as suggested by prior conversations regarding gamma
+          dynamics. LDPM and LDPS suggest an ABC occurred on ES without price
+          appreciation and now the cascade of eager ask looks to be entering (as is
+          the normal follow-up behavior to an ABC), along with LDPS painting the
+          daily ES red.
+
+          Overall, downside looks to be neigh and so our sights as set as such.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                     02/10/2025
+                                              DETAILS
+
+
+
+
+Hello all!
+Last week, we left off with continued bearish expectations, and despite the early-part of the week
+testing boundaries with us, this was the predominant movement overall (a hearty thanks to the
+last-minute sell-off as the weekend approached!). In terms of numbers, $SPY found itself set back
+-0.17%, while $QQQ moved +0.12%.
+
+We can see these moves in the heatmaps below:
+
+
+
+
+$SPY performed a bit of a pretzel maneuver for us this week, while $QQQ resisted the initial selling
+pressure to be aided up into gamma neutrality, from which it fell back to near its origins.
+A languish and weak market, it would appear.
+Thus, our work before us is quite clear: doth conditions persist in the bearish fashion or are things
+starting to settle?
+Let’s see if we can find out!
+
+Starting as usual with VoEx
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                          02/10/2025
+Starting as usual with VoEx, we see things have stalled in their pursuits towards stability:
+
+
+
+
+In this, I mean, VoEx itself, which in prior evaluations, in particular on $SPY, had a zeal in its
+movements northward – however, with the completion of the VoEx Spike at the end of January, it
+would seem VoEx has stalled in its ascent; for $QQQ this stall has manifested thereupon a
+reversal of course, bringing VoEx back to its lowest local point.
+These observations don’t distract from the take-away, as that remains the same from the week
+prior: VoEx within the Propagation Zone indicates downside is the default outlook, but it does
+color this week’s instability a bit more1.
+Namely, and especially, when looking to see how VoEx responds to price. An old homage from
+VoEx was that it would show us where stability lay, for instance, below, we can see that VoEx
+“calms down” when the price depreciates and becomes more erratic as the price appreciates:
+
+
+
+
+1
+  Back-in-my-day VoEx was exclusively used to describe if the underlying was “stable” or “unstable”, and so, it was
+commonplace to say things like “$SPY is becoming unstable” due to VoEx’s presentation, such as a more erratic
+VoEx, or VoEx Divergence forming, etc. This is less common now, but essentially instability is indicated by VoEx in
+several usual ways (most you are already familiar with): VoEx Spikes, Persistent Elevation within the I.Z. (BUPO of
+the Bullish variety), and VoEx within the P.Z., but there are a few more worth keeping in mind: Erratic VoEx (when
+its starts oscillating rapidly), and VoEx Coiling. Basically, if VoEx looks like it is having a wild time (and especially if
+that is a new finding), then it is safe to assume the underlying is preparing for a wild time. These findings and uses
+for VoEx are still valid, but just get discussed less often with LDPM/S/LTA and whatnot also hangin’ about.
+
+Deep Dive Stocks – Weekly Chat                                                                              02/10/2025
+This situation would be described as “VoEx is indicating stability is located on the downside”.
+From there, the VoEx Theorem of Price tells us “an equity will always move towards stability”; and
+so, when an equity is seen to have stability located on the downside, this is the default outlook
+(downide).
+Why do I bring this up? Who knows. But if I were to guess, it would be something along the lines
+of “does it look like the only times VoEx has been extra wiggly is when the prices have been going
+up?”, that is to say, is stability located on the downside? Perhaps too soon to tell but something
+to keep an eye out in the week ahead!
+Moving onwards with our BUPO (of the Bearish variety) outlook intact, we arrive at the Gamma
+Hedging Heatmaps:
+
+
+
+
+Well! Quite the familiar sight!
+
+
+
+Deep Dive Stocks – Weekly Chat                                                       02/10/2025
+$SPY (left) presents as it did a few weeks ago with diffuse and light purchasing support located
+proximally, while $QQQ presents with a pseudo-stable-vanna-unstable gamma hedging heatmap.
+One will remember, of course, the last time this was presented to us, and $QQQ moved
+extraordinarily on the pre-market session before Monday (2025-01-27).
+Before we get too comfortable with jumping to the conclusion that this implies our futures should
+be similarly planned, let’s keep in mind that should IV drop substantially on $QQQ, this will
+introduce some good purchasing support. The most likely outcome? Probably not – but worth
+pointing out nonetheless.
+So, with VoEx suggesting things continue to look bearish, and with the hedging environments
+showcasing an ominous pairing as before, things do indeed look prudently bearish. Let’s see if
+this is shared with our put-selling friends:
+
+
+
+
+Very much so it would seem!
+
+
+Behavior from the put-sellers is both muted and negative – highly suggestive of minimal plans
+for profitability in the [$+ , 𝐼𝐼𝑉𝑉 −] direction.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                      02/10/2025
+Moving onwards to the Market-Wide Gamma Squeeze (MWGS) data, we see appreciations:
+
+                                                                    The week-over-week growth of gamma
+                                                                    squeezes is 13%, with the 10-day
+                                                                    growth coming in at 21%. Thus, it would
+                                                                    appear that gamma squeezes are
+                                                                    indeed growing.
+
+                                                                    This is noteworthy for several reasons:
+                                                                    the first is that there was a general
+                                                                    growth in gamma squeezes during the
+                                                                    week (when the price largely
+                                                                    appreciated) – this is counter-intuitive!
+                                                                    Especially considering the last time we
+                                                                    looked at price appreciation it was with
+                                                                    the lens of finding where the long
+                                                                    gamma was coming from (Weekly Chat
+                                                                    2025-01-13). Now, however, we see
+                                                                    price appreciation seems to be met with
+                                                                    short gamma being introduced.
+                                                                    This is promising for our theory that the
+                                                                    gamma-squeeze destruction noted in
+                                                                    January was mainly due to the robust
+                                                                    price appreciation, rather than market
+                                                                    positioning or structural changes
+                                                                    (which would therefore give not bullish
+                                                                    outlooks but bearish).
+The idea was that if this were true, then if price should stagnate, gamma would migrate back “into
+position” as expiry would increase the magnitude of the short gamma, which would lower the net
+gamma (which was artificially made long via the price appreciations). It would seem this is
+panning out! Ideally the growth curve becomes positive but it would seem the market is in position
+to see the re-introduction of pre-existing gamma squeezes2.
+The take-home for me there is that MWGS looks to be bullish presently, but should our newfound
+hypothesis have any weight, an expectation of sudden re-emergence of gamma squeezes should
+follow soon; this deluge of gamma squeezes has been associated with future moderate
+downsides.
+
+Moving onwards to LDPM and LDPS, we see that ES on the daily has become bearish (Balanced
+settings) along with a very strange ABC:
+
+
+
+2
+  How can we be confident that this change in gamma squeezes isn’t a change in market positioning and whatnot
+like before? Just like before! Notice that GTM has been largely neutral – this means that the flow of options in the
+market hasn’t really indicated any overly negative gamma working its way to the market. Thus, the negative gamma
+must already be there!
+
+Deep Dive Stocks – Weekly Chat                                                                       02/10/2025
+There was an aggressive bid cascade but no price appreciation! In fact, the only thing the ABC did
+was keep a bearish candle from falling below LDPM-7!
+As is normal with ABCs, there’s the Cascading Part that seems to be forming next. In routine
+environments, this would take on an appearance such as:
+
+
+
+
+Where the ABC (near the green E) sends the price shooting upwards, followed by the lower-order
+LDPMs cascading upwards and downwards. It is usually during the cascade portion of the ABC
+that the price stalls and reverses.
+
+
+Deep Dive Stocks – Weekly Chat                                                       02/10/2025
+And thus, therein lies the concern: if there was no appreciation before the cascade, then:
+
+    1) The Aggressive Bid did little to alter the course of events, and
+    2) Downside will likely be brutal.
+Moving upwards in intervals to the weekly for #ES, we see surprisingly bullish outlooks
+(Aggressive LDPS 3):
+
+
+
+
+Worsening liquidity conditions all around:
+    1) LDPS is showing flow to the bid,
+    2) Low-order LDPMs are positioned as eager asks,
+    3) LDPM-5 and price look poised to cross.
+Thus, this would suggest movement to $5,400-area if a bearish cross with bearish liquidity is
+observed on the weekly interval. In such an event, perhaps thankfully, on the weekly view, this will
+be seen as a bear trap.
+
+And so, all things considered, it appears the market is still in quite a rough spot:
+    -   VoEx is within the P.Z. still with apparent reduced vigor in changing said location,
+    -   Put-selling has remained near-zero,
+    -   Gamma-squeezes are doing the thing we waved our hands at the other week, suggesting
+        a resurgence of latent gamma squeezes is incoming,
+    -   An aggressive bid cascade showed up on #ES without any real effect, and now it appears
+        the cascade part of the ABC is forming.
+
+
+
+
+3
+  In general I tend to go aggressive or conservative on the longer timeframes and leave Balanced for the lower
+timeframes. Totally a personal choice, I have nothing to support it.
+
+Deep Dive Stocks – Weekly Chat                                                                      02/10/2025
+With such bearishness, prudency suggests bracing again for downside with a potential target of
+$5,400 per LDPM on the Weekly for ES.
+
+
+Happy Trading!
+
+
+Justin
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                    02/10/2025
+

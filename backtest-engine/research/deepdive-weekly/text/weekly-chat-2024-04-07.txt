@@ -1,0 +1,265 @@
+                                    Weekly Chat 04/08/2024
+
+
+                                           Main Points
+
+
+    -   VoEx for $SPY and $QQQ are in agreement and within the Propagation Zone.
+    -   Gamma Hedging environments are luke-warm at-best, with purchasing support present,
+        but dubiously placed.
+    -   Put-selling has increased slightly for $SPY, and remains largely the same as last week
+        for $QQQ.
+    -   Gamma-Squeeze data show an increase in gamma squeezes, along with a return to
+        negative GTM prints.
+    -   LDPM-Crossovers have demonstrated a trend towards increasing bearish-ness over the
+        past month; the current outlooks on the 5-, 10-, and 20-day timeframes are bearish.
+    -   Overall, bearish inclinations persist and strengthen.
+
+                                            SUMMARY
+
+
+
+           $SPY and $QQQ transversed the week with net-negative moves and
+           concurrent deepening of VoEx into the Propagation Zone.
+
+           Alongside this growing bearish outlook from VoEx, the hedging
+           environments present with seemingly little-to-do in the event of either $+
+           or $-, with diffuse hedging located throughout that is poised to offer little-
+           to-no support in the event of a substantial $-/IV+ move.
+
+           Put-selling is slightly elevated, a similar situation as to last week for $QQQ.
+           Comparatively this movement is minimal but temporally it represents
+           more put-selling than has been observed in recent times.
+
+           Gamma squeeze data is ramping back up with around a 40% increase in
+           the number of gamma squeezes in the market. Said increase in gamma
+           squeezes accompanies with another bout of negative GTM prints.
+
+           LDPM Crossover data suggests growing bearish liquidity seeping through
+           the market with 3 out of the 4 timeframes demonstrating flat-to-bearish
+           outlooks for the future.
+
+           Overall, continued bearish outlooks prevail.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                           04/08/2024
+                                                DETAILS
+
+
+
+
+Hello, everyone!
+What a curious week – for both the events inside the market, and outside.
+I want to start by apologizing profusely for the interruption to the data this week. But, to be fair, if
+data was going to be interrupted, it couldn’t’ve happened a more Justin-esque way.
+This week, let’s take the opportunity of seeing the data post-facto and with eyes anew to saunter
+a bit slower through the examination of the week prior with a bit more granularity.
+So, without further a due, let’s get started!
+The Week
+
+A curious week. Even though downside was anticipated and achieved, it did so with a curious
+voyage, much like last week. The journey the market took can be visualized below in the Hedging
+Heatmaps for $SPY and $QQQ:
+
+
+
+
+We see $SPY experienced, what can only be described as some new dance the kids are doing,
+while $QQQ quickly relegated its future to a small, isolated pocket of purchasing support early in
+the week.
+Curiously, $SPY’s week-over-week move of -0.89% versus $QQQ’s weekly move of -0.8% mirrors
+the conditions noted within the hedging environments with regards to the purchasing support:
+whereas $SPY had minimal and moved a lot, $QQQ moved minimally and had a lot [of purchasing
+support].
+What luck!
+This finding also highlights another trend that we have been observing for awhile now: discordant
+IV movements on $SPY and $QQQ. Whereas $SPY’s IV increased throughout the week, $QQQ’s
+decreased – a recently familiar sight!
+
+Deep Dive Stocks – Weekly Chat                                                            04/08/2024
+In continuing our pursuits from last week, its noted that LDPM-Vol concurrently increased with IV
+for $SPY (right). In contrast, however,
+it was noted that last week, on $QQQ,
+the IV and LDPM-Vol behavior was
+discordant with respect to $SPY, and
+discordant with respect to the
+respective indicators (LDPM-Vol and
+IV).
+This pattern continues on $QQQ
+(below), as IV and LDPM-Vol moved in
+opposite directions once more.
+
+
+                                                     This places both $SPY and $QQQ in a rising
+                                                     LDPM-Vol         environment      (diminishing
+                                                     liquidity, albeit not substantially diminished
+                                                     in comparatively, and increased expectation
+                                                     for future price variance), yet the options
+                                                     environments on the two are quite different:
+                                                     whereas on $QQQ IV is dropping, on $SPY
+                                                     we find it rising!
+
+
+Perhaps this discrepancy has something to do with the large IV movements noted on both
+indexes, or, perhaps, the large IV movements have something to do with the discrepancy – who
+can be sure! Hopefully, should the week a head not be too exciting, some more spare time can be
+dedicated to investigating this.
+Moving onwards from the past to the present, our mortal coils are quickly discarded, and any
+remaining anamnesis of the past refocused on more present situations, like VoEx.
+Let’s check out VoEx.
+First up, we see $SPY’s VoEx alleviated us of our worries regarding its future direction by
+experiencing the flow of time, and in doing so, promptly fell out of the Inhibition Zone.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                        04/08/2024
+This was a bit of a thorn-in-the-side last week as lamented on briefly: “… [unfortunately, the ] VoEx
+Spike has maintained its position within the Inhibition Zone, but, as the kids say, perhaps “letting
+it cook” over the next few days might be prudent.”
+The benefit of “letting-it-cook” did indeed resolve our hesitations – VoEx continued to fall back
+out of the Inhibition Zone, suggestive that the risk of a spontaneous (and surprise) return to BUPO
+(of the Bullish variety) is minimal.
+A quick look at neo-VoEx echoes these sentiments, but, perhaps, in a slightly elevated volume:
+
+
+
+
+The increase in tone is mainly due to VoEx’s capitulation and entrance into the Propagation Zone.
+A full-fledged bearish endorsement.
+Much-the-same is noted on $QQQ, wherein VoEx is officially flirting with the Propagation Zone.
+
+
+
+Deep Dive Stocks – Weekly Chat                                                          04/08/2024
+As we have seen in previous weekly chats, this flirting between VoEx-trend and the Propagation
+Zone has progressed quite substantially within neo-VoEx, who finds itself already going steady
+with PZ:
+
+
+
+
+In combination, sum, and totality, these are full-fledged bearish prints.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                    04/08/2024
+With bearish intent in mind, let’s see how the market is expected to handle any potential
+downwards with regards to the response from the Hedging environments.
+First up, $SPY:
+A vanna-unstable orientation
+with selling-pressure located
+$- and IV+. A gamma neutral
+path exists in the $+/IV-
+direction, which might be
+worth keeping in mind
+considering the propensity
+for IV to violently move
+towards gamma neutrality
+the past two weeks.
+
+Next up, $QQQ:
+
+
+
+
+                                                              $QQQ presents with a some-what
+                                                              stable configuration (in that, it has
+                                                              selling pressure located someone
+                                                              in the $- direction, at least), but this
+                                                              is dependent on IV not mis-
+                                                              behaving too much in the event of a
+                                                              spot-down move.
+                                                              Similarly to $SPY, $QQQ has a
+                                                              gamma neutral zone that extends
+                                                              $+ and IV-, underscoring the idea of
+                                                              keeping an eye out for any
+                                                              spontaneous reductions in IV.
+
+
+Neither hedging environment provides robust support, and both suggest negative returns for the
+week ahead via the Influence Distribution. Thus, it seems that the hedging environments are
+poised to offer little resistance to any moves (other than, like, $- - /IV- - which would meet
+purchasing support and $++/IV++, which would meet selling pressure).
+From the shining seas of gamma neutrality, let’s turn out attention towards our put-selling friends
+and see if we can’t steal an answer or two for this week’s quiz.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                          04/08/2024
+The put-selling seems to have started to take off somewhat. Last week, there was some interest
+to see if $QQQ’s put selling would increase (it didn’t), and it seems that by-and-large, we find
+ourselves in the same boat (with $SPY joining this time!).
+Last week, such the small DLP showing on $QQQ did little to inspire confidence, but now with a
+renewed showing on $QQQ, and a new showing on $SPY, the evidence for growing bullish
+outlooks within our put-selling-friends is mounting.
+But, is it more bullish than last week? Sure.
+
+But is it overtly bullish? Ehhh.
+I will wait for a few more prints before I conclude if the put-sellers are in-it-to-win-it or not.
+Moving on to the Market-Wide Gamma Squeeze data, we see a sight for sore-eyes: an increase in
+gamma squeezes! The week started with 851 gamma squeezes and quickly rose to 1,209 by
+week’s end, a 42% increase1!
+Perhaps worth noting that this increase coincided with another dip into negative territory for GTM:
+
+
+
+
+1
+    3 weeks after the negative GTM print – coincidence?????? (I hope not).
+
+Deep Dive Stocks – Weekly Chat                                                              04/08/2024
+Thus, it would seem the expectation for continued gamma squeeze growth has been renewed,
+all-the-while gamma squeezes have already started to arrive. What timing !
+Moving to a not-often-talked-about-in-the-weekly-chat indicator, the LDPM Crossovers! Let’s take
+a peek and get acclimated to the new layout, and see if we can glean any insights.
+Below is the graph from the Macro Report with some annotations.
+
+The main take-away is that each of the four boxes represents the price-change outlook of 1-, 5-,
+10-, and 20-trading days (just like the SNAP graphs) in terms of MAD2. Their interpretations are
+much the same, except now we have to account for if the overall crossover type (as indicated by
+the “Indication” row [if Indication is >0.5 {Bullish} or <0.5 {Barish}] or via the text within the graph
+itself) is bullish or bearish.
+Once we figure that out, we just have to check to see where the purple line crosses the zero-line
+for that Indication (Bullish or Bearish), and viola ! We have a market-wide, LDPM-dependent
+forecast.
+
+
+
+
+2
+ A MAD of +1 means the price moved up and in its “average amount”. A MAD of -2 means the price moved down,
+and 2x more than its average move over the defined period.
+
+Deep Dive Stocks – Weekly Chat                                                               04/08/2024
+This translates to us as: bullish 1-day forecasts (indication is 0.66 and purple line crosses the
+trend-line well above the zero-line), but with bearish / near-zero outlooks for the rest of the
+timeframes.
+A curious exercise is always looking at the past data to see how it did, so here is the same graph
+but for last month, 2024-03-08:
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                       04/08/2024
+We see bullish inclinations abound, and indeed! $SPY moved 1.31%, and $QQQ moved 0.33%!
+Reasonably in-line with the bullish-to-flat outlook provided by the 20-day LDPM CO! Neato.
+So, overall, things continue to look bearish, and, arguably, on most fronts, the data appear to be
+more bearish than previous.
+Continued expectation for downside, with ever-more continued expectation for agonal market
+volatility until it starts (presumably, reasonable and persistent downside). Until then, I will keep
+an eye on VoEx to ensure no forming bull-traps are on the horizons; GTM to continue gamma
+squeeze formation, and, why not, I’ll even check in on the put-sellers at some point to see if they
+have anything interesting to say.
+Happy Trading,
+Justin
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                         04/08/2024
+

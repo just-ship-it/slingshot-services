@@ -1,0 +1,409 @@
+                                  Weekly Chat 07/10/2023
+
+
+                                         Main Points
+
+
+    -   Overall, the data are printing bearish.
+    -   Thorn in the side: VoEx has stalled at the Inhibition Zone once more with both $SPY
+        and $QQQ; reminiscent of the prior stall.
+    -   $SPY and $QQQ have VoEx Divergence once again.
+    -   An elevated risk of VoEx rebounding in IZ and the subsequent resumption of BUPO in
+        an otherwise bearish environment.
+
+
+                                          SUMMARY
+
+
+          VoEx on $SPY and $QQQ are finally in agreement, and not without their
+          signature irony.
+
+          Both are experiencing VoEx Divergence, and VoEx-trend is starting to leave
+          the I.Z., this is traditionally associated with the start of a market-downturn
+          but there are some data prints that prevent a full adherence to that rule:
+
+              1) $QQQ’s hedging environment does have some purchase support
+                 located $-/IV+
+              2) GTM/MWGSC are predominately bullish.
+
+          However, the remaining data suggest downside is in the near future, and
+          should VoEx continue into stability and subsequently into the Propagation
+          Zone (ideally by Monday!) then the market’s fate seems set.
+
+          Otherwise, should VoEx rebound, its BUPO until proven otherwise
+          (BUPOUPO).
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                         07/10/2023
+                                               DETAILS
+
+
+
+
+Last week, we left off with the idea that the “… rogue bullish wave is resting on unstable grounds.”,
+and this week that instability seems to have shown itself with $SPY moving -1.07% week-over-
+week, and $QQQ moving a staggering -0.86%.
+So, for this Weekly Chat, we should review some of the more interesting data-developments that
+happened throughout the week, and then spend the remaining sanity time waving our hands
+around pontificating about the real and potential.
+Pontifex
+
+One of the concerns walking into last week was that there was minimal-to-no purchasing support
+that would enter the $SPY and $QQQ hedging environments in the event of $-/IV+ moves, and we
+can see the effects of this in $SPY and $QQQ’s Hedging Heatmaps from last week.
+
+
+
+
+                                                          Curiously, despite having more selling
+                                                          pressure, $QQQ saw less dynamic
+                                                          movements throughout the week than
+                                                          did $SPY, with $SPY moving 21% more
+                                                          to the downside than $QQQ.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                          07/10/2023
+Throughout the week, it was interesting to watch
+the put-sellers quickly alter course, especially
+after a measly drop on $SPY of -0.15% on
+Wednesday.
+One can’t help but wonder if the put-selling was
+less a show-of-force for bullish outlooks or rather
+a theta-style play to capture gains from the short
+week1. Thus, as the short week approached, the
+selling of puts skyrocketed not because of
+bullish outlooks but rather simply because it was
+opportune for the theta-decay (theta chips away
+at delta even when the market is closed!).
+
+To investigate this, let’s quickly pivot over to a
+market-wide scan for OTM Dealer Long Puts
+creation and OTM Dealer Long Calls2.
+If see an increase in both the number of OTM
+DLPs and OTM DLCs, then this would suggest
+the short week was prepared for with theta-
+decay positioning (i.e.: no real price-direction
+outlook).
+But if we see a distinct difference between the
+DLP or DLC behavior, then perhaps there was a
+directional outlook.
+So, let’s take a look:
+
+
+
+
+1
+  Since selling puts is profitable when the delta of the sold puts moves towards zero, an implicit way to benefit
+from selling puts (or any options) is to sell them, and then wait for time to pass; as time passes, theta will bite
+away at delta and thus, the put looses value and the put seller gains value.
+2
+  The data is being filled out in preparation for the update to the Market Scan and there’s no reason not to get a
+sneak peek!
+
+Deep Dive Stocks – Weekly Chat                                                                         07/10/2023
+A bit surprising! It would seem that market-wide 3, in preparation for the short week ahead, puts
+were sold but calls seemed to have lagged some! As the week progressed and became more red,
+we see this behavior switched: the DLPs began closing and the DLCs began opening. This seems
+a pretty clear indication that there was directional anticipations that influenced the type of option
+selling.
+
+When I overlaid the changes in $SPY with the changes in DLP behavior, I was once again reminded
+at the well-timed-nature of our put-selling friends:
+
+
+
+
+3
+    By Market-Wide I mean about 900 stocks for now.
+
+Deep Dive Stocks – Weekly Chat                                                          07/10/2023
+So, it would seem that the surge of DLPs into the week and subsequent closure of them was apart
+of the plan, as-it-were. This leaves our current state with a net-closure of DLPs as we enter the
+next week in our journey through this life, which suggests the put sellers aren’t too eager to sell
+puts currently: a relatively bullish finding.
+Moving to VoEx, there are some curious changes as well. The first finding was VoEx Divergence
+on $SPY and $QQQ on Monday the 3rd.
+[Quick diversion: a lot of times, when we discuss VoEx Divergence we are describing the one with
+VoEx-trend’s performance. However, on Monday I realized that perhaps I didn’t spend enough
+(read: any) time reviewing the other, more subtle VoEx Divergence. ]
+
+This VoEx Divergence is … fickly but its identification has proved quite useful several times, so it
+is still worth keeping an eye out for.
+Truthfully, I don’t usually “look for” this type of VoEx Divergence – but I can’t lie and say it doesn’t
+catch my eye from time-to-time when it does pop up in nature, just as it did on Monday. Let’s take
+a look:
+
+
+
+
+The general theme for this type of VoEx Divergence is that:
+       1) The price is typically experiencing a rapid appreciation,
+       2) During this appreciation, the price and VoEx are “in-sync” (which, since VoEx doesn’t have
+          any inclusion of price in its calculation, always makes me giddy); that means that typically
+          when the price goes up, VoEx goes up, and when the price goes down, VoEx goes down.
+       3) but then, a day occurs where the price rises and VoEx falls.
+The Tier II Primer4 goes through an example or two of this type of VoEx Divergence, and it almost
+always signals the end of the causative bull run, which is determined by the appearance of VoEx
+Divergence.
+Why? I’m not sure!
+
+
+4
+    Tier II – Practical Applications, pg. 23
+
+Deep Dive Stocks – Weekly Chat                                                            07/10/2023
+But in investigating this current showing of VoEx Divergence, one can’t help but notice that so far,
+Monday’s close on $SPY ($443.790 has been the peak – now, its only been a few days so perhaps
+a grain of salt is warranted, but for now, things are going “according to expectations”.
+
+In a particularly joyous event, it would appear that $SPY and $QQQ have also started the more
+familiar and gross5 VoEx Divergence as well - and, for our sake’s, at the same time!
+
+                                                                          This, of course, is both
+                                                                          exciting (as it may
+                                                                          suggest that the bearish
+                                                                          run we have been
+                                                                          anticipating is becoming
+                                                                          very proximal) but it is
+                                                                          also       reminiscently
+                                                                          cautious:      remember
+                                                                          how VoEx paused at the
+                                                                          Inhibition    Zone    on
+                                                                          $QQQ, and $SPY at the
+                                                                          Propagation Zone6 not
+                                                                          but a week or two ago?
+Yes – this feels familiar: a sense of dubious optimism due to VoEx’s lack of commitment.
+
+Thus – due to the potential for a rebound and BUPO, and the potential magnitude of that
+possibility, I think I will place VoEx in the “mixed” bucket for now. The data, by-and-large, are
+bearish printing but I want to see some commitment from VoEx before I put a ring on some puts.
+
+
+
+
+5
+    Gross as in groß not gross.
+6
+    Weekly Chat 2023-06-23
+
+Deep Dive Stocks – Weekly Chat                                                         07/10/2023
+One of the first places we might look for more decisive data prints is towards the Gamma Hedging
+Heatmaps:
+
+
+
+
+$SPY has continued its stance from last week (vanna-oriented hedging heatmap) while $QQQ has
+taken some time to reflect and, it would seem, to add some purchasing support in the $-/IV+
+quadrant.
+This – as usual with these two – is just at-odds enough to be frustrating (but thankfully not as
+badly as a disagreeing VoEx).
+Here, we see that both influence distributions suggest red is the name-of-the-game for the week
+ahead, and although $QQQ does have purchasing support $-/IV+, if we wanted to go fishing for
+some bearish data, one may note that in order to reach the purchasing support, IV and Price would
+have to change in a way that the price falls more than IV rises (this is because the gamma neutral
+zone essentially runs in a straight line down).
+So, since we have nothing else to do, let’s take $QQQ and calculate the percent difference
+between the prior day and current day’s close, the same for IV. This gives us a quasi-normalized
+way to look at the two data, and allows the $:IV ratio to be computed.
+On $QQQ above, we see that price would have to drop more than IV in order to reach purchasing
+support – or in other words, the $:IV ratio would have to be greater than 1 (because $’s change
+would have to be greater than IV’s
+change). The question is, is this a
+feasible expectation? And if so, how
+often does it occur?
+To answer, let’s graph the ratio we
+computed above for dates when $QQQ
+experiences a red day. The blue bars are
+when the relative movement of $QQQ’s
+price is greater than the relative
+movement of IV – or in other words,
+when the ratio is greater than 1.
+We can see that this doesn’t happen very often (only about 8.7% of the time!).
+
+Deep Dive Stocks – Weekly Chat                                                       07/10/2023
+Notwithstanding, the presence of purchasing support on $QQQ sets the stage for potential
+support should the market start to slide next week.
+Perhaps something to keep an eye on as the week progresses.
+Turning towards the MWGS-data
+offers few distinct data prints as
+well:
+The 5-day rate-of-change of
+Gamma Squeeze counts (gold line,
+top graph), is peeking up once
+again above zero – a bearish
+finding for the market.
+
+However, the MWGS-count trend
+(top graph, black line) is negative
+suggestive of a bullish outlook!
+We can see from the counts
+themselves that the current
+numbers are above the 20-day
+average (1,308 vs. 1,201), as well
+as 10 day (1,290), and the 5 day
+(1,227),
+But despite all of this, GTM is
+persistently negative! What a
+trooper.
+GTM doesn’t seem to be detecting
+any incoming gamma squeezes in
+the market – or at least in any
+significant quantity, despite the
+slow dripple of gamma squeezes
+that have been passing through.
+
+
+
+So far, things are looking mixed – a particularly uncomfortable outcome but one that reminds me
+of the idea that mixed data are a mixed market. And the market doesn’t tend to enjoy being mixed.
+To summarize the findings so far:
+   -   VoEx has paused again simultaneously on $SPY and $QQQ during the end-stage of VoEx
+       Divergence,
+   -   The Hedging Heatmaps suggest negative outlooks for the week ahead but the purchasing
+       support on $QQQ should probably be considered throughout the week, especially if $QQQ
+       should find itself deep inside of the blue trenches,
+
+
+Deep Dive Stocks – Weekly Chat                                                      07/10/2023
+    -   DLP behavior suggests bearish outlooks for $SPY and $QQQ due to the lack of DLP
+        opening, and
+    -   MWGSC data are mixed: the “real-growth” is positive which is a bearish finding, but the
+        growth-trend and GTM are showing more bullish outlooks.
+For now, I think the most reasonable positioning is a slight bearish one – but until VoEx once
+again makes up its mind, I will be reserved in its sizing and duration.
+Potential
+Now that that’s out of the way – let’s move to some experimental data!
+The first experimental data print we should turn to is VoEx Variance – I’m not sure why, but lately
+I’ve been really enjoying tinkering with 𝑉𝑉 2.
+First, let’s look at the standard VoEx Variance view 7, showing the 40-day median VoEx Variance:
+
+
+
+
+Despite the recent downturn in about half of the indexes (which we noted a few Weekly Chats
+ago), the overall movement (black line) is positive. As a medium-to-long term data print, it is
+suggestive that the instability noted throughout the market may have some more time to brew
+before things get too entertaining.
+
+From looking at this, I thought it might be worthwhile investigating a cleaner version that is
+focused on how 𝑉𝑉 2 itself was changing, rather than 𝑉𝑉 2 itself – i.e.: the rate of change of 𝑉𝑉 2.
+
+
+7
+ Albeit slightly cleaned-up some. The ETFs are colored the same but have different line types to help distinguish
+them, and an “overall” VoEx Variance (black line) has been added.
+
+Deep Dive Stocks – Weekly Chat                                                                       07/10/2023
+This came from the observation that typically, 𝑉𝑉 2 seems to start its descent prior to the market
+downturn (which, obviously, is good news for us) – but the concern is that this may only be readily
+available after-the-fact. To help fill-in this blind-spot, the 20-day median rate-of-change for 𝑉𝑉 2 was
+calculated and plotted.
+
+
+
+
+There are three dominant down-trends that were strong enough to make it through the filtering
+process: one in late 2018, one in late 2019, and one in mid-to-late 2021.
+I put the resulting drawdown for $SPY during the highlighted boxes, and as we can see – this
+seems pretty salient! The most recent data prints suggest that “up” is the name of the game, but
+it may be worth noting that the most recent up-tick in VoEx Variance’s rate-of-change is quite …
+exponential. Admittedly, I’m not sure what to make of that just yet but it does seem atypical, at
+least from the data we can see here.
+
+Speaking of data, these data were compiled from around 1 million observations of VoEx
+throughout the market from 2018 to present, and so I think it is a rather robust observation. It will
+be worth keeping an eye on these data as both the weeks progress and as I dig through the
+numbers ensuring that 𝑉𝑉 2 and its companion, the rate-of-change of VoEx Variance (𝑑𝑑𝑉𝑉 2), are
+statistically strong enough to officially join the DDS ecosystem.
+Now, let’s move onto yet another fun developing toy! LDPM-Liquidity.
+LDPM-Liquidity is a re-configuration of LDPM (along with a few other changes) that allows the
+visualization of the liquidity levels directly! So far, I’ve been enjoying it and I would like to introduce
+to you as a potential addition to LDPM. It still has to go through various stages of testing and
+
+Deep Dive Stocks – Weekly Chat                                                               07/10/2023
+naturally a primer will have to be written (read: the LDPM primer has to be redone), but I think it
+will be worth it.
+I’ll share a screenshot of TradingView with $SPX on the daily timeframe with some particular
+moments-in-time pointed out. I’ll let you look at it for as long as you like to see what observations
+you can come up with.
+The LDPM set up is the Fib LDPM, and the bottom chart is LDPM Liquidity. There are two colors:
+blue for the “smaller” liquidity pool (LDPM-Ls ), and gold for the “larger” liquidity pool (LDPM-Lℓ).
+There is a red dashed line that is set at zero: above it, and things are considered bullish, and below
+it, things are considered bearish.
+The height of the colored area is how much liquidity is in that pool.
+Have a peek:
+
+
+
+
+.
+.
+
+.
+.
+
+
+Deep Dive Stocks – Weekly Chat                                                           07/10/2023
+Notice anything fun? Here are some of my observations:
+
+
+
+
+   1) The smaller liquidity pool (LDPM-Ls) (blue) is good at forecasting non-sustained market
+      dips,
+   2) The larger liquidity pool (LDPM-Lℓ) (gold) determines if LDPM cross-overs (price vs. the
+      LDPM-smoothed at a 55 backwindow) are going to be sustained or rejected, and
+      subsequently it is a good predictor of overall market direction.
+To synthesize these observations, we can see the first four blue bars show times when the LDPM-
+Ls is below zero (the red dashed line), and subsequently market dips occurred but during these
+Price-LDPM crossover attempts, LDPM-Lℓ was well-above zero, and so there was little threat for
+persistent downside (as it was likely that the crossover attempt would be rejected due to how
+much liquidity was “still left” in the bigger liquidity pool).
+This, however, changed as we approach the gold rectangle – notice that LDPM-Lℓ had been
+reducing steadily and had arrived at the zero-line, and so we see that the price tested and
+surpassed LDPM-55 for a bearish crossover, and the rest is history.
+
+Deep Dive Stocks – Weekly Chat                                                     07/10/2023
+Pretty nifty!
+It is worth noting that this new algorithm also works on smaller timeframes (depending on the
+overall liquidity levels on the equity). Check it out; here’s $SPX on the 5minute chart:
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                   07/10/2023
+$SPX on the 1 minute chart:
+
+
+
+
+$BTC on the 1 minute:
+
+
+
+
+Deep Dive Stocks – Weekly Chat   07/10/2023
+The key takeaway is that I think this can be a very helpful tool for both when there is an apparent
+crossover attempt forming (so as to be able to gain confidence as to whether the crossover will
+be a failure or success), as well as identifying market “dips” that are expected to recover versus
+larger-scale market downturns – and it can provide this benefit at almost all timeframes!
+Additionally, we can see from the $SPX graph above on the daily, that LDPM-Ls is nearing the
+zero line – so it may be worthwhile to brace for a potential market dip, ultimately leading to an
+LDPM-55 crossover test (bearish)!
+So – that’s all I have for you guys this week.
+
+Happy trading,
+
+
+Justin
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                        07/10/2023
+

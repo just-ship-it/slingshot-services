@@ -1,0 +1,117 @@
+                                    Weekly Chat 06/24/2024
+
+
+                                           Main Points
+
+
+    -   Potential pullback in the setting of overall bullish outlooks.
+
+
+
+
+                                            SUMMARY
+
+
+
+           VoEx is in Bullish-until-proven-otherwise for $SPY and $QQQ which brings
+           with it the normal bullish outlook secondary to “overheating”.
+
+           Near-term outlooks for the week ahead however, present with bearish
+           inklings. VoEx spiking towards the P.Z., minimally supportive hedging
+           environment for $SPY, and negative DLP activity suggest a side of the
+           market preparing for potential $- while the hedging environment would
+           offer little support.
+
+           Overall, bullish outlooks on the medium-term with bearish turbulence
+           expected in the interim.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                    06/24/2024
+                                              DETAILS
+
+
+
+
+Hello everyone!
+Last week, we left off with bullish thoughts, and as it turned out, $SPY moved +0.32% and $QQQ
+moved +0.21%. Not too shabby!
+We can see the riveting movements below in last weeks’ heatmaps for $SPY and $QQQ:
+
+
+
+
+Wild stuff.
+This week, the Weekly Chat is going to be rather short again as the data are relatively
+straightforward and I’m practicing “brevity”.
+
+So, let’s take our first peek at the data with VoEx below:
+
+
+
+
+Bullish-until-proven-otherwise (BUPO) seems to be in full-effect as VoEx-trend remains within the
+Inhibition Zone. Some antagonistic force against the aforementioned medium-term outlook
+regressing towards near-term Bearishness exists, namely, VoEx-daily’s quick spike out of the
+Inhibition Zone on $SPY and $QQQ.
+Thus, medium-term bullish outlooks with increased risk of near-term downside.
+If we take a peek at neo-VoEx, we see similar risks:
+
+
+
+Deep Dive Stocks – Weekly Chat                                                      06/24/2024
+                                 VoEx (gold line) is in
+                                 stability, but we see VoEx-
+                                 daily moving briefly out into
+                                 the neutral middle zone.
+                                 This isn’t bearish technically
+                                 since VoEx-daily hasn’t
+                                 entered the Propagation
+                                 Zone but it does echo
+                                 elevated risk of downside
+                                 seen above.
+                                 Nonetheless, for now, even
+                                 with near-term downside
+                                 (should it occur), the overall
+                                       medium-to-long-term
+                                 outlook is bullish.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                    06/24/2024
+Taking a peek at the hedging environments, we see $SPY and $QQQ have two distinct avenues
+towards gamma neutrality.
+
+
+
+
+For $SPY, a gamma-neutrality-void exists in the $-/IV+ quadrant without barrier, but a “ridge”
+exists in the $-/IV+ path which would introduce selling pressure.
+
+$QQQ is more stable, with purchasing support located $-/IV+ and $+/IV-, $QQQ seems relatively
+well prepared for any downside (despite the selling pressure being rather “soft”).
+Taken together, it appears to be an environment of moderate headwind but not without any
+downside support, should the current weakness seen above in VoEx and $SPY’s hedging
+environment “give way”.
+
+Our last stop this week will be the put-sellers, who have begun reducing their activity even more,
+as we can see below:
+
+
+
+
+So, by-and-large, it looks like the market has an increased risk of downside in the near-term but
+the longer-term outlooks seem fine (bullish, that is).
+
+
+Next week, some updates on the updates –
+Happy trading,
+
+
+Justin
+
+
+Deep Dive Stocks – Weekly Chat                                                       06/24/2024
+

@@ -1,0 +1,269 @@
+                                        Weekly Chat 2025-07-14
+
+
+                                               Main Points
+
+
+
+        -   VoEx remains within stability while VoEx-daily remains excluded from both Stability and
+            the Propagation Zone.
+        -   The Hedging environments are much as before with persistent selling pressure located
+            throughout.
+        -   The Market-Wide Gamma Squeeze data show a flatlined GS amount with some signs
+            within the predictive models of growth forthcoming. GTM remains negative.
+        -   LDPM/S study of ES showcase near-term turbulence with multiple potential LDPM
+            crossovers nearby, while the longer-term still pain a default-bearish picture.
+        -   dVoEx studies showcase a tech-centric instability cluster.
+        -   VoEx Variance showcases a market predominately within Phase I transition.
+        -   Overall, turbulence expected with the current data prints technically still poised towards
+            the upside but as evermore, the data suggests a slow coalescence towards bearish
+            prints.
+
+                                               SUMMARY
+
+               VoEx sits within Stability which confers an overall bullish state – despite
+               its apparent change in course towards VoEx-daily, who resides south of
+               stability and just north of the Propagation Zone. This paints a picture of
+               turbulence ahead – but one that should be well managed, so long as VoEx
+               decides to stay in stability. VoEx-daily entering P.Z. would be a definitive
+               move towards the current expected turbulence terminating towards the
+               downside.
+               The hedging environment eggs this notion on with severe headwinds
+               noted on $SPY and $QQQ – much like before, with the only reprieve
+               available with spot down, or in $QQQ’s case, with continued IV reduction1
+               A quick assessment of LDPM with ES showcases continued mixed signals
+               whereby the lower-timeframes (90 and 144) show proximal LDPM support
+               for now.
+               MWGS data show a flatline in GS counts, as there isn’t much more room
+               to go down, GTM continues to print negative values and the predictive
+               data has nudged up evermore to positive territory once more. VoEx
+               Variance and dVoEx studies showcase a migration towards bearish
+               outlooks as well.
+               Thus, taken together, prudency continues to brace for downside while the
+               data suggest a tenuous, turbulent upside is still a possibility – despite how
+               faintly its glow now appears amongst the encroaching darkness.
+
+1
+    How low can it go??
+
+
+Deep Dive Stocks – Weekly Chat               for the week of                2025-07-14 to 2025-07-19
+ DETAILS
+
+
+Hello all!
+Last week, we left off with a just-so net bullish outlook, tempered with some side-eyeing. This
+week, the market seems to have been in similar affect as the net movement for $SPY was -0.07%
+while $QQQ moved -0.37% week-over-week. WoW indeed.
+We can visualize these moves below in the hedging environments from last week:
+
+
+
+
+The week started out for both with downside – potentially spurred on or augmented by the
+availing headwinds we noted just prior to the week’s start. Nothing too remarkable!
+This suggests for us then, that the question laid before us for contemplation this week seems to
+be clear: is it unremarkable in that its simply unremarkable or est-ce que its being unremarkable
+when it should have been remarkable but remained unremarkable is, in fact, quite remarkable?
+Difficult to say.
+
+But for now, let’s check on the data and then rant about database design!
+Wie sollte die Zeit verrinnen, wenn unser Morgen ausbleibt?
+Starting as usual with VoEx, we see:
+
+
+
+
+Deep Dive Stocks – Weekly Chat           for the week of              2025-07-14 to 2025-07-19
+It would appear that VoEx-daily has established a downwards general trend for both $SPY and
+$QQQ – but this isn’t wholly bearish in-and-of-itself, but it does often indicate incoming weakness,
+in particular if VoEx itself exits stability.
+To this affect, we can see that for both $SPY and $QQQ, VoEx itself is still within stability – a
+placement which requires us to adopt a medium-to-longer-term bullish outlook, despite VoEx-
+daily’s side-eye-winking to the opposite. The take away here is: incoming turbulence but it might
+be too soon to expect any significant downside.
+For the upcoming turbulence, let’s check out how the hedging environment is set to influence
+conditions ahead:
+
+
+
+
+Selling pressure abound! We can see $QQQ has its ledge-of-purchasing support located in the
+[$~, 𝐼𝐼𝑉𝑉 − ] - which imagination suggests might set the destination for IV throughout the week.
+
+Let’s move right along to the MWGS, which showcases largely the same. A small growth noted
+week-over-week but nothing terribly exciting. One would
+note, though, that GTM is still pretty negative! This
+suggests that despite it all – the incoming flow of gamma
+to the market is still negative!
+
+In checking with our predictive models, we see that the
+growth-curve is also creeping up! Despite this, the data
+are still negative from the predictive MWGS data.
+
+
+
+
+Deep Dive Stocks – Weekly Chat            for the week of               2025-07-14 to 2025-07-19
+Thus, taken together the MWGS data seem to suggest the market is in a purgatory state of sorts:
+there isn’t much room for the gamma squeezes to go down (and thus, there exists little room to
+derive a bullish outlook!) but we still (for now) see the predictive models producing negative
+values (which forestall a bearish outlook!).
+Moving onwards, let’s check out the LDPM/S environment for ES and VX:
+
+
+
+
+On the 90-minute (top-left) we see LDPM-L5 following price through LDPM-L6 acting as a point
+of resistance while spot becomes entrapped between it and LDPM-L7. LDPS is showing an eager
+bid flowing to ask, which LDPM-L5 seems to be well poised to absorb. This suggests that if/when
+the eager bid dissipates (which is likely to occur before an organic ask) then bearish liquidity
+might return, and usher downside through LDPM-L7.
+Moving upwards to the 144-minute, we see an aggressive ask meeting an organic bid at LDPM-
+L6. With similar thinking as above but different context, we can see that LL-Amount and Flow are
+positive (yet declining) and so LDPM-L6 is expected to hold reasonably well for now. The concern
+is that the aggressive ask seems to be not far removed from an organic ask (as per LDPM-L5)
+which has maintained close proximity since starting its position as the proximal resistance for
+spot around the 4th of this month.
+Zooming out more, we encounter the 987-minute in the midsts of what appears to be the start of
+an Aggressive Ask Cascade (where all the LDPMs rapidly point upwards in unison). This seems
+to have pushed spot below the support at LDPM-L5 but Liquidity Levels-Amount and Flow are still
+positive for now, so I would expect some of the “underside support” LDPM is known to provide
+from time-to-time (where price doesn’t re-cross over the recently-crossed LDPM but sort of clings
+to its underside) until Amount and Flow are negative. This coincidences reasonably well with the
+idea of price-channel confinement a-la LDPM seen in the 90 and 144-minute views.
+
+
+
+
+Deep Dive Stocks – Weekly Chat          for the week of               2025-07-14 to 2025-07-19
+Moving finally upwards, we see on the Weekly view, the eternal beartrap with LDPM-L5 continuing
+in its refusal to allow a crossover to occur. LDPS is still showcasing conditions as bearish and
+the Liquidity Level Amount and Flow rates are both negative. This still paints quite the bearish
+picture ahead.
+Taken together, the notion of near-term turbulence without a clear direction seems reasonable,
+and with conditions looking ominous, the risk for ultimate resolution to be aimed at downside
+seems more probable than towards the upside.
+We’ll skip the VX assessment this week, and in its stead, let’s take a look at the change in VoEx
+data. You’ll remember this is a tool we bust out to look at the change in VoEx across several
+different indexes and then map the historical-future change in price, then we take our current data
+and plot that. The only change from the previous versions of this is that I switched it to VoEx-daily
+and zoomed a bit to get a better view of where things stood 2.
+
+
+
+
+To that end, we see that the turbulence we mentioned earlier seems poised to arrive from those
+symbols found on the right: $SPY, $XLK, $XLI, $QQQ, $XLC, $XLR, and $XLR, while stabilizing
+forces (read: bullish) appear forthcoming from $XLU, $XLB, $XLE, $XLV, $XLF, and $XLY.
+Some curious identifying information from these two broad groups is that those in the green
+($XLU, $XLB, …) is significantly more diversified as a group than those in the red, with sectors
+such as utilities, energy, healthcare, banks and whatnot, while the red-group is quite concentrated
+within Tech: $NVDA, $MSFT, $AMZ are all shared within $SPY, $QQQ, $XLK and $XLC.
+Next up, in the not-seen-for-awhile data, let’s check on VoEx Variance and see what it has been
+up to. Quick reminder: VoEx Variance takes all of the VoEx values within the market, calculates
+their differences, aggregates the data, and displays it for us in a nifty format that shows both
+
+2
+    Check out Weekly Chat 2025-01-06 for a refresher on these data!
+
+
+Deep Dive Stocks – Weekly Chat                   for the week of         2025-07-14 to 2025-07-19
+where the majority of VoExes in the market are and how “erratically” spaced out the VoEx values
+within the market are3.
+In addition to the normal graphs, I also went and placed a line on the graph that showcases the
+general “movement” of the data – as you’ll remember, one of the main ways of interpreting these
+data is with the VoEx Variance cycle, as seen below:
+
+
+
+
+Thus, since each individual graph shows data colored by date, I went and put an arrow with the
+thin part in the most distant past and the larger part (with the arrow) in the more recent time. This
+way, we can visualize how the data was moving through time, as a way of helping identify which
+stage of the cycle is present within each graph.
+Let’s check it out!
+
+
+
+
+3
+    Check out Weekly Chat 2025-03-10 for a good review of VoEx Variance and the graphs.
+
+
+Deep Dive Stocks – Weekly Chat                   for the week of                   2025-07-14 to 2025-07-19
+First, let’s check out the
+
+
+
+
+The top graph shows us the VoEx-Daily VoEx Variance values as the distributions developed over
+time from 2025-06-02 [title on graph is incorrect – apologies!] to present, which shows the market
+well within the `Bullish Distribution` phase of things – you’ll note that the change in height of the
+pathway as it connects with each date’s distribution, corresponds to the flattening out and
+narrowing of the collections. Thus, in the top graph, we can see that the market’s general
+movements, with regards to VV, has been up (getting more collected) and to the right (moving
+bullish).
+
+
+
+Deep Dive Stocks – Weekly Chat            for the week of                2025-07-14 to 2025-07-19
+Additionally, we can see that the data have been “rotating around” in a sense (while not spreading
+out all that much) around the boundary line to stability. This places the market, in the `Bullish
+Distribution` phase.
+Moving onwards to VoEx itself, we see quite a different story [bottom graph]! Much more chaotic!
+In this view, we can see that the migration to the left has been accompanied by a decrease in the
+height of the distributions (and such, the height of the time-pathway), which suggests that the
+Phase 1 Transition is present. This is defined as the start of bullish rumblings as VoExes
+throughout the market start, in sequence, disagreeing with each other (as instability starts to
+spread), and 2) start printing bearish prints. It seems step 1 is underway! This continues to speak
+to the instability noted throughout the market, and thus, expected turbulence.
+Let’s repeat this cycle but with some more historic data so we get a sense of a larger picture or
+pattern that we might be apart of:
+
+
+
+
+Deep Dive Stocks – Weekly Chat           for the week of                2025-07-14 to 2025-07-19
+These data we won’t go through in detail – as they are largely the same but grouped by Month.
+Up top, we see the general behavior of each month this year, with the current data for July (last
+box; top graph) showing general wiggle towards the right – but so far no significant increase in
+VoEx Variance.
+This is, however, not the case when we look at VoEx proper in the bottom graph! So far, the data
+show movement to the left has occurred (and come back slightly) while also flattening out quite
+extensively!
+
+
+Deep Dive Stocks – Weekly Chat           for the week of              2025-07-14 to 2025-07-19
+Overall, I think its reasonable to say the market has been experiencing the `Bullish Distribution`
+(in fact, we can see this clearly in the grouped data!) and there is evidence that market-wide
+instability is starting to mount. This is evidenced by the general pattern of VoEx Variance
+migrating to the left while spreading out – the hallmark finding for the Phase 1 transition.
+Taken together, it seems much is the same and that is remarkably unremarkable. The market
+appears ever ready to become infirm only to hussle through, and that appears by-and-large to be
+the case now. Nonetheless, the data are mounting that downside is forthcoming and the
+foundations of the market do not appear too healthy!
+Thus, prudency continues to brace for turbulence with few thoughts of overall bullish behavior
+until the skies clear, and so, since the skies aren’t clear, the head is filled with less fewer thoughts
+of bearish behavior embracing the market!
+Happy Trading,
+
+
+Justin
+
+
+
+
+Quick Update!
+Ok I ran out of time again to do a full update – but! The gist is that there is a Data Dash patch /
+update planned for August 1st! I’ll spread out more information as the time approaches but I’m
+hoping for a decent upgrade so I’ll keep you posted!
+
+
+Justin
+
+
+
+
+Deep Dive Stocks – Weekly Chat             for the week of                 2025-07-14 to 2025-07-19
+

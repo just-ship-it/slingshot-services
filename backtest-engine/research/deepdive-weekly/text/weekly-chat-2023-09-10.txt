@@ -1,0 +1,242 @@
+                                   Weekly Chat 09/11/2023
+
+
+                                          Main Points
+
+
+    -   VoEx continues to display erratic behavior with some indications of BUPO’s return.
+    -   Hedging Heatmaps offer opposite views with $SPY being unsupportive in the event of
+        a $-/IV+ week while $QQQ offers reasonable purchasing support.
+    -   MWGS-data is becoming increasingly bearish with positive growth rates and positive
+        GTM prints.
+    -   𝑉𝑉 2 suggests that the recent downside did little to quell the overall “overheating”
+        occurring within the market.
+    -   Potential for choppy week with prudence placed on bearish outlooks until substantial
+        and maintained data changes.
+
+
+
+                                           SUMMARY
+
+
+
+          VoEx this week is continuing its erratic behavior, however, a glance at its
+          location suggests its poised to express this instability with another round
+          of BUPO.
+
+          This outlook, looks to be worked against by way of the selling pressure
+          located in the $+/IV- quadrants for both $SPY and $QQQ. Additionally,
+          $QQQ is also poised to offer reasonable purchasing support if the
+          opposite ($-/IV+) occurs.
+
+          Put-sellers are uninspired as the MWGS-data crosses the threshold into
+          bearish-outlook-territory with positive growth and GTM values.
+
+          On a longer time-horizon, 𝑉𝑉 2 offers little solace that the recent market dip
+          was sufficient to cool off the market. Additionally, there are more data
+          within the Propagation Zone – supporting the notion that a larger market
+          correction is nearby.
+
+          Overall, for the week ahead, it seems prudent to expect choppy price
+          action as hedging forces compete against one another but it doesn’t seem
+          prudent to switch back fully to a bullish outlook just yet.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                         09/11/2023
+                                                DETAILS
+
+
+
+
+Heyo all!
+Last week, we left off with the idea that things were looking shaky, with the overall goal to
+downsize long positions and start leaning into short positions should the market present itself
+accordingly.
+Well, with $SPY down 1.26%, and $QQQ down -1.33% (which, as it turns out, $SPY’s EPR for the
+week was drum roll ±1.26%! $QQQ’s, on the other hand, is less serendipitous with a weekly EPR
+of ±1.92%).
+Through the lens of the Hedging Environments we can see that $SPY and $QQQ moved nicely
+into selling pressure throughout the week,
+with only $SPY experiencing a slight
+rebound as the week came to an end.
+
+Not too exciting considering the
+abundance of selling pressure, but it does
+harken back to our conversations about
+what the market might do with purchasing
+support in absentia. The good news: the
+market didn’t plummet, but we can see that
+there wasn’t enough eager bid to resist a
+downwards drift which supplies evermore
+credence to the idea that the tentative tug-
+of-war between eager bid and an eager ask
+seems perilously dependent on which price
+insensitive forces are entering the market.
+So, with that in mind, let’s turn towards the
+next week a head of us and see if we can’t
+renew some market-interest.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                     09/11/2023
+My interest about interests peaking has piqued
+Starting as usual with VoEx, one may well find the data to be immediately brow-furrow-inducing:
+                                                                              Despite VoEx’s insistence in
+                                                                              maintaining a presence outside of
+                                                                              the Propagation Zone, which on
+                                                                              the surface seems kind of $SPY, I
+                                                                              am still not a huge fan of how
+                                                                              erratic VoEx has been.
+                                                                              Nonetheless, one cannot deny
+                                                                              that VoEx is inside of stability and
+                                                                              VoEx-trend looks poised to enter
+                                                                              into the Inhibition Zone, both
+                                                                              tentatively bullish prints.
+
+
+
+With $QQQ’s VoEx, the story seems
+more “in progressed” with VoEx-
+trend’s place inside of the Inhibition
+Zone already secured. As with $SPY,
+$QQQ’s erratic VoEx behavior has
+placed VoEx within stability.
+Curiously, this set up reminds me of
+Weekly Chat 2023-05-15 wherein
+$QQQ had, in similar fashion,
+already secured its move into the
+Inhibition Zone (and thus, a BUPO
+outlook) while $SPY lagged behind.
+
+The benefit that past-Justin had, however, is that this situation was preceded by a relatively calm
+and reasonable VoEx rather than what current-Justin is contending with: an angry and somewhat
+overly-spikey VoEx (excuse my technical jargon).
+
+In both cases, there is a desire to switch to a BUPO stance: with $QQQ’s VoEx nearing existence
+within the Inhibition Zone, and $SPY seemingly following suite – but, the increased erratic
+behavior from VoEx recently provides some cautionary pause: perhaps VoEx’s location is more a
+by-product of its own erratic behavior rather than an indication of the behavior of the foundational
+flows1.
+
+
+1
+  Admittedly the two are one-and-the-same but it suffices to say there’s a subtle difference. A VoEx that is itself
+erratic is indicating an unstable stock regardless of its location. That is to say, suppose a driver is swerving all over
+the highway – occasionally the driver will pass through his own lane. But can we say that the driver, when
+occasionally in his lane, is offering a more stable outlook to his future driving behavior? Probably not. His driving is
+in-and-of-itself unstable. His presence within his lane is simply a casual consequence of his overall reckless
+behavior.
+
+Deep Dive Stocks – Weekly Chat                                                                            09/11/2023
+So, the question becomes: is VoEx’s instability (propagated by the index’s instability) pushing it
+into the Inhibition Zone or are we simply observing instability itself?
+An unfortunate question to have to answer as it will simply depend on time and observations in
+order to determine.
+Nonetheless, VoEx offers the view that the market is still unstable, despite the recent dip, which
+doesn’t bode well for any arguments towards the efficacy of the recent “cooling-off” period
+experienced.
+With that, it seems the question is whether to prepare now for more downturn, or expect a quick
+BUPO event, and then more downturn.
+Let’s turn to some additional data to see if we can triangulate some prudent choices.
+The Hedging Heatmaps demonstrate a unique arrangement as well with $SPY offering no
+purchasing support in the event of a $-/IV+ week, while $QQQ’s stable vanna-squeeze is poised
+to offer some substantial purchasing support in the event of a $-/IV+ week.
+
+
+
+
+What a combo that is auspiciously neutral for helping us decide on any outlooks.
+However, if Kindergarten taught me anything, its that the blue is darker than the red, and thus,
+there is probably more blue than red, and thus, more purchasing support than selling pressure. A
+slight nod towards $QQQ’s more bullish outlook, as it were.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                       09/11/2023
+                                 Our put-selling friends seem to have
+                                 reduced their eagerness in capturing
+                                 future returns by selling volatility and
+                                 delta, with $QQQ still experiencing a
+                                 net draw-down in the DLP’s being
+                                 opened (negative 5-day %-change)
+                                 while $SPY has peeked ever-so
+                                 slightly above zero after a precipitous
+                                 drop last week.
+
+
+                                 Nonetheless, we can see that as
+                                 compared to the last two weeks, this
+                                 behavior is, again, rather lackluster
+                                 and uninspiring.
+                                 It would seem that those-who-sell-
+                                 puts aren’t too confident in the dip
+                                 having dippeth-ed, at least in the near-
+                                 term, as there is minimal eagerness to
+                                 sell puts after the recent ~1%
+                                 downside this week.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                              09/11/2023
+The Market-Wide Gamma Squeeze
+(MWGS)-data is also teetering into bearish
+territory again with the growth-trend and
+growth-rate (top graph; black line and gold
+line, respectively) being once-more
+positive.
+In addition to the 14% increase in the
+number of gamma squeezes this week,
+GTM is printing positive values as well.
+Suggestive of more gamma squeeze
+starting to form and come “down the line”
+into the market.
+
+This is echoed as well in the revised-GTM
+plot which demonstrates a net-flow of
+short-gamma into the market (gold
+highlighting is below zero), and the recent
+individual data prints moving into negative
+territory as well.
+
+Thus, it would seem reasonable to expect
+a continued flow of gamma squeezes into
+the market, and thus, more bearish
+performance from this view.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                09/11/2023
+Lastly, we can peek at VoEx Variance (𝑉𝑉 2) to see if there are any developments on that front.
+
+
+
+
+[Note: I re-ran all of the data to ensure all 4.7 million observations were sound and to repair some
+missing data].
+
+𝑉𝑉 2 is showing continued reduced angle-of-attack within the Inhibition and Stable Zones, with
+additional data prints appearing within the Propagation Zone.
+This medium-to-longer-term view still offers relatively the same one as we have been observing:
+there’s still over-heating (by way of how many dots are within the Inhibition Zone), and growing
+VoEx’s within the Propagation Zone throughout the market – a sign of an upcoming downside.
+So, what can we take away from all of this:
+   -     VoEx is still unstable and it doesn’t appear as though the recent downside was enough
+         to quell this instability (if it were, VoEx wouldn’t be so erratic still!)
+   -     Hedging Environments are oddly opposite with $QQQ demonstrating some reasonable $-
+         /IV+ purchasing support while $SPY only offers some light selling pressure.
+   -     Our DLP friends are uninspired,
+   -     MWGS data is becoming increasingly bearish,
+   -     𝑉𝑉 2 continues to suggest we seem to be nearing a larger downside still.
+Perhaps a choppy week from competing hedging environments is forthcoming, with any long
+gains quickly captured as instability doesn’t appear to have left the market just yet.
+Happy trading,
+Justin
+
+Deep Dive Stocks – Weekly Chat                                                         09/11/2023
+

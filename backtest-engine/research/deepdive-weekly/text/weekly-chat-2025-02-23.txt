@@ -1,0 +1,183 @@
+                                 Weekly Chat 2025-02-24
+
+
+                                       Main Points
+
+
+
+    -   VoEx for $SPY and $QQQ remain within the P.Z. with VoEx-Daily spiking down to ~the
+        P.L. for both.
+    -   Gamma-hedging environments showcase a vanna-unstable orientation for both $SPY
+        and $QQQ with local and diffuse selling pressure present.
+    -   DLP-selling has decreased to sub-zero amounts.
+    -   MWGS data shows a re-surgence in GS counts and a GTM growing negative.
+    -   LDPM/S suggest ~8-10% downside until the next organic bid is located on ES and NQ.
+
+
+
+                                        SUMMARY
+
+
+
+          The data have become bearish throughout the land with VoEx indicating
+          near-term and longer-term downside; gamma-hedging environments
+          showcasing a vanna-unstable orientation with local and immediate selling
+          pressure; put-selling is has sub-zero temperatures and gamma squeezes
+          have been increasing.
+
+          Concurrently, with LDPM/S we see that liquidity has become bearish and
+          the next identifiable organic floor appears to reside around 8-10% down
+          from current spot on futures.
+
+          Thus, baring exceptional decrease in IV (and thus bringing purchasing
+          support into the market) downside seems likely and expected.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                   02/24/2025
+                                              DETAILS
+
+
+
+
+Hello all!
+Last week, we left off with notions of bearish-tainted bullish outlooks which framed future
+expectations into a bull-trap configuration. This outlook seems to have served well, as week-over-
+week changes in price are -1.60% for $SPY and -2.24% for $QQQ. Pretty neato!
+Let’s take a quick peek at these numbers when normalized against EPR (using the T+4 EPR)j:
+
+ Symbol              Anticipated         Realized             Ratio               Difference
+                     Move (±%)           Move (%)             (Real / Ant.)       (%-magnitude)
+
+ $SPY                   1.16                1.60                1.37                15.00
+
+ $QQQ                   1.65                2.24                1.35                30.00
+
+
+
+Decent numbers! Curiously, in terms of ratios, the two moved the same but in terms of the
+magnitude of difference between the starting and ending values, we see $QQQ moved over twice
+as much (the larger the %-magnitude, the larger the two values being compared are spread apart)!
+This doesn’t necessarily mean anything at present but worth keeping in the back of our pockets.
+Taking a look at the week through the gamma hedging heatmap shows the following:
+
+
+
+
+A quick look at the start of the week shows movement in the [$+ , 𝐼𝐼𝑉𝑉 + ] manner, only to have things
+fall back away from gamma neutrality and loop down and around. $QQQ, it would seem, per last
+Friday, managed to end at the week straddling the boundary between purchasing support and
+selling pressure.
+An exciting week which begets more excitement. For us, we should strive to focus our excitement
+on verifying the end of the bull trap as well as investigating if the spectre of ~mean reversion~ is
+loafing about.
+Tally ho!
+
+Deep Dive Stocks – Weekly Chat                                                           02/24/2025
+Tallying hos
+We start as usual with VoEx:
+
+
+
+
+To start, we see that VoEx-daily has removed itself rapidly from stability for both $SPY and $QQQ;
+curiously none ended their journey in the Propagation Zone (that would be too convenient for us),
+but rather $SPY’s ended directly on the Propagation Line, while $QQQ’s ended just shy thereof.
+The interpretation, despite these shortcomings (namely, the shorter-than-desired trip towards the
+P.Z.), is straightforward: downside is neigh, near, and possibly even next (up).
+Since VoEx is still within the P.Z., the default outlook is down, and since it appears VoEx-daily is
+spiking into the P.Z., it would appear our futures are unbridled with the burden of a bull bamboozle.
+With price-expectations established, let’s take a peek at the hedging heatmaps to see what we
+should expect therefrom:
+
+
+
+
+Wow!
+Both $SPY and $QQQ are well-endowed with local and immediate selling pressure. A rarity to have
+both $SPY and $QQQ in agreement to such a degree!
+An immediate consequence of this is that it shows us that if there is any rapid movement towards
+purchasing support / gamma neutrality, it will likely have to be via a sustained IV reduction at the
+immediate start of the week; otherwise, it would appear movement down and to the right is the
+most likely.
+
+
+Deep Dive Stocks – Weekly Chat                                                          02/24/2025
+Is this concern (namely, that of [$− , 𝐼𝐼𝑉𝑉 + ] movement) shared within the put-selling community?
+
+
+
+
+Very much so! Current put-selling behaviors have reduced to levels-not-usually-seen below zero.
+Thus, it would appear there is no immediate concern for missing any [$+ , 𝐼𝐼𝑉𝑉 −] movements in the
+near-term future.
+So far, in a stroke of good luck, the data have been straightforward. Does this continue with the
+market-wide gamma squeeze data?
+
+                                                                   Nothing too remarkable as of
+                                                                   yet – growth has peeked above
+                                                                   zero but its not quite
+                                                                   reminiscent of the “resurgence”
+                                                                   that was discussed a ~2 weeks
+                                                                   ago.
+                                                                   The week has seen a 6%
+                                                                   increase in gamma squeeze
+                                                                   counts, while over the past
+                                                                   month gamma squeezes are up
+                                                                   about 17%.
+                                                                   In the next day or so, should
+                                                                   growth skyrocket, this would
+breath renewed life into the “gamma resurgence” theory.
+
+The likelihood of this seems, at present, still
+relatively small, but GTM (right) does offer
+some hope with GTM dipping into negative
+territory at week’s end.
+Worth keeping an eye on these data, in
+particular, at the start of the week.
+So far, there is little data to suggest a
+materializing spectre of ~mean reversion~
+nor in the resetting of the bull-trap; rather, it would appear as though the data is confluently
+bearish.
+
+Deep Dive Stocks – Weekly Chat                                                         02/24/2025
+In peeking at LDPM/S for ES and NQ futures, the data continues in similar fashion:
+
+
+
+
+On the top (top) we see ES having crashed through the organic bid at LDPM-7 at $6,000-ish.
+Despite this showing of bearish liquidity, LDPM is remaining in a bullish “stack” (LDPM-5 > LDPM-
+6 > LDPM-7), which technically puts this showing as a bear trap. Quite the bear trap though!
+NQ, on the other hand, is much less bullish – its bull-trap appears to have sprung with a final test
+attempt of LDPM-6 at ~$22,250. The result is an immediate migration towards the bid – which,
+on the daily view, we can’t identify!
+Let’s zoom out to the weekly view:
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                         02/24/2025
+Here we see ES (top) has switched to bearish liquidity while testing LDPM-5. The next organic bid
+lays about 8% down at $5,440-ish, while on the bottom (NQ) we see things are technically bullish
+per LDPS but we can also see that the organic bid lay at ~19k (-10%).
+This suggests that should downside manifest, the proximal organic bids to look out for reside
+about 8% down for ES and 10% down for NQ. Considering the previous data, it suggests that these
+might be soon visited!
+Admittedly, these weekly views dis-courage a notion of super-max downsize (as both futures
+showcase bullish stacks) but the levels suggest by the inferior LDPMs does give hope for future
+excitement.
+Thus, taken all together, things look pretty bearish! Unless there’s a significant push towards
+purchasing support vis-à-vis a 𝐼𝐼𝑉𝑉 − push at the start of the week, conditions are such that selling
+should reign!
+Happy Trading,
+
+
+Justin
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                          02/24/2025
+

@@ -1,0 +1,216 @@
+                                 Weekly Chat 05/08/2023
+
+
+                                         Main Points
+
+
+    -   Red outlook for the week ahead
+    -   VoEx is behaving erratically, a bearish finding
+    -   The hedging environments are once again unsupportive in a $-/IV+ move and the
+        influence distributions have negative outlooks for the week ahead.
+
+
+
+
+                                         SUMMARY
+
+
+          Last week, we anticipated a bullish performance due to VoEx’s surprise
+          return to the Inhibition Zone. Since then, we have seen the markets and
+          VoEx whip-tail around, chasing the news of Carl Icahn.
+
+          This showing demonstrates that the cycle that we have been monitoring
+          for the past few months is still on track, and this week seems likely for it
+          to manifest with more downside.
+
+          Hedging environments are unsupportive in a $-/IV+ move, and are very
+          reminiscent of last week’s hedging environments. The influence
+          distributions are predominately negative again – although there is a
+          reasonable right-tail, so perhaps some thoughts towards hedging for
+          upside is in order should one be placing bearish bets on the week.
+
+          MWGSC growth is positive, also a bearish finding, despite GTM’s
+          insistence that gamma squeezes should be cooling off somewhat in the
+          near future.
+
+          Our DLP-friends don’t seem to be quite as convinced regarding future
+          $+/IV- moves, as their growth is significantly lower than the same time
+          last week.
+
+          Overall, a bearish outlook for the week ahead.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                       04/24/2023
+                                          DETAILS
+
+
+
+
+What a week!
+Last week we left off with the idea that the markets looked prime to continue their rally
+northward. There were several data prints upon which we leaned to support these lofty
+goals: VoEx had returned to the Inhibition Zone; DLPs were coming back; and GTM was
+cooling off – provided sufficient ingredients for to feed our outlook.
+To sour the meal that we have been looking forward to, however, stood Carl Icahn – the
+man, the myth, the lunch-stealer.
+The news of a potential multi-billion dollar Ponzi scheme did a cause quite a stir, and this
+turbulations came at an inopportune time with both hedging environments for $SPY and
+$QQQ demonstrating little purchasing support in a $-/IV+ manner.
+The consequences of these two fateful star-crosséd events can be visualized below from
+last Friday’s heatmaps:
+
+
+
+
+$SPY moved 24% more (to the downside) than $QQQ this week – perhaps associated
+with the lack of purchasing support for $SPY.
+Thus, lesson learned about scoffing at minor purchasing support – as once again we are
+reminded it is far better than none!
+It seems the week ahead of us has a simple question, along with hopefully a simple
+answer: Did Carl screw up the trajectory or is this just a small hiccup along the road?
+Let’s see what the data say.
+The data say:
+
+Deep Dive Stocks – Weekly Chat                                                  04/24/2023
+Starting as usual with VoEx, we see that it also did not enjoy this week’s acrobatics, with
+                                                               each             undulation
+                                                               rickshawing VoEx from one
+                                                               zone to another.
+                                                              What would the typical
+                                                              interpretation here be?
+                                                              Naturally, I’m inclined to
+                                                              just spout my insights but I
+                                                              want to ensure that I
+                                                              express      my     thought
+                                                              process some, so as to not
+                                                              come across as a hand
+                                                              waver. So, I’ll use this
+opportunity as a slight learning experience – to flesh out some of the reasoning.
+To do so, I’ll lay VoEx’s behavior out as I see them, and I’ll leave you to put the pieces
+together; then we’ll see if we agree. First, we’ll start with some general observation:
+   1) VoEx is indicating instability
+Before we continue, let’s go through each of the points above:
+VoEx is indicating instability
+Naturally, I’m going to ask something like “what doth this signify”, but I’m more interested
+first in ensuring we are both seeing the same thing – that is to say, I want to ensure we
+can see how this is being conveyed.
+VoEx, in colloquial terms, indicates instability whenever it is in the Inhibition Zone or the
+Propagation Zone. This, the standard definition of instability, applies here as well such
+that VoEx has in the span of 1 week been in both the Inhibition and Propagation Zones –
+several times. This is the first argument towards instability.
+The second is slightly more subjective but present nonetheless: VoEx appears itself
+unstable.
+Take a peek above and see if you can identify what I mean.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                   04/24/2023
+Notice the behavioral change?
+What are your thoughts on this behavioral change?
+What does this mean? (Told you I would ask).
+To me, it seems as though when the trajectory that we were anticipating (downside) didn’t
+come to fruition, VoEx started behaving quite unceremoniously. This suggests that
+deviation from the anticipated movement is itself provoking instability – causing VoEx to
+start moving erratically.
+Initially, we interpreted this instability as simply VoEx rebounding into the IZ, a sign that
+the bullish wave (that we were expecting to end) was going to continue:
+
+
+                                              “
+VoEx seems to have juked us out. With a sudden dip into the PZ followed by an immediate
+return to the IZ – this action seems antithesis to our expectation that VoEx would
+invariably fall into the PZ (namely because of its inching towards the IZ), and then reside
+there for awhile during a downturn, and slowly start to run back up – precisely the action
+typically seen during bull runs.
+                                              “
+I am still convinced that this was a reasonable interpretation – but now we have a clearer
+picture with more evidence: VoEx wants things to go down, and it wasn’t “juking us out”
+per se but rather reacting to the instability present when $SPY wasn’t going down.
+Is VoEx’s bearish outlooks reflected elsewhere?
+
+
+Deep Dive Stocks – Weekly Chat                                                   04/24/2023
+Let’s take a peek at the hedging environment for $SPY and $QQQ:
+
+
+
+
+We find ourselves with an almost exact carbon-copy from last week: little to no
+purchasing support in a $-/IV+ move for $SPY, and negligible purchasing support for
+$QQQ.
+In both cases, the Influence Distribution is showing negative outlooks for the week ahead
+– but (again) there is an appreciable right-sided tail, so perhaps some up-side risk hedging
+is appropriate should one position for an overall bearish move throughout the week.
+Zooming in on the dealer long puts we see a slight resurgence of DLPs, not too much but
+we can’t say that they aren’t there.
+
+
+
+
+Typically the DLPs are quite the salient indicator for future market performance but they,
+more than most indicators in DDS’ ecosystem, are reliant on a reasonable dose of
+subjectivity – i.e.: if someone somewhere with a lot of money thinks the market is going
+to go up; we tend to see DLP behavior spike.
+
+
+
+Deep Dive Stocks – Weekly Chat                                                  04/24/2023
+This system inherently rests on what this money thinks, and, as we saw this week, correct
+most of the time doesn’t mean correct all the time – and it would seem that our DLP
+friends caught the wrong-side of the trade this week.
+Thanks, Carl!
+In preparation for the week ahead, we will note that the DLPs haven’t quite rebounded as
+much as they did at the start of last week – perhaps some caution has been instilled in
+our DLPs friends.
+Moving towards the MWGSC, we see
+mixed signals showing up yet again with
+GTM printing values that are opposite to
+some of the other data prints.
+Currently MWGSC growth is positive (top
+graph), a bearish finding, and so let’s
+keep an eye on GTM to see if it doesn’t
+change its tune in the next day or so.
+So, overall, a short weekly chat this
+week.
+To recap, last week we acknowledged
+that VoEx’s performance was indicating
+instability but that it was reminiscent of
+an “interrupted” bearish phase and
+should       present      with     bullish
+performance.
+This seems and feels still like a good
+outlook given the data we had. Then Carl
+happened and caused a lot of organic
+ask to enter the market – with that
+organic selling we know that the market
+was in a precarious position in a $-/IV+ manner. This provoked some substantial selling
+that was only staved off towards the end of the week.
+Now, with more data, we see that VoEx is telling us that the interruption to the already-
+interrupted-normal bearish phase of the cycle is mucking things up a bit; VoEx itself is
+now behaving quite erratically as the market shifts from downside to upside – something
+that even a cursory review of prior similar episodes on $SPY will be return few results.
+DLP behavior is less robust than last week, perhaps less confidence in a $+/IV- move for
+the week, and the hedging environments are very unsupportive with negative influence
+distributions.
+
+Deep Dive Stocks – Weekly Chat                                               04/24/2023
+MWGSC growth is positive – a bearish finding, but GTM suggests that this may cool off
+in the future. So, we’ll keep an eye on that.
+Overall, a red week seems most likely ahead with a small acknowledgement of the right-
+sided tail risk that is lurking on the indexes.
+So, that’s all I have for you guys this week.
+I hope to have an update for everyone regarding the dashboard here soon – I am still
+working with the devs to iron some things out but it is looking relatively promising.
+Happy trading,
+
+
+Justin
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                             04/24/2023
+

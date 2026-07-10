@@ -1,0 +1,162 @@
+                                 Weekly Chat 2024-11-04
+
+
+                                        Main Points
+
+
+
+    -   VoEx-daily has moved decisively into the Propagation Zone, heralding downside
+        expectations.
+    -   Hedging environments are mixed with very local selling pressure located just-spot-
+        down.
+    -   Gamma squeezes have increased and GTM is printing negative values.
+    -   ES shows bearish liquidity with a forming bear-trap.
+    -   Overall, expectations are for maintained: near-term downside.
+
+
+
+                                        SUMMARY
+
+
+
+          This week brought its first nice showing of bearish activities. In
+          conjunction, VoEx-daily has moved into the Propagation Zone on $SPY
+          and $QQQ; this brings with it the usual downside imminence.
+
+          The heatmaps demonstrate conditions are thinly separated from a void of
+          selling pressure.
+
+          Put-selling, renown last week for its spritely nature, is now known this
+          week for its subsidence instead; a move that heightens the downside
+          expectations.
+
+          Market-Wide gamma squeeze (MWGS) data is showing a growth in
+          gamma squeezes along with persistently negative GTM – signs of both
+          local and extended instability.
+
+          Overall, the expectations are maintained from last week: downside with a
+          reasonable target of $6,000 for ES.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                   11/04/2024
+                                              DETAILS
+
+
+
+
+Hello every-body!
+Last week, we sounded the alarm on bearish inclinations, and, despite our lamenting as to the
+inherent lack of desire for the market to adhere to our desires last week, it seems the market
+actually does have said desire. This can be visualized in the following way:     but it is likely
+easier to express (and interpret) the following: $SPY moved -1.38% while $QQQ moved -1.59%.
+Not quite large enough moves to bust out the math, just yet, as these are well-housed within the
+expected-price-range of $SPY ±1.47 and $QQQ’s expectation of ±1.95% - but - soon perhaps.
+Looking at the movements throughout the week on the heatmaps, we see:
+
+
+
+
+Quite the drawdown from $QQQ for the week! It seems $QQQ’s early-week IV-downside brought
+conditions into selling pressure, dropping the market down some.
+Of curious note, however, is the difference in IV performance throughout the week; whereas both
+ended with IV having increased, we can see that $QQQ saw IV- at the start of the week to a larger
+degree than $SPY did! We’ll add “check LDPM-Vol between $SPY and $QQQ” to our list of data to
+investigate.
+So, nothing to write home about – but let’s see if we can’t peek into the future to see if we should
+prep the stationary for next week.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                         11/04/2024
+Mes chers parents1:
+Getting started with VoEx, as usual, we see danger zone!
+
+
+
+
+With VoEx-daily within the Propagation Zone, and VoEx looking to follow suit, these data present
+with a clear picture of downside.
+The longevity of this downside is still in the near-term given VoEx’s persistence within Stability,
+but a close eye will be set forth to see if we have to extend this outlook.
+
+Thus, downside it is!
+How might the hedging environments respond to downside?
+
+
+
+
+Poised to offer reasonable purchasing support in so long as price and IV maintain a stable
+relationship whereby IV moves significantly more to the right than price moves to the down.
+
+Otherwise, both indexes are in a very tricky spot if they should fall in price more than rise in IV due
+to the endless selling pressure that could impose.
+Thus, in either case, the expectation for me is a short-lived episode of purchasing support
+followed by some hearty downside.
+
+
+1
+    Just warming up the ol’ writing hand.
+
+Deep Dive Stocks – Weekly Chat                                                            11/04/2024
+Additionally, our put-selling friends seem to have reduced their activities significantly on $QQQ,
+as we can see below:
+
+
+
+
+It is not often that our friends mis-timed put-selling! Nonetheless, the continued increase in DLP
+activity continues to abate in the presence of downside; not the most hopeful of findings2!
+
+Thus, with VoEx in the P.Z., the hedging environments offering a scary view, and put-selling
+abating, things do look as though we might have something to write home about next week!
+
+Let’s check in with the Market-Wide Gamma Squeeze data to see how things are shaping up:
+                                                 The average over the last 5 days increased 9% week-over-
+                                                 week. This comes with a continued negative GTM and a
+                                                 rapidly growing Gamma-Squeeze growth rate (top graph,
+                                                 blue line), which is now well into positive territory.
+
+                                                 This brings with it additional downside concerns: with
+                                                 GTM printing negative values, this suggests that there is
+                                                 more negative gamma squeeze en bound to the market
+                                                 (which is a future-bearish sign), and the fact the current
+                                                 gamma squeeze growth is positive is present bearish
+                                                 findings!
+
+                                                 This emphases the importance of keeping an eye on VoEx
+                                                 to ensure it doesn’t fall out of stability in the next few
+                                                 weeks.
+
+
+
+
+Moving right along, let’s check out ES with LDPS on aggressive:
+
+
+
+2
+    One would think that conviction would predispose increasing put-selling with $- and IV+.
+
+Deep Dive Stocks – Weekly Chat                                                                 11/04/2024
+What a remarkably frustrating indicator I’ve created! Notice how LDPM-144 (neon blue) has finally
+overtaken its LDPM-377 friend just in time for bearish LDPS. So, now, we can’t even have a mixed-
+but-mostly-bearish outlook cause technically we are now in Bear Trap territory!
+So, downside is likely still, with LDPM-610 showing a reasonable floor now at $5.6k still – and
+that feels reasonable.
+
+
+So – bearish through and around with expectations of a dip to ~$5.6k on ES followed by
+resumption of normal programming and activities.
+Happy Trading!
+
+
+Justin
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                      11/04/2024
+

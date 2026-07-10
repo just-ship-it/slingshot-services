@@ -1,0 +1,201 @@
+                                  Weekly Chat 09/23/2024
+
+
+                                         Main Points
+
+
+
+    -   VoEx is up.
+    -   Gamma hedging environments are blue and supportive.
+    -   DLP behavior is absent.
+    -   High risk for bullish performance with some consideration towards a minor pullback.
+
+
+
+                                         SUMMARY
+
+
+
+          It would seem the music has started back up again officially as VoEx for
+          $SPY and $QQQ have re-entered stability. VoEx-daily is a bit rough with its
+          recent peaks, which supports the idea of a moderate pull-back given the
+          recent surge in price. However, should it occur, it is expected to be minor
+          given VoEx’s current state.
+
+          The Hedging environments are in a vanna-stable orientation with
+          reasonable purchasing support throughout. Concern exists here in the
+          event of excessive IV- which would work to bring in some selling pressure.
+          Nonetheless, the Influence Distributions suggest bullish week ahead,
+          despite the southern selling pressure.
+
+          No real developments in the put-selling or gamma-lands; both offer
+          minimal outlooks for the time ahead.
+
+          Overall, expectation is back to BUPO (Bullish-until-proven-otherwise)!
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                      09/23/2024
+                                                    DETAILS
+
+
+
+
+Hello everyone!1
+Last week, there were some whispers for an potentially-ever-growing bull-trap which led to a net-
+bullish outlook.
+Thus far, the market delivered with $SPY moving 1.11%, while $QQQ moved 1.49%. These values
+are less exciting than last week, and well-housed within the EPR2, so no need for any extra math
+this week!
+Additionally, there was some fretting last week over the orientation of the gamma hedging
+environment; namely because of the Vanna-stable orientation, which necessitated some hand-
+waving about Eddie currents.
+We can see the result of the week against the expectations below:
+
+
+
+
+If you tilt your head and squint some you can see that it sort-of played out. The idea was moreso
+that the market would float up, then down, then up – instead we went flatish, up, then down.
+Can’t win them all.
+So, without further ado, let’s get started and then end with some rambling about upgrades.
+
+
+
+
+1
+    Especially you!
+2
+    $SPY’s T+5 EPR from last week was ± 1.53% (0.72x) while $QQQ’s was ±2.20% (0.67x).
+
+
+Deep Dive Stocks – Weekly Chat                                                           09/23/2024
+In which there is no rambling:
+Starting as usual with VoEx, we see a refreshingly simple interpretation of market stability:
+
+
+
+
+We now live in an environment were VoEx and VoEx-daily are within Stability!
+This means BUPO (Bullish-Until-Proven-Otherwise) time!
+
+Admittedly, one can see that VoEx-daily is a bit rough, and, given the recent surge in price-action,
+if one really wanted to push against a bullish-outlook in lieu of a near-term, modestly bearish
+outlook due to a high-risk of pull-back; I don’t think anyone could fault that outlook3.
+Thus, with a tentatively bullish view, how would the gamma environments handle this?
+
+
+3
+  Essentially, VoEx-daily currently looks similar to local VoEx-daily tops, which suggest a near-term dip. But, this is
+mostly hand-waving interpretation as the text-book says: bullish-until-proven-otherwise! But I wouldn’t blame you
+if you also showed us the SNAP graphs for $SPY! Which do suggest a bearish Monday! This can be visualized below
+as the SNAP graphs show modestly-increasing positive outlooks as we expand out time-horizon from the 1-Day (far
+right) to the 20-day (1 trading month; far left).
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                                          09/23/2024
+It would seem very well!
+The markets seem to be sitting on some reasonable purchasing support, and the influence
+distributions are suggesting a bullish lean for the week ahead.
+Selling pressure is pretty far-off (well, reasonably-off for $QQQ) such that the closest route to
+would be via a [$-, IV-no-change]-market, which would be an arrangement, but worth keeping an
+eye out for if IV starts to stall.
+Perhaps IV dropping too aggressively at the start of the week may endanger a wholly-supportive
+environment but overall, the skies seem clear!
+So, if VoEx looks primed, and the hedging environments are poised to offer persistent purchasing
+support, are our put-selling friends at all convinced?
+
+
+
+
+Nope!
+Not at all, and why would they – they’re probably cooler than you us. They know things. Secret
+things, I’m sure.
+So, perhaps we can keep that in mind, but for now, it looks like they are missing out.
+Moving right on to the Gamma world, we see: not much!
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                           09/23/2024
+                                                               Gamma        squeezes     have
+                                                               decreased 26% to recent lows of
+                                                               769 over the past 10-(trading)-
+                                                               days, and -10% over the past
+                                                               trading-week.
+
+
+
+
+                                                               Even GTM is nonplussed at the
+                                                               recent activities and finds neutral
+                                                               gamma flowing towards the
+                                                               market.
+
+
+
+
+Gamma-land looks clear!
+So, all-in-all, the music seems to be playing so loudly we’ve almost forgotten about our several-
+month-long hand-wringing about medium-term downside.
+To that affect, it looks like it’s time to dance!
+
+
+Happy Trading,
+
+
+
+Justin
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                       09/23/2024
+In which there is (some) ranting:
+No, you’re ranting.
+In any case, I figured I’d give a quick update as to the progress of, well, the updates!
+Most of the back-end has been re-written and established in Rust (whoo) and the databases are
+getting populated and set up now (whoo). So far, the benefit is very noticeable speed-wise!
+
+The next month-or-so will be tying the back-end together and then probably a few “test-runs” to
+see how things work. If things continue to look how they are looking now, it shouldn’t be
+unreasonable that the new Dashboard will have the data up much sooner than currently!
+I am re-designing the UI of the dashboard from the ground up – I know that there has been some
+discussion about making the app more mobile-friendly, but right now I am focusing moreso on
+creating a powerful “Bloomberg Terminal”-esque style dashboard, so mobile support isn’t quite a
+priority but I will be keeping it in mind. If you have any specific ideas or suggestions please let me
+know!
+
+I bring that up because, ya – the new dashboard is shaping up to be pretty nifty! Essentially, the
+data page is such that you press a button “Add Data” and then you select which data you want to
+see for instance, “Show me a Table of Price-Action overview between $SPY and $QQQ”. From
+there, the dashboard will populate a table with various metrics to show you things like average
+daily price changes, comparison metrics, various X-week averages, various data values and their
+respective comparisons, etc.
+Or you can say things like “Show me a Graph of GTM for these Stocks $Stock_1, $Stock_2, …” and
+it will, hopefully, populate a graph showing you GTM with just those stocks included! Stuff like
+that.
+
+So that will populate into a little window, and then supposing you want even more data you can
+hit the button again and repeat the process! Ideally, you will be able to save various
+“configurations” so that they are easy to swap through.
+Additionally, along with the watchlist and the market scan, there will be an ability to set custom
+alerts, like “Alert me when $X is above LDPM-89 AND LDPS Bullish for Y days” or stuff like that,
+whatever it is that you kids are doing now-a-days.
+But ya! Stuff is happening, I suppose. Hopefully in about a month things will be up and moving
+enough to put on a little demo – fingers crossed!
+
+
+Until then,
+
+
+Justin
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                             09/23/2024
+

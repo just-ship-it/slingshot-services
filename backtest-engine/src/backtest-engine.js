@@ -30,6 +30,7 @@ import { GexAbsorptionStrategy } from '../../shared/strategies/gex-absorption.js
 import { IVSkewGexStrategy } from '../../shared/strategies/iv-skew-gex.js';
 import { GexFlipIvpctStrategy } from '../../shared/strategies/gex-flip-ivpct.js';
 import { GexLt3mCrossoverStrategy } from '../../shared/strategies/gex-lt-3m-crossover.js';
+import { LtGexPathRaceStrategy } from '../../shared/strategies/lt-gex-path-race.js';
 import { LsFlipTriggerBarStrategy } from '../../shared/strategies/ls-flip-trigger-bar.js';
 import { GexTouchConfirmStrategy } from '../../shared/strategies/gex-touch-confirm.js';
 import { GexTouchPatternsStrategy } from '../../shared/strategies/gex-touch-patterns.js';
@@ -1740,6 +1741,10 @@ export class BacktestEngine {
       case 'gex-lt-cross':
       case 'glx':
         return new GexLt3mCrossoverStrategy(params);
+      case 'lt-gex-path-race':
+      case 'path-race':
+      case 'lgpr':
+        return new LtGexPathRaceStrategy(params);
       case 'ls-flip-trigger-bar':
       case 'ls-flip':
       case 'lstb':

@@ -1,0 +1,204 @@
+                                   Weekly Chat 12/18/2023
+
+
+                                         Main Points
+
+
+   -   VoEx remains in a Bullish-until-Proven-otherwise configuration despite its recent
+       “spike-like” behavior.
+   -   Hedging Environments remain much the same: diffuse, light, proximal selling pressure
+       with a vanna-unstable orientation.
+   -   MWGS data shows a persistent near-zero growth-rate with a week-over-week
+       reduction in the number of gamma squeezes. GTM is moving into bearish territory as
+       the flow of long-gamma-that’s-moving-into-the market is rapidly diminishing.
+   -   Put-selling has reached a net-removal state as OTM dealer long puts are being closed
+       out for the week a head – a potent bearish data print.
+   -   Overall, despite VoEx’s spike-like behavior, until it breeches the Propagation Zone,
+       Bullish-until-proven-otherwise is maintained.
+
+
+
+                                          SUMMARY
+
+
+
+           Last week, $QQQ’s put-selling foretold a reasonable green week for the
+           tech index, which was reasonably followed by $SPY.
+
+           In response, it would seem VoEx has spiked southward on both $SPY
+           and $QQQ, however, for neither index, VoEx has not moved out of the
+           Inhibition Zone. This, then, reinforces Bullish-until-proven-otherwise.
+
+           Hedging environments remain much the same as before: unstable vanna
+           orientations with light, and diffuse selling pressure along with a gamma-
+           neutral path extending in the $+/IV- direction.
+
+           MWGS data is mostly unremarkable other than the ~13% reduction in the
+           number of gamma squeezes throughout the week. GTM has just dipped
+           into bearish territory with both prints, signaling the start of a shift in
+           flows.
+
+           Overall, BUPO (of the Bullish variety) is maintained but the data continue
+           to suggest the “O” is proximal.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                          12/18/2023
+                                                     DETAILS
+
+
+
+
+Hello all!
+Last week, we left off with a renewed sense of BUPO™ (of the Bullish variety). This week, $SPY
+moved +1.98% and $QQQ +3.36%
+Since those are some pretty hefty numbers, let’s normalize them (normalized to the Weekly
+EPR). In this way, we can directly compare $SPY and $QQQ’s performance to each other while
+still accounting for the relative volatilities of each stock. With this, we get a 0.62% weekly move
+for $SPY and a 1.98% (!) weekly move for $QQQ.
+So, in comparison to how the market was expecting, $SPY moved quite-less while $QQQ moved
+quite more! This performance paves the way to the initial ponder of the week: did the DLP-
+sellers know $QQQ was about to move greater than the market was expecting? And if so, how ?
+Additionally, why wasn’t this performance seen in $SPY? Not only did $SPY under-perform
+$QQQ both in absolute terms and when taking into consideration the market’s expectations, but
+it also did not see a massive surge in sold puts last week! How curious.
+We can visualize these weekly moves and the relative difference in performance between $SPY
+and $QQQ quite distinctly within the Hedging Environments:
+
+
+
+
+Both $SPY and $QQQ chugged-along up, eating up any of the soft-selling pressure present.
+Overall, nothing too exciting, and so, with last week behind us, and next week in front of us and
+quickly approaching1, let’s quickly review the data for the week ahead.
+Did you know that time is an endless spiral?
+It is true. I’ve seen it.
+
+
+1
+  Technically, we can’t tell if time is approaching quickly or slowly, as we can’t sense changes in time’s velocity but
+let’s assume for brevity that time is indeed approaching quicker than usual for us right now, and, as such, it is
+applicable to say “Thus, with the last week behind us, and next week in front of us and quickly approaching … “,
+otherwise the statement would be not only meaningless but in a relativistic sense, quite objectively wrong.
+
+Deep Dive Stocks – Weekly Chat                                                                          12/18/2023
+What is also true, and what I have also seen, is this week’s VoEx prints:
+Above we see $SPY’s VoEx. At first, one might get excited in thinking that the recent behavior is
+akin to a VoEx Spike. And indeed, it is very enticing to, say, start opening short positions in
+anticipation of VoEx continuing to the Propagation Zone, but with recent lessons about
+anticipating data moves fresh in mind, for now: VoEx remains within the Inhibition Zone, and as
+such, BUPO™ (of the Bullish variety) continues its reign.
+
+
+
+
+This spike-without-leaving-the-Inhibition-Zone event is exemplified further in $QQQ’s VoEx
+(above) whereby we also see a sharp migration southward for VoEx, yet it is quite removed from
+the Propagation Zone for now.
+So, per VoEx, things are getting spicy, but BUPO is still the outlook.
+
+Should VoEx continue into the Propagation Zone, I will find it time to start moving into short
+positions once more.
+
+
+
+Deep Dive Stocks – Weekly Chat                                                      12/18/2023
+Now that there’s a general direction in mind, let’s see if this outlook jives with the current
+hedging environments.
+
+
+
+
+Now, you may well be tempted to be awed but such a dynamic and intense hedging
+environment, filled like a mosaic of bids and asks, but let’s not get too energetic.
+Mute and diffuse selling pressure located all around the current spot and IV for $SPY and $QQQ
+(as can be seen above).
+These hedging environments offer no support in the event of a $-/IV+ week but also stand to
+offer no real selling pressure (and thus, no real resistance) in the event of another $+/IV- week.
+So, all-in-all, pretty benign.
+Moving from individual hedging environments to macro ones, let’s take a peek at the MWGS
+data.
+Let’s start with the growth curves and current counts:
+
+
+
+
+Despite the daily increase, the week-over-week change in the number of gamma squeezes
+stands at an appreciable 13%, which isn’t too shabby.
+Growth rates (above, left) are negative and nearing-zero; a finding that isn’t too surprising if you
+consider the market has the lowest amount of gamma squeezes that it has seen in 2 years! Its
+worth noting that 2021 spent the majority of its time in a sub-700 gamma squeeze environment.
+
+
+Deep Dive Stocks – Weekly Chat                                                         12/18/2023
+In anticipating future gamma squeeze changes, let’s consult GTM (both):
+
+
+
+
+Above we see both versions of GTM – on the left is the original version2 which is showing GTM
+migrating northward (in this version, that means more gamma squeezes incoming) and on the
+right is the updated version which shows GTM migrating southward3 (which, in this version,
+means that more gamma squeezes are incoming).
+In both, the rolling-EMA hasn’t quite breeched the other side, but the individual GTM prints have.
+
+Last week, one of the indications of moving from an overall-bullish outlook to an overall-bearish
+outlook was a growth in the number of gamma squeezes. This week provided no such prints,
+but GTM is suggesting that these prints may start appearing relatively soon, should GTM
+continue measuring incoming short-gamma flows towards the market.
+Thus, for maintenance of BUPO, we have VoEx suggesting Bullish-until-Proven-otherwise, and a
+hedging environment that isn’t poised to offer much resistance. This BUPO-outlook, however, is
+continuously tempered by an unsupportive hedging environment (in the event of a $-/IV+ week),
+along with GTM prints that are growing increasingly suggestive of a growing incoming short-
+gamma wave, and as such, brings with it a future expectation for gamma squeeze growth and
+market downside.
+Thankfully, we don’t have to pick a side just yet, as we can visit our put-selling friends to see if
+they can offer a bit of a tie-breaker:
+
+
+
+
+2
+  I swear its on the list of things to officially upgrade. What? Sometimes it takes a minute even though you already
+have the code that should present as an easily integrated object! But alas, it hasn’t been. Its just how things work, I
+don’t make the rules, I’m stuck with this brain as much as you are.
+3
+  The confluence between the two is quite nice considering their algorithms are pretty different!
+
+Deep Dive Stocks – Weekly Chat                                                                          12/18/2023
+It seems they have!
+
+Not only has the enthusiasm seen from $QQQ’s put-selling completely reversed, $SPY’s put-
+selling never happened! This divergence in cohesion between $SPY’s and $QQQ’s put-sellers is
+quite pronounced here, and this behavior isn’t all that typical!
+Nonetheless, it would seem that no one is expecting profitability in the form of a $+ or IV- move.
+I would imagine that it is likely due to the extremely low IV levels – the potential returns aren’t
+worth the risk of exposure if IV rebounds even slightly.
+So, overall, the week starts with BUPO but with a tempered enthusiasm (once more) due to
+GTM, put-selling behavior, and the introduction of une petit entrée de VoEx Spikes4 to entice our
+appetites for the real entre 5 end of BUPO (of the Bullish Variety).
+Should VoEx continue its migration towards the Propagation Zone (either via Spike or just a
+rapid movement over 2-3 days), gamma squeeze counts increase, and GTM start distinctly
+printing bearish prints, I will consider it time to pull the trigger on downside.
+Once that occurs, the next step will be to try to navigate the downwards currents: are we to have
+a rapid correction or a repeat of 2022?
+
+Perhaps next week we’ll be able to dive into that question a bit deeper. Until then,
+
+
+Happy Trading –
+
+
+Justin
+
+
+
+
+4
+    French for: “A small VoEx Spike appetizer”.
+5
+    American for “Main course”; not some small “appetizer”.
+
+Deep Dive Stocks – Weekly Chat                                                         12/18/2023
+

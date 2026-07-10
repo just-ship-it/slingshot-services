@@ -1,0 +1,463 @@
+                                 Weekly Chat 01/08/2024
+
+
+                                       Main Points
+
+
+      -   VoEx for $SPY and $QQQ have spiked.
+      -   VoEx Divergence has re-appeared on $SPY and $QQQ, with VoEx-trend having left
+          the I.Z.
+      -   Hedging environments are supportive for $QQQ but this benefit is not observed in
+          $SPY, who remains in a vanna-unstable orientation.
+      -   The MWGS data is suggestive of continued growth in gamma squeezes, with a
+          30% W-o-W increase, and GTM prints suggesting more is incoming.
+      -   Put-selling has increased slightly on $SPY and remains elevated on $QQQ.
+      -   Overall, BUPO has ended, and the expectation is therefore down.
+
+
+
+                                        SUMMARY
+
+
+
+          BUPO has ended as VoEx for $SPY and $QQQ have both moved out of
+          the Inhibition Zone but without commitment to the Propagation Zone
+          just yet. Unlike the last almost-journey to P.Z., the current market
+          conditions are in quite a different state.
+
+          Hedging environments remain in a vanna-unstable orientation for $SPY
+          with the nascent purchasing support on $QQQ remaining in the $-/IV+
+          quadrant for now. Recent events bring the efficacy and depth of this
+          purchasing support into question.
+
+          Market-wide gamma squeeze data are showing high gamma-squeeze
+          growth, and there is an expectation for more growth, per GTM.
+
+          Put-sellers have been put-selling. $QQQ’s persistent DLP growth
+          continues and $SPY ended the week with a smidgen of its own. QQQ’s
+          behavior is concerning given the surrounding data prints. In isolation,
+          these data are bullish.
+
+          Overall, BUPO has ended. GS growth is positive, and it is expected to
+          remain positive. The hedging environments seem ill-equipped to keep
+          the market from experiencing downside; thus, bearish expectations reign
+          supreme, despite our DLP friend’s insistence to the contrary.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                   01/08/2024
+                                          DETAILS
+
+
+
+
+Hello everyone!
+Last week, we left off with thoughts of BUPOUPO (of the Bullish variety) conjoined to an ever-
+increasing side-eye towards the more visible of the nascent bearish warning signs forming on
+the wall.
+These warning signs prevented adopting an outright bullish outlook, but this hesitation seems
+to have been reasonable considering this week’s performance. $SPY fell 1.55% throughout the
+week, while $QQQ followed suite with a casual 3.12% decline.
+Coincidentally, last week, there were discussions regarding the risk associated with having
+minimal downside protection was displayed today, especially in $QQQ, noting that:
+                                              “
+So far, this configuration hasn’t caused the market significant issues such that the market
+hasn’t “needed” significant purchasing support ….
+ Fortuitous thus far for the market but something to keep in mind as we ponder data that may
+                           continue to suggest BUPO is nearing its end.
+                                              “
+And with beautiful timing, the market demonstrated to us just what the market might look like
+should it “need” significant purchasing support.
+
+
+
+
+A fun observation about this week’s progression is the sudden halting of the budding downside
+steam-roll towards the end of the week.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                    01/08/2024
+  We can more distinctly see this if we dust off some physics textbooks and calculate $SPY and
+  $QQQ’s acceleration-or-something throughout this whole ordeal (not to be pedantic but its
+  actually “jerk” not acceleration; this is important as you’ll soon see).
+
+Date                                                          $SPY                             $QQQ
+
+2023-12-29                                                       19                                  58
+
+2024-01-02                                                      -58                                  -24
+
+2024-01-03                                                      -40                                  -61
+
+2024-01-04                                                      132                                  52
+
+2024-01-05                                                       11                                  76
+
+
+
+  These values help us examine sudden shifts in momentum. The more positive the value, the
+  more the price is suddenly jerked towards the upside, and the more negative the value, the more
+  the price is jerked toward the downside.
+  These values showcase some cool observations but the noteworthy finding can be found when
+  the numbers switch from negative to positive, which occurs on the 4th for both $SPY and $QQQ.
+  This switch to positive values are akin to slamming your foot on the breaks, which, for both
+  $SPY and $QQQ, meant drastically slowing down
+  and ultimately halting further downside.
+  What’s curious about this on the 4th, $SPY’s
+  “brakes” were applied (-40 → +132 [+430%]), which
+  happens to be right after $SPY’s hedging
+  environment switch from vanna unstable to vanna
+  stable! (Shown on right).
+  Curiously, however, the braking power experienced
+  on $QQQ wasn’t as potent, with only 52 units-of-
+  jerk noted instead of $SPY’s 132 units-of-jerk (87%
+  less jerking power!).
+
+
+                                                  Perhaps unrelatedly, $QQQ’s hedging heatmap
+                                                  on the 3rd       was still a vanna-unstable
+                                                  orientation, whereas $SPY’s had already
+                                                  changed to include purchasing support (top,
+                                                  right). Once $QQQ’s heatmap adopted a more
+                                                  stable-orientation on the 4th (below, left), the
+                                                  next day (on the 5th), $QQQ experienced even
+                                                  more jerking power (+46%) than it did when
+
+
+  Deep Dive Stocks – Weekly Chat                                                     01/08/2024
+only its compatriot $SPY had available purchasing support.
+This increase in downside-breaking is not as impressive as $SPY’s 430% increase but, still, it
+seems to have had sufficient impact in curtailing end-of-week continued downside!
+Expanding this vantage point into the future, we can see that the end-of-week jerk for $SPY
+reduced significantly1 (from 132 → 11), suggesting reduced “push” experienced by the market,
+whereas $QQQ’s end-of-week jerk rose slightly (52 → 76).
+It seems having purchasing support on both indexes is somewhat beneficial! A takeaway from
+this is that there seems to be some (but potentially diminishing) “bullish momentum” behind
+$SPY and $QQQ as the week ended.
+Thus, it might be our job to determine just how much movement this momentum might give us
+(if any).
+But - with all that being said and done being in the past, let’s instead move towards the future,
+shall we?
+The future of tomorrow!
+Crap, too far. Let’s back it up some now, y’all.
+Today’s future!
+VoEx just couldn’t help itself.
+
+
+
+
+1
+  Mentally, “jerk” can be thought of as the force you feel when you are being pushed on the swings. If you are
+being pushing with the normal direction (like you would if you wanted the person to go higher), you have positive
+jerk, but if you are pushing against the normal direction, your jerk would be negative.
+
+$SPY’s substantial decrease in its jerk on Friday would be akin to the person pushing you getting distracted, and
+not really pushing you as you start to move away from them; you’re not going to stop swinging upwards, but
+should your friend be distracted for too long, you will quickly start to slow down.
+
+Deep Dive Stocks – Weekly Chat                                                                    01/08/2024
+With a small bounce off of the Propagation Line once more, we find ourselves out of BUPO
+officially (of the Bullish variety), yet without the ability to adopt BUPO in its stead (of the Bearish
+variety). This inability stems from VoEx’s commitment issues, which is currently being
+manifested with the Propagation Zone.
+Now, there very well may be some of you in the crowd that find this particular VoEx behavior
+reminiscent. And of those who find this VoEx behavior to be reminiscent, there may even be
+those of you therein that feel as though this reminiscence might foretell a subsequent, equally
+reminiscent price-action.
+Now, for those who feel that this VoEx behavior is reminiscent, and feel as though this
+reminiscence might beget reminiscent price action, I just have to say: woah there partner. Let’s
+take a peek at the data.
+
+The first observation is that the last bounce off of the P.L. occurred on 2023-12-21, during which
+time VoEx, as mentioned, bounced off of the P.Z. and right back into the I.Z!
+This time, not so much.
+
+That’s not the only curious difference, either! Notice that from the day before 2023-12-21 2 (the
+day VoEx spiked to the Propagation Line), a strange change occurred on $SPY’s heatmap!
+
+
+
+
+When VoEx indicated things were getting spicey, the market ordered some purchasing support!
+
+The consequence? A 1% recovery on the 21st, sending VoEx reeling back into the Inhibition
+Zone. (And the removal of the advantageous purchasing support!).
+
+Ooooh, okay - Was there such an emergence of purchasing support for us this week?
+
+
+
+
+2
+    2023-12-20 for those of you counting.
+
+Deep Dive Stocks – Weekly Chat                                                            01/08/2024
+                                            Yup! Just when VoEx fell out of the Inhibition Zone (on the
+                                            3rd) to the Propagation Zone, purchasing support emerged
+                                            and helped prop the market up some! It was even nice
+                                            enough to say around for the 4th (left).
+                                            Digging into this curious difference further, one can’t help
+                                            but wonder why the market’s response to this
+                                            opportunistic purchasing support wasn’t equal?
+
+                                            For instance, whereas last time, at least for $SPY, the
+                                            emergence of purchasing support foreshadowed a ~1%
+                                            recovery the next day, but this time, $SPY only rose 0.14%!
+                                            Quite the difference.
+This difference brings with it additional concerns with respect to any future anticipations
+regarding the longer-term influences of this purchasing support. Last week, after the 1%-
+appreciation-day, the market rose about 1% more over the next week. Will our current future be
+able to sustain such movements if there is already a large reduction in the “bounce” provided by
+the purchasing support? Is the current purchasing support somehow less “strong” than
+previously?
+In pursuit of these questions, a strange idea occurred to me: what if the market it’s not that the
+purchasing support’s size isn’t inadequate but rather that the market’s expectations are just
+unsatiable? What if the market is worse-off than it was last time and just simply requires more ?
+To analyze this brain-thought, let’s assume the purchasing support is the same, but it’s the
+market is different, can we find data anywhere that might support this view3?
+The natural first place to look for a quick but reliable view of different market conditions is
+VoEx!
+Let’s look at VoEx then (again). Earlier, VoEx’s response to Friday’s price action on $SPY and
+$QQQ was simply described as “a small bounce off of the Propagation Line”, but what if that’s
+not the whole story?
+
+Paradoxically, to start out, let’s assume that the bounce off of the Propagation Line earlier in the
+month and the just-recently-experienced one are fundamentally the same.
+
+
+
+3
+  Suppose I tell you that I dropped a bowling ball onto a trampoline, and the bowling ball bounced $10. Then, I
+dropped another bowling ball onto the same trampoline and the ball only bounced $5. Then then, suppose I ask
+you “what is the difference between the two bowling balls?”. The initial response might be to analyze the two
+bowling balls: surly they are different, no? Maybe the two weigh differently, so let’s go get the scale and start
+fussing with numbers. You know the deal.
+But, what if instead of two bowling balls, I tell you it was the same bowling ball both times? Now, all eyes would
+slowly shift to the trampoline, possibly with a hint of concern: what changed?
+
+Deep Dive Stocks – Weekly Chat                                                                     01/08/2024
+On the surface, this suggests that the recent bounce off of the Propagation Line contained
+“less” instability than did the bounce from last month – since it didn’t make it into IZ, there must
+be less instability, despite using the “same” bowling ball; reasonable?
+
+Well, sure, but you’ll notice the change in price between these two dates is substantially
+different (150% different, to be exact). So, if we want to ensure that its not the market that has
+changed, perhaps we should “scaled up” the price movement on Friday to see how much
+instability would have been provoked today given the same change in price as 12/21/23?
+Once the “weight” of the price-action is calculated and made equivalent, any differences in the
+response from VoEx (all other things remaining constant) should give us an objective measure
+as to the relative instability or stability being experienced.
+Well – we can’t. VoEx’s algorithm is, unfortunately, is too incoherent tricky for fun ”off-the-cuff”
+experimentation – but, that’s okay. We can do the next best thing.
+Let’s look at the absolute change in VoEx against the change in price; in other words, let’s see
+what the relationship between VoEx. Doing so will allow us to see when VoEx is more sensitive
+to changes in price and when it is less sensitive to changes in price.
+In other words, we will be able to see when the trampoline is changing, not the bowling ball.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                         01/08/2024
+Pretty cool! There are several interesting findings (VoEx graph of $SPY for Reference):
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                       01/08/2024
+   1) From ~2023-03 to ~2023-06 $SPY experienced steady price appreciation.
+   2) Around the start of 06/2023, $SPY briefly entered BUPO before VoEx fell briefly into the
+      Propagation Zone. You’ll notice at this point, VoEx becomes less responsive to price-
+      action (i.e.: price is contributing less to VoEx’s assessment of stability or instability; and
+      as such, it is becoming less sensitive to price-action).
+   3) Mid-2023-06, VoEx falls into the Propagation Zone, and from mid-2023-06 to the end of
+      2023-06, the price depreciates. During this time, VoEx is traveling deeper into PZ and the
+      price is decreasing all the while VoEx is signaling the price is no longer causing
+      instability; thus it can be said that stability has been found on the downside (at least as
+      far as the direct influences of price-action is concerned).
+   4) $SPY rebounds and sends VoEx back into the Inhibition Zone. This causes VoEx to once
+      again become sensitive to Price (third arrow to the left).
+   5) BUPO resumes.
+   6) Between ~2023-08 and ~2023-11, VoEx remains predominantly within PZ and the price
+      continues to depreciate except for two times at the start of 2023-09 and 2 weeks later
+      (these can be seen as spikes on the “Response” graph; circled in magenta).
+   7) At the start of ~2023-10, $SPY starts to appreciate once more and VoEx once more
+      indicates increasing sensitivity to price movement.
+   8) BUPO resumes and VoEx “calms down”.
+
+Our current phase is seeing another end to BUPO as VoEx is becoming increasing sensitive to
+the instability being brought by price appreciation.
+In fact, using this information, we can now directly compare how concerned VoEx was with the
+price appreciation from 2023-12-21 and the price appreciation from 2024-01-05! From the graph
+you can see it has increased, and numerically, it can be said to have increased 2.5x!
+So, although the VoEx bounce off of the Propagation Line this time may not have been as large
+as it was before, when accounting for the concurrent change in price, we see that this response
+was larger than it was last time.
+An additional finding from this investigation , is that we can observe that VoEx has been hyper-
+sensitive to any movements that aren’t downwards movements (very observable around 2023-
+08 (6 on graphs) after VoEx had recently moved into the Propagation Zone, and again during
+2023-10 (7 on graphs) when the price started to not depreciate).
+This sensitivity has only been curtailed by VoEx’s appreciation for BUPO (as we all have by now)
+but the recent ignorance of price-action is no longer is present: any movements that aren’t
+depreciatory are still provoking instability.
+Neato!
+
+So, going all the way back to our original train-of-thought regarding the efficacy of the
+purchasing support present on $QQQ: it would seem that the purchasing supports inherent
+efficacy may not be disrupted in and of itself, but it might just that it is simply be dwarfed by
+other forces in the market (perhaps VoEx is becoming more sensitive to jerks elsewhere).
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                         01/08/2024
+On $QQQ the difference between this bounce and the last one is even more pronounced:
+
+
+
+
+A familiar but not equal set of conditions are apparent with $QQQ. Last time, VoEx only reached
+inside of stability, and spiked immediately back into the Inhibition Zone, whereas this time,
+$QQQ’s VoEx moved into the Propagation Zone and, in similar fashion, responded towards the
+I.Z. with Friday’s appreciation.
+Before moving on, it should be noted as well that, despite the loss of VoEx Divergence last week,
+its back! And not only is it back it’s been activated 4.
+What does that mean? Well, according to traditional VoEx wisdom: downside.
+A small hinderance to this majestic
+display of VoEx, although one that I don’t
+think poses too much threat, is $QQQ’s
+hedging heatmap, which demonstrates
+renewed and persistent purchasing
+support within the $-/IV+ quadrant.
+As suggested above, however, I do find
+the burden of proof that $QQQ’s
+purchasing support would be sufficient
+to starve off the downside that we’ve
+been looking forward to for the last
+several months now (and that is
+suggestive throughout a vast area of the
+market).
+So, it is indeed there but, for now, let’s put it in our back-pocket as we migrate towards the other
+data.
+4
+ Just an easier way of saying VoEx-trend moved out of the I.Z., but considering the need for a footnote explaining
+this, perhaps just saying “VoEx-trend has moved out of the I.Z.” would have bene better.
+
+Deep Dive Stocks – Weekly Chat                                                                       01/08/2024
+                                 First up in our migration is GTM
+                                 and the macro space for gamma
+                                 squeezes.
+                                 In the top graph, we see that
+                                 gamma squeeze growth-rates
+                                 have indeed spiked, after about a
+                                 month     of   slowly     moving
+                                 northward.
+                                 Currently, the growth-trend is
+                                 positive, and in the bottom graph
+                                 we see a sky-rocketing GTM print.
+                                 This suggests continued gamma
+                                 squeeze growth should be
+                                 expected.
+                                 It is worth noting that these prints
+                                 are occurring concurrently to an
+                                 already-experienced 30% increase
+                                 in the number of gamma
+                                 squeezes in the market over the
+                                 past week.
+
+                                 Hefty.
+                                 Below, we see the revised version
+                                 of GTM along with some
+                                 moments-in-time pointed out;
+                                 mainly these moments in time are
+                                 periods of prolonged negative
+GTM prints.
+These prolonged periods of
+short-gamma influx into the
+market were associated
+with ~10% declines and -7%
+declines over the next 1-2
+months.
+It would appear that from
+this view of GTM, we are,
+ourselves, currently in the
+beginning stages of such
+prolonged     short-gamma
+complexes (remember that
+
+Deep Dive Stocks – Weekly Chat                          01/08/2024
+the market and MWGS “lags” behind GTM since it measures gamma flowing towards the
+market).
+Taken together, this demonstrates a strong expectation for the continued emergence of gamma
+squeezes in the market, which is associated with medium-term price depreciation.
+It is worth noting, that the past two episodes of prolonged short-gamma expectations occurred
+in arguably more stable conditions; according to VoEx, at least.
+Hefty!
+Now, before we go and buy our apocalypse bunker in New Zealand from Mark Zuckerberg on
+craigslist due to all this bearish data, let’s look at what our superiors (intellectually, physically,
+and financially) are up to.
+
+
+
+
+Oh, okay.
+Nevermind then. BUPO’s back!
+
+-
+-
+-
+
+Just kidding – I don’t think they are correct.
+I don’t disagree often with our DLP overlords but after preponderance of the evidence, I can’t
+help but think that someone might be being greedy, and furthermore, that greed may not be the
+best leader.
+But, only the future will tell – in isolation, these DLP prints are associated with future price
+appreciations, and we can see that even on $SPY, the week ended with just a smidgen of put-
+selling.
+
+I will be very interested in keeping an eye on these data as the week progresses. Especially
+considering these OTM DLPs pose a threat on two fronts:
+
+
+
+Deep Dive Stocks – Weekly Chat                                                           01/08/2024
+   1) If the price depreciates and these puts become ITM and IV rises, hedging will shift from
+      purchasing to selling (vanna will diminish delta substantially despite gamma’s efforts
+      causing selling as the heretofore robustly negative delta becomes ever-so not robustly
+      negative), and
+   2) If the price depreciates and the puts get closed out, which will cause additional selling.
+In either case, a moment or two of $-/IV+ can send the market into a very unpleasant situation
+(this doesn’t even mention if people try to start going dealer short puts, which would cause even
+more selling!).
+Hefty.
+And so, it would appear that the data are finally getting interesting, which seems to be
+coinciding nicely to the market becoming interesting as well.
+VoEx Divergence on $QQQ and $SPY after a 2-month period of BUPO (of the Bullish variety) is
+worrisome for downside (but, we can’t refute, the small sense of vindication accompanies these
+recent, more definitive, changes in the data).
+The lack of appropriate purchasing support on $SPY is worrisome for downside.
+The positive growth rate of gamma squeezes along with the continued expectation of gamma
+squeeze growth per GTM is worrisome for downside.
+The large presence of DLPs and their potential futures is worrisome for downside.
+Overall, there seems to be a lot of worry for downside.
+And so, I’ll be focusing my attention in the week a head on protecting myself from downside,
+and if I’m lucky, profiting from it.
+
+
+
+Happy trading –
+
+
+Justin
+
+
+P.S. Next week, I’ll discuss the progress with LDPS and what its emergence means for you, my
+dear readers.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                      01/08/2024
+

@@ -1,0 +1,173 @@
+                                    Weekly Chat 5/13/2024
+
+
+                                          Main Points
+
+
+    -   VoEx has swiftly moved into the Inhibition Zone, bringing with it suspicions of a forming
+        Bullish-until-proven-otherwise environment.
+    -   Hedging heatmaps are conducive for $+ movements throughout the week.
+    -   Put-selling has reduced noticeably on $SPY and $QQQ for the week a head.
+    -   GTM Data are showing positive prints.
+    -   Continued local bullish performance expected.
+
+                                           SUMMARY
+
+
+
+           The market continues to rise and VoEx has done so similarly with
+           movement into the Inhibition Zone, marking a potential start to another
+           round of BUPO (of the bullish variety). However, this movement is still
+           considered “unstable” with its extreme movements.
+
+           Hedging environments are conducive with supportive purchasing support
+           located spot-up. Influence distributions for the week a head point towards
+           bullish performance.
+
+           Despite the recent up-tick in bullish data, the put sellers seem less
+           convinced for the week a head with a noted reduction in put-selling
+           behavior.
+
+           GTM is printing positive values while the week experience no net gain or
+           loss in gamma squeezes throughout the week.
+
+           Overall, continued cautious bullish outlooks without full commitment to
+           overtly bullish ideologies.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                       05/13/2024
+                                            DETAILS
+
+
+
+
+Hello every-body!
+Last week, we left off with continued bullish ideologies owing mainly to VoEx’s behavior, and a
+conducive hedging heatmap.
+With that in mind, the market was kind enough to deliver with $SPY moving 1.87% up and $QQQ
+moving 1.51% up. Not too shabby!
+Using the modified heatmaps (which, from now on, will just be “the heatmaps”), we can see the
+progression of the week was aided nicely by the purchasing support it seems:
+
+
+
+
+Nice lofty upwards movement, with a steady, casual, reduction in IV. Nice.
+
+This nice movement, however, does bring with it some un-nice thoughts regarding the future,
+mainly, the thought of what if this bounce not a bounce ?
+So, let’s see if we can find out some more information about this recent price appreciation, and
+then decide if the data still suggest this is a bounce – or – if things have stabilized enough to
+continue northward.
+
+Let’s get started!
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                      05/13/2024
+Au début
+Starting as usual with VoEx, we see
+conditions have moved from the
+Propagation Zone to the Inhibition
+Zone with record speed.
+This presentation brings with it
+both bullish ideologies, and the
+potential return of BUPO (of the
+bullish variety).
+In-and-of-itself, this development
+is not distressing but it is
+somewhat concerning that its already here before things got really spicy, as was the implicit
+expectation with the more recent downturn in conditions.
+Below, we find $QQQ in much the same position, with VoEx moving swiftly into the Inhibition
+                                                       Zone.
+                                                          Taken together, this rises reasonable
+                                                          evidence that the dip may have, in
+                                                          fact, dipped (for all intense and
+                                                          purposes) for another round of BUPO
+                                                          (of the bullish variety) seems to be
+                                                          starting back up.
+                                                          A bit of a wench in the overall plan but
+                                                          at least there’s a heads up.
+Let’s take a peek at neo-VoEx to see how things look there.
+
+
+
+
+Much the same! Even, perhaps, more confident in its future bullish ideologies, as we see $QQQ’s
+VoEx has almost entirely reversed course, and is now headed for a PZ-exit. $SPY’s VoEx is lagging
+behind somewhat, but it seems both are tentatively ready to move back into stability.
+Technically, for now, however, VoExes are still within the PZ, and so prudency still cautions for
+resumption of downside.
+
+Deep Dive Stocks – Weekly Chat                                                       05/13/2024
+Although the threat of downside remains, the prima facie interpretation is: overheating has
+resumed, and with it, additional risk of upside. A full-out “bullish” interpretation will be saved for
+when neo-VoEx is out of the Propagation Zone.
+
+Thus, with continued bullish outlooks per VoEx, let’s see how the hedging environments would
+respond:
+
+
+                                                It would seem both $SPY (top) and $QQQ (bottom)
+                                                are poised to offer continued purchasing support
+                                                in almost all directions!
+                                                This purchasing support does seem IV-dependent
+                                                in that as IV increases, the support will start to
+                                                retract.
+                                                This doesn’t present as selling pressure for now
+                                                but may be worth keeping in mind, should the
+                                                markets start to move downwards somewhat.
+                                                Both hedging environments present with an
+                                                influence distribution that is predominately
+                                                positive as well – another nod towards bullish
+                                                performance.
+
+
+
+
+With so much bullish music around, let’s take a peek at the put-sellers to see if they are dancing:
+
+
+
+
+Nope! The opposite, in fact!
+We normally poke-fun at the $SPY put-sellers, but you have to admit, they’ve been pretty good
+reasonably well performant since about mid-April, which is about the same for $QQQ put-sellers
+as well.
+
+
+Deep Dive Stocks – Weekly Chat                                                           05/13/2024
+The current data suggests a reduction in put-selling is here – and this is typically associated with
+a lack-of-confidence in a future $+ or IV- environment. This view is not too congruent with VoExes
+interpretation above.
+
+Moving from put-selling to Market-Wide Gamma Squeezes, the data are also starting to be overtly
+bullish, in particular due to GTM’s positive prints:
+
+
+
+
+Suggestive of long-gamma flows heading towards the market. This brings with it ideologies of
+gamma-squeeze destruction; another bullish-nail in the coffin.
+
+So, by-and-large, it would seem bullish sentiments are continuing but the skies seem to be
+clearing – despite not as much rain having fallen as expected.
+For now, a cautious step towards bullish sentiment, with bullish performance expected until
+things stabilize into a more longer-term bullish outlook (at which time we can go back to “auto-
+pilot mode”) or until this round of over-heating suddenly snaps.
+Time will tell!
+
+
+Happy trading,
+
+
+Justin
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                         05/13/2024
+

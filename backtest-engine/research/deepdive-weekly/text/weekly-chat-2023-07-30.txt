@@ -1,0 +1,448 @@
+                                    Weekly Chat 07/31/2023
+
+
+                                           Main Points
+
+
+       -   VoEx on $SPY and $QQQ demonstrate BUPO.
+       -   Hedging environments are remarkably unchanged.
+       -   DLP activity is positive but uninspiring.
+       -   MWGSC-data suggest minimal threat for a large expansion in gamma squeezes.
+       -   VoEx Variance suggests the market is “cooling off” more than “imploding”.
+       -   LDPM & LDPM-LL suggest the market’s recent bullish performance is organic.
+
+
+
+                                            SUMMARY
+
+
+
+           VoEx for both $SPY and $QQQ demonstrate BUPO – highlighting the
+           persistently elevated risk of market downside in an overall bullish
+           environment.
+
+           The hedging environments are largely unchanged from the prior weeks
+           with little-to-no purchasing support in the $-/IV+ quadrants, local selling
+           pressure, and a gamma-neutral zone that extends $+/IV-. Influence
+           distributions foretell of most-prominent probability of red performance.
+
+           DLPs are beginning to open up again ahead of next week but there is still
+           a rather moot tone to the performance.
+
+           MWGS-data showed a slight increase in the number of gamma squeezes
+           but this seems to be cooling off as well as GTM heads back into negative
+           territory.
+
+           Per 𝑉𝑉 2 , the market is in a period of “overheating” and this overheating does
+           seem to be collapsing ( 𝑉𝑉 2 is moving down) but with the new data-view, it
+           seems this collapse is mostly associated with VoExes moving back into
+           stability, rather than collapsing down into the P.Z.
+
+           A new tool (yet unnamed) which combines LDPM and LDPM-LL suggests
+           that the most recent bullish performance is organic and that this organic
+           bullish performance has been supported by market liquidity as recently as
+           03/2023. Providing more evidence of a robust bullish market.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                           07/31/2023
+                                              DETAILS
+
+
+
+
+Heyo!
+
+Last week, we left off with predominantly bearish-leaning ideologies but seeing how $SPY moved
+up 1.05% while $QQQ moved a casual 2.09% this week, it would seem our fears were relatively
+misplaced.
+
+Thus, for this week, let’s quickly review the progress of the data throughout last week, take a peek
+at what may lay in store for us a head, and then, as usual, wave our hands around with some new
+data.
+
+Ayo
+
+Movement throughout the market can be visualized with $SPY and $QQQ’s heatmaps below:
+
+
+
+
+Not the most direct routes towards the overall green movement throughout the week, with a good
+amount of time spent loopdy-looping through selling pressure.
+
+Despite the turbulence on the surface, as the week progressed, very little changed below the
+surface:
+
+   •    DLP activity remained mostly unchanged (until Friday),
+   •    GTM maintained its positive prints as it declined towards negative territory; it’s movement
+        northward seems to have been insufficient to pull GTM-ema into positive territory,
+   •    MWGS-counts remained largely steady,
+   •    VoExes remained largely complacent (as we will see below), and
+   •    Hedging environments remained largely in-tact.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                         07/31/2023
+In other-words, I could imagine MacBeth describing this week as “sound and fury, signifying
+nothing” 1.
+
+But since MacBeth is both fictional and pre-dates the stock market, let’s make sure his insights
+aren’t too biased.
+
+Starting as usual with VoEx, we see: nothing really.
+
+$SPY and $QQQ’s VoEx have predominately resumed their position inside of the Inhibition Zone.
+
+
+
+                                                                         With $QQQ responding quite
+                                                                         dramatically to Friday’s 1.8%
+                                                                         increase in price – some may
+                                                                         even say it spiked 2.
+
+                                                                         This places us squarely in BUPO
+                                                                         with continued emphasis on the
+                                                                         idea that “things are unstable”.
+
+
+
+
+The benefit of VoEx’s behavior is that this places us back in BUPO.
+
+The downside of VoEx’s behavior is that this places us back in BUPO.
+
+This means that we have to keep an eye out on the pesky signs that BUPO may be ending; a task
+that is provoking empathy for Sisyphus.
+
+Perhaps I shouldn’t
+complain too much
+– for at least now
+$SPY and $QQQ’s
+VoExes       are    in
+agreement. So, with
+our BUPO 3 outlooks
+in order, let’s take a
+peek at the hedging
+environments.
+
+
+
+
+1
+  My nickname in highschool.
+2
+  That someone would be the Market Scan as $QQQ registered as having a VoEx Spike on Friday (2023-07-28).
+3
+  Bullish-until-proven-otherwise.
+
+Deep Dive Stocks – Weekly Chat                                                                  07/31/2023
+Much-the-same as last week: local selling pressure, with little-to-no purchasing support in the
+event of a $- week, but with a gamma neutral zone extending into the $+/IV- quadrant.
+
+The similarities also extend to the influence distributions, wherein we see a predominantly soft-
+bearish outlook.
+
+Moving towards some other data, we see our DLP friends may have also caught a bit of the “BUPO
+bug” as Thursday and Friday saw a slight up-tick in puts being sold:
+
+
+
+
+Although it is worth mentioning still that this newfound growth is still relatively … quaint. Does it
+do enough to stir much confidence for you?
+
+For me? Not so much. But it is wroth keeping in mind that it does seem someone, somewhere is
+interested in profiting from either a price increase or a drop in IV.
+
+A partial-bullish outlook may also be supported by the MWGS-data.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                          07/31/2023
+With GTM returning back into
+negative territory, and a GTM-
+ema that never breeched into
+the positive arena, it would
+seem the only hiccup to an
+overall bullish data print is the
+slight increase in gamma
+squeezes seen over the week
+(current: 924 vs. 5-day average
+of 899, and 10-day average of
+901).
+
+So, it would seem that things
+are looking pretty bullish!
+
+   •   VoEx is BUPO again,
+   •   Hedging environments
+       are largely the same as
+       they have been,
+   •   DLPs are opening up,
+   •   MWGS-data is looking
+       bullish.
+
+
+
+
+Let’s see if we can’t find anything to dissuade us from marching on in a bullish fashion.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                        07/31/2023
+Moving towards VoEx Variance, there are signs that the market is still over-heating but VoEx
+Variance is continuing its collapse we noted previously:
+
+
+
+
+Ordinarily, this would leave the data analysis with a particularly strong sense of “doom”, as we’ve
+seen from the historical data that this is typically followed by market corrections.
+
+However, last week (or so), we broke up VoEx Variance into its constituent parts. The goal was to
+help get a more robust showing of VoEx Variance behavior and the respective location of each
+sector’s constituents’ VoEx location, all in one graph.
+
+Let’s see what it shows us:
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                        07/31/2023
+Oh - that’s pretty cool!
+
+We do see that VoEx Variance is collapsing with the top panel showing the overall value of VoEx
+Variance has started to shrink.
+
+However – this view also offers us the vantage point of “where is everything collapsing to”.
+
+With the original data, it was hard to parse this out: the idea was simply: VoEx Variance collapsing
+is interpretable as the majority of VoExes moving out of the I.Z., and grouping up in the
+Propagation Zone. This outlook was spurred by the evidence of such collapses pre-dating market
+corrections.
+
+The increased granularity provided by this VoEx Variance view, shows us that yes : VoEx Variance
+is collapsing; but we can see that VoExes throughout the land are collapsing into stability !
+
+
+Deep Dive Stocks – Weekly Chat                                                         07/31/2023
+In fact, there is still no data available from within the Propagation Zone to suggest that there is a
+large and sudden movement from I.Z. → P.Z.
+
+Could it be that the market’s overheating is cooling off in a non-catastrophic way?
+
+In a sense: could we be fully BUPO until we start seeing data prints pop up in the Propagation
+Zone?
+
+Questions for the ages4 but it does stand to reason: if no VoExes are starting to collect inside of
+or near the Propagation Zone while VoEx Variance is collapsing – is there any reason to have a
+bearish outlook?
+Naturally the answer is yes: duh. An overheating market is an unstable market; there are plenty of
+examples of a rapidly appreciating market that doesn’t provoke instability (the latter-half of 2021
+and the whole of 2022, as readily apparent examples). Thus, it seems reasonable that a healthy
+dose of precaution should exist, but the data do seem to be clearing up.
+
+Whereas before we anticipated the collapse of VoEx Variance would bring the market into correct-
+mode (since we assumed that collapsing from the I.Z. would invariably lead to market-wide VoEx
+collection into the P.Z., as it did in 2018, 2020, and 2022), these new data show us that this may
+not be the case. VoExes across the market are collecting (variance is dropping) but they seem to
+be doing so at the I.Z. / Stability border – rather than migrating towards the Propagation Zone.
+This suggests that perhaps the market is cooling off rather than looking to take a plunge into the
+cold depths of the P.Z.
+
+This outlook will change, of course, should data start to emerge from within the Propagation
+Zone.
+
+With VoEx Variance out-of-the-way, let’s wave our arms around even harder at some fun new data!
+
+Remember LDPM?
+
+Remember LDPM-LL5?
+
+Well. What if we thew caution to the wind and combined the two?
+
+The idea is simple: what if we could capture times when an LDPM crossover is expected to be
+reversed and when an LDPM crossover is expected to be maintained? To quote myself from the
+upcoming LDPM Primer revision:
+
+
+
+
+4
+  I am actually leaning towards this outlook as the data continue to evolve. Why shouldn’t the market be able to
+experience a “soft landing” of sorts?
+5
+  Weekly Chats 2023-07-10 & 2023-07-17.
+
+Deep Dive Stocks – Weekly Chat                                                                      07/31/2023
+          Practically, of what use is it to be able to visualize which party (the bid or the ask) is eager in a
+          given situation? Pragmatically, it boils down to a simple concept: when an LDPM crossover
+          occurs, there are two main reasons:
+                1) Liquidity is no longer supportive of the current price-action (we’ll call these organic
+                   crossovers [OCOs]), or
+                2) An overly eager party is pushing the price against the current schema (we’ll call these
+                   eager crossovers [ECOs].
+                                                                   …
+          Why should we care about if price is being moved organically or by an eager party? Well, the
+          benefit is that we can see OCOs are maintained whereas ECOs are rejected.
+                                                                   …
+          Make sense?
+
+          K let’s move on then 6.
+
+          The idea is that what if we can harness LDPM-LL’s direct view of liquidity against LDPM’s
+          directional insights, we can start to visualize and anticipate when an LDPM crossover attempt will
+          be successful (supported by the current liquidity environment; or an OCO and is expected to be
+          maintained) or unsuccessful and revert back (due to the crossover being unsupported by the
+          current liquidity environment; the crossover is an ECO and expected to revert).
+
+          With this schema, there are four main configurations:
+
+LDPM Crossover        LDPM-LL                Interpretation              Description                     Eager       Expected Price
+Type                  Outlook                                                                            Party       Action
+
+
+Bullish               Bullish                Organic Crossover &         Strong Bullish                  None        Sustained bullish
+                                             Support                                                                 performance
+
+Bullish               Bearish                Eager Crossover             Weak Bullish                    Bid         Un-sustained
+                                             without support                                                         bullish
+                                                                                                                     performance
+
+Bearish               Bearish                Organic Crossover &         Strong Bearish                  None        Sustained
+                                             Support                                                                 bearish
+                                                                                                                     performance
+
+Bearish               Bullish                Eager Crossover             Weak Bearish                    Ask         Un-sustained
+                                             without support                                                         bearish
+                                                                                                                     performance
+
+
+
+
+          6
+              Don’t worry – there’s a whole new primer incoming along with these new metrics and data.
+
+          Deep Dive Stocks – Weekly Chat                                                                        07/31/2023
+  The idea is that if a crossover event occurs, but the LDPM-LL view does not support the crossover
+  (rows #2 & #4), then the market’s organic bid/ask will naturally revert back from the overly-eager
+  price movement.
+
+  This will be expanded upon more in the LDPM Primer but the idea is: when there is an eager party
+  in the market: beware of reversion.
+
+  Additionally, if things are chugging along in a quite bullish fashion, if we can see signs that this is
+  due to some “overly eager” party, then perhaps are viewpoint of a “overheating but organically
+  cooling off” market isn’t quite right; whereas if there are no signs of any over-eager participants,
+  then perhaps this is an organically accelerating market that can be expected to “cool off” without
+  crashing us into the stone ages!
+
+  So, let’s quick check to see if there are any eager parties in the market!
+
+  To do so, let’s just take LDPM (LDPM-55) and LDPM-LL, and categorize each day as belonging to
+  one of the four groups above:
+
+
+
+Data Print                                Expected Price Action          Price Point Color
+
+Strong Bullish                        Sustained bullish performance                             Dark Green
+
+Weak Bullish                         Un-sustained bullish performance                           Light Green
+
+Strong Bearish                        Sustained bearish performance                                    Red
+
+Weak Bearish                        Un-sustained bearish performance                                Orange
+
+
+
+
+  Deep Dive Stocks – Weekly Chat                                                             07/31/2023
+Let’s graph $SPY:
+
+
+
+
+Ohhh - that’s pretty nifty!
+
+A few things to note besides my drawing skills:
+
+    1) Things are green! and have been for awhile
+    2) Testing an LDPM crossover would occur at ~433 (~ -5.0%).
+
+Interestingly, we can also see that the last LDPM Crossover test back in ~03/2023 produced
+“weak bearish” data prints – which, as it happens, was true! The market’s liquidity was sufficient
+to starve-off any significant downside! And we can see it plain-as-day!
+
+Let’s check out $QQQ:
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                       07/31/2023
+Much the same!
+
+Taking some arm-waving liberties, it would seem that for now, a nascent idea of “overheating but
+cooling off” seems to be springing into existence:
+
+   •   VoEx is BUPO on $SPY and $QQQ,
+   •   This overheating is seen market-wide via VoEx Variance,
+   •   However: VoEx Variance suggests that as it begins its collapse, its doing so into stability
+       not into the P.Z. (there is no data to be found in the P.Z. panel!),
+   •   and now, LDPM and LDPM-LL suggest that tings are going up pretty organically.
+
+So, overall, it would seem that:
+
+   1) Long-term outlook: bullish.
+   2) Medium-term: increased risk of a correct however the data are suggesting that this
+      correction may be side-stepped as VoEx Variance is cooling off into stability, rather than
+      P.Z. Additionally, LDPM & LDPM-LL suggest organic bullish performance with recent
+      evidence of liquidity supporting $SPY (03/2023) during the last dip.
+   3) Short-term: still an increased risk of downside (due to VoEx being in I.Z.) while in an overall
+      BUPO environment but it seems increasingly unlikely that this downside should propagate
+      into anything much more significant than a 5% decline, should it manifest.
+
+In terms of monitoring the short-term to get a leg-up on the downside, should it manifest, the
+same signs as usual:
+
+   1) Sudden VoEx Spiking into P.Z. on $SPY and $QQQ
+
+
+Deep Dive Stocks – Weekly Chat                                                          07/31/2023
+   2) Sudden increase in MWGSC/GTM
+
+This short-term “risk-on” environment precludes any short-term long positions for me, but it I am
+still confident in adding into my medium and long-term positions as bullish positions.
+
+In the short-term, I will probably just ride (with short-timeframes and low cost-basis) the BUPO
+and should it look as though the market is starting to test LDPM-55 at ~$430 (for $SPY), I will try
+to capture some quick short gains on the way down with a mind to “buy the dip”, unless the data
+showcase any spectacular changes to the foundations.
+
+That’s all I have for you guys this week!
+
+
+
+Happy trading,
+
+
+
+Justin
+
+
+
+P.S. : There’s some more fun graphs on the next page!
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                        07/31/2023
+Deep Dive Stocks – Weekly Chat   07/31/2023
+Deep Dive Stocks – Weekly Chat   07/31/2023
+Deep Dive Stocks – Weekly Chat   07/31/2023
+

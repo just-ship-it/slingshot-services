@@ -1,0 +1,38 @@
+                                       Data Dashboard Patch Notes
+                                               2023-06-11
+Some more general fixes and some additions for the dashboard:
+
+
+General
+   -     The dashboard thought the date was “4” earlier in the week. This has been fixed.
+   -     The Old Dashboard is officially offline and cannot be accessed.
+   -     Weekly Chat uploading functionality has been fixed to send the weekly chats to the new
+         dashboard.
+Additional Resources
+   -     Since there are a lot of changes recently, and more to come, an additional tab on the “Additional
+         Resources” page has been added that includes the Patch Notes and Progress Notes available for
+         download.
+
+
+Justin
+                                              Patch Notes
+                                              2023-06-11
+
+Known Bugs / Works in Progress:
+   -   There is recursion bug causing a stack overflow during certain operations, in particular when
+       larger data is called to be directionalized from the Dashboard. This is being investigated.
+   -   The graphs still get “stuck” if the zoom functionality is utilized.
+   -   Stocks with an underscore or period in their symbol name are not behaving well.
+   -   The stock banners occasionally do not update appropriately after adding or removing a stock
+       to/from the watch list.
+   -   Certain inputs in the Single Stock search will break everything including the known universe, don’t
+       do it.
+   -   There are some missing reports for the early part of 2023. I am working on revamping the report
+       handling/distribution process to speed things up overall (see: Report List being slow) and will
+       upload any and all missing reports from 06/01/2022 to present once that process is completed.
+   -   In a wonderful twist of fate, the stocks $T and $F have been erroneously being handled as
+       boolean values (TRUE and FALSE) causing widespread data disruptions for those two stocks.
+       I’m working on it and have contacted NYSE to change $T to $TRUE and $F to $FALSE to make
+       my life a tad easier – I’m waiting on hearing back.
+   -   Certain stocks appear on the market scan but are inaccessible via manual searching.
+

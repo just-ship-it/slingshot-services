@@ -1,0 +1,267 @@
+                                  Weekly Chat 2024-12-23
+
+
+                                         Main Points
+
+
+
+    -   VoEx-daily has spiked into the Propagation Zone on $QQQ and $SPY.
+    -   Hedging environments offer similar configurations as last week with local purchasing
+        support and near-by, spot-down selling pressure.
+    -   Put-selling remains near-zero with slight negative values noted on $QQQ.
+    -   Market-Wide Gamma Squeeze data (MWGS) is showing a sudden flare of activity and a
+        deepening, negative GTM.
+    -   LDPM showcases a potential support 3% down on the daily interval with the next
+        support noted 20% down.
+    -   Overall strong bearish leanings with potential for market correction brewing.
+
+                                         SUMMARY
+
+
+
+          Last week, there was some concern regarding mean reversion and the
+          current market-environment such activity would find itself in.
+
+          This week, VoEx presents with movement of its daily computations into
+          the Propagation Zone, indicative of immediate and near-term downside
+          expectations. VoEx remains within Stability which works to lessen the
+          extant expectations’ magnitude.
+
+          Put-selling remains minimal, despite the recent recent dip and IV increase;
+          a relatively strong showing of weak support.
+
+          The MWGS data shows a rapidly accelerating growth curve with a
+          deepening GTM; indicating a flow of short gamma towards the market
+          even as the gamma squeezes themselves increase.
+
+          Taken together, these data paint bearish outlooks.
+
+          For price movement, expectations lay between -3% (per LDPM on the Daily
+          for $ES), and -20% (per LDPM on the Weekly for $ES).
+
+          Prudence lays on the former while VoEx remains within Stability but will
+          likely find better comfort on the latter should VoEx abandon post.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                      12/23/2024
+                                                       DETAILS
+
+
+
+
+Wowza!
+Last week, we left off with the idea that the spectre of ~mean reversion~ was nearby and eager
+to chat, and that concurrently, conditions suggested a near-term dip was brewing. In combination,
+there was consideration regarding a lil’ dip and subsequent rip.
+Well, as we can see below the market did indeed dip!
+
+
+
+
+A dip of the highest calibre1!
+One of the first things I’m noticing, (here and in general since our recent conversation regarding
+“directionaless” hedging ) is that $QQQ did follow our predictions: movement up and to the right,
+stretching towards gamma neutrality, only to find o floor beneath its feet. In reflection, I was
+pondering this new idea for awhile when I realized - that’s exactly what should be happening!
+It’s just that, somewhere along the line, that simple fact eluded me: market makers want to hedge
+not for hedging’s sake in and of itself, but rather to achieve neutrality. So – above we see just
+that! A long reach northwards for $QQQ into gamma neutrality which coincided with the need for
+purchasing support (mean reversion, etc. etc.)! I guess its just been a minute since we’ve seen
+hedging activity so active in seeking neutrality!
+How cool.
+In nerd terms, $SPY moved -2.16% while $QQQ moved -2.24%; on the surface these seem rather
+in-line, but if we check below the surface (say, sub-surface), does this hold up?
+Yes – both EPRs (for $SPY and $QQQ) were around ~1.50%, and so both $QQQ and $SPY
+experienced similar absolute and relative movements.
+Neato!
+
+
+
+1
+    Someone of your caliber doesn’t need me to translate this.
+
+Deep Dive Stocks – Weekly Chat                                                       12/23/2024
+But, as usual with such big moves, now’s time to buckle in and determine if the market will supply
+us with the rip after the dip, or if said providers of said “RIP” will be us unto the market. Let’s find
+out!
+
+Teehee the market’s gone
+Starting as usual with VoEx:
+
+
+
+
+Now, on first glance this may very-well seem like a disastrously bearish print, but, if you pause
+and reflect, then upon second, third, and even fourth glance, you may very-well come to the same
+conclusion.
+
+VoEx-daily has diven2 significantly rapidly, and fiercely, into the Propagation Zone – this suggests
+that downside will continue. For now, said downside does still seem “limited” in its magnitude;
+such that VoEx itself is still within Stability – however, as the expected downside progresses,
+keeping an eye out on VoEx will be vital - for without the presence of such an assurance, the
+downside time-horizon becomes tricky to discern as it stretches out.
+So, overall, bearish takes from VoEx and VoEx-daily until either decides to relinquish their
+presence for their respective thrones, with subsequent bearish or bullish outlooks to replace them
+in their stead, respectively.
+Moving onwards and upwards (but in this case, downwards) we arrive at the Gamma Hedging
+Heatmaps for $SPY (left) and $QQQ (right).
+
+
+
+
+2
+    When one has driven and dove simultaneously.
+
+Deep Dive Stocks – Weekly Chat                                                            12/23/2024
+In both cases we see a similar orientation as before; a ridge dividing selling pressure from
+purchasing support, with only a small movement in spot separating reality from a transition to
+selling pressure.
+
+In terms of gamma neutral spots, both contain similar orientations with neutrality located either
+[$-, IV-] or [$+, IV+]. Supposing this is a market in which we are likely to find an increase in the
+aggressiveness of hedging3, this leaves the market in an awkward spot of choosing between two
+unusual configurations (one may well be reminded as to the consequences of said decision in
+$QQQ’s hedging heatmap from last week!).
+
+So, in much the same vein: the hedging environment is relatively supportive in the event of a [$-,
+IV+] week but keeping an eye out for [$+, IV+] movements (especially on $QQQ), which may
+foretell similar behavior as last week.
+Significant spot-down without reasonable IV-increase should also be monitored, for since an
+aggressive move down for both $SPY and $QQQ without concurrent IV-increase would introduce
+significant selling pressure that is likely directed, opinionated and eager.
+Moving onwards, let’s check out our put-selling-friends:
+
+
+
+
+3
+ You can usually bank (heh – cause finance) on hedging becoming more “directed, opinionated, and eager” the
+more directed, opinionated and eager the market’s moves are.
+
+Deep Dive Stocks – Weekly Chat                                                                  12/23/2024
+It would seem they left without telling us! A familiar event but somewhat disappointing all the
+same.
+It would seem there are no lofty ideas regarding profitability in selling volatility or spot. Perhaps
+they find the risk too great!
+Thankfully, we have other, more important and fancy parties to attend. Namely, the Market-Wide
+Gamma Squeeze Gala, which we can visit below 4.
+
+Stepping onto the carpet, we see first up is the eloquent Madame Croissance in the top panel,
+                                                  showcasing a stunning growth rate in gamma
+                                                  squeezes.
+                                                          Gorgeous.
+                                                          Such a growth rate is bound to be the result of
+                                                          the 15% increase in week-over-week gamma
+                                                          squeezes (reaching a peak of 45% growth on
+                                                          Tuesday!).
+                                                          This growth follows the illustrious trend setter
+                                                          that is Le Chassuer de Gamma Squeezes : GTM
+                                                          who has been serving negativity since 2024-07
+                                                          (last season), with particular deepening
+                                                          starting around 2024-10.
+
+                                                          As gamma squeezes grow and GTM deepens,
+                                                          this suggests continued erosion of one of the
+                                                          foundational metrics used to gauge overall
+                                                          market stability, and one of the reasons we
+                                                          have thusfar been limiting most of our
+                                                          downside views to the local and nearby.
+                                                          In short: the expectation is that gamma
+                                                          squeezes will continue to grow as there has
+                                                          been minimal evidence of long gamma flowing
+                                                          towards the market in recent times, all-the-
+                                                          while more gamma squeezes are birthed into
+                                                          existence.
+                                                     This highlights VoEx-daily’s interpretation of
+the recent instability: things are getting close to ~danger zone~.
+But for now, until VoEx itself stays within stability, preparation for a down then up seems
+reasonable.
+
+
+
+
+4
+    Just act like you know someone and keep busy, no one knows who’s who here.
+
+Deep Dive Stocks – Weekly Chat                                                               12/23/2024
+Thus, the outlook does indeed look bearish. In terms of downside targets, last week we
+entertained the idea of ~2.5% - 4.0% movements, and in checking with LDPM on #ES (balanced
+setting), it seems like re-defining the target is a bit tricky; I’ll let you see for yourself:
+
+
+
+
+On the daily timeframe we see LDPM-610 is still present at ~5.8k (currently about -3% away from
+us), and historically this has provided a good floor (see August 2024), and so that initially seems
+like a good place to land.
+But, should the market not be satisfied with a meager 3% offering (for instance, August’s fall down
+to LDPM-610 was ~-9%!), then another floor should be found. To do this, we gotta move up the
+timeframes, and so, let’s check out the weekly interval for $ES:
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                        12/23/2024
+Well – That’s not too good – we see a rather large Aggressive Ask Cascade forming on the weekly
+interval !
+This means that on the Weekly Interval, there is no floor! If we move up one more level to the
+monthly interval, we arrive at this view:
+
+
+
+
+Which showcases a floor all the way at LDPM-144 (neon-blue) at ~$5,000! That’s a hefty ~20%
+drop! For now, thankfully, despite the Weekly AAC, liquidity conditions remain bullish for the
+weekly and monthly intervals, but this is an overall concerning configuration to find the market in.
+
+
+
+Deep Dive Stocks – Weekly Chat                                                         12/23/2024
+So, all-in-all, it appears a spicey market is forming on the horizon with turbulent seas hencethither,
+suggestive of a 3% decline to LDPM-610 on the Daily interval, and should the seas continue to
+worsen, then an anticipation of a 20% decline thereafter.
+
+It will be pivotal to keep an eye out on the hedging behaviors and overall price : IV relationship,
+along with ensuring VoEx stays out of the Propagation Zone.
+Potentially fun times ahead!
+
+
+Happy Trading,
+
+
+
+Justin
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                           12/23/2024
+Nerd alert update
+So, the dashboard is coming along fine – fine I said!
+But I wanted to showcase an exciting change from a top-level view.
+First, take note of the repo for the current dashboard:
+
+
+
+
+Yes, oo and aaa at the majesty that is R.
+But look at the new version!
+
+
+
+
+Oo ya – she’s fast!
+
+
+Soon!
+
+
+Justin
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                       12/23/2024
+

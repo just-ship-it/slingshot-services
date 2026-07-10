@@ -1,0 +1,284 @@
+                                   Weekly Chat 12/04/2023
+
+
+                                        Main Points
+
+
+   -   VoEx remains in Bullish-until-proven-otherwise (BUPO).
+   -   Hedging environments are vanna-unstable with light selling pressure throughout, and
+       negative influence distributions.
+   -   Put-selling remains near-zero for both $SPY and $QQQ but is technically positive.
+   -   MWGS-data suggests growing growth-rates of gamma squeezes can be expected in
+       the future as the market bottoms out at <1,000 gamma squeezes.
+   -   𝑉𝑉 2 has suddenly reversed course with highly-erratic VoExes showing up throughout
+       the market within the Inhibition Zone.
+   -   𝑂𝑂𝑂𝑂𝑂𝑂𝑂𝑂𝑂𝑂𝑂𝑂𝑂𝑂, BUPO (of the bullish variety), until proven otherwise.
+
+
+
+                                          SUMMARY
+
+
+
+           VoExes for $SPY and $QQQ remain in the Inhibition Zone, indicative of
+           BUPO (of the Bullish variety), however the morphology is suggestive of a
+           budding Divergence that will be key to watch in the upcoming week(s).
+
+           Put-selling remains at a near-zero amount for $SPY and $QQQ for the
+           week a head, indicating continued lethargy on behalf of the put-sellers.
+
+           The Market-Wide Gamma Squeeze (MWGS) data is showing accelerating
+           current growth rates with anticipation of increased acceleration in the
+           future due to GTM’s data which is suggesting an increase in net-short
+           gamma flowing towards the market.
+
+           𝑉𝑉 2 defies expectations once more but this time in a not-so-fun way as it
+           has reversed course on both of its main fronts: data are rapidly re-
+           appearing within the Inhibition Zone as the former collapse witnessed
+           has all-but been erased.
+
+           The Inhibition-Propagation Ratio (IRP) shows a net-Inhibition market,
+           marking a rather quick reversal of prevailing trends from earlier in the
+           month.
+
+           Overall, per VoEx BUPO (of the bullish.. etc. etc.) but conditions look to
+           be deteriorating for continued upwards acceleration.
+
+
+
+Deep Dive Stocks – Weekly Chat                                                      12/04/2023
+                                           DETAILS
+
+
+
+
+Hello everyone!
+Last week, our short Weekly Chat (let’s combine last week’s chat and the week prior’s chat into
+some homunculus Weekly Chat for convenience) left off with the idea that perhaps, just
+perhaps, BUPO (of the Bullish variety), should reign supreme in our collective consciousness.
+Well, last week, this worked out relatively well, and overall (since 2023-11-17), $SPY has moved
++1.84%, and $QQQ +1.01%. Not the wildest of movements, but bullish nonetheless.
+In fact, we can see this not-the-wildest-of-movements-but-bullish-nonetheless price-action from
+the heatmaps from the last 1.5 week(s):
+
+
+
+
+Nothing to write home about.
+Thus, this week, we will conjecture some as to if there is anything to write home about for next
+week, or if we should resign ourselves to the sweet embrace of VoEx BUPO (of the Bullish
+Variety) evermore.
+From there, let’s do a quick look at some goings’-on’s under the surface.
+Let’s dig in!
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                     12/04/2023
+Digging
+Starting as usual with VoEx, we can see that our interpretation is relatively straightforward: VoEx
+is still within the Inhibition Zone, and thus, things are BUPO (of the Bullish Variety).
+Some concern can be given regarding VoEx’s “collapse” of sorts over the past week, but since it
+doesn’t quite pass the eye-ball test for VoEx Divergence1, BUPO is maintained.
+
+However, the discerning side-
+eye towards VoEx grows in
+magnitude.
+
+                ---
+Rant time! Well, not a rant, but
+a reminder.
+Anyone remember how I’m
+always like “Don’t anticipate
+data” blahblah?
+Well, I did. I was warned but I
+did it anyway and lost for it.
+
+When VoEx fell slightly on
+2023-11-29, I was convinced
+that was the start of a true
+VoEx migration out of the
+Inhibition Zone! So, I loaded
+up on vega and short delta,
+and …
+Lost.
+The lesson?
+Never anticipate where the
+data may go!
+                ---
+Thus, with BUPO maintained, let’s sift through the rest of the data to see if we can ball-park how
+long, or how robust, this BUPO might just be.
+The first step for the more imminent time-table, is the Hedging Environments:
+
+
+
+
+1
+  VoEx Divergence would be where VoEx is starting to migrate out of the Inhibition Zone, while the price continues
+to appreciate. Since the price, as of right now, seems to have “stalled” more-or-less, rather than “continue to
+appreciate”, its hard to consider it true VoEx Divergence.
+
+Deep Dive Stocks – Weekly Chat                                                                     12/04/2023
+Here, there are two important observations:
+
+    1) The orientations are in a vanna-unstable configuration2,
+    2) Influence Distributions indicate a net-negative outlook for the week a head (peak is in the
+       light red / red zones),
+    3) Selling pressure is weak overall.
+The overall takeaway is that the hedging environment does not seem poised to over any support
+in the event of a $-/IV+ market-week, but on the other hand, it is also not poised to offer much
+resistance to a $+/IV- week.
+Thus, mostly moot for now.
+
+Moving onwards to our put-selling-friends for some well-deserved guidance, we are, once again,
+met with tepidity:
+
+
+
+
+If you lean in (please do), and squint (please do) you’ll notice a small smudge that ~technically~
+is positive dealer-long-put growth for both $SPY and $QQQ.
+
+
+2
+  Vanna Orientation is one in which IV is the main controlling force in “deciding” if hedging is purchasing or selling.
+That is, if a heatmap shows purchasing to the left or right and selling to the right or left, rather than above or
+below (for both) each other, then vanna is becoming “dominant”. Vanna-Unstable is one in which selling is
+introduced if IV increases (IV+).
+
+Deep Dive Stocks – Weekly Chat                                                                          12/04/2023
+The question is, dear reader (please answer), is this sufficient performance to invoke bullish
+thoughts?
+For me? Not so much.
+Until the put-sellers come out with vigor
+(such as like 2023-10-23 for $SPY or
+around 2023-09 for $QQQ), I will take
+their luke-warm anticipations and adopt
+them as my own.
+Moving from tepidation to trepidation,
+we come across the Market-Wide
+Gamma Squeeze data.
+From the top graph, we can see the
+growth-trend (black line) is pointed
+northwards, suggesting that the growth-
+rate (gold line) is northward bound as
+well, threatening us with positivity.
+GTM is starting to print positive values –
+indicative (with this version) of incoming
+short-gamma into the market.
+We see below, that this bearish GTM
+print is shared with the newer version.
+The 5-, and 10-day running GTM values
+have become negative – indicative of
+incoming negative gamma.
+
+
+
+
+                                                                Taken together, these are
+                                                                relatively   bearish    prints:
+                                                                current growth rates are
+                                                                becoming more positive, and
+                                                                GTMs are suggesting future
+                                                                growth will accelerate.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                    12/04/2023
+Thus, it would seem that BUPO (of the Bullish variety) is indeed still indicated, but evermore the
+data are pointing towards a dissolution of the B and resolution of the O: put sellers aren’t really
+selling puts, and the gamma undercurrents are turning negative.
+If one were to try to contextualize this market movements in boarder terms, one might
+investigate 𝑉𝑉 2. So, let’s do that now.
+
+
+
+
+You’ll remember from long-ago that 𝑉𝑉 2 was monitored for insight into an up-coming “market
+correction”. The idea was that two things were to occur prior to the market correction:
+   1) Data would migrate towards the Propagation Zone (bottom panel), and
+   2) The data would “collapse” (referred to as 𝑉𝑉 2 Collapse; mostly monitored via the black
+      trend line).
+We can see this is indeed what happened starting and around 2023-09 and 2023-10. From there,
+there were two outcomes anticipated:
+   1) The data would “flatten out”, and:
+   2) Either:
+          a. Data would start migrating into stability and out of the Propagation Zone, or
+          b. Data would “stagnate” inside of the Propagation Zone.
+Essentially, the data were to either behave as they did in 2020 (choice 2.a.) or in 2022 (choice
+2.b.) wherein the market would correct and recover or grind down for awhile, respectively.
+
+Deep Dive Stocks – Weekly Chat                                                        12/04/2023
+What one of these choices wasn’t was a spontaneous resurgence towards the Inhibition Zone,
+which is what we see in our version of reality.
+We can visualize this spontaneous movement of Inhibition-bound VoExes a tad clearer if we
+look at the Inhibition-Propagation Ratio (IPR) which shows the relative amounts of stocks with
+their VoExes in the Inhibition Zone as compared to the Propagation Zone:
+
+
+
+
+The last time we saw this graph was in 2023-10-16’s Weekly Chat wherein it was pointed out
+that the 60-day running average of the IPR had breeched into net-Propagation territory, upon
+which I suggested that the 120 was surely to follow3.
+Naturally the market did not feel obligated to follow my lesson-plan, and with that, we can see
+the market experienced a rather abrupt re-direction of VoExes throughout the market, bringing
+all IPRs back into net-Inhibition Zone status.
+Or in other words: a market-wide BUPO.
+
+(of the Bullish variety).
+
+Thus, what does this mean for our interpretation of 𝑉𝑉 2? Well, it would seem there’s a lot of high-
+energy VoExes in the Inhibition Zone (the dots extend upwards to +1 on the top panel of 𝑉𝑉 2).
+At the risk of sounding like a broken record, this is unstable.
+
+
+3
+    See Weekly Chat 2023-12-04 Page 3§4-10
+
+Deep Dive Stocks – Weekly Chat                                                         12/04/2023
+Overall, growing instability in the market but for now this instability is pointed upwards.
+Until VoEx decides to engage in a VoEx Spike (downwards), or Divergence that leaves the
+Inhibition Zone, BUPO (of the Bullish variety) is the most prudent outlook.
+Below the surface of this BUPO, however, there is evidence of rumblings: puts aren’t being sold;
+GTM (of both varieties) is showing growing gamma-squeeze gamma movement towards the
+market; 𝑉𝑉 2 isn’t following the ascribed path and is showing high-energy, erratic VoExes
+dominating within the Inhibition Zone; and last the IPR’s erratic movements over the past month
+is relatively uncommon.
+So all-in-all, the short-term plan is to benefit from BUPO with the medium-, and longer-term plans
+still to be aimed at preparing for the resolution of this market-wide instability.
+
+Happy Trading!
+
+
+Justin
+
+
+P.S.
+So, what’s been going on behind the scenes?
+A quick update:
+   -     LDPS is going to be released back to the wild 2024-01-05! All Premium Members will get
+         access to LDPS.
+   -     The LDPS Robot is chugging along – if you are having any problems setting anything up,
+         please don’t hesitate to reach out. If you find a bug please don’t hesitate to reach out.
+   -     The LDPM Primer is being re-written.
+   -     An LDPS Primer is being written.
+   -     An LDPS YT Video is being filmed.
+   -     An LDPM YT Video was filmed and uploaded (here)
+   -     Initial stages of Dashboard updates undertaken.
+
+
+So that’s about it: mainly a lot of focus has been on LDPM/LDPS/LAT [the Bot] and the auxiliary
+components to those two things. As things are progressing, however, I have started to dip my
+toes in the next phase of Data Dashboard improvements.
+If you have anything that you would like to see added, please don’t hesitate to let me know!
+
+
+Justin (again)
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                          12/04/2023
+

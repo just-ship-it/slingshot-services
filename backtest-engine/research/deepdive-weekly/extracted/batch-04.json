@@ -1,0 +1,205 @@
+[
+  {
+    "file": "weekly-chat-2024-06-30",
+    "report_date": "2024-06-30",
+    "direction": {
+      "call": "bearish",
+      "confidence": "medium",
+      "summary": "Last week's downside call rolled forward: localized near-term downside expected, though minimal evidence of prolonged or significant decline.",
+      "conditions": "Medium/longer-term outlook remains bullish while VoEx stays within stability; downside seen as well-isolated.",
+      "quote": "Overall, last week's outlook is rolled to this week: localized downside expected."
+    },
+    "levels": [],
+    "notes": "Report header dated 07/01/2024; includes admin note about rewriting DDS processing in Rust."
+  },
+  {
+    "file": "weekly-chat-2024-07-07",
+    "report_date": "2024-07-07",
+    "direction": {
+      "call": "bullish",
+      "confidence": "high",
+      "summary": "Near-term dip has completed; VoEx back in stability, put-selling resumed, supportive hedging environments - bullish until proven otherwise.",
+      "conditions": "Flip if VoEx dips into the Propagation Zone.",
+      "quote": "Otherwise - clear bullish skies seem to be ahead!"
+    },
+    "levels": [],
+    "notes": "Report header dated 07/08/2024."
+  },
+  {
+    "file": "weekly-chat-2024-07-14",
+    "report_date": "2024-07-14",
+    "direction": {
+      "call": "bearish",
+      "confidence": "medium",
+      "summary": "Near-term downside and turbulence expected as VoEx encroaches on Propagation Zone; longer-term outlook remains bullish.",
+      "conditions": "Longer-term stays bullish while VoEx remains in stability; QQQ hedging weakness is the key downside driver.",
+      "quote": "Overall, downside suggested in the near-term but with longer-term still bullish."
+    },
+    "levels": [],
+    "notes": "Header incorrectly dated 07/08/2024 (same as prior week, likely typo); Main Points section is empty."
+  },
+  {
+    "file": "weekly-chat-2024-07-21",
+    "report_date": "2024-07-21",
+    "direction": {
+      "call": "bearish",
+      "confidence": "high",
+      "summary": "VoEx plunged into Propagation Zone, put-selling ceased, VoEx Variance collapsed; downside expected on both near and medium time horizons.",
+      "conditions": "Watch VoEx, MWGS, and VoEx Variance for stabilization signs; VoEx exiting stability would extend/confirm the bearish horizon.",
+      "quote": "Overall, the data seem to have shifted in severity, and, along with that, downside is both expected on the near and medium time horizons."
+    },
+    "levels": [],
+    "notes": "Report header dated 07/22/2024."
+  },
+  {
+    "file": "weekly-chat-2024-07-28",
+    "report_date": "2024-07-28",
+    "direction": {
+      "call": "bearish",
+      "confidence": "high",
+      "summary": "VoEx and VoEx-daily deep in Propagation Zone, bearish LDPM/LDPS on daily and 4-hour; significant volatile downside risk over short and medium term.",
+      "conditions": "A successful LDPM 'scoop' pattern or VoEx-daily spike would signal reversal; early-week purchasing support may cause brief upside.",
+      "quote": "Overall, prudency suggests significant caution due to prevailing robustly bearish data prints."
+    },
+    "levels": [],
+    "notes": "Report header dated 07/29/2024; includes tutorial on 'the Scoop' LDPM pattern."
+  },
+  {
+    "file": "weekly-chat-2024-08-04",
+    "report_date": "2024-08-04",
+    "direction": {
+      "call": "bearish",
+      "confidence": "high",
+      "summary": "Downside manifested and more expected: VoEx persists in Propagation Zone, put-selling ceased on SPY, gamma squeeze growth turning positive.",
+      "conditions": "VoEx Variance still shows minimal Propagation Zone involvement, so downside expectation limited to the medium-term for now.",
+      "quote": "Overall, the data continue to point towards continued downside."
+    },
+    "levels": [],
+    "notes": "Report header dated 08/05/2024."
+  },
+  {
+    "file": "weekly-chat-2024-08-11",
+    "report_date": "2024-08-11",
+    "direction": {
+      "call": "bearish",
+      "confidence": "high",
+      "summary": "VoEx remains in Propagation Zone, hedging offers little support, gamma flows increasingly involved; downside expected, possibly extending to longer term.",
+      "conditions": "Bounce anticipated only if VoEx-daily spikes into stability; risk cools if gamma squeezes decrease, GTM goes positive, or DLPs open.",
+      "quote": "Overall, downside is expected until things change."
+    },
+    "levels": [],
+    "notes": "Report header dated 08/12/2024; Main Points is a single line ('Downside is expected.'). VoEx Variance now printing in Propagation Zone, raising downside risk."
+  },
+  {
+    "file": "weekly-chat-2024-08-18",
+    "report_date": "2024-08-18",
+    "direction": {
+      "call": "bullish",
+      "confidence": "medium",
+      "summary": "Near-term bullish bounce forming (VoEx-daily spiked into Stability, supportive heatmaps), but viewed as a bull-trap within bearish medium-term.",
+      "conditions": "Medium/longer-term remains bearish while VoEx stays in Propagation Zone; bounce treated as transitory bull-trap.",
+      "quote": "Overall, high expectations for a bull-trap-like future ahead."
+    },
+    "levels": [],
+    "notes": "Split-horizon call: near-term bullish bounce, medium-term bearish (bull-trap thesis). Includes admin update on Rust migration of DDS backend."
+  },
+  {
+    "file": "weekly-chat-2024-08-25",
+    "report_date": "2024-08-25",
+    "direction": {
+      "call": "bullish",
+      "confidence": "low",
+      "summary": "Positioning bullish for the near term (VoEx-daily in stability, supportive heatmaps) while still expecting the rally is a bull-trap that resolves bearish.",
+      "conditions": "Bearish resolution expected when VoEx-daily returns to Propagation Zone; bullishness voided unless VoEx exits the P.Z.",
+      "quote": "So, all-in-all, brace for up, expect down seems reasonable."
+    },
+    "levels": [],
+    "notes": "Report header dated 08/26/2024; heavily hedged 'bullish but expecting bearish resolution to bull-trap'. Long tutorial section on LDPM projection/forecasting with CPRX/RIOT examples."
+  },
+  {
+    "file": "weekly-chat-2024-09-02",
+    "report_date": "2024-09-02",
+    "direction": {
+      "call": "bullish",
+      "confidence": "low",
+      "summary": "Bullish-until-proven-otherwise as bull-trap plays out, but high risk of large downside; expecting the trap to terminate shortly.",
+      "conditions": "Flip bearish on QQQ move toward LDPM-144 (~$414), VoEx re-entering Propagation Zone, or gamma-squeeze growth.",
+      "quote": "But, until then: planning for bullish performance but expecting termination of the bull-trap shortly."
+    },
+    "levels": [
+      {
+        "value": 414.0,
+        "instrument": "QQQ",
+        "role": "target",
+        "side": "below",
+        "quote": "a potential price-target for $QQQ is nearly $414(!) where LDPM-144 currently sits"
+      }
+    ],
+    "notes": "Downside target is conditional on the bull-trap trapping (~12% decline). Heavily hedged bullish-until-proven-otherwise stance."
+  },
+  {
+    "file": "weekly-chat-2024-09-08",
+    "report_date": "2024-09-08",
+    "direction": {
+      "call": "bearish",
+      "confidence": "high",
+      "summary": "Bull-trap has sprung; VoEx returning to Propagation Zone, hostile hedging environments, rising gamma squeezes - choppy, significant downside expected.",
+      "conditions": "Sustained positive movement seen as unlikely unless SPY IV improves dramatically; watching LDPM/S for navigation.",
+      "quote": "Overall, downside is expected as the bull-trap has trapped."
+    },
+    "levels": [],
+    "notes": "Mentions $SPY $410 only as a historical reference to the 2023-10 bottom, not a forward level (excluded)."
+  },
+  {
+    "file": "weekly-chat-2024-09-15",
+    "report_date": "2024-09-15",
+    "direction": {
+      "call": "bullish",
+      "confidence": "medium",
+      "summary": "VoEx-daily back in Stability and VoEx exited Propagation Zone; reversion to cautious bullish outlook, tempered by sparse liquidity and absent put-selling.",
+      "conditions": "Caution if QQQ IV drops too far (removes support); a [$-, IV+] eddy-current phase could revive bull-trap concerns.",
+      "quote": "Overall, reversion back to bullish outlook, tempered with caution about sparse liquidity."
+    },
+    "levels": [],
+    "notes": "Report header dated 09/16/2024; author concedes prior week's short call was wrong (SPY +4.01%, QQQ +5.94%). DLP macro-report graphs broken this week."
+  },
+  {
+    "file": "weekly-chat-2024-09-22",
+    "report_date": "2024-09-22",
+    "direction": {
+      "call": "bullish",
+      "confidence": "high",
+      "summary": "VoEx and VoEx-daily both within Stability - back to Bullish-Until-Proven-Otherwise, with supportive vanna-stable hedging environments.",
+      "conditions": "Minor near-term pullback possible (rough VoEx-daily peaks, SNAP suggests bearish Monday); aggressive IV drop could erode support.",
+      "quote": "Overall, expectation is back to BUPO (Bullish-until-proven-otherwise)!"
+    },
+    "levels": [],
+    "notes": "Report header dated 09/23/2024; includes long admin section on Rust backend rewrite and new dashboard plans."
+  },
+  {
+    "file": "weekly-chat-2024-09-29",
+    "report_date": "2024-09-29",
+    "direction": {
+      "call": "bullish",
+      "confidence": "medium",
+      "summary": "Technically bullish with VoEx in Stability, but watching a liquidity vacuum on ES and downward-stalled VoEx-daily; dips viewed as buyable.",
+      "conditions": "Concern if VoEx rapidly moves toward Propagation Zone, gamma squeezes grow, or the LDPM liquidity vacuum resolves downward.",
+      "quote": "Overall, technically bullish but a close eye on the liquidity vacuum."
+    },
+    "levels": [],
+    "notes": "Contains high-priority alert: Dealer Long Put data processing error affecting Macro Report PDFs. LDPM-89/LDPM-233 downside cited only as percentages (~5%/~8%), no numeric prices. Long liquidity-theory tutorial section."
+  },
+  {
+    "file": "weekly-chat-2024-10-06",
+    "report_date": "2024-10-06",
+    "direction": {
+      "call": "bullish",
+      "confidence": "high",
+      "summary": "BUPO maintained: VoEx healthy in Stability, supportive hedging heatmaps, DLP put-selling activity spiking ~50% on SPY - bullish sentiments abound.",
+      "conditions": "SNAP graphs and LDPM projections flag potential weakness/turbulence about one month out; watching for daily ES LDPM to un-invert.",
+      "quote": "Overall, bullish outlooks abound!"
+    },
+    "levels": [],
+    "notes": "Report header dated 10/07/2024 (typo '10/076/2024' throughout). DLP processing error from prior week reported fixed. LDPM-144 downside target cited only as ~9%, no numeric price. Long ABC/AAC pattern tutorial appendix."
+  }
+]

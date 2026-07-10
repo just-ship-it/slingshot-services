@@ -1,0 +1,271 @@
+                                   Weekly Chat 12/26/2023
+
+
+                                        Main Points
+
+
+   -   VoEx Divergence has emerged on $SPY and $QQQ, however, until VoEx leaves the I.Z.,
+       Bullish-until-Proven-otherwise remains the prudent choice.
+   -   Hedging Environments remain unchanged with local selling pressure and a vanna-
+       unstable orientation.
+   -   Put-selling remains near-zero, despite the long weekend to capture theta gains.
+   -   Market-Wide Gamma Squeeze data (MWGS-data) shows low amounts of gamma
+       squeezes throughout the market with GTM (both versions) showing short-gamma
+       making its way to the market.
+   -   𝑉𝑉 2 is showing collection of high-energy VoExes within the Inhibition Zone, an
+       inditement that the recent price-action is a strong bull-trap. However, no collapse or
+       migration into the Propagation Zone is yet observed.
+   -   Overall, BUPO (of the Bullish Variety) is maintained as the warning signs continue to
+       mount for the end of BUPO.
+
+
+
+
+           SUMMARY
+
+
+
+           VoEx on $SPY and $QQQ are starting the end-of-the-year with VoEx
+           Divergence; yet another dataum in the stream of data suggesting the end
+           of BUPO.
+
+           This reduction in bullish outlooks for the time-ahead is echoed with moot
+           put-selling behavior. $SPY and $QQQ are still showing near-zero put
+           selling even into an extended weekend.
+
+           Hedging environments remain largely unchanged with a vanna-unstable
+           orientation, local selling pressure, gamma neutrality extending $+/IV-
+           and negative influence distributions.
+
+           A quick review of 𝑉𝑉 2 is demonstrating renewed and greater-than-before
+           high-energy VoExes within the Inhibition Zone. These observations
+           present without evidence of VoEx collapse back into the Propagation
+           Zone.
+           Overall, BUPO is technically maintained (of the Bullish variety) however
+           the data are becoming increasingly enjoined in their outlook that BUPO’s
+           reign is coming to an end.
+
+Deep Dive Stocks – Weekly Chat                                                     12/26/2023
+                                                     DETAILS
+
+
+
+
+Hello all! Happy Holidays and the like.
+
+
+This week’s Weekly Chat is going to be somewhat short – just like the week a head – and will
+lay the foundations for a more comprehensive year-review Weekly Chat next week (I was going
+to do it this week but alas! I’ve been stricken down in my youthful prime1). So, until I can give a
+year-end review justice, I’m going to postpone it until next week.
+Coincidentally, this tempers our curiosities down quite nicely for this week. Namely, things are
+centered around if BUPO’s caroling shall ring evermore (at least until year’s-end) or shall we
+start suspecting a southernly-steeped snowy ski-slope set to smack us squarely in the façade?
+Last week we left off with BUPO, and the market obliged with a +0.92% move on $SPY and a
++0.75% move on $QQQ. In looking at the movements on the Hedging Heatmaps, we see that
+focusing only on overall price-movement of these two indexes doesn’t quite tell the whole tale:
+
+
+
+
+Although the price-movement was a net positive for both, we see the movement in IV was also
+a net positive! Movement into the $+/IV+ isn’t too uncommon but it’s always interesting to see.
+In fact, $SPY rose 8% in terms of IV and $QQQ rose 9.3%! Turning that into a ratio and we get an
+IV-Price %-change ratio of 0.115 for $SPY and 0.008 for $QQQ.
+Do these numbers mean anything? Who knows! Let’s do a quick investigation.
+Let's just quickly calculate this ratio (%-change in $ to %-change in IV), and the plot it onto a
+graph of $SPY and $QQQ to see if there are any patterns.
+
+
+
+
+1
+    Well, I suppose 31 is a prime number at least.
+
+Deep Dive Stocks – Weekly Chat                                                        12/26/2023
+The first observation is that there are a lot of dots! Not a very specific test, at least. But perhaps
+there’s something under the surface? A χ2 goodness-of-fit test 2 was performed for both $SPY
+and $QQQ and then combined. The resultant p-value? 0.58! In other words, we can’t really say
+any differences noted in the future change in behavior are anything other than chance (and, it
+should be noted, that if there were an association, it would appear there are more $+ than $-
+within the Condition group!)
+
+
+
+
+2
+  This is a really cool test! Its straightforward and simple-to-use. Essentially, you add up all of the times
+when something happens along with the outcome you expected, and then all of the times when
+something didn’t happen but still had the outcome you expected. This gives you a matrix that looks like
+this (data for $SPY):
+
+                                                              $−     $+
+                                                                          219
+                                         𝐶𝐶𝐶𝐶𝐶𝐶𝐶𝐶𝐶𝐶𝐶𝐶𝐶𝐶𝐶𝐶𝐶𝐶     87 132
+                                                              �        � 1,070
+                                      𝑁𝑁𝑁𝑁 𝐶𝐶𝐶𝐶𝐶𝐶𝐶𝐶𝐶𝐶𝐶𝐶𝐶𝐶𝐶𝐶𝐶𝐶 418 652
+                                       𝑇𝑇𝑇𝑇𝑇𝑇𝑇𝑇𝑇𝑇𝑇𝑇             505 784
+Which is a contingency table (forgive the formatting). This can be used to calculate the probability that
+the condition has any affect on the outcomes! The foundational expectation (𝐻𝐻𝑜𝑜 , null hypothesis) is that
+no difference in frequency between the two groups. In order to refute the 𝐻𝐻0, the test should tell us that
+the probability of seeing this arrangement of data is very low if left only to chance (this would be a low p-
+value). A high p-value (p >= 0.05) suggests that the differences noted may be just due to random chance.
+
+Deep Dive Stocks – Weekly Chat                                                                 12/26/2023
+So, that was a big nothing-burger. Perhaps its worth keeping an eye out for when $+/IV+ as a
+fun exercise, but, at least without further refinement, this condition ($+/IV+) doesn’t appear to
+be all that correlated with future price-action.
+
+With that out of the way, let’s get to the data that are statistically significant.
+The data that are statistically significant
+Starting as usual with VoEx, we see that $SPY is finally printing a potential end to BUPO!
+
+
+
+
+VoEx Divergence! As VoEx has started to collapse, the price continues to appreciate. Is this
+present as well on $QQQ?
+
+
+
+
+Not as “stark” perhaps, given the lack of $QQQ’s VoEx falling almost into the Propagation Zone
+but it would appear that VoEx is indeed falling on $QQQ as the price continues to appreciate!
+
+
+
+Deep Dive Stocks – Weekly Chat                                                        12/26/2023
+In other words, VoEx Divergence is forming on $SPY and $QQQ – one of the heralding trumpets
+to the end of BUPO.
+Typically, VoEx Divergence should be monitored for when VoEx-trend leaves the Inhibition Zone
+as a definitive trigger towards downside3. So, for now, the divergence will be monitored with the
+expectation of forming downside in the near future.
+This near-future, however, isn’t now and as such, BUPO is still dominant – even if weakened by
+the presence of divergence. Since VoEx is still within the Inhibition Zone for both $SPY and
+$QQQ, BUPO (of the Bullish variety) is still the most prudent outlook.
+How does this outlook fare in the current hedging environments?
+
+
+
+
+With conditions being much-the-same (local selling pressure, vanna-unstable orientation,
+gamma neutrality extending $+/IV-) we should expect much-the-same influence from the
+hedging environment: not terribly much.
+So far, the market has been absorbing the additional (light) selling pressure and with gamma
+neutrality extending in a $+/IV- path, it doesn’t seem that the hedging environment is well-poised
+to prevent bullish activity. However, as can be expected from a vanna-unstable orientation, the
+hedging environments are not positioned well to provide any purchasing support in the event of
+a $-/IV+ move, either.
+In short: conditions aren’t restrictive for any price appreciation but this is concurrent to a lack of
+support for any price depreciation.
+So, with VoEx in tentatively-bullish mode and hedging environments just existing, how do these
+conditions affect the temperaments of our put-selling friends? Are they excited for the start of
+the new-year or do they find themselves remembering on markets past?
+
+
+
+
+3
+    Examples: Tier II Educational Material, pg. 22-23; Weekly Chat 05/22/2023.
+
+Deep Dive Stocks – Weekly Chat                                                           12/26/2023
+                                 Nothing too exciting it
+                                 would seem!
+                                 A small smidgen of
+                                 activity – perhaps due to
+                                 the     upcoming       long
+                                 weekend – but overall it
+                                 would seem there is little
+                                 interest in trying to profit
+                                 from $+ or IV-.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                  12/26/2023
+Moving onwards from the puts to the squeezes, we see that the growth-rate of gamma
+                                                squeezes (top graph, gold-line and
+                                                black line [trend]) is still near-zero but
+                                                slowly creeping into positive territory.
+                                                     This isn’t too surprising as GTM has
+                                                     been positive for about 2 weeks now,
+                                                     suggesting gamma squeezes are
+                                                     making their way towards the market.
+                                                     It is worth noting that the current
+                                                     amount of gamma squeezes (685) is
+                                                     in the bottom 20% of the data for the
+                                                     market!
+                                                     In other words, its pretty low not just
+                                                     in relative terms to our recent
+                                                     conditions, but also overall!
+                                                     Does this provide any insights in-and-
+                                                     of itself? Not really – just a curious
+                                                     event to observe.
+                                                     To      extend     the   aforeobserved
+                                                     observation to actionable insights,
+                                                     let’s start with GTM (original), which is
+                                                     printing positive values (suggesting
+                                                     incoming short-gamma into the
+                                                     market)! Lets also take a peek at the
+                                                     revised GTM to see if it is showing the
+                                                     same (below).
+
+
+
+
+Much the same! This week
+saw quite the increase in
+short-gamma flowing into
+the market; enough to push
+the 60-day EMA precariously
+close to negative territory.
+Thus, we start the year with
+an expectation of short-
+gamma      flow     heading
+towards the market.
+
+
+
+Deep Dive Stocks – Weekly Chat                                                   12/26/2023
+So, overall, it seems there is a growing under-belly of malcontent within the market. The
+foundation for this outlook starts, as usual, with VoEx whereby it has indicated that the recent 2-
+month price appreciation has been quite unstable (and thus, provoked BUPO [of the Bullish
+variety]).
+Then, in the past month, put-selling has precipitously dropped off (despite $QQQ’s very
+opportune surge in put-selling the other week), and VoEx’s behavior has become more erratic.
+All-the-while, hedging environments remain in a vanna-unstable configuration.
+This has progressed even more-so into resilient put-selling cessation, gamma-squeeze growth
+rates trending towards positivity, GTM printing decisively bearish prints (both versions), and, of
+course, VoEx demonstrating VoEx Divergence.
+
+A slow-moving end to BUPO it would seem!
+Now, before this Weekly Chat is wrapped up, let’s take a look at our friend 𝑉𝑉 2!
+
+
+
+
+That’s a lot of erratic VoExes within the Inhibition Zone!
+
+
+Deep Dive Stocks – Weekly Chat                                                        12/26/2023
+Despite the initial collapse that was observed almost four months ago (!), it would seem this
+instability didn’t just “disappear” – but rather, simply shifted back into the Inhibition Zone where
+it now resides as BUPO in an energetically more unstable magnitude than pre-2020!
+Should this most recent of price-appreciations start to give way, we should expect to see the
+same signs as before: collapse of 𝑉𝑉 2 (within the Inhibition Zone) and migration of VoExes into
+the Propagation Zone.
+So, whereas it would appear the BUPO-ending signs-on-the-wall are beginning to imprint with
+bolder font, for now, VoEx holds steadfast within the Inhibition Zone, and as such, BUPO (of the
+Bullish Variety) is maintained – even if tenuously so.
+
+
+Happy Holidays and I’ll see everyone next year!
+
+
+Justin
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                         12/26/2023
+

@@ -1,0 +1,243 @@
+                                  Weekly Chat 02/05/2024
+
+
+                                       Main Points
+
+
+      -   VoEx has rebounded back into the Inhibition Zone. Bullish-until-proven-otherwise is
+          maintained.
+      -   Hedging environments are in a vanna-unstable orientation with local and proximal
+          selling pressure.
+      -   Put-selling has increased for the week ahead.
+      -   GTM has defined expectations and has moved into more-positive territory.
+      -   Overall, bullish inclinations.
+
+
+
+                                         SUMMARY
+
+
+
+          The week started out against our expectations but a surprise emergence
+          of purchasing support in the middle of the week let the market recover,
+          and thus, satisfy our expectations of a bullish week.
+
+          These expectations are maintained with reasonable caution due to the
+          extended duration of VoEx          within the Inhibition Zone.
+
+          In spite of these concerns, DLP activity has increased on both $SPY
+          (+10%) and $QQQ( +~80%), and GTM is printing resoundingly positive
+          prints; these data suggest bullish expectations are most prudent.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                     02/05/2024
+                                           DETAILS
+
+
+
+
+Hello everyone!
+Last week, we stood on our prominent promontories over the Deep seas, begrudgingly
+bemoaning the ever-abating bearishness, which finds itself precariously proximal but without
+potent provocation to pirate away BUPO (of the Bullish variety) for BUPO (of the Bearish variety).
+The hesitance in adopting BUPO (of the Bearish variety has been due to VoEx: without definitive
+and decisive moves into the Propagation Zone (despite the two recent teases to the contrary),
+BUPO just can’t be replaced by BUPO.
+This week’s eventuality did seem far-off at the start of the week, as can be gleaned below:
+
+
+
+
+The week progressed until the 31st, after which it didn’t anymore, but rather, experienced quite
+the turn around. It’s worth noting that the bottom of the week was the 31st, which, perhaps
+coincidentally, on both $SPY and $QQQ, represented the day-of-the-week in which both $SPY
+and $QQQ saw the introduction of hefty purchasing support:
+
+
+
+
+What luck!
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                       02/05/2024
+At least for our BUPO (of the Bullish
+variety).
+On the right, we can see this
+emergence of purchasing support
+occurred as VoEx for $QQQ was
+beginning its descent.
+Interestingly, this is not the first time
+such a series of events has unfolded!
+Remember way-back-when in 2022-
+01-08 when the exact same thing
+happened? VoEx spiked towards the
+P.Z., only to have the market discover
+purchasing support, which moved
+everything back up.
+
+Pretty neato to see this happen again.
+Frustrating. But neat.
+But, before we digress too much
+again, let’s get this week’s Weely Chat
+started and see if there’s anything
+new to gawk at.
+
+
+Please commence gawking
+Since moving towards the P.Z. and subsequent recovery, we can see that VoEx has moved
+substantially northward into the Inhibition Zone.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                            02/05/2024
+The same can be said for $QQQ:
+
+
+
+
+Almost identical prints.
+The good news is this maintains BUPO.
+The bad news is that this BUPO seems to be experiencing ~monthly VoEx Spikes.
+By bad news, I simply mean it complicates things (such that, I will have to watch VoEx more
+than usual now) but the overall strategy is the same: BUPO (of the Bullish variety) until
+otherwise.
+Moving from VoEx to the Hedging Environments, we see things are much the same as before.
+
+
+
+
+Local and proximal selling pressure, in a vanna-unstable orientation. Interestingly, gamma
+neutrality for $QQQ, from its current location, is straight up, while $SPY’s is $+/IV-. The benefit
+for $QQQ is that it will require much less movement to get to both gamma neutrality and
+purchasing support -should $QQQ find either of those things useful.
+In the event of a $-/IV+ week, once again there is only selling pressure to be found for our
+friends. Speaking of friends, let’s see what our put-sellers friends are up to.
+
+Deep Dive Stocks – Weekly Chat                                                        02/05/2024
+A modest jump in put-
+selling for $QQQ.
+This increase, especially
+given some of the
+anticipated      weekend
+events, does seem to be
+a rather robust showing
+of bullish sentiment.
+This      gives     bullish
+inclinations for the week
+ahead.
+
+
+
+
+Deep Dive Stocks – Weekly Chat   02/05/2024
+Next up, let’s move over to the Market-Wide Gamma Squeeze data to see how those gamma
+flows are doing.
+You’ll remember from last week, there was some discussion about the GTM spike the was
+investigated a few weeks ago. Something was said along the lines of:
+
+                                                    “
+GTM is still in the middle of its large positive spike – indicating that there is still a net flow of long-
+  gamma towards the market. This spike, however, seems to be winding down, and with it, the
+                          expectation of near-term downside draws closer.
+                                                    “
+
+
+The idea was that GTM would move back into negative territory, and which it, the prophecy of
+GTM-Spike would be fulfilled.
+
+So, naturally, in response, the market decided not to do that:
+
+
+
+
+With a rebound back into positive territory (and a robust one at that), it would seem that our
+anticipation of negative gamma flows rushing back into the market have been usurped. And
+with it, our lofty goals of seeing a surge of short gamma.
+This brings with it strong bullish outlooks as this increases the expectation of gamma-squeeze
+destruction coming down the line.
+These bullish GTM prints are found, paradoxically, in the setting of a growing gamma squeeze
+count. The week-over-week change in the number of gamma squeezes was 7% (1,118 → 1,205).
+Not a terrible increase, admittedly, but noteworthy given the recent positive GTM prints.
+
+Deep Dive Stocks – Weekly Chat                                                              02/05/2024
+This suggests we are in an environment of spontaneous gamma squeeze creation. Not outside
+the realm of possibility, I suppose, but if we assume GTM is reasonable at measuring gamma
+flows, and thus, it has been reasonably certain in its recent assessment of long gamma flows,
+but we still witness a growth of gamma squeezes, then the gamma squeezes didn’t “flow” to the
+market but rather, were created there!
+Supposing this theory is reasonable, let’s look at the stocks that weren’t in a gamma squeeze
+last Friday, and then the ones that were in one at the end of this past week, and grouped them
+based on their respective sectors. In this way, we can see where these spontaneous gamma
+squeezes are popping up, and maybe that might tell us something.
+Below is a graph showing the change in Short Calls or Short Puts per stock per day for those
+that experienced a spontaneous gamma-squeeze generation from within $SPY. The left are
+Short Calls and the right are Short Puts (black line is 0).
+
+
+
+
+The graph only shows the data for stocks that started the gamma squeeze for a day within the
+week. This means that $AAPL, for instance, started its gamma squeeze on the 31st –
+presumably because of its influx of Dealer Short Calls. It would appear that afterwards, $AAPL’s
+gamma squeeze likely worsened due to the robust opening of short puts on Friday.
+In general, it seems some gamma squeezes opened due to short calls in the first half of the
+week but the majority of the “spontaneous” gamma squeezes (at least from $SPY), were due to
+short puts being opened.
+
+
+Deep Dive Stocks – Weekly Chat                                                     02/05/2024
+So, it would seem that there were a few lucky bets placed on the 31st (via retail long calls), which
+pushed a good bit of stocks into a gamma squeeze, followed by a larger and more-sustained
+increase in dealer short puts towards the second half of the week, which worked to push even
+more stocks into a gamma squeeze.
+Worth noting, that the opening of these short puts would have provided some reasonable
+purchasing support to both $SPY and $QQQ (as most of these equities are shared between the
+two) via the initial hedging.
+In spite of this growth, as we saw above, long-gamma is the dominant flowing force toward the
+market with GTM’s positive prints, and as such, we should expect some diminishment of GS’
+population numbers here shortly.
+The take-home? A quick glimpse into some “spontaneous” movements in the market suggest
+the latter-half of the week was dominated by dealer short puts being opened.
+A nod to the idea that although the market-at-large may be sustainable for put-selling (looking at
+you $QQQ), but on the individual level, this bullish performance is putting enough short-puts into
+the market to push things into a gamma squeeze.
+The graph last page was $SPY’s contribution; below is $QQQ’s:
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                         02/05/2024
+Taken together, this suggests there’s some positioning occurring due to short puts being
+opened causing “spontaneous gamma squeezes”. However, are these data sufficient to
+overturn the conviction of our put-selling friends?
+
+I’ll leave that answer to the reader.
+For me, however, it would appear that there is another round of BUPO (of the Bullish variety) a
+head of us; an outlook that is likely to be maintained until VoEx makes a 2022-, or 2020-style
+move into the P.Z.
+Until then, a quick look occasionally towards the gamma squeezes, and DLPs to ensure nothing
+crazy is happening, and if not, back to putting the nose in the books1.
+
+
+
+Next week, we’ll talk some about some changes coming to LDPM.
+
+
+Happy trading,
+
+
+Justin
+
+
+
+
+1
+    A euphemism for “desperately pleading with the programming gods”.
+
+Deep Dive Stocks – Weekly Chat                                                     02/05/2024
+

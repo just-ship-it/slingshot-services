@@ -1,0 +1,856 @@
+Liquidity Trading Algorithm
+Handbook
+V.1.0
+
+
+
+
+Justin Cocco
+Deep Dive Stocks
+Contents
+      03     -      -      -      -      -    -    -     -    -     Introduction
+      04     -      -      -      -      -    -    -     -    -     -   Features
+      11     -      -      -      -      -    -    -     -    -     -   Settings
+      18     -      -      -      -      -    -     -    -     -    Backtesting
+      20     -      -      -      -      - Connecting LTA with External Accounts
+      22     -      -      -       -     -    -     - Frequently Asked Questions
+
+
+
+
+Liquidity Trading Algorithm – Handbook                                         2
+Introduction
+The Liquidity Trading Algorithm (LTA) is a customizable algorithm designed to measure and
+respond to changes in liquidity, as calculated via the Liquidity Dependent Price Movement (LDPM)
+and Liquidity Dependent Price Stability (LDPS) algorithms. LTA is designed to provide real-time
+estimations as to the actionability and practicality regarding these algorithms.
+Since LTA is based on LDPM and LDPS, it can be applied to any underlying on which LDPM or
+LDPS can be calculated, this includes most stocks, futures, and cryptocurrencies on most
+timeframes. In the following guide, the settings and customizations available to you will be
+detailed so that you can start your journey with LTA.
+First, a review of LTA’s features will give overviews to LTA’s unique features such as adjusting the
+Assessment Style, Enabling / Disabling Additional Monitoring Systems, and more. After a review
+of the features, a comprehensive review of the main settings is given. From there, a quick review
+of backtesting and some key points to keep in mind to ensure the backtest is conﬁgured
+appropriately. After the review on backtesting, a quick look at connecting LTA to external accounts
+follows, and ﬁnally terminating in a Frequently Asked Questions section.
+Be sure to read through and if at any point, if there is anything I can help clarify more, please do
+not hesitate to reach out at Justin@DeepDiveStocks.com.
+
+
+
+
+Liquidity Trading Algorithm – Handbook                                                            3
+Features
+There are several unique features to LTA that are worth mentioning and describing in more detail.
+   -   Assessment Style
+   -   Additional Monitoring Systems
+   -   Position Sizing
+   -   Data Table Information – Position Information
+   -   Data Table Information – Strategy Performance Information
+   -   Text Output
+
+Feature – Assessment Style
+LTA's assessment style determines how LTA collects and responds to changing data. In traditional
+terms, this is akin to (but not quite exactly the same as) the sensitivity versus speciﬁcity spectrum,
+whereby on one end (the sensitive end), an algorithm responds to changes in data in a reactive
+manner (which tends to lower its speciﬁcity, or how often it is correct in its indications), and on
+the other end, the opposite one, the algorithm forsakes quick changes for longevity of outlook.
+While this analogy is in part true, it is not a full view of the underlying mechanisms affected by
+changing the assessment style augments. A better analogy would be that the sensitive end of the
+spectrum (`Aggressive`) is in a state such that the algorithm wants to changing its outlooks (i.e.:
+if LTA is bullish then it assumes the current candle will end bearish), and as such, with changes in
+data, the algorithm has to be convinced as to why that is not a good idea to change outlooks,
+whereas the more speciﬁc states (`Conservative`, `Diamond`) must be convinced that their view
+is no longer valid and that it should be changed.
+This means the `Aggressive` and the `Diamond` settings fundamentally differ not just in their
+data collection, but also in the data processing such that the `Aggressive` decision tree has to
+be convinced that the data is the same (as its default is that it has changed),
+and the `Diamond` decision tree has to be convinced that the data is not the same, and as such,
+the outlook need changed.
+`Balanced` lies in the middle of this balance, attempting to balance being open to new ideas while
+not removing the wisdom of the past, as it were.
+On a scale of most `sensitive` to most `speciﬁc`, it is as follows: `Aggressive`, `Balanced`,
+`Conservative`, `Diamond`.
+Functionally, these different modes can help in different liquidity environments, as certain
+environments are more conducive to an eager approach (such as found near `Aggressive`) or are
+more conducive to a more conservative approach, where sudden changes in liquidity are known
+to be short-lived and unremarkable (such as many previously identiﬁed bull or bear traps).
+For instance, on low interval views, it can often-times be beneﬁcial to keep the algorithm towards
+the `Sensitive` end, since on the lower-timeframes, the crosswinds can change quite dramatically;
+whereas on the longer intervals, it may be useful to maintain a more `Speciﬁc` algorithm (such as
+found near `Diamond` mode) setting since longer intervals typically lend themselves to longer
+time-horizons, which themselves typically lend themselves to "weathering the storm", as it were.
+
+LTA's Assessment Style is also supported by the Additional Monitoring Systems which works
+
+
+Liquidity Trading Algorithm – Handbook                                                              4
+to add sensitivity without sacriﬁcing speciﬁcity by enacting a separate monitoring system, as
+described below.
+
+Feature – Additional Monitoring System
+The Additional Monitoring System (AMS) attempts to add more context to any changes as
+measured, such that LTA as a whole will have an expanded view into any rapidly changing liquidity
+conditions before these changes manifest in the “traditional” data streams (LDPM and LDPS’s).
+The ideal is that this allows for early exits or early entrances to positions "a head of time".
+The prototypical use of AMS is to indicate deteriorating conditions such that the current open
+position should be closed in abundance of caution, or LTA should be inhibited from entering into
+a new position, due to the increased uncertainty.
+When a position is exited because of AMS, it is denoted as an `Early Exit` and if a position is
+prevented from being entered, the text output will display `AM prevented entry...` to indicate that
+conditions are not meeting AMS' additional standards.
+The algorithm will wait to make any actions while `AMS` is `active` and will only enter into a new
+position once `AMS` has been `deactivated` and overall liquidity conditions are appropriate.
+
+Functionally, the beneﬁts of AMS translate to:
+In short, AMS is way of adding an additional level of liquidity monitoring that attempts to
+exit positions if conditions look to be deteriorating, and to enter conditions if they look to be
+improving. The cost of this additional monitoring, however, is a greater number of trades
+indicated, and a lower overall proﬁtability.
+
+
+ Outcome                      Changes when AMS is toggled on
+
+
+ Net Profitability            In general, decreases.
+
+ Max Drawdown                 In general, decreases.
+
+ Max Runup                    In general, decreases.
+
+ Return Over Max              In general, increases.
+ Drawdown
+ Trade Count                  In general, increases.
+
+ Trade Duration               In general, decreases.
+
+ Trade %                      In general, decreases.
+ Profitable
+
+
+
+
+Liquidity Trading Algorithm – Handbook                                                           5
+Feature – Position Sizing
+In addition to the availability to restrict the trade-direction of LTA to either a long-only or short-only
+strategy, LTA has additional ﬂexibility with regards to its position sizing, as discussed below.
+Position Sizing – Sizing Method
+There are two main ways LTA can determine the size of a position. Either via the `Fixed-Share`
+choice, or the `Fixed-Percentage` choice, as selected/input in the `Input` tab of the Settings.
+- `Fixed-Share` will use the amount indicated in the `Max Sizing Limit` ﬁeld as the position size,
+always.
+Note: With `Fixed-Share` sizing,         LTA   will   not   check    if   the   balance    is   suﬃcient
+prior to signaling an entrance.
+- `Fixed-Percentage` will use the percentage amount indicated in the `Portfolio Allotment` ﬁeld as
+the percentage of available funds to use when calculating the position size. Additionally, with the
+`Fixed-Percentage` choice, you can set the `Max Sizing Limit` if desired, which will ensure that no
+position will be entered greater than the amount indicated in the ﬁeld.
+Position Sizing - Fractional Share Sizing
+If the underlying instrument supports it (typically only cryptocurrencies), share sizing can be
+fractionalized. If this is done, the resulting position size is rounded to 4 digits. This means any
+position with a size less than `0.00005` will be rounded to `0.0000`
+Note: Ensure     that the underlying instrument supports fractional share sizing prior
+to initiating.
+Position Sizing - Max Sizing Limit
+As discussed above, the `Max Sizing Limit ` will determine:
+- The position size for every position, if `Sizing Method : Fixed-Share ` is selected, or
+- The maximum allowed size, regardless of available capital, if `Sizing Method : Fixed-Percentage`
+is utilized.
+Note: There is an internal maximum of 100,000 units.
+
+Position Sizing - Initial Capital
+Note: There are 2 `Initial Capital` settings; one in LTA's settings and one in the `Properties` tab.
+Ensure these two are the same when doing backtesting.
+The initial capital ﬁeld will be used to determine the starting balance of the strategy, and
+is used to calculate the internal data reporting (the data tables).
+
+
+
+
+Position Sizing - Portfolio Allotment
+
+
+Liquidity Trading Algorithm – Handbook                                                                  6
+You can specify how much of the total available balance should be used when calculating the
+share size. The default is 100%.
+
+Feature – Data Table Information : Position Information
+The Liquidity Trading Algorithm (LTA) can provide real-time information regarding the current
+position, if available. This data table can be toggled on and off in the Settings. The information
+provided by the data table is:
+
+
+ Text                Information
+
+
+ Position Duration   Displays the position duration in DD:HH:MM format.
+
+ Side                If the position is Long / Short.
+
+ Size                The position size.
+
+ Entry Price         The price the underlying was when the entry order was sent (but not necessarily
+ ($)                 sent or accepted)
+
+ Current Price       Displays the current underlying price and the percent-difference between said price
+ (% Dif.)            and the entry price.
+
+ Max Profit          Displays the max profit achieved since the position has been opened in both $ and
+ ($ / %)             % terms.
+
+ Current PnL         Displays the current PnL of the open position in total in both $ and %-terms.
+ ($ / %)
+
+
+The table can be customized in several ways:
+   -    Settings – Position Info Table – Location :               Location
+   -    Settings – Position Info Table – Text Size :              Text Size
+   -    Settings – Position Info Table – Text Color :             Text Color
+   -    Settings – Position Info Table – Background:              Background Color
+
+
+
+
+Liquidity Trading Algorithm – Handbook                                                                     7
+Feature – Data Table Information : Strategy Performance Data
+The Strategy Performance Data provides real-time updates on the overall strategy performance
+and is displayed within a customizable text-output box.
+Note: Toggling the Strategy Performance Data text output is controlled via `Settings – Display
+Position Data Table`
+ Text                   Information
+
+
+ Initial Equity         Displays the initial equity the algorithm started with.
+ ($)
+ Current Equity         Displays the total current equity value, including unrealized PnL and position
+ ($)                    equity.
+
+ Net Profits            Displays the net, realized profits obtained since inception in both $ and $ terms.
+ ($ / %)
+ Long / Short / Total   Displays the Long, Short, and Total amount of closed trades.
+ Trade Count
+ Profitability          Displays the ratio of profitable trades to the total number of trades closed.
+
+ Avg. Profit / Loss     Displays the average amount (in $ and %-terms) of profit or loss per trade of said
+ per Trade ($/%)        type, respectively.
+
+ Max Runup              Displays the maximum potential profit achieved from all opened trades.
+ ($/%)
+ Max Drawdown           Display the maximum potential downside achieved from all opened trades.
+ ($/%)
+ Return-Over-           Display the ratio of
+ Max-Drawdown
+                                                     𝑁𝑁𝑁𝑁𝑁𝑁 𝑅𝑅𝑅𝑅𝑅𝑅𝑅𝑅𝑅𝑅𝑅𝑅𝑅𝑅𝑅𝑅 𝑃𝑃𝑃𝑃𝑃𝑃𝑃𝑃𝑃𝑃𝑃𝑃
+                                                                                          𝑥𝑥 100
+                                                        𝑀𝑀𝑀𝑀𝑀𝑀 𝐷𝐷𝐷𝐷𝐷𝐷𝐷𝐷𝐷𝐷𝐷𝐷𝐷𝐷𝐷𝐷
+
+The table can be customized in several ways:
+    -   Settings – Strategy Performance Data – Location :                                Location
+    -   Settings – Strategy Performance Data – Text Size :                               Text Size
+    -   Settings – Strategy Performance Data – Text Color :                              Text Color
+    -   Settings – Strategy Performance Data – Background:                               Background Color
+
+
+
+
+Liquidity Trading Algorithm – Handbook                                                                       8
+Feature - Text Output
+In addition to the data table, LTA also provides real-time output regarding its performance within
+the text output. The text outputs are listed below:
+>> Checking conditions ….
+This message indicates that LTA has started checking liquidity conditions. This will only occur at
+the end of a candle, just prior to the start of the new candle. If no additional text follows the
+message, it means there were no changes noted and no actions required.
+>> Position entry signaled …
+This is the general message indicating that LTS is signaling that conditions are conducive to
+opening a new position.
+Entry order created for <quantity> @ <price of underlying>
+This message indicates that LTA has created an order to enter the underlying at the speciﬁed
+price with the speciﬁed quantity.
+>> Entry Order Interrupted – Wait Conﬁguration Active – Waiting <count> out of <total>
+This output indicates that an entry order was put on hold due to a conﬁgured wait setting. The
+number of bars that have been waited are included in the count amount, and the total is the value
+set in the settings.
+>> New position entry prevented – Trade Side Restriction
+This output indicates that the given entry order was prevented from being sent due to the
+conﬁgured trade side restrictions.
+>> New position < `<amount>` > entered at @ <price>
+This output indicates that the order that was created has passed all checks and sent to the
+market.
+Note: This does not mean that the position has been entered, if the algorithm is connected to a
+paper account or any other external account. The message only indicates that per LTA (on
+TradingView), the position has been entered.
+>> Exit order created for: qty <amount>, proﬁt: <amount $/%>
+This message indicates that an exit signal was produced for the given quantity. The output also
+lists the proﬁt amount (position for net proﬁts, negative for net losses) in both nominal and
+percent terms.
+>> Exit Order Interrupted – Wait Conﬁguration Active – Waiting
+This indicates that although LTA signaled any open positions should be exited, there is a
+conﬁgured `Impose Wait` that is preventing the exit.
+>> Position has been Exited … Resetting states and counts …
+
+
+
+Liquidity Trading Algorithm – Handbook                                                          9
+This message indicates that any open positions have been closed and assures us that the relative
+counts and algorithm states have been reset to reﬂect this.
+>> Take Proﬁt Activated … sending immediate exit signal …
+This message indicates that the take-proﬁt amount has been reached, and the conﬁgured take-
+proﬁt has now activated with an immediate exit signal being sent.
+>> Stop Loss Activated – sending immediate exit signal …
+If the stop-loss is activated, this message will appear. The order will be indicated on the chart as
+“Stop-Loss Exit”.
+>> Trailing Stop Loss Activated – sending immediate exit signal …
+As above, if the trailing-stop loss downside loss threshold is reached, this output will appear as
+LTA signals an exit.
+>> AM protocol activated … exiting …
+This message indicates that the Additional Monitoring System has ﬂagged conditions as
+unsuitable for the open position and so an exit signal is sent.
+These exits appear on the chart as “Early Exit”.
+>> AM protocol prevented entry … waiting …
+This indicates that although LTA signaled liquidity is conducive to a new position, the AM system
+prevented LTA from opening a new position.
+>> AM protocol disabled … entering position ….
+This indicates that LTA is no longer being restricted by the AM system and is preparing to enter
+into a new position.
+
+Feature – Patches and Updates
+Occasionally and when required, LTA will undergo updates. When LTA updates, the patch notes
+will indicate if it is a critical update or not. A critical update is one that ﬁxes or patches a core
+component of LTA’s behavior or performance.
+When a patch is noted as critical it is highly recommended that all running LTA algorithms be
+updated. This means re-creating the algorithm and submitting a new alert.
+If the update is not a critical update that affects a core component, a notice will go out with the
+anticipated update date. It is recommended but not required to update alerts with non-critical
+updates as they are usually quality-of-life ﬁxes, but it may be worth re-creating them on the charts
+for whatever said ﬁxes are.
+
+
+
+
+Liquidity Trading Algorithm – Handbook                                                            10
+Settings
+LTA is designed to offer as much ﬂexibility as possible when modeling the navigation through the
+markets, and as such, it has a number of important settings and conﬁgurations to review. The
+settings listed below are for LTA only and not for TradersPost or other connection conﬁgurations.
+
+
+
+Settings -- User Agreement
+   -   Important! Mandatory
+   -   Options: On / Off
+   -   Default: Off
+The User Agreement outlines the agreement between the User and Deep Dive Stocks and is a
+required parameter before the algorithm will start displaying values. The agreement discusses
+your acknowledgement of risk and represents your expressed aﬃrmation to your agreement
+thereof.
+
+The Use Agreement reads:
+By toggling this setting on [the user agreement], you agree that the LTA Algorithm is for
+educational purposes only, and its use is not intended or permitted with any live-account. You
+agree that there is no guarantee of proﬁt, ﬁctional or otherwise. You acknowledge the inherent
+risk with participating and, or, observing the markets, and you agree that you are solely
+responsible for imposing said risk upon yourself. You agree to hold Deep Dive Stocks harmless,
+from and against any and all claims, liabilities, losses, damages, costs and expenses, including
+attorney’s fees arising out of or related to the use of this or any of Deep Dive Stocks’ algorithms,
+data, metrics, tools or any other product or service provided by Deep Dive Stocks. Additionally,
+your toggling of this button is acknowledgement that nothing contained herein or produced
+herefrom is designed to be investment advice but is merely a mathematical expression of
+variously publicly available data within the market.
+
+
+
+Settings -- Blank Text Output
+   -   Options: On / Off
+   -   Default : Off
+The starting text box includes a default message which can be toggled off, leaving an empty text
+box by selecting this box.
+The default message reads:
+
+Hello! Welcome to the Liquidity Trading Algorithm – otherwise known as The Robo! To get started,
+be sure to read the User Agreement in the Settings page and then press the agree button to turn
+the robot on. Please be sure to read all of the descriptions in the settings to familiarize yourself
+
+
+
+Liquidity Trading Algorithm – Handbook                                                           11
+with the algorithm’s functionality. If you have any questions at any point, please do not hesitate to
+reach out, I can be reached at Justin@DeepDiveStocks.com
+
+
+Settings -- Backtesting Start Date
+   -   Default: 2023-06-01 12:00
+The date that the algorithm turns on. Prior to this date, no assessments or actions are taken or
+performed. This input can be set to future date values, if desired. The algorithm will perform its
+ﬁrst assessment after the close of the candle indicated by the date and time selected.
+Note: If using TradingView’s Deep Backtesting functionality ensure that this setting is set
+appropriately. LTA will not do anything prior to the date and time set here.
+
+
+
+Settings – Assessment Style
+   -   Default: Balanced
+   -   Options: Aggressive, Balanced, Conservative, Diamond
+The Assessment Style is the main conﬁguration for the algorithm as it dictates how it handles its
+observations. The settings are designed to balance sensitivity to new change with speciﬁcity
+(conﬁdence) of the interpretations. An algorithm can either be sensitive or speciﬁc but rarely both.
+In the case of LTA, `both` is best achieved with `Balanced`.
+The algorithm will become more sensitive to change (perhaps it is better to think of it as “eager
+to change outlooks”) with the `Aggressive` setting and it will be least sensitive (or “less eager”) to
+change outlooks (unless the data are speciﬁc ) with the `Diamond` setting.
+Note: This setting also affects the Settings – Additional Monitoring Systems.
+
+
+
+Settings – Impose Wait Type
+   -   Important! Does not affect Stop-Losses, Trailing-Stop-Losses or Take-Proﬁt signals.
+   -   Important! Does affect Additional Monitoring Systems.
+   -   Default: None
+   -   Options: None, Wait, Exit-Wait
+LTA assesses and produces output at the end of each candle-interval for which it is toggled on,
+and if a position is indicated, the signal to do so occurs at the start of the subsequent candle. If,
+however, a delay is desired, it would be imposed here.
+If an entry signal is generated while a wait is imposed, the signal is withheld from the market and
+a count begins, and each closed candle increases the count by 1. After waiting the speciﬁed
+number of candles, the algorithm re-assesses conditions, and, if the original signal is still `valid`,
+
+
+Liquidity Trading Algorithm – Handbook                                                             12
+the signal is set. If conditions changed and the signal is no longer valid for the liquidity condition,
+the signal is dropped, and the counts are reset.
+The two wait styles are:
+   -   Wait
+       Important!:Does not affect Stop-Losses, Trailing-Stop-Loses or Take-Proﬁt signals.
+       Important!: Does affect Additional Monitoring Systems.
+       This will impose a wait on both entry and exit signal generation by the speciﬁed number
+       of candles.
+
+   -   Exit-Wait
+       Important: Does not affect Stop-Losses, Trailing-Stop-Loses or Take-Proﬁt signals.
+       Important!:Does affect Additional Monitoring Systems.
+       `Exit-Wait` will not wait to exit a position if the algorithm indicates as such but will wait to
+       enter a new position until the speciﬁed number of bars have passed.
+
+
+
+Settings – Allowed Trade Directions
+   -   Default : Both
+   -   Options: Both, Long-Only, Short-Only
+The algorithm can have its trade direction restricted, if desired. `Both` will allow LTA to enter into
+long and short positions; `Long-Only` will restrict LTA to only entering into long positions, and
+`Short-Only` will restrict LTA to enter into short positions.
+
+
+
+Settings – Position Sizing Method
+   -   Default: Fixed-Share
+   -   Options: Fixed-Share, Fixed-Percentage
+When calculating size, LTA can either always use a speciﬁed number of equity (be it contracts,
+shares, crypto, etc.) or it can calculate the size by the available portfolio amount and the current
+underlying price.
+   -   Fixed Share
+       Important:
+              The ﬁxed-size sizing algorithm does not pre-verify if the available funds are present
+              before conﬁguring an entry signal.
+       Requires: Setting – Max Sizing Limit
+       This style of sizing uses the quantity speciﬁed in the Setting – Max Sizing Limit ﬁeld as
+       the position size, for every position.
+
+
+   -   Fixed-Percentage
+
+Liquidity Trading Algorithm – Handbook                                                              13
+       Requires: Setting – Portfolio Allotment (%)
+       Optional: Setting – Use Fractional Share Sizing
+       Optional: Setting – Max Sizing Limit
+       The ﬁxed-percentage algorithm will calculate the amount of available funds and take the
+       percentage amount speciﬁed in Setting – Portfolio Allotment as the total available funds
+       for calculating a new position.
+
+       Note: if Setting – Fractional Share Sizing is off then the resulting decimal is ﬂoored to the
+       nearest integer.
+       Note: The Setting – Max Sizing Limit will always over-ride either sizing schema.
+
+
+
+Settings – Fractional Share Sizing
+   -   Important!:
+       Ensure that the underlying can support fractional share sizing. This is typically only
+       cryptocurrencies.
+   -   Requires: Setting – Position Sizing Method : Fixed-Percentage
+   -   Default : Off
+   -   Options: On, Off
+Position sizes are integers unless speciﬁed here, in which case the calculated value is rounded to
+4 decimal places.
+Note: This means share sizes 0.000049.. and lower will be rounded to 0.
+
+
+
+Settings – Max Sizing Limit
+   -   Default: 100
+   -   Max: 10,000
+   -   Min: 0.0001
+Speciﬁes the maximum quantity of underlying that can be held. Any sizing attempts that exceed
+this value will be re-set to this value.
+
+
+
+Settings – Initial Capital
+   -   Important!:
+       If you are backtesting, ensure you set the `Initial Capital` ﬁeld within the `Properties` tab
+       to the same value as within the `Inputs` tab.
+   -   Default : $10,000.00
+Conﬁgure the initial balance for the algorithm to utilize in its calculations.
+
+
+Liquidity Trading Algorithm – Handbook                                                           14
+Note: If using any backtesting functionality, there is another `Initial Capital` ﬁeld within the
+`Properties` tab that will need to be set to the same amount for accurate reporting percentages.
+
+
+
+
+Settings – Portfolio Allotment
+   -   Required by: Setting – Position Sizing Method : Fixed Percentage
+   -   Default: 100.00%
+   -   Max: 100.00%
+   -   Min: 1.00%
+Conﬁgure the percentage of available capital to utilize when calculating new position sizing.
+
+
+
+Settings - Enact Additional Monitoring Systems
+   -   Important!:
+       The Additional Monitoring System (AMS) signals will be delayed by Setting – Impose Wait
+       Type.
+   -   Default : Off
+   -   Options: On / Off
+The additional monitoring system is designed to provide an additional layer of risk management
+via the activation of an additional set of measurements which look to measure deteriorating
+liquidity conditions.
+
+Settings – Conﬁgure Take Proﬁt
+   -   Important!:
+       Take proﬁt signals are not affected by Setting – Additional Monitoring System
+       Take proﬁt signals are not affected by Setting – Impose Wait Type
+   -   Default: Off
+   -   Options: On / Off
+If selected, then the value supplied in the integer ﬁeld will be set as the proﬁt (in percentage terms)
+that the exit signal will be sent at.
+Note: The Take-Proﬁt signal does not wait for the end of the candle to output an exit signal but
+will be generated said signal when it occurs.
+
+
+
+Settings – Conﬁgure Stop Loss
+   -   Important!:
+       Stop-Loss signals are not affected by Setting – Additional Monitoring Systems
+
+Liquidity Trading Algorithm – Handbook                                                              15
+       Stop-Loss signals are not affected by Setting – Impose Wait Type
+   -   Default: Off
+   -   Options: On / Off
+If selected, then the value supplied in the integer ﬁeld will be set as the loss (in percentage terms)
+that the exit signal will be sent at.
+Note: The Stop-Loss signal does not wait for the end of the candle to output an exit signal but will
+generate said signal when it occurs.
+
+
+
+Settings – Conﬁgure Trailing-Stop-Loss
+   -   Important!:
+       TSL signals are not affected by Setting – Additional Monitoring Systems
+       TSL signals are not affected by Setting – Impose Wait Type
+   -   Default: Off
+   -   Options: On / Off
+If selected, then a trailing stop loss will be conﬁgured with the supplied Setting – Conﬁgure TSL :
+Proﬁt and Setting – Conﬁgure TSL: Limit.
+
+The TSL will activate once the proﬁt-threshold has been reached and it will signal an exit if
+subsequent to the proﬁt-threshold being reached, the Setting – Conﬁgure TSL – Limit amount
+speciﬁes the percentage of loss (from the max proﬁt reached) to set the exit signal at. If an
+amount greater than the percentage speciﬁed is loss (from the proﬁts), the exit signal is sent.
+Setting – Conﬁgure Trailing-Stop-Loss : Proﬁt
+The proﬁt amount is the percentage of proﬁt the position need to obtain prior to activating the
+downside monitoring. If the position never reaches or exceeds the percentage of proﬁt speciﬁed,
+then the TSL never activates.
+Setting – Conﬁgure Trailing-Stop-Loss : Limit
+Once the proﬁt-threshold is reached, the Setting – Conﬁgure Trailing-Stop-Loss : Limit amount
+speciﬁes the percentage of loss threshold for downside. If this threshold is reached, then the
+position is exited.
+
+Settings – Display Position Data Table
+   -   Default: On
+   -   Options: On / Off
+   -   Required by: Position Info Table – Placement
+   -   Required by: Position Info Table – Text Size
+   -   Required by: Position Info Table – Text Color
+   -   Required by: Position Info Table – BG Color
+   -   Required by: Text Console – Placement
+
+Liquidity Trading Algorithm – Handbook                                                             16
+   -   Required by: Text Console – Text Size
+   -   Required by: Text Console – Text Color
+   -   Required by: Text Console – Background Color
+Determines if the data table displaying the current position information is displayed or not. Details
+about the information included in the table is found in Features – Position Information.
+This also controls the `Strategy Performance Data` output.
+
+
+
+
+Liquidity Trading Algorithm – Handbook                                                            17
+Backtesting
+Back-testing with the Liquidity-Trading Algorithm (LTA) is straightforward but there are a few
+items to keep in mind to ensure you are achieving the clearest view possible. This section will go
+over a few of those key items as well as discuss potential troubleshooting that may arise.
+
+Standard Conﬁguration
+When conﬁguring LTA for your backtest, ensure that the initial capital matches on both the `Inputs`
+page of the settings and within the `Properties Page`.
+Note: There are additional settings within the `Properties Page` that are discussed within the
+`Additional Settings` section. For a standard backtest, it is not recommended to change any other
+settings.
+
+Once LTA is conﬁgured and the initial balances match, toggling the `User Agreement` will cause
+the algorithm to automatically run from the date you selected in the `Backtesting Start Date`.
+
+Deep Backtesting
+If you are using TradingView’s Deep Backtesting feature, then you need to ensure that the
+`Backtesting Start Date` matches the Start Date selected for the Deep Backtesting. LTA will only
+analyze and trade once its internal `Backtesting Start Date` has been met.
+
+Standard Output
+In addition to LTA’s outputs, TradingView offers several key metrics associated with backtesting
+to monitor. These are found within the `Overview`, `Performance Summary`, `List of Trades` and
+`Properties` Tab.
+Within the `Performance Summary` tab, common metrics including the Sharpe Ratio and Sortino
+Ratios are calculated and provided by TradingView.
+
+Troubleshooting
+Not all backtesting is created equal, and so here are a list of common issues and (hopefully) their
+corresponding solutions:
+
+
+
+
+Liquidity Trading Algorithm – Handbook                                                          18
+ Issue                  Solution / Steps
+
+
+ Share Limit            This means the backtest has exceeded its allotted amount of trades
+ Exceeded               within the trading period (9,000). There are several ways to solve this,
+                        depending on the desired alteration:
+
+                        Increase the interval: Increasing the interval will decrease the effective
+                        time-span and thus reduce the total amount of trades. This will likely
+                        have a high impact on changing performance.
+
+                        Adjust the Assessment Style: If LTA is too aggressive, it may alternate
+                        too often between outlooks. Consider adjusting the assessment style
+                        to minimize such adjustments, if possible (typically by moving more
+                        conservative).
+
+                        Invoke Trade Side Restriction: Consider restricting LTA to only-long or
+                        only-short to reduce trade amounts.
+
+                        Remove Additional Monitoring: The AM-system often will cause more
+                        trades to be entered (and thus exited). If the AM-system is on, consider
+                        turning it off.
+
+                        This can happen for a variety of reasons. Check that:
+ The strategy did not
+ produce any                -   LTA isn’t already in a position;
+ trades during the
+ specified period.          -   Available balance is sufficient for the selected sizing settings;
+
+                            -   the selected trade-sizing method is appropriate;
+
+                            -   the `Backtesting Start Date` has been met; and that
+
+                            -   there is no trade-restriction in place.
+
+                        If none of these settings seem to be inhibiting the algorithm, check the
+                        text output. If it does show activity, investigate to see if LTA is indicating
+                        why there have been no positions.
+
+                        If it does not show any activity, then ensure that you have selected the
+                        User Agreement and are configuring the correct LTA (i.e.: that there are
+                        not multiple LTAs on your chart).
+
+
+
+
+Liquidity Trading Algorithm – Handbook                                                              19
+Connecting LTA with External Accounts
+LTA can be conﬁgured and set up to communicate with external APIs. In this section, we will go
+over the general method by with LTA can communicate with external APIs, and then take a
+closer approach at a familiar service TradersPost 1.
+However, before we do that, there are some very important concepts to keep in mind when
+doing so when connecting LTA to an external system:
+
+Keep in mind:
+      -    Once an alert is created, TradingView copies the conﬁgurations you have set, and sends
+           them to TradingView’s servers as a copy. This means once you create an alert, any change
+           you make to LTA requires that you create a new alert.
+      -    Once you create an Alert, since it exists on TradingView’s servers, it is worth saving the
+           chart so that you can easily reference the same algorithm that is running. Otherwise, you’ll
+           have to manually re-create the chart each time you want to check on the robot.
+      -    Ensure that your JSON message is correct.
+      -    Ensure that your API URL is correct.
+      -    DO NOT share your API URL with anyone. Deep Dive Stocks will never ask you for it ever.
+      -    Communication is one-way. LTA can communicate externally but it cannot receive any
+           messages back, and thus, LTA cannot conﬁrm any information with any external accounts.
+
+General Method
+In general, once a Strategy has been loaded and you are ready to have LTA start sending
+commands, the ﬁrst step is to `Make an Alert`. Once pressed, you will see a box with settings.
+There are 2 important settings that must be conﬁgured in order for LTA to communicate with the
+external world.
+
+General Method – JSON message
+Ensure the JSON message in the `Message` text input is a valid input for your receiving service
+or end-point. For TradersPost, the following JSON works:
+                                                                {
+
+                                                     “ticker” : “{{ticker}}”,
+
+                                             “action”: “{{strategy.order.action}}”,
+
+                                           “quantity”:”{{strategy.order.contracts}}”,
+
+                                                      “price”:”{{close}}”,
+
+                                                     “time”:”{{timenow}}”
+
+                                                                }
+
+If there are additional arguments required, visit the TradingView PineScript manual (here).
+
+
+
+1
+    No aﬃliation, it’s just the service I use so I’m familiar with its settings.
+
+Liquidity Trading Algorithm – Handbook                                                              20
+General Method – Webhook URL
+The Webhook URL is the API end-point of your recipient service. This is a speciﬁc URL for your
+speciﬁc algorithm and should not be shared with anyone.
+                ! Anyone with that URL will be able to trade the associated account !
+In combination, the JSON is the command LTA sends to the associated webhook URL. Continuing
+on, a closer look at speciﬁc settings will be explored with the TradersPost service.
+
+TradersPost Conﬁgurations
+TradersPost is a service that acts as a mediator between LTA and a Broker. TradersPost helps
+translate and conﬁgure the relevant JSON data with convenience so that we don’t have to. In
+addition to this, TradersPost has additional settings and conﬁgurations that can alter how LTA
+behaves.
+
+TradersPost can be accessed here: https://app.traderspost.io/
+The overall steps for connecting LTA with TradersPost are as follows:
+1 – Create a Strategy to match the underlying you have selected in TradingView
+2 – Create a Subscription. For the subscription, DDS uses but doesn’t necessarily recommend in
+any fashion, the following settings:
+       2.a—     Use Trade Signals
+                This is a global switch to ensure TradersPost conveys the signals only from LTA.
+
+       2.b—     Auto Submit selected (this requires paid account).
+                Otherwise, you will have to manually approve all of the trades.
+       2.c --   Disable Side Swapping
+                This means that exit orders are exit orders, and entry orders are entry orders and
+                they won’t mix with each other.
+       2.d --   Ensure the `Connected Broker` is conﬁgured (this requires connecting your broker
+                to TradersPost if desired).
+The remaining conﬁgurations and settings can be set-up as desired (Alerts, Cancel settings, etc.).
+Just remember that LTA will not be “aware” of any of TradersPost’s activities. This means that if
+TradersPost cancels an entry, for instance, LTA will not be alerted and may still consider the
+algorithm as being in said position.
+
+
+
+
+Liquidity Trading Algorithm – Handbook                                                         21
+Frequently Asked Questions
+How can I get ahold of you?
+          I can be contacted at Justin@DeepDiveStocks.com with any questions / concerns /
+          comments, or if you just want to say hi!
+
+What type of securities can LTA operate on?
+        LTA can operate on any equity that LDPM and LDPS can be calculated on. This includes,
+        standard equities, futures, cryptocurrencies and technically forex2.
+
+Can I have multiple LTA algorithms running simultaneously?
+       Yes – you can create additional running LTA algorithms by creating additional Alerts.
+
+Can I turn the algorithm on and off?
+       Yup! Once the alert is created, in the Alerts pane, you can turn the Algorithm on or off,
+       depending, as it suits.
+
+Can I use fractional share sizing on all equities?
+       Usually, no. TradingView usually restricts fraction share sizing to cryptocurrencies, despite
+       services offering fractional equity sizing (i.e.: Robinhood).
+
+Can I “tell” the algorithm to do anything?
+       No – once LTA is set, it cannot accept any commands. The only way to alter LTA’s behavior
+       is to turn it off or to create a new version of the algorithm.
+
+Does LTA need to be integrated with an external service?
+       No – you don’t need any external services in order to utilize LTA.
+
+Does anyone have access to LTA’s trades, logs or data besides me?
+       Deep Dive Stocks does not collect nor does Deep Dive Stocks have the ability to collect any
+       information or data regarding LTA’s use by other users. However, Deep Dive Stocks can not
+       speak on behalf of TradingView or any external services with regards to monitoring,
+       collecting, or analyzing LTA’s behavior.
+
+What kind of TradingView account do I need?
+       A free account is suﬃcient for LTA – however, you may ﬁnd the paid features to be
+       worthwhile.
+
+
+
+
+2
+    No testing has been done on LTA and forex but LDPM and LDPS both work and so LTA should as well.
+
+Liquidity Trading Algorithm – Handbook                                                                 22
+Can I place LTA, LDPM and LDPS on the same chart?
+    Yup! The only thing preventing multiple applications of indicators and/or multiple
+    applications of the same indicator is your TradingView subscription.
+
+Can multiple LTA’s use the same paper account?
+    Yes but there are a few caveats to keep in mind if connecting multiple LTAs (multiple alerts)
+    to the same API URL (same account):
+    1) LTA is conﬁgured to exit all positions whenever an exit signal is sent.
+    2) TA cannot receive communication from external sources, and as such, each LTA will be
+       unaware of the other LTAs using the same account. Balance management between the
+       three will have to be manually conﬁgured by you.
+
+I think I found a bug! What do I do?
+    Deﬁnitely let me know! If you can, please do the following:
+       1) Go to the Settings for LTA that caused the error or suspected bug,
+       2) Select “Debug”
+       3) Take a screen shot of the Debug table
+       4) Email Support@DeepDiveStocks.com and include the screenshot of the Debug table
+          and a short description about the error or bug.
+    That’s all! I’ll get back to you when I receive the report!
+
+Should the chart be set to Regular Trading Hours or Electronic Trading
+Hours?
+    Typically the chart set to `Electronic Trading Hours` provides the “truest” showing of liquidity
+    as time occurs, and this may be beneﬁcial in any underlying for which you want to monitor
+    the pre-, and post-market moves. If, however, you are not interested in those views, and would
+    prefer LTA group the pre-, and post-market be included in the market-hours data (the ﬁrst
+    candle), then `Regular Trading Hours` is more appropriate.
+
+I’m having some trouble with TradersPost, is there more information
+somewhere?
+    Yup! TradersPost has a lot of resources that are ready for the referencing. You can ﬁnd them
+    here: https://docs.traderspost.io/docs
+
+
+
+
+Liquidity Trading Algorithm – Handbook                                                           23
+

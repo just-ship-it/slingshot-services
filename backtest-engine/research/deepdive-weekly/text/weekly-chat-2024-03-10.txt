@@ -1,0 +1,35 @@
+                                         Patch Notes & Updates
+                                              2024-03-11
+Dashboard Fixes
+   -     A bug has been fixed when determining the appropriate date for the Dashboard. This should stop
+         the Dashboard from switching over earlier than expected, causing downstream issues and
+         persistent errors.
+   -     The report-list will now regenerate more frequently to handle delayed-report-uploading times.
+Macro Report Fixes
+   -     The Macro Report LDPM Crossover table has been reformatted for the new LDPM.
+   -     The Macro Report is getting a bit of a face-lift with LDPM. The LDPM-Price graphs are missing
+         from the report for now.
+   -     Fixed a bug causing Macro Report to not render appropriately.
+   -     Uploaded the missing Macro Reports.
+Data Processing Updates
+   -     Small improvement to the start-time for data processing.
+   -     Market Scan : LDPM crossovers are now calculated via LDPM V.2 with KF smoothing and a
+         lookback of 89.
+   -     Market Scan - Historic Data : Market Scan results have been retro-actively updated for the new
+         LDPM values. These scan results will be re-uploaded shortly.
+   -     Report Generation : Better code architecture is preventing large amounts of corrupted/missing
+         reports during the PDF generation process, incurring a drastic speed increase and the reduced
+         need for PDF verification processes.
+Next Steps:
+         The next (several) week(s) will be focused on:
+                Getting LDPM V.2 into the graphs on the Dashboard,
+                Updating the LDPM Primer & LDPM Video,
+                Updating Market Scan on Dashboard to incorporate more LDPM queriable data,
+                Updating Market Scan Primer appropriately, and
+                Performing a “data sweep” to ensure fidelity of data throughout system.
+
+
+Happy Trading,
+
+Justin
+

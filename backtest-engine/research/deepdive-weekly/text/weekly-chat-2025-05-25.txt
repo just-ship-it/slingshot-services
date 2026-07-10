@@ -1,0 +1,281 @@
+Weekly Chat 2025-05-26
+
+
+                                          Main Points
+
+
+
+    -   VoEx-daily has moved out of stability.
+    -   Gamma-hedging heatmaps are relatively stable with local and persistent purchasing
+        supported noted on $QQQ.
+    -   Dealer-Long Put activity remains at zero.
+    -   Market-Wide Gamma Squeeze data show a spike in GS accompanied with a significant
+        reduction in GTM.
+    -   LDPM/S studies showcase near-term bearish liquidity with downside targets around
+        3.5% for $ES.
+    -   Prudency suggests bracing for downside.
+
+                                          SUMMARY
+
+
+
+          VoEx-daily has left stability yet remains north of the Propagation Zone, this
+          brings with it tidings of downside. These tidings come with gamma
+          hedging environments that are technically supportive, with sparse
+          purchasing support for $SPY and $QQQ’s wall of p.
+
+          The rest of the data, however, are not quite as cheery. The Market-Wide
+          Gamma Squeeze (MWGS) data showcase a 20% growth week-over-week
+          in the market’s gamma squeezes, and GTM has taken a significant plunge
+          into negative territory. These data paint a picture with more gamma
+          squeezes than current, which in turn, is a future more bearish than present.
+
+          LDPM and LDPS studies on $ES and $VX showcase near-term bearish (or
+          bullish, in $VX’s case) and longer-term hints at the return to substantial
+          and protracted liquidity.
+
+          Taken together the data paint a bearish picture with hints of magnitude.
+
+
+
+
+Deep Dive Stocks – Weekly Chat          for the week of               2025-05-26 to 2025-05-30
+                                                  DETAILS
+
+
+
+
+Hello every-body!
+Last week, we left off with continued bearish notions, despite the apparent rally rallying around
+us, and to the market’s benefit, it kept with our outlooks. The week saw $SPY move -2.53% while
+$QQQ moved -2.45%; pretty decent downside moves! This means we should bust out the handy-
+dandy EPR chart, and so let’s do that now:
+
+ Symbol               T+5 Anticipated T + 5 Realized T + 5 Ratio T+5             %-
+                      Move (±%)       Move (%)       (Real / Ant.) magnitude Dif.
+
+
+ $SPY                   2.14                    2.53          1.18               1.67
+
+ $QQQ                   2.57                    2.44          0.95               4.78
+
+
+
+Never mind! The week’s EPRs and the realized price movements are well aligned. Thus, we can
+move right along to the hedging heatmaps:
+
+
+
+
+Above, we can see the market’s rapid descent into purchasing support (fueled by the hefty selling
+pressure throughout) which helped, it seems, to level-off the downside for the latter-half of the
+week.
+Taken together, it seems our journeys onwards will likely not involve the spectre of ~mean
+reversion~ due to the close adherence to the EPRs, but instead will mainly be focused on the
+question we prepared last week for this week: is this downside the sign of a dip in an otherwise-
+healthy environment or is this the start of a new leg-down.
+A hefty task set forth, so let’s get started!
+
+
+Deep Dive Stocks – Weekly Chat              for the week of          2025-05-26 to 2025-05-30
+New Beginnings or old endings?
+Starting as usual with VoEx, we see:
+
+
+
+
+Last week, we sat around the campfire looking at VoEx-daily’s enstallment within Stability, and
+thought that it might look as though a downwards spike might be starting. This week confirmed
+this expectation in part – VoEx-daily has moved rapidly out of stability, which brings with it
+unstable thoughts. The ideal outlook (convenience-wise for me, at least) would have been that it
+falls through into the Propagation Zone (which would make the outlook that-much easier to form)
+but it has instead entered the neutral area and paused.
+This does elevate the risk of continued downside but doesn’t explicitly state “downside” just yet
+– perhaps in the next day or two VoEx-daily re-enters the P.Z., then at least the near-term
+downside outlook can be cemented, leaving only concern with the more longer-term views.
+To this end, the longer-term view per VoEx is currently still bullish as it extends into stability.
+
+The take-away here is that the apparently-forming downside is still a local downside, perhaps
+worthy of “buy the dip” mentality but let’s check on the other data before we commit.
+Starting then with other data, we find the gamma hedging heatmaps:
+
+
+
+
+Much better than last week’s! $SPY’s environment has resumed a more stable and supportive
+arrangement with local purchasing support. Gamma neutrality for $SPY seems most reachable
+
+
+
+Deep Dive Stocks – Weekly Chat             for the week of                2025-05-26 to 2025-05-30
+in the direct [$+ , 𝐼𝐼𝑉𝑉 +] route or the [$− , 𝐼𝐼𝑉𝑉 − ]; mentally this works to ensure that the market will go
+in neither of those directions.
+$QQQ’s environment remains stubbornly unchanged but we see current conditions are local and
+persistent purchasing support, as opposed to the selling pressure noted from last week. The lack
+of gamma-neutrality obfuscates the ability to discern a reasonable, directed direction (or a
+direction that the hedgers would like to wiggle towards [i.e.: gamma neutrality]).
+Together these are relatively supportive environments to find the market in, so long as $SPY
+doesn’t fall below its little ridge of purchasing support.
+Next up, we have the Dealer-Long Putters, let’s see if they’ve joined the party yet:
+
+
+
+
+Nope! Not at all. It appears it might still be too risky to intermediate long puts with zeal. This
+suggests minimal expectation for [$+ , 𝐼𝐼𝑉𝑉 −] in the
+weeks ahead.
+How about the market-wide gamma squeeze data?
+Oh boy! That’s some growth! Not a terrible amount
+but we can see that over the past week, the GS count
+has increased 21% Alongside this is a very
+deepening GTM, which tells us that the flow of
+gamma to the market just got “turned on” and is very
+negative.
+But as with everything, I am dissatisfied with GTM
+still. We’ve recently done some modifications on it
+but I still think its too insensitive to changes. I went
+on a little spree to try to update the algorithm but
+then I remembered (again) that honestly it’s a
+strange one even for me but I think I was able to
+make something a bit more performant! Let’s check
+it out (in fact, I stole some technology from LDPM/S!
+Don’t tell anyone!)
+
+
+Deep Dive Stocks – Weekly Chat                for the week of                  2025-05-26 to 2025-05-30
+                                                            I’ll let you familiarize yourself with
+                                                            the new GTM (the last page will have
+                                                            a full-date GTM chart with $SPY as a
+                                                            reference for you to review).
+                                                            Thankfully the data aren’t too
+                                                            deviant from before, just slightly
+                                                            enhanced and so the outlook is
+                                                            largely the same: there is a sudden
+                                                            surge of short-gamma that has
+                                                            started its journey towards the
+                                                            market.
+                                                            This gives us a bearish outlook for
+                                                            our lives ahead as this insinuates
+                                                            that gamma squeeze growth will
+                                                            start ramping up soon, which itself
+                                                            infers a bearish lifestyle.
+
+Thus, it seems on the longer-term, the data (DLP and GTM) are once-again in modest
+disagreement with VoEx, who sees fit to remain within stability for the time being. We shall see
+who has the last laugh soon enough I believe!
+Moving onwards, let’s check out the updated MWGS data as well!
+
+
+
+
+These data showcase a continued declining Predictive Count Curve (orange; PCC), which gives
+us continued expectations for GS count destruction, but to off-set this discordant opinion we see
+
+
+
+Deep Dive Stocks – Weekly Chat          for the week of              2025-05-26 to 2025-05-30
+PGC (Predictive Growth Curve; purple line) is peeking its head up and is close to crossing the zero-
+barrier!
+This tells us that the breaks that were being applied to the GS growth is now nearing back to zero!
+This suggests the counts are “coasting” in a way, and with the PCC pointed downwards, this
+means they are costing ever-still towards GS count reduction. This gives a tenuously bullish
+outlook, but perhaps we check on them in a few days as GTM’s prints start to manifest within the
+market!
+On the whole, from the data reviewed so far, things look relatively mixed still. On the near-term,
+we have VoEx-daily moving out of stability, and minimal DLP activity which gives pause when
+forming an inclination towards a bullish-bounce following last week’s downside. To counter-act
+this pause, one might well look to longer-term timeframes in order to contextualize the more local
+data. To this end, we see that the longer-term data are mixed as well. VoEx itself says that the
+market’s recent performance was BUPO (bullish until proven otherwise) and has yet to signal the
+“otherwise”, thus giving a wholly bullish outlook. This is counter-balanced against the DLP
+behavior once more, as well as the MWGS data which show the potential start to a GS growth
+spurt, which is known to bring the market’s down. In the middle of all this is $QQQ’s hedging
+environment which is poised to offer purchasing support (briefly) and $SPY’s environment which
+has purchasing support, but is nestled quite close to selling pressure and far away from gamma
+neutrality.
+
+Together this paints a picture of a fragmented market and thus one that is inherently inclined
+towards downside, which I feel is a meta-data point but a worthwhile one nonetheless.
+Thus, the outlook for the week ahead is likely downside to continue and the evidence that this
+downside is not of the “buy the dip” kind, but rather the “downside is resuming” kind is mounting,
+with only VoEx proper delaying the distinction.
+With an overall lean towards downside, let’s check on LDPM/S for $ES and $VX to see if we can
+identify some targets. First up we have $ES (note: LDPS has been reverted back to `Balanced`):
+
+
+
+
+Deep Dive Stocks – Weekly Chat            for the week of              2025-05-26 to 2025-05-30
+Taken together these are some pretty bearish prints for both the longer and shorter time periods!
+Starting at the top-left we find the 90-minute is showcasing pure bearish outlooks as LDPM-
+L5(144) has worked to invert the LDPM stack before a “Bear trap” could even form. It appears on
+the 144-minute (top-right) that a similar situation is unfolding, just slightly slower (things from
+afar appear to move more slowly!) and we find a bear-trap that has failed the LDPM-L6(377)
+support. This gives us a near-term expectation of testing LDPM-L7(610) at $5,600ish, which
+currently sits ~-3.50% down.
+On the more longer timeframes, we see the 987-minute is progressing along the “bearish” path,
+as unless it bounces off of this upcoming LDPM-L6(377) test, we can see it is likely going to be
+firmly en route to the “bearish” highlighted region, from which it will likely be very difficult to
+reverse course!
+Zooming out even more to the 1-Week view, we find a bear-trap that has gotten snagged in its
+bounce on LDPM-L6 (again); without even a slight conversion to a more bullish LDPS outlook (say,
+weak bearish as opposed to just bearish) this bodes poorly for another attempt at overcoming
+LDPM-L6, and points the outloks back down towards a retest of LDPM-L7, at about $5,660.
+
+Taken together, it seems the stage is set for a test of $5,660-$5,600ish! If that occurs by Friday,
+we can indeed see that this will put us in the ~Bearish~ zone (as indicated by the green/blue dot):
+
+
+
+
+Deep Dive Stocks – Weekly Chat           for the week of               2025-05-26 to 2025-05-30
+How nifty would that be! If that happens, we can at least relax a bit as the outlook will largely be
+set.
+But what about $VX? Let’s check it ou
+
+
+
+
+Quite bearish for the market but bullish for VX! We see the shorter-term timeframes, such as on
+the 90-minute, things are almost entirely bullish: LDPM-L5 has worked to maintain itself as a bid-
+support line as it has crossed over LDPM-L6 and LDPM-L7, undermining the notion of “bulltrap”
+in favor of pure “bullishness”.
+
+
+
+Deep Dive Stocks – Weekly Chat            for the week of              2025-05-26 to 2025-05-30
+On the 144-minute timeframe we see a mature bulltrap underway, having tested, stalled and now
+surpassed LDPM-L6. This sets the next target at LDPM-L7, which is currently sitting about 20%
+north of present spot.
+The 987-minute timeframe shows a beartrap that found support along LDPM-L6; technically the
+outlook is a retest of LDPM-L6 (since LDPS is keeping things red) but given the lower-order
+timeframes, one might well be inclined to think this beartrap is soon to dissolve into a recovery.
+If so, this paints another ceiling to test at $30.32, approximately 30% north of current spot.
+On the 1-Week view, we see that things are still in a bulltrap, bullish and without a ceiling!
+Overall, this paints a picture of a market that is poised for another leg down.
+We started out chat today with the overall expectation that we would acquire near-term bearish
+expectations from the data, and it seems this has held true: VoEx-daily has left stability, the MWGS
+data showcase the early signs of a mounting GS problem, continued absence from the DLP folk,
+and LDPM/S for $ES and $VX showcase some robust data prints for near-term downside.
+The main question was if this downside would represent a “buy the dip” opportunity (which would
+require that the market has indeed reversed) or if this was a market being bent and downside
+should resume. The data, for now, appear to agree more with the latter.
+And so, the outlook is downside on the near-term with elevated risk that we are to return to
+substantial and protracted downside in the more far-out futures.
+Happy trading,
+
+
+Justin
+
+
+
+P.S.: I’m going to be taking the Dashboard down for maintenance throughout the week in
+preparation for the update. I will likely being doing this at around midnight – 3am EST but if you
+find the server disconnecting constantly as you are looking about, let me know and I’ll take a
+break!
+
+
+
+
+Deep Dive Stocks – Weekly Chat             for the week of               2025-05-26 to 2025-05-30
+

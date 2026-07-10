@@ -1,0 +1,190 @@
+                                     Weekly Chat 2025-08-04
+
+
+                                           Main Points
+
+
+
+    -   VoEx-daily for both $SPY and $QQQ migrate further towards the Propagation Zone but
+        stopped just short. VoEx itself has increased its downwards trajectory out of stability.
+    -   Gamma hedging environments showcase local and thin gamma neutrality but $SPY
+        finds itself surrounded by selling pressure whereas $QQQ finds itself surrounded by
+        purchasing support. For both, the influence distribution leans towards bearish-neutral
+        week.
+    -   MWGS showcase a substantial increase in GS counts with a deepening GTM. The
+        Predictive Growth Curve is positive.
+    -   LDPM/S for ES showcases bearish liquidity throughout with the reëmergence of the
+        bear-trap on the weekly view.
+    -   Overall, prudency suggest downside with potential target 4% down.
+
+                                            SUMMARY
+
+
+
+           An exciting week. In short, this is likely the manifestation of the instability
+           we’ve been tracking.
+
+           VoEx is moving rapidly out of stability (although VoEx-daily has still not
+           moved out of neutrality) with a steepening downwards trajectory. The
+           (modified) gamma hedging heatmaps identify a small area of gamma
+           neutrality for both $SPY and $QQQ but said neutrality is flanked by
+           opposing hedging directions with $SPY experiencing a net bearish flow
+           and $QQQ bullish.
+
+           As a tie breaker, the MWGS data showcases an increase in GS growths,
+           with a 36% increase week-over-week and a 63% increase 2-week-over-2-
+           week. These values coїncide with a persistently negative GTM foretelling
+           continued GS growth, and subsequent market downturn.
+
+           LDPM/S for ES showcases net bearish data throughout all four intervals.
+           On the weekly view, we can see that the bear trap has returned after a
+           failed bullish surge to crossover LDPM-L5.
+
+           Overall, it appears the reversion to downside is neigh. Expectation is
+           turbulence with resolution towards the downside with potential for
+           protraction.
+
+
+
+
+Deep Dive Stocks – Weekly Chat            for the week of                 2025-07-28 to 2025-08-01
+ DETAILS
+
+
+
+
+Hello all!
+Last week, we left off with default bullish vibes with emphasis to keep an eye on VoEx, and the
+MWGS data. To this end, $SPY moved -2.41% and $QQQ moved -2.21%! We can visualize these
+moves below in the (modified) gamma hedging heatmaps:
+
+
+
+
+Pretty nifty! We can see the 30th/31st on $SPY was supported somewhat via the purchasing
+support.
+Its worth noting that the EPR for the week for $SPY was ±1.45% while for $QQQ it was ±1.77%.
+This puts the realized moves well outside of EPR, and so, after dusting off the ouiji board, it seems
+time to bring forth the table of mean reversion summoning; also known as the EPR table:
+
+ Symbol              T+5 Anticipated T + 5 Realized          T + 5 Ratio         T+5
+                     Move (±%)       Move (%)                (Real / Ant.)       %-magnitude Dif.
+
+
+ $SPY                  1.45                 2.41                1.66               49.74
+
+ $QQQ                  1.77                 2.21                1.24               22.12
+
+
+
+These values aren’t too egregious but they do sit well within the “raises risk of mean reversion”
+range, and so, there is some reasonableness to expecting a slight reversion in the upcoming
+future. Let’s be sure to consider this within the assessment for next week!
+Speaking of which, let’s do that now:
+
+
+
+
+Deep Dive Stocks – Weekly Chat            for the week of                2025-07-28 to 2025-08-01
+Next Week
+
+Starting as usual with VoEx, we see:
+
+
+
+
+All monitored conditions are progressing! We see VoEx-daily has decreased (although admittedly
+not as much as expected) for both $SPY and $QQQ, with $SPY’s resting just shy of the
+Propagation Zone. In tandem, VoEx-proper is steepening in its trajectory towards the Propagation
+Zone.
+This naturally foretells a bearish future, but one that is not given the full pomp and circumstance
+accredited to those moments where VoEx has left stability.
+
+With bearish winds in the hair, let’s check on the gamma-hedging heatmaps1:
+
+
+
+
+1
+ We’ll use the new algorithm for the Weekly Chats to keep an eye on its performance as it makes its way to the
+dashboard.
+
+
+Deep Dive Stocks – Weekly Chat                  for the week of                   2025-07-28 to 2025-08-01
+Quite the difference between the two! It seems both have been brought into a sliver of gamma-
+neutrality but whereas $SPY is flanked by persistent selling pressure in all directions (one might
+note the vanna-unstable orientation from low IV to gamma neutrality on $SPY) while $QQQ has
+quite the opposite: purchasing support! To $QQQ’s detriment, however, this purchasing support
+diminishes in the[$+ , 𝐼𝐼𝑉𝑉 −] direction if kept below the “ridge” of neutrality.
+I’ll be particularly interested to see the difference in behaviors, if any, the two indexes experience
+and influence each other as the week progresses (as well as how well this new algorithm
+performs!).
+
+But all-in-all, the data look quite bearish for now: VoEx-daily and VoEx are moving rapidly towards
+the Propagation Zone while the gamma hedging environment are poised to only provide partial
+support (via $QQQ).
+With these data, let’s take a look at the MWGS data to see if the recent price movements have
+caused any shifts:
+                                                  A burst of growth indeed! A 36% increase in
+                                                  gamma squeezes week-over-week, and a 63%
+                                                  increase two-week-over-two-week.
+
+                                                  Along with this growth, we see the growth curve
+                                                  has risen above 0 once more all-the-while GTM
+                                                  itself is printing more negative prints!
+                                                  This suggests that the future is filled with gamma
+                                                  squeezes both in terms of the current growth
+                                                  rates measured (via the growth curve) and the
+                                                  anticipated growth rates (via GTM).
+                                                  Let’s check on the modified gamma squeeze data
+                                                  to see if they share this sentiment:
+
+
+
+
+Deep Dive Stocks – Weekly Chat             for the week of                2025-07-28 to 2025-08-01
+Indeedioso! It seems the predictive
+growth count (purple line) has risen
+sharply into positive territory, telling
+us that the anticipated growth rate is
+substantially higher than it currently
+is. For now, the predictive growth
+count is slow to raise, and although it
+finds the future to be filled with less
+fewer gamma squeezes, its not too
+far from overtaking the dashed line
+into positivity, thereby officiating the
+expectation of future greater GS
+counts
+These data are definitely starting to look like the downside anticipated may be severe and
+protracted in nature.
+Moving onwards, let’s check on LDPM/S to see how things look:
+
+
+
+
+To this end, we see bearish prints all around!
+
+
+
+
+Deep Dive Stocks – Weekly Chat             for the week of            2025-07-28 to 2025-08-01
+Of particular note is the 1-Week view that showcases the return of the bear trap! It seems that
+last week’s bullish surge resulted in only a failed crossover attempt of LDPM-L5. This places the
+next target price at LDPM-L6(377) sitting about ~4% down from current spot.
+Thus it seems the future is quite clear: downside seems prudent with a small chance of mean-
+reversion, given the spectre of mean reversion. It will be time again, as before, to monitor this
+downside as there are some concerning signs for protracted downside. We should keep an eye
+out for realized, substantial gamma squeeze growth along with VoEx moving into the Propagation
+Zone as the first signs of protracted downside. The first step should be down to LDPM-L6, as
+seen with LDPM/S, from which a pause might be worthwhile to re-assess the data.
+Happy trading!
+
+
+Justin
+
+
+
+
+Deep Dive Stocks – Weekly Chat          for the week of               2025-07-28 to 2025-08-01
+

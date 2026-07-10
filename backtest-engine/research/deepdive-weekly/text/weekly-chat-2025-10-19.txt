@@ -1,0 +1,242 @@
+                                         Weekly Chat 2025-10-20
+
+
+                                                 Main Points
+
+
+
+       -   VoEx-trend for $SPY, $QQQ have entered P.Z., followed closely by $VTI, and $VOO.
+       -   Gamma-hedging environments showcase local gamma-neutrality with spot-down
+           sparse purchasing support and spot-up selling pressure.
+       -   Gamma-squeeze data show a substantial reduction in GS growth on Friday despite
+           an overall week-long growth spurt. pMWGS data foretell continued albeit slower
+           growth.
+       -   LT/LS investigation into #ES futures suggests LT channel confinement due to multi-
+           timeframe LT resistances.
+       -   Overall, downside is still prudent but the market’s current structural composition
+           suggests high likelihood of a stalled market in the week ahead.
+
+                                                  SUMMARY
+
+
+           Last week, the general consensus (n=1) was that the market would go down as evidenced
+           by VoEx-daily within the P.Z., and the gamma-hedging heatmap indicating that $+ , 𝐼𝐼𝑉𝑉 +
+           would be necessary to avoid any of the “danger zones”. The week that followed (also last
+           week) found that to not be the case: the market moved up-and-to-the-right against all odds.
+
+           The data currently tell of continued downside expectations (VoEx-daily & VoEx-proper
+           being within the P.Z. on $SPY and $QQQ, with $VOO and $VTI in hot pursuit).
+
+           In the immediate term, this is expected to be met with a restrictive gamma-hedging
+           environment that looks poised to settle and keep the market within the pre-formed gamma-
+           neutral zone it currently inhabits.
+
+           MWGS data suggest a massive decrease in GS counts occurred on Friday, but a peek at
+           the relative changes in OI count and the change in net gamma throughout the market
+           suggests this is a mechanical response to the market-wide $~, 𝐼𝐼𝑉𝑉 − that occurred on Friday.
+           The predictive MWGS data still showcase expectations of GS growth, despite a slower
+           velocity thereof.
+
+           A LS/LT investigation shows near-term bull-trap-like morphologies on the 90-, and 144-
+           minute with compact LT resistances therein as well. The longer-timeframes also show
+           weakness: the 987-minute is in a bear-trap with multiple recent failed attempts to jump
+           back over L5 resistance, while the weekly view paints a picture of lethargy and apathy.
+
+           Overall, the outlook is still downside but the market appears to be in a position of
+           benefitting from a flat week and so that appears to be the most reasonable outlook (with
+           the overall expectation that the stall will resolve to the downside).
+
+
+
+
+Deep Dive Stocks – Weekly Chat                 for the week of                       2025-10-20 to 2025-10-24
+                                              DETAILS
+
+
+
+
+Last week we left off with notions of a spot-down and likely IV-up futures. This was largely
+predicated on hand-waving of the highest order, along with VoEx in the Propagation Zone, and the
+inherent difficulty expected for the market by-way of achieving gamma-neutrality in a [$+ , 𝐼𝐼𝑉𝑉 + ]
+manner.
+In response, the market mocks our mortal selves, as we can see here in the gamma hedging
+heatmaps below:
+
+
+
+
+What a hoot! The market did indeed extend up-and-to-the-right until Friday where things (read: IV)
+corrected. An unexpected but exciting twist to be sure! It is not unusual for the market to bend
+backwards to reach gamma neutrality but it does suggest that hedging is active and predominant,
+which itself suggests that this week was rather “algorithmic” and perhaps even hands-off from
+the market-at-large.
+But before we get too hypotheretical, let’s re-frame our goal for the week ahead and progress
+thusly.
+Goal: Is downside still expected? If not, why?
+
+Moving Thusly
+Starting as usual with VoEx we find:
+
+
+
+
+Deep Dive Stocks – Weekly Chat            for the week of               2025-10-20 to 2025-10-24
+Exciting orientations for VoEx! In our last look through these indexes it was remarked that while
+VoEx-daily had fallen into disrepair (read: Propagation Zone) VoEx-proper was still holdin’ on.
+Now, we can see, this is largely not the case.
+VoEx-proper for $SPY and $QQQ have dove (diven?) into the P.Z. while $VTI’s VoEx is nearing
+customs and $VOO not too far behind.
+
+This does two things: it re-affirms downside in the near-term (VoEx-dailys are in the PZ) and re-
+affirms that longer-term downside may be in the works – more so than the short-term downside-
+into-quick-recovery outlook is currently being worked upon. (Spoiler: Take note of VoEx-daily
+however – notice for all four views its somewhat stalled in its descent!).
+In checking with the gamma-hedging environments1 for near-term response to anticipated price
+movement (in this case: down), we find:
+
+
+
+
+1
+    Tad update to the heatmaps to help the distribution plots shows their data more consistently!
+
+
+Deep Dive Stocks – Weekly Chat                    for the week of                    2025-10-20 to 2025-10-24
+For $SPY and $QQQ (and $VOO & $VTI [not
+shown]) the hedging environments are
+technically stable but in a similar way to
+how a helicopter or me off my meds is
+“stable”. In closer inspection we see diffuse
+and weak (see how light the blue is)
+purchasing support while a ceiling of selling
+pressure hangs over-top.
+Frustratingly neither supportive nor
+inhibitive, well, inhibitive starting about
+$675-ish as the selling pressure kicks in. It’s
+difficult to see 2 but the market is currently
+nestled within a gamma-neutral zone that
+shows invariability to IV change; but despite
+being a deflating finding for those looking
+for a spur to IV+ for the week ahead, it also
+suggests the market’s gamma-hedging
+winds will likely be minimal in the week
+ahead as neutrality is already largely
+present. Should the market be in the same
+state as last week (namely: minimally active
+and mainly influenced by said gamma-
+hedging winds), this begets a frustratingly
+flat week ahead.
+
+
+
+
+2
+  I’m still working on how to get the colors to be a bit more vibrant while keeping their relationship intact! Its
+surprisingly tricky as I want to maintain the relative strength of the coloring between purchasing and selling pressure
+while also being able to, well, see it for when one is significantly more dominant than the other.
+
+
+Deep Dive Stocks – Weekly Chat                    for the week of                     2025-10-20 to 2025-10-24
+Moving along from gamma-hedging to gamma squeezes, let’s check on the gamma squeeze
+data:
+The week saw decent growth, barring Friday’s rapid reduction. Using Thursday as the benchmark,
+we find that the 20-day %-change was 32%! This number decreased by Friday, however, to -4.0%,
+a decrease in and of itself of 30%.
+In checking with the predictive data to see if this is a trend that will keep on goin’ or if it is just a
+structural product of $+ , 𝐼𝐼𝑉𝑉 − mechanics on gamma: a decrease in short gamma due to 𝐼𝐼𝐼𝐼 − while
+$+ shifts the distributions some. To avoid doing math, I drew a picture of this dynamic reflecting
+our present environment3:
+
+
+
+
+In this scenario, it tells us that the structural positioning of options hasn’t changed (i.e.: the same
+options layouts that were creating the aforementioned gamma squeezes prior to Friday) are still
+there but rather gamma-land has simply shifted in favor due to a relative increase in long gamma,
+which for all intents and purposes reads as “systemic gamma squeeze destruction”.
+The difference here being that whereas a structural change in the options positioning and layouts
+themselves would be resistant to reversions, when conditions are structurally the same and only
+mechanically different, any “return to status quo” (i.e.: $− and 𝐼𝐼𝑉𝑉 + (especially so)) will likely see
+the process simply reverse, and the “lost” gamma squeezes re-emerge.
+This theory is further supported by some numbers (I tried to shield you but I have failed): net
+gamma exposure for the top 50-traded stocks (per Friday) rose an average of 65% (from
+
+
+3
+ Gamma distribution from Cheat Sheet: Gamma used and adjusted to fit current environment. $+ , 𝐼𝐼𝑉𝑉 − works to
+“flatten and expand” gamma distributions with particular emphasis on the more near-term dated options.
+
+
+Deep Dive Stocks – Weekly Chat                 for the week of                    2025-10-20 to 2025-10-24
+Thursday) while the net change in OI for those same stocks from Thursday to Friday only changed
+16%! That’s quite the difference.
+Next, we should probably check on the predictive market-wide gamma squeeze models to see
+what they say: do they anticipate continued growth (i.e.: the current reduction is more likely a
+structural side-effect) or are they also detecting a decrease in anticipated gamma flowing into
+the market?
+
+On the right we see such
+data and it is: mixed.
+For the PGC (purple line;
+Predictive Growth Curve)
+the consensus is that the
+breaks       have        been
+“slammed” on GS growth
+(the purple line is below
+zero again) while the
+predictive count curve
+(PCC) is still positive.
+
+This tells us that the
+anticipated growth rate of
+GS has decreased (and is
+reversing some) but the propellent that has been already spent in moving GS’ into the market is
+still net positive (for the physics nerds: acceleration is slightly negative but velocity is still
+positive!).
+Overall, the gamma-squeeze data tells us that the gamma environment is cooling off some but
+there is reasonable concern it may be due only to mechanical changes and the structural
+weaknesses that predisposed the market to the GS growth initially are still present.
+
+So, so far, the data are painting an outlook of continued downside in general but in practical terms,
+there is growing evidence that this will manifest itself as a “flat and boring week” as the gamma-
+hedging heatmaps find $SPY and $QQQ already within gamma neutrality and gamma squeeze
+have decreased. In conjunction, should such a boring-and-flat-week occur, then IV will have little
+room to increase, and thus, little room to unwind the mechanically-long-gamma set-up currently
+existing in the market which will only help bolster the “restrictive” effects of gamma (purchasing
+support spot-down and selling pressure spot-up).
+This is also a good time to remind you, my dear reader, of the spoiler from prior: VoEx-daily has
+stalled! On its own, not too much of a finding, but taken in conjunction with the gamma-squeeze
+data, it appears that a “annoying and flat” week might be headed our way so long as IV can
+continue to decrease overall (or at least, not increase).
+Let’s take this outlook in hand and visit LS/LT to see what they say:
+
+
+
+
+Deep Dive Stocks – Weekly Chat            for the week of                2025-10-20 to 2025-10-24
+In general: I think these data are in agreement regarding a flat week.
+The set-up: we have a bear-trap on the 90-minute which is prime real-estate for repeated attempts
+to over-take LT support only to be rejected which sets the stage for confinement within LT levels.
+On the 144-minute (top-right) there is bearish outlooks and hefty spot-up pressure noted.
+
+The 987-minute (bottom-left) shows bearish prints during a bear-trap with already two failed
+attempts to over-take L5.
+And lastly, on the 1-Week (bottom-right) we have bullish liquidity that still needs L5 support!
+Overall, these data are mixed but I think do a reasonable job of suggesting a stalled market is
+forming – in other words: downside is still expected but the mechanics of the market suggest
+that next week will be filled with maintain gamma neutrality and keeping IV from creeping up. This
+is evidenced by VoEx-daily stalling, gamma-hedging environments showcasing a present gamma-
+neutral environment, gamma-distribution dynamics, as well as appreciable LT resistances noted
+on the 90-, 144-, and 987-minute with lack of “robust” strength found on the 1-week LS/LT view.
+The data then suggest that the resolution of the stall will still be towards the downside; this is
+mainly evidenced by VoEx-trend being within the Propagation Zone and the PCC data printing
+positive values still.
+Overall, the week ahead seems filled with frustratingly neutral price-action while IV is widdled
+lower with persistent resolution-risk towards the downside.
+Happy Trading,
+Justin
+
+
+
+Deep Dive Stocks – Weekly Chat            for the week of                2025-10-20 to 2025-10-24
+

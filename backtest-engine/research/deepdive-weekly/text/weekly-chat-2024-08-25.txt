@@ -1,0 +1,417 @@
+                                   Weekly Chat 08/26/2024
+
+
+ Main Points
+
+
+
+    -   VoEx is still showing Bull-trap.
+    -   Hedging environments are in a vanna-stable orientation with local and diffuse
+        purchasing support present for $SPY and $QQQ.
+    -   Put-sellers remain absent.
+    -   Market-wide gamma squeeze data show continued lack-of-disturbance therein.
+    -   Overall, bullish with prudency still expecting a trap.
+
+          SUMMARY
+
+
+
+          This week, VoEx has continued its move towards stability with VoEx-daily
+          has remained therein since its spike-like move the other week. In this, the
+          interpretation is bullish on the near-term with bearish on the medium-term,
+          due to VoEx’s location in the Propagation Zone.
+
+          Hedging environments are poised to offer diffuse purchasing support
+          throughout due to both $SPY and $QQQ’s current vanna-stable
+          orientation. Influence distributions are suggesting a flat-to-bullish week
+          ahead.
+
+          Put-selling remains zero, suggesting that there is little-to-no hope for
+          profitability in the [$+, IV-] quadrant (or some combination thereof).
+
+          Gamma squeeze data is still cool – despite the uptick in negative GTM
+          from last month. This suggests the things are still well confined to the
+          medium-term for now (the downside, that is).
+
+          Overall, preparing bullish, expecting bearish resolution to this bull-trap.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                          08/26/2024
+    DETAILS
+
+
+
+
+Hello every-body!
+Last week, we lamented not being ahead of the bearish-curve all-the-while mocking the curve for
+being a figment of expression rather than a real entity with teeth and the like, like us. From there,
+it was decided that the data were reminiscent of a forming bull-trap, and as such, bullish
+ideologies were tenuously adopted.
+This was fortuitous, as $SPY was good for 1.41% this week, while $QQQ provided 1.05% towards
+our goals. Now, with such accolades behind us, the only objective in sights this week is well
+defined: stretch our fortuitous fortunes further, friends!
+To start our foray into foraging for facts to either further finance or forsake - forevermore - our
+fantasmes fauveïsh1, let’s start with the gamma hedging heatmaps:
+
+
+
+
+A curious showing – it is not often to see a week-long’s-worth of [$+, IV+], but it does seem as
+though the market was migrating towards gamma neutrality predominately in said direction for
+the first part of the week. Overall, the net effect of this was a bit-of-a-dip-and-recover on $QQQ
+(with some persistent IV+) and some steady upwards mobility on $SPY (long OTM call buyers,
+rejoice!).
+The only slight concern is that IV+ may be indicative of some insurance being purchased – so
+perhaps we should keep a close eye out to see if the onset of dealer short puts didn’t nullify the
+above purchasing support throughout the week.
+Once we are done with our analysis, let’s do some fun hand-waving to usher in the new week.
+Let’s get started!
+
+
+
+
+1
+    Roughly translates to “bearish phantasies”? Kinda wingin’ it on the French here.
+
+Deep Dive Stocks – Weekly Chat                                                          08/26/2024
+Down here
+Starting as usual with VoEx2 (below; $SPY on left; $QQQ on right), we see VoEx-daily’s persistence
+within stability:
+
+
+
+
+This behavior continues to suggest bullish performance on the near-term (what with VoEx-daily
+spiking into the Bullish zone and all), and although it seems tantalizing to extend this
+interpretation (medium-term bullishness maybe?) further and envision VoEx as “basically already
+out of the Propagation Zone” – caution! For t’isn’t3!
+As such, since VoEx is still within the Propagation Zone, this bullish performance is considered
+to be transitory. Until either bearish performance resumes (and VoEx-daily moves back into P.Z.)
+or VoEx moves out of the P.Z., the prudent outlook is kept as “likely bull-trap”.
+With the data still suggestive of a forming bull-trap, let’s see how the hedging environments are
+poised to respond:
+
+
+
+
+2
+  Quasi-regular reminder that this is the updated version of VoEx and I am working on getting its computation within
+a reasonable time-frame to have included on the dashboard. Its interpretation is largely the same, except VoEx now
+refers to the gold line and VoEx-daily is the magenta line.
+3
+  Wingin’ it on English too.
+
+Deep Dive Stocks – Weekly Chat                                                                       08/26/2024
+Reasonably well – but we see that - once again - gamma neutrality, with respect to our current
+position at the cross-hairs, is towards the right [IV+], interspaced by purchasing support, and
+towards the left [IV-], interspaced by more purchasing support, followed by selling pressure.
+A vanna-stable orientation4 but a tricky one given the recent! This orientation suggests that, much
+like last week, reaching gamma neutrality towards the right will place the market in a [$+, IV+]
+manner (which, admittedly, is quite an odd manner to go in), or via-à-vis [$-, IV-]!
+To hand-wave slightly, this is how it looks in my mind:
+
+
+
+
+Since achieving [$+, IV-] and [$-, IV-] are relatively uncommon situations, it would seem the two
+paths towards gamma neutrality are relatively inaccessible (without another unusual week like
+the week prior) and so the path-of-least-resistance would collapse towards a casual [$+, IV-] move
+with some decent variance (probably in IV mainly) to be seen.
+
+It shold be noted that a [$-, IV+] path does exist through purchasing support – should the market
+find the additional bid from hedging insufficient to sate any anticipated downside moves.
+But, let’s see how well this handwaving fares in the week ahead!
+With our expectations elaborately, and (as I’ve heard some say) eloquently discussed above, let
+us move to our put-selling compadres to see how they are expressing their expectations:
+
+
+4
+  Due to IV being the dominant decider in hedging directionality, it can be said that the hedging environment is in a
+“Vanna Orientation”. The stability refers to the idea that if the market experiences a [$-, IV+] move, this will
+introduce purchasing support, thus “stabilizing” the $-. An unstable orientation would see [$-, IV+] introduce more
+selling pressure, thus perpetuating the cycle.
+
+Deep Dive Stocks – Weekly Chat                                                                        08/26/2024
+Oh – no one’s home5.
+Never mind we’ll come back next week to check.
+Moving on, let’s check out the gamma environments!
+
+
+
+
+5
+ The data show collapse of put-selling on $SPY (right) and $QQQ (the other right) suggesting that there is little
+expectation for profitability in a [$+, IV-] (or some combination thereof) environment. Persistent lack of put-selling
+activity is of note! For what, though, we may never know! The elusive put-sellers rarely tell their secrets – all we can
+do is watch.
+
+Deep Dive Stocks – Weekly Chat                                                                          08/26/2024
+Top is the gamma-growth graph, which is negative – indicating that the overall rate-of-growth of
+gamma squeezes in the market is negative.
+                                                                   This shouldn’t be too
+                                                                   surprising as below we see
+                                                                   the graph of the number of
+                                                                   gamma squeezes present,
+                                                                   and it does, in fact, align with
+                                                                   the     notion    of      recent
+                                                                   decreasature.
+
+
+                                                                   Below that, we see the GTM
+                                                                   graph, which has grown from
+                                                                   indicating negative gamma
+                                                                   flowing towards the market
+                                                                   (which should be hitting now-
+                                                                   ish, presumably, since it
+                                                                   started at the start of last
+                                                                   month) to being neutral-
+                                                                   positive. This      suggests
+                                                                   gamma flowing towards the
+                                                                   market is stabilizing rather
+                                                                   than destabilizing – at least
+                                                                   tentatively for now, as GTM
+                                                                   starts to sprout.
+
+
+                                                                   The take-home from this is
+                                                                   that things look tenuously
+                                                                   still reasonable in gamma-
+land, even with the recent negative GTM warnings. This is beneficial for maintaining a long-term
+bullish outlook to straddle our still-present medium-term downside (assuming this is a bull-trap,
+of course).
+Maybe its not! Who knows.
+Conveniently, however, what we do know is LDPS and LDPM have some concerning signs:
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                       08/26/2024
+On the weekly timeframe, $SPY’s condition looks – rough. The Lower-order LDPMs (LDPM-13 →
+LDPM-55) are above the price, and $SPY has already broken through LDPM-89 (neon-blue line)
+with bearish liquidity. Take a peek:
+
+
+
+
+This is, on its own, is bullish (in that, things say “bullish”) but a keen eye might notice the
+“Worsening” aspect of LDPS’ print out, along with LDPS’ refusal to return to “Strong Bullish” (or
+even “Bullish”) after climbing back above LDPM-89.
+
+Not particularly what a full-on-bull outlook would hope to see. If anything, this, I think, provides
+supplemental evidence for “Bull-trap”.
+Overall, the market looks ~fine~ in that the bull-trap seems to be trapping, but in doing so, nothing
+seems to be breaking terribly much: hedging environments are at least poised to offer some
+purchasing support; VoEx-daily hasn’t moved back into the P.Z.; VoEx is moving towards stability;
+etc.etc.
+However, despite these not-so-bad considerations existing, their existence is weak, fragile and
+like my once-forgotten-but-still-cold-ish iced coffee, may not have sufficient positive impact. This
+bullish-temperance is supplied via VoEx not being or having left the P.Z., the lack of put-selling,
+VoEx-daily’s spike, etc.etc.
+So, all-in-all, brace for up, expect down seems reasonable.
+
+
+
+Happy Trading!
+
+
+Now, let’s do some hand waving.
+
+Deep Dive Stocks – Weekly Chat                                                          08/26/2024
+You know how I hate lines? And no, not lines as in queues6 but lines. Like these: − ; small though
+they may be, if you look close enough, they’re literally everywhere and I haven’t processed that
+yet.
+Anyways, I started putting lines on things in an effort to quell the voices just to see if there was
+anything to see. And …
+Maybe? Let’s investigate and not ask too many questions.
+[The real motivation for this was I am developing a “forecasting” model of sorts that leverages
+LDPM/LDPS to provide, well, forecasts, and in doing so, I have been cycling through several
+frameworks to work with, and that’s where these lines came from.]
+
+Let’s check out this wonky looking monstrosity (bigger example on next page):
+The shaded wedges coming from the LDPMs (LDPM-89 and LDPM-144) and are anticipated
+ranges for those LDPMs to travel, and the dashed lines represent their current/anticipated
+trajectory.
+                                                                                     Now – don’t fret too
+                                                                                     much, my quantitative
+                                                                                     friends; these ranges
+                                                                                     (and lines) are derived
+                                                                                     from, at least, some form
+                                                                                     of        math       (think
+                                                                                     converging splines of
+                                                                                     sorts),    so    its    not
+                                                                                     complete voodoo – but
+                                                                                     we         are       close.
+                                                                                     Nonetheless, having a
+                                                                                     repeatable, standardized
+                                                                                     method is of analysis is
+                                                                                     always helpful, so let’s
+                                                                                     give it a go.
+Although converging splines is a great band name, it can be very difficult to compute by hand on
+TradingView with, essentially, digital sticks. Thankfully, there’s a neat trick we can do to
+approximate the values we need – we’ll go through that process below as well.
+To explain why this is a bit more robust than just mapping lines to a map is that the value of LDPM
+(I haven’t disclosed this so don’t tell anyone!) that is placed on the chart is the projected value !
+So essentially, LDPM is already itself a forecast masquerading as plain indicator!
+Put another way, the graphed value of LDPM is the arrow pointing in the direction of the trajectory
+of LDPM, at the given point-in-time until the bar closes (the data are “locked” once the bar closes).
+Sneaky huh? You can mentally visualize this by putting little arrows at the end of each LDPM line.
+
+
+
+6
+    French for the British word for “queue” which is the word they use for “line”.
+
+Deep Dive Stocks – Weekly Chat                                                                     08/26/2024
+So, armed with this knowledge, it becomes natural to want to iterate on this process and extend
+it further and that’s what we are seeing here! Let’s take another peek since I’ve rambled for a
+while. This time, on $RIOT.
+
+The idea is straightforward: what does it look like LDPM is going to do. So, to do that, we do some
+funky, unfortunate math, give up inside a little, and then map out the ranges for LDPM-89 and
+LDPM-144.
+Then, from within that range, I drew my anticipated trajectory of LDPM with the condition that it
+had to stay within the highlighted region.
+
+Once those four objects were placed, I looked to see what happened in reality. And: behold!
+
+
+
+
+Ooooo
+Ahhhhh
+So, we are looking at the anticipated trajectory of everything; the highlighted regions are the
+anticipated range of LDPM-144, while the blue wedge is LDPM-89. We can see that there is a
+“dunk” pattern occurring, and so when placing my price-expectations, I figured a trip to LDPM-89
+would be reasonable.
+From there, since the data looked as though there would be an LDPM-144 / LDPM-89 crossover
+soon, a bearish finale to the trip to LDPM-89 felt appropriate.
+
+
+
+Deep Dive Stocks – Weekly Chat                                                        08/26/2024
+Now, obviously this is sample size 1 (I mean, I’ve done this a lot lately and its pretty cool! And I
+want to show you the method now too to test out) but, still, pretty neat to see an idea produce
+fruit:
+
+
+
+
+Heyo! Not terrible! Some timing issues perhaps – but we aren’t looking for perfection here.
+Moreso just a guide-stick for now to help anticipate where things are moving that is standardized
+some way.
+So, let’s look at
+another example
+but this time I’ll go
+through the steps
+of doing this on
+your own!
+First up, let’s get
+started         with
+$CPRX on the
+Daily interval:
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                         08/26/2024
+The first step is draw the range for LDPMs.
+
+
+
+
+To do this, we will iterate over the following steps:
+   -   Starting from the recent peak and bottom, draw rays from the selected point unto the end
+       of LDPM.
+   -   From the peak or bottom draw a ray to the appropriate LDPM, and then go half way
+       between there and the end-point of LDPM, and draw another ray. Then go between that
+       point and the end of LDPM, and repeat. You should get something that looks like:
+
+
+From there, the Projection Tool lets us create a forecast-wedge. We can do this by ensuring the
+upper-limit and lower-limits of the wedge are defined by our rays. As such:
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                     08/26/2024
+Deep Dive Stocks – Weekly Chat   08/26/2024
+Erase the rays, and repeat the process with LDPM-144, and you should have something similar
+to:
+
+
+
+
+Now, let’s draw the LDPM-rays. These are the “projected” pathways from LDPM. To do this, we
+first draw rays from the last crossover to the current data, as such:
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                 08/26/2024
+Now, while staying within the ranges, the goal is to make these two lines cross within their shared
+boundaries in a way that minimizes the movement of LDPM-144’s ray while maximizing the
+movement of LDPM-89’s ray.
+
+In other words, only try to adjust LDPM-89’s ray when trying to make the two cross. I did so like
+such:
+
+
+
+
+Now, the stage is set – we can see that the anticipation is that LDPM-89 will start moving rapidly
+northward to initiate a bullish cross with LDPM-144 relatively soonish – within about a month.
+
+For anticipating price, the rule set I use is:
+    -   Conditions are bullish and stable (per LDPM) when Price > LDPM-89 > LDPM-144 or Bullish
+        and Stable if Price < LDPM-89 < LDPM-144.
+    -   Other configurations will “decompose” into either Bullish Stable or Bearish Stable.
+    -   Use LDPS on “Balanced” for general directionality insight.
+So below, above we see Price > LDPM-144 > LDPM-89 and LDPS is bullish.
+
+Since the overall expectation is bullish, that means conditions must become Price > LDPM-89 >
+LDPM-144, so I expect a fall to LDPM-89 followed by a LDPM-89/144 crossover. Can this happen
+with our current configuration?
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                        08/26/2024
+Let’s draw it out and then fast-forward in time some to see how we did.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                            08/26/2024
+Not too shabby! In fact, we under-estimated the performance! Neato – things decomposed
+exactly as expected: the price fell to LDPM-89 (earlier than expected, thanks to LDPM-89 moving
+up for us), LDPS remained bullish, and a LDPM-89/144 crossover occurred! Nice.
+
+Obviously, the estimations weren’t exact (LDPM-89 moved above its “expected range” while
+LDPM-144 didn’t decline quite as much) but I think for just quickly sketching a trajectory using a
+repeatable, methodological process is pretty nifty.
+If you test this out or whatnot, let me know how you like it!
+To recap the process:
+
+
+   -     Draw the rays for LDPM-89 and LDPM-144 from the last trough/peak to the current data.
+   -     Draw a projection from the origin point (where LDPM is), to the upper limit, and then drag
+         down to the lower.
+   -     Once completed for both, from the last crossover, draw the LDPM-89 and LDPM-144 rays.
+   -     While staying within the expected region for LDPM-89, attempt to make the lines cross.
+   -     If the lines cannot cross – then no expected crossover within that “range” until something
+         changes!
+
+
+
+Happy Trading!
+
+
+Justin
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                        08/26/2024
+

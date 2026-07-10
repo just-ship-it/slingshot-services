@@ -1,0 +1,392 @@
+                                 Weekly Chat 07/03/2023
+
+
+                                        Main Points
+
+
+    -   The rogue wave came and pushed VoEx back into the I.Z. for the short week a head.
+    -   This places us in BUPO (bullish-until-proven-otherwise) yet again.
+    -   The hedging environments are non-supportive both locally and in the event of a spot-
+        down, IV-up move.
+
+
+
+                                         SUMMARY
+
+
+           This week, VoEx for $SPY and $QQQ have risen yet-again into the
+           Inhibition Zone, in a rare sense of cohesion, they both suggest BUPO.
+
+           The hedging environments are providing immediate and local selling
+           pressure and provides little-to-no purchasing support in a spot-down, IV-
+           up – a particularly concerning arrangement considering the market’s
+           mostly larger-than-expected movements throughout the week putting an
+           increased risk of mean reversion on the table.
+
+           Per MWGSC, however, the market is in the process of shedding excess
+           gamma squeezes – a sign of returning stability, and GTM is printing
+           negative values once again.
+
+           Our new and developing tool, the GTM-Velocity is showing sustained but
+           weakening bid as the data are starting to show an increasingly aggressive
+           ask.
+
+           In combination, this solidifies the idea that the rogue bullish wave is
+           resting on unstable grounds, and the medium-to-longer term outlook of a
+           market downturn is still reasonable.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                     07/03/2023
+                                         DETAILS
+
+
+
+
+Last week, we left off with the idea that we were approaching ~ the storm ~ but the data
+were suggestive that a rogue wave (i.e.: bullish run) was manifesting. This ideology was
+mainly supported by VoEx, and the hedging environments.
+
+This was an apt description for the week ahead, with $SPY moving +2.32%, and $QQQ
+moving +1.90%.
+
+With the shortened week before us, we simply need to check how our rogue bullish wave
+is performing and when we can expect the resumption of the more longer-term outlook
+(bearishness).
+
+Let’s dive in!
+
+The waters
+
+The week through the lens of the hedging environments is visualized below:
+
+
+
+
+The purchasing support in the $-/IV+ quadrant seems to have been quite the nice addition
+to the market from Monday’s quick dip downwards.
+
+Curiously, we can see that $SPY had less interaction with selling pressure than did $QQQ,
+and also had more upside reach (+2.23% vs. +1.90%; 15% greater upside on $SPY).
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                               07/03/2023
+In terms of VoEx, the week started with VoEx diving into the Propagation Zone on both
+$SPY and $QQQ, only to rapidly rebound the next day (Tuesday, 06/27/2023):
+
+
+
+
+Admittedly, not the most routine of VoEx behavior, but it isn’t un-precedented. This
+behavior has become a main-stay around highly unstable markets:
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                 07/03/2023
+This rapid movement is the genesis of the mantra: an unstable VoEx is an unstable stock;
+simply due to the fact that this type of behavior does not occur at or around stable stocks
+(those that are simply appreciating-along), but rather, occur when things are getting
+spicey.
+
+After Monday’s dip into the Propagation Zone, this was the signal-long-awaited such that
+downside would be here, but truthfully, with the purchasing support located on the
+hedging environments, I elected to wait a day to see how the market would respond.
+
+Should the market chew through the purchasing support for one more day, while VoEx
+dove deeper into the P.Z., I was prepared to commit to full-downside; however, should the
+market appreciate, and VoEx move back out of the P.Z., I was prepared to continue the
+bullish-rogue-wave that was anticipated.
+
+So, with Tuesday’s recovery, and VoExes’ resumption into the I.Z., it seemed the market
+was planning for the latter.
+
+Ultimately, the week leaves us with the following VoExes:
+
+                                                             Both $SPY (top) and $QQQ
+                                                            (bottom) have skyrocketed
+                                                            back into the Inhibition Zone.
+
+                                                            The good news for us is that
+                                                            this behavior is shared – no
+                                                            more      fighting   between
+                                                            interpretations between $SPY
+                                                            and $QQQ!
+
+                                                            The other news for us is that
+                                                            this places us back in BUPO:
+                                                            bullish-until-proven-
+                                                            otherwise.
+
+                                                            And of course, the “otherwise”
+                                                            is VoEx Divergence or VoEx
+                                                            Spike, as we’ve seen before.
+
+                                                            Easy peasy!
+
+
+
+Deep Dive Stocks – Weekly Chat                                                 07/03/2023
+Moving on to the hedging
+environments, we saw last week
+that the presence of selling
+pressure spot-up seems to have
+slowed $QQQ’s ascent by about
+15% versus $SPY, and next week
+it appears a similar set-up may be
+brewing, as $QQQ sees more
+local selling pressure than does
+$QQQ.
+
+It’s also worth noting that both
+$SPY and $QQQ are in a vanna-
+heavy arrangement1.
+
+This places the market at an
+increased risk of spiraling-
+downside      should     downside
+manifest as there is not only little-
+to-no purchasing support if the
+price falls ($QQQ has some but
+the price would have to fall while
+IV also fell!), but a decreasing
+price and increasing IV will
+introduce even more selling
+pressure into the markets.
+
+
+
+
+1
+ Notice that the main determining factor between selling pressure and purchasing support is movement from left-
+to-right, not up-and-down; this means IV is the main controlling force in the hedging environment, not the price!
+
+Deep Dive Stocks – Weekly Chat                                                                     07/03/2023
+This week also saw the re-emergence of put sellers throughout the land, with Tuesday
+seeing quite the jump in DLP behavior that has persisted throughout the week:
+
+
+
+
+This, as we know, is quite bullish – in particular in the setting of a greater-than-EPR weekly
+movement for $SPY ($SPY 84% more than the market was expecting for the week) as this
+typically brings concerns regarding mean-reversion into play, but it would seem that the
+put sellers are jubilee-ing once more.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                    07/03/2023
+The gamma-squeeze data is
+showing a net-destruction in
+the rate-of-growth for gamma
+squeezes and GTM is printing
+negative values once more 2.
+
+It should be noted that the
+new 20-EMA on GTM (the
+gold ribbon), has been
+progressively    increasing
+since 05/2022 .
+              3
+
+
+
+Although I think this fits more
+into the longer-term bearish
+outlook than the immediate
+outlook, I think it is worth
+pointing out.
+
+
+
+
+Moving towards our developing tool, LDPM-Velocity, the following prints are obtained
+from the graph (next page):
+
+2
+ GTM was narrowed from a 10-rolling to 5, and an EMA of 20 (for a 1-month look) for GTM was added.
+3
+ GTM is due for an upgrade but in the meantime, I feel that having an EMA helps visualize the overall behavior
+without sacrificing the more detailed data prints from GTM itself.
+
+Deep Dive Stocks – Weekly Chat                                                                      07/03/2023
+   -    The “dominant force” is bullish crossovers (top graph, dots are blue).
+
+   -    LDPM Crossover Velocity is increasing (𝛿𝛿ℂ >                 Rule                        Expression Significance
+        0), which per our chart suggests decreasing
+        liquidity status (right):
+                                                                     LDPM Crossover               𝛿𝛿ℂ > 0         Poor
+   -    The LDPM Acceleration (bottom graph), is                     frequency increasing                      liquidity
+        negative (𝛿𝛿 2ℂ < 0) which suggests the non-                                                             Status
+        dominant force is becoming more dominant
+        (below)                                                      LDPM Crossover               𝛿𝛿ℂ < 0        Good
+                                                                     frequency decreasing                      liquidity
+   -    The crossover type is also negative (the dots in                                                         status
+        the gold circle are blue), which means 𝛿𝛿ℂ𝑡𝑡 < 0.
+        (below)
+                                             Rule                     Expression          Significance
+
+
+                                             LDPM Crossover             𝛿𝛿 2 ℂ > 0            The dominant force is
+                                             frequency’s frequency                          becoming more aggressive
+                                             is increasing
+                                             LDPM Crossover             𝛿𝛿 2 ℂ < 0          The non-dominant force is
+                                             frequency’s frequency                          becoming more aggressive
+                                             is decreasing
+
+ Rule                                                     Expression                          Significance
+
+
+ LDPM Crossover frequency’s frequency                       𝛿𝛿 2 ℂ > 0 𝑎𝑎𝑎𝑎𝑎𝑎 𝛿𝛿ℂ𝑡𝑡 > 0       Bid is becoming increasingly
+ is increasing and the net cross-over type                                                             aggressive
+ is bullish
+ LDPM Crossover frequency’s frequency                       𝛿𝛿 2 ℂ > 0 𝑎𝑎𝑎𝑎𝑎𝑎 𝛿𝛿ℂ𝑡𝑡 < 0             Ask is becoming
+ is increasing and the net cross-over type                                                            increasingly
+ is bearish                                                                                            aggressive
+
+ LDPM Crossover frequency’s frequency                       𝛿𝛿 2 ℂ < 0 𝑎𝑎𝑎𝑎𝑎𝑎 𝛿𝛿ℂ𝑡𝑡 > 0             Ask is becoming
+ is decreasing and the net cross-over type                                                            increasingly
+ is bullish                                                                                            aggressive
+
+ LDPM Crossover frequency’s frequency                       𝛿𝛿 2 ℂ < 0 𝑎𝑎𝑎𝑎𝑎𝑎 𝛿𝛿ℂ𝑡𝑡 < 0       Bid is becoming increasingly
+ is decreasing and the net cross-over type                                                             aggressive
+ is bearish
+Putting it all together, this suggests that the ask is becoming progressively dominant! So,
+whereas this recent bull rally may look like it is being spurred on by an aggressive bid, it
+would appear below the surface, the ask is ramping up its asking.
+
+
+Deep Dive Stocks – Weekly Chat                                                                    07/03/2023
+Another notch in the belt for “unsustainable bull-run” as we’ve gathered from VoEx.
+
+
+
+
+So overall, the data are pointing towards BUPO: bullish-until-proven-otherwise; but that
+doesn’t completely absolve all of the bearish-inclinations:
+
+   1) VoEx is unstable
+
+
+Deep Dive Stocks – Weekly Chat                                               07/03/2023
+   2) The hedging environments demonstrate local selling pressure and the absence of
+      purchasing support in a $-/IV+ move,
+   3) GTM-EMA20 is growing, and
+   4) increased risk of mean-reversion following a substantially green week.
+
+And as usual, we can monitor the impending downside via VoEx: VoEx Spikes into the PZ
+and/or VoEx Divergence will signal the start of more downside.
+
+But until then, time to kick up our feet and enjoy the bull-run.
+
+Happy trading,
+
+Justin
+
+
+
+
+                                         [Appendix]
+
+Let’s look at some examples of this LDPM Velocity, just to get a feel for how things might
+work should this pass the future tests of significance.
+
+
+
+Deep Dive Stocks – Weekly Chat                                                07/03/2023
+Let’s look at a time before the 2020 correction when the “ask” became the dominant
+market force:
+
+
+
+
+We see:
+    1) Dominant force is the ask (the dots are red) [ℂ𝑡𝑡 < 0]
+    2) The velocity line is pointed downwards [𝛿𝛿ℂ < 0] with a more-bearish LDPM
+       crossovers [𝛿𝛿ℂ𝑡𝑡 < 0]
+    3) Acceleration is positive [𝛿𝛿 2ℂ > 0]
+In combination, this give us:
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                         07/03/2023
+Rule                               Expression                        Significance
+
+
+LDPM Crossover                                  𝛿𝛿ℂ > 0                    Poor liquidity Status
+frequency increasing
+LDPM Crossover                                  𝛿𝛿ℂ < 0                   Good liquidity status
+frequency decreasing
+
+
+Rule                               Expression                        Significance
+
+
+LDPM Crossover                                  𝛿𝛿 2 ℂ > 0               The dominant force is
+frequency’s frequency                                                  becoming more aggressive
+is increasing
+LDPM Crossover                                  𝛿𝛿 2 ℂ < 0             The non-dominant force is
+frequency’s frequency                                                  becoming more aggressive
+is decreasing
+
+Rule                               Expression                        Significance
+
+
+LDPM Crossover frequency’s             𝛿𝛿 2 ℂ > 0 𝑎𝑎𝑎𝑎𝑎𝑎 𝛿𝛿ℂ𝑡𝑡 > 0     Bid is becoming increasingly
+frequency                                                                       aggressive
+is increasing and the net cross-
+over type
+is bullish
+LDPM Crossover frequency’s             𝛿𝛿 2 ℂ > 0 𝑎𝑎𝑎𝑎𝑎𝑎 𝛿𝛿ℂ𝑡𝑡 < 0     Ask is becoming increasingly
+frequency                                                                       aggressive
+is increasing and the net cross-
+over type
+is bearish
+LDPM Crossover frequency’s             𝛿𝛿 2 ℂ < 0 𝑎𝑎𝑎𝑎𝑎𝑎 𝛿𝛿ℂ𝑡𝑡 > 0     Ask is becoming increasingly
+frequency                                                                       aggressive
+is decreasing and the net cross-
+over type
+is bullish
+LDPM Crossover frequency’s             𝛿𝛿 2 ℂ < 0 𝑎𝑎𝑎𝑎𝑎𝑎 𝛿𝛿ℂ𝑡𝑡 < 0     Bid is becoming increasingly
+frequency                                                                       aggressive
+is decreasing and the net cross-
+over type
+is bearish
+
+A situation where not only is the ask the dominant force, but it is becoming more
+dominant!
+
+We can see this same set-up is repeated in 2021-12
+
+Deep Dive Stocks – Weekly Chat                                                           07/03/2023
+This process can be simplified by simply checking for the conditions listed in the last
+table. For instance, check out 2022-08:
+
+   -   𝛿𝛿 2ℂ > 0 (the acceleration is positive)
+   -   𝛿𝛿ℂ𝑡𝑡 > 0 (the change in cross-over type is bullish)
+
+This gives us the first row: the bid is becoming more aggressive, and it was doing so in a
+low-liquid state.
+
+Quite the opportune data to know as it seems this was the maximum drawdown from this
+bear market so far:
+
+
+
+
+This means, that as 10/2022 approached, the market had poor liquidity to the ask, and
+the bid was becoming more aggressive. What happens to a market with an aggressive
+bid and poor liquidity?
+
+It zooms! And now, it seems this newfound bullish performance has itself dried up the
+liquidity in the market.
+
+Curious!
+
+Deep Dive Stocks – Weekly Chat                                                07/03/2023
+

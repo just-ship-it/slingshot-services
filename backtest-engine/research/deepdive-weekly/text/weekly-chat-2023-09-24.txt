@@ -1,0 +1,417 @@
+                                  Weekly Chat 09/25/2023
+
+
+                                         Main Points
+
+
+    -   VoEx is demonstrating continued instability with significantly deep values;
+    -   The Hedging Environments for $SPY and $QQQ are opposite one another with $SPY’s
+        demonstrating support in the event of a $-/IV+ move, while $QQQ’s demonstrates
+        additional selling pressure;
+    -   DLP behavior for $QQQ has experienced a rapid growth without similar behavior noted
+        on $SPY; some concern for misguided rationale from our DLP-friends;
+    -   MWGS data is bearish with an increase in gamma squeezes noted, along with
+        continued negative GTM (revised) prints;
+    -   𝑉𝑉 2 is showing continued growth of data within the Propagation Zone market-wide;
+    -   The Inhibition-Propagation ratio demonstrates continued movement towards a net-
+        Propagation-Zone-market.
+    -   Prudency suggests bracing for continued downside.
+
+
+
+                                         SUMMARY
+
+
+
+          VoEx for $SPY and $QQQ are reminiscent of the “up-turn” phase of VoEx
+          Coiling which suggests some bullish behavior in the near future, however
+          this outlook is tempered against the erratic nature of VoEx itself, along
+          with its current location within the P.Z.
+
+          Investigating liquidity through the Hedging Environments suggests the
+          market was inundated with an eager ask throughout the week, with the
+          bid-side of the book being the liquidity supplier.
+
+          $SPY does provide reasonable purchasing support in the event of a $-/IV+
+          move but this is balanced against $QQQ’s even more reasonable selling
+          pressure.
+
+          MWGS data is bearish with continued GS growth along with GTM showing
+          continued flow of gamma squeezes into the market being expected.
+
+          Overall, things look uneasy and without merit for bullish thoughts.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                    09/25/2023
+                                                      DETAILS
+
+
+
+
+Hello all!
+Last week, we left off with the notion that things didn’t look quite right in the market and that
+something was brewing.
+It would appear that the market did in fact have something brewing for us as $SPY landed -2.92%
+down for the week, along with $QQQ mustering a -3.48% week-over-week move.
+This week, the main questions1 are:
+    1) Should there be concern for a mean reversion, following a 71% greater-than-weekly-EPR
+       move for $SPY and a 57% such move for $QQQ; or
+    2) Is the downside to continue forthwith?
+To start things off, lets look at the severity with which the market manifested its downside last
+week via the hedging environments:
+
+
+
+
+With an utter disregard for decency not seen since I wasn’t awarded the spelling bee
+championship title in 5th grade, we see the purchasing support introduced into the market proved
+to be of little consequence for the price-action throughout the week – however, this doesn’t mean
+we can’t glean any additional information for this behavior.
+For instance, in looking to see how liquidity and volatility were affected this week (that is, in a
+week of spot-down but abundant purchasing-support), it is noted that IV rose on average about
+5% per day throughout the week, but LDPM-Vol2 decreased 1.69% on average throughout the
+week.
+
+
+1
+  French for “questions”.
+2
+  Liquidity-Dependent Price Movement – Volatility (LDPM-Vol) is a measurement of volatility through the lens of
+liquidity by re-arranging LDPM slightly. It gives a non-option-dependent view of volatility status (and by extension,
+liquidity)
+
+Deep Dive Stocks – Weekly Chat                                                                         09/25/2023
+                                             Quick Recap
+
+
+
+
+Organic is the group of market participants that are seeking to extend or maintain the profitable
+conditions for their side of the book. That is, an organic bid will seek to purchase low (in order to
+sell high later on). Thus, the organic bid, perhaps slightly counter-intuitively, will work to push the
+price lower as the bid seeks to buy at discount (and thus, will work to push the price lower).
+
+An organic ask will do the opposite; as someone with shares, their win-condition is selling higher
+than they purchased the shares for. Thus, we can consider them a bullish force as they will work to
+raise their ask in order to ensure the highest profitability possible.
+Organic bids and asks are considered price sensitive because, as we saw, their motives and actions
+are dependent on the price.
+Eager market participants comprise both price sensitive parties and price insensitive parties.
+An eager bid or ask is one that is looking to transact in such a way that they are compelled to meet
+their respective counterparty to transact, regardless of profitability. This can be either due to
+urgency (price sensitive) or hedging (price insensitive).
+The performance, and subsequent consequences of, the eager parties are dependent on where,
+then, they must meet their counterparties, or in other words, the eager parties transact at the
+liquidity source as that is where it is most expedient to transact.
+Thus, if there is an eager bid and the bid has liquidity (the bid is determining where things run
+smoothly), this eager bid will provide additional bearish performance as it works to chew through
+the “bottom of the book” along with the residing organic bid.
+
+Conversely, if there is an eager bid and the ask has liquidity (the ask is determining where things
+run smoothly), this eager bid will provide additional bullish performance as it works to chew through
+the “top of the book” where the organic ask is located with liquidity, and as such, it is most expedient
+to transact at.
+So, we can see, that in determining the relative balance of these forces, it can be quite helpful to
+know the liquidity status currently present.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                           09/25/2023
+This means that despite the rise in IV throughout the week, we can see from LDPM-Vol that real
+liquidity increased. A curious phenomenon for a red week!
+From our recap on the preceding page, knowing that liquidity improved with the aforementioned
+circumstances, suggests that liquidity didn’t deteriorate – and if liquidity didn’t deteriorate during
+a 3%-down week, this means there must have come from somewhere !
+So, where was this liquidity? Well – let’s do some quick brain stuff and play:
+
+
+
+
+[Note: Although the following method isn’t exact, it serves as a good rule-of-thumb one can utilize
+to answer this question.]
+Consider that if the bid has liquidity, then this means that transactions occur most easily at the
+bid, and if the ask has liquidity, then this means that transactions occur most easily at the ask.
+The consequence of this orientation is that if there is an organic ask, and the ask has good
+liquidity, then things are running smoothly at the ask, which will compel the price northward, and
+liquidity status (so long as there is sufficient “balance of forces”) will not deteriorate.
+But, if there is an organic ask and the bid has liquidity, then the organic ask will meet resistance
+towards moving upwards as things only transact “smoothly” at the bid – which, if it is an organic
+bid, will cause a “liquidity vacuum” between the two sides of the book as the organic ask looks to
+set higher exit-points and the bid looks to set lower entry-points). This, consequently, works to
+decrease liquidity (as things are not running smoothly anymore), which manifests as an increase
+in LDPM-Vol.
+
+With that in mind, we can quickly see that as the market dropped further into purchasing support,
+liquidity improved (with an average improvement of 1.69% per day – not immense, but not
+negative!). This means, that as a price insensitive bid entered the market things started to run
+more smoothly than they previously were.
+So, since we know that the price dropping implies that the ask was transacting at the bid (at the
+lower price-point), and that as this was occurring, liquidity was improving, this tells us that:
+   1) The bid has liquidity (albeit, just-so), and
+   2) The ask was eager.
+We know that the ask was eager, or rather, our napkin-calculations suggest the ask was eager,
+because an organic ask would resist moving downwards to meet liquidity at the bid, and thus,
+we should see an overall decrease in liquidity status. Yet – that’s not what we see!
+As the price dropped, and ask continued to absorb the market, we see that the determining factor
+in how smoothly the ask was being absorbed seemed to be dependent on how much purchasing
+support was being introduced.
+
+
+
+Deep Dive Stocks – Weekly Chat                                                           09/25/2023
+In other words: this week’s price action was heavily dominated by an eager ask - and a rather
+robust one at that. So robust, that things started running more smoothly once the price insensitive
+bid entered the market, which allowed more eager ask to transact, which made things run more
+smoothly, etc.etc.
+The main concern here is that a dominating eager ask will move down to the bid with zeal if that
+bid happens to be the liquidity-supplier (which it seems to be); an eager ask + organic bid + bid-
+liquidity is a recipe for drastic downside3.
+Pivoting slightly, in investigating these data, I wanted to see how the change in LDPM-Volatility
+affects the future change in price for $SPY, so I cooked up the data and took the average daily
+change in LDPM-Volatility for 10 days and compared it to the average daily future change in price
+over the next 10 days:
+
+The results4 are on the right: we
+can see that as the average daily
+change in LDPM-Vol increases, the
+anticipated future change in price
+over the next 10 days becomes
+progressively more negative and
+more spread out.
+These data align with our
+expectations:        as     liquidity
+diminishes, things are typically not
+running well, and $SPY tends to
+respond with both an increase in
+the range of price-action (the dots
+spread out more as you move to
+the right), and with an overall trend
+of negative price action.
+
+The change in LDPM-Vol suggests a negative outlook (albeit, just-so) for the next 10-days ahead
+(5-day lookahead is just below 0).
+We can extend this analysis further slightly by quickly looking at what the change in LDPM-
+Volatility values were 10-, and 5-days prior (next page).
+
+
+
+
+3
+    Exercise left to the reader.
+4
+    Data utilized are from $SPY from 2018-01-01 to Present.
+
+Deep Dive Stocks – Weekly Chat                                                        09/25/2023
+                                                             We can quickly see that things have
+                                                             been “heating up” somewhat in a rather
+                                                             quickly.
+                                                             Curious data, perhaps worth keeping an
+                                                             eye on, but I think we can move on.
+
+
+
+
+Economists HATE this one simple trick:
+Starting as usual with VoEx, I find myself angsty – again.
+
+
+
+
+The recent extreme movements into the Propagation Zone are relatively unheard of for $SPY and
+$QQQ.
+It goes without saying that these behaviors are clearly unstable, and as such, unstable indices
+should be expected.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                         09/25/2023
+In raking my brain for reasons to get out of bed what these data may mean, I couldn’t help but
+remember the Weekly Chat from 2023-08-28, wherein it was hinted by someone that $QQQ’s VoEx
+looked reminiscent of VoEx Coiling:
+
+
+
+
+Well, from that day VoEx moved (as we can see) into the Inhibition Zone for a brief BUPO, and fell
+back into stability along with a net-move of 3.85%. Not too shabby.
+This idea came into my head because – well – gosh darn if it doesn’t look like another round of
+VoEx coiling might be forming.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                       09/25/2023
+The concern is, however, that this coiling is still in its “infancy” (that is to say, the “up-side” of the
+coiling isn’t really there yet – just the apex), and so for now, we are simply left with a deeply deep
+VoEx within the Propagation Zone for both $SPY and $QQQ.
+That is to say, although there exists some reminiscence regarding potential VoEx Coiling – until
+VoEx completes its journey into Stability, I find prudency on the side of anticipating continued
+decline.
+
+Moving from VoEx towards the Hedging Environments, things don’t become more cheery:
+
+
+
+
+With downstream ($-/IV+) selling pressure located in the immediate proximity on $QQQ, this does
+little to reinforce the idea of a “mean reverting week”.
+
+Although $SPY’s hedging environment is more supportive, there is concern that given the lack of
+price-action-support the recent purchasing support has provided, along with the selling pressure
+on $QQQ, the purchasing support might once again fail to supply the market with price-directing
+influence.
+In this vein, I think it will be important to watch the hedging environments closely in the event of
+a spot-up Monday; should $QQQ make its way into purchasing support since the combined
+purchasing support from $SPY and $QQQ may work to give us that “mean-reverting week”.
+Lofty goals perhaps.
+
+Otherwise, I think recent history has demonstrated the price-directing influence incoming price-
+insensitive bid may have in the setting of an eager ask throughout the market, which may work to
+dampen our goals somewhat.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                              09/25/2023
+For $SPY and $QQQ the Hedging Environments’ differences may have something to do with the
+large discordant behavior of the put-sellers:
+
+
+
+
+With a rather large show-of-force, $QQQ put-sellers have entered the battle with a uniquely curious
+1,815% increase in retail sold-puts as they bet on a brighter $+/IV- week a head.
+This is behavior that one would relish to see in order to acquire a bullish outlook: the mark-of-the-
+bottom as delivered by our put-selling friends, but this behavior introduces some questions:
+   1) Why weren’t puts get sold on $SPY as well?
+   2) Did put-selling occur in order to anticipate mean-reversion for the week ahead or is there
+      a genuine bullish outlook?
+
+Ultimately, I find these questions, along with the other data prints both seen and to-be-seen,
+sufficient to, dare I say it, suggest that our friends might be wrong.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                          09/25/2023
+         Consider, for example, the most recent spikes in DLPs on 2023-06-26 and 2023-08-21 as
+         compared to the current environments we currently find them in5:
+
+Date         VoEx                            LDPM (as measured on                 LDPM-LL (as                 Change in Price
+                                             daily timeframe) 6                   measured
+                                                                                  on daily timeframe)
+
+2023-06-26   BUPO-state                      Bullish (Close > LDPM-89)            Bullish (LDPM-LL > 0) 6.14% to peak (T+24)
+
+2023-08-21   VoEx Coiling reached Bullish (Close > LDPM-89)                       “Weak Bullish”7               3.78% to peak (T+9)
+             stability on this date.
+
+2023-09-22   VoEx within P.Z.                Bearish (Close < LDPM-89)            Bearish (LDPM-LL <                       -
+                                                                                    0)
+
+
+
+
+         These differences aren’t particularly insignificant.
+
+
+
+
+         5
+           It should be noted that these increases in DLP behavior were seen on both $SPY and $QQQ as well.
+         6
+           Personal preference but I use the LDPM-Fib set up and use LDPM-89 on the daily as the definitive “bearish” or
+         “bullish” crossover.
+         7
+           See Weekly Chat 2023-07-21 for explanation of “Weak Bullish”
+
+         Deep Dive Stocks – Weekly Chat                                                                      09/25/2023
+Although our put-selling friends are typically well-timed, I find these changes in the environment
+too be too significant to
+reasonably       assume
+success themfore, and I
+will need confirmation
+of both price-action and
+the data in order to have
+full confidence in them
+this time.
+In other words: I think
+they might be wrong!
+Moving from DLPs to
+MWGSs, we see there’s
+been a 13% increase in
+gamma squeezes in the
+market over the past 5
+days, a 15% over the
+past 10 days, and a 25%
+increase over the past
+20-days.
+With this, the growth-
+trend remains positive,
+and GTM (revised) is
+showing continued flow
+of        short-gamma
+                                                                                          (gamma
+                                                                              squeezes) into the
+                                                                              market, setting up
+                                                                              the expectation for
+                                                                              continued growth
+                                                                              in the number of
+                                                                              gamma squeezes
+                                                                              in the future.
+                                                                              These data are, as
+                                                                              it were, bearish.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                       09/25/2023
+Moving towards 𝑉𝑉 2 we see continued growth in the number of data prints within the Propagation
+Zone:
+
+
+
+
+Yet, still no noteworthy 𝑉𝑉 2 collapse! (some dipping now within the I.Z., but nothing too serious).
+These data demonstrate continued migration of VoEx values throughout the market into the
+Propagation Zone in a manner that is still “erratic” (I imagine it similar to $QQQ’s VoEx Coiling
+vs. its VoEx during 2022).
+
+Here, although there is minimal 𝑉𝑉 2 collapse yet, it still seems reasonable to consider these data
+bearish due to the elevated 𝑉𝑉 2 values themselves (“overheating” is still present), and the
+continued compilation of data within the Propagation Zone.
+Lastly, before we leave off for the week, we come to the IPR (Inhibition-Propagation Ratio) that
+we discussed last week:
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                          09/25/2023
+The data seem to be inching close to the cross-over point with the Inhibition Ratio showing a 20-
+day average of 0.52 – a measly 0.02 points away from there being more stocks inside of the
+Propagation Zone than the Inhibition Zone for the past month!
+So – overall, things are messy; a condition I thought I had grown used-to these past few months
+in particular, but that it would seem there was still room for growth.
+
+The data thus far are:
+   -   VoEx is showing incredible levels of instability that out-rank even the instability noted prior
+       to and during the 2020 correction; a slight potential for VoEx Coiling but its in its infancy;
+   -   The Hedging Heatmaps demonstrate an unsupported $QQQ with a moderately supported
+       $SPY;
+   -   DLP behavior on $QQQ has increased rapidly but there is concern that this behavior may
+       be erroneous and rests on a tenuous hope for mean reversion in the week a head;
+   -   Gamma squeezes have grown and GTM demonstrates continued short gamma flow into
+       the market; and
+   -   𝑉𝑉 2 is showing continued growth within the Propagation Zone, with minimal collapse
+       noted.
+Overall, I think it is still prudent to bet against any long gains. Even in the event of a “mean
+reverting” first-half of the week, to me the instability present won’t be fixed within a week.
+Happy trading! Justin
+
+
+Deep Dive Stocks – Weekly Chat                                                           09/25/2023
+

@@ -1,0 +1,155 @@
+                                 Weekly Chat 2026-03-09
+
+
+                                       Main Points
+
+
+
+       -   VoEx for $SPY and $QQQ are wholly within the Propagation Zone with $QQQ’s VoEx-
+           daily experiencing a substantial spike downwards.
+       -   Hedging environments for $SPY demonstrate local gamma-squeeze with
+           surrounding selling pressure while $QQQ’s has transitioned to a blanket of
+           purchasing support.
+       -   Gamma squeeze data showcase GS growth and increased expectations for future
+           growth.
+       -   LS&T data showcase diffuse and persistent bearish liquidity, minimal proximal
+           organic bid supports.
+
+                                       SUMMARY
+
+
+
+           The data continue to grow evermore bearish!
+
+           VoEx is unanimous in its bearish-outlooks for $SPY and $QQQ with
+           VoEx and VoEx-daily for both residing (and deepening) within the
+           P.Z. Of note is $QQQ’s massive downwards VoEx-daily spike.
+
+           Gamma-squeeze data measured a 25% growth in count week-over-
+           week with the predictive data forecasting greater counts and more
+           significant growth in the future.
+
+           LS&T data are also wholly bearish, with the final inclusion of the
+           weekly interval into the bearish club. Thusly, downside is expected
+           and in search of support, we find only LT6 approximately 3% down.
+
+           Thus, it seems prudent to set a conservative downside target of 3%
+           as the next step in this market-journey.
+
+
+
+
+Deep Dive Stocks – Weekly Chat        for the week of            2026-03-09 to 2026-03-13
+                                             DETAILS
+
+
+
+
+Hello everyone!
+Last week, we had visions of downside and also last week, we were not disappointed. $SPY
+moved 1.98% to the downside while $QQQ mustered -1.25%. Not too shabby! We can visualize
+these moves in the heatmaps below:
+
+
+
+
+It seems the market did all it could to keep conditions away from selling pressure, perhaps for the
+better since even without said selling pressure, the market floated down quite substantially!
+This week, our task is straightforward and should be quick: will downside continue or are there
+any concerns for a bounce.
+Let’s get started!
+Turbulence!
+Starting as usual with VoEx, we see:
+
+
+
+
+That is quite the showing!
+
+
+
+
+Deep Dive Stocks – Weekly Chat           for the week of               2026-03-09 to 2026-03-13
+Both $SPY and $QQQ present with VoEx and VoEx-daily within the Propagation Zone, all four are
+also descending, and $QQQ has just experienced quite the massive VoEx-daily drop! These are,
+universally bearish1 on the near-term and long-term.
+Let’s check out the hedging heatmaps to see if there is any reason to inflate our hopes for a
+bounce:
+
+
+
+
+It seems conditions are much the same for $SPY while $QQQ’s environment has changed
+substantially.
+
+For SPY, we can see another “local gamma squeeze” with selling-pressure located below and
+purchasing support located spot-up. The main difference from last week is $SPY’s location in the
+selling pressure rather than the purchasing support!
+$QQQ’s environment, however, is quite different and is loaded with purchasing support – perhaps
+given the VoEx data this is a good thing!
+
+Taken together, conditions look rough! Essentially, it boils down to: will the purchasing support
+on $QQQ’s hedging environment be substantial in the face of selling pressure from $SPY and all
+of the other bearish prints seen (and to be seen below)? If one finds ample reason to suspect that
+yes, said purchasing support is sufficiently robust, then there is hope that it will help the market
+float down rather than slam down, however, if
+one finds vacancy instead, well, slam down it is,
+then!
+Moving onwards, let’s check out the market-
+wide gamma squeeze data. This week, gamma-
+squeeze counts rose by 25% from 958 to 1,201.
+Pretty strong jump!
+
+Overall, we can see the growth for gamma
+squeezes (despite the fluctuations in total count
+lately; right) has maintained its positive stature
+since 2026-01-26! That’s 2 months of growth!
+
+
+1
+ Let us take a moment to thank VoEx for being so decisive! Usually, it is lamented that signals are mixed or
+muddied but not now!
+
+
+Deep Dive Stocks – Weekly Chat                   for the week of                    2026-03-09 to 2026-03-13
+Moving to the predictive gamma squeeze data, we find:
+
+
+
+
+Expectations for the future are greater than they are today! The predictive-growth-count (PCC;
+golden) is positive, indicating the future is to be filled with more gamma squeezes than is currently
+present, while the predictive-growth-curve (PGC; purple) is rising rapidly. A rapidly rising PGC
+suggests that future gamma squeeze growth will be greater than it currently is (which, mind you,
+is setting at 25% week-over-week!).
+These data are pretty bearish all around with minimal showings for a brewing bounce !
+Moving onwards, let’s check the LS&T data to see how liquidity is finding currently conditions:
+
+
+
+
+Deep Dive Stocks – Weekly Chat            for the week of                2026-03-09 to 2026-03-13
+Quite bearish prints all around and of particular note is the transition to bearish liquidity found on
+the Weekly Interval!
+This suggests that the bullish liquidity (i.e.: support) that was being supplied by LT4 has run dry
+(or to be technical, the well may not be dry but the demand for water [the ask] is now sufficiently
+larger than anticipated supply!), and this brings with it tidings of a future needing to test LT6 for
+support (which sits about 3% down).
+
+On the shorter intervals, we find also bearish liquidity and some evidence of dip-buyers (90-, and
+144-minute) which may hold off some immediate downside but I wouldn’t put too much faith in
+their ability to turn things around, especially given how far-off the 987-minute dip-buyers seem to
+be (who are well above spot still!).
+Overall, these data are also quite bearish with minimal evidence of a brewing bounce: there are
+no near-by supports (other than the depleting LT4) and all liquidity appears bearish.
+In sum, these data are resoundingly bearish! In such conditions, I would interpret any “bounce”
+merely as volatility and turbulence than evidence of changing tides while expecting significant
+downside all-the-while.
+Happy trading!
+
+
+Justin
+
+
+Deep Dive Stocks – Weekly Chat             for the week of               2026-03-09 to 2026-03-13
+

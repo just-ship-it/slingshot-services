@@ -1,0 +1,98 @@
+                                     Weekly Chat 06/17/2024
+
+
+                                          Main Points
+
+
+    -   VoEx suggests bullish outlooks.
+    -   Hedging Environments show persistent support locally for $SPY and $QQQ.
+    -   DLP behavior is moot.
+    -   MWGS data shows no turbulence.
+    -   Overall, continued bullish outlooks.
+
+
+
+                                           SUMMARY
+
+
+
+          The waters have stilled!
+
+          VoEx for $SPY and $QQQ is representative of bullish outlooks. This occurs
+          with a supportive hedging environment found on both, with reasonable
+          purchasing support in all directions.
+
+          Put-selling is still near-zero, but given IV’s low-state, this suggests minimal
+          price-concerns (i.e.: not selling because of fear for $+) but rather IV
+          concerns (IV probably doesn’t have much room to go down).
+
+          Gamma squeeze data is largely flat as well: growth rates are positive but
+          near-zero, and GTM shows similar data.
+
+          Overall, calm waters and bullish outlooks abound.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                          06/17/2024
+                                              DETAILS
+
+
+
+
+Hello everybody!
+Last week was entered with bullish thoughts in mind, and the market was kind enough to oblige.
+$SPY moved 1.64% while $QQQ moved 3.15%. In comparing these with the EPR’s from last week,
+we see parts of the market moved more than expected once more, namely, $QQQ.
+$QQQ’s EPR last week was ± 1.73%, and with a realized move of 3.15%, that places $QQQ’s
+movements above the market’s expectations by 58%! We can see this below in the Gamma
+Hedging Heatmaps from last week:
+
+
+
+
+Of note is the end-of-week increase in IV noted. Perhaps the greater-than-expected movements
+in the early part of the week provoked some healthy put-purchasing (and conveniently pulled
+things away from selling pressure!).
+This week, the goal is simple: determine if things are going to go up or if the recent greater-then-
+EPR moves should expect some pullback. Let’s get started!
+Starting
+Starting as usual with VoEx, we see both renditions are bullish-oriented. $SPY’s VoEx is officially
+in BUPO (bullish-until-proven-otherwise), while neo-VoEx shows VoEx well within Stability, after
+the initial hesitation we’ve been monitoring recently.
+
+
+
+
+Deep Dive Stocks – Weekly Chat                                                         06/17/2024
+This brings with it overall bullish outlooks.
+The same can be said with $QQQ:
+
+
+
+
+One could, if one so desired, look at VoEx-daily and think “hm that looks like a local peak”.
+And one would not be completely wrong – but for now, I’m going to keep things simple: VoEx says
+up is the likely overall movement, and so I’ll look forward as such.
+Moving from VoEx to the hedging environments, we see another supportive environment for
+$+/IV-:
+
+
+
+
+$SPY and $QQQ are met with local and reasonable purchasing support, some diminish-ment to
+occur should IV rise too much on $QQQ, but over-all, it seems the hedging environment is quite
+supportive.
+Of note, $SPY’s influence distribution suggests a bit of greater-than-expected moves – perhaps
+this week will be $SPY’s time to shine.
+Moving onwards, not much else has changed:
+   -   DLP data is still near-zero. Unsurprising given the low IV – so perhaps this is less of a
+       price-statement than a simple IV one.
+   -   Market-Wide Gamma Squeeze data show persistent near-zero growth rates and a near-
+       zero GTM. Overall – steady waters.
+
+So, overall, expected bullish smooth sailing ahead! Happy Trading – Justin.
+
+
+Deep Dive Stocks – Weekly Chat                                                         06/17/2024
+
