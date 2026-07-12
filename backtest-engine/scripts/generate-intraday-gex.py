@@ -121,6 +121,45 @@ def load_statistics(stats_dir, date_str):
     return merged[['symbol', 'strike', 'type', 'expiry', 'oi', 'close_price']].copy()
 
 
+def find_prev_stats_date(stats_dir, date_str):
+    """Previous trading day = the statistics file immediately before date_str's."""
+    files = sorted(p.name for p in Path(stats_dir).glob('opra-pillar-*.statistics.csv'))
+    key = f'opra-pillar-{date_str.replace("-", "")}.statistics.csv'
+    if key not in files:
+        return None
+    i = files.index(key)
+    if i == 0:
+        return None
+    d = files[i - 1].split('-')[2].split('.')[0]
+    return f'{d[:4]}-{d[4:6]}-{d[6:8]}'
+
+
+def load_statistics_causal(stats_dir, date_str):
+    """Day-D OI (stat_type 9, published premarket) merged with the PREVIOUS
+    trading day's close prices (stat_type 11) — both knowable before the open.
+
+    The default load_statistics uses day-D closes, which OPRA publishes at
+    16:00-17:00 ET of day D: intraday snapshots built from them contain
+    end-of-day information (lookahead). Caveat: contracts first listed on
+    day D (0DTE weeklies) have no prior close and are dropped by the inner
+    join — an inherent limit of any causal close-based variant; cbbo IV is
+    the full-universe fix.
+
+    Returns (df_or_None, prev_date_str_or_None).
+    """
+    prev = find_prev_stats_date(stats_dir, date_str)
+    if prev is None:
+        return None, None
+    cur = load_statistics(stats_dir, date_str)
+    prv = load_statistics(stats_dir, prev)
+    if cur is None or prv is None:
+        return None, prev
+    merged = cur.drop(columns=['close_price']).merge(
+        prv[['symbol', 'close_price']], on='symbol', how='inner')
+    merged = merged[merged['close_price'] > 0]
+    return (merged if not merged.empty else None), prev
+
+
 def load_cbbo_buckets(cbbo_dir, date_str, interval_minutes=15):
     """
     Load cbbo-1m for a date and bucket by interval. Returns dict
@@ -235,8 +274,16 @@ def load_cbbo_buckets(cbbo_dir, date_str, interval_minutes=15):
     return buckets if buckets else None
 
 
-def load_ohlcv_for_date(ohlcv_path, date_str):
-    """Load OHLCV data for a specific date, return 15-min sampled prices."""
+def load_ohlcv_for_date(ohlcv_path, date_str, primary_contract=False):
+    """Load OHLCV data for a specific date, return 15-min sampled prices.
+
+    primary_contract=True resolves the multi-contract ambiguity in raw futures
+    files deterministically: per clock-hour, only rows from the highest-volume
+    symbol that hour are eligible (same rule as the engine's
+    filterPrimaryContract). Without it, "last row in bucket" depends on raw-CSV
+    row order, so a thinly-traded back-month row can become the spot price and
+    shift every futures-space level by the roll spread.
+    """
     prices = {}
 
     # Use grep to extract only matching lines (much faster than pandas for large files)
@@ -252,6 +299,26 @@ def load_ohlcv_for_date(ohlcv_path, date_str):
         print(f"grep failed: {e}")
         return prices
 
+    hour_winner = {}
+    if primary_contract:
+        # Pass 1: volume per (hour, symbol) → winning symbol per hour.
+        hour_vol = {}
+        for line in lines:
+            parts = line.split(',')
+            if len(parts) < 10 or '-' in parts[-1]:
+                continue
+            try:
+                hour_key = parts[0][:13]  # 'YYYY-MM-DDTHH'
+                vol = float(parts[8])
+            except (ValueError, IndexError):
+                continue
+            sym = parts[-1].strip()
+            hour_vol[(hour_key, sym)] = hour_vol.get((hour_key, sym), 0.0) + vol
+        for (hour_key, sym), vol in hour_vol.items():
+            best = hour_winner.get(hour_key)
+            if best is None or vol > best[1]:
+                hour_winner[hour_key] = (sym, vol)
+
     for line in lines:
         if not line:
             continue
@@ -263,6 +330,11 @@ def load_ohlcv_for_date(ohlcv_path, date_str):
         # Skip calendar spreads (symbol contains '-')
         if '-' in parts[-1]:
             continue
+
+        if primary_contract:
+            win = hour_winner.get(parts[0][:13])
+            if win is None or parts[-1].strip() != win[0]:
+                continue
 
         try:
             ts_str = parts[0]
@@ -619,6 +691,20 @@ def main():
                              'falls back to stat_type 11 for contracts without quote)')
     parser.add_argument('--output-dir', default=None,
                         help='Override default output directory')
+    parser.add_argument('--close-source', choices=['sameday', 'prevday'], default='sameday',
+                        help='Which day\'s stat_type 11 closes seed close_price: "sameday" '
+                             '(default, legacy — EOD closes, intraday lookahead) or "prevday" '
+                             '(previous trading day — causal/premarket-knowable; drops '
+                             'day-listed 0DTEs). Applies to the stats base in BOTH iv-source '
+                             'modes (in cbbo mode it is the no-quote fallback price).')
+    parser.add_argument('--cbbo-fallback', choices=['skip', 'prevday'], default='skip',
+                        help='With --iv-source cbbo, what to do for days with no cbbo file: '
+                             '"skip" (default, legacy) or "prevday" (generate the day as '
+                             'causal prevday-close stats instead).')
+    parser.add_argument('--primary-contract-spot', action='store_true',
+                        help='Resolve futures spot from the per-hour highest-volume contract '
+                             '(deterministic; matches engine filterPrimaryContract) instead of '
+                             'last-row-in-bucket, which is raw-CSV row-order-sensitive.')
     args = parser.parse_args()
 
     config = PRODUCTS[args.product]
@@ -659,15 +745,22 @@ def main():
         print(f"Processing {date_str}...", end=' ', flush=True)
 
         # Load statistics (OI + close prices)
-        stats_df = load_statistics(config['stats_dir'], date_str)
+        prev_close_date = None
+        close_source_day = args.close_source
+        if args.close_source == 'prevday':
+            stats_df, prev_close_date = load_statistics_causal(config['stats_dir'], date_str)
+        else:
+            stats_df = load_statistics(config['stats_dir'], date_str)
         if stats_df is None:
             print("no statistics data")
             current += timedelta(days=1)
             continue
 
         # Load OHLCV prices
-        etf_prices = load_ohlcv_for_date(config['etf_ohlcv'], date_str)
-        futures_prices = load_ohlcv_for_date(config['futures_ohlcv'], date_str)
+        etf_prices = load_ohlcv_for_date(config['etf_ohlcv'], date_str,
+                                         primary_contract=args.primary_contract_spot)
+        futures_prices = load_ohlcv_for_date(config['futures_ohlcv'], date_str,
+                                             primary_contract=args.primary_contract_spot)
 
         if not etf_prices:
             print(f"no {config['etf_symbol']} OHLCV data")
@@ -681,21 +774,40 @@ def main():
 
         # Load cbbo-1m if requested
         cbbo_buckets = None
+        iv_source_day = args.iv_source
         if args.iv_source == 'cbbo':
             cbbo_buckets = load_cbbo_buckets(config['cbbo_dir'], date_str, interval_minutes=15)
             if cbbo_buckets is None:
-                print(f"no cbbo-1m data (will skip)")
-                current += timedelta(days=1)
-                continue
+                if args.cbbo_fallback == 'prevday':
+                    if close_source_day != 'prevday':
+                        stats_df, prev_close_date = load_statistics_causal(
+                            config['stats_dir'], date_str)
+                        if stats_df is None:
+                            print("no cbbo-1m and no prevday statistics")
+                            current += timedelta(days=1)
+                            continue
+                    iv_source_day = 'stats'
+                    close_source_day = 'prevday'
+                    print("no cbbo-1m -> prevday-close stats fallback ...", end=' ')
+                else:
+                    print(f"no cbbo-1m data (will skip)")
+                    current += timedelta(days=1)
+                    continue
 
         # Generate JSON
         result = generate_day(date_str, stats_df, etf_prices, futures_prices, config,
-                              iv_source=args.iv_source, cbbo_buckets=cbbo_buckets)
+                              iv_source=iv_source_day, cbbo_buckets=cbbo_buckets)
 
         if result is None:
             print("failed to generate")
             current += timedelta(days=1)
             continue
+
+        # Provenance stamps for the causal-regeneration audit trail.
+        result['metadata']['close_source'] = close_source_day
+        if prev_close_date:
+            result['metadata']['prev_close_date'] = prev_close_date
+        result['metadata']['primary_contract_spot'] = bool(args.primary_contract_spot)
 
         # Write output
         output_path = output_dir / f"{config['output_prefix']}_{date_str}.json"
@@ -703,7 +815,7 @@ def main():
             json.dump(result, f, indent=2)
 
         snap_count = result['metadata']['snapshots']
-        if args.iv_source == 'cbbo':
+        if iv_source_day == 'cbbo':
             hit_rate = result['metadata'].get('cbbo_hit_rate', 0.0)
             print(f"OK ({snap_count} snapshots, cbbo hit rate {hit_rate*100:.1f}%)")
         else:

@@ -1,0 +1,26 @@
+{
+ "F1-long-flip90-imb50-am": {
+  "n": 42,
+  "wr": 59.5,
+  "pnl": 35167,
+  "pf": 2.09,
+  "maxdd": 6042,
+  "sharpe": 6.22
+ },
+ "F2-short-flip20-imb80-day": {
+  "n": 47,
+  "wr": 59.6,
+  "pnl": 51897,
+  "pf": 2.95,
+  "maxdd": 8469,
+  "sharpe": 6.27
+ },
+ "F3-long-flip80-res50-day": {
+  "n": 154,
+  "wr": 57.1,
+  "pnl": 86569,
+  "pf": 1.85,
+  "maxdd": 17646,
+  "sharpe": 5.85
+ }
+}

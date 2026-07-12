@@ -178,6 +178,11 @@ export class CLI {
         description: 'Path to a 1m LS state flip CSV (ls-flip-trigger-bar strategy). Schema: timestamp_iso, unix_ms, state (0|1), source_symbol. Use research/lt-extraction/output/nq_ls_1m_raw.csv.'
       })
 
+      .option('ls15-file', {
+        type: 'string',
+        description: 'Path to a 15m LS state flip CSV — point-in-time source for the lstb LT-alignment filter (--lstb-require-lt-align). Same schema as --ls-1m-file. Use research/lt-extraction/output/nq_ls_15m_raw.csv.'
+      })
+
       .option('lstb-fib', {
         type: 'number',
         description: 'ls-flip-trigger-bar: fib retrace level for limit entry. Default 0.5.'
@@ -2826,6 +2831,7 @@ export class CLI {
       lt1mFile: args['lt-1m-file'] || args.lt1mFile || null, // 1m LT CSV path for gex-lt-3m-crossover
       s1VwapFile: args['s1-vwap-file'] || args.s1VwapFile || null, // s1 VWAP feature CSV for gex-touch-confirm
       ls1mFile: args['ls-1m-file'] || args.ls1mFile || null, // 1m LS flip CSV path for ls-flip-trigger-bar
+      ls15File: args['ls15-file'] || args.ls15File || null, // 15m LS flip CSV (lstb ltAlign sentiment source)
       eodCutoffEt: args.eodCutoffEt || null, // ET cutoff (HH:MM) for day-trade-margin liquidation
       strictLimitFill: args.strictFill ?? false, // require trade-through (low<entry / high>entry) for limit fills
       captureSignals: args.captureSignals ? true : false, // capture-mode: emit every signal, skip trade execution

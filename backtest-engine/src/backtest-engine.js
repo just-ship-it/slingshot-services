@@ -413,6 +413,23 @@ export class BacktestEngine {
       }
     }
 
+    // Optional 15m LS state data (--ls15-file), the honest source for the
+    // lstb LT-alignment filter: the historical LT-feed "sentiment" column IS
+    // the LS-15m state (verified 99.7% match, 2026-07-11). Point-in-time
+    // lookup from the sparse flip file decouples the filter from LT-row
+    // coverage holes. Same schema/loader as --ls-1m-file. Loaded with a
+    // 14-day warmup so the state AT window start is known (the current state
+    // comes from the last flip BEFORE the window).
+    let lsData15m = [];
+    if (this.config.ls15File) {
+      const warmStart = new Date(this.config.startDate.getTime() - 14 * 24 * 3600000);
+      lsData15m = await this._loadLs1mFile(this.config.ls15File,
+        warmStart, this.config.endDate);
+      if (!this.config.quiet) {
+        console.log(`✅ Loaded ${lsData15m.length.toLocaleString()} 15m LS flip records from ${this.config.ls15File}`);
+      }
+    }
+
     // Load GEX data from 15-minute interval JSON files
     const gexLoaded = await this.gexLoader.loadDateRange(this.config.startDate, this.config.endDate);
 
@@ -595,7 +612,7 @@ export class BacktestEngine {
     }
 
     // Create market data lookup for efficient access (for legacy compatibility)
-    const marketDataLookup = this.createMarketDataLookup(gexData, liquidityData, liquidityData1m, s1VwapData, lsData1m);
+    const marketDataLookup = this.createMarketDataLookup(gexData, liquidityData, liquidityData1m, s1VwapData, lsData1m, lsData15m);
 
     // Load IV data for IV-based strategies (iv-skew-gex, gex-flip-ivpct, gex-touch-confirm)
     const isIVSkewStrategy = this.config.strategy === 'iv-skew-gex' || this.config.strategy === 'iv-skew';
@@ -706,6 +723,7 @@ export class BacktestEngine {
       liquidityLevels: liquidityData,
       liquidityLevels1m: liquidityData1m,
       lsState1m: lsData1m,
+      lsState15m: lsData15m,
       calendarSpreads: calendarSpreads,  // For contract transition tracking
       marketDataLookup: marketDataLookup,
       cvdMap: this.cvdMap,               // CVD data aligned to candle timestamps (Phase 3)
@@ -1473,7 +1491,7 @@ export class BacktestEngine {
    * @param {Object[]} liquidityData - Liquidity levels data
    * @returns {Object} Market data lookup
    */
-  createMarketDataLookup(gexData, liquidityData, liquidityData1m = null, s1VwapData = null, lsData1m = null) {
+  createMarketDataLookup(gexData, liquidityData, liquidityData1m = null, s1VwapData = null, lsData1m = null, lsData15m = null) {
     const lookup = {
       gex: new Map(),
       liquidity: new Map(),
@@ -1481,6 +1499,8 @@ export class BacktestEngine {
       liquidity1mSorted: null,  // sorted ts array for at-or-before fallback
       s1Vwap: null,             // ts → vwap_close_diff (gex-touch-confirm)
       lsState1m: null,          // ts → {timestamp, state} (ls-flip-trigger-bar)
+      ls15Ts: null,             // sorted flip ts array (15m LS, lstb ltAlign)
+      ls15State: null,          // parallel state array (0|1)
     };
 
     // Index GEX data by date
@@ -1523,6 +1543,15 @@ export class BacktestEngine {
       for (const r of lsData1m) {
         lookup.lsState1m.set(r.timestamp, r);
       }
+    }
+
+    // Index 15m LS flips as parallel sorted arrays for point-in-time
+    // (at-or-before) state lookup — unlike the 1m map, the CURRENT state is
+    // what matters here (lstb ltAlign filter), not flip instants.
+    if (lsData15m && lsData15m.length) {
+      const sorted = [...lsData15m].sort((a, b) => a.timestamp - b.timestamp);
+      lookup.ls15Ts = sorted.map(r => r.timestamp);
+      lookup.ls15State = sorted.map(r => r.state);
     }
 
     return lookup;
@@ -1651,7 +1680,23 @@ export class BacktestEngine {
       lsState1m = lookup.lsState1m.get(timestamp) || null;
     }
 
+    // 15m LS point-in-time state → sentiment label (lstb ltAlign filter).
+    // Binary search for the latest flip at-or-before this bar; the state
+    // HOLDS until the next flip. 1=BULLISH, 0=BEARISH (verified 99.7% match
+    // vs the historical LT-feed sentiment column, 2026-07-11).
+    let ls15Sentiment = null;
+    if (lookup && lookup.ls15Ts && lookup.ls15Ts.length) {
+      let lo = 0, hi = lookup.ls15Ts.length - 1, idx = -1;
+      while (lo <= hi) {
+        const mid = (lo + hi) >> 1;
+        if (lookup.ls15Ts[mid] <= timestamp) { idx = mid; lo = mid + 1; }
+        else hi = mid - 1;
+      }
+      if (idx >= 0) ls15Sentiment = lookup.ls15State[idx] === 1 ? 'BULLISH' : 'BEARISH';
+    }
+
     return {
+      ls15Sentiment: ls15Sentiment,        // 15m LS state label (lstb ltAlign)
       gexLevels: gexLevels,
       ltLevels: liquidityLevels,
       ltLevels1m: liquidityLevels1m,       // 1m LT for gex-lt-3m-crossover

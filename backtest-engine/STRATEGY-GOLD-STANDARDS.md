@@ -2,6 +2,10 @@
 
 Per-strategy backtest CLI invocations with current gold-standard numbers, alternate presets, and historical baselines. Auto-memory entries in `MEMORY.md` track live-default changes and supersession events — when this doc and MEMORY.md disagree, MEMORY.md is more current.
 
+> **⚠ 2026-07-11 — stats-GEX lookahead event.** The stats-variant GEX dirs (`data/gex/nq`, `data/gex/es`) were found to embed same-day EOD close prices in every intraday snapshot's IV (verification: `research/databento-live-parity/VERIFICATION-stats-gex-lookahead.md`). Contaminated data quarantined in `data/quarantine-lookahead/`; `data/gex/nq` + `data/gex/es` now contain CAUSAL regenerations (cbbo quote IV 2025-01+, prior-day-close fallback earlier, as-of labels, primary-contract spot; provenance stamped in each file's metadata).
+> **VOID golds:** all GEX-FLIP-IVPCT entries (causal rerun: 94tr / −$1,737 / PF 0.98 — edge did not survive); LT-GEX-Path-Race v1 (causal rerun 2026-07-11: 512tr / $60,998 / WR 61.9 / **PF 1.22 / Sh 0.95 / DD 16.15%** — real residual but not book quality); LT-GEX-Path-Race v1-ES (causal rerun: **98tr / $44,079 / WR 72.4 / PF 2.08 / DD 7.73%** — survives standalone but FCFS-dilutive, see below); gex-touch-patterns (used default `gex/nq`); the 4-strategy FCFS baseline where it includes gfi.
+> **NEW HONEST BOOK BASELINE (2026-07-11, `research/4strategy-portfolio/run-clean-book.js`, window Jan'25–Apr'26): lstb + glx + glf = $513,536 / PF 1.64 / WR 67% / Sharpe 10.47.** Adding v1-ES-causal: $523,122 / PF 1.64 / Sharpe 10.24 (+$9.6k PnL, −0.23 Sharpe) → v1-ES does NOT earn the 4th slot on Sharpe-first criteria; bench candidate. Causal v1-ES trades: `data/gold-standard/lt-gex-path-race-v1-es-causal.json`. **Unaffected:** IV-SKEW-GEX, GEX-LT-3M-Crossover, GEX-Level-Fade (all `gex/nq-cbbo`, causal since 2026-05 fixes), LS-Flip-Trigger-Bar (no GEX), Short-DTE-IV.
+
 Run `node index.js --help` for all available strategies and options.
 
 ---
@@ -167,6 +171,14 @@ node index.js --ticker NQ --strategy ls-flip-trigger-bar --timeframe 1m --raw-co
 `--lstb-preset v3` expands to: `--lstb-blocked-hours "5,16,17,18,19,20,21,22,23" --lstb-min-range 3 --lstb-target-pts 15 --lstb-stop-pts 12 --lstb-breakeven-stop --lstb-be-trigger 8 --lstb-be-offset 2`.
 
 **v3 candJ gold standard (2026-05-21):** **6,463 trades / $279,135 PnL / +114% vs v2 / WR 72.2% / PF 1.59 / Sharpe 21.00 / MaxDD 1.82%** over 16 months. JSON: `data/gold-standard/ls-flip-trigger-bar-v3.json`. Doubles v2's $130,500 PnL while preserving sub-2% DD; per-trade Sharpe nearly doubles (10.97 → 21.00).
+
+### v3 + ltAlign (2026-07-11 — production-candidate variant)
+
+Adds `--lstb-require-lt-align --ls15-file research/lt-extraction/output/nq_ls_15m_raw.csv` to the v3 command. The alignment source is the **LS-15m state** point-in-time (the historical LT-feed "sentiment" column IS this series — 99.7% verified; see `memory/lt-sentiment-is-ls15.md`). `--ls15-file` decouples the filter from LT-row coverage and mirrors the live design (dedicated 15m LS study; the 1m LS stream is NOT a valid proxy — 52% agreement).
+
+**v3-ltAlign gold (2026-07-11, filter active over the FULL window):** **3,449 trades / $193,486 / WR 74.5% / PF 1.84 / Sharpe 19.98 / MaxDD 1.47%.** −47% trades and −$86k PnL vs plain v3, buying +0.25 PF and a lower DD. JSON: `data/gold-standard/ls-flip-trigger-bar-v3-ltalign.json`.
+
+**Book context (post-lookahead-event production candidate, `run-book-scenarios.js`, Jan'25–Apr'26):** GLX + LSTB-ltAlign = **$381,305 / PF 1.86 / WR 72.1% / Sharpe 9.40 / maxDD $7,157 (3.0%) / worst day −$4,135 / worst week −$3,131**. Adding v1-ES: +$12.4k but Sharpe −0.15 (benched). Adding GLF: +$69k but PF −0.11, worst day −$5,085 (small-account risk trade-off).
 
 Mechanism (four levers compound):
 1. Fixed 15pt target / 12pt stop replacing bar-extreme equidistant TP/SL.
