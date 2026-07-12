@@ -251,6 +251,14 @@ class LTMonitor extends EventEmitter {
     // Generate session IDs
     this.quoteSession = this.generateSession('qs');
     this.chartSession = this.generateSession('cs');
+    // Second CHART SESSION for the 15m LS state feed. TV enforces a
+    // one-series-per-chart-session limit ("exceed limit of series in the
+    // session" critical_error kills the whole session, verified 2026-07-11),
+    // so the 15m series must live in its own chart session — still on this
+    // same WebSocket (a second socket doubles reconnect churn; a second
+    // session does not).
+    this.chartSession15 = String(this.timeframe) !== '15'
+      ? this.generateSession('cs') : null;
 
     // Send initialization sequence
     this.sendMessage('set_auth_token', [this.jwtToken || 'unauthorized_user_token']);
@@ -258,6 +266,9 @@ class LTMonitor extends EventEmitter {
 
     // Create sessions
     this.sendMessage('chart_create_session', [this.chartSession, '']);
+    if (this.chartSession15) {
+      this.sendMessage('chart_create_session', [this.chartSession15, '']);
+    }
     this.sendMessage('quote_create_session', [this.quoteSession]);
     this.sendMessage('quote_set_fields', [
       this.quoteSession,
@@ -297,14 +308,16 @@ class LTMonitor extends EventEmitter {
       ''
     ]);
 
-    // Second series at 15m for the LS-15m STATE feed (lstb LT-alignment gate).
-    // Same session/socket — series are cheap, sockets are not. Skipped when
-    // the primary timeframe is already 15m (st10 covers it there).
-    if (String(this.timeframe) !== '15') {
+    // 15m series for the LS-15m STATE feed (lstb LT-alignment gate) — in its
+    // OWN chart session (TV limits one series per chart session; a second
+    // create_series in the main session kills it with critical_error).
+    // Skipped when the primary timeframe is already 15m (st10 covers it).
+    if (this.chartSession15) {
+      this.sendMessage('resolve_symbol', [this.chartSession15, 'sds_sym_1', `=${resolveSymbol}`]);
       this.sendMessage('create_series', [
-        this.chartSession,
-        'sds_2',
-        's2',
+        this.chartSession15,
+        'sds_1',
+        's1',
         'sds_sym_1',
         '15',
         300,           // LS needs no deep warmup; 300 bars ≈ 3+ trading days
@@ -451,20 +464,20 @@ class LTMonitor extends EventEmitter {
                 }
               }
 
-              // 15m LS study (st11) on the second series — same indicator,
-              // reused metadata fetch. State feed for the lstb ltAlign gate.
-              if (LIQUIDITY_STATUS_INDICATOR && !this.ls15StudyAdded
-                  && String(this.timeframe) !== '15') {
+              // 15m LS study (st11) on the second chart session's series —
+              // same indicator, fresh metadata fetch. State feed for the
+              // lstb ltAlign gate.
+              if (LIQUIDITY_STATUS_INDICATOR && !this.ls15StudyAdded && this.chartSession15) {
                 this.ls15StudyAdded = true;
                 try {
                   const ls15Result = await this.fetchIndicatorMetadata(LIQUIDITY_STATUS_INDICATOR, LIQUIDITY_STATUS_VERSION);
                   if (ls15Result) {
                     const ls15Payload = this.prepareIndicatorMetadata(LIQUIDITY_STATUS_INDICATOR, ls15Result.metainfo);
                     this.sendMessage('create_study', [
-                      this.chartSession,
+                      this.chartSession15,
                       'st11',   // 15m LS study ID
-                      'st3',    // Output ID
-                      'sds_2',  // 15m series
+                      'st1',    // Output ID (per-session namespace)
+                      'sds_1',  // the 15m session's series
                       ls15Result.scriptEndpoint,
                       ls15Payload
                     ]);
