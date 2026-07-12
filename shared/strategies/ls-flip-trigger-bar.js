@@ -242,13 +242,29 @@ export class LsFlipTriggerBarStrategy extends BaseStrategy {
     // Step 2c: LT-sentiment alignment filter (optional). Reject flips that fight
     // the prevailing 15m LT sentiment. Fail-open when sentiment is unavailable.
     if (this.params.requireLtAlign) {
-      const sent = marketData?.ltLevels?.sentiment ?? marketData?.liquidityLevels?.sentiment;
+      // Preferred source: point-in-time 15m LS state (marketData.ls15Sentiment,
+      // engine --ls15-file / live 15m LS study). The legacy fallback reads the
+      // LT-feed row's sentiment column — which IS the LS-15m state historically
+      // (99.7% match) but goes stale/absent across LT-row coverage holes.
+      const sent = marketData?.ls15Sentiment
+        ?? marketData?.ltLevels?.sentiment
+        ?? marketData?.liquidityLevels?.sentiment;
       if (sent === 'BULLISH' || sent === 'BEARISH') {
         const bull = sent === 'BULLISH';
         const aligned = (direction === 'long' && bull) || (direction === 'short' && !bull);
         if (!aligned) {
           this._lastRejectReason = `LT sentiment ${sent} misaligned with ${direction} flip`;
           return null;
+        }
+      } else {
+        // Fail-open by design, but LOUDLY: the gate is configured on and the
+        // 15m LS state is missing — a dead/unseeded feed silently reverts the
+        // strategy to unfiltered v3 behavior. Rate-limit to one warn / 15 min.
+        const now = Date.now();
+        if (!this._lastLtAlignWarnAt || now - this._lastLtAlignWarnAt > 15 * 60_000) {
+          this._lastLtAlignWarnAt = now;
+          // eslint-disable-next-line no-console
+          console.warn('[lstb] requireLtAlign is ON but no 15m LS sentiment is available — gate failing OPEN (check ls.status.15m feed / --ls15-file)');
         }
       }
     }

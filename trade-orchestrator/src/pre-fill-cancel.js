@@ -68,6 +68,33 @@ export function shouldCancelOnAdverseLsFlip(direction, sentiment) {
   return (isLong && s === 'BEARISH') || (isShort && s === 'BULLISH');
 }
 
+/**
+ * Full per-order decision for the adverse-LS-flip watcher: given a pending
+ * order and an LS_STATUS flip, should this order be cancelled? Pure — the
+ * index.js loop applies this to every pending order and performs the actual
+ * cancel/telemetry on true.
+ *
+ * @param {object} pending - pendingOrders entry ({cancelOnAdverseLsFlip,
+ *   cancelRequested, action, signalId, direction, adverseFlipCreatedTs, underlying}).
+ * @param {string} product - LS_STATUS product (already uppercased), e.g. 'NQ'.
+ * @param {string} sentiment - LS_STATUS sentiment ('BULLISH'|'BEARISH').
+ * @param {number|null} flipTsMs - flip timestamp in ms (null when unknown).
+ * @returns {boolean}
+ */
+export function shouldCancelPendingOnFlip(pending, product, sentiment, flipTsMs) {
+  if (!pending || !pending.cancelOnAdverseLsFlip) return false;
+  if (pending.cancelRequested) return false;
+  if (pending.action !== 'place_limit') return false;
+  if (!pending.signalId) return false;
+  if (pending.underlying !== product) return false;
+  if (!shouldCancelOnAdverseLsFlip(pending.direction, sentiment)) return false;
+  // Only a flip strictly AFTER the one that created the order counts — a
+  // stale/replayed flip (or the creating flip itself) must not self-cancel.
+  if (flipTsMs != null && pending.adverseFlipCreatedTs != null &&
+      flipTsMs <= pending.adverseFlipCreatedTs) return false;
+  return true;
+}
+
 export function shouldCancelOnPreFillExtreme(direction, stopLoss, takeProfit, high, low) {
   const isBuy = direction === 'buy' || direction === 'long';
   const isSell = direction === 'sell' || direction === 'short';

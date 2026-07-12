@@ -578,6 +578,7 @@ function createLsFlipTriggerBarStrategy(config) {
     `stopPoints=${params.stopPoints ?? 'null'}, targetPoints=${params.targetPoints ?? 'null'}, ` +
     `breakevenStop=${!!params.breakevenStop}, breakevenTrigger=${params.breakevenTrigger ?? 'null'}, breakevenOffset=${params.breakevenOffset ?? 0}, ` +
     `trailingTrigger=${params.trailingTrigger ?? 'null'}, trailingOffset=${params.trailingOffset ?? 'null'}, ` +
+    `requireLtAlign=${!!params.requireLtAlign}, ` +
     `eodCutoff=${params.eodCutoffEt}`);
 
   return new LsFlipTriggerBarStrategy(params);

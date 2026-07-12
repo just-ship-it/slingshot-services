@@ -82,6 +82,20 @@ class LTMonitor extends EventEmitter {
     this.lsBarFullyObserved = false;
     // ~1m bar = 60s; allow some clock drift before classifying as a gap.
     this.LS_GAP_THRESHOLD_SEC = 90;
+
+    // 15m LS state feed (lstb LT-alignment gate; 2026-07-11). A SECOND series
+    // (sds_2 @ '15') + LS study (st11) on the SAME chart session/socket — a
+    // second WebSocket doubles TV reconnect churn (see the disabled ES
+    // monitor), a second series does not. This is a STATE feed (what is the
+    // 15m LS right now), never an entry trigger, so unlike the 1m path it
+    // seeds a baseline from the study's history batch (second-to-last entry =
+    // last CONFIRMED closed bar) and emits it immediately on (re)connect.
+    this.ls15StudyAdded = false;
+    this.ls15FormingBarTs = null;
+    this.ls15FormingBarSentiment = null;
+    this.ls15FormingBarRaw = null;
+    this.ls15ConfirmedSentiment = null;
+    this.ls15ConfirmedBarTs = null;
   }
 
   generateSession(prefix = 'qs') {
@@ -196,6 +210,13 @@ class LTMonitor extends EventEmitter {
     this.lsFormingBarSentiment = null;
     this.lsFormingBarRaw = null;
     this.lsBarFullyObserved = false;
+    // 15m LS: same reseed rules; the confirmed state survives the reconnect
+    // (still the truth until a newer 15m close) and the history-batch baseline
+    // re-emits it for late-joining consumers.
+    this.ls15StudyAdded = false;
+    this.ls15FormingBarTs = null;
+    this.ls15FormingBarSentiment = null;
+    this.ls15FormingBarRaw = null;
     this.initializeSessions();
     this.startKeepalivePing();
     this.emit('connected');
@@ -264,16 +285,32 @@ class LTMonitor extends EventEmitter {
     // Resolve symbol for chart
     this.sendMessage('resolve_symbol', [this.chartSession, 'sds_sym_1', `=${resolveSymbol}`]);
 
-    // Create 15-minute series with more historical data
+    // Create primary series (this.timeframe, prod default 1m) with more
+    // historical data
     this.sendMessage('create_series', [
       this.chartSession,
       'sds_1',
       's1',
       'sds_sym_1',
-      this.timeframe,  // 15-minute timeframe
+      this.timeframe,  // primary timeframe (LT levels + 1m LS flips)
       700,             // Request 700 bars (LT Fib 7 needs 610 bars to calculate)
       ''
     ]);
+
+    // Second series at 15m for the LS-15m STATE feed (lstb LT-alignment gate).
+    // Same session/socket — series are cheap, sockets are not. Skipped when
+    // the primary timeframe is already 15m (st10 covers it there).
+    if (String(this.timeframe) !== '15') {
+      this.sendMessage('create_series', [
+        this.chartSession,
+        'sds_2',
+        's2',
+        'sds_sym_1',
+        '15',
+        300,           // LS needs no deep warmup; 300 bars ≈ 3+ trading days
+        ''
+      ]);
+    }
 
     // Study will be added after receiving timescale_update message
     // This ensures the series is fully loaded before adding the indicator
@@ -413,6 +450,32 @@ class LTMonitor extends EventEmitter {
                   logger.error('❌ Error creating LS study with metadata:', lsError);
                 }
               }
+
+              // 15m LS study (st11) on the second series — same indicator,
+              // reused metadata fetch. State feed for the lstb ltAlign gate.
+              if (LIQUIDITY_STATUS_INDICATOR && !this.ls15StudyAdded
+                  && String(this.timeframe) !== '15') {
+                this.ls15StudyAdded = true;
+                try {
+                  const ls15Result = await this.fetchIndicatorMetadata(LIQUIDITY_STATUS_INDICATOR, LIQUIDITY_STATUS_VERSION);
+                  if (ls15Result) {
+                    const ls15Payload = this.prepareIndicatorMetadata(LIQUIDITY_STATUS_INDICATOR, ls15Result.metainfo);
+                    this.sendMessage('create_study', [
+                      this.chartSession,
+                      'st11',   // 15m LS study ID
+                      'st3',    // Output ID
+                      'sds_2',  // 15m series
+                      ls15Result.scriptEndpoint,
+                      ls15Payload
+                    ]);
+                    logger.info(`📐 LS-15m study creation sent (${ls15Result.scriptEndpoint})`);
+                  } else {
+                    logger.error('❌ Failed to fetch LS indicator metadata for the 15m study');
+                  }
+                } catch (ls15Error) {
+                  logger.error('❌ Error creating LS-15m study:', ls15Error);
+                }
+              }
             } catch (error) {
               logger.error('❌ Error creating LT study with metadata:', error);
             }
@@ -436,6 +499,87 @@ class LTMonitor extends EventEmitter {
     if (!payload || payload.length < 2) return;
 
     const update = payload[1];
+
+    // 15m LS state (st11 on sds_2) — STATE feed for the lstb ltAlign gate.
+    // Semantics differ from the 1m flip feed below on purpose:
+    //  - Baseline seeding: the first batch after study creation carries
+    //    history; the second-to-last entry is the last CONFIRMED closed 15m
+    //    bar, a trustworthy state — emit it immediately (baseline: true) so
+    //    consumers know the state on (re)connect instead of waiting for the
+    //    next flip (potentially hours).
+    //  - Bar-close gating still applies for LIVE transitions: only a closed
+    //    bar's sentiment updates the confirmed state.
+    if (update.st11 && update.st11.st) {
+      const s15 = update.st11.st;
+      if (s15.length > 0) {
+        const toSentiment = (v) => {
+          const raw = v && v.v ? v.v[5] : null;
+          return raw == null ? null : raw <= 6 ? 'BULLISH' : raw >= 7 ? 'BEARISH' : null;
+        };
+        // Baseline from history: only when we have no confirmed state for
+        // this session yet and the batch includes at least one CLOSED bar.
+        if (this.ls15FormingBarTs === null && s15.length >= 2) {
+          const closed = s15[s15.length - 2];
+          const closedSent = toSentiment(closed);
+          if (closedSent) {
+            const changed = closedSent !== this.ls15ConfirmedSentiment;
+            this.ls15ConfirmedSentiment = closedSent;
+            this.ls15ConfirmedBarTs = closed.v[0];
+            logger.info(`📊 LS-15m baseline: ${closedSent} @ ${new Date(closed.v[0] * 1000).toISOString()}${changed ? '' : ' (unchanged)'}`);
+            this.emit('ls15_status', {
+              sentiment: closedSent,
+              raw: closed.v[5],
+              timestamp: closed.v[0],
+              candleTime: new Date(closed.v[0] * 1000).toISOString(),
+              priorSentiment: null,
+              barClose: true,
+              baseline: true,
+              resolution: '15',
+            });
+          }
+        }
+        const latest = s15[s15.length - 1];
+        const values = latest.v;
+        if (values) {
+          const newTs = values[0];
+          const raw = values[5];
+          const sentiment = raw == null ? null : raw <= 6 ? 'BULLISH' : raw >= 7 ? 'BEARISH' : null;
+          if (this.ls15FormingBarTs === null || newTs === this.ls15FormingBarTs) {
+            // Seed or intrabar update — cache provisional value only.
+            this.ls15FormingBarTs = newTs;
+            if (sentiment) {
+              this.ls15FormingBarSentiment = sentiment;
+              this.ls15FormingBarRaw = raw;
+            }
+          } else if (newTs > this.ls15FormingBarTs) {
+            // Previous forming bar CONFIRMED CLOSED.
+            const closedTs = this.ls15FormingBarTs;
+            const closedSent = this.ls15FormingBarSentiment;
+            const closedRaw = this.ls15FormingBarRaw;
+            if (closedSent && closedSent !== this.ls15ConfirmedSentiment) {
+              logger.info(`📊 LS-15m FLIP (bar-close): ${this.ls15ConfirmedSentiment ?? 'null'} → ${closedSent} (raw=${closedRaw}) candle=${new Date(closedTs * 1000).toISOString()}`);
+              this.emit('ls15_status', {
+                sentiment: closedSent,
+                raw: closedRaw,
+                timestamp: closedTs,
+                candleTime: new Date(closedTs * 1000).toISOString(),
+                priorSentiment: this.ls15ConfirmedSentiment,
+                barClose: true,
+                baseline: false,
+                resolution: '15',
+              });
+              this.ls15ConfirmedSentiment = closedSent;
+              this.ls15ConfirmedBarTs = closedTs;
+            } else if (closedSent) {
+              this.ls15ConfirmedBarTs = closedTs;
+            }
+            this.ls15FormingBarTs = newTs;
+            this.ls15FormingBarSentiment = sentiment;
+            this.ls15FormingBarRaw = raw;
+          }
+        }
+      }
+    }
 
     // Look for LS indicator data in st10
     //

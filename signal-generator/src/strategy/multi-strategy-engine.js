@@ -236,6 +236,26 @@ class MultiStrategyEngine {
 
       this.products.set(product, state);
       logger.info(`Product ${product}: ${state.strategies.size} strategies configured, trading ${productConfig.tradingSymbol}`);
+
+      // Seed the 15m LS state from Redis (retained by data-service on every
+      // baseline/flip). Without this, a signal-generator restart leaves the
+      // lstb ltAlign gate failing open until the next 15m event.
+      if (messageBus.publisher) {
+        messageBus.publisher.get(`ls15:sentiment:${product}`).then((raw) => {
+          if (!raw || state.ls15Sentiment) return;   // live event beat the seed
+          try {
+            const msg = JSON.parse(raw);
+            const sentiment = (msg.sentiment || '').toUpperCase();
+            if (sentiment === 'BULLISH' || sentiment === 'BEARISH') {
+              state.ls15Sentiment = sentiment;
+              state.ls15SentimentAt = Number.isFinite(msg.timestamp) ? msg.timestamp * 1000 : null;
+              logger.info(`LS-15m state seeded from Redis for ${product}: ${sentiment} @ ${msg.candleTime || '?'}`);
+            }
+          } catch { /* malformed key — live feed will repopulate */ }
+        }).catch((err) => {
+          logger.warn(`LS-15m Redis seed failed for ${product}: ${err.message}`);
+        });
+      }
     }
   }
 
@@ -337,6 +357,21 @@ class MultiStrategyEngine {
       const inSession = this.isInTradingSession();
       this.evaluateStrategyOnCandle(state, lstbRunner, matchCandle, inSession)
         .catch(err => logger.error(`[lstb LS-driven re-eval] failed: ${err.message}`));
+    });
+
+    // Subscribe to 15m LS state (lstb LT-alignment gate). Pure STATE feed —
+    // it never triggers evaluation; the next candle eval reads it via
+    // marketData.ls15Sentiment. Separate channel from LS_STATUS so 15m
+    // closes can never be mistaken for 1m entry flips.
+    messageBus.subscribe(CHANNELS.LS_STATUS_15M, (message) => {
+      const product = (message.product || 'NQ').toUpperCase();
+      const state = this.products.get(product);
+      if (!state) return;
+      const sentiment = (message.sentiment || '').toUpperCase();
+      if (sentiment !== 'BULLISH' && sentiment !== 'BEARISH') return;
+      state.ls15Sentiment = sentiment;
+      state.ls15SentimentAt = Number.isFinite(message.timestamp) ? message.timestamp * 1000 : Date.now();
+      logger.info(`LS-15m state for ${product}: ${sentiment}${message.baseline ? ' (baseline)' : ''} @ ${message.candleTime}`);
     });
 
     // Subscribe to IV skew
@@ -636,6 +671,10 @@ class MultiStrategyEngine {
       // it does an exact timestamp match so a stale flip from a prior bar
       // won't fire a new entry. Other strategies ignore the field.
       lsState1m: state.lsState1m || null,
+      // Point-in-time 15m LS state (lstb ltAlign gate; ls.status.15m feed,
+      // Redis-seeded at startup). Null until first baseline/flip — the gate
+      // fails open and warns.
+      ls15Sentiment: state.ls15Sentiment || null,
     };
 
     // Add IV data for strategies that need it

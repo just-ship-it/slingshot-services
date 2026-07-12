@@ -81,6 +81,10 @@ export const CHANNELS = {
   // Signal Generator events
   LT_LEVELS: 'lt.levels',
   LS_STATUS: 'ls.status',
+  // 15m LS state (lstb LT-alignment gate). Separate channel so LS_STATUS
+  // stays pure 1m — 1m flips drive lstb entries and the orchestrator's
+  // adverse-flip pre-fill cancel; 15m is a STATE feed, never a trigger.
+  LS_STATUS_15M: 'ls.status.15m',
   GEX_LEVELS: 'gex.levels',
   VEX_LEVELS: 'vex.levels',
   CEX_LEVELS: 'cex.levels',

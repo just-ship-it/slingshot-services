@@ -12,7 +12,7 @@
  * failing scenario and exits 1.
  */
 
-import { shouldCancelOnPreFillExtreme, effectivePreFillExtremes, shouldCancelOnAdverseLsFlip } from '../src/pre-fill-cancel.js';
+import { shouldCancelOnPreFillExtreme, effectivePreFillExtremes, shouldCancelOnAdverseLsFlip, shouldCancelPendingOnFlip } from '../src/pre-fill-cancel.js';
 
 let passes = 0;
 function ok(cond, msg) {
@@ -109,5 +109,46 @@ ok(shouldCancelOnAdverseLsFlip('buy', 'BEARISH') === true, 'buy vocabulary also 
 ok(shouldCancelOnAdverseLsFlip('sell', 'BULLISH') === true, 'sell vocabulary also cancels on BULLISH');
 ok(shouldCancelOnAdverseLsFlip('long', 'sideways') === false, 'unknown sentiment never cancels');
 ok(shouldCancelOnAdverseLsFlip('na', 'BEARISH') === false, 'unknown direction never cancels');
+
+// --- full per-order decision (shouldCancelPendingOnFlip): opt-in, shape,
+// product match, stale-flip guard ---
+const basePending = {
+  cancelOnAdverseLsFlip: true,
+  cancelRequested: false,
+  action: 'place_limit',
+  signalId: 'sig-1',
+  direction: 'long',
+  adverseFlipCreatedTs: 1_700_000_000_000,   // creating flip (ms)
+  underlying: 'NQ',
+};
+const LATER = 1_700_000_060_000;   // +60s: a genuine subsequent flip
+const CREATING = 1_700_000_000_000;
+
+ok(shouldCancelPendingOnFlip(basePending, 'NQ', 'BEARISH', LATER) === true,
+   'pending lstb long cancelled by later BEARISH flip');
+ok(shouldCancelPendingOnFlip(basePending, 'NQ', 'BEARISH', CREATING) === false,
+   'STALE GUARD: the creating flip itself (ts equal) must not self-cancel');
+ok(shouldCancelPendingOnFlip(basePending, 'NQ', 'BEARISH', CREATING - 1000) === false,
+   'STALE GUARD: an earlier/replayed flip must not cancel');
+ok(shouldCancelPendingOnFlip(basePending, 'NQ', 'BEARISH', null) === true,
+   'null flip ts (unknown) still cancels — fail toward the backtest behavior');
+ok(shouldCancelPendingOnFlip({ ...basePending, adverseFlipCreatedTs: null }, 'NQ', 'BEARISH', LATER) === true,
+   'missing creating-flip ts still cancels on a real adverse flip');
+ok(shouldCancelPendingOnFlip(basePending, 'ES', 'BEARISH', LATER) === false,
+   'product mismatch (ES flip vs NQ pending) never cancels');
+ok(shouldCancelPendingOnFlip({ ...basePending, cancelOnAdverseLsFlip: false }, 'NQ', 'BEARISH', LATER) === false,
+   'non-opted-in strategies are never cancelled');
+ok(shouldCancelPendingOnFlip({ ...basePending, cancelOnAdverseLsFlip: undefined }, 'NQ', 'BEARISH', LATER) === false,
+   'undefined opt-in (non-lstb signal) never cancels');
+ok(shouldCancelPendingOnFlip({ ...basePending, cancelRequested: true }, 'NQ', 'BEARISH', LATER) === false,
+   'already-requested cancel is not re-issued');
+ok(shouldCancelPendingOnFlip({ ...basePending, action: 'place_market' }, 'NQ', 'BEARISH', LATER) === false,
+   'only pending LIMITS are subject to the flip cancel');
+ok(shouldCancelPendingOnFlip({ ...basePending, signalId: null }, 'NQ', 'BEARISH', LATER) === false,
+   'no signalId → cannot address the cancel → skip');
+ok(shouldCancelPendingOnFlip(basePending, 'NQ', 'BULLISH', LATER) === false,
+   'aligned flip never cancels the long');
+ok(shouldCancelPendingOnFlip({ ...basePending, direction: 'sell' }, 'NQ', 'BULLISH', LATER) === true,
+   'sell-vocabulary pending cancelled by BULLISH flip');
 
 console.log(`OK — ${passes} pre-fill-cancel scenarios passed`);

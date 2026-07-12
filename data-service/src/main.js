@@ -518,6 +518,9 @@ class DataService {
         // Set up LS sentiment listener
         monitor.on('ls_status', (lsStatus) => this.handleLsUpdate(ltConfig.key, lsStatus));
 
+        // 15m LS state listener (lstb LT-alignment gate)
+        monitor.on('ls15_status', (ls15Status) => this.handleLs15Update(ltConfig.key, ls15Status));
+
         await monitor.connect();
         await monitor.startMonitoring();
         this.ltMonitors.set(ltConfig.key, monitor);
@@ -753,6 +756,23 @@ class DataService {
       await messageBus.publish(CHANNELS.LS_STATUS, { ...lsStatus, product });
     } catch (error) {
       logger.error(`Error handling LS update for ${product}:`, error);
+    }
+  }
+
+  /**
+   * Handle 15m LS state update (lstb LT-alignment gate). Published on its own
+   * channel — LS_STATUS stays pure 1m (entry triggers + adverse-flip cancel).
+   * Also retained in Redis so consumers that start AFTER the last
+   * flip/baseline (e.g. a signal-generator restart) seed the state instantly.
+   */
+  async handleLs15Update(product, ls15Status) {
+    try {
+      logger.info(`LS-15m state for ${product}: ${ls15Status.sentiment}${ls15Status.baseline ? ' (baseline)' : ''}`);
+      const msg = { ...ls15Status, product };
+      await messageBus.publish(CHANNELS.LS_STATUS_15M, msg);
+      await messageBus.publisher.set(`ls15:sentiment:${product}`, JSON.stringify(msg));
+    } catch (error) {
+      logger.error(`Error handling LS-15m update for ${product}:`, error);
     }
   }
 

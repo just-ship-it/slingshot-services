@@ -29,7 +29,7 @@ import { evaluateCrossStrategyRules, evaluateStrategyAlerts } from './cross-stra
 import { evaluateGammaFilter, readGammaFilterConfig, normRegime } from '../shared/filters/gamma-filter.js';
 import { createExitRuleManager, captureRuleFromSignal } from './src/exit-rule-manager.js';
 import { applyStrategyRuleProfile } from './src/strategy-rule-profile.js';
-import { shouldCancelOnPreFillExtreme, effectivePreFillExtremes, shouldCancelOnAdverseLsFlip } from './src/pre-fill-cancel.js';
+import { shouldCancelOnPreFillExtreme, effectivePreFillExtremes, shouldCancelOnAdverseLsFlip, shouldCancelPendingOnFlip } from './src/pre-fill-cancel.js';
 import { reconcileOrdersSnapshot, reconcilePositionSnapshot } from './src/snapshot-reconciler.js';
 
 const SERVICE_NAME = 'trade-orchestrator';
@@ -1728,18 +1728,11 @@ async function checkAdverseLsFlip(lsMsg) {
   const flipTsMs = Number.isFinite(lsMsg.timestamp) ? lsMsg.timestamp * 1000 : null;
 
   for (const pending of state.pendingOrders.values()) {
-    if (!pending.cancelOnAdverseLsFlip) continue;
-    if (pending.cancelRequested) continue;
-    if (pending.action !== 'place_limit') continue;
-    if (!pending.signalId) continue;
-    if (extractUnderlying(pending.symbol) !== product) continue;
-    // Only cancel when the flip is adverse (opposite the pending direction).
-    // An aligned flip — including the very flip that created the signal — is
-    // a no-op here. Sign-critical logic lives in shouldCancelOnAdverseLsFlip.
-    if (!shouldCancelOnAdverseLsFlip(pending.direction, sentiment)) continue;
-    // Only act on a flip strictly AFTER the one that created the order, so a
-    // stale/replayed flip cannot cancel a freshly-placed order.
-    if (flipTsMs != null && pending.adverseFlipCreatedTs != null && flipTsMs <= pending.adverseFlipCreatedTs) continue;
+    // Full decision (opt-in flag, pending-limit shape, product match, adverse
+    // sign, stale-flip guard) lives in shouldCancelPendingOnFlip — pure and
+    // unit-tested in test/pre-fill-extreme-cancel.test.js.
+    const candidate = { ...pending, underlying: extractUnderlying(pending.symbol) };
+    if (!shouldCancelPendingOnFlip(candidate, product, sentiment, flipTsMs)) continue;
 
     pending.cancelRequested = true;
     logger.warn(`[ADVERSE-FLIP-CANCEL] ${pending.accountId} ${pending.strategy} ${pending.symbol} ${pending.direction} — LS flipped ${sentiment} before fill — cancelling pending limit`);

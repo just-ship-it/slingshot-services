@@ -215,6 +215,12 @@ const config = {
   // or 'v3-low-dd' below expands to the full bundle; individual env vars then
   // override preset values.
   LSTB_PRESET: process.env.LSTB_PRESET || 'v3',
+  // LT-alignment gate (2026-07-11 production standard): reject LS-flip entries
+  // that fight the 15m LS state (the historical "LT sentiment"). Default ON —
+  // set LSTB_REQUIRE_LT_ALIGN=false to disable. Requires the 15m LS feed
+  // (ls.status.15m) to be flowing; the gate fails OPEN without it and the
+  // strategy logs a warning.
+  LSTB_REQUIRE_LT_ALIGN: (process.env.LSTB_REQUIRE_LT_ALIGN || 'true').toLowerCase() !== 'false',
   LSTB_FIB: parseFloat(process.env.LSTB_FIB || '0.5'),
   LSTB_CB_ATR_MAX: parseFloat(process.env.LSTB_CB_ATR_MAX || '1.81'),
   LSTB_ATR_PERIOD: parseInt(process.env.LSTB_ATR_PERIOD || '20'),
@@ -460,6 +466,7 @@ const config = {
       breakevenOffset:  this.LSTB_BE_OFFSET      ?? preset.beOff,
       trailingTrigger:  this.LSTB_TRAIL_TRIGGER  ?? preset.trailTrig,
       trailingOffset:   this.LSTB_TRAIL_OFFSET   ?? preset.trailOff,
+      requireLtAlign:   this.LSTB_REQUIRE_LT_ALIGN,
     };
   },
 
