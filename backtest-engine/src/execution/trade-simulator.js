@@ -2398,21 +2398,20 @@ export class TradeSimulator {
     // Apply slippage to exit
     const isBuy = this.isBuyPosition(trade);
     let actualExitPrice;
-    if (reason === 'stop_loss') {
-      // Stops convert to market on trigger — apply stop slippage
+    if (reason === 'stop_loss' || reason === 'trailing_stop') {
+      // ANY stop order (incl. trailing/breakeven stops) converts to market on
+      // trigger — apply stop slippage. Live BE stops are stop-markets and slip
+      // like regular stops; modeling them slip-free inflated BE-heavy strategies
+      // (2026-07-13 LSTB live-vs-backtest audit).
       const slippage = isBuy ? -this.slippage.stopOrderSlippage : this.slippage.stopOrderSlippage;
       actualExitPrice = roundTo(exitPrice + slippage);
     } else if (reason === 'take_profit') {
       // Limit orders fill at the exact limit price — never slip (CLAUDE.md spec)
       actualExitPrice = roundTo(exitPrice);
     } else {
-      // eod_liquidation / market_close / time_exit / max_hold_time / trailing_stop / soft_stop.
-      // These are technically market-order exits but historically use
-      // limitOrderSlippage as a "soft slippage" value. With limitOrderSlippage
-      // now zero (CLAUDE.md spec), these exits incur no slippage — slightly
-      // optimistic for trailing/soft stops, fine for time-based exits. Switch
-      // to marketOrderSlippage if a strategy needs realistic exit slippage.
-      const slippage = isBuy ? -this.slippage.limitOrderSlippage : this.slippage.limitOrderSlippage;
+      // eod_liquidation / market_close / time_exit / max_hold_time / soft_stop /
+      // fib_retrace: market-order exits — apply market slippage.
+      const slippage = isBuy ? -this.slippage.marketOrderSlippage : this.slippage.marketOrderSlippage;
       actualExitPrice = roundTo(exitPrice + slippage);
     }
 
@@ -2758,9 +2757,13 @@ export class TradeSimulator {
     let closestTime = null;
     let smallestDelta = Infinity;
 
-    // Search for closest timestamp with spread data
+    // KNOWABILITY (2026-07-16): at-or-before only. Previously nearest-by-absolute-
+    // distance, which could convert prices using a spread quote up to 15 minutes in
+    // the FUTURE. Rule: a time lookup must never see the future. Conversion may fail
+    // slightly more often near rollovers; that is preferable to foresight.
     for (const timestamp of this.calendarSpreadsByTime.keys()) {
-      const delta = Math.abs(timestamp - targetTimestamp);
+      if (timestamp > targetTimestamp) continue;             // never the future
+      const delta = targetTimestamp - timestamp;
       if (delta < smallestDelta && delta <= maxDelta) {
         const timeData = this.calendarSpreadsByTime.get(timestamp);
         if (timeData && timeData.has(symbol)) {

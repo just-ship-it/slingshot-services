@@ -81,3 +81,12 @@ v1 full window: 512tr / $60,998 / PF 1.22 / Sh 0.95 / DD 16.15% (vs void gold PF
 3. v1-ES causal verdict.
 
 Files: `01`–`10` scripts, `features.csv` (45,701 rows, segment-tagged), `matrix-discovery.json`, `validate-1s.json`, `touch-events.json`, `shape-touch.json`.
+
+## Charm/vanna investigation (11, 2026-07-12): NEGATIVE — no incremental alpha
+
+Per-strike CEX/VEX walls added to the generator (top-5 |magnitude| per side, signed, futures-translated; emitted in `data/gex/nq-cbbo-causal`). Two pre-registered tests:
+
+1. **CEX-wall touches** (2,700 events, GEX-overlap control): the only year-stable cell (neg-charm walls approached from above: fwd60 +0.047/+0.024%) is the broken-resistance retest wearing a charm costume (neg charm concentrates at above-spot ATM strikes). Positive-charm cells flip sign between years. Nothing charm-SPECIFIC separates from GEX-wall behavior.
+2. **Charm flow → close drift** (total_cex at 14:00 ET vs 14:00→15:45 return): 2025 IC −0.055 (p=0.39), 2026 IC +0.148 (p=0.12) — null both years, opposite signs.
+
+CLOSED. Caveat: 18-month window (2025–26), B-S-approx greeks from OI×quotes; a dedicated dealer-positioning dataset could reopen this, our data cannot.

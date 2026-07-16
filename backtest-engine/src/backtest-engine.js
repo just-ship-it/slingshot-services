@@ -32,6 +32,7 @@ import { GexFlipIvpctStrategy } from '../../shared/strategies/gex-flip-ivpct.js'
 import { GexLt3mCrossoverStrategy } from '../../shared/strategies/gex-lt-3m-crossover.js';
 import { LtGexPathRaceStrategy } from '../../shared/strategies/lt-gex-path-race.js';
 import { LsFlipTriggerBarStrategy } from '../../shared/strategies/ls-flip-trigger-bar.js';
+import { DealerWallFadeStrategy } from '../../shared/strategies/dealer-wall-fade.js';
 import { GexTouchConfirmStrategy } from '../../shared/strategies/gex-touch-confirm.js';
 import { GexTouchPatternsStrategy } from '../../shared/strategies/gex-touch-patterns.js';
 import { GexStructuralResistStrategy } from '../../shared/strategies/gex-structural-resist.js';
@@ -420,6 +421,34 @@ export class BacktestEngine {
     // coverage holes. Same schema/loader as --ls-1m-file. Loaded with a
     // 14-day warmup so the state AT window start is known (the current state
     // comes from the last flip BEFORE the window).
+    // Optional DWF levels file (--dwf-levels-file): daily flow-signed dealer
+    // wall levels for the dealer-wall-fade strategy. Schema:
+    //   date,level_nq,strike,kind,dg_sign,dte0_share
+    let dwfLevels = null;
+    if (this.config.dwfLevelsFile) {
+      dwfLevels = new Map();
+      const dwfPath = path.isAbsolute(this.config.dwfLevelsFile)
+        ? this.config.dwfLevelsFile
+        : path.resolve(this.config.dwfLevelsFile);
+      const raw = fs.readFileSync(dwfPath, 'utf8').trim().split('\n');
+      for (let i = 1; i < raw.length; i++) {
+        const c = raw[i].split(',');
+        if (c.length < 6) continue;
+        const day = c[0];
+        if (!dwfLevels.has(day)) dwfLevels.set(day, []);
+        dwfLevels.get(day).push({
+          level: parseFloat(c[1]),
+          strike: parseFloat(c[2]),
+          kind: c[3],
+          dgSign: parseInt(c[4], 10),
+          dte0Share: parseFloat(c[5]),
+        });
+      }
+      if (!this.config.quiet) {
+        console.log(`✅ Loaded DWF levels for ${dwfLevels.size} days from ${this.config.dwfLevelsFile}`);
+      }
+    }
+
     let lsData15m = [];
     if (this.config.ls15File) {
       const warmStart = new Date(this.config.startDate.getTime() - 14 * 24 * 3600000);
@@ -724,6 +753,7 @@ export class BacktestEngine {
       liquidityLevels1m: liquidityData1m,
       lsState1m: lsData1m,
       lsState15m: lsData15m,
+      dwfLevels: dwfLevels,
       calendarSpreads: calendarSpreads,  // For contract transition tracking
       marketDataLookup: marketDataLookup,
       cvdMap: this.cvdMap,               // CVD data aligned to candle timestamps (Phase 3)
@@ -821,8 +851,17 @@ export class BacktestEngine {
     // is by definition an adverse (opposite-state) flip. Precompute it so the
     // strategy/engine can cancel pending limits when an adverse flip occurs
     // before fill. Last record has no adverse flip in-sample → null.
+    // KNOWABILITY (2026-07-15 lookahead fix, applied 2026-07-16 per Drew): the
+    // dumper stamps the flip bar's OPEN minute, but the sealed state is only
+    // knowable at bar CLOSE (+60s) — live lt-monitor emits ls_status at bar
+    // close. Cancelling at the raw stamp gave every backtest pending up to 60s
+    // of foresight, which carried the entire LSTB gold edge (honest rerun
+    // PF 1.31 → 0.87; research/vp-defended-wick/REPORT.md Part 3).
+    const LS_1M_KNOWABLE_OFFSET_MS = 60_000;
     for (let i = 0; i < records.length; i++) {
-      records[i].adverseFlipTs = (i + 1 < records.length) ? records[i + 1].timestamp : null;
+      records[i].adverseFlipTs = (i + 1 < records.length)
+        ? records[i + 1].timestamp + LS_1M_KNOWABLE_OFFSET_MS
+        : null;
     }
     return records;
   }
@@ -1080,13 +1119,23 @@ export class BacktestEngine {
 
       // Detect Fair Value Gaps if strategy uses FVG entries
       if (data.fvgCandles && this.strategy.imbalanceDetector) {
-        // Find the current position in FVG candles
-        const currentFVGIndex = data.fvgCandles.findIndex(fvgCandle =>
-          fvgCandle.timestamp >= candle.timestamp
-        );
+        // KNOWABILITY (2026-07-16): only 15m candles that have fully CLOSED by the
+        // current evaluation instant (current 1m bar's close) may be visible.
+        // Previously the slice included the 15m bar containing the current 1m bar —
+        // a still-forming bar with its FINAL OHLC = up to 15 minutes of intra-bar
+        // future leaking into FVG detection.
+        const evalTime = candle.timestamp + this.getTimeframeMs(this.config.timeframe);
+        const FVG_TF_MS = 15 * 60 * 1000;
+        let currentFVGIndex = -1;
+        for (let fi = data.fvgCandles.length - 1; fi >= 0; fi--) {
+          if (data.fvgCandles[fi].timestamp + FVG_TF_MS <= evalTime) {
+            currentFVGIndex = fi;
+            break;
+          }
+        }
 
         if (currentFVGIndex > 0) {
-          // Get slice of FVG candles up to current time for analysis
+          // Get slice of fully-closed FVG candles for analysis
           const fvgCandlesUpToCurrent = data.fvgCandles.slice(0, currentFVGIndex + 1);
 
           // Detect FVGs using the last N candles for context
@@ -1616,15 +1665,18 @@ export class BacktestEngine {
       gexLevels = this.transformGexLevels(rawGexLevels);
     }
 
-    // Find closest liquidity levels (within reasonable time window)
+    // Find most recent liquidity levels AT OR BEFORE this bar (within staleness cap).
+    // KNOWABILITY (2026-07-16): previously nearest-by-absolute-distance within ±15min,
+    // which could bind a row stamped up to 15 minutes IN THE FUTURE. Rule: a time
+    // lookup must never see the future — most-recently-knowable datum only.
     let liquidityLevels = null;
-    const maxTimeDiff = 15 * 60 * 1000; // 15 minutes
+    const maxTimeDiff = 15 * 60 * 1000; // 15 minutes staleness cap
 
     if (lookup && lookup.liquidity) {
       for (const [ltTimestamp, ltData] of lookup.liquidity) {
-        const timeDiff = Math.abs(timestamp - ltTimestamp);
-        if (timeDiff <= maxTimeDiff) {
-          if (!liquidityLevels || timeDiff < Math.abs(timestamp - liquidityLevels.timestamp)) {
+        if (ltTimestamp > timestamp) continue;               // never the future
+        if (timestamp - ltTimestamp <= maxTimeDiff) {
+          if (!liquidityLevels || ltTimestamp > liquidityLevels.timestamp) {
             liquidityLevels = ltData;
           }
         }
@@ -1681,21 +1733,34 @@ export class BacktestEngine {
     }
 
     // 15m LS point-in-time state → sentiment label (lstb ltAlign filter).
-    // Binary search for the latest flip at-or-before this bar; the state
+    // Binary search for the latest flip KNOWABLE at this bar; the state
     // HOLDS until the next flip. 1=BULLISH, 0=BEARISH (verified 99.7% match
     // vs the historical LT-feed sentiment column, 2026-07-11).
+    // 2026-07-13 LOOKAHEAD FIX: dumper rows stamp the 15m bar OPEN but the
+    // sealed state is only knowable at bar CLOSE (open+15m). Live receives
+    // LS_STATUS_15M at close. Expose the state only from stamp+15m onward —
+    // pre-fix ltAlign golds had up to 14min of foresight during flip bars
+    // (timing test: 15m-flip 60m drift +31pt at stamp, +0.6pt at stamp+15m).
     let ls15Sentiment = null;
     if (lookup && lookup.ls15Ts && lookup.ls15Ts.length) {
+      const knowableAt = timestamp - 15 * 60000;
       let lo = 0, hi = lookup.ls15Ts.length - 1, idx = -1;
       while (lo <= hi) {
         const mid = (lo + hi) >> 1;
-        if (lookup.ls15Ts[mid] <= timestamp) { idx = mid; lo = mid + 1; }
+        if (lookup.ls15Ts[mid] <= knowableAt) { idx = mid; lo = mid + 1; }
         else hi = mid - 1;
       }
       if (idx >= 0) ls15Sentiment = lookup.ls15State[idx] === 1 ? 'BULLISH' : 'BEARISH';
     }
 
+    // DWF levels for the current day (dealer-wall-fade)
+    let dwfDay = null;
+    if (data?.dwfLevels) {
+      dwfDay = data.dwfLevels.get(new Date(timestamp).toISOString().slice(0, 10)) || null;
+    }
+
     return {
+      dwfLevels: dwfDay,                   // day's flow-signed walls (dwf)
       ls15Sentiment: ls15Sentiment,        // 15m LS state label (lstb ltAlign)
       gexLevels: gexLevels,
       ltLevels: liquidityLevels,
@@ -1794,6 +1859,9 @@ export class BacktestEngine {
       case 'ls-flip':
       case 'lstb':
         return new LsFlipTriggerBarStrategy(params);
+      case 'dealer-wall-fade':
+      case 'dwf':
+        return new DealerWallFadeStrategy(params);
       case 'gex-touch-confirm':
       case 'gex-touch':
       case 'gtc':

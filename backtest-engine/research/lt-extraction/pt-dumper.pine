@@ -1,0 +1,65 @@
+// Price-Trigger Dumper — extracts the Liquidity Toolkit ("T") Price Trigger
+// levels via the TradingView strategy-tester trade-list export.
+//
+// SETUP
+//   1. Add the Liquidity Toolkit indicator ("T") to the chart.
+//   2. Add this strategy. In its settings, wire each "PT ..." input to the
+//      matching T plot in the dropdown (the plots are named "1", "5", "H",
+//      "D", "W", "M" in T's Data Window — NOT the four "Close" plots).
+//   3. Enable W (and M if desired) in T's settings so those plots emit.
+//   4. Strategy Properties: initial capital 100,000,000; margin 0 (set below).
+//   5. Deep Backtest the desired range, export "List of trades" as CSV.
+//
+// Recommended pulls:
+//   - 1m chart, max depth (~2023-07) → today: captures 1/5/H/D (+W/M if lit)
+//   - 1h chart, 2021-01-17 → today: captures H/D/W/M deep history
+//
+// Comment format: P1=..|P5=..|PH=..|PD=..|PW=..|PM=..|T=YYYYMMDDTHHMM
+// Missing/na plots emit NaN — the parser keeps them as gaps.
+//
+//@version=5
+strategy("PT_Dumper", overlay=false,
+     pyramiding=1,
+     default_qty_type=strategy.fixed,
+     default_qty_value=1,
+     initial_capital=100000000,
+     commission_type=strategy.commission.cash_per_order,
+     commission_value=0,
+     margin_long=0,
+     margin_short=0,
+     max_bars_back=500)
+
+gPT = "Price Triggers (link to T plots: 1, 5, H, D, W, M)"
+pt1 = input.source(close, "PT 1-Min", group=gPT)
+pt5 = input.source(close, "PT 5-Min", group=gPT)
+ptH = input.source(close, "PT Hourly", group=gPT)
+ptD = input.source(close, "PT Daily", group=gPT)
+ptW = input.source(close, "PT Weekly", group=gPT)
+ptM = input.source(close, "PT Monthly", group=gPT)
+
+gOpts = "Options"
+priceDecimals = input.int(2, "Price decimals", minval=0, maxval=4, group=gOpts)
+
+fmt = "#." + str.repeat("#", priceDecimals)
+f(x) => na(x) ? "NaN" : str.tostring(x, fmt)
+
+ptStr = "P1=" + f(pt1) + "|" +
+     "P5=" + f(pt5) + "|" +
+     "PH=" + f(ptH) + "|" +
+     "PD=" + f(ptD) + "|" +
+     "PW=" + f(ptW) + "|" +
+     "PM=" + f(ptM)
+
+ts = str.tostring(year(time, "UTC"), "0000") +
+     str.tostring(month(time, "UTC"), "00") +
+     str.tostring(dayofmonth(time, "UTC"), "00") + "T" +
+     str.tostring(hour(time, "UTC"), "00") +
+     str.tostring(minute(time, "UTC"), "00")
+ptStr := ptStr + "|T=" + ts
+
+// One reversal order per bar; entry comment carries the snapshot (see
+// lt-dumper.pine for rationale — parser dedupes by T= stamp).
+if bar_index % 2 == 0
+    strategy.entry("PT", strategy.long,  qty=1, comment=ptStr)
+else
+    strategy.entry("PT", strategy.short, qty=1, comment=ptStr)

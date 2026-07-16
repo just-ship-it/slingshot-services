@@ -210,9 +210,14 @@ function loadSpotPrices(product) {
     const close = parseFloat(cols[closeIdx]);
     if (isNaN(close)) continue;
 
-    // Round to 15-min interval
-    const intervalTs = Math.floor(ts / (15 * 60 * 1000)) * (15 * 60 * 1000);
-    // Keep last price per interval
+    // AS-OF labeling (lookahead fix 2026-07-12): a 1m bar at minute T closes
+    // at T+1; it belongs to the 15m boundary AT OR AFTER its close, so the
+    // row labeled B contains only closes <= B. The old floor-label kept the
+    // ~B+14:59 close under label B (same class as the GEX snapshot bucket
+    // lookahead fixed 2026-05-06).
+    const closeTs = ts + 60 * 1000;
+    const intervalTs = Math.ceil(closeTs / (15 * 60 * 1000)) * (15 * 60 * 1000);
+    // Keep last price per interval (the last close before the boundary)
     spotPrices.set(intervalTs, close);
   }
 
@@ -343,8 +348,12 @@ function processTCBBOFile(filePath, product, spotPrices) {
       const mid = (bid + ask) / 2;
       if ((ask - bid) / mid > 0.50) return;
 
-      // Round to 15-min interval
-      const intervalTs = Math.floor(ts / (15 * 60 * 1000)) * (15 * 60 * 1000);
+      // AS-OF labeling (lookahead fix 2026-07-12): a quote at ts is known by
+      // the 15m boundary at-or-after ts, so the row labeled B contains only
+      // quotes <= B. The old floor-label put quotes from [B, B+15) under B —
+      // the strategy read ~15 min of future IV at the bar open (this is what
+      // manufactured the r=-0.68 headline correlation).
+      const intervalTs = Math.ceil(ts / (15 * 60 * 1000)) * (15 * 60 * 1000);
 
       if (!intervals.has(intervalTs)) intervals.set(intervalTs, new Map());
       // Keep the latest quote per symbol in each interval

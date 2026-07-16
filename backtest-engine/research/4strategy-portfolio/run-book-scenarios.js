@@ -22,6 +22,8 @@ const FILES = {
   glf:  'data/gold-standard/gex-level-fade-v2.json',
   v1es: 'data/gold-standard/lt-gex-path-race-v1-es-causal.json',
   lstbA: 'data/gold-standard/ls-flip-trigger-bar-v3-ltalign.json',
+  glxC:  'data/gold-standard/gex-lt-3m-crossover-v3-causal.json',
+  dwf:   'data/gold-standard/dealer-wall-fade-v1-candidate.json',
 };
 
 function normSide(s) {
@@ -132,3 +134,6 @@ scenario(['glx', 'lstb', 'glf', 'v1es'], pools, winStart, winEnd, 'clean book + 
 scenario(['glx', 'lstbA'], pools, winStart, winEnd, 'GLX + LSTB-ltAlign');
 scenario(['glx', 'lstbA', 'v1es'], pools, winStart, winEnd, 'GLX + LSTB-ltAlign + v1-ES');
 scenario(['glx', 'lstbA', 'glf'], pools, winStart, winEnd, 'GLX + LSTB-ltAlign + GLF');
+scenario(['glxC', 'lstbA'], pools, winStart, winEnd, 'GLX-causal(as-tuned) + LSTB-ltAlign');
+scenario(['lstbA'], pools, winStart, winEnd, 'LSTB-ltAlign alone');
+scenario(['lstbA', 'dwf'], pools, winStart, winEnd, 'LSTB-ltAlign + DWF (FCFS, one slot)');

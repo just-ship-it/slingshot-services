@@ -141,7 +141,7 @@ Stop losses convert to market orders when triggered, incurring slippage:
 - **BUY Stop Loss**: When `candle.low <= stop_price`, fill at `stop_price - slippage`
 - **SELL Stop Loss**: When `candle.high >= stop_price`, fill at `stop_price + slippage`
 
-**Key principle**: Limit orders should NEVER have slippage — they either fill at the limit price or not at all. Only market orders and triggered stop losses experience slippage. Implementation: `/backtest-engine/src/execution/trade-simulator.js` `checkOrderFill()`.
+**Key principle**: Limit orders should NEVER have slippage — they either fill at the limit price or not at all. EVERY other exit slips (fixed 2026-07-13): stop-type exits (`stop_loss`, `trailing_stop`/breakeven) take `stopOrderSlippage`; time/market exits (`eod_liquidation`, `market_close`, `max_hold_time`, etc.) take `marketOrderSlippage`. Golds generated before 2026-07-13 credited BE/trailing exits with zero slippage and are optimistic. Implementation: `/backtest-engine/src/execution/trade-simulator.js` `checkOrderFill()` / `exitTrade()`.
 
 ## Dashboard (React Frontend)
 

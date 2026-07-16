@@ -535,6 +535,25 @@ def calculate_gex_at_spot(stats_df, spot, ref_date, price_overrides=None):
         if total_near > 0 else None
     )
 
+    # CEX/VEX walls (2026-07-12): per-strike charm/vega exposure, top-5 by
+    # |magnitude| on each side of spot, signed values preserved. Emitted for
+    # the charm-wall touch study + GLX meta-filter research — sign semantics
+    # deliberately left to the consumer (no support/resistance connotation).
+    cex_dict = dict(zip(strike_agg['strike'], strike_agg['cex']))
+    vex_dict = dict(zip(strike_agg['strike'], strike_agg['vex']))
+
+    def _walls(d, below):
+        side = [(k, d[k]) for k in strikes
+                if (k < spot if below else k > spot) and d[k] == d[k]]
+        side.sort(key=lambda x: -abs(x[1]))
+        top = side[:5]
+        return [k for k, _ in top], [float(v) for _, v in top]
+
+    cex_below, cex_below_val = _walls(cex_dict, True)
+    cex_above, cex_above_val = _walls(cex_dict, False)
+    vex_below, vex_below_val = _walls(vex_dict, True)
+    vex_above, vex_above_val = _walls(vex_dict, False)
+
     # Regime (matching gex_calculator.py thresholds)
     if total_gex > 5e9:
         regime = 'strong_positive'
@@ -560,6 +579,10 @@ def calculate_gex_at_spot(stats_df, spot, ref_date, price_overrides=None):
         'total_gex': float(total_gex),
         'total_vex': float(total_vex),
         'total_cex': float(total_cex),
+        'cex_below': cex_below, 'cex_below_val': cex_below_val,
+        'cex_above': cex_above, 'cex_above_val': cex_above_val,
+        'vex_below': vex_below, 'vex_below_val': vex_below_val,
+        'vex_above': vex_above, 'vex_above_val': vex_above_val,
         'gamma_above_spot': float(gamma_above_spot),
         'gamma_below_spot': float(gamma_below_spot),
         'gamma_imbalance': gamma_imbalance,
@@ -649,7 +672,16 @@ def generate_day(date_str, stats_df, etf_prices, futures_prices, config,
             'support': [round(s * multiplier, 2) for s in gex['support']],
             'support_gex': gex['support_gex'],
             'regime': gex['regime'],
-            'options_count': gex['options_count']
+            'options_count': gex['options_count'],
+            # CEX/VEX walls, futures-translated like the GEX levels
+            'cex_below': [round(x * multiplier, 2) for x in gex['cex_below']],
+            'cex_below_val': gex['cex_below_val'],
+            'cex_above': [round(x * multiplier, 2) for x in gex['cex_above']],
+            'cex_above_val': gex['cex_above_val'],
+            'vex_below': [round(x * multiplier, 2) for x in gex['vex_below']],
+            'vex_below_val': gex['vex_below_val'],
+            'vex_above': [round(x * multiplier, 2) for x in gex['vex_above']],
+            'vex_above_val': gex['vex_above_val'],
         }
         if iv_source == 'cbbo':
             snapshot['cbbo_hits'] = cbbo_hits

@@ -4,7 +4,9 @@ Per-strategy backtest CLI invocations with current gold-standard numbers, altern
 
 > **⚠ 2026-07-11 — stats-GEX lookahead event.** The stats-variant GEX dirs (`data/gex/nq`, `data/gex/es`) were found to embed same-day EOD close prices in every intraday snapshot's IV (verification: `research/databento-live-parity/VERIFICATION-stats-gex-lookahead.md`). Contaminated data quarantined in `data/quarantine-lookahead/`; `data/gex/nq` + `data/gex/es` now contain CAUSAL regenerations (cbbo quote IV 2025-01+, prior-day-close fallback earlier, as-of labels, primary-contract spot; provenance stamped in each file's metadata).
 > **VOID golds:** all GEX-FLIP-IVPCT entries (causal rerun: 94tr / −$1,737 / PF 0.98 — edge did not survive); LT-GEX-Path-Race v1 (causal rerun 2026-07-11: 512tr / $60,998 / WR 61.9 / **PF 1.22 / Sh 0.95 / DD 16.15%** — real residual but not book quality); LT-GEX-Path-Race v1-ES (causal rerun: **98tr / $44,079 / WR 72.4 / PF 2.08 / DD 7.73%** — survives standalone but FCFS-dilutive, see below); gex-touch-patterns (used default `gex/nq`); the 4-strategy FCFS baseline where it includes gfi.
-> **NEW HONEST BOOK BASELINE (2026-07-11, `research/4strategy-portfolio/run-clean-book.js`, window Jan'25–Apr'26): lstb + glx + glf = $513,536 / PF 1.64 / WR 67% / Sharpe 10.47.** Adding v1-ES-causal: $523,122 / PF 1.64 / Sharpe 10.24 (+$9.6k PnL, −0.23 Sharpe) → v1-ES does NOT earn the 4th slot on Sharpe-first criteria; bench candidate. Causal v1-ES trades: `data/gold-standard/lt-gex-path-race-v1-es-causal.json`. **Unaffected:** IV-SKEW-GEX, GEX-LT-3M-Crossover, GEX-Level-Fade (all `gex/nq-cbbo`, causal since 2026-05 fixes), LS-Flip-Trigger-Bar (no GEX), Short-DTE-IV.
+> **NEW HONEST BOOK BASELINE (2026-07-11, `research/4strategy-portfolio/run-clean-book.js`, window Jan'25–Apr'26): lstb + glx + glf = $513,536 / PF 1.64 / WR 67% / Sharpe 10.47.** Adding v1-ES-causal: $523,122 / PF 1.64 / Sharpe 10.24 (+$9.6k PnL, −0.23 Sharpe) → v1-ES does NOT earn the 4th slot on Sharpe-first criteria; bench candidate. Causal v1-ES trades: `data/gold-standard/lt-gex-path-race-v1-es-causal.json`. **Unaffected:** LS-Flip-Trigger-Bar (no GEX/IV inputs). **2026-07-12 second audit wave:** Short-DTE-IV **VOID/DEAD** — its 15m IV file was floor-labeled (row T held IV at ~T+14:59; the "enter at candle.open" timing fix harvested the leak); on as-of labels: 281tr / −$19,765 / WR 45.9 / **PF 0.80**. `nq-cbbo` GEX found partially contaminated (pre-RTH snapshots = 100% same-day-EOD-close IV; RTH ~4% fallback). **Causal reruns (`data/gex/nq-cbbo-causal`, adds CEX/VEX walls): GLX v3 $217,864/PF 1.90 → $54,096/PF 1.30 — pre-RTH edge ~91% lookahead (block 7–9 ET live), RTH drop pending re-tune attribution (v3 rules index the ladder ordering the spot fix reshuffled) → GLX v3 AS-TUNED VOID pending re-tune. GLF v2 $110,730/PF 1.44 → $87,040/PF 1.36 SURVIVES. ISG v8 $92,164/PF 1.64 → $57,188/PF 1.43 survives-thin, tuning doubly stale.**
+
+> **⚠ 2026-07-13 — simulator BE/trailing slippage fix.** `trade-simulator.js exitTrade()` previously applied `stopOrderSlippage` (1.5 pt) only to `stop_loss`; `trailing_stop` (= BE exits) and time-based exits got ZERO slippage. Now: any stop-type exit (stop_loss, trailing_stop) slips 1.5 pt; time/market exits (eod_liquidation, market_close, max_hold_time, soft_stop, fib_retrace) slip 1.0 pt; only take_profit limit fills are slip-free. **Every gold generated before 2026-07-13 that uses BE/trailing or time exits is optimistic and needs a regen** (GLX, GLF, ISG, GFI tight-stop, …). LSTB regenerated same day (see its section + `research/lstb-be-resweep/REPORT.md`): v3-ltAlign honest = **$154,606 / PF 1.66 / Sharpe 10.4** (was $193,486 / 1.84); BE re-sweep shows **no-BE beats all BE configs** ($201,021 / Sharpe 11.0).
 
 Run `node index.js --help` for all available strategies and options.
 
@@ -172,11 +174,56 @@ node index.js --ticker NQ --strategy ls-flip-trigger-bar --timeframe 1m --raw-co
 
 **v3 candJ gold standard (2026-05-21):** **6,463 trades / $279,135 PnL / +114% vs v2 / WR 72.2% / PF 1.59 / Sharpe 21.00 / MaxDD 1.82%** over 16 months. JSON: `data/gold-standard/ls-flip-trigger-bar-v3.json`. Doubles v2's $130,500 PnL while preserving sub-2% DD; per-trade Sharpe nearly doubles (10.97 → 21.00).
 
-### v3 + ltAlign (2026-07-11 — production-candidate variant)
+### v3 + ltAlign (2026-07-11 — RETIRED 2026-07-14, ls15 stamp lookahead)
+
+> **⚠ 2026-07-14 — ls15 lookahead fix + ltAlign retirement.** The 15m LS dumper
+> stamps bars at OPEN; the sealed state is knowable only at CLOSE. The engine
+> exposed it at the stamp → every ltAlign backtest had up to 14min of foresight
+> during flip bars (caught by a PILOTFISH timing test: 15m-flip 60m drift +31pt
+> at stamp, +0.6pt at stamp+15m). Engine fixed (`knowableAt = ts − 15m`,
+> backtest-engine.js). Honest rerun: ltAlign-no-BE = 3,137tr/$142,805/PF 1.39/
+> Sh 11.46/DD 3.01% vs **plain v3 no-BE = 5,934tr/$241,928/PF 1.35/Sh 15.76/
+> DD 3.70%** — the filter costs 41% PnL and 4.3 Sharpe for +0.04 PF; it does
+> NOT earn its place at honest semantics. **LIVE reverted to plain v3 no-BE
+> 2026-07-14 04:00Z** (`LSTB_REQUIRE_LT_ALIGN=false` env on signal-generator,
+> artifact restart; startup log verified `requireLtAlign=false,
+> breakevenStop=false`). **New live gold:**
+> `ls-flip-trigger-bar-v3-plain-noBE-slipfix.json`. The honest ltAlign regen is
+> `ls-flip-trigger-bar-v3-ltalign-noBE-ls15fix.json` (reference only). DWF
+> ls-align variants (A/C) died the same way — dte0-only variant B unaffected.
+
+> **✅ 2026-07-14 — TRUE OOS CONFIRMATION (2023-08→2025-01).** LS-1m backfill
+> (TV dumper, walls at 2023-07-16) enabled the first cross-regime test of the
+> live config on data its params never saw: **6,108 trades / $191,133 /
+> PF 1.26 / Sharpe 10.67 / MaxDD 3.85% / WR 52.8%, ALL SIX quarters positive**
+> (PF by quarter 1.25/1.20/1.22/1.10/1.37/1.44). Softer than in-sample
+> (PF 1.35/Sh 15.8) but decisively profitable across the 2023 recovery and
+> 2024 grind. JSON: `ls-flip-trigger-bar-v3-plain-noBE-oos2023-24.json`.
+> Caveat: the 2023-24 LS-1m series is single-source (no cross-validation
+> possible; flip-rate profile matches the validated 2025+ series).
+
+> **📊 2026-07-14 — FULL-WINDOW EXTENSION + HOURS STUDY (`research/lstb-hours/REPORT.md`).**
+> Single continuous run of the live config over the max honest window
+> 2023-07-16 → 2026-06-15 (LS-1m walls at 2023-07-16 — TV 1m deep-backtest
+> limit; the new 2021 backfills are 3m/15m only and don't feed LSTB):
+> **13,049tr / $480,820 / WR 53.9 / PF 1.31 / Sharpe 8.79 / maxDD $6,310 /
+> ALL 12 quarters positive** — `ls-flip-trigger-bar-v3-plain-noBE-fullwindow-2023-2026.json`.
+> Hours: existing 5,16-23 blocks decisively validated (fully-open evenings
+> = PF 0.12-0.79, negative all 4 periods, ≈ −$106k); hour 0 ET is the only
+> consistently bad open hour (PF 0.93, −$4.1k, negative 3/4 periods).
+> Engine-verified block-0 variant: **12,623tr / $483,510 / PF 1.33 / Sharpe 8.88
+> / maxDD $6,460 / 12/12 quarters +**
+> (`ls-flip-trigger-bar-v3-plain-noBE-block0-fullwindow.json`) — **DEPLOYED LIVE
+> 2026-07-14 ~16:10Z** via `LSTB_BLOCKED_HOURS_ET=0,5,16,17,18,19,20,21,22,23`
+> env on signal-generator + artifact redeploy (b8ab8f0); verified via
+> `/strategy/status/ls-flip-trigger-bar` → blockedHoursEt includes 0. The v3
+> preset lists in cli.js/config.js intentionally NOT changed — env override is
+> the live truth; backtests should pass the explicit blocked-hours flag.
+> **This block-0 JSON is the new live gold.**
 
 Adds `--lstb-require-lt-align --ls15-file research/lt-extraction/output/nq_ls_15m_raw.csv` to the v3 command. The alignment source is the **LS-15m state** point-in-time (the historical LT-feed "sentiment" column IS this series — 99.7% verified; see `memory/lt-sentiment-is-ls15.md`). `--ls15-file` decouples the filter from LT-row coverage and mirrors the live design (dedicated 15m LS study; the 1m LS stream is NOT a valid proxy — 52% agreement).
 
-**v3-ltAlign gold (2026-07-11, filter active over the FULL window):** **3,449 trades / $193,486 / WR 74.5% / PF 1.84 / Sharpe 19.98 / MaxDD 1.47%.** −47% trades and −$86k PnL vs plain v3, buying +0.25 PF and a lower DD. JSON: `data/gold-standard/ls-flip-trigger-bar-v3-ltalign.json`.
+**v3-ltAlign gold (2026-07-11, filter active over the FULL window):** **3,449 trades / $193,486 / WR 74.5% / PF 1.84 / Sharpe 19.98 / MaxDD 1.47%.** −47% trades and −$86k PnL vs plain v3, buying +0.25 PF and a lower DD. JSON: `data/gold-standard/ls-flip-trigger-bar-v3-ltalign.json`. **⚠ SUPERSEDED 2026-07-13 by the simulator BE-slippage fix (see banner):** honest regen = **3,449 trades / $154,606 / WR 73.6% / PF 1.66 / daily Sharpe 10.4 / worst day −$2,170**, JSON `ls-flip-trigger-bar-v3-ltalign-slipfix.json`. At MNQ scale with real fees (~$2.4/RT) ≈ $8.9k/15.5mo ≈ +$27/day. BE re-sweep on the fixed engine (`research/lstb-be-resweep/REPORT.md`): **no-BE = $201,021 / PF 1.57 / Sharpe 11.0 / MNQ real-fee $13.9k** beats every BE config (BE only trims tail: worst day −$2,170 vs −$2,750); balanced alternates trig12/off2 ($184,621/Sh 10.6) and trig10/off3 ($171,762/PF 1.63). **LIVE DEFAULT since 2026-07-13: no-BE** (`LSTB_BREAKEVEN_STOP=false` env on signal-generator Sevalla app; preset stays v3 otherwise — ltAlign ON, tgt 15/stp 12). New live gold = `ls-flip-trigger-bar-v3-ltalign-noBE-slipfix.json`: **3,278 trades / $201,021 / WR 58.5% / PF 1.57 / Sharpe 11.0 / maxDD $3,055 / worst day −$2,750**.
 
 **Book context (post-lookahead-event production candidate, `run-book-scenarios.js`, Jan'25–Apr'26):** GLX + LSTB-ltAlign = **$381,305 / PF 1.86 / WR 72.1% / Sharpe 9.40 / maxDD $7,157 (3.0%) / worst day −$4,135 / worst week −$3,131**. Adding v1-ES: +$12.4k but Sharpe −0.15 (benched). Adding GLF: +$69k but PF −0.11, worst day −$5,085 (small-account risk trade-off).
 
@@ -262,3 +309,33 @@ Config (defaults baked into the strategy): every 4th fresh LT-feed row (~hourly,
 Research parity (1s-honest research sim: 632 tr / WR 70.9 / PF 2.28 / +14,429pt): engine WR matches exactly; n −13% / PF −10% from (a) LT row-grid phase drift (engine misses rows with no candle within 20 min), (b) research's signal-minute fill optimism, (c) engine stop slip 1.5 vs research 0.5 (kept for book-comparability). Exit agreement on shared signal instants: 96.5%. Grid-phase robustness confirmed (off-phase 2024: PF 1.96). Diff tool: `research/deepdive-weekly/diff-engine-vs-research.py`.
 
 Rejected in research (do NOT re-sweep): stop caps, breakeven stops, near-target rejection exits, sentiment/IV/LS/DDS signal filters, stop-on-wall exclusion (marginal, DD gain evaporates under slot re-sequencing). Wide-geometry (stop-LT >0.8% away) is a SIZE-UP tilt (PF 3-5 every year), not a filter — portfolio phase.
+
+---
+
+## Dealer-Wall-Fade — v1 CANDIDATE (2026-07-13, NOT live, awaiting OOS)
+
+Short NQ at flow-confirmed dealer-LONG-gamma GEX walls after a 5-min stall in the ±0.10% zone (below-approach only). Mechanism pre-registered + placebo-controlled (`research/dealer-flow/`): naked GEX walls proved placebo-equivalent; the edge is specifically dealer positioning SIGN from signed options flow (TCBBO quote-rule; Schwab polling and tick-rule both empirically REJECTED as substitutes).
+
+```bash
+cd backtest-engine
+node index.js --ticker NQ --strategy dwf --timeframe 1m --raw-contracts   --start 2025-02-02 --end 2026-01-28   --dwf-levels-file data/features/dwf_levels.csv   --dwf-stop-mode zone --dwf-max-hold 120 --dwf-target-pts 45   --commission 4 --allow-overnight-holds
+```
+
+**v1 candidate (engine, house slippage 1.0/1.5):** **272 trades / $27,422 / WR 55.5% / PF 1.33 / Sharpe 2.11 / MaxDD 6.59%** over 2025-02→2026-01 (12 months — TCBBO coverage limit). Quarter-blocks ALL positive [6219, 4948, 2109, 14146]; 9/12 months green, worst month −$3,591. Trades: `data/gold-standard/dealer-wall-fade-v1-candidate.json`.
+
+Sweep (engine): base s25/h60 PF 1.19 → s35/h60 1.25 → zone/h120/t35 1.31 → **zone/h120/t45 1.33** (plateau t35↔t45). Breakeven overlay REJECTED under house stop slippage (whipsaw tax; research's 0.5pt slip had flattered it). `--allow-overnight-holds` REQUIRED (38% of trades die to session force-close without it — evening/overnight carries much of the edge; RTH-only variant guts it to PF 1.10).
+
+Levels file: `scripts/precompute-dwf-levels.py` (causal cbbo GEX walls × signed-flow dealer inventory from `data/flow/qqq/`). **Gates before live:** (1) OOS on 2026-02→present (TCBBO extension purchase, ~$150-200 one-time, or Massive Options Advanced trial month); (2) ~~unexplored conditioning~~ DONE 2026-07-13, see v1.1 below; (3) live inventory feed = options tape ($199/mo class — Massive Adv or Databento OPRA Std; Schwab CANNOT substitute, verified).
+
+### v1.1 conditioning variants (2026-07-13, gate #2 complete — in-sample refinements, same OOS gate applies)
+
+One condition at a time on the v1 config (`--dwf-min-dte0`, `--dwf-ls-align` + `--ls15-file research/lt-extraction/output/nq_ls_15m_raw.csv`):
+
+| Variant | n | PnL | PF | Sharpe | MaxDD | WR | Quarters |
+|---|---|---|---|---|---|---|---|
+| v1 base | 272 | $27,422 | 1.33 | 2.11 | 6.59% | 55.5% | all + |
+| ~~A `--dwf-ls-align`~~ | 114 | $11,640 | 1.30 | 1.10 | 4.26% | 55.3% | DEAD (ls15 lookahead; honest regen 2026-07-14) |
+| **B `--dwf-min-dte0 0.16`** | 183 | $25,758 | **1.47** | **2.28** | **3.83%** | 56.8% | **all +** |
+| ~~C both gates~~ | 74 | $9,329 | 1.37 | 0.93 | 3.11% | — | DEAD (ls15 lookahead) |
+
+**B is the only surviving conditioner** (raises PF+Sharpe+DD together while keeping 94% of PnL) — A and C were ls15-stamp lookahead artifacts (see LSTB section banner); their pre-fix rows: A 115/$20,609/1.61, C 73/$18,251/1.88. Both gates are mechanism-grounded, not mined: dte0 = concentration of TODAY's hedging obligation at the strike (charm-consistent; matches the pilotfish D2 gradient PF 1.04→1.53 and walls strengthening after 14:00 ET), lsAlign = don't short walls into bullish 15m tape. Placebo-with-stall control CLOSED by pilotfish E6 (stall shape at round hundreds = null both 2023-24 and 2025-26 → flow-signing IS the edge). Caveat: both conditioners chosen on the same 12-month window as v1 — the 2026-02+ OOS purchase remains the arbiter for ALL variants.

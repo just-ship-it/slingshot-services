@@ -198,14 +198,11 @@ export class GexLoader {
       return null;
     }
 
-    // If no snapshot before, try interpolation if allowed
-    if (allowInterpolation) {
-      const { after } = this.findSurroundingTimestamps(targetTime);
-      if (after) {
-        return this.loadedData.get(after);
-      }
-    }
-
+    // KNOWABILITY (2026-07-16): the former allowInterpolation fallback returned the
+    // NEXT (future) snapshot when no prior one existed. A time lookup must never see
+    // the future — no prior snapshot means no GEX, full stop. (No caller ever passed
+    // allowInterpolation=true; the parameter is retained for signature compatibility
+    // but is now inert.)
     return null;
   }
 
