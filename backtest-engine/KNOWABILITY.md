@@ -39,12 +39,25 @@ MOST RECENTLY KNOWABLE datum at the query instant.
 5. `data-loaders/gex-loader.js getGexLevels` — removed the (never-used) allowInterpolation fallback that returned the NEXT snapshot when no prior existed.
 
 **Fixed — mislabeled data (SDIV-class traps):**
-6. `data/iv/qqq/qqq_atm_iv_1m.csv` (+60s) and `qqq_atm_iv_15m.csv` (+900s) relabeled
-   to as-of bucket-END stamps (backups: `*.floor-labeled-bak`). Consumers (ISG, GFI)
-   were close-evaluated and thus consistent in the standard path, but the labels
-   violated the contract and were one `sameCandleFill`-style change away from another
-   SDIV. NOTE: any re-run of `precompute-iv.js` will regenerate floor labels — port
-   the `Math.ceil` as-of labeling from `precompute-short-dte-iv.js` before rerunning.
+6. `data/iv/qqq/qqq_atm_iv_15m.csv` relabeled +900s to as-of bucket-END stamps
+   (backup: `.floor-labeled-bak`) — the floor labels held up to 14 min of future IV.
+   Consumers (ISG, GFI) were close-evaluated and thus consistent in the standard
+   path, but the labels violated the contract and were one `sameCandleFill`-style
+   change away from another SDIV.
+   **REVISED 2026-07-16 (verification finding):** cbbo-1m `ts_recv` stamps are
+   snapped to the exact interval-END minute boundary (verified: zero sub-minute
+   offsets across 2025-06 and 2026-06 day files). At 1m resolution the old floor
+   bucketing was therefore ALREADY as-of — the initial +60s relabel of
+   `qqq_atm_iv_1m.csv` was an over-shift (causal but 60s stale). The 1m file has
+   been RESTORED to its original labels, proven correct by regenerating a full day
+   with the fixed script: byte-identical to the original. The 15m relabel stands
+   (floor foresight there was real). `precompute-iv.js` now emits as-of labels
+   natively (Math.ceil bucketing on quotes + close-time keying on the ETF spot
+   fallback, ported 2026-07-16 from `precompute-short-dte-iv.js`) — a regen can no
+   longer resurrect floor labels. Note: a 15m regen would also be one minute
+   fresher than the relabeled file (bucket B includes the row stamped exactly B)
+   and the existing 15m file predates the shared-calculator pipeline (no fwd
+   columns, different DTE selection) — prefer the 1m file or regen before reuse.
 
 **Verified clean (as-of / at-or-before / properly shifted):**
 - GEX `nq-cbbo-causal` (causal regen, bucket-END labels) and `nq-cbbo` (+15m relabel).

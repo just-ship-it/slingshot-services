@@ -269,8 +269,14 @@ function loadQQQSpotPrices(dataDir, intervalMinutes = 15) {
     const close = parseFloat(cols[closeIdx]);
     if (isNaN(close)) continue;
 
-    // Bucket to interval — keep last price per interval
-    const intervalTs = Math.floor(ts / intervalMs) * intervalMs;
+    // AS-OF labeling (KNOWABILITY 2026-07-16, ported from
+    // precompute-short-dte-iv.js): a 1m bar stamped T closes at T+1m; it
+    // belongs to the interval boundary AT OR AFTER its close, so the row
+    // labeled B contains only closes <= B. The old floor-label kept the
+    // ~B+14:59 close under label B (the SDIV lookahead class).
+    const closeTs = ts + 60 * 1000;
+    const intervalTs = Math.ceil(closeTs / intervalMs) * intervalMs;
+    // Keep last price per interval (the last close at-or-before the boundary)
     spotPrices.set(intervalTs, close);
   }
 
@@ -335,7 +341,11 @@ function extractDateFromFilename(filename) {
  * Load CBBO data for a specific date using streaming to handle large files.
  *
  * Bucketing rules (must match generate-intraday-gex.py:load_cbbo_buckets):
- *   1. Bucket on `ts_recv` (the row's interval-end boundary), NEVER `ts_event`.
+ *   0. AS-OF (interval-END) labels (KNOWABILITY 2026-07-16): the bucket labeled
+ *      B holds quotes with ts_recv <= B, i.e. everything knowable AT the label
+ *      instant. Never floor-label — that puts up to a full interval of future
+ *      quotes under an already-past stamp (the SDIV lookahead class).
+ *   1. Bucket on `ts_recv`, NEVER `ts_event`.
  *      `ts_event` is the matching-engine timestamp of the last *trade* for the
  *      instrument and can lag `ts_recv` by hours for illiquid contracts.
  *      Bucketing on it places late-arriving rows into earlier buckets after
@@ -394,8 +404,12 @@ function loadCBBOForDate(filePath, intervalMinutes = 15) {
       const ts = new Date(cols[tsIdx]).getTime();
       if (isNaN(ts)) return;
 
-      // Floor to interval boundary
-      const intervalTs = Math.floor(ts / intervalMs) * intervalMs;
+      // AS-OF labeling (KNOWABILITY 2026-07-16, ported from
+      // precompute-short-dte-iv.js): a quote at ts is known by the interval
+      // boundary at-or-after ts, so the row labeled B contains only quotes
+      // <= B. The old floor-label put quotes from [B, B+interval) under B —
+      // consumers read up to a full interval of future IV at the bar open.
+      const intervalTs = Math.ceil(ts / intervalMs) * intervalMs;
 
       // When we cross an interval boundary, snapshot the just-finished one.
       // The cbbo file is sorted by ts_recv so intervalTs is monotonic.

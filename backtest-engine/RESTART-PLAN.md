@@ -8,13 +8,15 @@ restart strategy work on the verified foundation. This is the plan.
 ## Phase 0 — Stop the bleeding (immediate, mostly done)
 
 - [x] Engine knowability fixes (5) + ATM-IV relabel — 2026-07-15/16, uncommitted.
-- [ ] **Commit the fixes.** They are load-bearing; uncommitted engine fixes have
-      bitten before (exit-rule bugs sat uncommitted for weeks). One commit:
-      engine fixes + KNOWABILITY.md + this plan + relabeled IV (with .bak files).
-- [ ] **Live: disable LSTB** (Drew's call — honest expectancy PF ~0.87, losing).
-      Signal-generator env `LS_FLIP_TRIGGER_BAR` toggle / dashboard.
-- [ ] Port as-of labeling (`Math.ceil`, per `precompute-short-dte-iv.js`) into
+- [x] **Commit the fixes.** Done 2026-07-16 (Drew).
+- [x] **Live: disable LSTB.** Done 2026-07-16 — Drew disabled ALL live trading.
+- [x] Port as-of labeling (`Math.ceil`, per `precompute-short-dte-iv.js`) into
       `precompute-iv.js` so a future regen can't resurrect floor labels.
+      Done 2026-07-16. Verification finding: cbbo-1m `ts_recv` is already
+      interval-END snapped, so the 1m floor labels were already as-of — the +60s
+      relabel was an over-shift; `qqq_atm_iv_1m.csv` restored to original labels
+      (regen with fixed script = byte-identical). 15m relabel stands. Details in
+      KNOWABILITY.md fix #6.
 
 ## Phase 1 — Re-baseline everything under the honest engine (1-2 sessions)
 
