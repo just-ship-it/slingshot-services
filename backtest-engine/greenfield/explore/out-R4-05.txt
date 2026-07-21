@@ -1,0 +1,36 @@
+=== H5 OR(09:30-09:45)-break, 1348 days ===
+  broke UP: 0.516  DOWN: 0.482  no break by 12:00: 0.001
+  median break time: mod 588 (09:48)
+  [all early breaks (by 10:30)] n=1326
+     ->1030: cont pts=-0.169 t=-0.08 /atr=-0.0002  [MIXED(3+/3-)]
+     ->1100: cont pts=+1.284 t=+0.49 /atr=+0.0059  [MIXED(3+/3-)]
+     ->1200: cont pts=+2.885 t=+0.87 /atr=+0.0128  [MIXED(5+/1-)]
+  [break aligned with gap] n=652
+     ->1030: cont pts=+3.125 t=+1.07 /atr=+0.0084  [MIXED(3+/3-)]
+     ->1100: cont pts=+3.628 t=+0.98 /atr=+0.0143  [STABLE(+) 6/6]
+     ->1200: cont pts=+3.538 t=+0.72 /atr=+0.0169  [MIXED(4+/2-)]
+  [break against gap] n=652
+     ->1030: cont pts=-3.882 t=-1.30 /atr=-0.0101  [MIXED(1+/5-)]
+     ->1100: cont pts=-1.913 t=-0.50 /atr=-0.0055  [MIXED(3+/3-)]
+     ->1200: cont pts=+1.533 t=+0.34 /atr=+0.0057  [MIXED(3+/3-)]
+  [break + compressed ON] n=435
+     ->1030: cont pts=+3.055 t=+1.05 /atr=+0.0078  [MIXED(5+/1-)]
+     ->1100: cont pts=+5.320 t=+1.48 /atr=+0.0138  [MIXED(5+/1-)]
+     ->1200: cont pts=+11.864 t=+2.47 /atr=+0.0326  [STABLE(+) 6/6]
+  [break + wide ON] n=439
+     ->1030: cont pts=-4.215 t=-0.98 /atr=-0.0119  [MIXED(2+/4-)]
+     ->1100: cont pts=-4.815 t=-0.87 /atr=-0.0118  [MIXED(3+/3-)]
+     ->1200: cont pts=-5.798 t=-0.85 /atr=-0.0113  [MIXED(3+/3-)]
+  [break same dir as opening candle + fast arr5] n=376
+     ->1030: cont pts=-3.405 t=-0.77 /atr=-0.0102  [MIXED(2+/4-)]
+     ->1100: cont pts=+1.221 t=+0.21 /atr=+0.0110  [MIXED(3+/3-)]
+     ->1200: cont pts=+2.620 t=+0.36 /atr=+0.0200  [MIXED(4+/2-)]
+  [break same dir as opening candle + slow arr5] n=271
+     ->1030: cont pts=+1.000 t=+0.24 /atr=+0.0049  [MIXED(4+/2-)]
+     ->1100: cont pts=+2.767 t=+0.54 /atr=+0.0067  [MIXED(3+/3-)]
+     ->1200: cont pts=+7.466 t=+1.17 /atr=+0.0184  [MIXED(4+/2-)]
+
+--- CONTROL: unconditional drift to same marks from 09:45 (no break condition) ---
+  uncond 09:45->1030: pts=+0.596 t=+0.26 [MIXED(3+/3-)]
+  uncond 09:45->1100: pts=-1.147 t=-0.41 [MIXED(1+/5-)]
+  uncond 09:45->1200: pts=+1.648 t=+0.48 [MIXED(4+/2-)]

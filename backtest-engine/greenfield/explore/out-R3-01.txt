@@ -1,0 +1,50 @@
+/home/drew/projects/slingshot-services/backtest-engine/greenfield/explore/R3_common.py:87: RuntimeWarning: All-NaN slice encountered
+  out[d] = np.nanmedian(E[lo:j], axis=0)
+days=1395 eligible=1345 with-baseline=1330
+
+Per-second volume baseline shape (median volb/60 across used days):
+  09:30: p50=  85.6 ctr/s  p10=  63.8 p90= 100.5
+  09:45: p50=  43.9 ctr/s  p10=  35.3 p90=  51.8
+  10:30: p50=  30.6 ctr/s  p10=  24.7 p90=  37.2
+  12:00: p50=  18.4 ctr/s  p10=  14.9 p90=  23.2
+  14:00: p50=  16.6 ctr/s  p10=  12.7 p90=  21.2
+  15:00: p50=  17.3 ctr/s  p10=  12.9 p90=  22.3
+  15:30: p50=  17.2 ctr/s  p10=  14.4 p90=  22.8
+  15:59: p50= 128.6 ctr/s  p10=  78.8 p90= 151.3
+
+Vol multiple (Vmin/volb) distribution, 09:30-16:00, used days:
+  p    1:     0.34
+  p   10:     0.56
+  p   25:     0.74
+  p   50:     1.00
+  p   75:     1.39
+  p   90:     1.93
+  p   99:     3.85
+  p 99.9:     6.88
+
+Single-second multiple census (v / (volb/60)), events per day:
+  >=  10x:   148613 total    111.7/day
+  >=  25x:    14783 total     11.1/day
+  >=  50x:     1971 total      1.5/day
+  >= 100x:       96 total      0.1/day
+  >= 200x:        1 total      0.0/day
+
+Fano factor F180 distribution vs its baseline (rf = F/fanob):
+  p    1:     0.35
+  p    5:     0.46
+  p   10:     0.54
+  p   25:     0.71
+  p   50:     1.00
+  p   75:     1.51
+  p   90:     2.46
+  p   99:     7.50
+
+Raw F180 by time of day (median across used days):
+  09:45: F180 p50=    26.6  AC180 p50=+0.304
+  11:00: F180 p50=    21.4  AC180 p50=+0.249
+  13:00: F180 p50=    17.0  AC180 p50=+0.198
+  15:00: F180 p50=    18.8  AC180 p50=+0.214
+  15:45: F180 p50=    18.2  AC180 p50=+0.176
+
+Zero-volume seconds per day (09:30-16:00):
+  p10=176 p50=577 p90=1406 (of 23460)

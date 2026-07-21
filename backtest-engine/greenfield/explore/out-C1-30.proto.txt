@@ -1,0 +1,196 @@
+93890 touch rows; kinds: {'rand': 63998, 'real': 28457, 'round': 1435}
+placebo contamination excluded: 57552 rows (61.3%)
+tol=2.0: real n=7949 race15=0.358 | rand n=1898 race15=0.374 | d=-0.016
+tol=5.0: real n=8766 race15=0.497 | rand n=2304 race15=0.502 | d=-0.005
+tol=10.0: real n=10718 race15=0.729 | rand n=3047 race15=0.708 | d=+0.020
+
+===== CLASS (tol=5): real vs placebos =====
+       key  n_real  n_rand  n_round  race_real  race_rand  race_round  d_vs_rand      z  brk60_real  brk60_rand  pen60_real  pen60_rand  ret60_real  ret60_rand  race35_real  race35_rand
+   DynVWAP     559     141        0      0.430      0.391         NaN      0.039  0.839       0.839       0.858       24.50      29.260       29.75       27.90        0.196        0.173
+MultiTouch    2433     734        0      0.511      0.513         NaN     -0.002 -0.105       0.816       0.822       26.75      21.915       33.50       37.80        0.252        0.249
+   Opening     819     219        0      0.502      0.551         NaN     -0.049 -1.286       0.806       0.840       25.25      24.830       36.50       40.35        0.253        0.266
+  PriorDay     927     249        0      0.486      0.546         NaN     -0.060 -1.650       0.756       0.695       18.75      16.730       27.75       30.95        0.239        0.303
+     Swing    3787     879        0      0.501      0.486         NaN      0.015  0.780       0.779       0.730       21.00      15.740       27.25       30.23        0.221        0.251
+
+===== FAMILY (tol=5): real vs placebos =====
+  key  n_real  n_rand  n_round  race_real  race_rand  race_round  d_vs_rand      z  brk60_real  brk60_rand  pen60_real  pen60_rand  ret60_real  ret60_rand  race35_real  race35_rand
+   MT    2433     734        0      0.511      0.513         NaN     -0.002 -0.105       0.816       0.822       26.75      21.915      33.500      37.800        0.252        0.249
+PDHVN     230      68        0      0.455      0.552         NaN     -0.098 -1.408       0.778       0.662       19.50      16.340      28.125      34.485        0.211        0.318
+ RPOC     384     101        0      0.375      0.316         NaN      0.059  1.111       0.844       0.891       24.75      32.510      27.625      25.950        0.172        0.141
+SW15H     455      94        0      0.511      0.429         NaN      0.083  1.450       0.780       0.777       20.50      14.225      26.750      25.310        0.224        0.231
+SW15L     508     121        0      0.482      0.462         NaN      0.020  0.383       0.780       0.810       21.00      19.700      28.625      31.930        0.221        0.202
+ SW5H    1175     282        0      0.522      0.507         NaN      0.014  0.421       0.755       0.702       20.50      14.760      26.000      28.535        0.240        0.288
+ SW5L    1387     327        0      0.493      0.489         NaN      0.004  0.141       0.789       0.716       21.25      15.890      28.000      31.980        0.207        0.239
+
+===== CLASS: yearly race15 delta (real - rand) =====
+             2024   n2024  pos_yrs  neg_yrs
+DynVWAP     0.039   559.0        1        0
+MultiTouch -0.002  2433.0        0        1
+Opening    -0.049   819.0        0        1
+Overnight  -0.098   185.0        0        1
+PriorDay   -0.060   927.0        0        1
+Swing       0.015  3787.0        1        0
+
+===== FAMILY: yearly race15 delta (real - rand) =====
+        2024   n2024  pos_yrs  neg_yrs
+MT    -0.002  2433.0        0        1
+PDHVN -0.098   230.0        0        1
+RPOC   0.059   384.0        1        0
+SW15H  0.083   455.0        1        0
+SW15L  0.020   508.0        1        0
+SW5H   0.014  1175.0        1        0
+SW5L   0.004  1387.0        1        0
+VWAP  -0.023   175.0        0        1
+
+arr5 quintile edges: [1.72 2.31 2.9  3.65]
+
+===== ARR5 QUINTILE x structure (all real families pooled): real vs placebos =====
+ key  n_real  n_rand  n_round  race_real  race_rand  race_round  d_vs_rand      z  brk60_real  brk60_rand  pen60_real  pen60_rand  ret60_real  ret60_rand  race35_real  race35_rand
+   1    1850     343       13      0.530      0.573       0.769     -0.043 -1.467       0.791       0.717      23.125       17.32      30.750       36.37        0.259        0.316
+   2    1729     477       15      0.535      0.528       0.533      0.008  0.290       0.807       0.771      24.250       18.61      31.500       35.64        0.245        0.281
+   3    1690     447        8      0.537      0.481       0.625      0.056  2.100       0.772       0.823      22.250       18.08      29.875       35.08        0.255        0.227
+   4    1859     386       15      0.473      0.519       0.400     -0.046 -1.614       0.791       0.782      23.250       18.77      28.250       29.01        0.227        0.229
+   5    1632     651       24      0.402      0.450       0.286     -0.048 -2.022       0.814       0.777      22.890       22.81      28.625       32.94        0.180        0.237
+
+===== ARR5 QUINTILE within PriorDay: real vs placebos =====
+ key  n_real  n_rand  n_round  race_real  race_rand  race_round  d_vs_rand      z  brk60_real  brk60_rand  pen60_real  pen60_rand  ret60_real  ret60_rand  race35_real  race35_rand
+   5     206      88        0      0.429      0.583         NaN     -0.154 -2.397       0.772       0.659       18.75      18.275      26.195      35.455        0.189        0.302
+
+===== ARR5 QUINTILE within Overnight: real vs placebos =====
+(no cells)
+
+===== ARR5 QUINTILE within Opening: real vs placebos =====
+(no cells)
+
+===== ARR5 QUINTILE within Swing: real vs placebos =====
+ key  n_real  n_rand  n_round  race_real  race_rand  race_round  d_vs_rand      z  brk60_real  brk60_rand  pen60_real  pen60_rand  ret60_real  ret60_rand  race35_real  race35_rand
+   1     643     106        0      0.546      0.638         NaN     -0.092 -1.798       0.793       0.594       21.25       7.955      27.250      38.270        0.234        0.422
+   2     703     145        0      0.567      0.535         NaN      0.032  0.698       0.774       0.717       21.75      11.600      29.500      28.670        0.247        0.246
+   3     697     174        0      0.521      0.444         NaN      0.077  1.799       0.775       0.764       21.25      14.975      26.750      30.755        0.230        0.206
+   4     872     139        0      0.482      0.519         NaN     -0.037 -0.792       0.766       0.719       20.50      14.850      26.625      22.760        0.231        0.254
+   5     867     315        0      0.412      0.417         NaN     -0.005 -0.159       0.792       0.768       21.00      20.890      27.250      30.180        0.171        0.220
+
+===== ARR5 QUINTILE within MultiTouch: real vs placebos =====
+ key  n_real  n_rand  n_round  race_real  race_rand  race_round  d_vs_rand      z  brk60_real  brk60_rand  pen60_real  pen60_rand  ret60_real  ret60_rand  race35_real  race35_rand
+   1     546     112        0      0.574      0.578         NaN     -0.004 -0.085       0.786       0.777      26.250      23.165      36.000      36.680        0.302        0.266
+   2     517     200        0      0.545      0.518         NaN      0.027  0.641       0.824       0.805      27.500      20.565      35.500      38.015        0.267        0.290
+   3     522     137        0      0.539      0.541         NaN     -0.002 -0.035       0.785       0.898      25.500      19.190      34.375      40.190        0.268        0.191
+   4     476     124        0      0.478      0.512         NaN     -0.035 -0.683       0.838       0.806      26.625      22.185      31.500      32.000        0.217        0.226
+   5     372     161        0      0.373      0.436         NaN     -0.064 -1.327       0.866       0.820      29.625      32.700      29.250      36.480        0.180        0.255
+
+===== ARR5 QUINTILE within DynVWAP: real vs placebos =====
+(no cells)
+
+===== FAST-ARRIVAL (arr5 Q4-5) yearly delta by class: yearly race15 delta (real - rand) =====
+             2024   n2024  pos_yrs  neg_yrs
+DynVWAP     0.045   128.0        1        0
+MultiTouch -0.038   848.0        0        1
+Opening    -0.135   269.0        0        1
+PriorDay   -0.118   421.0        0        1
+Swing      -0.001  1739.0        0        1/home/drew/projects/slingshot-services/backtest-engine/greenfield/explore/C1-30-analyze.py:99: FutureWarning: The default of observed=False is deprecated and will be changed to True in a future version of pandas. Pass observed=False to retain current behavior or observed=True to adopt the future default and silence this warning.
+  for val, g in df.groupby(bycol):
+
+
+===== TIME OF DAY: real vs placebos =====
+      key  n_real  n_rand  n_round  race_real  race_rand  race_round  d_vs_rand      z  brk60_real  brk60_rand  pen60_real  pen60_rand  ret60_real  ret60_rand  race35_real  race35_rand
+ ON_early     886     344       12      0.447      0.394       0.400      0.053  1.660       0.620       0.654      10.025      10.520      17.250      15.890        0.206        0.208
+   midday    2203     427       13      0.516      0.598       0.538     -0.082 -3.140       0.812       0.759      25.500      14.560      31.250      39.380        0.243        0.309
+   premkt    1828     531       15      0.489      0.494       0.467     -0.005 -0.190       0.799       0.695      20.250      13.240      23.125      29.480        0.188        0.281
+rth_close    1693     300        7      0.484      0.510       0.429     -0.027 -0.839       0.820       0.810      25.000      19.135      33.750      41.970        0.218        0.244
+ rth_open    2156     702       28      0.514      0.498       0.519      0.016  0.748       0.824       0.896      33.500      32.945      40.750      43.805        0.287        0.228
+
+===== RTH vs non-RTH: real vs placebos =====
+  key  n_real  n_rand  n_round  race_real  race_rand  race_round  d_vs_rand      z  brk60_real  brk60_rand  pen60_real  pen60_rand  ret60_real  ret60_rand  race35_real  race35_rand
+False    2714     875       27      0.476      0.455       0.440      0.021  1.048       0.740       0.679       16.25       12.20       20.75       21.58        0.193        0.254
+ True    6052    1429       48      0.506      0.531       0.511     -0.024 -1.639       0.819       0.837       27.50       24.09       35.25       41.63        0.252        0.256
+
+===== TOUCH INDEX: real vs placebos =====
+ key  n_real  n_rand  n_round  race_real  race_rand  race_round  d_vs_rand      z  brk60_real  brk60_rand  pen60_real  pen60_rand  ret60_real  ret60_rand  race35_real  race35_rand
+ 1st    4072    1676       62      0.488      0.517       0.458     -0.029 -1.962       0.776       0.761       20.50      18.320       28.00      34.255        0.229        0.272
+ 2nd    2162     402       12      0.506      0.490       0.583      0.016  0.586       0.798       0.818       24.25      22.535       31.25      33.655        0.247        0.232
+3rd+    2532     226        1      0.503      0.416       1.000      0.088  2.522       0.821       0.823       27.00      24.290       31.93      30.495        0.232        0.172
+
+===== TOUCH INDEX within PriorDay: real vs placebos =====
+key  n_real  n_rand  n_round  race_real  race_rand  race_round  d_vs_rand      z  brk60_real  brk60_rand  pen60_real  pen60_rand  ret60_real  ret60_rand  race35_real  race35_rand
+1st     281     200        0      0.445      0.544         NaN     -0.099 -2.103       0.683       0.665        13.5      12.605       18.75       30.16        0.222        0.311
+
+===== TOUCH INDEX within Overnight: real vs placebos =====
+(no cells)
+
+===== TOUCH INDEX within Opening: real vs placebos =====
+key  n_real  n_rand  n_round  race_real  race_rand  race_round  d_vs_rand      z  brk60_real  brk60_rand  pen60_real  pen60_rand  ret60_real  ret60_rand  race35_real  race35_rand
+1st     311     181        0      0.477      0.551         NaN     -0.073 -1.562       0.817       0.834       29.75       24.83        36.5       41.33         0.27        0.272
+
+===== TOUCH INDEX within Swing: real vs placebos =====
+ key  n_real  n_rand  n_round  race_real  race_rand  race_round  d_vs_rand      z  brk60_real  brk60_rand  pen60_real  pen60_rand  ret60_real  ret60_rand  race35_real  race35_rand
+ 1st    2361     559        0      0.486      0.509         NaN     -0.023 -0.973       0.766       0.689       18.00       13.62       26.75       28.32        0.217        0.283
+ 2nd     907     147        0      0.525      0.472         NaN      0.053  1.168       0.791       0.810       24.25       17.54       29.75       30.83        0.230        0.209
+3rd+     519     173        0      0.525      0.423         NaN      0.103  2.335       0.817       0.798       31.50       20.16       26.75       30.82        0.226        0.189
+
+===== LEVEL AGE: real vs placebos =====
+  key  n_real  n_rand  n_round  race_real  race_rand  race_round  d_vs_rand      z  brk60_real  brk60_rand  pen60_real  pen60_rand  ret60_real  ret60_rand  race35_real  race35_rand
+  <2h    1746     513        0      0.499      0.508         NaN     -0.009 -0.338       0.801       0.768        24.0      20.650      31.625      35.320        0.239        0.265
+ 2-8h    2745     650        0      0.507      0.498         NaN      0.008  0.375       0.773       0.757        20.5      16.470      29.250      30.195        0.243        0.256
+8-24h    2313     539        0      0.507      0.489         NaN      0.018  0.756       0.784       0.761        22.5      18.600      28.500      32.430        0.234        0.250
+ >24h     399     198        0      0.453      0.547         NaN     -0.094 -2.131       0.870       0.778        38.5      18.175      24.000      38.495        0.171        0.269
+
+===== CONFLUENCE (real levels) =====
+
+===== real by confluence =====
+conf_b    n  race15    se  n_res  race35  n35  brk15  brk60  inst  pen60  ret60  pen60atr  ret60atr
+ conf1 1856   0.499 0.012   1807   0.247 1810  0.619  0.790 0.125   24.0  31.50     0.097     0.127
+conf2+ 5698   0.493 0.007   5567   0.223 5538  0.609  0.796 0.104   22.5  29.00     0.095     0.119
+  near 1147   0.517 0.015   1118   0.269 1114  0.631  0.791 0.119   26.0  33.25     0.107     0.138
+placebo-solo baseline: n=1356 race15=0.521 brk60=0.763 ret60=34.055
+real confluence race15 by year:
+ year     2024
+conf_b       
+conf1   0.499
+conf2+  0.493
+near    0.517
+solo    0.429
+
+===== APPROACH SIDE (b=from below/resistance): real vs placebos =====
+key  n_real  n_rand  n_round  race_real  race_rand  race_round  d_vs_rand      z  brk60_real  brk60_rand  pen60_real  pen60_rand  ret60_real  ret60_rand  race35_real  race35_rand
+  a    4533    1110       39      0.494      0.510       0.459     -0.016 -0.929       0.805       0.759        24.5      18.775        30.5       38.65        0.226        0.274
+  b    4233    1194       36      0.500      0.496       0.514      0.005  0.273       0.783       0.793        22.0      19.690        29.5       30.17        0.243        0.237
+
+===== SIDE within PriorDay: real vs placebos =====
+key  n_real  n_rand  n_round  race_real  race_rand  race_round  d_vs_rand      z  brk60_real  brk60_rand  pen60_real  pen60_rand  ret60_real  ret60_rand  race35_real  race35_rand
+  a     457     126        0      0.482      0.574         NaN     -0.092 -1.812       0.786       0.698       22.50      16.595       29.00      33.565        0.234        0.288
+  b     470     123        0      0.490      0.517         NaN     -0.027 -0.519       0.728       0.691       15.75      17.150       25.56      27.790        0.245        0.319
+
+===== SIDE within Overnight: real vs placebos =====
+(no cells)
+
+===== SIDE within Opening: real vs placebos =====
+key  n_real  n_rand  n_round  race_real  race_rand  race_round  d_vs_rand      z  brk60_real  brk60_rand  pen60_real  pen60_rand  ret60_real  ret60_rand  race35_real  race35_rand
+  a     387      90        0      0.521      0.506         NaN      0.015  0.260       0.835       0.811        28.0      19.365      34.750      45.105        0.229        0.225
+  b     432     129        0      0.485      0.583         NaN     -0.098 -1.958       0.780       0.860        23.5      29.250      37.125      36.910        0.276        0.295
+
+===== HELD vs BROKEN (extremes, real): knowable-at-touch features =====
+  arr5       held mean=   2.472 (n=215)  broken mean=   2.482 (n=792)  d=  -0.010  z=-0.12
+  touch_idx  held mean=   2.442 (n=215)  broken mean=   2.352 (n=792)  d=  +0.090  z=+0.80
+  conf_f     held mean=   3.079 (n=215)  broken mean=   2.790 (n=792)  d=  +0.289  z=+2.22
+  pen0       held mean=  -2.649 (n=215)  broken mean=  -1.940 (n=792)  d=  -0.709  z=-4.48
+  age_min    held mean= 519.758 (n=215)  broken mean= 462.192 (n=792)  d= +57.566  z=+0.70
+  atr14d     held mean= 242.495 (n=215)  broken mean= 239.848 (n=792)  d=  +2.647  z=+1.20
+P(broken<=60m) by session (extremes):
+             mean  size
+sess                  
+ON_early   0.725    40
+midday     0.795   375
+premkt     0.804    56
+rth_close  0.793   237
+rth_open   0.776   299
+
+===== placebo per-seed race15 (consistency check) =====
+  seed 1: n=781 race15=0.489
+  seed 2: n=757 race15=0.516
+  seed 3: n=766 race15=0.503
+
+===== broken-by-H profile (real vs rand, tol=5) =====
+  H=  5: P(pen>5.0) real=0.435 rand=0.445 | P(ret>=15) real=0.433 rand=0.460
+  H= 15: P(pen>5.0) real=0.614 rand=0.631 | P(ret>=15) real=0.595 rand=0.625
+  H= 30: P(pen>5.0) real=0.716 rand=0.711 | P(ret>=15) real=0.683 rand=0.705
+  H= 60: P(pen>5.0) real=0.794 rand=0.777 | P(ret>=15) real=0.772 rand=0.796

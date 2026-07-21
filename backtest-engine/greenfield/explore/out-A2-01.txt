@@ -1,0 +1,29 @@
+/home/drew/projects/slingshot-services/backtest-engine/greenfield/explore/A2-01-feed-characterization.py:220: DeprecationWarning: datetime.datetime.utcfromtimestamp() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.fromtimestamp(timestamp, datetime.UTC).
+  datetime.datetime.utcfromtimestamp(int(row['unix_timestamp']) / 1000).isoformat())
+/home/drew/projects/slingshot-services/backtest-engine/greenfield/explore/A2-01-feed-characterization.py:105: DeprecationWarning: datetime.datetime.utcfromtimestamp() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.fromtimestamp(timestamp, datetime.UTC).
+  y = datetime.datetime.utcfromtimestamp(ts).year
+LT tz check: datetime col = 2021-01-27 07:30:00 | unix->UTC = 2021-01-27T07:30:00
+== GEX feed: 804 day files, 2023-03-29 .. 2026-06-15
+  days per year: {'2023': 189, '2024': 252, '2025': 250, '2026': 113}
+  snapshots/day: median=60 p10=52 p90=60
+  snapshot spacing (min): median=15 p90=15
+  first/last snapshot example: ('2024-11-05T09:15:00+00:00', '2024-11-06T00:00:00+00:00')
+  levels per snapshot: median=11 min=10 max=11
+  distance from spot (pts): n=486844 p10=79.8 p25=186.8 median=432.1 p75=818.2 p90=1323.9
+  snapshot-to-snapshot persistence: within 1pt 50.7%, within 5pt 91.2% (n=478313)
+  level lifetime (hours, 5pt identity, within-day): n=50072 p10=0.2 p25=0.2 median=0.8 p75=2.5 p90=8.2
+
+== LT feed: 128292 rows
+  rows per year: {2021: 21999, 2022: 23609, 2023: 23563, 2024: 23671, 2025: 23326, 2026: 12124}
+  set changed row-to-row (0.1pt): 100.0% of 126882 consecutive pairs
+  level lifetime (hours, 5pt identity): n=254865 p10=0.2 p25=0.2 median=0.2 p75=0.5 p90=1.2
+
+== cache pass: LT distance-from-spot + daily vol table
+  cache days: 1703; days with >1 contract symbol (roll days, EXCLUDED from touch census): 36
+  roll days: ['2021-03-14', '2021-03-15', '2021-06-11', '2021-06-15', '2021-09-10', '2021-12-10', '2022-03-10', '2022-03-11', '2022-03-14', '2022-03-15', '2022-03-16', '2022-06-13', '2022-09-12', '2022-09-13', '2022-12-11', '2022-12-12', '2023-03-13', '2023-06-11', '2023-06-12', '2023-09-10', '2023-12-10', '2023-12-11', '2024-03-10', '2024-03-11', '2024-06-16', '2024-09-15', '2024-09-16', '2024-12-16', '2025-03-17', '2025-03-18', '2025-06-15', '2025-06-16', '2025-09-15', '2025-12-15', '2026-03-15', '2026-03-16']
+  LT distance from spot (pts): n=632395 p10=11.5 p25=30.2 median=70.6 p75=143.3 p90=248.7
+  wrote /home/drew/projects/slingshot-services/backtest-engine/greenfield/explore/vol_daily.csv (1703 days)
+
+== GEX vs LT agreement (at GEX snapshot stamps, LT as-of<=stamp, cap 2h)
+  GEX level near an LT level: within10 4.3%, within25 9.0% (n=483395)
+  LT level near a GEX level: within10 10.1%, within25 24.0% (n=227770)

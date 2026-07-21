@@ -68,7 +68,7 @@ export class CLI {
         type: 'string',
         description: 'Strategy to backtest',
         default: 'gex-recoil',
-        choices: ['gex-recoil', 'gex-recoil-enhanced', 'gex-ldpm-confluence', 'gex-ldpm-confluence-pullback', 'contrarian-bounce', 'gex-scalp', 'gex-scalp-confirmed', 'ict-smc', 'ict-ob', 'ldpm-level-sweep', 'order-flow-momentum', 'ofm', 'contrarian-orderflow', 'cof', 'gex-absorption', 'absorption', 'iv-skew-gex', 'iv-skew', 'gex-flip-ivpct', 'gfi', 'gex-lt-3m-crossover', 'gex-lt-cross', 'glx', 'lt-gex-path-race', 'path-race', 'lgpr', 'ls-flip-trigger-bar', 'ls-flip', 'lstb', 'dealer-wall-fade', 'dwf', 'gex-touch-confirm', 'gex-touch', 'gtc', 'gex-touch-patterns', 'gtp', 'gex-structural-resist', 'gsr', 'gex-level-fade', 'glf', 'cbbo-lt-volatility', 'cbbo-lt', 'gex-mean-reversion', 'gex-mr', 'lt-failed-breakdown', 'lt-fb', 'lt-level-crossing', 'lt-cross', 'lt-level-migration', 'lt-mig', 'regime-scalp', 'rs', 'gex-level-sweep', 'gex-sweep', 'sweep', 'micro-structure-scalper', 'micro-scalper', 'mss', 'trend-scalp', 'ts', 'level-bounce', 'lb', 'overnight-gex-touch', 'overnight-gex', 'ogt', 'overnight-charm-vanna', 'ocv', 'es-cross-signal', 'es-cross', 'ecs', 'es-micro-scalper', 'es-micro', 'esms', 'es-stop-hunt', 'es-hunt', 'esh', 'ohlcv-absorption', 'absorption-detect', 'abs', 'ohlcv-liquidity-sweep', 'liquidity-sweep', 'lsweep', 'ohlcv-vpin', 'vpin', 'ohlcv-mtf-rejection', 'mtf-rejection', 'mtfr', 'momentum-microstructure', 'momentum-micro', 'mm', 'midnight-open-retracement', 'midnight-open', 'mor', 'initial-balance-breakout', 'ib-breakout', 'ibb', 'gap-fill', 'gap', 'daily-level-sweep', 'daily-sweep', 'dls', 'vwap-bounce', 'vwap', 'session-transition', 'session', 'st', 'value-area-80', 'va80', 'swing-reversal', 'sr', 'ict-silver-bullet', 'silver-bullet', 'isb', 'price-action-exhaustion', 'pa-exhaust', 'pae', 'ict-mtf-sweep', 'mtf-sweep', 'jv', 'dc-st1', 'dc1', 'dc-st2', 'dc2', 'dc-st3', 'dc3', 'dc-st4', 'dc4', 'dc-st5', 'dc5', 'dc-st6', 'dc6', 'dc-st7', 'dc7', 'dc-st8', 'dc8', 'dc-mstgam', 'mstgam', 'mnq-adaptive-scalper', 'mnq-scalper', 'mnq', 'sweep-reversal', 'sweep-rev', 'nq-leads-es', 'nq-lead', 'nle', 'gex-support-bounce', 'gex-bounce', 'gsb', 'impulse-fvg', 'impulse', 'ifvg', 'short-dte-iv', 'sdiv', 'overnight-scoring', 'overnight-score', 'ons', 'overnight-composite', 'overnight-comp', 'onc', 'overnight-lt-crossing', 'overnight-ltx', 'oltx', 'lt-crossover', 'ltx', 'lt-structure-confirm', 'ltsc', 'lt-struct', 'lt-candle-regime', 'lt-regime', 'lcr', 'gamma-regime-drift', 'grd']
+        choices: ['gex-recoil', 'gex-recoil-enhanced', 'gex-ldpm-confluence', 'gex-ldpm-confluence-pullback', 'contrarian-bounce', 'gex-scalp', 'gex-scalp-confirmed', 'ict-smc', 'ict-ob', 'ldpm-level-sweep', 'order-flow-momentum', 'ofm', 'contrarian-orderflow', 'cof', 'gex-absorption', 'absorption', 'iv-skew-gex', 'iv-skew', 'gex-flip-ivpct', 'gfi', 'gex-lt-3m-crossover', 'gex-lt-cross', 'glx', 'lt-gex-path-race', 'path-race', 'lgpr', 'ls-flip-trigger-bar', 'ls-flip', 'lstb', 'dealer-wall-fade', 'dwf', 'gex-touch-confirm', 'gex-touch', 'gtc', 'gex-touch-patterns', 'gtp', 'gex-structural-resist', 'gsr', 'gex-level-fade', 'glf', 'cbbo-lt-volatility', 'cbbo-lt', 'gex-mean-reversion', 'gex-mr', 'lt-failed-breakdown', 'lt-fb', 'lt-level-crossing', 'lt-cross', 'lt-level-migration', 'lt-mig', 'regime-scalp', 'rs', 'gex-level-sweep', 'gex-sweep', 'sweep', 'micro-structure-scalper', 'micro-scalper', 'mss', 'trend-scalp', 'ts', 'level-bounce', 'lb', 'overnight-gex-touch', 'overnight-gex', 'ogt', 'overnight-charm-vanna', 'ocv', 'es-cross-signal', 'es-cross', 'ecs', 'es-micro-scalper', 'es-micro', 'esms', 'es-stop-hunt', 'es-hunt', 'esh', 'ohlcv-absorption', 'absorption-detect', 'abs', 'ohlcv-liquidity-sweep', 'liquidity-sweep', 'lsweep', 'ohlcv-vpin', 'vpin', 'ohlcv-mtf-rejection', 'mtf-rejection', 'mtfr', 'momentum-microstructure', 'momentum-micro', 'mm', 'midnight-open-retracement', 'midnight-open', 'mor', 'initial-balance-breakout', 'ib-breakout', 'ibb', 'gap-fill', 'gap', 'preclose-continuation', 'preclose', 'pcc', 'monday-strength', 'monday', 'mon', 'gapup-fade', 'gap-fade', 'guf', 'daily-level-sweep', 'daily-sweep', 'dls', 'vwap-bounce', 'vwap', 'session-transition', 'session', 'st', 'value-area-80', 'va80', 'swing-reversal', 'sr', 'ict-silver-bullet', 'silver-bullet', 'isb', 'price-action-exhaustion', 'pa-exhaust', 'pae', 'ict-mtf-sweep', 'mtf-sweep', 'jv', 'dc-st1', 'dc1', 'dc-st2', 'dc2', 'dc-st3', 'dc3', 'dc-st4', 'dc4', 'dc-st5', 'dc5', 'dc-st6', 'dc6', 'dc-st7', 'dc7', 'dc-st8', 'dc8', 'dc-mstgam', 'mstgam', 'mnq-adaptive-scalper', 'mnq-scalper', 'mnq', 'sweep-reversal', 'sweep-rev', 'nq-leads-es', 'nq-lead', 'nle', 'gex-support-bounce', 'gex-bounce', 'gsb', 'impulse-fvg', 'impulse', 'ifvg', 'short-dte-iv', 'sdiv', 'overnight-scoring', 'overnight-score', 'ons', 'overnight-composite', 'overnight-comp', 'onc', 'overnight-lt-crossing', 'overnight-ltx', 'oltx', 'lt-crossover', 'ltx', 'lt-structure-confirm', 'ltsc', 'lt-struct', 'lt-candle-regime', 'lt-regime', 'lcr', 'gamma-regime-drift', 'grd']
       })
 
       .option('timeframe', {
@@ -84,6 +84,16 @@ export class CLI {
         type: 'number',
         description: 'Round-trip commission per contract',
         default: this.defaultConfig.backtesting.commission
+      })
+      .option('slippage', {
+        type: 'number',
+        description: 'Market-order slippage in points per fill (entry/market/time exits). Default from config; set lower for liquid 1-lots (NQ spread = 0.25pt).',
+        default: this.defaultConfig.backtesting.slippage.marketOrderSlippage
+      })
+      .option('stop-slippage', {
+        type: 'number',
+        description: 'Stop-order slippage in points per fill (stop_loss / trailing / BE exits). Default from config.',
+        default: this.defaultConfig.backtesting.slippage.stopOrderSlippage
       })
 
       .option('capital', {
@@ -1913,6 +1923,7 @@ export class CLI {
       console.log(chalk.white(`📅 Period: ${args.start} → ${args.end}`));
       console.log(chalk.white(`⏱️  Timeframe: ${args.timeframe}`));
       console.log(chalk.white(`💰 Commission: $${args.commission} per round-trip`));
+      console.log(chalk.white(`💧 Slippage: ${args.slippage}pt market / ${args['stop-slippage']}pt stop (per fill)`));
 
       // Show contract specifications
       const contractSpec = this.defaultConfig.contracts[args.ticker.toUpperCase()];
@@ -2837,6 +2848,11 @@ export class CLI {
       strategy: args.strategy,
       strategyParams: strategyParams,
       commission: args.commission,
+      slippage: {
+        limitOrderSlippage: this.defaultConfig.backtesting.slippage.limitOrderSlippage,
+        marketOrderSlippage: args.slippage,
+        stopOrderSlippage: args['stop-slippage']
+      },
       initialCapital: args.capital,
       dataDir: args.dataDir,
       verbose: args.verbose,

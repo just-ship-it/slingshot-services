@@ -1,0 +1,30 @@
+
+##### ATR variant atr_fs_tr #####
+=== dev 2021-2024 ===
+  eligible=927 skips={'not_full': 34, 'roll': 4, 'atr': 56, 'cover': 0, 'zero': 1, 'no_bars': 0}
+  mv>0.3 atr_fs_tr slip0.25          n=515  WR=60.6 PF=1.482 PnL=$+53,220 Sh=2.19 DD=$-11,510 grossPts mean=5.92 med=6.75 [2021:+8665/106 2022:+24340/139 2023:+20125/136 2024:+90/134]
+  mv>0.3 atr_fs_tr slip0.5           n=515  WR=59.6 PF=1.428 PnL=$+48,070 Sh=1.97 DD=$-12,110 grossPts mean=5.92 med=6.75 [2021:+7605/106 2022:+22950/139 2023:+18765/136 2024:-1250/134]
+=== val 2025-2026 ===
+  eligible=358 skips={'not_full': 13, 'roll': 2, 'atr': 0, 'cover': 0, 'zero': 0, 'no_bars': 0}
+  mv>0.3 atr_fs_tr slip0.25          n=191  WR=51.8 PF=1.510 PnL=$+30,305 Sh=2.07 DD=$-9,595 grossPts mean=8.68 med=1.75 [2025:+13940/128 2026:+16365/63]
+  mv>0.3 atr_fs_tr slip0.5           n=191  WR=50.8 PF=1.470 PnL=$+28,395 Sh=1.93 DD=$-10,595 grossPts mean=8.68 med=1.75 [2025:+12660/128 2026:+15735/63]
+
+##### ATR variant atr_fs_trr #####
+=== dev 2021-2024 ===
+  eligible=927 skips={'not_full': 34, 'roll': 4, 'atr': 56, 'cover': 0, 'zero': 1, 'no_bars': 0}
+  mv>0.3 atr_fs_trr slip0.25         n=518  WR=60.6 PF=1.476 PnL=$+53,095 Sh=2.17 DD=$-11,510 grossPts mean=5.88 med=6.75 [2021:+8665/106 2022:+24340/139 2023:+21225/138 2024:-1135/135]
+  mv>0.3 atr_fs_trr slip0.5          n=518  WR=59.7 PF=1.422 PnL=$+47,915 Sh=1.95 DD=$-12,110 grossPts mean=5.88 med=6.75 [2021:+7605/106 2022:+22950/139 2023:+19845/138 2024:-2485/135]
+=== val 2025-2026 ===
+  eligible=358 skips={'not_full': 13, 'roll': 2, 'atr': 0, 'cover': 0, 'zero': 0, 'no_bars': 0}
+  mv>0.3 atr_fs_trr slip0.25         n=192  WR=51.6 PF=1.477 PnL=$+29,000 Sh=1.96 DD=$-10,900 grossPts mean=8.30 med=1.75 [2025:+12635/129 2026:+16365/63]
+  mv>0.3 atr_fs_trr slip0.5          n=192  WR=50.5 PF=1.439 PnL=$+27,080 Sh=1.83 DD=$-11,910 grossPts mean=8.30 med=1.75 [2025:+11345/129 2026:+15735/63]
+
+##### ATR variant atr_fs_hl #####
+=== dev 2021-2024 ===
+  eligible=927 skips={'not_full': 34, 'roll': 4, 'atr': 56, 'cover': 0, 'zero': 1, 'no_bars': 0}
+  mv>0.3 atr_fs_hl slip0.25          n=518  WR=60.6 PF=1.476 PnL=$+53,095 Sh=2.17 DD=$-11,510 grossPts mean=5.88 med=6.75 [2021:+8665/106 2022:+24340/139 2023:+21225/138 2024:-1135/135]
+  mv>0.3 atr_fs_hl slip0.5           n=518  WR=59.7 PF=1.422 PnL=$+47,915 Sh=1.95 DD=$-12,110 grossPts mean=5.88 med=6.75 [2021:+7605/106 2022:+22950/139 2023:+19845/138 2024:-2485/135]
+=== val 2025-2026 ===
+  eligible=358 skips={'not_full': 13, 'roll': 2, 'atr': 0, 'cover': 0, 'zero': 0, 'no_bars': 0}
+  mv>0.3 atr_fs_hl slip0.25          n=196  WR=52.0 PF=1.490 PnL=$+29,850 Sh=2.00 DD=$-10,365 grossPts mean=8.36 med=2.12 [2025:+13120/131 2026:+16730/65]
+  mv>0.3 atr_fs_hl slip0.5           n=196  WR=51.0 PF=1.451 PnL=$+27,890 Sh=1.87 DD=$-11,375 grossPts mean=8.36 med=2.12 [2025:+11810/131 2026:+16080/65]

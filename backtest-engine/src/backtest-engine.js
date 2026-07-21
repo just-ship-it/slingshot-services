@@ -59,6 +59,9 @@ import { OHLCVMTFRejectionStrategy } from '../../shared/strategies/ohlcv-mtf-rej
 import { MomentumMicrostructureStrategy } from '../../shared/strategies/momentum-microstructure.js';
 import { MidnightOpenRetracementStrategy } from '../../shared/strategies/midnight-open-retracement.js';
 import { InitialBalanceBreakoutStrategy } from '../../shared/strategies/initial-balance-breakout.js';
+import { PreCloseContinuationStrategy } from '../../shared/strategies/preclose-continuation.js';
+import { MondayStrengthStrategy } from '../../shared/strategies/monday-strength.js';
+import { GapUpFadeStrategy } from '../../shared/strategies/gapup-fade.js';
 import { GapFillStrategy } from '../../shared/strategies/gap-fill.js';
 import { DailyLevelSweepStrategy } from '../../shared/strategies/daily-level-sweep.js';
 import { VWAPBounceStrategy } from '../../shared/strategies/vwap-bounce.js';
@@ -107,7 +110,7 @@ export class BacktestEngine {
     this.aggregator = new CandleAggregator();
     this.tradeSimulator = new TradeSimulator({
       commission: config.commission,
-      slippage: this.defaultConfig.backtesting.slippage,
+      slippage: config.slippage ?? this.defaultConfig.backtesting.slippage,
       contractSpecs: this.defaultConfig.contracts,
       forceCloseAtMarketClose: config.strategyParams?.forceCloseAtMarketClose ?? this.defaultConfig.backtesting.forceCloseAtMarketClose,
       marketCloseTimeUTC: config.strategyParams?.marketCloseTimeUTC ?? this.defaultConfig.backtesting.marketCloseTimeUTC,
@@ -1958,6 +1961,18 @@ export class BacktestEngine {
       case 'gap-fill':
       case 'gap':
         return new GapFillStrategy(params);
+      case 'preclose-continuation':
+      case 'preclose':
+      case 'pcc':
+        return new PreCloseContinuationStrategy(params);
+      case 'monday-strength':
+      case 'monday':
+      case 'mon':
+        return new MondayStrengthStrategy(params);
+      case 'gapup-fade':
+      case 'gap-fade':
+      case 'guf':
+        return new GapUpFadeStrategy(params);
       case 'daily-level-sweep':
       case 'daily-sweep':
       case 'dls':

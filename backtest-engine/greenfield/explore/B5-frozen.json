@@ -1,0 +1,13 @@
+{
+  "_declared": "2026-07-17, BEFORE any 2025-2026 run",
+  "_rationale": "Best-of-16 dev config by PF (1.141). Explicitly distrusted as the single best cell of a 16-config sweep that ALREADY FAILS the survival bar in dev (no config is positive every year; 2022 & 2023 negative here). Frozen only to document OOS behavior for completeness. Strategy is DEAD in dev regardless of the locked outcome.",
+  "k": 2.0,
+  "vm3": 2.5,
+  "atr": "top",
+  "targ_c": 0.20,
+  "stop_c": 0.30,
+  "hold_m": 15,
+  "entry": "lim",
+  "lim_off": 8.0,
+  "lim_win_s": 180
+}

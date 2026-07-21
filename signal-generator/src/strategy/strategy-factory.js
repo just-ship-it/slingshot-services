@@ -18,6 +18,9 @@ import { LTCandleRegimeStrategy } from '../../../shared/strategies/lt-candle-reg
 import { GexLt3mCrossoverStrategy } from '../../../shared/strategies/gex-lt-3m-crossover.js';
 import { GexLevelFadeStrategy } from '../../../shared/strategies/gex-level-fade.js';
 import { LsFlipTriggerBarStrategy } from '../../../shared/strategies/ls-flip-trigger-bar.js';
+import { PreCloseContinuationStrategy } from '../../../shared/strategies/preclose-continuation.js';
+import { MondayStrengthStrategy } from '../../../shared/strategies/monday-strength.js';
+import { GapUpFadeStrategy } from '../../../shared/strategies/gapup-fade.js';
 
 const logger = createLogger('strategy-factory');
 
@@ -37,6 +40,9 @@ export const STRATEGY_TYPES = {
   GEX_LT_3M_CROSSOVER: 'gex-lt-3m-crossover',
   GEX_LEVEL_FADE: 'gex-level-fade',
   LS_FLIP_TRIGGER_BAR: 'ls-flip-trigger-bar',
+  PRECLOSE_CONTINUATION: 'preclose-continuation',
+  MONDAY_STRENGTH: 'monday-strength',
+  GAPUP_FADE: 'gapup-fade',
   AI_TRADER: 'ai-trader'
 };
 
@@ -112,6 +118,24 @@ export function createStrategy(strategyName, config) {
     case 'ls-flip':
     case 'lstb':
       return createLsFlipTriggerBarStrategy(config);
+
+    case STRATEGY_TYPES.PRECLOSE_CONTINUATION:
+    case 'preclose_continuation':
+    case 'preclose':
+    case 'pcc':
+      return createPreCloseContinuationStrategy(config);
+
+    case STRATEGY_TYPES.MONDAY_STRENGTH:
+    case 'monday_strength':
+    case 'monday':
+    case 'mon':
+      return createMondayStrengthStrategy(config);
+
+    case STRATEGY_TYPES.GAPUP_FADE:
+    case 'gapup_fade':
+    case 'gap-fade':
+    case 'guf':
+      return createGapUpFadeStrategy(config);
 
     case STRATEGY_TYPES.AI_TRADER:
     case 'ai_trader':
@@ -279,6 +303,24 @@ export function getStrategyConstant(strategyName) {
     case 'lstb':
       return 'LS_FLIP_TRIGGER_BAR';
 
+    case STRATEGY_TYPES.PRECLOSE_CONTINUATION:
+    case 'preclose_continuation':
+    case 'preclose':
+    case 'pcc':
+      return 'PRECLOSE_CONTINUATION';
+
+    case STRATEGY_TYPES.MONDAY_STRENGTH:
+    case 'monday_strength':
+    case 'monday':
+    case 'mon':
+      return 'MONDAY_STRENGTH';
+
+    case STRATEGY_TYPES.GAPUP_FADE:
+    case 'gapup_fade':
+    case 'gap-fade':
+    case 'guf':
+      return 'GAPUP_FADE';
+
     case STRATEGY_TYPES.AI_TRADER:
     case 'ai_trader':
     case 'aitrader':
@@ -367,6 +409,24 @@ export function getDataRequirements(strategyName) {
     case 'ls-flip':
     case 'lstb':
       return LsFlipTriggerBarStrategy.getDataRequirements();
+
+    case STRATEGY_TYPES.PRECLOSE_CONTINUATION:
+    case 'preclose_continuation':
+    case 'preclose':
+    case 'pcc':
+      return PreCloseContinuationStrategy.getDataRequirements();
+
+    case STRATEGY_TYPES.MONDAY_STRENGTH:
+    case 'monday_strength':
+    case 'monday':
+    case 'mon':
+      return MondayStrengthStrategy.getDataRequirements();
+
+    case STRATEGY_TYPES.GAPUP_FADE:
+    case 'gapup_fade':
+    case 'gap-fade':
+    case 'guf':
+      return GapUpFadeStrategy.getDataRequirements();
 
     case STRATEGY_TYPES.AI_TRADER:
     case 'ai_trader':
@@ -597,6 +657,64 @@ function createLTCandleRegimeStrategy(config) {
     `requireSentiment=${params.requireSentiment}`);
 
   return new LTCandleRegimeStrategy(params);
+}
+
+/**
+ * Book edge #1 — Pre-Close Continuation (greenfield 2026-07). Long/short the
+ * 15:00→15:30 ET dealer re-hedge drift on trended days. No stop, no target,
+ * time exit at 15:30 (maxHoldBars=30). ATR14 computed in-strategy (seeded from
+ * daily candles). Overrides via config.getPreCloseContinuationParams() if present.
+ */
+function createPreCloseContinuationStrategy(config) {
+  const overrides = typeof config.getPreCloseContinuationParams === 'function'
+    ? config.getPreCloseContinuationParams() : {};
+  const params = {
+    ...overrides,
+    tradingSymbol: config.TRADING_SYMBOL,
+    defaultQuantity: config.DEFAULT_QUANTITY,
+    debug: false,
+  };
+  logger.info(`PreClose-Continuation params: moveAtrMult=${params.moveAtrMult ?? 0.30}, `
+    + `hold=${params.holdBars ?? 30}min, seedSymbol=${params.seedSymbol ?? 'NQ'}`);
+  return new PreCloseContinuationStrategy(params);
+}
+
+/**
+ * Book edge #2 — Monday Strength. Long the Monday 09:30 RTH open; no stop/target;
+ * self-contained max-hold exit at 15:45 ET (holdBars=375). Long-only session beta
+ * — a book diversifier, size accordingly.
+ */
+function createMondayStrengthStrategy(config) {
+  const overrides = typeof config.getMondayStrengthParams === 'function'
+    ? config.getMondayStrengthParams() : {};
+  const params = {
+    ...overrides,
+    tradingSymbol: config.TRADING_SYMBOL,
+    defaultQuantity: config.DEFAULT_QUANTITY,
+    debug: false,
+  };
+  logger.info(`Monday-Strength params: hold=${params.holdBars ?? 375}min (→15:45 ET), `
+    + `dow=${params.tradeDow ?? 1}`);
+  return new MondayStrengthStrategy(params);
+}
+
+/**
+ * Book edge #3 (HEDGE) — Gap-Up Fade. Short a large opening gap-up (≥0.5·ATR14)
+ * at 09:30, cover 11:00 (maxHoldBars=90), no stop. ATR14 + prior-RTH-close seeded
+ * from daily/hourly candles. Pays when the long edges bleed.
+ */
+function createGapUpFadeStrategy(config) {
+  const overrides = typeof config.getGapUpFadeParams === 'function'
+    ? config.getGapUpFadeParams() : {};
+  const params = {
+    ...overrides,
+    tradingSymbol: config.TRADING_SYMBOL,
+    defaultQuantity: config.DEFAULT_QUANTITY,
+    debug: false,
+  };
+  logger.info(`GapUp-Fade params: gapAtrMult=${params.gapAtrMult ?? 0.50}, `
+    + `hold=${params.holdBars ?? 90}min (→11:00 ET), seedSymbol=${params.seedSymbol ?? 'NQ'}`);
+  return new GapUpFadeStrategy(params);
 }
 
 export default {

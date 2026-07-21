@@ -2350,6 +2350,13 @@ export class TradeSimulator {
    * @returns {boolean} True if stop was hit
    */
   checkStopHit(trade, candle, stopPrice) {
+    // Skip stop check if no stop set (time-exit-only mode). Without this guard a
+    // null stopPrice coerces to 0, so a short's `high >= 0` always "hits" -> a
+    // bogus stop_loss exit at price 0. Mirrors checkTakeProfitHit's null guard.
+    if (stopPrice == null) {
+      return false;
+    }
+
     // JV eBook close-based stops: "You only get stopped out if the candle closes
     // above or below your key level. Wicks are noise. Closes show real break."
     const useClose = trade.stopCheckMode === 'close';

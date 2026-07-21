@@ -1,0 +1,35 @@
+=== H6 overnight-unwind, 1329 gap-valid days ===
+  gap up: 0.536  down: 0.461  |gap|/atr median 0.226
+  [all gap days] n=1329  (+ = continue gap, - = fade/gap-fill)
+     ->0945: pts=-1.871 t=-1.14 /atr=-0.0037  [MIXED(2+/4-)]
+     ->1015: pts=+0.391 t=+0.15 /atr=+0.0024  [MIXED(4+/2-)]
+     ->1030: pts=+0.900 t=+0.32 /atr=+0.0032  [MIXED(3+/3-)]
+     ->1045: pts=+0.065 t=+0.02 /atr=+0.0043  [MIXED(4+/2-)]
+     ->1200: pts=-1.441 t=-0.37 /atr=-0.0001  [MIXED(2+/4-)]
+  [small gap (bot tercile)] n=439  (+ = continue gap, - = fade/gap-fill)
+     ->0945: pts=-2.593 t=-0.98 /atr=-0.0023  [MIXED(3+/3-)]
+     ->1015: pts=+1.741 t=+0.42 /atr=+0.0073  [MIXED(4+/2-)]
+     ->1030: pts=+4.466 t=+0.97 /atr=+0.0158  [MIXED(4+/2-)]
+     ->1045: pts=+4.548 t=+0.90 /atr=+0.0207  [MIXED(4+/2-)]
+     ->1200: pts=+3.293 t=+0.54 /atr=+0.0171  [MIXED(5+/1-)]
+  [large gap (top tercile)] n=439  (+ = continue gap, - = fade/gap-fill)
+     ->0945: pts=-3.646 t=-1.16 /atr=-0.0099  [MIXED(3+/3-)]
+     ->1015: pts=-3.395 t=-0.65 /atr=-0.0094  [MIXED(3+/3-)]
+     ->1030: pts=-4.953 t=-0.93 /atr=-0.0187  [MIXED(2+/4-)]
+     ->1045: pts=-7.932 t=-1.36 /atr=-0.0243  [MIXED(2+/4-)]
+     ->1200: pts=-8.858 t=-1.16 /atr=-0.0236  [MIXED(3+/3-)]
+  [compressed ON] n=439  (+ = continue gap, - = fade/gap-fill)
+     ->0945: pts=+2.346 t=+0.98 /atr=+0.0067  [MIXED(5+/1-)]
+     ->1015: pts=+1.724 t=+0.44 /atr=+0.0031  [MIXED(3+/3-)]
+     ->1030: pts=+4.953 t=+1.17 /atr=+0.0116  [MIXED(4+/2-)]
+     ->1045: pts=+3.657 t=+0.79 /atr=+0.0078  [MIXED(4+/2-)]
+     ->1200: pts=+3.210 t=+0.54 /atr=+0.0078  [MIXED(4+/2-)]
+  [wide ON] n=439  (+ = continue gap, - = fade/gap-fill)
+     ->0945: pts=-8.657 t=-2.56 /atr=-0.0215  [MIXED(1+/5-)]
+     ->1015: pts=-6.453 t=-1.17 /atr=-0.0141  [MIXED(2+/4-)]
+     ->1030: pts=-6.466 t=-1.15 /atr=-0.0176  [MIXED(1+/5-)]
+     ->1045: pts=-7.109 t=-1.15 /atr=-0.0120  [MIXED(1+/5-)]
+     ->1200: pts=-5.537 t=-0.71 /atr=-0.0106  [MIXED(2+/4-)]
+
+--- correlation: gap/atr vs first-hour move (P1030-P0930)/atr ---
+  corr(gap, first-hour move) = -0.045  (n=1329)

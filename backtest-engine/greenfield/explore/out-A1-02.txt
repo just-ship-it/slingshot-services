@@ -1,0 +1,111 @@
+days usable: 1319 (2021-01-12..2026-06-12)
+
+=== ON vs RTH range (ATR units) ===
+      on_range_atr  rth_range_atr
+mean      0.573300       0.841784
+50%       0.511400       0.758586
+std       0.278588       0.386485
+corr(on_range_atr, rth_range_atr) = 0.345  n=1319
+  2021: corr=0.488 n=237
+  2022: corr=0.293 n=242
+  2023: corr=0.195 n=243
+  2024: corr=0.354 n=245
+  2025: corr=0.358 n=241
+  2026: corr=0.298 n=111
+
+ON-range tercile (per-year terciles) -> RTH range:
+               n  rth_range_atr  rth_abs_ret_atr
+on_rng_terc                                     
+low          441       0.717810         0.375377
+mid          438       0.805015         0.429524
+high         440       1.002643         0.530325
+
+=== Gap (RTH open - prior RTH close) ===
+n=1319 mean=0.0185 med=0.0356 std=0.4159 |gap| med=0.2303 ATR
+pts: mean=5.6 med=9.6 |gap| med=67.9
+gap_atr quantiles: {0.05: -0.686, 0.25: -0.199, 0.5: 0.036, 0.75: 0.253, 0.95: 0.672}
+
+Gap fill rate by |gap| (ATR) bucket (fill = touch prior RTH close during RTH):
+              n  fill_rate  med_fill_min
+gap_bucket                              
+0-.05       152   0.960526           0.0
+.05-.1      159   0.899371           4.0
+.1-.2       276   0.760870          14.0
+.2-.35      290   0.562069          32.0
+.35-.6      268   0.417910          82.5
+>.6         170   0.241176         142.0
+
+per-year fill rate, |gap| ATR > 0.2:
+          mean  size
+year                
+2021  0.500000   134
+2022  0.436508   126
+2023  0.458647   133
+2024  0.388489   139
+2025  0.427481   131
+2026  0.353846    65
+
+per-year fill rate, |gap| ATR <= 0.1:
+          mean  size
+year                
+2021  0.921569    51
+2022  0.936508    63
+2023  0.938462    65
+2024  0.946429    56
+2025  0.892857    56
+2026  0.956522    23
+
+RTH return (ATR) conditioned on gap direction & size:
+                      n  mean_rth_ret_atr       med  pct_continue
+gap_bucket gap_dir                                               
+0-.05      -1.0      71          0.077910  0.009702      0.492958
+            1.0      81          0.031373  0.103923      0.592593
+.05-.1     -1.0      77         -0.029951  0.000000      0.493506
+            1.0      82         -0.015561  0.059617      0.548780
+.1-.2      -1.0     129          0.008584  0.129651      0.410853
+            1.0     147          0.037186  0.098361      0.551020
+.2-.35     -1.0     127          0.044134  0.072934      0.433071
+            1.0     163          0.099315  0.115201      0.570552
+.35-.6     -1.0     115         -0.026977  0.014520      0.495652
+            1.0     153         -0.076940 -0.022304      0.483660
+>.6        -1.0      86          0.073901  0.133525      0.418605
+            1.0      84         -0.109118 -0.036091      0.488095
+
+per-year mean RTH ret (ATR) x gap dir, |gap|>0.2 ATR:
+                  mean  size
+year gap_dir                
+2021 -1.0     0.090073    53
+      1.0     0.029920    81
+2022 -1.0    -0.061345    73
+      1.0    -0.090002    53
+2023 -1.0     0.073041    67
+      1.0     0.002172    66
+2024 -1.0    -0.043156    50
+      1.0     0.059441    89
+2025 -1.0     0.074681    55
+      1.0    -0.154461    76
+2026 -1.0     0.057301    30
+      1.0     0.111501    35
+
+=== RTH vs overnight extremes ===
+n=1319 break ON-high: 0.644  break ON-low: 0.586  both: 0.266  neither(inside day): 0.036
+median minutes to first ON-high break: 15, ON-low: 21
+
+per-year break rates:
+        brk_hi    brk_lo      both    n
+year                                   
+2021  0.666667  0.569620  0.274262  237
+2022  0.611570  0.640496  0.285124  242
+2023  0.670782  0.609053  0.300412  243
+2024  0.648980  0.591837  0.273469  245
+2025  0.634855  0.543568  0.232365  241
+2026  0.621622  0.531532  0.189189  111
+
+break rates by ON-range tercile:
+               n    brk_hi    brk_lo      both
+on_rng_terc                                   
+low          441  0.709751  0.671202  0.383220
+mid          438  0.671233  0.566210  0.257991
+high         440  0.552273  0.520455  0.156818
+
+saved cache/NQ_daily_sessions.csv

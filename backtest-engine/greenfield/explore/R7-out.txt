@@ -1,0 +1,301 @@
+# NQ calendar-flow census  days=1409  2020-12-28..2026-06-15
+# one drift per day per segment -> pooled == day-weighted (rule 8 satisfied by construction)
+
+
+====================================================================================================
+H0 SANITY: all-days segment drifts (baseline; confirmed 15:00->15:30 pre-close should show)
+====================================================================================================
+ALL DAYS                     rth_full             n=1357 mean=  +3.70pt t=+0.70 atr=+0.009 yr[4/7]: -11 +7 -14 +16 -4 +3 +26
+ALL DAYS                     pre30_1500_1530      n=1362 mean=  -1.27pt t=-1.12 atr=-0.005 yr[3/7]: -2 -2 +1 -4 +0 -3 +2
+ALL DAYS                     close30_1530_1600    n=1357 mean=  +0.77pt t=+0.58 atr=+0.001 yr[5/7]: +5 -3 +0 +1 -0 +2 +8
+ALL DAYS                     lasthr_1500_1600     n=1357 mean=  -0.44pt t=-0.24 atr=-0.004 yr[4/7]: +3 -5 +1 -3 +0 -1 +10
+ALL DAYS                     pm_1400_1600         n=1357 mean=  +1.27pt t=+0.53 atr=+0.005 yr[5/7]: +6 +4 +5 +2 -4 +0 -0
+ALL DAYS                     am1_0930_1030        n=1405 mean=  -0.03pt t=-0.01 atr=-0.002 yr[4/7]: -26 +1 -7 +2 -2 +4 +7
+ALL DAYS                     on_sess_1800_0930    n=1391 mean=  +5.73pt t=+1.67 atr=+0.016 yr[6/7]: +53 +4 -5 +3 +11 +6 +27
+ALL DAYS                     gap                  n=1388 mean=  +5.07pt t=+1.33 atr=+0.017 yr[6/7]: +36 +7 -13 +3 +16 +11 +4
+
+====================================================================================================
+H1 DAY-OF-WEEK x TIME-OF-DAY (signed drift). control=pooled all-weekdays
+====================================================================================================
+
+-- segment rth_full --
+  (control) all wkdays       rth_full             n=1357 mean=  +3.70pt t=+0.70 atr=+0.009 yr[4/7]: -11 +7 -14 +16 -4 +3 +26
+  Mon                        rth_full             n= 251 mean= +24.65pt t=+2.41 atr=+0.084 yr[6/7]: +19 +5 -1 +51 +20 +30 +66
+  Tue                        rth_full             n= 283 mean=  +1.70pt t=+0.17 atr=-0.006 yr[4/7]: -54 -2 -36 +23 +10 +5 +25
+  Wed                        rth_full             n= 280 mean=  +7.14pt t=+0.54 atr=+0.003 yr[3/7]: -56 -2 +1 -21 -17 +66 +27
+  Thu                        rth_full             n= 274 mean= -16.56pt t=-1.31 atr=-0.044 yr[4/7]: +47 +12 -7 +3 -45 -74 +29
+  Fri                        rth_full             n= 269 mean=  +3.29pt t=+0.27 atr=+0.017 yr[3/6]: +22 -24 +30 +11 -15 -13
+
+-- segment am1_0930_1030 --
+  (control) all wkdays       am1_0930_1030        n=1405 mean=  -0.03pt t=-0.01 atr=-0.002 yr[4/7]: -26 +1 -7 +2 -2 +4 +7
+  Mon                        am1_0930_1030        n= 280 mean=  +8.22pt t=+1.51 atr=+0.025 yr[5/7]: -34 +0 -7 +13 +10 +16 +28
+  Tue                        am1_0930_1030        n= 285 mean= -10.50pt t=-1.76 atr=-0.043 yr[0/7]: -41 -5 -24 -5 -11 -4 -18
+  Wed                        am1_0930_1030        n= 283 mean=  +5.01pt t=+0.89 atr=+0.009 yr[3/7]: -31 -1 +11 -14 -5 +25 +27
+  Thu                        am1_0930_1030        n= 282 mean=  -6.35pt t=-1.05 atr=-0.019 yr[2/7]: +3 +19 -11 -4 -16 -6 -38
+  Fri                        am1_0930_1030        n= 275 mean=  +3.73pt t=+0.58 atr=+0.021 yr[3/6]: -9 -4 +20 +10 -13 +33
+
+-- segment pm_1400_1600 --
+  (control) all wkdays       pm_1400_1600         n=1357 mean=  +1.27pt t=+0.53 atr=+0.005 yr[5/7]: +6 +4 +5 +2 -4 +0 -0
+  Mon                        pm_1400_1600         n= 252 mean=  +6.82pt t=+1.41 atr=+0.021 yr[6/7]: -12 +6 +24 +5 +0 +0 +7
+  Tue                        pm_1400_1600         n= 283 mean=  +6.03pt t=+1.40 atr=+0.027 yr[4/7]: -17 +6 -1 +14 +11 -7 +22
+  Wed                        pm_1400_1600         n= 280 mean=  +0.84pt t=+0.12 atr=-0.004 yr[3/7]: -29 +1 -11 -2 -12 +27 +4
+  Thu                        pm_1400_1600         n= 274 mean=  -8.24pt t=-1.49 atr=-0.026 yr[2/7]: +81 -3 -7 -9 -22 -14 +15
+  Fri                        pm_1400_1600         n= 268 mean=  +1.21pt t=+0.24 atr=+0.005 yr[4/6]: +11 +22 +2 +0 -7 -47
+
+-- segment lasthr_1500_1600 --
+  (control) all wkdays       lasthr_1500_1600     n=1357 mean=  -0.44pt t=-0.24 atr=-0.004 yr[4/7]: +3 -5 +1 -3 +0 -1 +10
+  Mon                        lasthr_1500_1600     n= 253 mean=  +6.65pt t=+1.60 atr=+0.017 yr[5/7]: -22 -3 +17 +3 +6 +7 +14
+  Tue                        lasthr_1500_1600     n= 283 mean=  -0.60pt t=-0.17 atr=+0.004 yr[3/7]: -4 -6 -3 +4 +8 -14 +20
+  Wed                        lasthr_1500_1600     n= 280 mean=  -2.02pt t=-0.40 atr=-0.015 yr[2/7]: -8 -5 -15 -10 -11 +27 +6
+  Thu                        lasthr_1500_1600     n= 274 mean=  -6.06pt t=-1.53 atr=-0.020 yr[2/7]: +44 -9 -2 -8 -5 -23 +26
+  Fri                        lasthr_1500_1600     n= 267 mean=  +0.45pt t=+0.12 atr=-0.002 yr[3/6]: +0 +12 -2 +1 -2 -15
+
+-- segment pre30_1500_1530 --
+  (control) all wkdays       pre30_1500_1530      n=1362 mean=  -1.27pt t=-1.12 atr=-0.005 yr[3/7]: -2 -2 +1 -4 +0 -3 +2
+  Mon                        pre30_1500_1530      n= 254 mean=  -2.03pt t=-0.87 atr=-0.007 yr[1/7]: -4 -7 -0 -4 +4 -3 -0
+  Tue                        pre30_1500_1530      n= 283 mean=  -1.04pt t=-0.47 atr=-0.001 yr[4/7]: +10 +1 -0 -2 +0 -6 +5
+  Wed                        pre30_1500_1530      n= 280 mean=  -0.48pt t=-0.15 atr=-0.007 yr[3/7]: -8 -2 +1 -8 -5 +10 +1
+  Thu                        pre30_1500_1530      n= 274 mean=  -3.05pt t=-1.21 atr=-0.010 yr[1/7]: -7 -3 -1 -7 -0 -14 +18
+  Fri                        pre30_1500_1530      n= 271 mean=  +0.16pt t=+0.07 atr=+0.001 yr[4/6]: +0 +5 +3 +1 -1 -15
+
+-- segment on_sess_1800_0930 --
+  (control) all wkdays       on_sess_1800_0930    n=1391 mean=  +5.73pt t=+1.67 atr=+0.016 yr[6/7]: +53 +4 -5 +3 +11 +6 +27
+  Mon                        on_sess_1800_0930    n= 269 mean= +19.41pt t=+2.30 atr=+0.048 yr[5/7]: +125 +0 -1 -4 +6 +41 +133
+  Tue                        on_sess_1800_0930    n= 284 mean=  -5.28pt t=-0.73 atr=-0.031 yr[3/7]: +51 +2 +21 -10 -17 -20 -11
+  Wed                        on_sess_1800_0930    n= 283 mean= +14.07pt t=+1.96 atr=+0.036 yr[6/7]: +34 -4 +12 +8 +15 +10 +76
+  Thu                        on_sess_1800_0930    n= 281 mean=  +6.91pt t=+0.88 atr=+0.040 yr[4/7]: +0 +18 -39 +13 +58 +11 -53
+  Fri                        on_sess_1800_0930    n= 274 mean=  -6.13pt t=-0.81 atr=-0.012 yr[2/6]: +2 -20 +7 -8 -11 -10
+
+-- segment gap --
+  (control) all wkdays       gap                  n=1388 mean=  +5.07pt t=+1.33 atr=+0.017 yr[6/7]: +36 +7 -13 +3 +16 +11 +4
+  Mon                        gap                  n= 265 mean=  +4.15pt t=+0.41 atr=+0.017 yr[4/6]: +6 -28 -3 +16 +27 +8
+  Tue                        gap                  n= 284 mean=  -1.21pt t=-0.16 atr=-0.018 yr[3/7]: +58 +10 +23 -7 -13 -12 -19
+  Wed                        gap                  n= 283 mean= +16.97pt t=+2.15 atr=+0.042 yr[7/7]: +50 +0 +10 +4 +9 +23 +102
+  Thu                        gap                  n= 282 mean=  +9.31pt t=+1.01 atr=+0.053 yr[4/7]: -1 +18 -46 +22 +65 +14 -51
+  Fri                        gap                  n= 274 mean=  -4.18pt t=-0.53 atr=-0.008 yr[4/6]: +2 -23 +0 +6 +1 -18
+
+====================================================================================================
+H2 TURN-OF-MONTH (trading-day-of-month). control=mid-month (tdom 8..-8)
+====================================================================================================
+
+-- segment rth_full --
+  (control) mid-month        rth_full             n= 465 mean=  -2.76pt t=-0.34 atr=-0.004 yr[2/6]: +16 -28 +24 -6 -16 -10
+  last trading day           rth_full             n=  64 mean=  +8.58pt t=+0.36 atr=-0.018 yr[5/7]: +47 -16 +26 +26 -72 +3 +135
+  last 3 trading days        rth_full             n= 193 mean=  -1.54pt t=-0.11 atr=-0.020 yr[3/7]: -21 -11 +45 +25 -57 -40 +55
+  first trading day          rth_full             n=  64 mean=  +8.20pt t=+0.35 atr=+0.036 yr[4/7]: +19 -41 +9 +56 -32 -13 +127
+  first 3 trading days       rth_full             n= 191 mean= +19.25pt t=+1.44 atr=+0.057 yr[5/7]: -31 -29 +2 +29 +29 +54 +53
+  ToM window(last1+first3)   rth_full             n= 255 mean= +16.57pt t=+1.42 atr=+0.038 yr[5/7]: -11 -26 +8 +28 +4 +42 +74
+
+-- segment pm_1400_1600 --
+  (control) mid-month        pm_1400_1600         n= 465 mean=  +0.68pt t=+0.17 atr=+0.005 yr[2/6]: +14 -1 +6 -8 -3 -8
+  last trading day           pm_1400_1600         n=  64 mean= +21.89pt t=+1.66 atr=+0.060 yr[6/7]: +81 -9 +1 +9 +25 +69 +45
+  last 3 trading days        pm_1400_1600         n= 193 mean=  +8.30pt t=+1.20 atr=+0.018 yr[5/7]: +12 -14 +20 +12 -1 +9 +37
+  first trading day          pm_1400_1600         n=  64 mean= +16.59pt t=+1.36 atr=+0.061 yr[3/7]: -12 -17 +72 +53 +20 -20 -29
+  first 3 trading days       pm_1400_1600         n= 191 mean=  +5.04pt t=+0.77 atr=+0.023 yr[4/7]: -19 -11 +22 +12 +11 -10 +12
+  ToM window(last1+first3)   pm_1400_1600         n= 255 mean=  +9.27pt t=+1.56 atr=+0.032 yr[6/7]: +6 -10 +16 +11 +15 +9 +21
+
+-- segment lasthr_1500_1600 --
+  (control) mid-month        lasthr_1500_1600     n= 465 mean=  -1.14pt t=-0.37 atr=-0.003 yr[1/6]: +4 -1 -3 -2 -3 -1
+  last trading day           lasthr_1500_1600     n=  64 mean= +10.88pt t=+1.14 atr=+0.024 yr[5/7]: +44 -18 +14 -1 +3 +35 +45
+  last 3 trading days        lasthr_1500_1600     n= 193 mean=  +3.18pt t=+0.66 atr=+0.001 yr[5/7]: +11 -22 +21 +2 -6 +7 +27
+  first trading day          lasthr_1500_1600     n=  64 mean=  +2.62pt t=+0.26 atr=+0.005 yr[3/7]: -22 -24 +33 +17 -2 +1 -15
+  first 3 trading days       lasthr_1500_1600     n= 191 mean=  -1.77pt t=-0.35 atr=-0.006 yr[4/7]: -11 -13 +3 +4 +4 -6 +0
+  ToM window(last1+first3)   lasthr_1500_1600     n= 255 mean=  +1.41pt t=+0.32 atr=+0.001 yr[6/7]: +3 -14 +6 +3 +4 +4 +11
+
+-- segment on_sess_1800_0930 --
+  (control) mid-month        on_sess_1800_0930    n= 470 mean=  +3.40pt t=+0.58 atr=+0.014 yr[4/6]: -2 -4 +2 +13 +8 +5
+  last trading day           on_sess_1800_0930    n=  67 mean= +11.16pt t=+0.72 atr=+0.021 yr[3/7]: +0 -3 -5 +19 +40 -37 +97
+  last 3 trading days        on_sess_1800_0930    n= 201 mean= +13.70pt t=+1.62 atr=+0.039 yr[6/7]: +28 -2 +13 +24 +12 +7 +38
+  first trading day          on_sess_1800_0930    n=  67 mean= +21.11pt t=+1.76 atr=+0.047 yr[5/7]: +125 +65 +17 -11 +3 -4 +72
+  first 3 trading days       on_sess_1800_0930    n= 200 mean=  -7.58pt t=-0.80 atr=-0.025 yr[3/7]: +70 +19 -15 -2 -52 -17 +38
+  ToM window(last1+first3)   on_sess_1800_0930    n= 267 mean=  -2.88pt t=-0.36 atr=-0.014 yr[4/7]: +53 +14 -13 +3 -29 -22 +53
+
+-- segment gap --
+  (control) mid-month        gap                  n= 468 mean=  +5.82pt t=+0.92 atr=+0.021 yr[4/6]: +2 -2 +1 +20 +17 -16
+  last trading day           gap                  n=  66 mean=  -4.05pt t=-0.24 atr=-0.014 yr[4/7]: -1 -23 -49 +17 +20 +8 +10
+  last 3 trading days        gap                  n= 200 mean= +12.05pt t=+1.40 atr=+0.039 yr[5/7]: +36 -10 -8 +34 +11 +23 +29
+  first trading day          gap                  n=  66 mean= +14.17pt t=+0.92 atr=+0.043 yr[4/6]: +89 +11 +0 +16 -33 -13
+  first 3 trading days       gap                  n= 200 mean= -15.94pt t=-1.38 atr=-0.039 yr[2/7]: +54 +30 -18 -11 -44 -41 -15
+  ToM window(last1+first3)   gap                  n= 266 mean= -12.99pt t=-1.35 atr=-0.033 yr[2/7]: +36 +17 -26 -4 -28 -28 -10
+
+====================================================================================================
+H2b tdom sweep (rth_full mean pts by forward tdom 1..10 and reverse -1..-5)
+====================================================================================================
+  tdom=1                     rth_full             n=  64 mean=  +8.20pt t=+0.35 atr=+0.036 yr[4/7]: +19 -41 +9 +56 -32 -13 +127
+  tdom=2                     rth_full             n=  64 mean= +34.24pt t=+1.48 atr=+0.082 yr[5/7]: -54 +7 +23 -13 +17 +143 +21
+  tdom=3                     rth_full             n=  63 mean= +15.24pt t=+0.66 atr=+0.051 yr[4/7]: -56 -54 -29 +38 +102 +25 +11
+  tdom=4                     rth_full             n=  64 mean= -13.97pt t=-0.60 atr=-0.035 yr[3/7]: +47 +89 -87 -7 -18 -119 +121
+  tdom=5                     rth_full             n=  66 mean=  +3.84pt t=+0.13 atr=+0.045 yr[3/6]: +33 -24 +59 -1 +26 -143
+  tdom=6                     rth_full             n=  66 mean= +18.79pt t=+0.74 atr=+0.082 yr[4/6]: -43 +13 +31 +57 -88 +267
+  tdom=7                     rth_full             n=  66 mean= +19.88pt t=+0.54 atr=+0.018 yr[2/6]: -6 -33 -45 +47 +198 -102
+  tdom=8                     rth_full             n=  63 mean= -17.93pt t=-0.73 atr=-0.026 yr[2/6]: -49 -52 +47 +81 -95 -78
+  tdom=9                     rth_full             n=  66 mean=  +6.66pt t=+0.23 atr=-0.001 yr[4/6]: -37 -89 +71 +14 +54 +46
+  tdom=10                    rth_full             n=  64 mean= +21.40pt t=+1.04 atr=+0.072 yr[5/6]: +50 -29 +38 +13 +15 +62
+  tdom_rev=-1                rth_full             n=  64 mean=  +8.58pt t=+0.36 atr=-0.018 yr[5/7]: +47 -16 +26 +26 -72 +3 +135
+  tdom_rev=-2                rth_full             n=  64 mean= -24.57pt t=-1.05 atr=-0.078 yr[2/7]: -56 -8 +77 +14 -91 -123 -14
+  tdom_rev=-3                rth_full             n=  65 mean= +11.18pt t=+0.45 atr=+0.036 yr[3/7]: -54 -8 +35 +35 -12 -4 +43
+  tdom_rev=-4                rth_full             n=  65 mean= -11.61pt t=-0.49 atr=-0.043 yr[4/7]: +19 -6 -161 +1 +50 +53 -32
+  tdom_rev=-5                rth_full             n=  59 mean= +13.55pt t=+0.61 atr=+0.028 yr[3/6]: +45 +81 -9 -87 +88 -109
+
+====================================================================================================
+H3 OPEX-WEEK (week containing 3rd Friday). control=non-opex weeks. day-by-day within week
+====================================================================================================
+
+-- segment rth_full --
+  (control) non-opex wks     rth_full             n=1044 mean=  +7.59pt t=+1.24 atr=+0.022 yr[5/7]: -11 +7 -3 +12 +8 +6 +26
+  opex week (all days)       rth_full             n= 313 mean=  -9.28pt t=-0.90 atr=-0.031 yr[3/6]: +6 -48 +31 -45 -5 +25
+    opex-wk Mon              rth_full             n=  55 mean= +12.13pt t=+0.68 atr=+0.073 yr[3/6]: -14 -28 +107 -32 +2 +52
+    opex-wk Tue              rth_full             n=  65 mean=  -2.93pt t=-0.16 atr=-0.034 yr[3/6]: -36 -54 +41 +14 +23 -8
+    opex-wk Wed              rth_full             n=  64 mean=  -9.80pt t=-0.40 atr=-0.040 yr[3/6]: +81 -25 +11 -124 -26 +50
+    opex-wk Thu              rth_full             n=  64 mean= -33.99pt t=-1.17 atr=-0.072 yr[3/6]: +9 -96 +23 -77 -60 +34
+    opex-wk Fri              rth_full             n=  65 mean=  -8.93pt t=-0.38 atr=-0.068 yr[2/6]: -13 -36 -22 -12 +32 +5
+
+-- segment am1_0930_1030 --
+  (control) non-opex wks     am1_0930_1030        n=1082 mean=  +0.81pt t=+0.26 atr=+0.004 yr[5/7]: -26 +2 -5 +0 +1 +2 +8
+  opex week (all days)       am1_0930_1030        n= 323 mean=  -2.82pt t=-0.55 atr=-0.019 yr[3/6]: -4 -14 +8 -15 +8 +2
+    opex-wk Mon              am1_0930_1030        n=  63 mean=  -4.47pt t=-0.41 atr=-0.022 yr[3/6]: -35 +9 +32 +1 -31 -2
+    opex-wk Tue              am1_0930_1030        n=  65 mean=  -3.97pt t=-0.35 atr=-0.009 yr[3/6]: +14 -33 +21 +7 -8 -50
+    opex-wk Wed              am1_0930_1030        n=  65 mean=  +4.66pt t=+0.40 atr=-0.007 yr[5/6]: +6 +1 +3 -45 +49 +26
+    opex-wk Thu              am1_0930_1030        n=  65 mean=  +9.14pt t=+0.76 atr=+0.013 yr[4/6]: +7 -13 +2 -28 +61 +47
+    opex-wk Fri              am1_0930_1030        n=  65 mean= -19.53pt t=-1.62 atr=-0.071 yr[0/6]: -11 -30 -18 -8 -34 -10
+
+-- segment pm_1400_1600 --
+  (control) non-opex wks     pm_1400_1600         n=1043 mean=  +2.95pt t=+1.09 atr=+0.009 yr[7/7]: +6 +2 +9 +2 +1 +0 +4
+  opex week (all days)       pm_1400_1600         n= 314 mean=  -4.29pt t=-0.80 atr=-0.012 yr[2/6]: +12 -10 +2 -22 -0 -14
+    opex-wk Mon              pm_1400_1600         n=  56 mean=  +6.56pt t=+0.78 atr=+0.029 yr[3/6]: +35 -23 +7 -1 +22 -5
+    opex-wk Tue              pm_1400_1600         n=  65 mean=  +4.00pt t=+0.44 atr=+0.002 yr[3/6]: -9 -11 +7 +29 -7 +29
+    opex-wk Wed              pm_1400_1600         n=  64 mean=  -4.00pt t=-0.22 atr=-0.016 yr[4/6]: +58 +6 +9 -93 +0 -23
+    opex-wk Thu              pm_1400_1600         n=  64 mean= -20.48pt t=-1.85 atr=-0.046 yr[2/6]: +0 -49 -9 -36 -22 +10
+    opex-wk Fri              pm_1400_1600         n=  65 mean=  -6.28pt t=-0.64 atr=-0.022 yr[2/6]: -22 +28 -4 -9 +7 -81
+
+-- segment lasthr_1500_1600 --
+  (control) non-opex wks     lasthr_1500_1600     n=1042 mean=  +0.14pt t=+0.07 atr=-0.002 yr[4/7]: +3 -6 +3 -3 +3 -1 +11
+  opex week (all days)       lasthr_1500_1600     n= 315 mean=  -2.36pt t=-0.61 atr=-0.007 yr[2/6]: +1 -5 -2 -11 -0 +8
+    opex-wk Mon              lasthr_1500_1600     n=  57 mean=  +5.30pt t=+0.69 atr=+0.022 yr[3/6]: +12 -18 +5 -4 +43 -17
+    opex-wk Tue              lasthr_1500_1600     n=  65 mean=  +1.81pt t=+0.24 atr=+0.003 yr[4/6]: -7 +7 +4 +18 -21 +19
+    opex-wk Wed              lasthr_1500_1600     n=  64 mean=  -1.84pt t=-0.16 atr=-0.011 yr[4/6]: +25 +6 +0 -56 -7 +40
+    opex-wk Thu              lasthr_1500_1600     n=  64 mean= -14.88pt t=-1.77 atr=-0.041 yr[1/6]: -3 -36 -20 -12 -19 +20
+    opex-wk Fri              lasthr_1500_1600     n=  65 mean=  -1.42pt t=-0.20 atr=-0.007 yr[3/6]: -20 +16 +4 -4 +8 -29
+
+-- opex Friday itself (monthly) and quarterly --
+  opexFri am1_0930_1030      am1_0930_1030        n=  65 mean= -19.53pt t=-1.62 atr=-0.071 yr[0/6]: -11 -30 -18 -8 -34 -10
+  qtrOpexFri am1_0930_1030   am1_0930_1030        n=  21 mean=  -3.65pt t=-0.16 atr=-0.035 yr[2/6]: -23 +37 -36 +38 -3 -128
+  opexFri rth_full           rth_full             n=  65 mean=  -8.93pt t=-0.38 atr=-0.068 yr[2/6]: -13 -36 -22 -12 +32 +5
+  qtrOpexFri rth_full        rth_full             n=  21 mean= +16.60pt t=+0.42 atr=-0.022 yr[3/6]: -17 +122 -102 +77 +82 -293
+  opexFri pm_1400_1600       pm_1400_1600         n=  65 mean=  -6.28pt t=-0.64 atr=-0.022 yr[2/6]: -22 +28 -4 -9 +7 -81
+  qtrOpexFri pm_1400_1600    pm_1400_1600         n=  21 mean=  +3.40pt t=+0.25 atr=+0.007 yr[2/6]: -45 +53 -14 -4 +48 -80
+
+====================================================================================================
+H4 MONTH-END / MONTH-START drift windows. (subset of H2 but focus close/open windows)
+====================================================================================================
+
+-- segment lasthr_1500_1600 --
+  (control) mid-month        lasthr_1500_1600     n= 465 mean=  -1.14pt t=-0.37 atr=-0.003 yr[1/6]: +4 -1 -3 -2 -3 -1
+  month-end (last td)        lasthr_1500_1600     n=  64 mean= +10.88pt t=+1.14 atr=+0.024 yr[5/7]: +44 -18 +14 -1 +3 +35 +45
+  month-start (first td)     lasthr_1500_1600     n=  64 mean=  +2.62pt t=+0.26 atr=+0.005 yr[3/7]: -22 -24 +33 +17 -2 +1 -15
+
+-- segment pre30_1500_1530 --
+  (control) mid-month        pre30_1500_1530      n= 470 mean=  -1.68pt t=-0.90 atr=-0.003 yr[1/6]: +5 -2 -3 -1 -5 -9
+  month-end (last td)        pre30_1500_1530      n=  64 mean=  +1.68pt t=+0.32 atr=-0.000 yr[3/7]: -7 -7 +14 -8 -5 +3 +23
+  month-start (first td)     pre30_1500_1530      n=  64 mean=  +1.31pt t=+0.20 atr=-0.001 yr[4/7]: -4 -22 +15 +14 +1 -5 +10
+
+-- segment on_sess_1800_0930 --
+  (control) mid-month        on_sess_1800_0930    n= 470 mean=  +3.40pt t=+0.58 atr=+0.014 yr[4/6]: -2 -4 +2 +13 +8 +5
+  month-end (last td)        on_sess_1800_0930    n=  67 mean= +11.16pt t=+0.72 atr=+0.021 yr[3/7]: +0 -3 -5 +19 +40 -37 +97
+  month-start (first td)     on_sess_1800_0930    n=  67 mean= +21.11pt t=+1.76 atr=+0.047 yr[5/7]: +125 +65 +17 -11 +3 -4 +72
+
+-- segment gap --
+  (control) mid-month        gap                  n= 468 mean=  +5.82pt t=+0.92 atr=+0.021 yr[4/6]: +2 -2 +1 +20 +17 -16
+  month-end (last td)        gap                  n=  66 mean=  -4.05pt t=-0.24 atr=-0.014 yr[4/7]: -1 -23 -49 +17 +20 +8 +10
+  month-start (first td)     gap                  n=  66 mean= +14.17pt t=+0.92 atr=+0.043 yr[4/6]: +89 +11 +0 +16 -33 -13
+
+-- segment am1_0930_1030 --
+  (control) mid-month        am1_0930_1030        n= 480 mean=  -2.00pt t=-0.47 atr=-0.008 yr[2/6]: -4 +5 +7 -7 -5 -15
+  month-end (last td)        am1_0930_1030        n=  67 mean=  +2.43pt t=+0.21 atr=-0.003 yr[4/7]: +3 +13 -10 +20 -13 -5 +17
+  month-start (first td)     am1_0930_1030        n=  67 mean=  -5.44pt t=-0.41 atr=-0.028 yr[1/7]: -34 -17 -20 -16 -20 -4 +96
+
+====================================================================================================
+H5 FOMC PROXY: top-8/yr Wednesdays by 14:00 vol-spike ratio. control=other Wednesdays
+====================================================================================================
+fomc_proxy days=49  by year: {2020: 1, 2021: 8, 2022: 8, 2023: 8, 2024: 8, 2025: 8, 2026: 8}
+
+-- segment fomc30_1400_1430 --
+  (control) other Weds       fomc30_1400_1430     n= 231 mean=  +3.45pt t=+1.20 atr=+0.012 yr[6/6]: +0 +1 +7 +0 +3 +17
+  FOMC-proxy days            fomc30_1400_1430     n=  49 mean=  +1.43pt t=+0.15 atr=+0.008 yr[2/7]: -9 +29 -11 -8 +7 -6 -2
+
+-- segment fomc60_1400_1500 --
+  (control) other Weds       fomc60_1400_1500     n= 231 mean=  -2.53pt t=-0.58 atr=-0.007 yr[2/6]: -5 -4 +3 -8 +2 -5
+  FOMC-proxy days            fomc60_1400_1500     n=  49 mean= +28.29pt t=+1.73 atr=+0.101 yr[5/7]: -21 +70 +46 +37 +29 -10 +4
+
+-- segment pm_1400_1600 --
+  (control) other Weds       pm_1400_1600         n= 231 mean=  -3.03pt t=-0.46 atr=-0.015 yr[3/6]: -19 -10 +1 -10 +19 +9
+  FOMC-proxy days            pm_1400_1600         n=  49 mean= +19.10pt t=+0.79 atr=+0.051 yr[2/7]: -29 +110 -14 -14 -20 +66 -6
+
+-- segment rth_full --
+  (control) other Weds       rth_full             n= 231 mean=  -5.08pt t=-0.43 atr=-0.021 yr[3/6]: -18 +2 -25 -17 +24 +21
+  FOMC-proxy days            rth_full             n=  49 mean= +64.78pt t=+1.32 atr=+0.117 yr[4/7]: -56 +90 +0 -1 -18 +294 +38
+
+-- segment lasthr_1500_1600 --
+  (control) other Weds       lasthr_1500_1600     n= 231 mean=  -0.50pt t=-0.12 atr=-0.008 yr[2/6]: -14 -6 -2 -3 +18 +14
+  FOMC-proxy days            lasthr_1500_1600     n=  49 mean=  -9.19pt t=-0.45 atr=-0.050 yr[2/7]: -8 +40 -60 -52 -50 +76 -10
+
+-- segment am1_0930_1030 --
+  (control) other Weds       am1_0930_1030        n= 234 mean=  +3.87pt t=+0.61 atr=+0.005 yr[3/6]: -2 +15 -15 -4 +22 +15
+  FOMC-proxy days            am1_0930_1030        n=  49 mean= +10.47pt t=+0.87 atr=+0.025 yr[3/7]: -31 +5 -9 -9 -11 +43 +49
+
+====================================================================================================
+H5b 08:30-RELEASE PROXY: top-decile days by 08:30 vol-spike. control=bottom-half
+====================================================================================================
+rel(top-decile 0830) days=141 by year {2021: 16, 2022: 33, 2023: 36, 2024: 33, 2025: 18, 2026: 5}
+
+-- segment rel830_0830_0930 --
+  (control) low-0830-vol     rel830_0830_0930     n= 701 mean=  -0.99pt t=-0.63 atr=-0.002 yr[2/7]: -0 -0 -1 +1 -3 -5 +7
+  high-0830-vol days         rel830_0830_0930     n= 140 mean=  +7.28pt t=+1.23 atr=+0.030 yr[4/6]: +21 +2 +8 +16 -3 -30
+
+-- segment gap --
+  (control) low-0830-vol     gap                  n= 689 mean=  +5.49pt t=+1.16 atr=+0.014 yr[5/7]: +36 +10 -18 -9 +15 +14 +25
+  high-0830-vol days         gap                  n= 140 mean= +14.39pt t=+1.05 atr=+0.060 yr[4/6]: +23 -21 +18 +28 +84 -146
+
+-- segment am1_0930_1030 --
+  (control) low-0830-vol     am1_0930_1030        n= 702 mean=  -8.24pt t=-2.21 atr=-0.024 yr[1/7]: -26 +0 -16 -5 -6 -12 -14
+  high-0830-vol days         am1_0930_1030        n= 141 mean= +15.92pt t=+2.07 atr=+0.059 yr[6/6]: +15 +1 +30 +4 +25 +63
+
+-- segment rth_full --
+  (control) low-0830-vol     rth_full             n= 687 mean= -10.05pt t=-1.43 atr=-0.029 yr[2/7]: -11 -1 -29 +5 -14 -21 +14
+  high-0830-vol days         rth_full             n= 135 mean= +10.32pt t=+0.71 atr=+0.041 yr[3/6]: -14 -17 +39 +25 +47 -138
+
+====================================================================================================
+H6 HOLIDAY-ADJACENT / HALF DAYS. control=normal full days
+====================================================================================================
+pre_holiday=17 post_holiday=17 half_day=47
+
+-- segment rth_full --
+  (control) normal days      rth_full             n=1325 mean=  +4.44pt t=+0.83 atr=+0.011 yr[4/7]: -31 +6 -13 +16 -3 +7 +26
+  pre-holiday                rth_full             n=  15 mean=  -0.61pt t=-0.01 atr=-0.026 yr[4/7]: +47 +92 -56 +17 -140 -89 +424
+  post-holiday               rth_full             n=  17 mean= -50.06pt t=-1.43 atr=-0.083 yr[2/6]: +38 -37 +4 -38 -128 -138
+
+-- segment am1_0930_1030 --
+  (control) normal days      am1_0930_1030        n=1326 mean=  +0.53pt t=+0.19 atr=-0.001 yr[3/7]: -36 -0 -7 +3 -3 +7 +7
+  pre-holiday                am1_0930_1030        n=  17 mean=  +1.45pt t=+0.07 atr=+0.021 yr[5/7]: +3 +70 -38 +15 +26 -72 +162
+  post-holiday               am1_0930_1030        n=  17 mean= -42.32pt t=-1.55 atr=-0.117 yr[2/6]: +60 +11 -68 -33 -108 -94
+
+-- segment pm_1400_1600 --
+  (control) normal days      pm_1400_1600         n=1325 mean=  +0.89pt t=+0.36 atr=+0.004 yr[3/7]: -19 +4 +5 +2 -5 -0 -3
+  pre-holiday                pm_1400_1600         n=  15 mean=  -0.47pt t=-0.02 atr=-0.022 yr[3/7]: +81 +4 -1 -13 -4 -54 +117
+  post-holiday               pm_1400_1600         n=  17 mean= +32.36pt t=+1.75 atr=+0.077 yr[5/6]: +6 -15 +31 +18 +54 +100
+
+-- segment on_sess_1800_0930 --
+  (control) normal days      on_sess_1800_0930    n=1312 mean=  +6.16pt t=+1.73 atr=+0.018 yr[6/7]: +70 +3 -4 +4 +12 +6 +27
+  pre-holiday                on_sess_1800_0930    n=  17 mean= -10.06pt t=-0.36 atr=-0.009 yr[4/7]: +0 +78 -53 +8 +49 +10 -381
+  post-holiday               on_sess_1800_0930    n=  17 mean=  +0.80pt t=+0.02 atr=-0.028 yr[2/6]: +60 -31 -32 -94 -66 +270
+
+-- segment gap --
+  (control) normal days      gap                  n=1309 mean=  +5.46pt t=+1.38 atr=+0.019 yr[6/7]: +54 +6 -12 +4 +18 +11 +6
+  pre-holiday                gap                  n=  17 mean= -14.65pt t=-0.47 atr=-0.027 yr[3/7]: -1 +92 -59 -7 +36 +23 -437
+  post-holiday               gap                  n=  17 mean=  -1.82pt t=-0.06 atr=-0.012 yr[2/6]: +74 -36 -1 -68 -62 +138
+
+-- half-day session (09:30->13:00) --
+  (control) normal           half_0930_1300       n=1327 mean=  +0.60pt t=+0.15 atr=+0.002 yr[4/7]: -20 +2 -15 +14 -2 +1 +11
+  half days                  half_0930_1300       n=  10 mean= +63.55pt t=+1.63 atr=+0.153 yr[3/5]: -202 -17 +8 +192 +88
+
+wrote R7-nq-panel.csv

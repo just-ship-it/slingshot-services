@@ -1,0 +1,217 @@
+loaded 466699 episode rows
+gex real coverage: ('2023-03-29', '2026-06-15')
+lt real coverage: ('2021-01-27', '2026-06-15')
+
+================ FAMILY GEX (dates 2023-03-29..2026-06-15) ================
+
+### gex touch census, X=2
+  gex_real                           n=  4175 resolved=  3832 bounce%= 60.7± 0.8 medFwd30=  +1.5pts (+0.06v) medRej30= 31.6 (1.26v) medBey30= 28.2 (1.12v)
+  gex_rand                           n= 13635 resolved= 12506 bounce%= 60.0± 0.4 medFwd30=  -1.2pts (-0.05v) medRej30= 32.2 (1.26v) medBey30= 26.7 (1.05v)
+  grid50                             n= 22371 resolved= 20213 bounce%= 59.0± 0.3 medFwd30=  +0.0pts (+0.00v) medRej30= 33.5 (1.16v) medBey30= 29.8 (1.03v)
+  grid100                            n= 11178 resolved= 10113 bounce%= 58.3± 0.5 medFwd30=  +0.0pts (+0.00v) medRej30= 33.2 (1.16v) medBey30= 29.8 (1.03v)
+
+### gex touch census, X=5
+  gex_real                           n=  4633 resolved=  4297 bounce%= 72.6± 0.7 medFwd30=  +0.8pts (+0.03v) medRej30= 34.0 (1.36v) medBey30= 24.8 (0.97v)
+  gex_rand                           n= 15086 resolved= 13940 bounce%= 72.0± 0.4 medFwd30=  -1.0pts (-0.04v) medRej30= 34.7 (1.37v) medBey30= 23.0 (0.91v)
+  grid50                             n= 24450 resolved= 22224 bounce%= 71.4± 0.3 medFwd30=  +0.0pts (+0.00v) medRej30= 35.8 (1.26v) medBey30= 26.0 (0.90v)
+  grid100                            n= 12207 resolved= 11101 bounce%= 70.7± 0.4 medFwd30=  +0.0pts (+0.00v) medRej30= 35.8 (1.26v) medBey30= 26.0 (0.90v)
+
+### gex touch census, X=10
+  gex_real                           n=  5535 resolved=  5183 bounce%= 87.9± 0.5 medFwd30=  +0.6pts (+0.03v) medRej30= 37.5 (1.54v) medBey30= 18.5 (0.73v)
+  gex_rand                           n= 18084 resolved= 16933 bounce%= 87.9± 0.3 medFwd30=  -0.7pts (-0.02v) medRej30= 38.2 (1.53v) medBey30= 17.0 (0.67v)
+  grid50                             n= 29037 resolved= 26736 bounce%= 86.9± 0.2 medFwd30=  -0.5pts (-0.02v) medRej30= 39.5 (1.41v) medBey30= 19.5 (0.69v)
+  grid100                            n= 14548 resolved= 13403 bounce%= 86.5± 0.3 medFwd30=  -0.5pts (-0.02v) medRej30= 39.5 (1.41v) medBey30= 19.2 (0.68v)
+
+### gex X=5 by session
+  ('gex_rand', '1-overnight(18-04)') n=   645 resolved=   603 bounce%= 73.5± 1.8 medFwd30=  -2.0pts (-0.08v) medRej30= 25.2 (0.92v) medBey30= 13.0 (0.46v)
+  ('gex_rand', '2-premkt(04-9:30)')  n=  2946 resolved=  2747 bounce%= 73.2± 0.8 medFwd30=  -0.0pts (-0.00v) medRej30= 26.5 (1.00v) medBey30= 16.8 (0.63v)
+  ('gex_rand', '3-rth-open(9:30-11)') n=  4177 resolved=  3761 bounce%= 69.6± 0.8 medFwd30=  -1.4pts (-0.06v) medRej30= 45.7 (1.82v) medBey30= 34.0 (1.39v)
+  ('gex_rand', '4-rth-mid(11-14)')   n=  4025 resolved=  3812 bounce%= 72.9± 0.7 medFwd30=  -1.8pts (-0.07v) medRej30= 34.5 (1.39v) medBey30= 21.2 (0.86v)
+  ('gex_rand', '5-rth-close(14-16)') n=  2715 resolved=  2521 bounce%= 72.2± 0.9 medFwd30=  -0.0pts (-0.00v) medRej30= 34.5 (1.37v) medBey30= 22.8 (0.91v)
+  ('gex_rand', '6-ah(16-18)')        n=   578 resolved=   496 bounce%= 74.0± 2.0 medFwd30=  -2.4pts (-0.09v) medRej30= 29.4 (1.11v) medBey30= 14.4 (0.60v)
+  ('gex_real', '1-overnight(18-04)') n=   217 resolved=   200 bounce%= 72.5± 3.2 medFwd30=  -2.3pts (-0.10v) medRej30= 28.8 (0.96v) medBey30= 18.8 (0.60v)
+  ('gex_real', '2-premkt(04-9:30)')  n=   906 resolved=   856 bounce%= 75.8± 1.5 medFwd30=  -1.9pts (-0.08v) medRej30= 30.0 (1.11v) medBey30= 17.5 (0.66v)
+  ('gex_real', '3-rth-open(9:30-11)') n=  1238 resolved=  1125 bounce%= 71.2± 1.4 medFwd30=  +2.0pts (+0.08v) medRej30= 42.4 (1.78v) medBey30= 33.0 (1.40v)
+  ('gex_real', '4-rth-mid(11-14)')   n=  1237 resolved=  1165 bounce%= 73.2± 1.3 medFwd30=  +2.3pts (+0.11v) medRej30= 31.8 (1.32v) medBey30= 22.8 (0.95v)
+  ('gex_real', '5-rth-close(14-16)') n=   822 resolved=   773 bounce%= 71.2± 1.6 medFwd30=  +2.8pts (+0.13v) medRej30= 33.2 (1.45v) medBey30= 24.4 (1.02v)
+  ('gex_real', '6-ah(16-18)')        n=   213 resolved=   178 bounce%= 69.1± 3.5 medFwd30=  -0.5pts (-0.02v) medRej30= 29.8 (1.09v) medBey30= 21.9 (0.78v)
+
+### gex X=5 first-touch vs re-touch
+  ('gex_rand', 'first')              n=  7631 resolved=  7033 bounce%= 73.3± 0.5 medFwd30=  -1.0pts (-0.04v) medRej30= 33.0 (1.32v) medBey30= 20.8 (0.85v)
+  ('gex_rand', 'retouch')            n=  7455 resolved=  6907 bounce%= 70.6± 0.5 medFwd30=  -1.0pts (-0.04v) medRej30= 36.5 (1.41v) medBey30= 25.2 (0.97v)
+  ('gex_real', 'first')              n=  3198 resolved=  2983 bounce%= 73.1± 0.8 medFwd30=  +0.6pts (+0.03v) medRej30= 33.4 (1.34v) medBey30= 22.7 (0.91v)
+  ('gex_real', 'retouch')            n=  1435 resolved=  1314 bounce%= 71.5± 1.2 medFwd30=  +1.7pts (+0.07v) medRej30= 36.0 (1.40v) medBey30= 29.8 (1.13v)
+
+### gex X=5 by approach speed (15m move toward level / vol30)
+  ('gex_rand', 'fast(>1v)')          n=  8262 resolved=  7592 bounce%= 66.8± 0.5 medFwd30=  -1.0pts (-0.04v) medRej30= 35.2 (1.47v) medBey30= 26.9 (1.11v)
+  ('gex_rand', 'med(0.25-1v)')       n=  4352 resolved=  4118 bounce%= 77.1± 0.7 medFwd30=  -0.7pts (-0.03v) medRej30= 28.9 (1.09v) medBey30= 15.2 (0.57v)
+  ('gex_rand', 'slow(<0.25v)')       n=  2472 resolved=  2230 bounce%= 80.0± 0.8 medFwd30=  -1.6pts (-0.06v) medRej30= 47.2 (1.65v) medBey30= 27.3 (0.96v)
+  ('gex_real', 'fast(>1v)')          n=  2742 resolved=  2540 bounce%= 68.4± 0.9 medFwd30=  +0.8pts (+0.03v) medRej30= 35.0 (1.48v) medBey30= 27.5 (1.16v)
+  ('gex_real', 'med(0.25-1v)')       n=  1248 resolved=  1174 bounce%= 78.1± 1.2 medFwd30=  +2.0pts (+0.08v) medRej30= 27.4 (1.06v) medBey30= 17.8 (0.66v)
+  ('gex_real', 'slow(<0.25v)')       n=   643 resolved=   583 bounce%= 80.1± 1.7 medFwd30=  -2.2pts (-0.09v) medRej30= 48.8 (1.71v) medBey30= 28.0 (1.05v)
+
+### gex X=5 by level age
+  ('gex_rand', '30-120m')            n=  4188 resolved=  3904 bounce%= 71.9± 0.7 medFwd30=  -2.0pts (-0.08v) medRej30= 33.2 (1.28v) medBey30= 20.8 (0.81v)
+  ('gex_rand', '<30m')               n=  3114 resolved=  2783 bounce%= 72.2± 0.8 medFwd30=  -1.5pts (-0.05v) medRej30= 42.5 (1.63v) medBey30= 30.0 (1.10v)
+  ('gex_rand', '>120m')              n=  7784 resolved=  7253 bounce%= 72.0± 0.5 medFwd30=  -0.4pts (-0.01v) medRej30= 32.8 (1.34v) medBey30= 22.0 (0.89v)
+  ('gex_real', '30-120m')            n=  1421 resolved=  1323 bounce%= 73.8± 1.2 medFwd30=  -0.2pts (-0.01v) medRej30= 32.0 (1.27v) medBey30= 22.0 (0.85v)
+  ('gex_real', '<30m')               n=  1083 resolved=   971 bounce%= 70.2± 1.5 medFwd30=  +0.2pts (+0.00v) medRej30= 42.2 (1.57v) medBey30= 31.9 (1.23v)
+  ('gex_real', '>120m')              n=  2129 resolved=  2003 bounce%= 73.0± 1.0 medFwd30=  +1.8pts (+0.09v) medRej30= 32.3 (1.35v) medBey30= 23.0 (0.93v)
+
+### gex X=5 real-only: cross-feed confluence
+  confluent(<=10)                    n=   812 resolved=   756 bounce%= 73.9± 1.6 medFwd30=  -1.9pts (-0.08v) medRej30= 31.5 (1.31v) medBey30= 22.2 (0.89v)
+  near(10-25)                        n=   779 resolved=   739 bounce%= 73.7± 1.6 medFwd30=  -0.5pts (-0.02v) medRej30= 32.3 (1.36v) medBey30= 20.3 (0.81v)
+  solo(>25)                          n=  3020 resolved=  2780 bounce%= 71.8± 0.9 medFwd30=  +2.0pts (+0.09v) medRej30= 35.5 (1.38v) medBey30= 27.0 (1.06v)
+
+### gex X=5 by distance to nearest same-feed level
+  ('gex_rand', 'crowded(<=25)')      n=  3022 resolved=  2840 bounce%= 73.0± 0.8 medFwd30=  -1.5pts (-0.07v) medRej30= 32.5 (1.41v) medBey30= 19.8 (0.86v)
+  ('gex_rand', 'isolated(>75)')      n=  7425 resolved=  6739 bounce%= 71.6± 0.5 medFwd30=  -1.2pts (-0.05v) medRej30= 37.8 (1.38v) medBey30= 26.3 (0.96v)
+  ('gex_rand', 'mid(25-75)')         n=  4639 resolved=  4361 bounce%= 71.9± 0.7 medFwd30=  -0.3pts (-0.02v) medRej30= 31.4 (1.32v) medBey30= 20.9 (0.87v)
+  ('gex_real', 'crowded(<=25)')      n=   169 resolved=   159 bounce%= 76.7± 3.4 medFwd30=  -1.2pts (-0.07v) medRej30= 29.5 (1.42v) medBey30= 16.7 (0.65v)
+  ('gex_real', 'isolated(>75)')      n=  2370 resolved=  2167 bounce%= 72.5± 1.0 medFwd30=  -0.0pts (-0.00v) medRej30= 38.8 (1.43v) medBey30= 29.8 (1.05v)
+  ('gex_real', 'mid(25-75)')         n=  2094 resolved=  1971 bounce%= 72.4± 1.0 medFwd30=  +1.7pts (+0.07v) medRej30= 29.8 (1.31v) medBey30= 20.8 (0.91v)
+
+### gex X=5 per-year
+  ('gex_rand', '2023')               n=  2808 resolved=  2713 bounce%= 73.9± 0.8 medFwd30=  +0.0pts (+0.00v) medRej30= 25.9 (1.27v) medBey30= 15.5 (0.75v)
+  ('gex_rand', '2024')               n=  4934 resolved=  4662 bounce%= 71.0± 0.7 medFwd30=  -0.0pts (-0.00v) medRej30= 30.3 (1.32v) medBey30= 20.8 (0.91v)
+  ('gex_rand', '2025')               n=  5132 resolved=  4598 bounce%= 72.1± 0.7 medFwd30=  -2.3pts (-0.08v) medRej30= 42.0 (1.48v) medBey30= 28.0 (0.97v)
+  ('gex_rand', '2026')               n=  2212 resolved=  1967 bounce%= 71.2± 1.0 medFwd30=  -3.8pts (-0.11v) medRej30= 47.0 (1.39v) medBey30= 33.5 (1.01v)
+  ('gex_real', '2023')               n=   928 resolved=   900 bounce%= 75.7± 1.4 medFwd30=  +1.7pts (+0.09v) medRej30= 24.8 (1.24v) medBey30= 15.8 (0.77v)
+  ('gex_real', '2024')               n=  1657 resolved=  1574 bounce%= 72.2± 1.1 medFwd30=  +1.8pts (+0.09v) medRej30= 31.3 (1.36v) medBey30= 22.1 (0.95v)
+  ('gex_real', '2025')               n=  1387 resolved=  1240 bounce%= 70.6± 1.3 medFwd30=  -0.8pts (-0.03v) medRej30= 40.8 (1.46v) medBey30= 32.0 (1.18v)
+  ('gex_real', '2026')               n=   661 resolved=   583 bounce%= 73.2± 1.8 medFwd30=  -1.8pts (-0.05v) medRej30= 49.0 (1.43v) medBey30= 34.8 (1.02v)
+
+### gex X=5 per-half-year
+  ('gex_rand', '2023H1')             n=  1001 resolved=   964 bounce%= 72.8± 1.4 medFwd30=  +0.4pts (+0.02v) medRej30= 24.0 (1.21v) medBey30= 15.2 (0.73v)
+  ('gex_rand', '2023H2')             n=  1807 resolved=  1749 bounce%= 74.6± 1.0 medFwd30=  -0.3pts (-0.02v) medRej30= 26.7 (1.30v) medBey30= 15.7 (0.75v)
+  ('gex_rand', '2024H1')             n=  2419 resolved=  2296 bounce%= 72.1± 0.9 medFwd30=  +0.0pts (+0.00v) medRej30= 27.0 (1.37v) medBey30= 18.1 (0.92v)
+  ('gex_rand', '2024H2')             n=  2515 resolved=  2366 bounce%= 70.0± 0.9 medFwd30=  +0.2pts (+0.01v) medRej30= 34.3 (1.29v) medBey30= 23.8 (0.89v)
+  ('gex_rand', '2025H1')             n=  3044 resolved=  2649 bounce%= 72.2± 0.9 medFwd30=  -2.2pts (-0.07v) medRej30= 46.3 (1.35v) medBey30= 32.8 (0.93v)
+  ('gex_rand', '2025H2')             n=  2088 resolved=  1949 bounce%= 72.1± 1.0 medFwd30=  -2.7pts (-0.12v) medRej30= 36.3 (1.68v) medBey30= 22.2 (1.04v)
+  ('gex_rand', '2026H1')             n=  2212 resolved=  1967 bounce%= 71.2± 1.0 medFwd30=  -3.8pts (-0.11v) medRej30= 47.0 (1.39v) medBey30= 33.5 (1.01v)
+  ('gex_real', '2023H1')             n=   333 resolved=   325 bounce%= 75.4± 2.4 medFwd30=  +0.2pts (+0.01v) medRej30= 24.1 (1.25v) medBey30= 13.5 (0.68v)
+  ('gex_real', '2023H2')             n=   595 resolved=   575 bounce%= 75.8± 1.8 medFwd30=  +2.3pts (+0.13v) medRej30= 25.3 (1.24v) medBey30= 16.6 (0.85v)
+  ('gex_real', '2024H1')             n=   765 resolved=   730 bounce%= 71.5± 1.7 medFwd30=  +2.5pts (+0.13v) medRej30= 26.8 (1.37v) medBey30= 18.8 (0.94v)
+  ('gex_real', '2024H2')             n=   892 resolved=   844 bounce%= 72.9± 1.5 medFwd30=  +1.0pts (+0.04v) medRej30= 37.0 (1.35v) medBey30= 25.1 (0.95v)
+  ('gex_real', '2025H1')             n=   815 resolved=   713 bounce%= 71.7± 1.7 medFwd30=  -2.0pts (-0.06v) medRej30= 47.8 (1.34v) medBey30= 37.0 (1.07v)
+  ('gex_real', '2025H2')             n=   572 resolved=   527 bounce%= 69.3± 2.0 medFwd30=  +0.5pts (+0.03v) medRej30= 34.4 (1.60v) medBey30= 28.6 (1.31v)
+  ('gex_real', '2026H1')             n=   661 resolved=   583 bounce%= 73.2± 1.8 medFwd30=  -1.8pts (-0.05v) medRej30= 49.0 (1.43v) medBey30= 34.8 (1.02v)
+
+### gex X=5 by approach direction
+  ('gex_rand', 'from-above(sup)')    n=  8037 resolved=  7358 bounce%= 70.9± 0.5 medFwd30=  -3.2pts (-0.12v) medRej30= 37.5 (1.47v) medBey30= 26.5 (1.03v)
+  ('gex_rand', 'from-below(res)')    n=  7049 resolved=  6582 bounce%= 73.2± 0.5 medFwd30=  +1.0pts (+0.04v) medRej30= 31.5 (1.26v) medBey30= 20.1 (0.80v)
+  ('gex_real', 'from-above(sup)')    n=  2684 resolved=  2461 bounce%= 72.0± 0.9 medFwd30=  -0.7pts (-0.03v) medRej30= 37.2 (1.50v) medBey30= 29.1 (1.14v)
+  ('gex_real', 'from-below(res)')    n=  1949 resolved=  1836 bounce%= 73.4± 1.0 medFwd30=  +2.3pts (+0.10v) medRej30= 30.0 (1.18v) medBey30= 19.8 (0.79v)
+
+================ FAMILY LT (dates 2021-01-27..2026-06-15) ================
+
+### lt touch census, X=2
+  lt_real                            n= 19496 resolved= 18028 bounce%= 59.8± 0.4 medFwd30=  -0.8pts (-0.03v) medRej30= 25.7 (0.99v) medBey30= 20.6 (0.80v)
+  lt_rand                            n= 45855 resolved= 42335 bounce%= 60.0± 0.2 medFwd30=  -0.5pts (-0.02v) medRej30= 27.7 (1.06v) medBey30= 23.5 (0.89v)
+  grid50                             n= 34096 resolved= 31224 bounce%= 58.5± 0.3 medFwd30=  -0.0pts (-0.00v) medRej30= 30.8 (1.11v) medBey30= 28.0 (1.01v)
+  grid100                            n= 17068 resolved= 15649 bounce%= 58.0± 0.4 medFwd30=  +0.4pts (+0.02v) medRej30= 30.5 (1.11v) medBey30= 28.2 (1.01v)
+
+### lt touch census, X=5
+  lt_real                            n= 22049 resolved= 20551 bounce%= 72.4± 0.3 medFwd30=  -0.5pts (-0.02v) medRej30= 27.9 (1.09v) medBey30= 17.2 (0.66v)
+  lt_rand                            n= 51523 resolved= 47952 bounce%= 72.1± 0.2 medFwd30=  -0.5pts (-0.02v) medRej30= 30.0 (1.15v) medBey30= 20.0 (0.75v)
+  grid50                             n= 37363 resolved= 34418 bounce%= 71.3± 0.2 medFwd30=  +0.2pts (+0.01v) medRej30= 33.5 (1.21v) medBey30= 24.5 (0.87v)
+  grid100                            n= 18709 resolved= 17239 bounce%= 70.9± 0.3 medFwd30=  +0.5pts (+0.02v) medRej30= 33.2 (1.21v) medBey30= 24.5 (0.88v)
+
+### lt touch census, X=10
+  lt_real                            n= 27607 resolved= 26431 bounce%= 89.4± 0.2 medFwd30=  -0.4pts (-0.01v) medRej30= 31.6 (1.25v) medBey30= 11.4 (0.45v)
+  lt_rand                            n= 63819 resolved= 60617 bounce%= 88.7± 0.1 medFwd30=  -0.3pts (-0.01v) medRej30= 33.8 (1.32v) medBey30= 14.1 (0.53v)
+  grid50                             n= 44469 resolved= 41472 bounce%= 87.2± 0.2 medFwd30=  -0.2pts (-0.01v) medRej30= 37.5 (1.38v) medBey30= 18.2 (0.66v)
+  grid100                            n= 22268 resolved= 20769 bounce%= 86.9± 0.2 medFwd30=  +0.0pts (+0.00v) medRej30= 37.2 (1.38v) medBey30= 18.2 (0.66v)
+
+### lt X=5 by session
+  ('lt_rand', '1-overnight(18-04)')  n= 10410 resolved=  9633 bounce%= 74.2± 0.4 medFwd30=  -0.8pts (-0.03v) medRej30= 19.8 (0.74v) medBey30= 10.1 (0.37v)
+  ('lt_rand', '2-premkt(04-9:30)')   n= 10106 resolved=  9568 bounce%= 73.7± 0.5 medFwd30=  -0.0pts (-0.00v) medRej30= 24.2 (0.92v) medBey30= 14.8 (0.54v)
+  ('lt_rand', '3-rth-open(9:30-11)') n= 12112 resolved= 10961 bounce%= 69.1± 0.4 medFwd30=  -0.5pts (-0.02v) medRej30= 47.0 (1.85v) medBey30= 36.5 (1.43v)
+  ('lt_rand', '4-rth-mid(11-14)')    n= 10589 resolved= 10121 bounce%= 71.5± 0.4 medFwd30=  -0.8pts (-0.03v) medRej30= 32.8 (1.29v) medBey30= 22.8 (0.86v)
+  ('lt_rand', '5-rth-close(14-16)')  n=  6980 resolved=  6580 bounce%= 73.0± 0.5 medFwd30=  -0.7pts (-0.03v) medRej30= 34.5 (1.32v) medBey30= 22.5 (0.85v)
+  ('lt_rand', '6-ah(16-18)')         n=  1326 resolved=  1089 bounce%= 70.7± 1.4 medFwd30=  -1.0pts (-0.03v) medRej30= 25.5 (0.98v) medBey30= 14.4 (0.56v)
+  ('lt_real', '1-overnight(18-04)')  n=  4796 resolved=  4381 bounce%= 74.1± 0.7 medFwd30=  -0.3pts (-0.01v) medRej30= 18.1 (0.69v) medBey30=  8.7 (0.32v)
+  ('lt_real', '2-premkt(04-9:30)')   n=  4897 resolved=  4661 bounce%= 75.3± 0.6 medFwd30=  -1.0pts (-0.04v) medRej30= 23.1 (0.91v) medBey30= 11.4 (0.44v)
+  ('lt_real', '3-rth-open(9:30-11)') n=  4751 resolved=  4306 bounce%= 69.5± 0.7 medFwd30=  -1.8pts (-0.08v) medRej30= 46.0 (1.86v) medBey30= 32.5 (1.32v)
+  ('lt_real', '4-rth-mid(11-14)')    n=  4220 resolved=  4044 bounce%= 70.7± 0.7 medFwd30=  +1.2pts (+0.05v) medRej30= 31.2 (1.22v) medBey30= 23.0 (0.89v)
+  ('lt_real', '5-rth-close(14-16)')  n=  2857 resolved=  2722 bounce%= 72.0± 0.9 medFwd30=  -0.8pts (-0.03v) medRej30= 33.0 (1.28v) medBey30= 21.5 (0.83v)
+  ('lt_real', '6-ah(16-18)')         n=   528 resolved=   437 bounce%= 71.4± 2.2 medFwd30=  -2.8pts (-0.11v) medRej30= 23.2 (0.83v) medBey30= 14.1 (0.48v)
+
+### lt X=5 first-touch vs re-touch
+  ('lt_rand', 'first')               n= 37409 resolved= 34757 bounce%= 72.0± 0.2 medFwd30=  -0.6pts (-0.02v) medRej30= 28.4 (1.09v) medBey30= 18.7 (0.70v)
+  ('lt_rand', 'retouch')             n= 14114 resolved= 13195 bounce%= 72.3± 0.4 medFwd30=  -0.4pts (-0.01v) medRej30= 34.7 (1.30v) medBey30= 23.8 (0.89v)
+  ('lt_real', 'first')               n= 16449 resolved= 15281 bounce%= 72.5± 0.4 medFwd30=  -0.5pts (-0.02v) medRej30= 26.4 (1.03v) medBey30= 15.8 (0.62v)
+  ('lt_real', 'retouch')             n=  5600 resolved=  5270 bounce%= 72.2± 0.6 medFwd30=  -0.8pts (-0.02v) medRej30= 32.5 (1.26v) medBey30= 21.5 (0.81v)
+
+### lt X=5 by approach speed (15m move toward level / vol30)
+  ('lt_rand', 'fast(>1v)')           n= 24112 resolved= 22468 bounce%= 66.5± 0.3 medFwd30=  -1.5pts (-0.06v) medRej30= 32.3 (1.33v) medBey30= 25.2 (1.02v)
+  ('lt_rand', 'med(0.25-1v)')        n= 17766 resolved= 16750 bounce%= 76.0± 0.3 medFwd30=  -0.0pts (-0.00v) medRej30= 24.2 (0.89v) medBey30= 13.8 (0.50v)
+  ('lt_rand', 'slow(<0.25v)')        n=  9376 resolved=  8479 bounce%= 79.5± 0.4 medFwd30=  +0.3pts (+0.01v) medRej30= 38.8 (1.35v) medBey30= 21.5 (0.75v)
+  ('lt_real', 'fast(>1v)')           n=  9279 resolved=  8702 bounce%= 67.0± 0.5 medFwd30=  -2.0pts (-0.08v) medRej30= 31.8 (1.35v) medBey30= 23.2 (0.97v)
+  ('lt_real', 'med(0.25-1v)')        n=  8404 resolved=  7918 bounce%= 76.1± 0.5 medFwd30=  -0.3pts (-0.01v) medRej30= 22.8 (0.86v) medBey30= 12.0 (0.45v)
+  ('lt_real', 'slow(<0.25v)')        n=  4257 resolved=  3824 bounce%= 77.4± 0.7 medFwd30=  +1.2pts (+0.05v) medRej30= 32.3 (1.16v) medBey30= 17.5 (0.64v)
+
+### lt X=5 by level age
+  ('lt_rand', '30-120m')             n= 20350 resolved= 19181 bounce%= 73.1± 0.3 medFwd30=  -0.6pts (-0.02v) medRej30= 28.5 (1.10v) medBey30= 17.8 (0.67v)
+  ('lt_rand', '<30m')                n= 20818 resolved= 19147 bounce%= 70.3± 0.3 medFwd30=  -0.5pts (-0.02v) medRej30= 36.8 (1.32v) medBey30= 28.3 (1.00v)
+  ('lt_rand', '>120m')               n= 10355 resolved=  9624 bounce%= 73.9± 0.4 medFwd30=  -0.5pts (-0.02v) medRej30= 22.1 (0.97v) medBey30= 12.2 (0.51v)
+  ('lt_real', '30-120m')             n=  8855 resolved=  8349 bounce%= 73.3± 0.5 medFwd30=  -0.4pts (-0.02v) medRej30= 25.8 (1.02v) medBey30= 14.8 (0.58v)
+  ('lt_real', '<30m')                n=  8657 resolved=  7994 bounce%= 70.4± 0.5 medFwd30=  -0.8pts (-0.03v) medRej30= 36.2 (1.31v) medBey30= 26.8 (0.97v)
+  ('lt_real', '>120m')               n=  4537 resolved=  4208 bounce%= 74.6± 0.7 medFwd30=  -0.5pts (-0.02v) medRej30= 20.4 (0.90v) medBey30= 10.0 (0.43v)
+
+### lt X=5 real-only: cross-feed confluence
+  confluent(<=10)                    n=   907 resolved=   839 bounce%= 70.9± 1.6 medFwd30=  -0.5pts (-0.02v) medRej30= 29.2 (1.19v) medBey30= 21.3 (0.83v)
+  near(10-25)                        n=  1274 resolved=  1189 bounce%= 72.3± 1.3 medFwd30=  -1.0pts (-0.03v) medRej30= 29.3 (1.23v) medBey30= 15.9 (0.67v)
+  solo(>25)                          n=  8770 resolved=  8148 bounce%= 72.5± 0.5 medFwd30=  -1.0pts (-0.04v) medRej30= 32.5 (1.23v) medBey30= 20.8 (0.78v)
+
+### lt X=5 by distance to nearest same-feed level
+  ('lt_rand', 'crowded(<=25)')       n= 20749 resolved= 19458 bounce%= 72.5± 0.3 medFwd30=  -0.6pts (-0.03v) medRej30= 28.5 (1.13v) medBey30= 18.2 (0.72v)
+  ('lt_rand', 'isolated(>75)')       n= 10008 resolved=  9131 bounce%= 71.2± 0.5 medFwd30=  -0.0pts (-0.00v) medRej30= 34.8 (1.22v) medBey30= 25.2 (0.88v)
+  ('lt_rand', 'mid(25-75)')          n= 20766 resolved= 19363 bounce%= 72.1± 0.3 medFwd30=  -0.8pts (-0.03v) medRej30= 29.3 (1.13v) medBey30= 19.4 (0.73v)
+  ('lt_real', 'crowded(<=25)')       n= 12847 resolved= 12065 bounce%= 73.6± 0.4 medFwd30=  -0.7pts (-0.03v) medRej30= 25.8 (1.05v) medBey30= 14.8 (0.60v)
+  ('lt_real', 'isolated(>75)')       n=  2293 resolved=  2068 bounce%= 70.1± 1.0 medFwd30=  -0.0pts (-0.00v) medRej30= 39.8 (1.30v) medBey30= 31.8 (1.03v)
+  ('lt_real', 'mid(25-75)')          n=  6909 resolved=  6418 bounce%= 70.9± 0.6 medFwd30=  -0.3pts (-0.01v) medRej30= 29.1 (1.10v) medBey30= 18.8 (0.70v)
+
+### lt X=5 per-year
+  ('lt_rand', '2021')                n=  6503 resolved=  6094 bounce%= 72.0± 0.6 medFwd30=  -0.5pts (-0.03v) medRej30= 23.0 (1.28v) medBey30= 14.0 (0.76v)
+  ('lt_rand', '2022')                n= 10978 resolved= 10313 bounce%= 71.3± 0.4 medFwd30=  -0.0pts (-0.00v) medRej30= 31.5 (1.03v) medBey30= 22.8 (0.73v)
+  ('lt_rand', '2023')                n=  7060 resolved=  6625 bounce%= 72.8± 0.5 medFwd30=  -1.0pts (-0.05v) medRej30= 24.1 (1.15v) medBey30= 14.5 (0.68v)
+  ('lt_rand', '2024')                n=  8440 resolved=  7955 bounce%= 72.9± 0.5 medFwd30=  -0.3pts (-0.01v) medRej30= 27.6 (1.15v) medBey30= 17.0 (0.70v)
+  ('lt_rand', '2025')                n= 11691 resolved= 10773 bounce%= 71.8± 0.4 medFwd30=  -0.4pts (-0.01v) medRej30= 34.3 (1.19v) medBey30= 23.9 (0.80v)
+  ('lt_rand', '2026')                n=  6851 resolved=  6192 bounce%= 72.5± 0.6 medFwd30=  -1.8pts (-0.06v) medRej30= 40.7 (1.18v) medBey30= 27.8 (0.82v)
+  ('lt_real', '2021')                n=  2626 resolved=  2500 bounce%= 71.4± 0.9 medFwd30=  -0.3pts (-0.02v) medRej30= 22.6 (1.28v) medBey30= 15.0 (0.81v)
+  ('lt_real', '2022')                n=  4598 resolved=  4333 bounce%= 72.0± 0.7 medFwd30=  +0.3pts (+0.01v) medRej30= 30.2 (0.99v) medBey30= 20.7 (0.67v)
+  ('lt_real', '2023')                n=  3500 resolved=  3239 bounce%= 71.7± 0.8 medFwd30=  -0.3pts (-0.02v) medRej30= 21.7 (1.04v) medBey30= 11.9 (0.57v)
+  ('lt_real', '2024')                n=  3896 resolved=  3643 bounce%= 74.7± 0.7 medFwd30=  +0.3pts (+0.01v) medRej30= 25.2 (1.05v) medBey30= 14.0 (0.58v)
+  ('lt_real', '2025')                n=  4863 resolved=  4500 bounce%= 72.5± 0.7 medFwd30=  -1.5pts (-0.05v) medRej30= 31.6 (1.12v) medBey30= 19.8 (0.67v)
+  ('lt_real', '2026')                n=  2566 resolved=  2336 bounce%= 71.5± 0.9 medFwd30=  -2.4pts (-0.07v) medRej30= 38.5 (1.13v) medBey30= 26.0 (0.77v)
+
+### lt X=5 per-half-year
+  ('lt_rand', '2021H1')              n=  3064 resolved=  2889 bounce%= 72.1± 0.8 medFwd30=  -0.3pts (-0.02v) medRej30= 24.3 (1.22v) medBey30= 14.2 (0.71v)
+  ('lt_rand', '2021H2')              n=  3439 resolved=  3205 bounce%= 72.0± 0.8 medFwd30=  -0.5pts (-0.03v) medRej30= 22.1 (1.33v) medBey30= 13.8 (0.81v)
+  ('lt_rand', '2022H1')              n=  6458 resolved=  6028 bounce%= 70.5± 0.6 medFwd30=  +0.7pts (+0.02v) medRej30= 35.5 (1.03v) medBey30= 27.0 (0.78v)
+  ('lt_rand', '2022H2')              n=  4520 resolved=  4285 bounce%= 72.3± 0.7 medFwd30=  -0.8pts (-0.03v) medRej30= 27.0 (1.02v) medBey30= 17.8 (0.67v)
+  ('lt_rand', '2023H1')              n=  3604 resolved=  3359 bounce%= 72.7± 0.8 medFwd30=  -1.2pts (-0.06v) medRej30= 24.6 (1.16v) medBey30= 14.6 (0.67v)
+  ('lt_rand', '2023H2')              n=  3456 resolved=  3266 bounce%= 72.8± 0.8 medFwd30=  -0.7pts (-0.03v) medRej30= 23.5 (1.13v) medBey30= 14.3 (0.69v)
+  ('lt_rand', '2024H1')              n=  3420 resolved=  3220 bounce%= 72.2± 0.8 medFwd30=  +0.0pts (+0.00v) medRej30= 23.5 (1.18v) medBey30= 14.2 (0.72v)
+  ('lt_rand', '2024H2')              n=  5020 resolved=  4735 bounce%= 73.3± 0.6 medFwd30=  -0.4pts (-0.02v) medRej30= 31.1 (1.14v) medBey30= 19.1 (0.69v)
+  ('lt_rand', '2025H1')              n=  6718 resolved=  6132 bounce%= 71.6± 0.6 medFwd30=  -0.0pts (-0.00v) medRej30= 38.5 (1.10v) medBey30= 27.2 (0.77v)
+  ('lt_rand', '2025H2')              n=  4973 resolved=  4641 bounce%= 71.9± 0.7 medFwd30=  -0.8pts (-0.03v) medRej30= 29.8 (1.27v) medBey30= 20.2 (0.85v)
+  ('lt_rand', '2026H1')              n=  6851 resolved=  6192 bounce%= 72.5± 0.6 medFwd30=  -1.8pts (-0.06v) medRej30= 40.7 (1.18v) medBey30= 27.8 (0.82v)
+  ('lt_real', '2021H1')              n=  1212 resolved=  1174 bounce%= 69.8± 1.3 medFwd30=  +0.7pts (+0.03v) medRej30= 23.5 (1.20v) medBey30= 17.2 (0.88v)
+  ('lt_real', '2021H2')              n=  1414 resolved=  1326 bounce%= 72.9± 1.2 medFwd30=  -1.2pts (-0.08v) medRej30= 22.0 (1.35v) medBey30= 12.6 (0.75v)
+  ('lt_real', '2022H1')              n=  2635 resolved=  2478 bounce%= 70.2± 0.9 medFwd30=  +1.3pts (+0.04v) medRej30= 33.8 (0.99v) medBey30= 26.7 (0.75v)
+  ('lt_real', '2022H2')              n=  1963 resolved=  1855 bounce%= 74.4± 1.0 medFwd30=  -0.9pts (-0.03v) medRej30= 26.2 (1.00v) medBey30= 15.0 (0.57v)
+  ('lt_real', '2023H1')              n=  1812 resolved=  1673 bounce%= 72.0± 1.1 medFwd30=  -0.8pts (-0.04v) medRej30= 22.7 (1.07v) medBey30= 11.8 (0.55v)
+  ('lt_real', '2023H2')              n=  1688 resolved=  1566 bounce%= 71.5± 1.1 medFwd30=  +0.0pts (+0.00v) medRej30= 21.0 (1.00v) medBey30= 12.1 (0.58v)
+  ('lt_real', '2024H1')              n=  1640 resolved=  1526 bounce%= 74.6± 1.1 medFwd30=  +0.8pts (+0.04v) medRej30= 21.1 (1.07v) medBey30= 11.3 (0.58v)
+  ('lt_real', '2024H2')              n=  2256 resolved=  2117 bounce%= 74.7± 0.9 medFwd30=  -0.3pts (-0.01v) medRej30= 28.7 (1.03v) medBey30= 16.5 (0.59v)
+  ('lt_real', '2025H1')              n=  2666 resolved=  2440 bounce%= 71.6± 0.9 medFwd30=  -0.6pts (-0.02v) medRej30= 35.0 (1.04v) medBey30= 24.5 (0.70v)
+  ('lt_real', '2025H2')              n=  2197 resolved=  2060 bounce%= 73.5± 1.0 medFwd30=  -2.5pts (-0.10v) medRej30= 28.8 (1.22v) medBey30= 14.8 (0.65v)
+  ('lt_real', '2026H1')              n=  2566 resolved=  2336 bounce%= 71.5± 0.9 medFwd30=  -2.4pts (-0.07v) medRej30= 38.5 (1.13v) medBey30= 26.0 (0.77v)
+
+### lt X=5 by approach direction
+  ('lt_rand', 'from-above(sup)')     n= 25267 resolved= 23515 bounce%= 71.9± 0.3 medFwd30=  -2.3pts (-0.09v) medRej30= 31.5 (1.20v) medBey30= 21.7 (0.80v)
+  ('lt_rand', 'from-below(res)')     n= 26256 resolved= 24437 bounce%= 72.3± 0.3 medFwd30=  +1.0pts (+0.04v) medRej30= 28.3 (1.09v) medBey30= 18.7 (0.70v)
+  ('lt_real', 'from-above(sup)')     n= 10927 resolved= 10191 bounce%= 72.5± 0.4 medFwd30=  -2.2pts (-0.08v) medRej30= 29.2 (1.14v) medBey30= 18.2 (0.70v)
+  ('lt_real', 'from-below(res)')     n= 11122 resolved= 10360 bounce%= 72.3± 0.4 medFwd30=  +0.8pts (+0.03v) medRej30= 26.8 (1.03v) medBey30= 16.2 (0.63v)

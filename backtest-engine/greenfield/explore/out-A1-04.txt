@@ -1,0 +1,27 @@
+=== Lag-1 autocorrelation of non-overlapping k-min RTH returns ===
+(returns in ATR units per day via merge; corr is scale-free anyway)
+k=  1m: AC=+0.0038 n= 538370  2020:+0.036 2021:+0.019 2022:+0.021 2023:-0.002 2024:+0.009 2025:-0.007 2026:-0.009  [MIXED(4+/3-)]
+k=  5m: AC=+0.0007 n= 105410  2020:-0.052 2021:-0.005 2022:-0.007 2023:+0.017 2024:-0.026 2025:+0.011 2026:+0.010  [MIXED(3+/4-)]
+k= 15m: AC=+0.0028 n=  33250  2020:-0.061 2021:-0.018 2022:+0.048 2023:+0.005 2024:+0.032 2025:-0.020 2026:-0.024  [MIXED(3+/4-)]
+k= 30m: AC=+0.0080 n=  15215  2021:-0.020 2022:-0.000 2023:+0.011 2024:+0.031 2025:-0.000 2026:+0.028  [MIXED(3+/3-)]
+k= 60m: AC=+0.0470 n=   6892  2021:+0.026 2022:-0.010 2023:+0.089 2024:+0.078 2025:+0.044 2026:+0.089  [MIXED(5+/1-)]
+
+=== First-N-min RTH direction -> rest-of-day (N-min close -> 15:59 close) ===
+N=15: n=1319 P(rest follows first-N dir)=0.541  mean aligned rest-ret=+0.0351 ATR  corr=+0.041
+      per-year aligned: 2021:-0.028 2022:+0.056 2023:+0.035 2024:+0.067 2025:+0.067 2026:-0.016  [MIXED(4+/2-)]
+      |f|>median: n=659 P(cont)=0.558 aligned=+0.0359  [STABLE(+)]
+N=30: n=1319 P(rest follows first-N dir)=0.526  mean aligned rest-ret=+0.0114 ATR  corr=+0.048
+      per-year aligned: 2021:-0.015 2022:+0.023 2023:-0.002 2024:+0.029 2025:+0.018 2026:+0.019  [MIXED(4+/2-)]
+      |f|>median: n=659 P(cont)=0.543 aligned=+0.0086  [MIXED(5+/1-)]
+N=60: n=1319 P(rest follows first-N dir)=0.558  mean aligned rest-ret=+0.0320 ATR  corr=+0.067
+      per-year aligned: 2021:+0.001 2022:+0.050 2023:+0.050 2024:+0.049 2025:+0.022 2026:+0.003  [STABLE(+)]
+      |f|>median: n=659 P(cont)=0.574 aligned=+0.0324  [MIXED(5+/1-)]
+
+=== First-60m direction -> last-60m return (15:00->15:59), gap day excluded/incl ===
+first60 dir -> last60        n=1319 hit=0.524 aligned=+0.0015 ATR  2021:-0.017 2022:+0.003 2023:+0.016 2024:-0.004 2025:+0.021 2026:-0.023 [MIXED(3+/3-)]
+10:30-15:00 dir -> last60    n=1319 hit=0.533 aligned=+0.0067 ATR  2021:+0.024 2022:+0.027 2023:+0.014 2024:-0.010 2025:-0.014 2026:-0.009 [MIXED(3+/3-)]
+
+=== Session-to-session predictiveness (ATR units) ===
+ON ret -> same-day RTH ret   n=1319 corr=-0.039 hit=0.488 aligned=-0.0120  2021:+0.002 2022:-0.022 2023:-0.010 2024:+0.037 2025:-0.100 2026:+0.059 [MIXED(3+/3-)]
+RTH ret -> next ON ret       n=1297 corr=-0.041 hit=0.490 aligned=-0.0154  2021:+0.002 2022:-0.027 2023:-0.015 2024:+0.002 2025:-0.020 2026:-0.058 [MIXED(2+/4-)]
+RTH ret -> next RTH ret      n=1297 corr=-0.033 hit=0.503 aligned=+0.0004  2021:-0.000 2022:+0.006 2023:-0.013 2024:+0.027 2025:-0.029 2026:+0.024 [MIXED(3+/3-)]

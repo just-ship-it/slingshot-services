@@ -1,0 +1,28 @@
+ES usable days: 1209 (2021-02-09..2026-01-23)
+
+=== ES gap fill rate by |gap| ATR bucket ===
+              n  fill_rate  med_fill_min
+gap_bucket                              
+0-.05       133   0.984962           0.0
+.05-.1      150   0.873333           3.0
+.1-.2       233   0.806867          23.5
+.2-.35      284   0.580986          60.0
+.35-.6      256   0.394531         107.0
+>.6         144   0.250000         207.5
+per-year fill rate |gap|>0.2 ATR: {2021: 0.406, 2022: 0.464, 2023: 0.468, 2024: 0.422, 2025: 0.452, 2026: 0.333}
+
+=== ES ON-range tercile -> RTH range & ON-extreme breaks ===
+               n  rth_range_atr    brk_hi    brk_lo      both
+on_rng_terc                                                  
+low          405       0.676534  0.696296  0.639506  0.353086
+mid          401       0.806051  0.680798  0.553616  0.256858
+high         403       1.034912  0.531017  0.521092  0.121588
+overall: brk_hi=0.636 brk_lo=0.572 neither=0.036
+per-year (low-terc minus high-terc RTH range/ATR): 2021:-0.503 2022:-0.198 2023:-0.160 2024:-0.457 2025:-0.475 2026:-0.563 [STABLE(-)]
+
+=== ES first-60m dir -> rest-of-day ===
+n=1209 hit=0.535 aligned=+0.0132 ATR  2021:-0.026 2022:-0.000 2023:+0.047 2024:+0.027 2025:+0.016 2026:-0.018 [MIXED(3+/3-)]
+
+=== ES intraday 15m range clustering === corr=+0.637 n=31707  2021:+0.672 2022:+0.534 2023:+0.528 2024:+0.553 2025:+0.706 2026:+0.497 [STABLE(+)]
+
+=== ES timing === P(one RTH extreme in first 30m)=0.524, first 60m=0.710 (n=1209)

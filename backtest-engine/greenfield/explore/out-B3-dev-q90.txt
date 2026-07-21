@@ -1,0 +1,58 @@
+B3 sim years 2021-2024 slipmult=1.0 arr5>=0.127
+eligible events: 2665
+  0/2665
+  500/2665
+  1000/2665
+  1500/2665
+  2000/2665
+  2500/2665
+
+=== RESULTS 2021-2024 slipx1.0 arr5>=0.127 (entry,stop,tgt_atr,hold) ===
+L S15 T0.10 H30: n=1957 WR=0.348 PF=0.84 Sharpe=-1.88 maxDD=$-65,683 pnl=$-62,254 hold med/avg=3/6m
+   per-year pnl: 2021:-15,631(PF0.85) 2022:-17,230(PF0.83) 2023:+1,617(PF1.02) 2024:-31,009(PF0.71)
+   sides: long@lo: n=1179 PF0.80 -50,225 | short@hi: n=778 PF0.92 -12,029
+L S15 T0.10 H60: n=1957 WR=0.343 PF=0.84 Sharpe=-1.98 maxDD=$-68,953 pnl=$-65,524 hold med/avg=3/6m
+   per-year pnl: 2021:-17,106(PF0.84) 2022:-17,456(PF0.83) 2023:+1,008(PF1.01) 2024:-31,970(PF0.70)
+   sides: long@lo: n=1179 PF0.79 -51,650 | short@hi: n=778 PF0.91 -13,874
+L S15 T0.20 H30: n=1943 WR=0.265 PF=0.91 Sharpe=-0.95 maxDD=$-45,098 pnl=$-40,620 hold med/avg=5/9m
+   per-year pnl: 2021:-5,075(PF0.96) 2022:-13,978(PF0.87) 2023:+8,574(PF1.08) 2024:-30,141(PF0.74)
+   sides: long@lo: n=1169 PF0.83 -45,265 | short@hi: n=774 PF1.03 +4,645
+L S15 T0.20 H60: n=1937 WR=0.239 PF=0.91 Sharpe=-0.88 maxDD=$-49,478 pnl=$-39,712 hold med/avg=5/12m
+   per-year pnl: 2021:+332(PF1.00) 2022:-13,699(PF0.88) 2023:+6,420(PF1.06) 2024:-32,766(PF0.73)
+   sides: long@lo: n=1165 PF0.85 -43,410 | short@hi: n=772 PF1.02 +3,698
+L S25 T0.10 H30: n=1944 WR=0.465 PF=0.86 Sharpe=-1.72 maxDD=$-75,491 pnl=$-72,973 hold med/avg=6/9m
+   per-year pnl: 2021:-24,299(PF0.82) 2022:-28,196(PF0.80) 2023:+6,917(PF1.06) 2024:-27,395(PF0.80)
+   sides: long@lo: n=1169 PF0.85 -46,455 | short@hi: n=775 PF0.87 -26,518
+L S25 T0.10 H60: n=1941 WR=0.463 PF=0.86 Sharpe=-1.72 maxDD=$-77,035 pnl=$-74,677 hold med/avg=6/11m
+   per-year pnl: 2021:-23,929(PF0.82) 2022:-27,655(PF0.80) 2023:+4,872(PF1.04) 2024:-27,965(PF0.80)
+   sides: long@lo: n=1167 PF0.86 -44,893 | short@hi: n=774 PF0.86 -29,784
+L S25 T0.20 H30: n=1916 WR=0.376 PF=0.93 Sharpe=-0.75 maxDD=$-45,843 pnl=$-41,014 hold med/avg=11/14m
+   per-year pnl: 2021:-16,852(PF0.89) 2022:-26,042(PF0.83) 2023:+18,189(PF1.15) 2024:-16,309(PF0.89)
+   sides: long@lo: n=1150 PF0.89 -40,161 | short@hi: n=766 PF1.00 -853
+L S25 T0.20 H60: n=1894 WR=0.345 PF=0.93 Sharpe=-0.71 maxDD=$-45,325 pnl=$-41,016 hold med/avg=11/19m
+   per-year pnl: 2021:-9,771(PF0.94) 2022:-25,756(PF0.84) 2023:+10,822(PF1.08) 2024:-16,310(PF0.90)
+   sides: long@lo: n=1136 PF0.91 -32,039 | short@hi: n=758 PF0.96 -8,977
+C S15 T0.10 H30: n=1743 WR=0.542 PF=0.62 Sharpe=-3.76 maxDD=$-142,112 pnl=$-140,607 hold med/avg=2/5m
+   per-year pnl: 2021:-37,521(PF0.57) 2022:-20,400(PF0.77) 2023:-23,331(PF0.71) 2024:-59,355(PF0.47)
+   sides: long@lo: n=1082 PF0.58 -100,452 | short@hi: n=661 PF0.70 -40,155
+C S15 T0.10 H60: n=1743 WR=0.545 PF=0.62 Sharpe=-3.79 maxDD=$-144,061 pnl=$-142,556 hold med/avg=2/5m
+   per-year pnl: 2021:-37,443(PF0.58) 2022:-20,488(PF0.77) 2023:-24,276(PF0.70) 2024:-60,349(PF0.47)
+   sides: long@lo: n=1082 PF0.58 -101,472 | short@hi: n=661 PF0.70 -41,084
+C S15 T0.20 H30: n=1723 WR=0.467 PF=0.92 Sharpe=-0.76 maxDD=$-49,705 pnl=$-38,756 hold med/avg=9/12m
+   per-year pnl: 2021:-5,664(PF0.95) 2022:-16,588(PF0.88) 2023:+2,876(PF1.03) 2024:-19,381(PF0.86)
+   sides: long@lo: n=1068 PF0.86 -45,216 | short@hi: n=655 PF1.04 +6,460
+C S15 T0.20 H60: n=1717 WR=0.452 PF=0.91 Sharpe=-0.92 maxDD=$-61,583 pnl=$-48,764 hold med/avg=9/15m
+   per-year pnl: 2021:-4,442(PF0.97) 2022:-14,172(PF0.90) 2023:-2,580(PF0.98) 2024:-27,571(PF0.82)
+   sides: long@lo: n=1064 PF0.85 -51,267 | short@hi: n=653 PF1.01 +2,503
+C S25 T0.10 H30: n=1740 WR=0.589 PF=0.66 Sharpe=-3.25 maxDD=$-136,535 pnl=$-134,801 hold med/avg=3/7m
+   per-year pnl: 2021:-39,873(PF0.58) 2022:-14,607(PF0.84) 2023:-21,272(PF0.75) 2024:-59,048(PF0.50)
+   sides: long@lo: n=1080 PF0.62 -95,503 | short@hi: n=660 PF0.72 -39,298
+C S25 T0.10 H60: n=1740 WR=0.598 PF=0.65 Sharpe=-3.31 maxDD=$-141,718 pnl=$-139,985 hold med/avg=3/8m
+   per-year pnl: 2021:-39,276(PF0.59) 2022:-15,151(PF0.84) 2023:-25,016(PF0.72) 2024:-60,541(PF0.51)
+   sides: long@lo: n=1080 PF0.63 -96,233 | short@hi: n=660 PF0.70 -43,752
+C S25 T0.20 H30: n=1703 WR=0.525 PF=0.95 Sharpe=-0.50 maxDD=$-42,989 pnl=$-28,579 hold med/avg=13/15m
+   per-year pnl: 2021:-14,137(PF0.90) 2022:-18,539(PF0.88) 2023:+12,913(PF1.11) 2024:-8,816(PF0.94)
+   sides: long@lo: n=1054 PF0.90 -35,400 | short@hi: n=649 PF1.03 +6,821
+C S25 T0.20 H60: n=1686 WR=0.517 PF=0.93 Sharpe=-0.68 maxDD=$-56,153 pnl=$-40,851 hold med/avg=13/20m
+   per-year pnl: 2021:-8,909(PF0.94) 2022:-19,311(PF0.88) 2023:+1,552(PF1.01) 2024:-14,183(PF0.91)
+   sides: long@lo: n=1043 PF0.90 -39,002 | short@hi: n=643 PF0.99 -1,849

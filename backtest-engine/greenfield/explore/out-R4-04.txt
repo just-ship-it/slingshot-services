@@ -1,0 +1,26 @@
+=== H4 10:00 vol: median 5m range/atr @10:00 = 0.1287 vs @11:00 = 0.0891 ===
+    release-proxy (top-tercile 10:00 vol) threshold /atr = 0.1593  n_days=1348
+
+-- (b) unconditional signed drift on HIGH-vol-10:00 (release-proxy) days --
+  [high-vol 10:00 (all)] n=445
+     p1000->p1015: pts=-5.129 t=-1.53 /atr=-0.0164  [MIXED(1+/5-)]
+     p1000->p1030: pts=-6.697 t=-1.73 /atr=-0.0215  [MIXED(1+/5-)]
+
+-- (a) CONTINUATION of the 09:45->10:00 impulse (side*fwd) --
+  high-vol 10:00   impulse-cont 10:00->1015: pts=+7.135 t=+2.14 n=445 [STABLE(+) 6/6]
+  high-vol 10:00   impulse-cont 10:00->1030: pts=+2.956 t=+0.76 n=445 [MIXED(5+/1-)]
+  low-vol 10:00    impulse-cont 10:00->1015: pts=+2.480 t=+1.60 n=445 [MIXED(5+/1-)]
+  low-vol 10:00    impulse-cont 10:00->1030: pts=+3.166 t=+1.44 n=445 [MIXED(5+/1-)]
+
+-- (a-CAUSAL) gate on IMPULSE MAGNITUDE known AT 10:00; enter 10:00, continuation --
+  big-impulse(known@10:00) cont 10:00->1015: pts=+6.341 t=+2.18 n=445 [MIXED(5+/1-)]
+  big-impulse(known@10:00) cont 10:00->1030: pts=+3.198 t=+0.97 n=445 [MIXED(3+/3-)]
+
+-- (a-CAUSAL2) vol gate known at 10:05; enter 10:05, continuation to 10:15/10:30 --
+  hivol-gate@10:05 enter10:05 cont ->1015: pts=+2.026 t=+0.75 n=445 [MIXED(4+/2-)]
+  hivol-gate@10:05 enter10:05 cont ->1030: pts=-2.152 t=-0.68 n=445 [MIXED(2+/4-)]
+
+-- FADE framing: -impulse*fwd on high-vol days (does the 10:00 spike revert?) --
+  high-vol fade 10:00->1015: pts=-7.135 t=-2.14 n=445 [STABLE(-) 6/6]
+  high-vol fade 10:00->1030: pts=-2.956 t=-0.76 n=445 [MIXED(1+/5-)]
+  high-vol fade 10:00->1045: pts=-2.960 t=-0.68 n=445 [MIXED(2+/4-)]

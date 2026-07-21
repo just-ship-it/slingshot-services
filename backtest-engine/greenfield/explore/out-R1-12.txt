@@ -1,0 +1,8 @@
+iv_put day-matched:        0.693 (361)
+iv_put day+hour-matched:   0.621 (1487)
+iv_put day+hour+speedQ5:   0.568 (1183, se~0.015)
+speed  day+hour+ivQ5:      0.633 (1016)
+
+iv_put dh-z : n=8460 base=0.410 top-decile=0.687  2025:0.408->0.698  2026:0.412->0.666
+iv_call dh-z: n=8460 base=0.409 top-decile=0.668  2025:0.408->0.662  2026:0.412->0.672
+speed dh-z  : n=8832 base=0.419 top-decile=0.649  2025:0.417->0.642  2026:0.423->0.661

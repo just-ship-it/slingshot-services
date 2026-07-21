@@ -1,0 +1,15 @@
+=== ES minute drift (points), 1286 days ===
+  09:34  drift=-0.124pt t=-1.76 n=1286 [MIXED(1+/4-)]
+  09:40  drift=-0.192pt t=-2.42 n=1286 [STABLE(-) 5/5]
+  09:49  drift=-0.245pt t=-3.49 n=1286 [STABLE(-) 5/5]
+  09:50  drift=-0.013pt t=-0.18 n=1286 [MIXED(3+/2-)]
+  10:00  drift=-0.093pt t=-0.76 n=1286 [MIXED(2+/3-)]
+  10:50  drift=-0.301pt t=-4.46 n=1286 [STABLE(-) 5/5]
+  10:52  drift=-0.125pt t=-2.29 n=1286 [MIXED(1+/4-)]
+  11:00  drift=+0.151pt t=+2.26 n=1286 [MIXED(4+/1-)]
+  11:06  drift=+0.185pt t=+3.23 n=1286 [MIXED(4+/1-)]
+
+=== ES opening 15m fast-drive fade to 10:30 ===
+  all                        cont pts=+0.196 t=+0.43 n=1272 [MIXED(3+/2-)]
+  fast arr (top quartile)    cont pts=-0.205 t=-0.19 n=319 [MIXED(2+/3-)]
+  slow arr (bot quartile)    cont pts=+0.813 t=+0.98 n=318 [MIXED(4+/1-)]

@@ -90,3 +90,12 @@ backtest-engine/research/*/output/
 
 # Skunkworks projects
 skunkworks/
+# Greenfield: regenerable caches and binary artifacts (masters live in backtest-engine/data/)
+backtest-engine/greenfield/**/__pycache__/
+backtest-engine/greenfield/**/*.npz
+backtest-engine/greenfield/**/*.pkl
+backtest-engine/greenfield/explore/cache/
+backtest-engine/greenfield/explore/cache_*
+backtest-engine/greenfield/explore/C1-touches.csv.gz
+backtest-engine/greenfield/explore/R1-oi-cache.csv
+backtest-engine/greenfield/explore/episodes.csv

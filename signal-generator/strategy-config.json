@@ -57,6 +57,24 @@
           "priority": 4,
           "evalTimeframe": "1m",
           "hidden": true
+        },
+        {
+          "name": "preclose-continuation",
+          "enabled": false,
+          "priority": 5,
+          "evalTimeframe": "1m"
+        },
+        {
+          "name": "monday-strength",
+          "enabled": false,
+          "priority": 6,
+          "evalTimeframe": "1m"
+        },
+        {
+          "name": "gapup-fade",
+          "enabled": false,
+          "priority": 7,
+          "evalTimeframe": "1m"
         }
       ]
     },

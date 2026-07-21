@@ -1,0 +1,69 @@
+
+===== (a) COMPRESSION BOXES: 6487 breakout events =====
+           n  ft4_med  ft4_pos  ft12_med  ft12_pos  ft12_atr  up_share
+kind                                                                  
+comp  2542.0   -1.125    0.473      -0.5     0.492    -0.001     0.541
+ctrl  3945.0   -1.250    0.480      -1.0     0.451    -0.003     0.556
+
+by year (comp - ctrl, ft12_med):
+  2021: comp n=442 ft12_med=  -2.38 pos=0.464 | ctrl n=628 ft12_med=  +1.75 pos=0.471
+  2022: comp n=521 ft12_med=  -0.25 pos=0.493 | ctrl n=735 ft12_med=  -5.25 pos=0.422
+  2023: comp n=476 ft12_med=  -0.25 pos=0.492 | ctrl n=736 ft12_med=  -1.00 pos=0.454
+  2024: comp n=463 ft12_med=  +1.75 pos=0.516 | ctrl n=738 ft12_med=  -1.62 pos=0.450
+  2025: comp n=463 ft12_med=  -3.00 pos=0.477 | ctrl n=729 ft12_med=  -3.00 pos=0.446
+  2026: comp n=177 ft12_med=  +6.75 pos=0.537 | ctrl n=379 ft12_med=  +5.75 pos=0.485
+
+comp by direction:
+           n  ft4_med  ft4_pos  ft12_med  ft12_pos  ft12_atr  up_share
+dirn                                                                  
+-1    1166.0   -1.875    0.461    -2.875     0.473    -0.010       0.0
+ 1    1376.0   -0.500    0.484     1.000     0.508     0.004       1.0
+
+===== (b1) SHALLOW SPRING (pierce<=5 in 15m, no break) =====
+  [real]
+     cat     n  ret60_med  race15  ret60_ge15  ret60_ge35
+ broke15 39724      33.50   0.289       0.766       0.485
+nopierce 13163      48.00   0.955       0.945       0.657
+  spring  6418      38.75   0.850       0.876       0.555
+  [rand]
+     cat    n  ret60_med  race15  ret60_ge15  ret60_ge35
+ broke15 9868     33.870   0.283       0.759       0.486
+nopierce 3176     49.635   0.966       0.959       0.681
+  spring 1782     39.880   0.858       0.882       0.562
+  yearly P(ret60>=35 | spring): real vs rand
+    2021: real 0.446 (n=1153) rand 0.410 (n=324) d=+0.035
+    2022: real 0.629 (n=1158) rand 0.666 (n=359) d=-0.037
+    2023: real 0.479 (n=1252) rand 0.452 (n=334) d=+0.027
+    2024: real 0.539 (n=1244) rand 0.614 (n=321) d=-0.075
+    2025: real 0.602 (n=1096) rand 0.588 (n=296) d=+0.014
+    2026: real 0.751 (n=515) rand 0.730 (n=148) d=+0.022
+
+===== (b2) DEEP SPRING (break>5 then re-enter within 10m) =====
+  [real] traverse toward origin side after re-entry (ctrl=no re-entry):
+             n  trav_med  trav_pos  mfe_med  mae_med
+reent                                               
+False   6082.0       2.0     0.525     22.0    21.50
+True   36956.0       1.0     0.506     33.5    34.25
+  [rand] traverse toward origin side after re-entry (ctrl=no re-entry):
+            n  trav_med  trav_pos  mfe_med  mae_med
+reent                                              
+False  1551.0     -0.50     0.494    20.75    23.75
+True   9202.0      1.75     0.511    33.25    33.25
+  yearly trav_pos (real spring vs rand spring):
+    2021: real 0.500 (n=4747) rand 0.465 (n=1201)
+    2022: real 0.494 (n=8157) rand 0.512 (n=1893)
+    2023: real 0.519 (n=5727) rand 0.525 (n=1316)
+    2024: real 0.516 (n=6370) rand 0.510 (n=1628)
+    2025: real 0.508 (n=7593) rand 0.533 (n=2007)
+    2026: real 0.497 (n=4362) rand 0.504 (n=1157)
+
+===== (c) DOUBLE TEST (2nd touch, 1st touch had not broken) =====
+  [real] 2nd-after-held: n=18053 race15=0.540 | 1st touches: n=102695 race15=0.510
+  [rand] 2nd-after-held: n=1078 race15=0.603 | 1st touches: n=44395 race15=0.510
+  yearly 2nd-after-held race15 (real vs rand):
+    2021: real 0.512 (n=2909) rand 0.581 (n=124)
+    2022: real 0.549 (n=3436) rand 0.682 (n=211)
+    2023: real 0.527 (n=3048) rand 0.577 (n=123)
+    2024: real 0.548 (n=3289) rand 0.572 (n=173)
+    2025: real 0.545 (n=3610) rand 0.614 (n=267)
+    2026: real 0.563 (n=1761) rand 0.556 (n=180)

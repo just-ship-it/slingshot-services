@@ -1,0 +1,26 @@
+RTH bars with baseline: 514410; spike distribution:
+spike_b
+<2      465629
+2-4      44032
+4-8       4488
+8-16       260
+>16          1
+
+=== Forward returns after volume spikes (ATR units), signed by spike-bar direction ===
+              n       al5      al15      al30      al60     abs15
+spike_b                                                          
+<2       438343  0.000053  0.000285  0.000495  0.000753  0.070733
+2-4       42898 -0.000562 -0.000538 -0.000846  0.002178  0.094866
+4-8        4459 -0.001759 -0.001311  0.003973  0.004265  0.131844
+8-16        258  0.014809  0.013033  0.032056  0.037286  0.171049
+>16           1  0.273009  0.553222  0.765002  0.437247  0.553222
+
+spike>=8, aligned 30m fwd per-year:   [NO DATA]
+spike>=8 fwd |15m ret| vs quiet-bar |ret| ratio per-year: 
+
+=== Spike >= 8x split by context (breakout of prior-60m range vs interior) ===
+interior     n=   106 aligned fwd30=+0.0585 ATR   [NO DATA]
+breakout-up  n=    49 aligned fwd30=+0.0526 ATR   [NO DATA]
+breakout-dn  n=    98 aligned fwd30=+0.0007 ATR   [NO DATA]
+
+spike>=16 AT breakout: n=1 aligned fwd30=+0.7650  [NO DATA]

@@ -1,0 +1,53 @@
+rows: 20290; years ['2025', '2026']
+feature              ctrl             2025         2026       pooled
+---------------------------------------------------------------------
+spread_put           broken     0.534(n30)   0.531(n15)   0.533(n45)
+spread_put           placebo    0.397(n30)   0.407(n15)   0.401(n45)
+spread_call          broken     0.538(n30)   0.544(n15)   0.539(n45)
+spread_call          placebo    0.422(n30)   0.424(n15)   0.424(n45)
+rspread_put          broken     0.505(n30)   0.504(n15)   0.505(n45)
+rspread_put          placebo    0.342(n30)   0.357(n15)   0.350(n45)
+rspread_call         broken     0.507(n30)   0.521(n15)   0.513(n45)
+rspread_call         placebo    0.363(n30)   0.377(n15)   0.370(n45)
+imb_put              broken     0.488(n30)   0.502(n15)   0.493(n45)
+imb_put              placebo    0.492(n30)   0.485(n15)   0.490(n45)
+imb_call             broken     0.506(n30)   0.505(n15)   0.505(n45)
+imb_call             placebo    0.499(n30)   0.478(n15)   0.492(n45)
+depth_put            broken     0.478(n30)   0.452(n15)   0.470(n45)
+depth_put            placebo    0.447(n30)   0.469(n15)   0.454(n45)
+depth_call           broken     0.476(n30)   0.459(n15)   0.471(n45)
+depth_call           placebo    0.453(n30)   0.454(n15)   0.452(n45)
+depth_ratio          broken     0.535(n30)   0.515(n15)   0.529(n45)
+depth_ratio          placebo    0.441(n30)   0.478(n15)   0.454(n45)
+intens               broken     0.487(n31)   0.471(n15)   0.482(n47)
+intens               placebo    0.500(n31)   0.501(n15)   0.500(n47)
+intens_ratio         broken     0.499(n30)   0.501(n15)   0.500(n45)
+intens_ratio         placebo    0.496(n30)   0.498(n15)   0.497(n45)
+dspread_otm          broken     0.506(n23)   0.516(n11)   0.509(n35)
+dspread_otm          placebo    0.570(n23)   0.579(n11)   0.573(n35)
+iv_put               broken     0.537(n30)   0.550(n15)   0.539(n45)
+iv_put               placebo    0.488(n30)   0.485(n15)   0.487(n45)
+iv_call              broken     0.537(n30)   0.549(n15)   0.539(n45)
+iv_call              placebo    0.489(n30)   0.486(n15)   0.488(n45)
+iv_gap               broken     0.505(n30)   0.493(n15)   0.501(n45)
+iv_gap               placebo    0.505(n30)   0.492(n15)   0.501(n45)
+iv_kink              broken     0.518(n30)   0.516(n15)   0.518(n45)
+iv_kink              placebo    0.515(n30)   0.507(n15)   0.512(n45)
+
+medians (pooled): feature: rejected | broken | placebo | round
+  spread_put           0.020 | 0.020 | 0.020 | 0.030
+  spread_call          0.020 | 0.020 | 0.020 | 0.030
+  rspread_put          0.011 | 0.011 | 0.015 | 0.013
+  rspread_call         0.011 | 0.011 | 0.014 | 0.011
+  imb_put              0.000 | 0.000 | 0.000 | 0.000
+  imb_call             0.000 | 0.000 | 0.018 | 0.091
+  depth_put            73.000 | 78.000 | 81.000 | 50.000
+  depth_call           72.000 | 78.000 | 81.000 | 45.000
+  depth_ratio          0.559 | 0.524 | 0.606 | 0.737
+  intens               62.000 | 62.000 | 62.000 | 16.000
+  intens_ratio         1.000 | 1.000 | 1.000 | 1.000
+  dspread_otm          0.000 | 0.000 | 0.000 | 0.010
+  iv_put               0.324 | 0.302 | 0.328 | 0.435
+  iv_call              0.325 | 0.303 | 0.328 | 0.440
+  iv_gap               0.000 | 0.000 | 0.000 | 0.001
+  iv_kink              -0.001 | -0.001 | -0.001 | -0.000

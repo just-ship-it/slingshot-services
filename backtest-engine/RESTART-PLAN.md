@@ -63,29 +63,29 @@ same engine. Institutionalize independent cross-checks:
    exists); alert at >10% composition or WR divergence. The June "live
    underperformance = plumbing" investigations were this signal, unheeded.
 
-## Phase 3 — Where the next edge plausibly lives (research queue)
+## Phase 3 — GREENFIELD research (Drew's directive, 2026-07-16)
 
-Ranked candidates informed by everything closed this week
-(`research/vp-defended-wick/REPORT.md`): naked levels (5 families), tape/book
-microstructure, public flip detectors, causal-GEX conditioners, and LSTB-family
-architectures are all DEAD — do not re-mine. Standing survivors worth honest re-tests:
+**If Phase 1 leaves no survivors, the restart is a TRUE reset.** Drew, verbatim
+intent: all historical research is presumed tainted — it was run on bad data. The
+new search must NOT be anchored in ANY prior research, candidate list, ranked
+queue, "survivor", "dead end", or past assumption about where edge lives. Approach
+the honest dataset as brand-new green-field data. Concretely:
 
-1. **First-hour book** (T5 GEX-wall fade + T7 ONH/ONL gap-break) — validated with
-   real OOS, single-trade-per-day, uncorrelated with anything live. Cheapest path to
-   a tradable slot.
-2. **DWF** — the only mechanism-grounded NEW edge with placebo control; spend the
-   $150-200 for OOS closure.
-3. **GLF** — the fade family's one causal survivor.
-4. **Zarattini ES momentum** (PF 1.94, 2021-26, parked for throughput) — as a
-   diversifier sleeve once a core exists.
-5. **New data acquisition** (Databento tier-0 nightly, ~$30/mo) before any new
-   microstructure research — the 2025-only windows repeatedly produced unfalsifiable
-   candidates.
+- No prior research report, memory file, or REPORT.md is admissible as a starting
+  point, prior, or pruning device for new hypotheses.
+- Hypotheses are generated from the DATA and from market mechanism first
+  principles, not from what "worked" or "failed" before — both labels came from a
+  broken engine and are equally untrustworthy.
+- The project's sole success criterion is a strategy that makes money on the
+  honest dataset and live. Negative results have no standalone value.
 
-Explicitly NOT on the queue: LS/LDPS-derived signals until the indicator itself is
-reverse-engineered from Pine source AND passes a knowability audit end-to-end
-(dumper stamps, live emission, engine consumption). The LS feed has produced three
-lookahead incidents; it does not get a fourth chance on trust.
+What DOES carry forward is engineering, not research: the KNOWABILITY.md data
+contract, the honest engine, the 1s-fill research rules (CLAUDE.md), the
+independent-verification harness (Phase 2), and the raw datasets themselves.
+Correctness infrastructure is not an "assumption" — it is the floor the reset
+stands on. (This includes the standing knowability audit for any series entering
+the engine; a data feed with unresolved stamp semantics enters as data to be
+audited, with no inherited trust either way.)
 
 ## Phase 4 — Live re-entry criteria
 

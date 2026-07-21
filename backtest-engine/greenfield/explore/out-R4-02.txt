@@ -1,0 +1,29 @@
+=== H2A morning extreme timing (window 09:30-12:00, 1348 days) ===
+  09:30-09:45  P(high)=0.301 P(low)=0.319  P(either)=0.620  uniform=0.100
+  09:45-10:00  P(high)=0.090 P(low)=0.116  P(either)=0.205  uniform=0.100
+  10:00-10:15  P(high)=0.082 P(low)=0.097  P(either)=0.179  uniform=0.100
+  10:15-10:30  P(high)=0.062 P(low)=0.058  P(either)=0.119  uniform=0.100
+  10:30-10:45  P(high)=0.056 P(low)=0.062  P(either)=0.119  uniform=0.100
+  10:45-11:00  P(high)=0.053 P(low)=0.054  P(either)=0.108  uniform=0.100
+  11:00-11:30  P(high)=0.114 P(low)=0.097  P(either)=0.211  uniform=0.200
+  11:30-12:00  P(high)=0.242 P(low)=0.197  P(either)=0.438  uniform=0.200
+  -> morning HIGH in 10:00-10:30: 0.143  LOW: 0.155  EITHER extreme: 0.290 (uniform 0.200)
+  RTH session extreme in first 30min: 0.625  first 60min: 0.791
+
+=== H2B CAUSAL fresh-extreme reversal ===
+  Extreme over CLOSED past window [a,anchor); fresh if it occurred in the last
+  30min AND is in 10:00-10:30; outcome window strictly AFTER anchor. side=+1 if
+  fresh extreme is a HIGH (expect down). +revert => turn/fade, - => continue.
+
+  [fresh 10:00-10:30 turn] n=1148
+     to10:45    n=1148 revert pts=-1.041 t=-0.87 /atr=-0.0032  [MIXED(1+/5-)]
+     to11:00    n=1148 revert pts=-1.662 t=-1.00 /atr=-0.0050  [MIXED(1+/5-)]
+     to12:00    n=1148 revert pts=-2.922 t=-1.07 /atr=-0.0088  [MIXED(1+/5-)]
+  [placebo fresh 09:45-10:15] n=1288
+     to10:45    n=1288 revert pts=-1.281 t=-0.77 /atr=-0.0039  [MIXED(3+/3-)]
+     to11:00    n=1288 revert pts=-0.790 t=-0.41 /atr=-0.0024  [MIXED(3+/3-)]
+     to12:00    n=1288 revert pts=-2.620 t=-0.92 /atr=-0.0079  [MIXED(1+/5-)]
+  [placebo fresh 10:30-11:00] n=1132
+     to11:30(via1200 half) n=1132 revert pts=-1.962 t=-0.95 /atr=-0.0060  [MIXED(2+/4-)]
+  [placebo fresh 11:00-11:30] n=1158
+     to12:00    n=1158 revert pts=-27.203 t=-13.86 /atr=-0.0826  [STABLE(-) 6/6]

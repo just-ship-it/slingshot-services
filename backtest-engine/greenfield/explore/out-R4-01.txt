@@ -1,0 +1,29 @@
+=== H1 opening-15m: CONTINUATION(+) vs FADE(-), side*fwd from 09:45  (n_days=1344) ===
+  r15(->10:00)   pts mean=+0.892 t=+0.63 | /atr mean=+0.0034 t=+0.81 n=1344
+    per-year [MIXED(3+/3-)]: 2021:-0.002(n243,t-0.2)  2022:+0.000(n248,t+0.0)  2023:-0.000(n248,t-0.0)  2024:+0.015(n247,t+1.7)  2025:-0.003(n246,t-0.2)  2026:+0.017(n112,t+1.1)
+  r30(->10:15)   pts mean=+0.638 t=+0.30 | /atr mean=+0.0040 t=+0.64 n=1344
+    per-year [MIXED(3+/3-)]: 2021:+0.000(n243,t+0.0)  2022:+0.013(n248,t+1.0)  2023:-0.001(n248,t-0.0)  2024:+0.019(n247,t+1.4)  2025:-0.008(n246,t-0.4)  2026:-0.007(n112,t-0.3)
+  r60(->10:45)   pts mean=+5.433 t=+2.15 | /atr mean=+0.0171 t=+2.20 n=1344
+    per-year [STABLE(+) 6/6]: 2021:+0.010(n243,t+0.5)  2022:+0.026(n248,t+1.6)  2023:+0.008(n248,t+0.4)  2024:+0.022(n247,t+1.1)  2025:+0.023(n246,t+1.3)  2026:+0.008(n112,t+0.3)
+  to10:30        pts mean=+2.101 t=+0.93 | /atr mean=+0.0073 t=+1.06 n=1344
+    per-year [MIXED(5+/1-)]: 2021:-0.003(n243,t-0.2)  2022:+0.016(n248,t+1.1)  2023:+0.003(n248,t+0.2)  2024:+0.017(n247,t+1.0)  2025:+0.006(n246,t+0.3)  2026:+0.000(n112,t+0.0)
+  to12:00        pts mean=+4.308 t=+1.26 | /atr mean=+0.0133 t=+1.28 n=1344
+    per-year [MIXED(5+/1-)]: 2021:-0.004(n243,t-0.1)  2022:+0.035(n248,t+1.5)  2023:+0.018(n248,t+0.7)  2024:+0.020(n247,t+0.8)  2025:+0.001(n246,t+0.1)  2026:+0.005(n112,t+0.1)
+
+--- CONTROL: same construction at a midday anchor (11:00-11:15 candle -> next 15/30/60m) ---
+  ctrl 10:45->11:00 dir -> 11:00->12:00  pts mean=+1.445 t=+0.77 n=1344
+    per-year [MIXED(5+/1-)]: 2021:+0.001(n243,t+0.1)  2022:+0.013(n248,t+1.1)  2023:+0.001(n248,t+0.0)  2024:-0.005(n247,t-0.4)  2025:+0.000(n246,t+0.0)  2026:+0.025(n112,t+1.3)
+
+=== H1 conditional splits on side*fwd to 10:30 (continuation framing) ===
+  small gap (|gap|/atr<0.1)                n=318   pts=+0.302 t=+0.07  [MIXED(3+/3-)]
+  large gap (|gap|/atr>=0.3)               n=514   pts=+1.023 t=+0.26  [MIXED(2+/4-)]
+  gap same dir as opening candle           n=654   pts=+4.745 t=+1.43  [MIXED(5+/1-)]
+  gap opposite opening candle              n=668   pts=-0.792 t=-0.25  [MIXED(3+/3-)]
+  fast opening drive (arr5 top quartile)   n=336   pts=-4.359 t=-0.83  [STABLE(-) 6/6]
+  slow opening drive (arr5 bot quartile)   n=336   pts=+4.682 t=+1.15  [MIXED(5+/1-)]
+  compressed ON (on_range/atr bot tercile) n=444   pts=+4.540 t=+1.40  [STABLE(+) 6/6]
+  wide ON (on_range/atr top tercile)       n=444   pts=-3.412 t=-0.73  [MIXED(3+/3-)]
+  opening candle trend-bar (body/range>=0.7) n=336   pts=+4.824 t=+1.04  [STABLE(+) 6/6]
+  opening candle doji/wick (body/range<=0.3) n=415   pts=-1.045 t=-0.26  [MIXED(2+/4-)]
+
+  P(opening candle sets eventual RTH extreme in drive dir) = 0.110  n=1344

@@ -1,0 +1,46 @@
+full RTH days: 1319
+
+=== Minute of RTH HIGH (after 09:30) ===
+rth_high_mod
+0-15       0.224
+15-30      0.071
+30-60      0.086
+60-90      0.061
+90-120     0.044
+120-180    0.068
+180-240    0.054
+240-300    0.068
+300-360    0.125
+360-390    0.198
+P(HIGH in first 30m) = 0.296   P(in first 60m) = 0.381   P(in last 30m) = 0.198
+
+=== Minute of RTH LOW (after 09:30) ===
+rth_low_mod
+0-15       0.252
+15-30      0.081
+30-60      0.106
+60-90      0.067
+90-120     0.049
+120-180    0.079
+180-240    0.065
+240-300    0.075
+300-360    0.080
+360-390    0.146
+P(LOW in first 30m) = 0.334   P(in first 60m) = 0.440   P(in last 30m) = 0.146
+
+P(at least one RTH extreme set in first 30m) = 0.625
+P(at least one RTH extreme set in first 60m) = 0.791
+P(BOTH extremes in first 60m, i.e. rest of day inside) = 0.030
+
+per-year P(one extreme in first 30m / 60m):
+  2021: 30m=0.658 60m=0.823 n=237
+  2022: 30m=0.599 60m=0.764 n=242
+  2023: 30m=0.613 60m=0.778 n=243
+  2024: 30m=0.604 60m=0.784 n=245
+  2025: 30m=0.618 60m=0.772 n=241
+  2026: 30m=0.703 60m=0.865 n=111
+
+day type counts: {'range': 1039, 'trend_up': 162, 'trend_dn': 118}
+range     n=1039: P(high first 60m)=0.392  P(low first 60m)=0.437  P(high last 30m)=0.156  P(low last 30m)=0.104
+trend_dn  n=118: P(high first 60m)=0.788  P(low first 60m)=0.008  P(high last 30m)=0.000  P(low last 30m)=0.712
+trend_up  n=162: P(high first 60m)=0.019  P(low first 60m)=0.772  P(high last 30m)=0.611  P(low last 30m)=0.000

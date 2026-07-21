@@ -1,0 +1,57 @@
+======================================================================
+(1) CLOCK CONTROL: 15:00->15:30 aligned with 09:30->15:00 day move
+
+== 15:00-15:30 aligned continuation ==
+year    n_ev  ndays           cont_pts   (dayw-mean/day-t)
+2021     225    225        +5.04/ +2.4
+2022     250    250        +6.91/ +2.2
+2023     248    248        +3.99/ +2.1
+2024     249    249        -1.23/ -0.6
+2025     245    245        +4.43/ +1.3
+2026     113    113        +3.30/ +0.6
+ ALL    1330   1330        +3.76/ +3.2
+
+  restricted to trend days (|09:30-15:00|>=20pt): n=1196
+
+== trend-day continuation ==
+year    n_ev  ndays           cont_pts   (dayw-mean/day-t)
+2021     196    196        +5.13/ +2.1
+2022     235    235        +7.62/ +2.3
+2023     220    220        +5.10/ +2.5
+2024     209    209        -1.20/ -0.5
+2025     227    227        +3.33/ +0.9
+2026     109    109        +4.14/ +0.7
+ ALL    1196   1196        +4.08/ +3.2
+
+======================================================================
+(2) DETECTOR ALIGNMENT 14:00-15:45 (does a volume signature point
+    the same way as the day's move-so-far?)
+   program: n=  531  aligned-with-day-move=47.1%  per-yr[2021:41 2022:49 2023:53 2024:50 2025:44 2026:50]
+    bursty: n= 4111  aligned-with-day-move=54.5%  per-yr[2021:53 2022:55 2023:55 2024:53 2025:55 2026:57]
+    volrun: n= 3483  aligned-with-day-move=51.5%  per-yr[2021:50 2022:48 2023:55 2024:48 2025:56 2026:52]
+
+======================================================================
+(3) ONSET: continuation 15:00->15:30 conditioned on a 14:30-15:00
+    ALIGNED volume-run having fired (vs no such run)
+  days with an aligned 14:30-15:00 volume-run: 423 / 1330
+  15:00-15:30 aligned continuation:
+    fired : +6.64 pts (t+2.8, n=423)
+    quiet : +2.42 pts (t+1.9, n=907)
+
+== continuation | aligned late run fired ==
+year    n_ev  ndays               cont   (dayw-mean/day-t)
+2021      67     67       +11.59/ +3.1
+2022      77     77        +6.30/ +1.2
+2023      77     77        +7.86/ +2.3
+2024      78     78        +1.70/ +0.4
+2025      82     82        +4.55/ +0.6
+2026      42     42       +10.42/ +0.9
+ ALL     423    423        +6.64/ +2.8
+
+  onset-anchored: from each aligned 14:30-15:00 run detection minute,
+  aligned move to 15:30 (dir = day move-so-far):
+    n=530  aligned det->15:30 = +8.37 pts (t+2.9)
+
+======================================================================
+(4) 14:00-15:45 bursts (from R3-02) — aligned continuation to +15m
+  EOD burst blocks aligned with day move: 51.4% (n=9226)

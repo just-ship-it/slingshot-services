@@ -1,0 +1,43 @@
+=== H3 minute drift, mods 570..719  (149 minutes) ===
+minutes with |t|>2: 14 (chance~7)   |t|>2 AND per-year sign-stable: 5
+
+Top 12 by |t| (drift = signed re-hedge; vol = event magnitude):
+  10:50  drift=-1.688pt (-0.0051/atr) t=-5.64 vol=0.0331 STABLE [STABLE(-) 6/6]
+  09:49  drift=-1.161pt (-0.0042/atr) t=-4.00 vol=0.0389 STABLE [STABLE(-) 6/6]
+  11:00  drift=+1.201pt (+0.0036/atr) t=+3.69 vol=0.0360 STABLE [STABLE(+) 6/6]
+  11:06  drift=+0.788pt (+0.0024/atr) t=+2.97 vol=0.0290 STABLE [STABLE(+) 6/6]
+  09:34  drift=-1.143pt (-0.0035/atr) t=-2.82 vol=0.0451       [MIXED(2+/4-)]
+  09:40  drift=-1.013pt (-0.0034/atr) t=-2.79 vol=0.0450       [MIXED(1+/5-)]
+  10:52  drift=-0.663pt (-0.0022/atr) t=-2.69 vol=0.0294       [MIXED(2+/4-)]
+  09:45  drift=+1.202pt (+0.0033/atr) t=+2.62 vol=0.0469       [MIXED(4+/2-)]
+  11:25  drift=-0.534pt (-0.0018/atr) t=-2.56 vol=0.0263       [MIXED(1+/5-)]
+  10:12  drift=+0.796pt (+0.0024/atr) t=+2.32 vol=0.0380       [MIXED(4+/2-)]
+  10:11  drift=-0.767pt (-0.0023/atr) t=-2.26 vol=0.0377       [MIXED(2+/4-)]
+  09:38  drift=+0.897pt (+0.0025/atr) t=+2.23 vol=0.0407 STABLE [STABLE(+) 6/6]
+
+09:49 fade hint (mod 589) and neighbours:
+  09:47  drift=+0.392pt t=+1.27  [MIXED(4+/2-)]
+  09:48  drift=+0.508pt t=+1.21  [MIXED(4+/2-)]
+  09:49  drift=-1.161pt t=-4.00 STABLE [STABLE(-) 6/6]
+  09:50  drift=-0.494pt t=-2.04  [MIXED(2+/4-)]
+  09:51  drift=+0.474pt t=+1.35  [MIXED(5+/1-)]
+
+Highest-vol minutes (event windows, magnitude not direction):
+  10:00  vol=0.0653/atr  drift=-0.803pt t=-1.75
+  09:31  vol=0.0594/atr  drift=-0.294pt t=-0.34
+  09:32  vol=0.0526/atr  drift=-0.007pt t=-0.63
+  09:33  vol=0.0495/atr  drift=+0.232pt t=+0.85
+  09:35  vol=0.0485/atr  drift=-0.170pt t=+0.12
+  09:45  vol=0.0469/atr  drift=+1.202pt t=+2.62
+
+Cumulative mean drift (pts) at marks vs 09:30 open (sanity, unsigned):
+  by 09:45: cum drift -0.35 pt
+  by 10:00: cum drift -0.91 pt
+  by 10:15: cum drift -0.43 pt
+  by 10:30: cum drift -0.46 pt
+  by 10:45: cum drift -0.15 pt
+
+CONTROL midday 12:00-14:00 (120 min): |t|>2 = 16  |t|>2 & stable = 5
+first-hour+ band 09:30-11:59 (149 min):  |t|>2 = 14  |t|>2 & stable = 5
+
+saved R4-minute-drift-summary.csv

@@ -1,0 +1,65 @@
+====================================================================================================
+A. CAUSAL 08:30-RELEASE PROXY (baseline = PRIOR-day RTH avg 1m vol; knowable at 09:30)
+====================================================================================================
+
+--- classifier=prior-day-RTH-norm  hi-days=141 by yr {2021: 18, 2022: 32, 2023: 36, 2024: 35, 2025: 17, 2026: 3}
+  (ctrl) low-prior-da        am1_0930_1030        n= 700 mean=  -3.54pt t=-0.98 atr=-0.008 yr[1/7]: -23 +4 -17 -4 -1 -0 -9
+  HI-prior-da                am1_0930_1030        n= 141 mean=  +3.82pt t=+0.45 atr=+0.020 yr[3/6]: +1 +2 +21 -4 -0 -54
+  (ctrl) low-prior-da        rel830_0830_0930     n= 700 mean=  -0.20pt t=-0.13 atr=-0.000 yr[2/7]: -1 -1 -1 +3 -1 -3 +6
+  HI-prior-da                rel830_0830_0930     n= 141 mean=  +3.14pt t=+0.56 atr=+0.019 yr[3/6]: +22 -11 +4 +14 -11 -13
+  (ctrl) low-prior-da        rth_full             n= 662 mean=  -0.41pt t=-0.06 atr=+0.000 yr[4/7]: -21 +11 -26 +5 +2 -4 +18
+  HI-prior-da                rth_full             n= 135 mean=  +0.72pt t=+0.05 atr=+0.008 yr[2/6]: -16 -18 +11 +31 -5 -153
+
+--- classifier=trail20d-self-norm  hi-days=140 by yr {2021: 26, 2022: 30, 2023: 31, 2024: 27, 2025: 21, 2026: 5}
+  (ctrl) low-trail20d        am1_0930_1030        n= 697 mean=  -3.10pt t=-0.87 atr=-0.008 yr[2/6]: +0 -7 +1 -4 -1 -14
+  HI-trail20d                am1_0930_1030        n= 140 mean=  +0.82pt t=+0.09 atr=+0.002 yr[4/6]: -31 -7 +21 +4 +3 +63
+  (ctrl) low-trail20d        rel830_0830_0930     n= 696 mean=  -0.46pt t=-0.31 atr=-0.000 yr[2/6]: -0 -3 +2 -2 -1 +3
+  HI-trail20d                rel830_0830_0930     n= 139 mean=  +7.28pt t=+1.21 atr=+0.033 yr[6/6]: +13 +0 +6 +17 +1 +0
+  (ctrl) low-trail20d        rth_full             n= 655 mean=  +2.71pt t=+0.40 atr=+0.010 yr[3/6]: +15 -16 +16 -4 +6 -1
+  HI-trail20d                rth_full             n= 138 mean= -11.17pt t=-0.75 atr=-0.040 yr[3/6]: -34 -50 +0 +36 +8 -65
+
+====================================================================================================
+A2. FOMC proxy note: real FOMC dates are SCHEDULED (knowable). proxy=top-8/yr Wed by 14:00 vol.
+====================================================================================================
+  (ctrl) other Weds          fomc60_1400_1500     n= 231 mean=  +0.76pt t=+0.18 atr=+0.004 yr[3/6]: -3 -2 +3 +0 +6 -0
+  FOMC-proxy                 fomc60_1400_1500     n=  49 mean= +12.78pt t=+0.72 atr=+0.049 yr[3/7]: -21 +58 +37 +36 -11 -34 -6
+  (ctrl) other Weds          fomc30_1400_1430     n= 231 mean=  +6.99pt t=+2.70 atr=+0.023 yr[5/6]: -0 +12 +8 +6 +3 +23
+  FOMC-proxy                 fomc30_1400_1430     n=  49 mean= -15.25pt t=-1.43 atr=-0.044 yr[1/7]: -9 +32 -72 -12 -24 -4 -12
+  (ctrl) other Weds          pm_1400_1600         n= 231 mean=  -2.76pt t=-0.49 atr=-0.013 yr[3/6]: -18 -12 -7 +7 +16 +1
+  FOMC-proxy                 pm_1400_1600         n=  49 mean= +17.84pt t=+0.62 atr=+0.044 yr[4/7]: -29 +107 -5 +27 -109 +84 +9
+
+====================================================================================================
+B. ES CROSS-CHECK (points + per-year signs; sign agreement w/ NQ = generalization)
+====================================================================================================
+
+-- ES dow x rth_full --
+  ES Mon                     rth_full             n= 231 mean=  +5.06pt t=+2.32 atr=+5.060 yr[5/6]: +3 -0 +10 +3 +9 +20
+  ES Tue                     rth_full             n= 259 mean=  -0.98pt t=-0.44 atr=-0.984 yr[3/6]: -3 -7 +2 +3 +0 -10
+  ES Wed                     rth_full             n= 256 mean=  +1.46pt t=+0.46 atr=+1.457 yr[3/6]: +1 -1 -5 -3 +14 +9
+  ES Thu                     rth_full             n= 250 mean=  -3.15pt t=-1.15 atr=-3.152 yr[2/6]: +3 +0 -0 -8 -11 -6
+  ES Fri                     rth_full             n= 247 mean=  +1.83pt t=+0.66 atr=+1.833 yr[3/6]: +4 -3 +7 +4 -3 -2
+
+-- ES dow x am1_0930_1030 (Tue AM weakness?) --
+  ES Mon                     am1_0930_1030        n= 256 mean=  +1.28pt t=+1.18 atr=+1.278 yr[5/6]: +0 -1 +4 +0 +3 +12
+  ES Tue                     am1_0930_1030        n= 261 mean=  -1.89pt t=-1.63 atr=-1.895 yr[1/6]: -1 -5 -1 -1 -2 +2
+  ES Wed                     am1_0930_1030        n= 259 mean=  +1.20pt t=+1.12 atr=+1.196 yr[3/6]: +0 +3 -2 -0 +6 -1
+  ES Thu                     am1_0930_1030        n= 258 mean=  -0.45pt t=-0.38 atr=-0.453 yr[2/6]: +4 -3 -1 -3 +1 -2
+  ES Fri                     am1_0930_1030        n= 253 mean=  -0.11pt t=-0.08 atr=-0.113 yr[2/6]: -2 -2 +4 +3 -3 -6
+
+-- ES dow x pm_1400_1600 --
+  ES Mon                     pm_1400_1600         n= 231 mean=  +1.55pt t=+1.33 atr=+1.547 yr[5/6]: +1 +5 +0 +0 +1 -6
+  ES Tue                     pm_1400_1600         n= 259 mean=  +0.67pt t=+0.64 atr=+0.669 yr[3/6]: -1 +0 +3 +2 -1 -1
+  ES Wed                     pm_1400_1600         n= 256 mean=  -0.66pt t=-0.38 atr=-0.656 yr[2/6]: -1 -3 -1 -3 +4 +15
+  ES Thu                     pm_1400_1600         n= 250 mean=  -1.94pt t=-1.42 atr=-1.943 yr[1/6]: +0 -1 -2 -4 -2 -9
+  ES Fri                     pm_1400_1600         n= 247 mean=  +1.60pt t=+1.28 atr=+1.602 yr[5/6]: +1 +6 +1 +2 -2 +3
+
+-- ES turn-of-month (pm_1400_1600 & rth_full) --
+  ES mid(ctrl)               pm_1400_1600         n= 436 mean=  -0.01pt t=-0.01 atr=-0.012 yr[3/6]: +2 -0 +1 -2 -1 +5
+  ES last-td pm              pm_1400_1600         n=  57 mean=  +3.54pt t=+0.92 atr=+3.535 yr[3/5]: -5 -4 +4 +5 +18
+  ES ToM-window pm           pm_1400_1600         n= 229 mean=  +1.11pt t=+0.69 atr=+1.114 yr[5/6]: -5 +3 +2 +3 +2 +5
+  ES ToM-window rth          rth_full             n= 229 mean=  +2.14pt t=+0.82 atr=+2.139 yr[4/6]: -5 +3 +6 -1 +8 +4
+
+-- ES opex-week Thu afternoon --
+  ES non-opex pm             pm_1400_1600         n= 950 mean=  +0.58pt t=+0.86 atr=+0.579 yr[4/6]: -0 +2 +0 +1 -0 +1
+  ES opexThu pm              pm_1400_1600         n=  59 mean=  -4.57pt t=-1.69 atr=-4.572 yr[1/6]: -2 -10 -2 -6 +0 -24
+  ES opexThu rth             rth_full             n=  59 mean=  -6.50pt t=-1.03 atr=-6.504 yr[2/6]: +4 -20 +7 -15 -6 -20

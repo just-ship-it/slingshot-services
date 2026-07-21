@@ -1,0 +1,2 @@
+label,n,wr,pf,pnl,avg,sharpe,maxdd,hold_avg_m,hold_med_m,years_pos,years_n,per_year,attempted,fill_rate,pnl_2xslip,pf_2xslip,stop%,tgt%
+"b[0.03,0.12]|lim6|on5|T120",65,53.8,0.963,-1155,-17.8,-0.11,-8390,10.6,3.6,1,2,"{2025: (-2920, 47), 2026: (1765, 18)}",88,73.9,-1450,0.954,44.6,53.8
