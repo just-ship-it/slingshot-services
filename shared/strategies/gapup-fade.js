@@ -25,7 +25,7 @@
  */
 
 import { BaseStrategy } from './base-strategy.js';
-import { isValidCandle, roundTo } from './strategy-utils.js';
+import { isValidCandle, roundTo, etParts, secondsToNextDecision } from './strategy-utils.js';
 
 const ONE_MIN_MS = 60 * 1000;
 
@@ -59,6 +59,11 @@ export class GapUpFadeStrategy extends BaseStrategy {
     this.sessTradeDate = null;
     this.priorRthClose = null;   // prior trade_date's last RTH close
     this._resetSession();
+
+    // Status-panel state (getInternalState).
+    this._lastSignal = null;
+    this._firedDate = null;
+    this._lastGapEval = null;    // { date, gapPts, gapAtr, met } — set at the 09:30 decision, fired or not
   }
 
   _resetSession() {
@@ -141,6 +146,9 @@ export class GapUpFadeStrategy extends BaseStrategy {
 
     const gap = candle.open - this.priorRthClose;
     const gapAtr = gap / atr;
+    const gapMet = gapAtr >= this.params.gapAtrMult && gapAtr <= this.params.maxGapAtr;
+    // Record the decision-time gap for the status panel — fired or not.
+    this._lastGapEval = { date: et.tradeDate, gapPts: gap, gapAtr, atr, met: gapMet };
     if (gapAtr < this.params.gapAtrMult) return null;          // not a large gap-up
     if (gapAtr > this.params.maxGapAtr) return null;           // roll/glitch guard
 
@@ -149,6 +157,9 @@ export class GapUpFadeStrategy extends BaseStrategy {
       console.log(`[GUF] ${et.tradeDate} SHORT gap=${gap.toFixed(1)} (${gapAtr.toFixed(2)}ATR) `
         + `atr14=${atr.toFixed(1)} entry~${entryPrice.toFixed(2)} → 11:00`);
     }
+
+    this._firedDate = et.tradeDate;
+    this._lastSignal = { ts: timestamp, side: 'sell', price: roundTo(entryPrice), note: 'SHORT · exit 11:00' };
 
     return {
       timestamp: timestamp + ONE_MIN_MS,
@@ -226,12 +237,57 @@ export class GapUpFadeStrategy extends BaseStrategy {
     return this.dayRanges.length >= this.params.atrMinPeriods && this.priorRthClose !== null;
   }
 
+  /**
+   * Readiness snapshot for the dashboard book panel. "Distance" is the countdown
+   * to the 09:30 open (where the gap is evaluated); the gap itself is only known
+   * at the open, so pre-open the condition is pending. After the open the card
+   * shows the actual gap vs the 0.50×ATR threshold. States: watching (pre-open) |
+   * fired | stood-down (gap too small) | dormant.
+   */
+  getInternalState() {
+    const now = Date.now();
+    const et = etParts(now);
+    const atr = this._atr();
+    const seeded = this.isSeeded();
+    const decMin = this.params.rthOpenHour * 60 + this.params.rthOpenMinute;
+    const isWeekday = et.dow >= 1 && et.dow <= 5;
+    const decisionPassed = isWeekday && et.minutesOfDay >= decMin;
+    const firedToday = this._firedDate === et.dateKey;
+    const gapToday = this._lastGapEval && this._lastGapEval.date === et.dateKey ? this._lastGapEval : null;
+
+    let state;
+    if (!seeded) state = 'dormant';
+    else if (firedToday) state = 'fired';
+    else if (!isWeekday) state = 'dormant';
+    else if (decisionPassed) state = 'stood-down';
+    else state = 'watching';
+
+    const thrPts = atr ? this.params.gapAtrMult * atr : null;
+    return {
+      kind: 'gapfade', state, seeded, atr14: atr ? roundTo(atr, 1) : null,
+      decision: { label: '09:30 ET', secondsTo: secondsToNextDecision(now, this.params.rthOpenHour, this.params.rthOpenMinute, [1, 2, 3, 4, 5]) },
+      direction: 'SHORT',
+      condition: {
+        kind: 'gap', label: 'Opening gap vs threshold',
+        value: gapToday ? roundTo(gapToday.gapAtr, 2) : null,
+        valuePts: gapToday ? roundTo(gapToday.gapPts, 0) : null,
+        threshold: this.params.gapAtrMult, thresholdPts: thrPts != null ? roundTo(thrPts, 0) : null,
+        unit: 'ATR', met: gapToday ? gapToday.met : null,
+        refPrice: this.priorRthClose != null ? roundTo(this.priorRthClose, 0) : null,
+      },
+      firedToday, lastSignal: this._lastSignal,
+    };
+  }
+
   reset() {
     super.reset();
     this.dayRanges = [];
     this.sessTradeDate = null;
     this.priorRthClose = null;
     this._resetSession();
+    this._lastSignal = null;
+    this._firedDate = null;
+    this._lastGapEval = null;
   }
 
   getName() { return 'GAPUP_FADE'; }

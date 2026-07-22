@@ -21,7 +21,7 @@
  */
 
 import { BaseStrategy } from './base-strategy.js';
-import { isValidCandle, roundTo } from './strategy-utils.js';
+import { isValidCandle, roundTo, etParts, secondsToNextDecision } from './strategy-utils.js';
 
 const ONE_MIN_MS = 60 * 1000;
 
@@ -53,6 +53,8 @@ export class MondayStrengthStrategy extends BaseStrategy {
     this.params = { ...this.defaultParams, ...params };
     this.currentTradingDate = null;
     this.firedToday = false;
+    this._lastSignal = null;   // status panel
+    this._firedDate = null;
   }
 
   getETTime(timestamp) {
@@ -94,6 +96,8 @@ export class MondayStrengthStrategy extends BaseStrategy {
     this.firedToday = true;
     this.updateLastSignalTime(timestamp);
     const entryPrice = candle.open; // RTH-open price
+    this._firedDate = et.dateKey;
+    this._lastSignal = { ts: timestamp, side: 'buy', price: roundTo(entryPrice), note: 'LONG · exit 15:45' };
 
     if (this.params.debug) {
       console.log(`[MON] ${et.dateKey} Monday LONG @ open ${entryPrice.toFixed(2)} → 15:45 flat`);
@@ -119,10 +123,39 @@ export class MondayStrengthStrategy extends BaseStrategy {
     };
   }
 
+  /**
+   * Readiness snapshot for the dashboard book panel. Unconditional strategy —
+   * "distance" is purely the countdown to the next Monday 09:30 open.
+   */
+  getInternalState() {
+    const now = Date.now();
+    const et = etParts(now);
+    const decMin = this.params.rthOpenHour * 60 + this.params.rthOpenMinute;
+    const isMon = et.dow === this.params.tradeDow;
+    const decisionPassed = isMon && et.minutesOfDay >= decMin;
+    const firedToday = this._firedDate === et.dateKey;
+
+    let state;
+    if (firedToday) state = 'fired';
+    else if (!isMon) state = 'dormant';
+    else if (decisionPassed) state = 'stood-down';
+    else state = 'armed'; // Monday pre-open — unconditional, certain to fire
+
+    return {
+      kind: 'monday', state, seeded: true, atr14: null,
+      decision: { label: 'Mon 09:30 ET', secondsTo: secondsToNextDecision(now, this.params.rthOpenHour, this.params.rthOpenMinute, [this.params.tradeDow]) },
+      direction: 'LONG',
+      condition: { kind: 'unconditional', label: 'Fires at the Monday open', met: state === 'armed' ? true : null },
+      firedToday, lastSignal: this._lastSignal,
+    };
+  }
+
   reset() {
     super.reset();
     this.currentTradingDate = null;
     this.firedToday = false;
+    this._lastSignal = null;
+    this._firedDate = null;
   }
 
   getName() { return 'MONDAY_STRENGTH'; }

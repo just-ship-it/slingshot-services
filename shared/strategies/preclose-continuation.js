@@ -29,7 +29,7 @@
  */
 
 import { BaseStrategy } from './base-strategy.js';
-import { isValidCandle, roundTo } from './strategy-utils.js';
+import { isValidCandle, roundTo, etParts, secondsToNextDecision } from './strategy-utils.js';
 
 const ONE_MIN_MS = 60 * 1000;
 
@@ -81,6 +81,12 @@ export class PreCloseContinuationStrategy extends BaseStrategy {
     // Current-session accumulators (Globex trade_date)
     this.sessTradeDate = null;
     this._resetSession();
+
+    // Status-panel state (getInternalState): last observed price, last emitted
+    // signal, the ET date we last fired, and the decision-time move evaluation.
+    this._lastPrice = null;
+    this._lastSignal = null;
+    this._firedDate = null;
   }
 
   _resetSession() {
@@ -138,6 +144,7 @@ export class PreCloseContinuationStrategy extends BaseStrategy {
 
     const timestamp = this.toMs(candle.timestamp);
     const et = this.getETTime(timestamp);
+    this._lastPrice = candle.close; // for live day-move in getInternalState
 
     // New Globex session -> finalize the one that ended, reset accumulators.
     if (et.tradeDate !== this.sessTradeDate) {
@@ -181,6 +188,9 @@ export class PreCloseContinuationStrategy extends BaseStrategy {
     if (side === 'short' && !this.params.allowShorts) return null;
 
     this.updateLastSignalTime(timestamp);
+    this._firedDate = et.tradeDate;
+    this._lastSignal = { ts: timestamp, side: side === 'long' ? 'buy' : 'sell',
+      price: roundTo(decisionPrice), note: `${side.toUpperCase()} · exit 15:30` };
     if (this.params.debug) {
       console.log(`[PCC] ${et.tradeDate} ${side.toUpperCase()} move=${move.toFixed(1)} `
         + `atr14=${atr.toFixed(1)} thr=${(this.params.moveAtrMult * atr).toFixed(1)} `
@@ -248,11 +258,60 @@ export class PreCloseContinuationStrategy extends BaseStrategy {
     return this.dayRanges.length >= this.params.atrMinPeriods;
   }
 
+  /**
+   * Readiness snapshot for the dashboard book panel. Reports how close the
+   * strategy is to firing: the countdown to the 15:00 decision plus the live
+   * day-move vs the 0.30×ATR threshold. States: armed | watching | fired |
+   * stood-down | dormant.
+   */
+  getInternalState() {
+    const now = Date.now();
+    const et = etParts(now);
+    const atr = this._atr();
+    const seeded = this.isSeeded();
+    const decMin = this.params.decisionHour * 60 + this.params.decisionMinute;
+    const isWeekday = et.dow >= 1 && et.dow <= 5;
+    const decisionPassed = isWeekday && et.minutesOfDay >= decMin;
+    const firedToday = this._firedDate === et.dateKey;
+
+    let moveP = null, moveAtr = null, direction = null, met = null;
+    if (this.rthOpen != null && this._lastPrice != null) {
+      moveP = this._lastPrice - this.rthOpen;
+      if (atr) { moveAtr = moveP / atr; met = Math.abs(moveP) > this.params.moveAtrMult * atr; }
+      direction = moveP > 0 ? 'LONG' : (moveP < 0 ? 'SHORT' : null);
+    }
+
+    let state;
+    if (!seeded) state = 'dormant';
+    else if (firedToday) state = 'fired';
+    else if (!isWeekday) state = 'dormant';
+    else if (decisionPassed) state = 'stood-down';
+    else state = met === true ? 'armed' : 'watching';
+
+    const thrPts = atr ? this.params.moveAtrMult * atr : null;
+    return {
+      kind: 'preclose', state, seeded, atr14: atr ? roundTo(atr, 1) : null,
+      decision: { label: '15:00 ET', secondsTo: secondsToNextDecision(now, this.params.decisionHour, this.params.decisionMinute, [1, 2, 3, 4, 5]) },
+      direction: firedToday && this._lastSignal ? (this._lastSignal.side === 'buy' ? 'LONG' : 'SHORT') : direction,
+      condition: {
+        kind: 'threshold', label: 'Day move vs threshold',
+        value: moveAtr != null ? roundTo(moveAtr, 2) : null,
+        valuePts: moveP != null ? roundTo(moveP, 0) : null,
+        threshold: this.params.moveAtrMult, thresholdPts: thrPts != null ? roundTo(thrPts, 0) : null,
+        unit: 'ATR', met, refPrice: this.rthOpen != null ? roundTo(this.rthOpen, 0) : null,
+      },
+      firedToday, lastSignal: this._lastSignal,
+    };
+  }
+
   reset() {
     super.reset();
     this.dayRanges = [];
     this.sessTradeDate = null;
     this._resetSession();
+    this._lastPrice = null;
+    this._lastSignal = null;
+    this._firedDate = null;
   }
 
   getName() { return 'PRECLOSE_CONTINUATION'; }

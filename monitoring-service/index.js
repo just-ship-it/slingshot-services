@@ -3354,6 +3354,29 @@ app.get('/api/strategies', dashboardAuth, async (req, res) => {
   }
 });
 
+// Book readiness — the greenfield book (pre-close / Monday / gap-fade) in one
+// call for the "book at a glance" panel. Proxies signal-generator's all-status
+// (which carries each strategy's getInternalState internals) and returns just
+// the three book strategies, in display order.
+const BOOK_STRATEGIES = ['preclose-continuation', 'monday-strength', 'gapup-fade'];
+app.get('/api/book/readiness', dashboardAuth, async (req, res) => {
+  try {
+    const response = await axios.get(`${SIGNAL_GENERATOR_URL}/strategy/status`, { timeout: 5000 });
+    const all = Array.isArray(response.data?.strategies) ? response.data.strategies : [];
+    const strategies = BOOK_STRATEGIES
+      .map(name => all.find(s => s.name === name))
+      .filter(Boolean);
+    res.json({ strategies, timestamp: new Date().toISOString() });
+  } catch (error) {
+    if (error.code === 'ECONNREFUSED') {
+      res.json({ strategies: [], error: 'signal-generator not running' });
+    } else {
+      logger.error('Failed to fetch book readiness:', error.message);
+      res.status(500).json({ error: 'Failed to fetch book readiness', details: error.message });
+    }
+  }
+});
+
 // Enable strategy
 app.post('/api/strategy/enable', dashboardAuth, async (req, res) => {
   try {

@@ -193,6 +193,48 @@ export function calculateDistance(price1, price2) {
 }
 
 /**
+ * Eastern-Time wall-clock parts for a timestamp — for strategy status readouts.
+ *
+ * @param {number} ms - Unix ms
+ * @returns {{hour:number,minute:number,second:number,minutesOfDay:number,dow:number,dateKey:string}}
+ *          dow: 0=Sun..6=Sat; dateKey: 'YYYY-MM-DD' in ET.
+ */
+export function etParts(ms) {
+  const dtf = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'America/New_York', year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false, weekday: 'short',
+  });
+  const p = {};
+  for (const { type, value } of dtf.formatToParts(new Date(ms))) p[type] = value;
+  let hour = parseInt(p.hour, 10); if (hour === 24) hour = 0;
+  const minute = parseInt(p.minute, 10);
+  const second = parseInt(p.second, 10);
+  const dow = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 }[p.weekday];
+  return { hour, minute, second, minutesOfDay: hour * 60 + minute, dow, dateKey: `${p.year}-${p.month}-${p.day}` };
+}
+
+/**
+ * Seconds until the next occurrence of a decision time (decHour:decMin ET) on an
+ * allowed weekday. Same-day countdown is exact; multi-day is approximate to the
+ * minute (ignores the ≤1h DST shift twice a year — fine for a status readout).
+ *
+ * @param {number} nowMs
+ * @param {number} decHour - decision hour ET (0-23)
+ * @param {number} decMin - decision minute ET
+ * @param {number[]} tradingDows - allowed days-of-week (0=Sun..6=Sat)
+ * @returns {number} seconds until next decision
+ */
+export function secondsToNextDecision(nowMs, decHour, decMin, tradingDows) {
+  const et = etParts(nowMs);
+  const decMinutes = decHour * 60 + decMin;
+  const secsToTodayDecision = (decMinutes - et.minutesOfDay) * 60 - et.second;
+  if (tradingDows.includes(et.dow) && secsToTodayDecision > 0) return secsToTodayDecision;
+  let days = 1;
+  while (days < 8 && !tradingDows.includes((et.dow + days) % 7)) days++;
+  return secsToTodayDecision + days * 86400;
+}
+
+/**
  * Check if timestamp is within a specific time window
  *
  * @param {number} timestamp - Timestamp to check
