@@ -646,6 +646,59 @@ async function clearStaleLocalsForAccount(accountId) {
   return cleared;
 }
 
+// Broker-authoritative flat check SCOPED TO ONE UNDERLYING INSTRUMENT. The entry
+// gate's real job is to enforce the broker constraint — you cannot be long AND
+// short (or stack on) the SAME futures instrument — NOT one-trade-per-account.
+// Different instruments (e.g. MNQ vs MGC) are independent broker positions and
+// must never cross-block. Matching is by extractUnderlying() (collapses micros,
+// strips the contract month), so it is robust to contract-format / rollover
+// differences — the format mismatch that made an exact-symbol check unsafe.
+//   true  → flat in THIS underlying (no matching row has non-zero netPos)
+//   false → holds a net position in THIS underlying → block
+//   null  → could not determine → fail-CLOSED (reject), never "flat".
+async function brokerFlatForUnderlying(accountId, underlying) {
+  const url = `${TRADOVATE_SERVICE_URL}/accounts/${encodeURIComponent(accountId)}/positions`;
+  const ac = new AbortController();
+  const timer = setTimeout(() => ac.abort(), GATE_BROKER_CHECK_TIMEOUT_MS);
+  try {
+    const res = await fetch(url, { method: 'GET', signal: ac.signal });
+    if (!res.ok) {
+      logger.warn(`[BROKER-GATE] ${accountId}: positions HTTP ${res.status} — cannot confirm flat`);
+      return null;
+    }
+    const body = await res.json();
+    const positions = Array.isArray(body?.positions) ? body.positions : null;
+    if (positions == null) {
+      logger.warn(`[BROKER-GATE] ${accountId}: malformed positions response — cannot confirm flat`);
+      return null;
+    }
+    return !positions.some(p => Number(p.netPos) !== 0 && extractUnderlying(p.symbol) === underlying);
+  } catch (err) {
+    logger.warn(`[BROKER-GATE] ${accountId}: ${underlying} check failed (${err.name === 'AbortError' ? `timeout ${GATE_BROKER_CHECK_TIMEOUT_MS}ms` : err.message}) — cannot confirm flat`);
+    return null;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+// Broker confirmed FLAT in `underlying` → drop stale locals for THIS (account,
+// underlying) only, so a gold-flat confirmation never tears down an open NQ
+// position (or vice versa). Underlying-scoped mirror of clearStaleLocalsForAccount.
+async function clearStaleLocalsForUnderlying(accountId, underlying) {
+  let cleared = 0;
+  for (const pos of [...state.openPositions.values()]) {
+    if (pos.accountId !== accountId) continue;
+    if (extractUnderlying(pos.symbol) !== underlying) continue;
+    logger.warn(`[BROKER-GATE] broker FLAT (${underlying}) on ${accountId} but local held ${pos.strategy} ${pos.symbol} (netPos=${pos.netPos}) — dropping stale local position`);
+    await handlePositionClosed({
+      accountId, strategy: pos.strategy, symbol: pos.symbol,
+      signalId: pos.signalId, realizedPnl: null,
+    });
+    cleared++;
+  }
+  return cleared;
+}
+
 // ---------- Signal handling ----------
 
 async function handleTradeSignal(raw) {
@@ -773,20 +826,23 @@ async function handleTradeSignal(raw) {
     }
 
     if (!signal.eodForceFlat) {
-      const flat = await brokerAccountFlat(accountId);
+      // Scoped to THIS signal's underlying instrument: you can't be long+short (or
+      // stack on) the same instrument, but a different instrument (e.g. an open
+      // MGC gold position) never blocks an MNQ entry — each gets its own slot.
+      const flat = await brokerFlatForUnderlying(accountId, underlying);
       if (flat === false) {
-        // Broker holds a position — never stack onto it.
+        // Broker holds a position IN THIS INSTRUMENT — never stack onto it.
         rejected.push({ accountId, reason: 'broker_position_open' });
         continue;
       }
       if (flat === null) {
         // Could not confirm flat → fail CLOSED. We never place an entry unless
-        // the broker positively confirms the account is flat.
+        // the broker positively confirms this instrument is flat.
         rejected.push({ accountId, reason: 'broker_check_failed' });
         continue;
       }
-      // Broker confirms flat → drop any stale local position for this account.
-      await clearStaleLocalsForAccount(accountId);
+      // Broker confirms flat in this instrument → drop any stale local for it.
+      await clearStaleLocalsForUnderlying(accountId, underlying);
 
       // A working limit (pending order) means an entry is already in flight for
       // this account+symbol; don't place a duplicate. (No position exists yet,

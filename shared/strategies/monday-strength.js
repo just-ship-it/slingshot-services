@@ -87,17 +87,22 @@ export class MondayStrengthStrategy extends BaseStrategy {
       this.firedToday = false;
     }
 
-    // Only Mondays, only at the 09:30 RTH-open bar, once per day.
+    // Only Mondays, once per day, on the bar that CLOSES at the 09:30 RTH open —
+    // i.e. the 09:29-labeled bar. Live, candle.close for the 09:30-labeled bar
+    // only arrives at 09:31, which entered a minute late; the 09:29 close is the
+    // last pre-open print, delivered right at 09:30:00.
     if (et.dow !== this.params.tradeDow) return null;
-    if (et.hhmm !== this.params.rthOpenHour * 100 + this.params.rthOpenMinute) return null;
+    const openMinOfDay = this.params.rthOpenHour * 60 + this.params.rthOpenMinute;
+    const barMinOfDay = (openMinOfDay - 1 + 1440) % 1440;
+    if (et.hhmm !== Math.floor(barMinOfDay / 60) * 100 + (barMinOfDay % 60)) return null;
     if (this.firedToday) return null;
     if (!this.checkCooldown(timestamp, this.params.signalCooldownMs)) return null;
 
     this.firedToday = true;
     this.updateLastSignalTime(timestamp);
-    const entryPrice = candle.open; // RTH-open price
+    const entryPrice = candle.close; // last pre-open print ≈ the 09:30 open
     this._firedDate = et.dateKey;
-    this._lastSignal = { ts: timestamp, side: 'buy', price: roundTo(entryPrice), note: 'LONG · exit 15:45' };
+    this._lastSignal = { ts: timestamp + ONE_MIN_MS, side: 'buy', price: roundTo(entryPrice), note: 'LONG · exit 15:45' };
 
     if (this.params.debug) {
       console.log(`[MON] ${et.dateKey} Monday LONG @ open ${entryPrice.toFixed(2)} → 15:45 flat`);

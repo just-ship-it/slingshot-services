@@ -16,7 +16,7 @@
         },
         {
           "name": "gex-flip-ivpct",
-          "enabled": true,
+          "enabled": false,
           "priority": 2,
           "evalTimeframe": "5m"
         },
@@ -28,7 +28,7 @@
         },
         {
           "name": "gex-lt-3m-crossover",
-          "enabled": true,
+          "enabled": false,
           "priority": 3,
           "evalTimeframe": "1m"
         },

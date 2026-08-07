@@ -135,16 +135,21 @@ export class GapUpFadeStrategy extends BaseStrategy {
       this.rthBarCount++;
     }
 
-    // Decision only at the 09:30 RTH-open bar, once per day.
-    if (et.hhmm !== this.params.rthOpenHour * 100 + this.params.rthOpenMinute || this.firedToday) return null;
+    // Decision fires on the bar that CLOSES at the 09:30 RTH open — i.e. the
+    // 09:29-labeled bar. Live, candle.close for the 09:30-labeled bar only
+    // arrives at 09:31, which measured the gap late and entered a minute after
+    // the open. The 09:29 close is the last pre-open print ≈ the 09:30 open.
+    const openMinOfDay = this.params.rthOpenHour * 60 + this.params.rthOpenMinute;
+    const barMinOfDay = (openMinOfDay - 1 + 1440) % 1440;
+    if (et.hhmm !== Math.floor(barMinOfDay / 60) * 100 + (barMinOfDay % 60) || this.firedToday) return null;
     this.firedToday = true;
 
-    if (this.rthOpen === null || this.priorRthClose === null) return null;
+    if (this.priorRthClose === null) return null;
     const atr = this._atr();
     if (atr === null || atr <= 0) return null;
     if (!this.checkCooldown(timestamp, this.params.signalCooldownMs)) return null;
 
-    const gap = candle.open - this.priorRthClose;
+    const gap = candle.close - this.priorRthClose;
     const gapAtr = gap / atr;
     const gapMet = gapAtr >= this.params.gapAtrMult && gapAtr <= this.params.maxGapAtr;
     // Record the decision-time gap for the status panel — fired or not.
@@ -152,14 +157,14 @@ export class GapUpFadeStrategy extends BaseStrategy {
     if (gapAtr < this.params.gapAtrMult) return null;          // not a large gap-up
     if (gapAtr > this.params.maxGapAtr) return null;           // roll/glitch guard
 
-    const entryPrice = candle.open;
+    const entryPrice = candle.close; // last pre-open print ≈ the 09:30 open
     if (this.params.debug) {
       console.log(`[GUF] ${et.tradeDate} SHORT gap=${gap.toFixed(1)} (${gapAtr.toFixed(2)}ATR) `
         + `atr14=${atr.toFixed(1)} entry~${entryPrice.toFixed(2)} → 11:00`);
     }
 
     this._firedDate = et.tradeDate;
-    this._lastSignal = { ts: timestamp, side: 'sell', price: roundTo(entryPrice), note: 'SHORT · exit 11:00' };
+    this._lastSignal = { ts: timestamp + ONE_MIN_MS, side: 'sell', price: roundTo(entryPrice), note: 'SHORT · exit 11:00' };
 
     return {
       timestamp: timestamp + ONE_MIN_MS,

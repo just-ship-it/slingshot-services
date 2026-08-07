@@ -169,9 +169,15 @@ export class PreCloseContinuationStrategy extends BaseStrategy {
       this.rthBarCount++;
     }
 
-    // Decision only at the 15:00 RTH bar, once per day.
-    const decisionHHMM = this.params.decisionHour * 100 + this.params.decisionMinute;
-    if (et.hhmm !== decisionHHMM || this.firedToday) return null;
+    // Decision fires on the bar that CLOSES at the decision instant (15:00 ET),
+    // i.e. the 14:59-labeled bar. The 15:00-labeled bar doesn't close — and live
+    // isn't delivered via candle.close — until 15:01, which shipped signals a
+    // minute late with a stale price. The 14:59 close IS the 15:00:00 price the
+    // research decided on (B4a: last 1s close before 15:00, entry 15:00:01).
+    const decMinOfDay = this.params.decisionHour * 60 + this.params.decisionMinute;
+    const barMinOfDay = (decMinOfDay - 1 + 1440) % 1440;
+    const decisionBarHHMM = Math.floor(barMinOfDay / 60) * 100 + (barMinOfDay % 60);
+    if (et.hhmm !== decisionBarHHMM || this.firedToday) return null;
     this.firedToday = true; // fire-or-skip: one decision per day either way
 
     if (this.rthOpen === null) return null;
@@ -179,7 +185,7 @@ export class PreCloseContinuationStrategy extends BaseStrategy {
     if (atr === null || atr <= 0) return null; // not yet seeded (warmup)
     if (!this.checkCooldown(timestamp, this.params.signalCooldownMs)) return null;
 
-    const decisionPrice = candle.open; // price at 15:00:00 ET
+    const decisionPrice = candle.close; // last trade at/just before 15:00:00 ET
     const move = decisionPrice - this.rthOpen;
     if (Math.abs(move) <= this.params.moveAtrMult * atr) return null; // below filter
 
@@ -189,7 +195,7 @@ export class PreCloseContinuationStrategy extends BaseStrategy {
 
     this.updateLastSignalTime(timestamp);
     this._firedDate = et.tradeDate;
-    this._lastSignal = { ts: timestamp, side: side === 'long' ? 'buy' : 'sell',
+    this._lastSignal = { ts: timestamp + ONE_MIN_MS, side: side === 'long' ? 'buy' : 'sell',
       price: roundTo(decisionPrice), note: `${side.toUpperCase()} · exit 15:30` };
     if (this.params.debug) {
       console.log(`[PCC] ${et.tradeDate} ${side.toUpperCase()} move=${move.toFixed(1)} `

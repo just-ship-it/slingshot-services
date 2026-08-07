@@ -64,6 +64,7 @@ import { MondayStrengthStrategy } from '../../shared/strategies/monday-strength.
 import { GapUpFadeStrategy } from '../../shared/strategies/gapup-fade.js';
 import { GapFillStrategy } from '../../shared/strategies/gap-fill.js';
 import { DailyLevelSweepStrategy } from '../../shared/strategies/daily-level-sweep.js';
+import { JvIctStrategy } from '../../shared/strategies/jv-ict.js';
 import { VWAPBounceStrategy } from '../../shared/strategies/vwap-bounce.js';
 import { SessionTransitionStrategy } from '../../shared/strategies/session-transition.js';
 import { ValueArea80Strategy } from '../../shared/strategies/value-area-80.js';
@@ -1961,6 +1962,9 @@ export class BacktestEngine {
       case 'gap-fill':
       case 'gap':
         return new GapFillStrategy(params);
+      case 'jv-ict':
+      case 'jvi':
+        return new JvIctStrategy(params);
       case 'preclose-continuation':
       case 'preclose':
       case 'pcc':
