@@ -737,6 +737,18 @@ const config = {
     };
   },
 
+  // PCC breadth/stress conditioner (research I1/I2/I3, 2026-08-08).
+  // PCC_SIZING_MODE: off (default) | trin | stress | either | ladder.
+  // 'ladder' = 1 contract when one of {TRIN aligned, COR1M rising} holds,
+  // 2 when both, no trade when neither. Values are fetched live at
+  // ~14:40-14:59 ET by the multi-strategy engine (pcc-conditioner-fetcher);
+  // fetch failure fails OPEN to base 1-lot sizing.
+  getPreCloseContinuationParams() {
+    return {
+      sizingMode: (process.env.PCC_SIZING_MODE || 'off').toLowerCase(),
+    };
+  },
+
   getGexThresholds() {
     return {
       strongPositive: this.GEX_STRONG_POSITIVE_THRESHOLD,

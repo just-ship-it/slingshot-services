@@ -28,6 +28,7 @@
  * Research: greenfield/explore/B4-preclose-expiry.md, V1-b4-verification.md.
  */
 
+import fs from 'fs';
 import { BaseStrategy } from './base-strategy.js';
 import { isValidCandle, roundTo, etParts, secondsToNextDecision } from './strategy-utils.js';
 
@@ -70,10 +71,42 @@ export class PreCloseContinuationStrategy extends BaseStrategy {
       defaultQuantity: 1,
       seedSymbol: 'NQ',   // data-service root used by seedHistoricalData
 
+      // Optional breadth/stress conditioner (I1/I2 research, 2026-08-08).
+      // conditionerFile: CSV `date,trin_1430,cor_chg5` (I3-build-pcc-conditioner.py).
+      //   trin_1430 = NYSE TRIN last 1h bar closing <=14:30 ET (same-day, causal);
+      //   cor_chg5  = COR1M prior-day close minus close 5 sessions earlier.
+      // sizingMode:
+      //   'off'    — ignore conditioner entirely (live default; no behavior change)
+      //   'trin'   — trade only when TRIN aligns with side (TRIN<1 long / >1 short)
+      //   'stress' — trade only when cor_chg5 > corChg5Min (rising correlation)
+      //   'either' — trade when at least one condition holds
+      //   'ladder' — quantity = defaultQuantity x tier (tier = #conditions true;
+      //              tier 0 = no trade)
+      conditionerFile: null,
+      sizingMode: 'off',
+      corChg5Min: 2.27,    // I2 E3 top-tercile edge (plateau >= +2)
+      trinNeutral: 1.0,    // canonical TRIN midpoint
+
       debug: false
     };
 
     this.params = { ...this.defaultParams, ...params };
+
+    // date -> { trin, cor } (null fields when missing). Backtest-only in
+    // practice: live config never sets conditionerFile.
+    this.conditioner = null;
+    if (this.params.conditionerFile) {
+      this.conditioner = new Map();
+      const raw = fs.readFileSync(this.params.conditionerFile, 'utf8').trim().split('\n');
+      for (let i = 1; i < raw.length; i++) {
+        const c = raw[i].split(',');
+        if (c.length < 3) continue;
+        this.conditioner.set(c[0], {
+          trin: c[1] === '' ? null : parseFloat(c[1]),
+          cor: c[2] === '' ? null : parseFloat(c[2])
+        });
+      }
+    }
 
     // Rolling buffer of prior FULL-day ranges (most recent last); ATR = mean.
     this.dayRanges = [];
@@ -87,6 +120,7 @@ export class PreCloseContinuationStrategy extends BaseStrategy {
     this._lastPrice = null;
     this._lastSignal = null;
     this._firedDate = null;
+    this._condLatest = null;
   }
 
   _resetSession() {
@@ -193,6 +227,39 @@ export class PreCloseContinuationStrategy extends BaseStrategy {
     if (side === 'long' && !this.params.allowLongs) return null;
     if (side === 'short' && !this.params.allowShorts) return null;
 
+    // Breadth/stress conditioner. Missing VALUE = that condition false
+    // (conservative); NO DATA AT ALL for today (live fetch failed) = FAIL OPEN
+    // to base 1-lot sizing — a data outage must degrade to the base strategy
+    // (confirmed profitable live), never silently disable trading.
+    let qty = this.params.defaultQuantity;
+    let condMeta = null;
+    if (this.params.sizingMode !== 'off') {
+      const cond = this.conditioner ? this.conditioner.get(et.tradeDate) : undefined;
+      if (!cond || (cond.trin == null && cond.cor == null)) {
+        condMeta = { conditioner_missing: true };
+      } else {
+        const trinAligned = cond.trin != null &&
+          ((cond.trin < this.params.trinNeutral) === (side === 'long'));
+        const stress = cond.cor != null && cond.cor > this.params.corChg5Min;
+        const tier = (trinAligned ? 1 : 0) + (stress ? 1 : 0);
+        const mode = this.params.sizingMode;
+        if (mode === 'trin' && !trinAligned) return null;
+        if (mode === 'stress' && !stress) return null;
+        if (mode === 'either' && tier === 0) return null;
+        if (mode === 'ladder') {
+          if (tier === 0) return null;
+          qty = this.params.defaultQuantity * tier;
+        }
+        condMeta = {
+          conditioner_tier: tier,
+          trin_1430: cond.trin,
+          cor_chg5: cond.cor,
+          trin_aligned: trinAligned,
+          stress
+        };
+      }
+    }
+
     this.updateLastSignalTime(timestamp);
     this._firedDate = et.tradeDate;
     this._lastSignal = { ts: timestamp + ONE_MIN_MS, side: side === 'long' ? 'buy' : 'sell',
@@ -210,13 +277,14 @@ export class PreCloseContinuationStrategy extends BaseStrategy {
       strategy: 'PRECLOSE_CONTINUATION',
       symbol: options.symbol || this.params.tradingSymbol,
       price: roundTo(decisionPrice),
-      quantity: options.quantity || this.params.defaultQuantity,
+      quantity: options.quantity || qty,
       stopLoss: null,          // no stop — pure clock-locked drift
       takeProfit: null,        // no target — time exit only
       maxHoldBars: this.params.holdBars,
       metadata: {
         strategy: 'PRECLOSE_CONTINUATION',
         direction: side,
+        ...(condMeta || {}),
         day_move: roundTo(move),
         atr14_prior: roundTo(atr),
         move_threshold: roundTo(this.params.moveAtrMult * atr),
@@ -265,6 +333,24 @@ export class PreCloseContinuationStrategy extends BaseStrategy {
   }
 
   /**
+   * Live conditioner injection (multi-strategy engine, ~14:40-14:59 ET via
+   * pcc-conditioner-fetcher): today's TRIN reading (last 1h bar closing
+   * <=14:30 ET) and prior-day COR1M 5-session change. Same tier logic as the
+   * backtest conditionerFile path — this just feeds the same map.
+   */
+  setLiveConditioner({ date, trin = null, cor = null } = {}) {
+    if (!date) return;
+    if (!this.conditioner) this.conditioner = new Map();
+    this.conditioner.set(date, { trin, cor });
+    this._condLatest = { date, trin, cor };
+  }
+
+  hasConditionerFor(date) {
+    const c = this.conditioner ? this.conditioner.get(date) : undefined;
+    return !!c && (c.trin != null || c.cor != null);
+  }
+
+  /**
    * Readiness snapshot for the dashboard book panel. Reports how close the
    * strategy is to firing: the countdown to the 15:00 decision plus the live
    * day-move vs the 0.30×ATR threshold. States: armed | watching | fired |
@@ -307,6 +393,9 @@ export class PreCloseContinuationStrategy extends BaseStrategy {
         unit: 'ATR', met, refPrice: this.rthOpen != null ? roundTo(this.rthOpen, 0) : null,
       },
       firedToday, lastSignal: this._lastSignal,
+      conditioner: this.params.sizingMode !== 'off'
+        ? { mode: this.params.sizingMode, ...(this._condLatest || { date: null, trin: null, cor: null }) }
+        : null,
     };
   }
 
@@ -318,6 +407,7 @@ export class PreCloseContinuationStrategy extends BaseStrategy {
     this._lastPrice = null;
     this._lastSignal = null;
     this._firedDate = null;
+    this._condLatest = null;
   }
 
   getName() { return 'PRECLOSE_CONTINUATION'; }

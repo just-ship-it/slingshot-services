@@ -419,6 +419,68 @@ class MultiStrategyEngine {
 
     // Initial seed attempt after brief delay (data-service may already have data)
     setTimeout(() => this.seedStrategies(), 5000);
+
+    this.startPccConditionerScheduler();
+  }
+
+  /**
+   * PCC breadth/stress conditioner scheduler (research I1/I2/I3, 2026-08-08).
+   * When any preclose-continuation strategy runs with sizingMode != 'off',
+   * fetch today's TRIN (last 1h bar closing <=14:30 ET) and prior-day COR1M
+   * 5-session change in a 14:40-14:59 ET window — ahead of PCC's 15:00
+   * decision — and inject via strategy.setLiveConditioner(). Retries each
+   * minute inside the window until today's values are in. Fetch failure is
+   * non-fatal: the strategy fails open to base 1-lot sizing.
+   */
+  startPccConditionerScheduler() {
+    const pccRunners = [];
+    for (const [, state] of this.products) {
+      for (const [, runner] of state.strategies) {
+        if (typeof runner.strategy?.setLiveConditioner === 'function'
+            && runner.strategy.params?.sizingMode
+            && runner.strategy.params.sizingMode !== 'off') {
+          pccRunners.push(runner);
+        }
+      }
+    }
+    if (pccRunners.length === 0) return;
+    logger.info(`PCC conditioner scheduler active (sizingMode=${pccRunners[0].strategy.params.sizingMode}) — fetch window 14:40-14:59 ET`);
+
+    let fetching = false;
+    this._pccCondTimer = setInterval(async () => {
+      if (fetching) return;
+      const now = new Date();
+      const s = now.toLocaleString('en-US', {
+        timeZone: 'America/New_York', year: 'numeric', month: '2-digit',
+        day: '2-digit', hour: '2-digit', minute: '2-digit', weekday: 'short', hour12: false,
+      });
+      // "Sat, 08/08/2026, 14:45"
+      const wd = s.slice(0, 3);
+      if (wd === 'Sat' || wd === 'Sun') return;
+      const [datePart, timePart] = s.split(', ').slice(1);
+      const [month, day, year] = datePart.split('/');
+      const [hh, mm] = timePart.split(':').map(Number);
+      const minOfDay = (hh === 24 ? 0 : hh) * 60 + mm;
+      if (minOfDay < 14 * 60 + 40 || minOfDay > 14 * 60 + 59) return;
+      const today = `${year}-${month}-${day}`;
+      if (pccRunners.every(r => r.strategy.hasConditionerFor(today))) return;
+
+      fetching = true;
+      try {
+        const { fetchPccConditioner } = await import('../utils/pcc-conditioner-fetcher.js');
+        const cond = await fetchPccConditioner(config.getRedisUrl());
+        if (cond.trin != null || cond.cor != null) {
+          for (const r of pccRunners) r.strategy.setLiveConditioner(cond);
+          logger.info(`PCC conditioner set for ${cond.date}: trin_1430=${cond.trin ?? 'n/a'} cor_chg5=${cond.cor != null ? cond.cor.toFixed(2) : 'n/a'}`);
+        } else {
+          logger.warn(`PCC conditioner fetch returned no data for ${cond.date} — will retry within window; strategy fails open to base size`);
+        }
+      } catch (err) {
+        logger.warn(`PCC conditioner fetch error: ${err.message} — strategy fails open to base size`);
+      } finally {
+        fetching = false;
+      }
+    }, 60 * 1000);
   }
 
   /**

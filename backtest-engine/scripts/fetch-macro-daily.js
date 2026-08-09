@@ -62,6 +62,25 @@ const BASKET = [
   { name: 'si',   tv: 'COMEX:SI1!' },        // silver
   { name: 'hg',   tv: 'COMEX:HG1!' },        // copper (growth proxy)
   { name: 'ng',   tv: 'NYMEX:NG1!' },        // natural gas
+  // Market internals (breadth) — RTH-only series; TICK/TRIN closes are noise,
+  // bar HIGH/LOW carry the extreme readings. ADD/VOLD closes are meaningful.
+  { name: 'tick',  tv: 'USI:TICK' },         // NYSE tick (upticking - downticking issues)
+  { name: 'tickq', tv: 'USI:TICKQ' },        // Nasdaq tick (NQ-native breadth)
+  { name: 'add',   tv: 'USI:ADD' },          // NYSE advancers - decliners
+  { name: 'addq',  tv: 'USI:ADDQ' },         // Nasdaq advancers - decliners
+  { name: 'vold',  tv: 'USI:VOLD' },         // NYSE up-volume - down-volume
+  { name: 'voldq', tv: 'USI:VOLDQ' },        // Nasdaq up/down volume diff
+  { name: 'trin',  tv: 'USI:TRIN' },         // NYSE arms index
+  // Vol web (cross-asset vol surfaces — "is the whole web repricing?")
+  { name: 'vxn',   tv: 'CBOE:VXN' },         // Nasdaq-100 vol (NQ's own VIX)
+  { name: 'vvix',  tv: 'CBOE:VVIX' },        // vol-of-vol
+  { name: 'vix9d', tv: 'CBOE:VIX9D' },       // short-dated vol (term structure front)
+  { name: 'vix3m', tv: 'CBOE:VIX3M' },       // 3m vol (term structure back)
+  { name: 'move',  tv: 'TVC:MOVE' },         // bond vol (ICE BofA MOVE)
+  { name: 'ovx',   tv: 'CBOE:OVX' },         // oil vol
+  { name: 'gvz',   tv: 'CBOE:GVZ' },         // gold vol
+  { name: 'cor1m', tv: 'CBOE:COR1M' },       // 1m implied correlation (dispersion regime)
+  { name: 'cor3m', tv: 'CBOE:COR3M' },       // 3m implied correlation
 ];
 
 function genId(prefix) {
@@ -169,9 +188,10 @@ async function fetchSymbol(tvSymbol, resolution, bars, pages, jwt, cookieHeader)
 async function main() {
   const args = process.argv.slice(2);
   let bars = 8000, outDir = path.join(__dirname, '..', 'data', 'macro'), only = null;
-  let resolution = '1D', pages = 0;
+  let resolution = '1D', pages = 0, merge = false;
   for (let i = 0; i < args.length; i++) {
-    if (args[i] === '--bars' && args[i + 1]) bars = parseInt(args[++i], 10);
+    if (args[i] === '--merge') merge = true;
+    else if (args[i] === '--bars' && args[i + 1]) bars = parseInt(args[++i], 10);
     else if (args[i] === '--out' && args[i + 1]) outDir = path.isAbsolute(args[i + 1]) ? args[++i] : path.join(process.cwd(), args[++i]);
     else if (args[i] === '--symbols' && args[i + 1]) only = args[++i].toLowerCase().split(',');
     else if ((args[i] === '--resolution' || args[i] === '--res') && args[i + 1]) resolution = args[++i];
@@ -208,12 +228,25 @@ async function main() {
       await new Promise(r => setTimeout(r, INTER_SYMBOL_DELAY_MS));
       continue;
     }
+    const outFile = path.join(outDir, `${name}_${resSuffix}.csv`);
+    if (merge && fs.existsSync(outFile)) {
+      // Union with existing rows so periodic re-runs accumulate history beyond
+      // TV's rolling depth wall (1m ~6wk, 5m ~6mo). New fetch wins on ts collision.
+      const existing = fs.readFileSync(outFile, 'utf8').trim().split('\n').slice(1);
+      const merged = new Map();
+      for (const line of existing) {
+        const ts = parseInt(line.split(',')[1], 10);
+        if (Number.isFinite(ts)) merged.set(ts, line.split(',').slice(2));
+      }
+      for (const [ts, ohlcv] of rows) merged.set(ts, ohlcv);
+      rows.length = 0;
+      rows.push(...Array.from(merged.entries()).sort((a, b) => a[0] - b[0]));
+    }
     const lines = ['date,ts,open,high,low,close,volume'];
     for (const [ts, ohlcv] of rows) {
       const d = new Date(ts * 1000).toISOString().slice(0, 10);
       lines.push([d, ts, ...ohlcv].join(','));
     }
-    const outFile = path.join(outDir, `${name}_${resSuffix}.csv`);
     fs.writeFileSync(outFile, lines.join('\n') + '\n');
     const oldest = new Date(rows[0][0] * 1000).toISOString().slice(0, 10);
     const newest = new Date(rows[rows.length - 1][0] * 1000).toISOString().slice(0, 10);
