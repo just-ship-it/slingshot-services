@@ -875,8 +875,14 @@ async function handleTradeSignal(raw) {
 
   const now = new Date().toISOString();
   const action = directionToAction(direction);
+  // Sizing: signal.quantity is a per-trade MULTIPLIER on the account base size
+  // (fixedQuantity). Strategies that don't size per-trade send quantity=1, so
+  // qty == fixedQuantity for them (unchanged behavior); conditioned strategies
+  // (PCC ladder tiers) scale it. fixedQuantity used to OVERRIDE signal.quantity
+  // entirely, which silently clamped tier-2 signals to 1 contract.
+  const signalMult = Number.isFinite(signal.quantity) && signal.quantity > 0 ? signal.quantity : 1;
   const quantity = Math.min(
-    state.positionSizing.fixedQuantity ?? signal.quantity ?? 1,
+    signalMult * (state.positionSizing.fixedQuantity ?? 1),
     state.positionSizing.maxContracts ?? 10
   );
 
