@@ -62,6 +62,7 @@ import { InitialBalanceBreakoutStrategy } from '../../shared/strategies/initial-
 import { PreCloseContinuationStrategy } from '../../shared/strategies/preclose-continuation.js';
 import { MondayStrengthStrategy } from '../../shared/strategies/monday-strength.js';
 import { GapUpFadeStrategy } from '../../shared/strategies/gapup-fade.js';
+import { IntradayMomentumStrategy } from '../../shared/strategies/intraday-momentum.js';
 import { GapFillStrategy } from '../../shared/strategies/gap-fill.js';
 import { DailyLevelSweepStrategy } from '../../shared/strategies/daily-level-sweep.js';
 import { JvIctStrategy } from '../../shared/strategies/jv-ict.js';
@@ -1977,6 +1978,10 @@ export class BacktestEngine {
       case 'gap-fade':
       case 'guf':
         return new GapUpFadeStrategy(params);
+      case 'intraday-momentum':
+      case 'zarattini':
+      case 'zim':
+        return new IntradayMomentumStrategy(params);
       case 'daily-level-sweep':
       case 'daily-sweep':
       case 'dls':

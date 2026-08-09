@@ -28,7 +28,7 @@ const toSec = (hhmm) => { const [h, m] = hhmm.split(':').map(Number); return ((h
 
 // ---- load store ----
 console.log(`Loading feature store (${TICKER}) ...`);
-const daysMeta = JSON.parse(fs.readFileSync(path.join(OUT, `days.${TICKER}.json`), 'utf8'));
+const daysMeta = JSON.parse(fs.readFileSync(path.join(OUT, process.env.DAYS_FILE || `days.${TICKER}.json`), 'utf8'));
 const DAYS = daysMeta.days; // [{date, open, prevClose, mClose[390], rthOpenMs}]
 const bin = fs.readFileSync(path.join(OUT, `rth1s.${TICKER}.bin`));
 const ROW = 12, N = Math.floor(bin.length / ROW);

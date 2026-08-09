@@ -21,6 +21,7 @@ import { LsFlipTriggerBarStrategy } from '../../../shared/strategies/ls-flip-tri
 import { PreCloseContinuationStrategy } from '../../../shared/strategies/preclose-continuation.js';
 import { MondayStrengthStrategy } from '../../../shared/strategies/monday-strength.js';
 import { GapUpFadeStrategy } from '../../../shared/strategies/gapup-fade.js';
+import { IntradayMomentumStrategy } from '../../../shared/strategies/intraday-momentum.js';
 
 const logger = createLogger('strategy-factory');
 
@@ -43,6 +44,7 @@ export const STRATEGY_TYPES = {
   PRECLOSE_CONTINUATION: 'preclose-continuation',
   MONDAY_STRENGTH: 'monday-strength',
   GAPUP_FADE: 'gapup-fade',
+  INTRADAY_MOMENTUM: 'intraday-momentum',
   AI_TRADER: 'ai-trader'
 };
 
@@ -136,6 +138,12 @@ export function createStrategy(strategyName, config) {
     case 'gap-fade':
     case 'guf':
       return createGapUpFadeStrategy(config);
+
+    case STRATEGY_TYPES.INTRADAY_MOMENTUM:
+    case 'intraday_momentum':
+    case 'zarattini':
+    case 'zim':
+      return createIntradayMomentumStrategy(config);
 
     case STRATEGY_TYPES.AI_TRADER:
     case 'ai_trader':
@@ -321,6 +329,12 @@ export function getStrategyConstant(strategyName) {
     case 'guf':
       return 'GAPUP_FADE';
 
+    case STRATEGY_TYPES.INTRADAY_MOMENTUM:
+    case 'intraday_momentum':
+    case 'zarattini':
+    case 'zim':
+      return 'INTRADAY_MOMENTUM';
+
     case STRATEGY_TYPES.AI_TRADER:
     case 'ai_trader':
     case 'aitrader':
@@ -427,6 +441,12 @@ export function getDataRequirements(strategyName) {
     case 'gap-fade':
     case 'guf':
       return GapUpFadeStrategy.getDataRequirements();
+
+    case STRATEGY_TYPES.INTRADAY_MOMENTUM:
+    case 'intraday_momentum':
+    case 'zarattini':
+    case 'zim':
+      return IntradayMomentumStrategy.getDataRequirements();
 
     case STRATEGY_TYPES.AI_TRADER:
     case 'ai_trader':
@@ -715,6 +735,30 @@ function createGapUpFadeStrategy(config) {
   logger.info(`GapUp-Fade params: gapAtrMult=${params.gapAtrMult ?? 0.50}, `
     + `hold=${params.holdBars ?? 90}min (→11:00 ET), seedSymbol=${params.seedSymbol ?? 'NQ'}`);
   return new GapUpFadeStrategy(params);
+}
+
+/**
+ * Book edge #5 — Zarattini noise-band breakout (ES). Long-only trend-day
+ * capture: checkpoints 10:00-11:30 ET, no stop, hold to 15:45 via max-hold.
+ * Runs on the ES product (per-product tradingSymbol from strategy-config).
+ */
+function createIntradayMomentumStrategy(config) {
+  const overrides = typeof config.getIntradayMomentumParams === 'function'
+    ? config.getIntradayMomentumParams() : {};
+  const params = {
+    ...overrides,
+    defaultQuantity: config.DEFAULT_QUANTITY,
+    // Sigma-profile seeding: TV one-shot ES1! 1m backfill (~4 weeks) so the
+    // sleeve is live at startup instead of warming up for 14 sessions.
+    seedLoader: async () => {
+      const { fetchZimSeedDays } = await import('../utils/tv-series-fetcher.js');
+      return fetchZimSeedDays(config.getRedisUrl());
+    },
+    debug: false,
+  };
+  logger.info(`Intraday-Momentum params: lookback=${params.lookback ?? 14}, `
+    + `mult=${params.mult ?? 1.5}, long-only, checkpoints 10:00-11:30 ET, seedSymbol=${params.seedSymbol ?? 'ES'}`);
+  return new IntradayMomentumStrategy(params);
 }
 
 export default {
