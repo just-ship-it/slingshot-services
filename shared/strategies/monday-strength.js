@@ -34,15 +34,23 @@ export class MondayStrengthStrategy extends BaseStrategy {
     super(params);
 
     this.defaultParams = {
-      // Entry: the RTH open, Eastern Time
+      // Entry anchor: the RTH open, Eastern Time
       rthOpenHour: 9,
       rthOpenMinute: 30,
+      // Enter this many minutes BEFORE the open (fire on the bar closing at
+      // 09:30 - lead). Default 1 -> decision on the 09:28-labeled bar, entry
+      // stamps ~09:29:03 live. Measured on the 249-Monday 1s history
+      // (2026-08-10): pre-open drift +1.3pt/trade in the final minute
+      // (t=2.2-3.1) AND the first RTH second trades a 6-13pt range vs ~1.3pt
+      // pre-open — entering early both captures the drift tail and removes
+      // the unmodelable open-second slippage die-roll. Set 0 for the original
+      // frozen at-the-open behavior.
+      preOpenLeadMin: 1,
       // Monday = day-of-week 1 (JS getDay: 0=Sun,1=Mon)
       tradeDow: 1,
-      // Exit via max-hold time: 09:30 entry + 375 min = 15:45 ET (the production
-      // flat time), so the strategy is self-contained on the existing max-hold
-      // pattern and needs no EOD-cutoff wiring. A 15:45 EOD force-flat, if
-      // configured, is a harmless belt-and-suspenders backstop.
+      // Exit via max-hold time anchored to the 15:45 ET production flat:
+      // maxHold = holdBars + preOpenLeadMin so the exit time is invariant to
+      // the entry lead. Self-contained on the existing max-hold pattern.
       holdBars: 375,
       tradingSymbol: 'NQ1!',
       defaultQuantity: 1,
@@ -87,20 +95,22 @@ export class MondayStrengthStrategy extends BaseStrategy {
       this.firedToday = false;
     }
 
-    // Only Mondays, once per day, on the bar that CLOSES at the 09:30 RTH open —
-    // i.e. the 09:29-labeled bar. Live, candle.close for the 09:30-labeled bar
-    // only arrives at 09:31, which entered a minute late; the 09:29 close is the
-    // last pre-open print, delivered right at 09:30:00.
+    // Only Mondays, once per day, on the bar that CLOSES at (09:30 - lead) —
+    // with the default lead of 1 that is the 09:28-labeled bar, whose close
+    // arrives live ~09:29:02, so the market entry stamps ~09:29:03: inside the
+    // calm pre-open tape, ahead of the 09:30:00 chaos second. (lead 0 = the
+    // original at-the-open behavior via the 09:29-labeled bar.)
     if (et.dow !== this.params.tradeDow) return null;
+    const lead = this.params.preOpenLeadMin || 0;
     const openMinOfDay = this.params.rthOpenHour * 60 + this.params.rthOpenMinute;
-    const barMinOfDay = (openMinOfDay - 1 + 1440) % 1440;
+    const barMinOfDay = (openMinOfDay - 1 - lead + 1440) % 1440;
     if (et.hhmm !== Math.floor(barMinOfDay / 60) * 100 + (barMinOfDay % 60)) return null;
     if (this.firedToday) return null;
     if (!this.checkCooldown(timestamp, this.params.signalCooldownMs)) return null;
 
     this.firedToday = true;
     this.updateLastSignalTime(timestamp);
-    const entryPrice = candle.close; // last pre-open print ≈ the 09:30 open
+    const entryPrice = candle.close; // last print before the entry instant
     this._firedDate = et.dateKey;
     this._lastSignal = { ts: timestamp + ONE_MIN_MS, side: 'buy', price: roundTo(entryPrice), note: 'LONG · exit 15:45' };
 
@@ -118,10 +128,12 @@ export class MondayStrengthStrategy extends BaseStrategy {
       quantity: options.quantity || this.params.defaultQuantity,
       stopLoss: null,   // no stop
       takeProfit: null, // no target — EOD-cutoff time exit
-      maxHoldBars: this.params.holdBars,
+      // exit time invariant at 15:45 ET regardless of entry lead
+      maxHoldBars: this.params.holdBars + lead,
       metadata: {
         strategy: 'MONDAY_STRENGTH',
         direction: 'long',
+        entry_lead_min: lead,
         rth_open: roundTo(entryPrice),
         trading_date: et.dateKey
       }
@@ -146,9 +158,11 @@ export class MondayStrengthStrategy extends BaseStrategy {
     else if (decisionPassed) state = 'stood-down';
     else state = 'armed'; // Monday pre-open — unconditional, certain to fire
 
+    const lead = this.params.preOpenLeadMin || 0;
     return {
       kind: 'monday', state, seeded: true, atr14: null,
-      decision: { label: 'Mon 09:30 ET', secondsTo: secondsToNextDecision(now, this.params.rthOpenHour, this.params.rthOpenMinute, [this.params.tradeDow]) },
+      decision: { label: lead ? `Mon 09:${30 - lead} ET (pre-open)` : 'Mon 09:30 ET',
+        secondsTo: secondsToNextDecision(now, this.params.rthOpenHour, this.params.rthOpenMinute, [this.params.tradeDow]) },
       direction: 'LONG',
       condition: { kind: 'unconditional', label: 'Fires at the Monday open', met: state === 'armed' ? true : null },
       firedToday, lastSignal: this._lastSignal,
