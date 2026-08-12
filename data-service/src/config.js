@@ -20,7 +20,6 @@ if (fs.existsSync(sharedEnvPath)) {
 // Derive TradingView symbols from contract env vars (update *_CONTRACT for quarterly rollover)
 const nqContract = process.env.NQ_CONTRACT || 'NQH6';
 // const mnqContract = process.env.MNQ_CONTRACT || 'MNQH6';   // [2026-05-20] disabled — micro prices match NQ
-// const esContract = process.env.ES_CONTRACT || 'ESH6';      // [2026-05-20] disabled — no ES strategies
 // const mesContract = process.env.MES_CONTRACT || 'MESH6';   // [2026-05-20] disabled — micro prices match ES (also disabled)
 
 // Quote symbols kept on the feed:
@@ -37,7 +36,6 @@ function toTradingViewSymbol(contract) {
 }
 const tvNQ = toTradingViewSymbol(nqContract);
 // const tvMNQ = toTradingViewSymbol(mnqContract);   // [2026-05-20] disabled
-// const tvES = toTradingViewSymbol(esContract);     // [2026-05-20] disabled
 // const tvMES = toTradingViewSymbol(mesContract);   // [2026-05-20] disabled
 
 const config = {

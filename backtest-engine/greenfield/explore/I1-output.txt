@@ -1,0 +1,194 @@
+=== I1: internals gate study on the book sleeves ===
+
+sanity tick 1h: ET labels ['09:30', '10:30', '11:30', '12:30', '13:30', '14:30', '15:30']...['13:30', '14:30', '15:30'] (7 distinct, bar=60m)
+sanity tick 15m: ET labels ['09:30', '09:45', '10:00', '10:15', '10:30', '10:45', '11:00', '11:15']...['15:15', '15:30', '15:45'] (26 distinct, bar=15m)
+
+PCC side derivation: 709/709 trade dates matched; min |14:59-09:30 move| = 48.0pt (should be well > 0)
+
+================ PCC (same-day breadth through 15:00 ET) ================
+
+  ADD sign aligns w/ trade side [1h, close<=14:30, 2021+]  (joined n=709, perm-p=0.755)
+    ALL                          n=709  pnl=$   77,635  avg=$   109  wr=57.1%  pf=1.45
+    pass (aligned)               n=471  pnl=$   55,020  avg=$   117  wr=56.5%  pf=1.51
+    fail (misaligned)            n=238  pnl=$   22,615  avg=$    95  wr=58.4%  pf=1.35
+      2021: pass $-1,555(66) / fail $8,745(41)
+      2022: pass $18,090(98) / fail $2,770(39)
+      2023: pass $14,475(92) / fail $3,895(42)
+      2024: pass $-11,135(81) / fail $10,390(55)
+      2025: pass $27,320(91) / fail $-10,525(42)
+      2026: pass $7,825(43) / fail $7,340(19)
+
+  ADDQ sign aligns w/ trade side [1h, close<=14:30, 2021+]  (joined n=706, perm-p=0.193)
+    ALL                          n=706  pnl=$   78,005  avg=$   110  wr=57.2%  pf=1.45
+    pass (aligned)               n=502  pnl=$   69,455  avg=$   138  wr=57.4%  pf=1.60
+    fail (misaligned)            n=204  pnl=$    8,550  avg=$    42  wr=56.9%  pf=1.15
+      2021: pass $1,370(66) / fail $6,190(38)
+      2022: pass $18,805(107) / fail $2,055(30)
+      2023: pass $17,005(96) / fail $1,365(38)
+      2024: pass $-8,845(87) / fail $8,100(49)
+      2025: pass $28,715(97) / fail $-11,920(36)
+      2026: pass $12,405(49) / fail $2,760(13)
+
+  VOLD sign aligns w/ trade side [1h, close<=14:30, 2021+]  (joined n=709, perm-p=0.053)
+    ALL                          n=709  pnl=$   77,635  avg=$   109  wr=57.1%  pf=1.45
+    pass (aligned)               n=491  pnl=$   74,870  avg=$   152  wr=58.5%  pf=1.70
+    fail (misaligned)            n=218  pnl=$    2,765  avg=$    13  wr=54.1%  pf=1.04
+      2021: pass $4,880(63) / fail $2,310(44)
+      2022: pass $21,995(103) / fail $-1,135(34)
+      2023: pass $15,970(100) / fail $2,400(34)
+      2024: pass $-6,995(84) / fail $6,250(52)
+      2025: pass $26,590(94) / fail $-9,795(39)
+      2026: pass $12,430(47) / fail $2,735(15)
+
+  VOLDQ sign aligns w/ trade side [1h, close<=14:30, 2021+]  (joined n=706, perm-p=0.419)
+    ALL                          n=706  pnl=$   78,005  avg=$   110  wr=57.2%  pf=1.45
+    pass (aligned)               n=546  pnl=$   68,125  avg=$   125  wr=57.5%  pf=1.53
+    fail (misaligned)            n=160  pnl=$    9,880  avg=$    62  wr=56.2%  pf=1.23
+      2021: pass $2,940(82) / fail $4,620(22)
+      2022: pass $21,080(114) / fail $-220(23)
+      2023: pass $17,110(110) / fail $1,260(24)
+      2024: pass $-9,310(91) / fail $8,565(45)
+      2025: pass $22,515(98) / fail $-5,720(35)
+      2026: pass $13,790(51) / fail $1,375(11)
+
+  TRIN<1 aligns w/ trade side [1h, close<=14:30, 2021+]  (joined n=708, perm-p=0.034)
+    ALL                          n=708  pnl=$   77,165  avg=$   109  wr=57.1%  pf=1.45
+    pass (aligned)               n=398  pnl=$   68,950  avg=$   173  wr=59.8%  pf=1.77
+    fail (misaligned)            n=310  pnl=$    8,215  avg=$    26  wr=53.5%  pf=1.10
+      2021: pass $5,020(55) / fail $2,170(52)
+      2022: pass $13,780(87) / fail $7,080(50)
+      2023: pass $10,850(86) / fail $7,520(48)
+      2024: pass $4,195(64) / fail $-5,410(71)
+      2025: pass $18,335(74) / fail $-1,540(59)
+      2026: pass $16,770(32) / fail $-1,605(30)
+
+  TICK net +/-1000 extremes x side [1h, 2021+]  (joined n=709, tercile edges 0.00/1.00)
+    ALL                          n=709  pnl=$   77,635  avg=$   109  wr=57.1%  pf=1.45
+    T1 low                       n=387  pnl=$   48,080  avg=$   124  wr=60.5%  pf=1.57
+    T2 mid                       n=156  pnl=$   14,330  avg=$    92  wr=50.6%  pf=1.37
+    T3 high                      n=166  pnl=$   15,225  avg=$    92  wr=55.4%  pf=1.31
+    top-tercile perm-p=0.764
+
+  TICKQ net +/-1000 extremes x side [1h, 2021+]  (joined n=706, tercile edges 0.00/0.00)
+    ALL                          n=706  pnl=$   78,005  avg=$   110  wr=57.2%  pf=1.45
+    T1 low                       n=512  pnl=$   44,190  avg=$    86  wr=58.0%  pf=1.36
+    T2 mid                       n=0
+    T3 high                      n=194  pnl=$   33,815  avg=$   174  wr=55.2%  pf=1.69
+    top-tercile perm-p=0.247
+
+---- 15m variants, 2025-01+ subset (cutoff = bars closing <= 15:00) ----
+
+  ADD sign aligns [15m, close<=15:00, 2025+]  (joined n=195, perm-p=0.275)
+    ALL                          n=195  pnl=$   31,960  avg=$   164  wr=50.8%  pf=1.53
+    pass (aligned)               n=135  pnl=$   30,935  avg=$   229  wr=54.1%  pf=1.85
+    fail (misaligned)            n=60   pnl=$    1,025  avg=$    17  wr=43.3%  pf=1.04
+      2025: pass $24,560(91) / fail $-7,765(42)
+      2026: pass $6,375(44) / fail $8,790(18)
+
+  ADDQ sign aligns [15m, close<=15:00, 2025+]  (joined n=195, perm-p=0.045)
+    ALL                          n=195  pnl=$   31,960  avg=$   164  wr=50.8%  pf=1.53
+    pass (aligned)               n=150  pnl=$   38,740  avg=$   258  wr=56.0%  pf=1.99
+    fail (misaligned)            n=45   pnl=$   -6,780  avg=$  -151  wr=33.3%  pf=0.68
+      2025: pass $28,540(101) / fail $-11,745(32)
+      2026: pass $10,200(49) / fail $4,965(13)
+
+  VOLD sign aligns [15m, close<=15:00, 2025+]  (joined n=195, perm-p=0.097)
+    ALL                          n=195  pnl=$   31,960  avg=$   164  wr=50.8%  pf=1.53
+    pass (aligned)               n=141  pnl=$   35,465  avg=$   252  wr=55.3%  pf=1.97
+    fail (misaligned)            n=54   pnl=$   -3,505  avg=$   -65  wr=38.9%  pf=0.85
+      2025: pass $25,265(96) / fail $-8,470(37)
+      2026: pass $10,200(45) / fail $4,965(17)
+
+  ADD 13->15h slope aligns [15m, 2025+]  (joined n=195, perm-p=0.921)
+    ALL                          n=195  pnl=$   31,960  avg=$   164  wr=50.8%  pf=1.53
+    pass (aligned)               n=126  pnl=$   21,475  avg=$   170  wr=49.2%  pf=1.51
+    fail (misaligned)            n=69   pnl=$   10,485  avg=$   152  wr=53.6%  pf=1.57
+      2025: pass $13,355(87) / fail $3,440(46)
+      2026: pass $8,120(39) / fail $7,045(23)
+
+  ADDQ 13->15h slope aligns [15m, 2025+]  (joined n=195, perm-p=0.542)
+    ALL                          n=195  pnl=$   31,960  avg=$   164  wr=50.8%  pf=1.53
+    pass (aligned)               n=137  pnl=$   17,560  avg=$   128  wr=48.9%  pf=1.41
+    fail (misaligned)            n=58   pnl=$   14,400  avg=$   248  wr=55.2%  pf=1.85
+      2025: pass $14,845(98) / fail $1,950(35)
+      2026: pass $2,715(39) / fail $12,450(23)
+
+================ MONDAY long (prior-day daily internals) ================
+
+  prior-day ADD close > 0  (joined n=249, perm-p=0.487)
+    ALL                          n=249  pnl=$  109,895  avg=$   441  wr=58.2%  pf=1.44
+    pass (aligned)               n=138  pnl=$   43,215  avg=$   313  wr=55.1%  pf=1.34
+    fail (misaligned)            n=111  pnl=$   66,680  avg=$   601  wr=62.2%  pf=1.54
+      2021: pass $5,645(27) / fail $2,085(18)
+      2022: pass $9,835(19) / fail $-18,600(25)
+      2023: pass $25,975(25) / fail $19,830(19)
+      2024: pass $595(31) / fail $5,915(16)
+      2025: pass $-8,935(27) / fail $39,145(21)
+      2026: pass $10,100(9) / fail $18,305(12)
+
+  prior-day VOLD close > 0  (joined n=249, perm-p=0.562)
+    ALL                          n=249  pnl=$  109,895  avg=$   441  wr=58.2%  pf=1.44
+    pass (aligned)               n=152  pnl=$   53,555  avg=$   352  wr=53.9%  pf=1.35
+    fail (misaligned)            n=97   pnl=$   56,340  avg=$   581  wr=64.9%  pf=1.58
+      2021: pass $170(27) / fail $7,560(18)
+      2022: pass $6,730(23) / fail $-15,495(21)
+      2023: pass $24,920(25) / fail $20,885(19)
+      2024: pass $2,840(30) / fail $3,670(17)
+      2025: pass $-1,185(28) / fail $31,395(20)
+      2026: pass $20,080(19) / fail $8,325(2)
+
+  prior-day TRIN < 1  (joined n=249, perm-p=0.867)
+    ALL                          n=249  pnl=$  109,895  avg=$   441  wr=58.2%  pf=1.44
+    pass (aligned)               n=133  pnl=$   53,955  avg=$   406  wr=58.6%  pf=1.37
+    fail (misaligned)            n=116  pnl=$   55,940  avg=$   482  wr=57.8%  pf=1.55
+      2021: pass $-895(21) / fail $8,625(24)
+      2022: pass $-6,590(22) / fail $-2,175(22)
+      2023: pass $27,655(23) / fail $18,150(21)
+      2024: pass $-525(21) / fail $7,035(26)
+      2025: pass $12,115(34) / fail $18,095(14)
+      2026: pass $22,195(12) / fail $6,210(9)
+
+  prior-day TICK daily LOW (terciles)  (joined n=249, tercile edges -43.33/222.67)
+    ALL                          n=249  pnl=$  109,895  avg=$   441  wr=58.2%  pf=1.44
+    T1 low                       n=83   pnl=$   63,050  avg=$   760  wr=61.4%  pf=1.90
+    T2 mid                       n=83   pnl=$   21,185  avg=$   255  wr=59.0%  pf=1.23
+    T3 high                      n=83   pnl=$   25,660  avg=$   309  wr=54.2%  pf=1.30
+    top-tercile perm-p=0.646
+
+================ GAP-FADE short (prior-day daily internals) ================
+
+  prior-day ADD close < 0 (weak breadth)  (joined n=125, perm-p=0.949)
+    ALL                          n=125  pnl=$   55,270  avg=$   442  wr=49.6%  pf=1.61
+    pass (aligned)               n=67   pnl=$   28,705  avg=$   428  wr=49.3%  pf=1.59
+    fail (misaligned)            n=58   pnl=$   26,565  avg=$   458  wr=50.0%  pf=1.64
+      2021: pass $-2,455(8) / fail $-7,790(10)
+      2022: pass $7,110(10) / fail $3,000(4)
+      2023: pass $-5,455(13) / fail $7,350(11)
+      2024: pass $12,915(15) / fail $6,260(13)
+      2025: pass $7,555(13) / fail $18,660(16)
+      2026: pass $9,035(8) / fail $-915(4)
+
+  prior-day VOLD close < 0  (joined n=125, perm-p=0.973)
+    ALL                          n=125  pnl=$   55,270  avg=$   442  wr=49.6%  pf=1.61
+    pass (aligned)               n=60   pnl=$   26,160  avg=$   436  wr=51.7%  pf=1.69
+    fail (misaligned)            n=65   pnl=$   29,110  avg=$   448  wr=47.7%  pf=1.56
+      2021: pass $-3,615(9) / fail $-6,630(9)
+      2022: pass $4,980(9) / fail $5,130(5)
+      2023: pass $-2,630(14) / fail $4,525(10)
+      2024: pass $13,790(14) / fail $5,385(14)
+      2025: pass $7,555(13) / fail $18,660(16)
+      2026: pass $6,080(1) / fail $2,040(11)
+
+  prior-day TRIN > 1 (selling pressure)  (joined n=125, perm-p=0.292)
+    ALL                          n=125  pnl=$   55,270  avg=$   442  wr=49.6%  pf=1.61
+    pass (aligned)               n=52   pnl=$    9,375  avg=$   180  wr=40.4%  pf=1.20
+    fail (misaligned)            n=73   pnl=$   45,895  avg=$   629  wr=56.2%  pf=2.05
+      2021: pass $-5,650(7) / fail $-4,595(11)
+      2022: pass $-390(4) / fail $10,500(10)
+      2023: pass $3,640(10) / fail $-1,745(14)
+      2024: pass $-2,790(11) / fail $21,965(17)
+      2025: pass $13,825(14) / fail $12,390(15)
+      2026: pass $740(6) / fail $7,380(6)
+
+
+Joined PCC table -> /home/drew/projects/slingshot-services/backtest-engine/greenfield/explore/I1-pcc-joined.csv

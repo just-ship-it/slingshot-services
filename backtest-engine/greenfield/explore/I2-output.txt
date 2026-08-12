@@ -1,0 +1,388 @@
+=== I2: vol-web / dispersion / VIX-tailwind gates on the book ===
+
+================ PCC (dir-agnostic, 15:00), n=709 ================
+
+  A1 VIX9D/VIX < 1 (calm front)  (n=709, perm-p=0.016) ***  [stress-front inverts edge?]
+    pass                           n=523  pnl=$   32,850  avg=$    63  wr=55.8%  pf=1.29
+    fail                           n=186  pnl=$   44,785  avg=$   241  wr=60.8%  pf=1.75
+      2021: pass $4,450(94) / fail $2,740(13)
+      2022: pass $10,445(84) / fail $10,415(53)
+      2023: pass $5,280(92) / fail $13,090(42)
+      2024: pass $4,285(94) / fail $-5,030(42)
+      2025: pass $7,240(109) / fail $9,555(24)
+      2026: pass $1,150(50) / fail $14,015(12)
+
+  A2 VIX/VIX3M < 1 (contango)  (n=709, perm-p=0.022) ***  [backwardation = stress]
+    pass                           n=664  pnl=$   59,290  avg=$    89  wr=57.1%  pf=1.39
+    fail                           n=45   pnl=$   18,345  avg=$   408  wr=57.8%  pf=1.99
+      2021: pass $7,415(106) / fail $-225(1)
+      2022: pass $17,885(129) / fail $2,975(8)
+      2023: pass $18,370(134) / fail $0(0)
+      2024: pass $390(127) / fail $-1,135(9)
+      2025: pass $8,700(113) / fail $8,095(20)
+      2026: pass $6,530(55) / fail $8,635(7)
+
+  A3 VIX/VIX3M terciles  (n=709, edges 0.860/0.919)
+    T1 low                         n=237  pnl=$   15,550  avg=$    66  wr=57.0%  pf=1.37
+    T2 mid                         n=236  pnl=$   21,920  avg=$    93  wr=58.1%  pf=1.44
+    T3 high                        n=236  pnl=$   40,165  avg=$   170  wr=56.4%  pf=1.49
+    T3 perm-p=0.210
+    T1 perm-p=0.371
+
+  B1 VIX 5d-change < 0 (falling)  (n=709, perm-p=0.247)  [vol-target tailwind]
+    pass                           n=339  pnl=$   22,925  avg=$    68  wr=56.9%  pf=1.32
+    fail                           n=370  pnl=$   54,710  avg=$   148  wr=57.3%  pf=1.54
+      2021: pass $1,680(46) / fail $5,510(61)
+      2022: pass $9,895(85) / fail $10,965(52)
+      2023: pass $6,470(71) / fail $11,900(63)
+      2024: pass $-1,385(59) / fail $640(77)
+      2025: pass $-1,125(57) / fail $17,920(76)
+      2026: pass $7,390(21) / fail $7,775(41)
+
+  B2 VIX below 20d SMA  (n=709, perm-p=0.750)
+    pass                           n=365  pnl=$   36,335  avg=$   100  wr=58.4%  pf=1.55
+    fail                           n=344  pnl=$   41,300  avg=$   120  wr=55.8%  pf=1.39
+      2021: pass $-3,015(52) / fail $10,205(55)
+      2022: pass $13,435(74) / fail $7,425(63)
+      2023: pass $12,410(87) / fail $5,960(47)
+      2024: pass $6,550(63) / fail $-7,295(73)
+      2025: pass $1,590(66) / fail $15,205(67)
+      2026: pass $5,365(23) / fail $9,800(39)
+
+  B3 VIX 5d-change terciles  (n=709, edges -0.041/0.057)
+    T1 low                         n=237  pnl=$   21,600  avg=$    91  wr=57.0%  pf=1.44
+    T2 mid                         n=236  pnl=$   10,000  avg=$    42  wr=55.5%  pf=1.19
+    T3 high                        n=236  pnl=$   46,035  avg=$   195  wr=58.9%  pf=1.66
+    T3 perm-p=0.075
+    T1 perm-p=0.681
+
+  C1 VIX level terciles  (n=709, edges 16.490/20.080)
+    T1 low                         n=237  pnl=$    9,590  avg=$    40  wr=56.1%  pf=1.19
+    T2 mid                         n=236  pnl=$   22,805  avg=$    97  wr=56.4%  pf=1.42
+    T3 high                        n=236  pnl=$   45,240  avg=$   192  wr=58.9%  pf=1.67
+    T3 perm-p=0.079
+    T1 perm-p=0.152
+
+  C2 VXN level terciles  (n=709, edges 20.280/24.780)
+    T1 low                         n=237  pnl=$    8,170  avg=$    34  wr=56.1%  pf=1.17
+    T2 mid                         n=236  pnl=$   21,860  avg=$    93  wr=55.5%  pf=1.41
+    T3 high                        n=236  pnl=$   47,605  avg=$   202  wr=59.7%  pf=1.68
+    T3 perm-p=0.056
+    T1 perm-p=0.114
+
+  C3 VVIX level terciles  (n=709, edges 91.110/106.450)
+    T1 low                         n=237  pnl=$   24,120  avg=$   102  wr=58.6%  pf=1.53
+    T2 mid                         n=236  pnl=$    5,600  avg=$    24  wr=53.8%  pf=1.09
+    T3 high                        n=236  pnl=$   47,915  avg=$   203  wr=58.9%  pf=1.77
+    T3 perm-p=0.049 ***
+    T1 perm-p=0.872
+
+  D1 web z-count >0.5 (0-4)  (n=709, edges 0.000/2.000)
+    T1 low                         n=246  pnl=$   12,070  avg=$    49  wr=55.3%  pf=1.23
+    T2 mid                         n=301  pnl=$   48,120  avg=$   160  wr=58.8%  pf=1.75
+    T3 high                        n=162  pnl=$   17,445  avg=$   108  wr=56.8%  pf=1.31
+    T3 perm-p=0.972
+    T1 perm-p=0.193
+
+  D2 web z-dispersion  (n=709, edges 0.518/0.861)
+    T1 low                         n=237  pnl=$   17,145  avg=$    72  wr=53.2%  pf=1.29
+    T2 mid                         n=236  pnl=$   18,920  avg=$    80  wr=57.6%  pf=1.33
+    T3 high                        n=236  pnl=$   41,570  avg=$   176  wr=60.6%  pf=1.74
+    T3 perm-p=0.176
+    T1 perm-p=0.440
+
+  D3 equity-vs-web z divergence  (n=709, edges -0.270/0.398)
+    T1 low                         n=237  pnl=$   29,730  avg=$   125  wr=62.4%  pf=1.71
+    T2 mid                         n=236  pnl=$   16,135  avg=$    68  wr=49.6%  pf=1.25
+    T3 high                        n=236  pnl=$   31,770  avg=$   135  wr=59.3%  pf=1.47
+    T3 perm-p=0.583
+    T1 perm-p=0.733
+
+  E1 COR1M level terciles  (n=709, edges 15.700/29.060)
+    T1 low                         n=237  pnl=$    2,525  avg=$    11  wr=50.6%  pf=1.04
+    T2 mid                         n=236  pnl=$   33,725  avg=$   143  wr=58.9%  pf=1.86
+    T3 high                        n=236  pnl=$   41,385  avg=$   175  wr=61.9%  pf=1.63
+    T3 perm-p=0.161
+    T1 perm-p=0.042 ***
+
+  E2 COR1M-COR3M term structure  (n=709, edges -4.220/-0.670)
+    T1 low                         n=237  pnl=$   23,915  avg=$   101  wr=60.3%  pf=1.56
+    T2 mid                         n=237  pnl=$   12,075  avg=$    51  wr=52.7%  pf=1.19
+    T3 high                        n=235  pnl=$   41,645  avg=$   177  wr=58.3%  pf=1.63
+    T3 perm-p=0.146
+    T1 perm-p=0.849
+
+  E3 COR1M 5d-change terciles  (n=709, edges -1.770/2.270)
+    T1 low                         n=237  pnl=$   18,100  avg=$    76  wr=54.4%  pf=1.41
+    T2 mid                         n=236  pnl=$    2,410  avg=$    10  wr=57.2%  pf=1.04
+    T3 high                        n=236  pnl=$   57,125  avg=$   242  wr=59.7%  pf=1.94
+    T3 perm-p=0.004 ***
+    T1 perm-p=0.502
+
+================ MONDAY (long 09:30), n=249 ================
+
+  A1 VIX9D/VIX < 1 (calm front)  (n=249, perm-p=0.163)  [stress-front inverts edge?]
+    pass                           n=215  pnl=$   70,745  avg=$   329  wr=57.2%  pf=1.33
+    fail                           n=34   pnl=$   39,150  avg=$ 1,151  wr=64.7%  pf=2.10
+      2021: pass $1,455(41) / fail $6,275(4)
+      2022: pass $-25,345(34) / fail $16,580(10)
+      2023: pass $36,050(37) / fail $9,755(7)
+      2024: pass $14,635(43) / fail $-8,125(4)
+      2025: pass $24,690(43) / fail $5,520(5)
+      2026: pass $19,260(17) / fail $9,145(4)
+
+  A2 VIX/VIX3M < 1 (contango)  (n=249, perm-p=0.906)  [backwardation = stress]
+    pass                           n=241  pnl=$  105,255  avg=$   437  wr=58.5%  pf=1.48
+    fail                           n=8    pnl=$    4,640  avg=$   580  wr=50.0%  pf=1.17
+      2021: pass $7,730(45) / fail $0(0)
+      2022: pass $-11,255(43) / fail $2,490(1)
+      2023: pass $45,805(44) / fail $0(0)
+      2024: pass $-1,370(46) / fail $7,880(1)
+      2025: pass $38,060(44) / fail $-7,850(4)
+      2026: pass $26,285(19) / fail $2,120(2)
+
+  A3 VIX/VIX3M terciles  (n=249, edges 0.847/0.911)
+    T1 low                         n=83   pnl=$   43,695  avg=$   526  wr=61.4%  pf=1.73
+    T2 mid                         n=83   pnl=$   14,355  avg=$   173  wr=50.6%  pf=1.18
+    T3 high                        n=83   pnl=$   51,845  avg=$   625  wr=62.7%  pf=1.48
+    T3 perm-p=0.532
+    T1 perm-p=0.761
+
+  B1 VIX 5d-change < 0 (falling)  (n=249, perm-p=0.553)  [vol-target tailwind]
+    pass                           n=140  pnl=$   46,545  avg=$   332  wr=57.1%  pf=1.40
+    fail                           n=109  pnl=$   63,350  avg=$   581  wr=59.6%  pf=1.48
+      2021: pass $2,555(24) / fail $5,175(21)
+      2022: pass $-15,960(27) / fail $7,195(17)
+      2023: pass $21,145(28) / fail $24,660(16)
+      2024: pass $5,695(24) / fail $815(23)
+      2025: pass $22,055(27) / fail $8,155(21)
+      2026: pass $11,055(10) / fail $17,350(11)
+
+  B2 VIX below 20d SMA  (n=249, perm-p=0.739)
+    pass                           n=149  pnl=$   57,495  avg=$   386  wr=57.0%  pf=1.53
+    fail                           n=100  pnl=$   52,400  avg=$   524  wr=60.0%  pf=1.37
+      2021: pass $10,095(29) / fail $-2,365(16)
+      2022: pass $-12,320(26) / fail $3,555(18)
+      2023: pass $18,200(30) / fail $27,605(14)
+      2024: pass $8,610(26) / fail $-2,100(21)
+      2025: pass $20,575(29) / fail $9,635(19)
+      2026: pass $12,335(9) / fail $16,070(12)
+
+  B3 VIX 5d-change terciles  (n=249, edges -0.055/0.049)
+    T1 low                         n=83   pnl=$   33,425  avg=$   403  wr=59.0%  pf=1.47
+    T2 mid                         n=83   pnl=$   32,290  avg=$   389  wr=54.2%  pf=1.48
+    T3 high                        n=83   pnl=$   44,180  avg=$   532  wr=61.4%  pf=1.40
+    T3 perm-p=0.748
+    T1 perm-p=0.891
+
+  C1 VIX level terciles  (n=249, edges 16.387/20.557)
+    T1 low                         n=83   pnl=$   42,585  avg=$   513  wr=55.4%  pf=1.85
+    T2 mid                         n=83   pnl=$   44,525  avg=$   536  wr=63.9%  pf=1.53
+    T3 high                        n=83   pnl=$   22,785  avg=$   275  wr=55.4%  pf=1.20
+    T3 perm-p=0.562
+    T1 perm-p=0.814
+
+  C2 VXN level terciles  (n=249, edges 20.367/25.100)
+    T1 low                         n=83   pnl=$   56,555  avg=$   681  wr=62.7%  pf=2.53
+    T2 mid                         n=83   pnl=$   31,440  avg=$   379  wr=57.8%  pf=1.33
+    T3 high                        n=83   pnl=$   21,900  avg=$   264  wr=54.2%  pf=1.19
+    T3 perm-p=0.537
+    T1 perm-p=0.414
+
+  C3 VVIX level terciles  (n=249, edges 92.060/107.850)
+    T1 low                         n=83   pnl=$   19,575  avg=$   236  wr=53.0%  pf=1.30
+    T2 mid                         n=83   pnl=$   50,820  avg=$   612  wr=60.2%  pf=1.76
+    T3 high                        n=83   pnl=$   39,500  avg=$   476  wr=61.4%  pf=1.34
+    T3 perm-p=0.903
+    T1 perm-p=0.467
+
+  D1 web z-count >0.5 (0-4)  (n=249, edges 0.000/1.000)
+    T1 low                         n=102  pnl=$   50,860  avg=$   499  wr=57.8%  pf=1.70
+    T2 mid                         n=66   pnl=$   18,855  avg=$   286  wr=57.6%  pf=1.29
+    T3 high                        n=81   pnl=$   40,180  avg=$   496  wr=59.3%  pf=1.36
+    T3 perm-p=0.855
+    T1 perm-p=0.824
+
+  D2 web z-dispersion  (n=249, edges 0.533/0.894)
+    T1 low                         n=83   pnl=$   38,095  avg=$   459  wr=59.0%  pf=1.44
+    T2 mid                         n=83   pnl=$   49,825  avg=$   600  wr=57.8%  pf=1.70
+    T3 high                        n=83   pnl=$   21,975  avg=$   265  wr=57.8%  pf=1.24
+    T3 perm-p=0.552
+    T1 perm-p=0.955
+
+  D3 equity-vs-web z divergence  (n=249, edges -0.347/0.405)
+    T1 low                         n=83   pnl=$   20,050  avg=$   242  wr=53.0%  pf=1.25
+    T2 mid                         n=83   pnl=$   51,120  avg=$   616  wr=62.7%  pf=1.77
+    T3 high                        n=83   pnl=$   38,725  avg=$   467  wr=59.0%  pf=1.38
+    T3 perm-p=0.931
+    T1 perm-p=0.497
+
+  E1 COR1M level terciles  (n=249, edges 15.113/27.890)
+    T1 low                         n=83   pnl=$   40,610  avg=$   489  wr=51.8%  pf=1.55
+    T2 mid                         n=84   pnl=$   75,440  avg=$   898  wr=70.2%  pf=2.36
+    T3 high                        n=82   pnl=$   -6,155  avg=$   -75  wr=52.4%  pf=0.95
+    T3 perm-p=0.076
+    T1 perm-p=0.861
+
+  E2 COR1M-COR3M term structure  (n=249, edges -4.853/-1.263)
+    T1 low                         n=83   pnl=$   35,170  avg=$   424  wr=56.6%  pf=1.56
+    T2 mid                         n=83   pnl=$   49,410  avg=$   595  wr=61.4%  pf=1.62
+    T3 high                        n=83   pnl=$   25,315  avg=$   305  wr=56.6%  pf=1.24
+    T3 perm-p=0.641
+    T1 perm-p=0.952
+
+  E3 COR1M 5d-change terciles  (n=249, edges -2.360/1.683)
+    T1 low                         n=83   pnl=$   39,115  avg=$   471  wr=60.2%  pf=1.59
+    T2 mid                         n=83   pnl=$   13,140  avg=$   158  wr=53.0%  pf=1.14
+    T3 high                        n=83   pnl=$   57,640  avg=$   694  wr=61.4%  pf=1.66
+    T3 perm-p=0.372
+    T1 perm-p=0.925
+
+================ GAP-FADE (short 09:30), n=125 ================
+
+  A1 VIX9D/VIX < 1 (calm front)  (n=125, perm-p=0.141)  [stress-front inverts edge?]
+    pass                           n=79   pnl=$   53,470  avg=$   677  wr=54.4%  pf=2.19
+    fail                           n=46   pnl=$    1,800  avg=$    39  wr=41.3%  pf=1.04
+      2021: pass $650(11) / fail $-10,895(7)
+      2022: pass $5,035(5) / fail $5,075(9)
+      2023: pass $3,760(13) / fail $-1,865(11)
+      2024: pass $20,285(18) / fail $-1,110(10)
+      2025: pass $24,090(24) / fail $2,125(5)
+      2026: pass $-350(8) / fail $8,470(4)
+
+  A2 VIX/VIX3M < 1 (contango)  (n=125, perm-p=0.252)  [backwardation = stress]
+    pass                           n=116  pnl=$   43,450  avg=$   375  wr=49.1%  pf=1.51
+    fail                           n=9    pnl=$   11,820  avg=$ 1,313  wr=55.6%  pf=3.34
+      2021: pass $-10,245(18) / fail $0(0)
+      2022: pass $11,345(13) / fail $-1,235(1)
+      2023: pass $1,895(24) / fail $0(0)
+      2024: pass $18,480(25) / fail $695(3)
+      2025: pass $18,440(25) / fail $7,775(4)
+      2026: pass $3,535(11) / fail $4,585(1)
+
+  A3 VIX/VIX3M terciles  (n=125, edges 0.872/0.935)
+    T1 low                         n=42   pnl=$   36,210  avg=$   862  wr=59.5%  pf=2.64
+    T2 mid                         n=41   pnl=$    1,225  avg=$    30  wr=41.5%  pf=1.04
+    T3 high                        n=42   pnl=$   17,835  avg=$   425  wr=47.6%  pf=1.53
+    T3 perm-p=0.955
+    T1 perm-p=0.164
+
+  B1 VIX 5d-change < 0 (falling)  (n=125, perm-p=0.954)  [vol-target tailwind]
+    pass                           n=48   pnl=$   20,525  avg=$   428  wr=54.2%  pf=1.58
+    fail                           n=77   pnl=$   34,745  avg=$   451  wr=46.8%  pf=1.63
+      2021: pass $-170(6) / fail $-10,075(12)
+      2022: pass $2,270(5) / fail $7,840(9)
+      2023: pass $560(12) / fail $1,335(12)
+      2024: pass $15,060(11) / fail $4,115(17)
+      2025: pass $4,135(11) / fail $22,080(18)
+      2026: pass $-1,330(3) / fail $9,450(9)
+
+  B2 VIX below 20d SMA  (n=125, perm-p=0.482)
+    pass                           n=53   pnl=$   32,175  avg=$   607  wr=54.7%  pf=1.86
+    fail                           n=72   pnl=$   23,095  avg=$   321  wr=45.8%  pf=1.43
+      2021: pass $1,810(7) / fail $-12,055(11)
+      2022: pass $-2,085(5) / fail $12,195(9)
+      2023: pass $-1,405(10) / fail $3,300(14)
+      2024: pass $14,785(10) / fail $4,390(18)
+      2025: pass $17,830(14) / fail $8,385(15)
+      2026: pass $1,240(7) / fail $6,880(5)
+
+  B3 VIX 5d-change terciles  (n=125, edges -0.011/0.083)
+    T1 low                         n=42   pnl=$   25,925  avg=$   617  wr=59.5%  pf=1.88
+    T2 mid                         n=41   pnl=$    9,650  avg=$   235  wr=36.6%  pf=1.30
+    T3 high                        n=42   pnl=$   19,695  avg=$   469  wr=52.4%  pf=1.69
+    T3 perm-p=0.925
+    T1 perm-p=0.575
+
+  C1 VIX level terciles  (n=125, edges 16.747/20.443)
+    T1 low                         n=42   pnl=$   36,830  avg=$   877  wr=54.8%  pf=2.77
+    T2 mid                         n=41   pnl=$    8,180  avg=$   200  wr=46.3%  pf=1.27
+    T3 high                        n=42   pnl=$   10,260  avg=$   244  wr=47.6%  pf=1.26
+    T3 perm-p=0.496
+    T1 perm-p=0.147
+
+  C2 VXN level terciles  (n=125, edges 20.880/24.747)
+    T1 low                         n=42   pnl=$   35,695  avg=$   850  wr=57.1%  pf=2.74
+    T2 mid                         n=41   pnl=$    4,805  avg=$   117  wr=43.9%  pf=1.15
+    T3 high                        n=42   pnl=$   14,770  avg=$   352  wr=47.6%  pf=1.38
+    T3 perm-p=0.770
+    T1 perm-p=0.167
+
+  C3 VVIX level terciles  (n=125, edges 93.830/104.673)
+    T1 low                         n=42   pnl=$   35,315  avg=$   841  wr=57.1%  pf=2.51
+    T2 mid                         n=41   pnl=$    5,175  avg=$   126  wr=43.9%  pf=1.14
+    T3 high                        n=42   pnl=$   14,780  avg=$   352  wr=47.6%  pf=1.48
+    T3 perm-p=0.747
+    T1 perm-p=0.174
+
+  D1 web z-count >0.5 (0-4)  (n=125, edges 1.000/2.000)
+    T1 low                         n=66   pnl=$   29,490  avg=$   447  wr=50.0%  pf=1.64
+    T2 mid                         n=33   pnl=$   11,735  avg=$   356  wr=48.5%  pf=1.47
+    T3 high                        n=26   pnl=$   14,045  avg=$   540  wr=50.0%  pf=1.74
+    T3 perm-p=0.811
+    T1 perm-p=0.982
+
+  D2 web z-dispersion  (n=125, edges 0.567/0.875)
+    T1 low                         n=42   pnl=$    5,705  avg=$   136  wr=47.6%  pf=1.16
+    T2 mid                         n=41   pnl=$   15,405  avg=$   376  wr=43.9%  pf=1.56
+    T3 high                        n=42   pnl=$   34,160  avg=$   813  wr=57.1%  pf=2.28
+    T3 perm-p=0.228
+    T1 perm-p=0.317
+
+  D3 equity-vs-web z divergence  (n=125, edges -0.087/0.558)
+    T1 low                         n=42   pnl=$    9,855  avg=$   235  wr=45.2%  pf=1.26
+    T2 mid                         n=41   pnl=$   25,540  avg=$   623  wr=56.1%  pf=2.02
+    T3 high                        n=42   pnl=$   19,875  avg=$   473  wr=47.6%  pf=1.72
+    T3 perm-p=0.924
+    T1 perm-p=0.493
+
+  E1 COR1M level terciles  (n=125, edges 14.557/27.860)
+    T1 low                         n=42   pnl=$   34,550  avg=$   823  wr=57.1%  pf=2.27
+    T2 mid                         n=41   pnl=$   18,595  avg=$   454  wr=48.8%  pf=1.73
+    T3 high                        n=42   pnl=$    2,125  avg=$    51  wr=42.9%  pf=1.06
+    T3 perm-p=0.204
+    T1 perm-p=0.205
+
+  E2 COR1M-COR3M term structure  (n=125, edges -3.483/-0.370)
+    T1 low                         n=42   pnl=$   14,710  avg=$   350  wr=47.6%  pf=1.57
+    T2 mid                         n=41   pnl=$    8,950  avg=$   218  wr=51.2%  pf=1.26
+    T3 high                        n=42   pnl=$   31,610  avg=$   753  wr=50.0%  pf=2.07
+    T3 perm-p=0.301
+    T1 perm-p=0.754
+
+  E3 COR1M 5d-change terciles  (n=125, edges -0.573/4.420)
+    T1 low                         n=42   pnl=$   20,505  avg=$   488  wr=50.0%  pf=1.67
+    T2 mid                         n=41   pnl=$   12,835  avg=$   313  wr=51.2%  pf=1.45
+    T3 high                        n=42   pnl=$   21,930  avg=$   522  wr=47.6%  pf=1.70
+    T3 perm-p=0.787
+    T1 perm-p=0.882
+
+================ PCC same-day vol alignment (F) ================
+
+  F1 VXN falling-by-14:30 aligns w/ side  (n=709, perm-p=0.366)  [vol drop confirms long drift]
+    pass                           n=543  pnl=$   68,700  avg=$   127  wr=57.6%  pf=1.56
+    fail                           n=166  pnl=$    8,935  avg=$    54  wr=55.4%  pf=1.18
+      2021: pass $-555(81) / fail $7,745(26)
+      2022: pass $23,960(115) / fail $-3,100(22)
+      2023: pass $20,050(96) / fail $-1,680(38)
+      2024: pass $-6,340(103) / fail $5,595(33)
+      2025: pass $15,980(105) / fail $815(28)
+      2026: pass $15,605(43) / fail $-440(19)
+
+  F2 VIX falling-by-14:30 aligns w/ side [2023+]  (n=465, perm-p=0.209)
+    pass                           n=343  pnl=$   48,125  avg=$   140  wr=55.1%  pf=1.57
+    fail                           n=122  pnl=$    1,460  avg=$    12  wr=54.1%  pf=1.04
+      2023: pass $19,310(97) / fail $-940(37)
+      2024: pass $-5,460(98) / fail $4,715(38)
+      2025: pass $17,220(101) / fail $-425(32)
+      2026: pass $17,055(47) / fail $-1,890(15)
+
+================ SURVIVORS (p<0.05, pre-robustness) ================
+  p=0.004  E3 COR1M 5d-change terciles [T3]
+  p=0.016  A1 VIX9D/VIX < 1 (calm front)
+  p=0.022  A2 VIX/VIX3M < 1 (contango)
+  p=0.042  E1 COR1M level terciles [T1]
+  p=0.049  C3 VVIX level terciles [T3]
+
+  NOTE: ~40 tests run -> ~2 expected false positives at alpha=.05.
+  Each survivor needs I2b-style structure checks before "lead" status.
