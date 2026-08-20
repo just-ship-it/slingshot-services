@@ -287,9 +287,13 @@ export class IntradayMomentumStrategy extends BaseStrategy {
     };
   }
 
+  /**
+   * Session reset (live engine, 18:00 ET Globex boundary). prevDays is the
+   * 14-day sigma profile — multi-day warmup state, kept across sessions (see
+   * the same note in preclose-continuation.js).
+   */
   reset() {
     super.reset();
-    this.prevDays = [];
     this.sessTradeDate = null;
     this._resetSession();
     this._lastPrice = null;

@@ -399,9 +399,15 @@ export class PreCloseContinuationStrategy extends BaseStrategy {
     };
   }
 
+  /**
+   * Session reset (live engine, 18:00 ET Globex boundary). Clears INTRADAY
+   * state only. dayRanges is a rolling multi-day ATR14 buffer — wiping it here
+   * un-seeds the sleeve every evening, and the only re-seed path (data.ready)
+   * fires on an incidental Schwab reconnect, so the strategy sat "warming up"
+   * from 18:00 ET until whenever the streamer next reconnected.
+   */
   reset() {
     super.reset();
-    this.dayRanges = [];
     this.sessTradeDate = null;
     this._resetSession();
     this._lastPrice = null;

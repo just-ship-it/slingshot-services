@@ -17,6 +17,12 @@ const __dirname = dirname(__filename);
 
 const logger = createLogger('multi-strategy-engine');
 
+// How often the run loop may retry seeding a strategy whose warmup state is
+// still cold. seedStrategies() otherwise runs only at boot+5s and on data.ready
+// — and data.ready is emitted only when the Schwab streamer reconnects, so a
+// missed boot seed could leave a sleeve un-seeded for a whole session.
+const RESEED_RETRY_MS = 5 * 60 * 1000;
+
 /**
  * Wraps a single strategy instance with its runtime state
  */
@@ -860,6 +866,33 @@ class MultiStrategyEngine {
     }
   }
 
+  /**
+   * Retry seeding any strategy that reports isSeeded() === false. An un-seeded
+   * sleeve shows "warming up" on the book panel and silently skips its decision
+   * (gapup-fade at 09:29 ET, preclose-continuation at 14:59 ET), so we don't
+   * want to wait on an incidental data.ready to fix it.
+   */
+  async reseedUnseededStrategies() {
+    const cold = [];
+    for (const [product, state] of this.products) {
+      for (const [name, runner] of state.strategies) {
+        if (typeof runner.strategy?.isSeeded === 'function'
+            && typeof runner.strategy?.seedHistoricalData === 'function'
+            && !runner.strategy.isSeeded()) {
+          cold.push(`${name} (${product})`);
+        }
+      }
+    }
+    if (cold.length === 0) return;
+
+    const since = Date.now() - (this._lastReseedAttemptAt || 0);
+    if (since < RESEED_RETRY_MS) return;
+    this._lastReseedAttemptAt = Date.now();
+
+    logger.warn(`Un-seeded strategies: ${cold.join(', ')} — retrying historical seed`);
+    await this.seedStrategies();
+  }
+
   resetProduct(product) {
     const state = this.products.get(product);
     if (!state) return;
@@ -1098,6 +1131,9 @@ class MultiStrategyEngine {
 
         // Publish strategy status
         await this.publishStrategyStatus();
+
+        // Refill any cold warmup buffer (throttled to RESEED_RETRY_MS)
+        await this.reseedUnseededStrategies();
 
         await new Promise(resolve => setTimeout(resolve, 30000));
       } catch (error) {

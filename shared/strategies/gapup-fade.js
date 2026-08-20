@@ -284,11 +284,15 @@ export class GapUpFadeStrategy extends BaseStrategy {
     };
   }
 
+  /**
+   * Session reset (live engine, 18:00 ET Globex boundary). Intraday state only:
+   * dayRanges (rolling ATR14) and priorRthClose are multi-day warmup state and
+   * survive. Wiping them here made the 09:29 ET decision run un-seeded every
+   * single day — the re-seed only landed at ~09:31 on a Schwab reconnect.
+   */
   reset() {
     super.reset();
-    this.dayRanges = [];
     this.sessTradeDate = null;
-    this.priorRthClose = null;
     this._resetSession();
     this._lastSignal = null;
     this._firedDate = null;
