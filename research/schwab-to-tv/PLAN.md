@@ -195,3 +195,47 @@ DATA_READY storms must never gate session *repair*.
   validation run.
 - Revert lever: `MARKET_DATA_SOURCE=schwab` (no redeploy needed), though Schwab's token
   will likely need a manual re-auth.
+
+---
+
+## OPEN ISSUE: TV closes the socket every ~65-75s (unresolved 2026-08-21)
+
+Since the cutover, TV closes the WS with **code 1000 (clean, server-initiated)** at a
+consistent 65-75s uptime, while the connection is demonstrably healthy at the moment of
+close: `quoteAge 0-2s, heartbeatAge 5-9s, jwtTTL 236m+`. Reconnect takes ~5s and the
+client re-seeds 500 1m bars, so bar data stays accurate and candle.close kept publishing
+at 0-2s lag throughout. Functional, but not something to run a book on.
+
+### Ruled out (do not re-investigate)
+
+| candidate | evidence against |
+|---|---|
+| multi-series / session limit | flaps identically at `chartSessions=1` and `=3` |
+| JWT expiry | TTL 236-240m at every close |
+| our health monitor forcing it | forced reconnect logs `🧟 STALE`; no such line, heartbeats 5-9s fresh |
+| missing client keepalive | `handleOpen()` → `startKeepalivePing()` confirmed wired to `ws.on('open')`; zero "skipped"/"send failed" warnings (the guard logs both); frame format `~m~4~m~~h~1` matches protocol |
+| keepalive being wrong in general | `lt-monitor.js` uses a byte-identical keepalive and ran 14 days with 0 disconnects |
+| a second data-service pod | Sevalla instance-count metric = 1 for every minute across the whole flap window; scaling is manual/1 |
+
+Note the code comment in `tradingview-client.js` attributes a ~65-75s cut to a MISSING
+client keepalive — the fingerprint matches exactly, but the keepalive is verifiably
+present and running, so the comment is a red herring here.
+
+### Leading remaining hypothesis (needs Drew, unverified)
+
+**Sessionid collision.** TV pins one JWT per sessionid; a second client using the same one
+displaces us. `bootstrapTradingViewSession()` warns about exactly this and says to
+bootstrap from an incognito login, NOT the daily-driver tab. Only data-service opens a TV
+socket in prod (LT monitors are off), so any competitor is external — i.e. a browser
+session on the same login. This is the leading candidate mainly *because* every internal
+cause above is eliminated, not because it has direct evidence.
+
+Test: re-bootstrap the session from an incognito window (or a second TV account) and see
+whether the 70s cycle stops.
+
+### Side effect to watch
+
+The reconnect fix force-rebuilds 1h/1D on every reconnect. Combined with a ~70s flap that
+is ~3 DATA_READY publishes per 70s into signal-generator. Memory warns a DATA_READY storm
+can freeze the strategy engine. Tolerable at this rate, but it disappears once the flap is
+fixed — and it is a reason to fix the flap rather than live with it.
