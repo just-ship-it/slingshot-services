@@ -262,6 +262,13 @@ class DataService {
         // session. NON-FATAL on failure (expired token, etc.); the instance that
         // does NOT win the lock stands by and takes over if the owner dies.
         await this._startSchwabStreamingGuarded(redisUrl);
+      } else if (config.MARKET_DATA_SOURCE === 'lt') {
+        // OHLCV rides the LT monitor's socket (wired in initializeLtMonitors).
+        // No separate market-data WS is opened: that client is cut by TV every
+        // 65-75s, while the LT socket holds indefinitely with the same intra-bar
+        // resolution. The sweep still runs — it is feed-independent.
+        logger.info('OHLCV source: LT monitor socket (no separate TradingView market-data WS)');
+        this.startFormingBarSweep();
       } else {
         await this._startTradingViewStreaming();
       }
@@ -559,6 +566,19 @@ class DataService {
         // identically-shaped payload, so candle-manager needs no changes.
         if (config.LT_FEED_OHLCV) {
           monitor.on('quote', (quote) => this.handleQuoteUpdate(quote));
+          monitor.on('history_loaded', ({ baseSymbol, timeframe, candles }) => {
+            const canonical = this.candleManager.resolveBaseSymbol(baseSymbol);
+            if (!canonical) return;
+            this.candleManager.seedHistory(canonical, timeframe, candles);
+            this.candleManager.markSeeded(canonical, timeframe);
+            logger.info(`History loaded (LT): ${candles.length} ${timeframe} candles for ${canonical}`);
+            messageBus.publish(CHANNELS.DATA_READY, {
+              product: canonical,
+              timeframe,
+              candleCount: candles.length,
+              readiness: this.candleManager.getReadiness()
+            }).catch(err => logger.warn(`Failed to publish data.ready: ${err.message}`));
+          });
           logger.info(`LT monitor ${ltConfig.key} is ALSO the OHLCV source (LT_EMIT_OHLCV=true)`);
         }
         monitor.on('lt_levels', (ltLevels) => this.handleLtUpdate(ltConfig.key, ltLevels));
@@ -635,6 +655,21 @@ class DataService {
    * seals each bar on the wall clock instead; it is idempotent, so the
    * next-bar path remains a harmless backstop.
    */
+  /**
+   * Seal forming bars on the wall clock. Required by EVERY feed mode — the
+   * TradingView streams deliver FORMING bars, so without this a bar is only
+   * sealed when the next one arrives (late, and never at all if ticks stop).
+   */
+  startFormingBarSweep() {
+    if (this._formingSweepTimer) return;
+    this._formingSweepTimer = setInterval(() => {
+      this.candleManager.sweepFormingCloses().catch(
+        (e) => logger.warn(`forming-bar sweep failed: ${e.message}`)
+      );
+    }, 1000);
+    this._formingSweepTimer.unref?.();
+  }
+
   async _startTradingViewStreaming() {
     if (!this.tradingViewClient) {
       logger.error('MARKET_DATA_SOURCE=tradingview but no TradingViewClient — cannot stream');
@@ -699,15 +734,7 @@ class DataService {
       return;
     }
 
-    // Seal forming bars on the wall clock (see method doc above).
-    if (!this._formingSweepTimer) {
-      this._formingSweepTimer = setInterval(() => {
-        this.candleManager.sweepFormingCloses().catch(
-          (e) => logger.warn(`forming-bar sweep failed: ${e.message}`)
-        );
-      }, 1000);
-      this._formingSweepTimer.unref?.();
-    }
+    this.startFormingBarSweep();
   }
 
   async _startSchwabStreamingGuarded(redisUrl) {
@@ -1258,7 +1285,9 @@ class DataService {
     if (this.tradingViewClient) {
       this.tradingViewClient.jwtToken = token;
       this.tradingViewClient.tokenRefreshRetryCount = 0;
-      if (config.MARKET_DATA_SOURCE === 'schwab') {
+      // In 'lt' mode the market-data WS is never opened, so reconnecting here would
+      // CREATE the very socket we are avoiding. LT monitors get the token below.
+      if (config.MARKET_DATA_SOURCE === 'schwab' || config.MARKET_DATA_SOURCE === 'lt') {
         this.tradingViewClient.stopTokenRefreshSchedule?.();
       } else {
         try {

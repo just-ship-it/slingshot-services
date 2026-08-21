@@ -231,6 +231,8 @@ class LTMonitor extends EventEmitter {
     this.ls15FormingBarRaw = null;
     this.initializeSessions();
     this.startKeepalivePing();
+    // New socket => new chart sessions; allow history to be emitted again.
+    this._historyEmitted = new Set();
     this.emit('connected');
   }
 
@@ -269,6 +271,10 @@ class LTMonitor extends EventEmitter {
     // so the 15m series must live in its own chart session — still on this
     // same WebSocket (a second socket doubles reconnect churn; a second
     // session does not).
+    // Extra chart sessions so ONE socket carries every timeframe the book needs.
+    // TV allows one series per chart session but many sessions per socket.
+    this.chartSession60 = LT_EMIT_OHLCV ? this.generateSession('cs') : null;
+    this.chartSession1D = LT_EMIT_OHLCV ? this.generateSession('cs') : null;
     this.chartSession15 = String(this.timeframe) !== '15'
       ? this.generateSession('cs') : null;
 
@@ -281,6 +287,15 @@ class LTMonitor extends EventEmitter {
     if (this.chartSession15) {
       this.sendMessage('chart_create_session', [this.chartSession15, '']);
     }
+    if (this.chartSession60) this.sendMessage('chart_create_session', [this.chartSession60, '']);
+    if (this.chartSession1D) this.sendMessage('chart_create_session', [this.chartSession1D, '']);
+
+    // sessionId -> timeframe, so timescale_update/du can tell the series apart.
+    this.sessionTf = new Map();
+    this.sessionTf.set(this.chartSession, String(this.timeframe));
+    if (this.chartSession15) this.sessionTf.set(this.chartSession15, '15');
+    if (this.chartSession60) this.sessionTf.set(this.chartSession60, '60');
+    if (this.chartSession1D) this.sessionTf.set(this.chartSession1D, '1D');
     this.sendMessage('quote_create_session', [this.quoteSession]);
     this.sendMessage('quote_set_fields', [
       this.quoteSession,
@@ -335,6 +350,18 @@ class LTMonitor extends EventEmitter {
         300,           // LS needs no deep warmup; 300 bars ≈ 3+ trading days
         ''
       ]);
+    }
+
+    // 60m + 1D series for candle-manager's hourly/daily buffers. preclose-
+    // continuation derives ATR14 from the prior 14 full-session DAILY ranges, so
+    // without the 1D seed it never forms an ATR and never trades.
+    if (this.chartSession60) {
+      this.sendMessage('resolve_symbol', [this.chartSession60, 'sds_sym_1', `=${resolveSymbol}`]);
+      this.sendMessage('create_series', [this.chartSession60, 'sds_1', 's1', 'sds_sym_1', '60', 300, '']);
+    }
+    if (this.chartSession1D) {
+      this.sendMessage('resolve_symbol', [this.chartSession1D, 'sds_sym_1', `=${resolveSymbol}`]);
+      this.sendMessage('create_series', [this.chartSession1D, 'sds_1', 's1', 'sds_sym_1', '1D', 10, '']);
     }
 
     // Study will be added after receiving timescale_update message
@@ -425,6 +452,8 @@ class LTMonitor extends EventEmitter {
       } else if (data.m === 'symbol_resolved') {
         logger.debug('LT symbol resolved');
       } else if (data.m === 'timescale_update') {
+        // Seed candle-manager from whichever series this batch belongs to.
+        if (LT_EMIT_OHLCV) this.emitSeriesHistory(data);
         logger.debug('LT timescale update received');
         // Try adding study after receiving timescale update
         if (!this.studyAdded) {
@@ -535,7 +564,11 @@ class LTMonitor extends EventEmitter {
     // du -- not qsd -- is where its ~1.3/s came from. Counting the same channel
     // here is the like-for-like comparison; qsd alone understates this socket
     // by 20-60x and is NOT evidence of lost granularity.
-    if (update.sds_1 && update.sds_1.s) {
+    // 🚨 Session guard. EVERY chart session names its series 'sds_1' (it is scoped
+    // per session), and this handler otherwise disambiguates only by STUDY key
+    // (st10 vs st11). Without this check the 15m/60m/1D series would be folded
+    // into the 1m candle stream as if they were 1m bars.
+    if (update.sds_1 && update.sds_1.s && payload[0] === this.chartSession) {
       this._duCount = (this._duCount || 0) + 1;
       this._duWindowCount = (this._duWindowCount || 0) + 1;
       const now = Date.now();
@@ -819,6 +852,50 @@ class LTMonitor extends EventEmitter {
         }
       }
     }
+  }
+
+  /**
+   * Emit the initial history batch for a chart session as `history_loaded`,
+   * shaped exactly like tradingview-client's so data-service can seed
+   * candle-manager without any special-casing.
+   *
+   * Only the FIRST batch per session is emitted — subsequent timescale_updates
+   * are incremental and would re-seed the buffer (and re-publish DATA_READY).
+   */
+  emitSeriesHistory(data) {
+    const payload = data.p;
+    if (!payload || payload.length < 2) return;
+    const sessionId = payload[0];
+    const tf = this.sessionTf?.get(sessionId);
+    if (!tf) return;
+    // 15m exists only for the LS state study; candle-manager has no 15m buffer.
+    if (tf === '15') return;
+    const series = payload[1]?.sds_1?.s;
+    if (!Array.isArray(series) || series.length === 0) return;
+
+    if (!this._historyEmitted) this._historyEmitted = new Set();
+    if (this._historyEmitted.has(sessionId)) return;
+    this._historyEmitted.add(sessionId);
+
+    const baseSymbol = this.extractBaseSymbol(this.symbol);
+    const candles = series
+      .filter(bar => bar.v && bar.v.length >= 5 && bar.v[0] && bar.v[4])
+      .map(bar => ({
+        symbol: this.symbol,
+        baseSymbol,
+        timestamp: new Date(bar.v[0] * 1000).toISOString(),
+        candleTimestamp: bar.v[0],
+        open: bar.v[1],
+        high: bar.v[2],
+        low: bar.v[3],
+        close: bar.v[4],
+        volume: bar.v[5] || 0,
+        source: 'tradingview-lt'
+      }));
+    if (candles.length === 0) return;
+
+    logger.info(`📚 LT history: ${candles.length} ${tf} candles for ${baseSymbol}`);
+    this.emit('history_loaded', { symbol: this.symbol, baseSymbol, timeframe: tf, candles });
   }
 
   /**
