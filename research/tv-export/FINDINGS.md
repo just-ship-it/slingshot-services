@@ -180,3 +180,72 @@ it keeps turning up as the thing that explains apparent structure.
 - `dump-study.js` — pulls ANY TradingView Pine study to CSV.
 - The rule this session keeps re-learning: **normalise both sides, or volatility will
   masquerade as signal.**
+
+---
+
+# Do the trigger levels carry alpha? (2026-08-21) — NO
+
+Reconstructed T:1 / T:5 / T:H / T:D over 318,732 5m bars (2021-01-13 -> 2026-06-12),
+front-month, rolls excluded, each higher-timeframe value usable only after that bar
+CLOSES (`merge_asof` on close time). `build-triggers.py --out triggers_NQ_mtf.csv`.
+
+## 1. MTF alignment ("stack" = how many of c>T1, T1>T5, T5>TH, TH>TD hold)
+
+Raw forward returns are positive in EVERY state — that is NQ's 2021-26 drift, not signal.
+Net of the unconditional mean the pattern is a **U**, not a ladder: fully-bearish (stack 0)
+and fully-bullish (stack 4) both positive, the middle flat. stack4 vs stack0 is
+insignificant at every horizon (p = 0.36 / 0.67 / 0.96).
+
+🚨 **The overlap trap.** Using every bar gave z up to −4.5 and looked convincing. Forward
+windows of 24 bars on adjacent rows overlap almost entirely, so nominal n=318,085 is really
+13k-53k independent observations. Striding by the horizon:
+
+| horizon | independent n | (nominal) | max abs t |
+|---|---|---|---|
+| +30m | 53,014 | 318,085 | 1.77 |
+| +60m | 26,507 | 318,079 | 1.58 |
+| +120m | 13,253 | 318,067 | 1.14 |
+
+Nothing clears t=2. Net $/trade negative in nearly every cell.
+
+## 2. Why it is empty — most of it is momentum we have already tested
+
+R² of each trigger feature regressed on {30m momentum, 2h momentum, c−SMA20, c−EMA50}:
+
+| feature | R² | reading |
+|---|---|---|
+| `c_vs_T5` | 0.699 | repackaged momentum |
+| `slopeT5` | 0.604 | repackaged momentum |
+| `c_vs_T1` | 0.557 | repackaged momentum |
+| `c_vs_TH` | 0.272 | partly novel |
+| `T5_vs_TH` | 0.204 | partly novel |
+| **`c_vs_TD`** | **0.029** | **nearly orthogonal** |
+| **`TH_vs_TD`** | **0.005** | **essentially orthogonal** |
+
+RMA(14) on 5m is a short moving average, so the fast triggers cannot be anything else. The
+DAILY-scale relations genuinely are new information — and the stack score diluted them by
+averaging them with the redundant ones.
+
+## 3. The orthogonal daily-scale features, tested directly — still nothing
+
+Quintiles of `c_vs_TD` and `TH_vs_TD`, independent (strided) observations, +60/120/240m:
+**max abs t = 1.78**, no monotonicity. Large-looking net$ cells (+$93 at q0/+240m) carry
+t = 0.25 and are drift.
+
+## Verdict
+
+The trigger levels carry **no standalone directional alpha** on NQ at 5m-4h horizons —
+neither the fast components (already-known momentum) nor the orthogonal daily ones.
+
+Not ruled out, and the framing the repo's own history favours: triggers as a **conditioner**
+on an already-validated edge rather than a signal in their own right
+("conditioners only sharpen forced-flow edges", [[internals-breadth-program]]). That test
+needs an edge to condition, e.g. PCC, not a standalone sweep.
+
+## Method notes worth keeping
+
+1. **Stride by the horizon.** Overlapping forward windows inflated z from <2 to −4.5.
+2. **Subtract the unconditional mean.** NQ's drift makes every cell look positive.
+3. **Normalise by ATR on BOTH sides** — see the compression finding above.
+4. **Check redundancy before hunting.** An R² of 0.70 against plain momentum would have
+   predicted the null before any of the return work was done.

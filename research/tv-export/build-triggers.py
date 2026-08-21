@@ -79,27 +79,35 @@ if __name__ == "__main__":
     d = front_month(d)
     print(f"  front-month only: {len(d):,} rows, {d.symbol.nunique()} contracts")
 
-    b5 = bars(d, "5min");  b5["T5"] = per_contract_rma(b5)
+    b1  = bars(d, "1min");  b1["T1"]  = per_contract_rma(b1)
+    b5  = bars(d, "5min");  b5["T5"]  = per_contract_rma(b5)
     b60 = bars(d, "60min"); b60["TH"] = per_contract_rma(b60)
-    print(f"  5m bars {len(b5):,} | 60m bars {len(b60):,}")
+    bD  = bars(d, "1D");    bD["TD"]  = per_contract_rma(bD)
+    print(f"  bars 1m {len(b1):,} | 5m {len(b5):,} | 60m {len(b60):,} | 1D {len(bD):,}")
 
     # CAUSAL alignment: a 5m bar may only see the LAST COMPLETED hourly bar.
     # merge_asof on the hour's CLOSE time (dt + 1h) guarantees no peeking.
-    b60c = b60[["dt", "TH"]].copy()
-    b60c["avail"] = b60c.dt + pd.Timedelta(hours=1)
-    m = pd.merge_asof(b5.sort_values("dt"), b60c[["avail", "TH"]].sort_values("avail"),
-                      left_on="dt", right_on="avail", direction="backward")
+    m = b5.sort_values("dt")
+    for src, col, delta in ((b60, "TH", pd.Timedelta(hours=1)),
+                            (bD,  "TD", pd.Timedelta(days=1))):
+        t = src[["dt", col]].copy()
+        t["avail"] = t.dt + delta          # value is knowable only once the bar CLOSES
+        m = pd.merge_asof(m, t[["avail", col]].sort_values("avail"),
+                          left_on="dt", right_on="avail", direction="backward").drop(columns=["avail"])
+    # T1 is finer than the 5m row: take the last 1m RMA at or before the bar open
+    t1 = b1[["dt", "T1"]].copy()
+    m = pd.merge_asof(m, t1.sort_values("dt"), on="dt", direction="backward")
     m["roll"] = (m.sym != m.sym.shift(1))
     m["bars_since_roll"] = (~m.roll).cumsum() - (~m.roll).cumsum().where(m.roll).ffill().fillna(0)
     m["near_roll"] = m.bars_since_roll < a.roll_skip
-    m = m.dropna(subset=["T5", "TH"])
+    m = m.dropna(subset=["T5", "TH", "TD", "T1"])
     m["spread"] = m.T5 - m.TH
     sgn = np.sign(m.spread.values)
     prev = np.r_[np.nan, sgn[:-1]]
     m["x_up"] = (sgn > 0) & (prev <= 0)
     m["x_dn"] = (sgn < 0) & (prev >= 0)
     out = os.path.join(HERE, a.out)
-    m[["dt", "sym", "o", "h", "l", "c", "v", "T5", "TH", "spread",
+    m[["dt", "sym", "o", "h", "l", "c", "v", "T1", "T5", "TH", "TD", "spread",
        "x_up", "x_dn", "near_roll"]].to_csv(out, index=False)
     print(f"\nwrote {len(m):,} 5m rows -> {out}")
     print(f"  {m.dt.iloc[0].date()} -> {m.dt.iloc[-1].date()}")
