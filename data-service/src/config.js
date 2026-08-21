@@ -57,7 +57,15 @@ const config = {
   // [2026-05-20] MNQ/MES quotes removed — prices match NQ/ES within 0.1%,
   // tradovate is the authoritative source for traded contract pricing.
   // QQQ remains (NQ GEX needs live underlying for options chain pricing).
-  QUOTE_ONLY_SYMBOLS: (process.env.QUOTE_ONLY_SYMBOLS || additionalQuoteSymbols).split(','),
+  // [2026-08-21] QQQ existed solely so NQ GEX could price its options chain from a
+  // live underlying. GEX is retired, so the default is now empty unless GEX is on.
+  // This is also the last material protocol difference vs the stable lt-monitor
+  // socket, which subscribes no quote-only symbols: an equity on a futures quote
+  // session is a plausible trigger for TV's ~65-75s session cap. Empties are
+  // filtered so QUOTE_ONLY_SYMBOLS='' means none, not [''].
+  QUOTE_ONLY_SYMBOLS: (process.env.QUOTE_ONLY_SYMBOLS
+    ?? (process.env.GEX_ENABLED?.toLowerCase() === 'true' ? additionalQuoteSymbols : '')
+  ).split(',').map(x => x.trim()).filter(Boolean),
 
   // LT Monitor Configuration (per product) — derived from contract env vars
   LT_NQ_SYMBOL: process.env.LT_NQ_SYMBOL || `CME_MINI:${tvNQ}`,

@@ -48,7 +48,10 @@ function buildTvWebsocketUrl() {
     // Real chart slug from Drew's TV account (vs the prior placeholder). TV's
     // classifier appears to validate that `from=` resolves to a chart the
     // authenticated session owns; a mismatch may downgrade the connection.
-    from: 'chart/4NTS38Zt/',
+    // TV_FROM_CHART lets this client claim a DIFFERENT saved chart than lt-monitor.
+    // TV appears to validate that from= resolves to a chart the session owns; two
+    // sockets claiming the same layout is an untested variable in the ~70s cut.
+    from: process.env.TV_FROM_CHART || 'chart/4NTS38Zt/',
     date: now,
     type: 'chart',
     auth: 'sessionid',
