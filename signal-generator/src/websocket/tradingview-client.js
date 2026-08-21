@@ -885,6 +885,37 @@ class TradingViewClient extends EventEmitter {
         ''
       ]);
 
+      // [2026-08-21] Attach a lightweight built-in study to the chart session.
+      //
+      // Why: lt-monitor holds its socket for hours while this client is cut by TV
+      // at 65-75s — running side by side in ONE process, ONE account, ONE cookie
+      // jar (lt: 0 disconnects, here: 4 cuts in 5 min). Their WS URL and handshake
+      // headers are byte-identical, the client keepalive is verified sending
+      // (pingsSent=7 at uptime=75s), and the cut still happens with a single chart
+      // session — so session count, fingerprint, auth and keepalive are all ruled
+      // out. The ONLY protocol message lt-monitor sends that this client does not
+      // is create_study, and `git log -S create_study` shows this client has never
+      // sent one. A chart session carrying only a series appears to be classified
+      // as a lightweight/polling client and given the short session cap.
+      //
+      // Note the browser-matching + keepalive fixes (43b5f23/5814fd7/c055d69) all
+      // landed 2026-05-22 — the same day this client's WS was retired for Schwab —
+      // so they were never verified against a study-less chart session.
+      //
+      // TV_CHART_STUDY: 'volume' (default) | 'none' to A/B without a rebuild.
+      const studyMode = (process.env.TV_CHART_STUDY || 'volume').toLowerCase();
+      if (studyMode !== 'none') {
+        this.sendMessage('create_study', [
+          chartSession,
+          'st1',
+          'st1',
+          'sds_1',
+          'Volume@tv-basicstudies-241',
+          { length: 20, col_prev_close: false }
+        ]);
+        logger.info(`📐 Attached ${studyMode} study to ${chartSession} (TV session-cap mitigation)`);
+      }
+
       // Add quote_fast_symbols like Python implementation (with raw symbol, not resolve format)
       this.sendMessage('quote_fast_symbols', [this.quoteSession, exchangeSymbol]);
 
