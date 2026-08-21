@@ -44,6 +44,9 @@ export class CandleManager {
    * @returns {string|null} 'NQ', 'ES', or null if not tracked
    */
   resolveBaseSymbol(quoteBaseSymbol) {
+    // Defensive: a quote missing baseSymbol used to throw here (.includes on
+    // undefined), which crashes the quote handler for the whole feed.
+    if (typeof quoteBaseSymbol !== 'string' || !quoteBaseSymbol) return null;
     for (const [canonical, aliases] of Object.entries(this.symbolMap)) {
       if (quoteBaseSymbol === canonical || aliases.some(a => quoteBaseSymbol.includes(a))) {
         return canonical;
@@ -95,8 +98,15 @@ export class CandleManager {
       return closedCandle ? this._publishClose(baseSymbol, closedCandle) : null;
     }
 
-    // Intrabar/forming feeds (legacy TradingView): the newest candle is still
-    // forming, so a close is only confirmed once the NEXT bar's timestamp lands.
+    // Intrabar/forming feeds (TradingView): the newest candle is still forming.
+    // Historically a close was only confirmed once the NEXT bar's timestamp
+    // landed, which costs a FULL BAR of latency — the shadow audit (2026-08-20)
+    // caught exactly that: PCC stamping 15:01 ET instead of 15:00 on the
+    // forming-bar path. Every live strategy fires on a specific bar close
+    // (PCC 15:00, monday-strength 09:28, gapup-fade 09:30), so that lag is not
+    // acceptable. `sweepFormingCloses()` (below) now seals a forming bar on the
+    // WALL CLOCK once its minute has elapsed; this next-bar path remains as the
+    // backstop for when the next bar arrives first.
     const isNewCandle = buffer.addCandle(candleData);
     if (isNewCandle) {
       const closedCandle = buffer.getLastClosedCandle();
@@ -115,6 +125,16 @@ export class CandleManager {
    * @returns {Object} the published candle.close payload
    */
   async _publishClose(baseSymbol, closedCandle) {
+    // Idempotency: two paths can seal the same bar (wall-clock sweep and the
+    // next-bar arrival). Publishing a bar twice would double-fire every
+    // bar-close strategy, so the first one to seal a given timestamp wins.
+    if (!this._lastPublishedTs) this._lastPublishedTs = new Map();
+    const tsKey = typeof closedCandle.timestamp === 'number'
+      ? new Date(closedCandle.timestamp * 1000).toISOString()
+      : closedCandle.timestamp;
+    if (this._lastPublishedTs.get(baseSymbol) === tsKey) return null;
+    this._lastPublishedTs.set(baseSymbol, tsKey);
+
     const candleCloseData = {
       product: baseSymbol,
       symbol: closedCandle.symbol,
@@ -129,6 +149,40 @@ export class CandleManager {
     await messageBus.publish(CHANNELS.CANDLE_CLOSE, candleCloseData);
     logger.info(`Published candle.close: ${baseSymbol} ${closedCandle.close} @ ${closedCandle.timestamp}`);
     return candleCloseData;
+  }
+
+  /**
+   * Seal forming bars on the WALL CLOCK.
+   *
+   * Forming-bar feeds (TradingView) never announce "this bar is done" — the old
+   * code inferred it from the arrival of the NEXT bar, which costs a full bar of
+   * latency and made PCC fire at 15:01 instead of 15:00 (shadow audit 2026-08-20).
+   * Once a bar's minute has elapsed (plus a small grace for in-flight ticks) the
+   * bar IS complete, so publish it. Idempotent via _publishClose's timestamp guard,
+   * so the next-bar path can still act as a backstop without double-firing.
+   *
+   * @param {number} graceMs - wait this long past the bar boundary before sealing
+   * @returns {Promise<number>} how many bars were sealed
+   */
+  async sweepFormingCloses(graceMs = 1500) {
+    let sealed = 0;
+    const now = Date.now();
+    for (const [baseSymbol, buffer] of this.buffers) {
+      const cur = buffer.getCurrentCandle?.();
+      if (!cur || !cur.timestamp) continue;
+      const barStart = typeof cur.timestamp === 'number'
+        ? cur.timestamp * 1000
+        : Date.parse(cur.timestamp);
+      if (!Number.isFinite(barStart)) continue;
+      // the bar covers [barStart, barStart + 60s)
+      if (now < barStart + 60_000 + graceMs) continue;
+      const published = await this._publishClose(baseSymbol, cur);
+      if (published) {
+        sealed++;
+        logger.debug(`Sealed forming bar on wall clock: ${baseSymbol} @ ${cur.timestamp}`);
+      }
+    }
+    return sealed;
   }
 
   /**

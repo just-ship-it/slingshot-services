@@ -84,6 +84,31 @@ const config = {
   GEX_COOLDOWN_MINUTES: parseInt(process.env.GEX_COOLDOWN_MINUTES || '5'),
 
   // Schwab API Configuration (alternative to Tradier for options data)
+  // ─── Market data source ────────────────────────────────────────────────────
+  // [2026-08-20] Schwab's refresh token has a hard 7-day life and renewing it
+  // requires an interactive browser login, so a Schwab-fed system needs a human
+  // every week (schwab-client.js: `const remainDays = 7 - ageDays`). In the
+  // 2026-07/08 shadow window that produced 304 auth-expired log lines and 11
+  // disconnects on 07-27 alone. TradingView refreshes its JWT from cached
+  // session cookies with no login and logged ZERO disconnects over the same
+  // 14 days, while already carrying the LT monitors. Default is now TradingView.
+  //   'tradingview' — OHLCV + quotes stream from TV (default)
+  //   'schwab'      — legacy path, kept intact for instant rollback
+  MARKET_DATA_SOURCE: (process.env.MARKET_DATA_SOURCE || 'tradingview').toLowerCase(),
+
+  // [2026-08-20] Master switch for the options/GEX stack (GEX/VEX/CEX, CBOE
+  // chains, short-DTE IV). Every strategy that consumed it is retired, and it is
+  // the only remaining reason to hold a Schwab/Tradier options connection.
+  // Code is left in place; this simply stops it running. Set 'true' to revive.
+  GEX_ENABLED: process.env.GEX_ENABLED?.toLowerCase() === 'true',
+
+  // [2026-08-20] LT monitors hold their own TradingView chart sessions for the
+  // proprietary LT/LS Pine studies. No live strategy consumes lt.levels any more
+  // (lt-candle-regime, gex-lt-3m-crossover and ls-flip-trigger-bar are all off;
+  // PCC / monday-strength / gapup-fade declare candles-only). Off by default to
+  // cut startup time and TV session pressure; code retained.
+  LT_MONITORS_ENABLED: process.env.LT_MONITORS_ENABLED?.toLowerCase() === 'true',
+
   SCHWAB_ENABLED: process.env.SCHWAB_ENABLED?.toLowerCase() === 'true',
   SCHWAB_APP_KEY: process.env.SCHWAB_APP_KEY || '',
   SCHWAB_APP_SECRET: process.env.SCHWAB_APP_SECRET || '',

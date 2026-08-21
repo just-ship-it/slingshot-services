@@ -146,10 +146,12 @@ class DataService {
         }
       }
 
-      // [2026-05-22] TradingViewClient kept instantiated ONLY for JWT-token
-      // plumbing into LT monitors (lt-monitor.js still needs TV WS for the
-      // proprietary LT/LS Pine studies). OHLCV/quote streaming has migrated
-      // to Schwab — TV WS is NOT opened here anymore.
+      // [2026-08-20] TradingView is the primary OHLCV/quote feed again
+      // (MARKET_DATA_SOURCE=tradingview). Schwab's 7-day refresh-token life made it
+      // unsustainable — 2026-07-27 alone logged 304 auth-expired lines and 11
+      // disconnects on Schwab while TV logged zero. The TV WS IS opened here, by
+      // _startTradingViewStreaming() below; this client also still supplies the
+      // JWT-token plumbing for LT monitors when LT_MONITORS_ENABLED=true.
       this.tradingViewClient = new TradingViewClient({
         symbols: config.OHLCV_SYMBOLS,
         quoteOnlySymbols: config.QUOTE_ONLY_SYMBOLS,
@@ -161,12 +163,14 @@ class DataService {
         candleHistoryBars: 500,
       });
 
-      // ─── Schwab streaming (replaces TradingView for OHLCV + quotes) ───
+      // ─── Schwab streaming (legacy alternate feed; MARKET_DATA_SOURCE=schwab) ───
       const schwabFutureSymbols = config.OHLCV_SYMBOLS.map(tvSymbolToSchwabFuture).filter(Boolean);
       const schwabEquitySymbols = config.QUOTE_ONLY_SYMBOLS.map(tvSymbolToSchwabEquity).filter(Boolean);
       logger.info(`Schwab streamer symbols: futures=[${schwabFutureSymbols.join(',')}] equities=[${schwabEquitySymbols.join(',')}]`);
 
-      this.schwabStreamer = new SchwabStreamer({
+      // Only construct the Schwab streamer when it is the selected feed — building
+      // it unconditionally pulls tokens and sets up listeners for nothing.
+      this.schwabStreamer = config.MARKET_DATA_SOURCE !== 'schwab' ? null : new SchwabStreamer({
         appKey: config.SCHWAB_APP_KEY,
         appSecret: config.SCHWAB_APP_SECRET,
         redisUrl,
@@ -175,88 +179,107 @@ class DataService {
         historyBarCount: 500,
       });
 
-      this.schwabStreamer.on('quote', (quote) => this.handleQuoteUpdate(quote));
+      // Schwab event wiring — only when Schwab is the selected feed.
+      if (this.schwabStreamer) {
+        this.schwabStreamer.on('quote', (quote) => this.handleQuoteUpdate(quote));
 
-      this.schwabStreamer.on('history_loaded', ({ symbol, baseSymbol, timeframe, candles }) => {
-        const canonical = this.candleManager.resolveBaseSymbol(baseSymbol);
-        if (canonical) {
-          this.candleManager.seedHistory(canonical, timeframe, candles);
-          this.candleManager.markSeeded(canonical, timeframe);
-          const tfLabel = timeframe === '1D' ? '1D' : `${timeframe}m`;
-          logger.info(`History loaded: ${candles.length} ${tfLabel} candles for ${canonical} (from ${baseSymbol})`);
-          messageBus.publish(CHANNELS.DATA_READY, {
-            product: canonical,
-            timeframe,
-            candleCount: candles.length,
-            readiness: this.candleManager.getReadiness()
-          }).catch(err => logger.warn(`Failed to publish data.ready: ${err.message}`));
-        }
-      });
+        this.schwabStreamer.on('history_loaded', ({ symbol, baseSymbol, timeframe, candles }) => {
+          const canonical = this.candleManager.resolveBaseSymbol(baseSymbol);
+          if (canonical) {
+            this.candleManager.seedHistory(canonical, timeframe, candles);
+            this.candleManager.markSeeded(canonical, timeframe);
+            const tfLabel = timeframe === '1D' ? '1D' : `${timeframe}m`;
+            logger.info(`History loaded: ${candles.length} ${tfLabel} candles for ${canonical} (from ${baseSymbol})`);
+            messageBus.publish(CHANNELS.DATA_READY, {
+              product: canonical,
+              timeframe,
+              candleCount: candles.length,
+              readiness: this.candleManager.getReadiness()
+            }).catch(err => logger.warn(`Failed to publish data.ready: ${err.message}`));
+          }
+        });
 
-      this.schwabStreamer.on('reconnected', async () => {
-        // Debounce the history re-seed. The live stream resumes on its own; only
-        // re-seed if we haven't recently, so a brief reconnect (or flap) can't
-        // trigger a DATA_READY storm that freezes the strategy engine.
-        const sinceLast = Date.now() - (this._lastHistoryReseedAt || 0);
-        if (sinceLast < RESEED_DEBOUNCE_MS) {
-          logger.info(`Schwab streamer reconnected — skipping history re-seed (last ${Math.round(sinceLast / 1000)}s ago)`);
-          return;
-        }
-        logger.info('Schwab streamer reconnected — recreating history sessions...');
-        this.candleManager.resetReadiness();
-        await this.createHistorySessions();
-      });
+        this.schwabStreamer.on('reconnected', async () => {
+          // Debounce the history re-seed. The live stream resumes on its own; only
+          // re-seed if we haven't recently, so a brief reconnect (or flap) can't
+          // trigger a DATA_READY storm that freezes the strategy engine.
+          const sinceLast = Date.now() - (this._lastHistoryReseedAt || 0);
+          if (sinceLast < RESEED_DEBOUNCE_MS) {
+            logger.info(`Schwab streamer reconnected — skipping history re-seed (last ${Math.round(sinceLast / 1000)}s ago)`);
+            return;
+          }
+          logger.info('Schwab streamer reconnected — recreating history sessions...');
+          this.candleManager.resetReadiness();
+          await this.createHistorySessions();
+        });
 
-      // A flapping streamer (repeated short-lived connections) almost always
-      // means a competing Schwab session — surface it as a critical alert
-      // instead of silently looping for hours.
-      this.schwabStreamer.on('session_conflict', (info) => {
-        messageBus.publish(CHANNELS.STRATEGY_ALERT, {
-          severity: 'critical',
-          source: 'data-service',
-          type: 'schwab_session_conflict',
-          message: info?.message || 'Schwab streamer session conflict (competing session likely)',
-          timestamp: new Date().toISOString(),
-        }).catch(err => logger.warn(`Failed to publish schwab session_conflict alert: ${err.message}`));
-      });
+        // A flapping streamer (repeated short-lived connections) almost always
+        // means a competing Schwab session — surface it as a critical alert
+        // instead of silently looping for hours.
+        this.schwabStreamer.on('session_conflict', (info) => {
+          messageBus.publish(CHANNELS.STRATEGY_ALERT, {
+            severity: 'critical',
+            source: 'data-service',
+            type: 'schwab_session_conflict',
+            message: info?.message || 'Schwab streamer session conflict (competing session likely)',
+            timestamp: new Date().toISOString(),
+          }).catch(err => logger.warn(`Failed to publish schwab session_conflict alert: ${err.message}`));
+        });
 
-      // Streamer down across multiple reconnect attempts (dead token, Schwab
-      // outage) — distinct from session_conflict, which flaps. The streamer
-      // throttles this itself, so no _publishSchwabAlert throttle needed.
-      this.schwabStreamer.on('prolonged_disconnect', (info) => {
-        this._schwabStreamerDownAlerted = true;
-        this._publishSchwabAlert(
-          'schwab_streamer_down', 'critical',
-          info?.message || 'Schwab streamer down — repeated reconnect failures; live candles are NOT flowing.',
-          info, { throttleMs: 0 }
-        );
-      });
-      // 'reconnected' fires on every routine reconnect — only publish a
-      // recovery alert if we previously alerted that the streamer was down.
-      this.schwabStreamer.on('reconnected', () => {
-        if (!this._schwabStreamerDownAlerted) return;
-        this._schwabStreamerDownAlerted = false;
-        this._publishSchwabAlert(
-          'schwab_streamer_recovered', 'info',
-          'Schwab streamer reconnected — live candles/quotes flowing again.',
-          {}, { throttleMs: 0 }
-        );
-      });
+        // Streamer down across multiple reconnect attempts (dead token, Schwab
+        // outage) — distinct from session_conflict, which flaps. The streamer
+        // throttles this itself, so no _publishSchwabAlert throttle needed.
+        this.schwabStreamer.on('prolonged_disconnect', (info) => {
+          this._schwabStreamerDownAlerted = true;
+          this._publishSchwabAlert(
+            'schwab_streamer_down', 'critical',
+            info?.message || 'Schwab streamer down — repeated reconnect failures; live candles are NOT flowing.',
+            info, { throttleMs: 0 }
+          );
+        });
+        // 'reconnected' fires on every routine reconnect — only publish a
+        // recovery alert if we previously alerted that the streamer was down.
+        this.schwabStreamer.on('reconnected', () => {
+          if (!this._schwabStreamerDownAlerted) return;
+          this._schwabStreamerDownAlerted = false;
+          this._publishSchwabAlert(
+            'schwab_streamer_recovered', 'info',
+            'Schwab streamer reconnected — live candles/quotes flowing again.',
+            {}, { throttleMs: 0 }
+          );
+        });
+      }
 
-      // Connect to Schwab — gated by a single-instance Redis lock so two
-      // data-service instances can't fight over the one-per-account streamer
-      // session. NON-FATAL on failure (expired token, etc.); the instance that
-      // does NOT win the lock stands by and takes over if the owner dies.
-      await this._startSchwabStreamingGuarded(redisUrl);
+
+      // ─── Market data feed selection ────────────────────────────────────────
+      // [2026-08-20] Default is TradingView. Schwab's refresh token dies every
+      // 7 days and needs an interactive browser login to renew; TV refreshes
+      // from cached session cookies with no login and logged zero disconnects
+      // over the same 14-day window (see config.MARKET_DATA_SOURCE).
+      if (config.MARKET_DATA_SOURCE === 'schwab') {
+        // Legacy path — gated by a single-instance Redis lock so two
+        // data-service instances can't fight over the one-per-account streamer
+        // session. NON-FATAL on failure (expired token, etc.); the instance that
+        // does NOT win the lock stands by and takes over if the owner dies.
+        await this._startSchwabStreamingGuarded(redisUrl);
+      } else {
+        await this._startTradingViewStreaming();
+      }
 
       // Initialize LT Monitors for both products
       // Use the client's current token (may have been refreshed during connect) rather than the startup token
       const ltToken = this.tradingViewClient.jwtToken || startupJwtToken;
-      await this.initializeLtMonitors(ltToken, redisUrl);
+      if (config.LT_MONITORS_ENABLED) {
+        await this.initializeLtMonitors(ltToken, redisUrl);
+      } else {
+        logger.info('LT monitors disabled (LT_MONITORS_ENABLED=false) — no live strategy consumes lt.levels');
+      }
 
-      // Set up GEX refresh schedules
-      this.scheduleGexRefresh();
-      this.scheduleRTHOpenRefresh();
+      // GEX refresh schedules — only meaningful when the options stack is on.
+      if (config.GEX_ENABLED) {
+        this.scheduleGexRefresh();
+        this.scheduleRTHOpenRefresh();   // forces a GEX/IV refresh at the RTH open
+      }
 
       // Auto-refresh JWT from cached sessionid every ~90 min (Option A).
       // No-op if no sessionid is cached yet (bootstrap via POST /tv-auth/sessionid).
@@ -299,6 +322,15 @@ class DataService {
    * Initialize GEX calculators for NQ (from QQQ) and ES (from SPY)
    */
   async initializeGexCalculators() {
+    // [2026-08-20] Master switch. Every GEX/VEX/CEX consumer is retired
+    // (gex-* strategies, short-DTE IV) and the options stack is the only reason
+    // this service needs a Schwab/Tradier connection at all. Code retained for
+    // revival; GEX_ENABLED=true brings it back.
+    if (!config.GEX_ENABLED) {
+      logger.info('GEX calculators disabled (GEX_ENABLED=false) — skipping CBOE/Tradier/Schwab options stack');
+      return;
+    }
+
     const products = [
       {
         key: 'NQ',
@@ -411,6 +443,14 @@ class DataService {
    * Initialize Tradier Exposure Service for both QQQ and SPY
    */
   async initializeTradierService() {
+    // [2026-08-20] This is purely the options/exposure (GEX/VEX/CEX/IV) provider.
+    // Master-gated on GEX_ENABLED so a leftover SCHWAB_ENABLED=true in the
+    // deployed env can't quietly re-open Schwab REST auth after the retirement.
+    if (!config.GEX_ENABLED) {
+      logger.info('Options/exposure data disabled (GEX_ENABLED=false) — skipping options provider');
+      return;
+    }
+
     const schwabEnabled = config.SCHWAB_ENABLED && config.SCHWAB_APP_KEY;
     const tradierEnabled = config.TRADIER_ENABLED && config.TRADIER_ACCESS_TOKEN;
 
@@ -572,6 +612,88 @@ class DataService {
   }
 
   // Decide ownership, then either start streaming (+renew) or stand by.
+  /**
+   * Start OHLCV/quote streaming from TradingView.
+   *
+   * TV emits the same event surface the Schwab path already consumes
+   * (`quote`, `history_loaded`, `reconnected`), so the handlers wired above are
+   * reused verbatim — this only opens the socket and starts the wall-clock
+   * bar-close sweep.
+   *
+   * TV streams FORMING bars (unlike Schwab, which delivers one finalized bar
+   * ~2s after close). Without the sweep a bar is only sealed when the NEXT bar
+   * arrives, which is a full minute of latency and is exactly what made PCC
+   * stamp 15:01 instead of 15:00 in the shadow audit. `sweepFormingCloses()`
+   * seals each bar on the wall clock instead; it is idempotent, so the
+   * next-bar path remains a harmless backstop.
+   */
+  async _startTradingViewStreaming() {
+    if (!this.tradingViewClient) {
+      logger.error('MARKET_DATA_SOURCE=tradingview but no TradingViewClient — cannot stream');
+      return;
+    }
+
+    this.tradingViewClient.on('quote', (quote) => this.handleQuoteUpdate(quote));
+
+    this.tradingViewClient.on('history_loaded', ({ symbol, baseSymbol, timeframe, candles }) => {
+      const canonical = this.candleManager.resolveBaseSymbol(baseSymbol);
+      if (!canonical) return;
+      this.candleManager.seedHistory(canonical, timeframe, candles);
+      this.candleManager.markSeeded(canonical, timeframe);
+      const tfLabel = timeframe === '1D' ? '1D' : `${timeframe}m`;
+      logger.info(`History loaded (TV): ${candles.length} ${tfLabel} candles for ${canonical} (from ${baseSymbol})`);
+      messageBus.publish(CHANNELS.DATA_READY, {
+        product: canonical,
+        timeframe,
+        candleCount: candles.length,
+        readiness: this.candleManager.getReadiness()
+      }).catch(err => logger.warn(`Failed to publish data.ready: ${err.message}`));
+    });
+
+    this.tradingViewClient.on('reconnected', async () => {
+      logger.info('TradingView reconnected — live candles/quotes flowing again.');
+      // The reconnect restarts only the main 1m series (and reconnectWithNewToken
+      // clears chartSessions), so the 1h/1D sessions must be rebuilt. Debounced so
+      // a flap can't trigger a DATA_READY storm that freezes the strategy engine.
+      const sinceLast = Date.now() - (this._lastHistoryReseedAt || 0);
+      if (sinceLast >= RESEED_DEBOUNCE_MS) {
+        this.candleManager.resetReadiness();
+        await this.createTvHistorySessions();
+      } else {
+        logger.info(`Skipping TV history re-seed (last ${Math.round(sinceLast / 1000)}s ago)`);
+      }
+      this._alertThrottled?.(
+        'tv_streamer_recovered', 'info',
+        'TradingView reconnected — live candles/quotes flowing again.',
+        {}, { throttleMs: 0 }
+      );
+    });
+
+    this.tradingViewClient.on('error', (err) => {
+      logger.error(`TradingView streamer error: ${err?.message || err}`);
+    });
+
+    try {
+      await this.tradingViewClient.connect();
+      logger.info(`TradingView streaming started: ohlcv=[${config.OHLCV_SYMBOLS.join(',')}] quotes=[${config.QUOTE_ONLY_SYMBOLS.join(',')}]`);
+      // 1m arrives with the main series; 1h/1D need their own chart sessions.
+      await this.createTvHistorySessions();
+    } catch (error) {
+      logger.error(`Failed to start TradingView streaming: ${error.message}`);
+      return;
+    }
+
+    // Seal forming bars on the wall clock (see method doc above).
+    if (!this._formingSweepTimer) {
+      this._formingSweepTimer = setInterval(() => {
+        this.candleManager.sweepFormingCloses().catch(
+          (e) => logger.warn(`forming-bar sweep failed: ${e.message}`)
+        );
+      }, 1000);
+      this._formingSweepTimer.unref?.();
+    }
+  }
+
   async _startSchwabStreamingGuarded(redisUrl) {
     const owns = await this._acquireSchwabLock(redisUrl);
     if (owns) {
@@ -683,6 +805,35 @@ class DataService {
         logger.info(`Created 1D history session for ${sym}`);
       } catch (error) {
         logger.error(`Failed to create 1D history session for ${sym}: ${error.message}`);
+      }
+    }
+  }
+
+  /**
+   * [2026-08-20] TradingView equivalent of createHistorySessions().
+   *
+   * connect()/startStreaming() only establish the main 1m series. The hourly and
+   * daily bars are separate chart sessions and MUST be created explicitly, because
+   * strategies depend on them at startup:
+   *   - preclose-continuation derives ATR14 from the prior 14 full-session DAILY
+   *     ranges (min 10) — with no 1D seed it never produces an ATR and never trades.
+   *   - signal-generator seeds /candles/hourly (300) and /candles/daily (10) from
+   *     these buffers on boot.
+   *
+   * Must also run after every reconnect: both TV reconnect paths restart only the
+   * main series, and reconnectWithNewToken() clears chartSessions outright.
+   */
+  async createTvHistorySessions() {
+    if (!this.tradingViewClient) return;
+    this._lastHistoryReseedAt = Date.now();
+    for (const sym of config.OHLCV_SYMBOLS) {
+      for (const [tf, bars, label] of [['60', 300, '1h'], ['1D', 10, '1D']]) {
+        try {
+          await this.tradingViewClient.createHistorySession(sym, tf, bars);
+          logger.info(`Created ${label} history session for ${sym} (TV)`);
+        } catch (error) {
+          logger.error(`Failed to create ${label} history session for ${sym}: ${error.message}`);
+        }
       }
     }
   }
@@ -1065,19 +1216,30 @@ class DataService {
     await cacheTokenInRedis(redisUrl, token);
     logger.info('Manual token cached in Redis');
 
-    // [2026-05-22] OHLCV/quotes now flow via Schwab streamer; TradingViewClient's
-    // WS is no longer opened by this service. We still update its `jwtToken`
-    // field so any status reporting that reads from it stays current, but
-    // we do NOT call reconnectWithNewToken() — that would re-open the WS
-    // we explicitly migrated away from.
+    // [2026-08-20] Token handling depends on which feed is live.
+    //   tradingview (default): TV carries OHLCV/quotes, so a new token must be
+    //     pushed into the live WS — reconnect with it and LEAVE the auto-refresh
+    //     schedule running. (Under the old Schwab-primary code this path stopped
+    //     the refresh schedule and never reconnected; doing that now would
+    //     silently strand the primary feed on a stale token.)
+    //   schwab (legacy): TV WS is not opened for market data; just keep the
+    //     jwtToken field current for status reporting and LT monitors.
     if (this.tradingViewClient) {
       this.tradingViewClient.jwtToken = token;
       this.tradingViewClient.tokenRefreshRetryCount = 0;
-      this.tradingViewClient.stopTokenRefreshSchedule?.();
-      // INTENTIONALLY NOT calling reconnectWithNewToken() — see comment above.
+      if (config.MARKET_DATA_SOURCE === 'schwab') {
+        this.tradingViewClient.stopTokenRefreshSchedule?.();
+      } else {
+        try {
+          await this.tradingViewClient.reconnectWithNewToken();
+          logger.info('TradingView WS reconnected with the updated token');
+        } catch (err) {
+          logger.error(`TradingView reconnect with new token failed: ${err.message}`);
+        }
+      }
     }
 
-    // Update all LT monitors (this is the only path that still needs a TV JWT).
+    // Update all LT monitors (no-op unless LT_MONITORS_ENABLED=true).
     for (const [product, monitor] of this.ltMonitors) {
       try {
         await monitor.updateToken(token);

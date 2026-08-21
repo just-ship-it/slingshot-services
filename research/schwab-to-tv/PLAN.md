@@ -1,0 +1,139 @@
+# Migrate market data: Schwab → TradingView
+
+## Why
+Schwab's refresh token has a **hard 7-day life** (`schwab-client.js`: `const remainDays = 7 - ageDays`)
+and renewing it needs an interactive browser login. That is a Schwab OAuth policy, not a bug we can
+engineer around — any Schwab-fed system needs a human every week. In the 4-week shadow window it
+produced `schwab_auth_expired` ×14 on 07-27 alone (plus 08-07, 08-14 ×5), `schwab_streamer_down` ×4,
+and persistent `schwab_standby` (two data-service instances). TradingView's token refreshes
+programmatically (`tradingview-auth.js: refreshToken`), the account has full real-time futures data,
+and the WS instability that caused the May migration was subsequently fixed (session-ID init +
+keep-alive) and has been stable since.
+
+## What Schwab actually supplies today
+| use | still needed? |
+|---|---|
+| real-time futures + equity quote/candle stream | **yes — this is the feed** |
+| historical candle seeding (PCC / gap-fade ATR) | **yes** |
+| options chains → GEX / VEX / CEX | no — strategies retired |
+| short-DTE IV | no — strategy scrapped |
+| TRIN/COR conditioner fetch | no — `conditionerMode: 'off'` live |
+
+So only the feed and seeding matter; everything else is dead weight that can go with it.
+
+## ⚠️ The one real risk: bar-close latency
+
+`candle-manager.js` supports both feed semantics, but they differ in WHEN a close is published:
+
+- **Schwab** (`quote.barClosed`) — delivers one finalized 1m bar ~2s after the close → publishes immediately.
+- **TradingView** (forming bars) — the newest bar is still forming, so the close is only confirmed
+  **once the NEXT bar's timestamp lands**, i.e. up to a full minute late.
+
+All three live strategies fire on a specific bar close (PCC 15:00 ET, Monday 09:28, gap-fade 09:30),
+so a naive revert makes every one of them a minute late.
+
+**This is not hypothetical — it already happened.** The shadow audit found PCC stamping 15:01:02 ET
+from 07-24 → 08-05 and 15:00:03 from 08-11. The late stamps are the forming-bar signature.
+
+### The fix (required, and worth doing regardless)
+Close a forming bar on the **wall clock** rather than on arrival of the next bar: when the clock
+passes the bar boundary, publish the forming bar as closed. This removes the one-bar lag from the TV
+path entirely and is a small, contained change in `candle-manager.js`. It also protects against a
+quiet-market gap where the next bar simply never arrives.
+
+## Change set (all feature-flagged, instantly reversible)
+1. `data-service/src/config.js` — add `MARKET_DATA_SOURCE` (`schwab` | `tradingview`, default `schwab`).
+2. `data-service/src/main.js` — when `tradingview`: open the TV WS (it is currently instantiated at
+   L153 but deliberately never connected) and wire `quote` / `history_loaded` / `reconnected` to the
+   SAME handlers Schwab uses (L178-196). The event surfaces already match 1:1; TV additionally emits
+   `candle` and `lt_levels`. Skip `schwabStreamer.connect()` (L599, L1270) in this mode.
+3. `data-service/src/candle-manager.js` — wall-clock bar close for forming feeds (above).
+4. Leave `SCHWAB_ENABLED=false` once stable; that also removes the `schwab_standby` double-instance alerts.
+
+## Validation before cutover (must all pass)
+- Bar-close timing: PCC's decision bar must publish within ~2s of 15:00:00 ET, matching the Schwab path.
+- Candle parity: run both feeds simultaneously for 2 sessions, diff 1m OHLCV bar-for-bar.
+- Seeding: PCC/gap-fade ATR14 seeds correctly at startup (the audit showed re-seeds landing at ~09:31
+  on Schwab reconnects — verify TV seeds before 09:28).
+- LT monitors keep working (they already use TV WS; watch the one-series-per-session limit, commit b8ab8f0).
+- One data-service replica only (`schwab-streamer-single-instance` memory applies to any streamer).
+
+## Open questions for Drew
+- Is data-service currently running 2 replicas? The `schwab_standby` alerts say yes; that must go to 1.
+- Does anything still consume GEX/VEX/CEX or short-DTE IV in a way I have not found? If not, Schwab
+  can be turned off entirely rather than left as a fallback.
+
+---
+
+## Implementation status — 2026-08-20
+
+### Config flags (all default to the slim path; no env change needed to get it)
+
+| flag | default | effect |
+|---|---|---|
+| `MARKET_DATA_SOURCE` | `tradingview` | `schwab` restores the legacy feed verbatim |
+| `GEX_ENABLED` | `false` | master switch for the whole options/exposure/GEX/IV stack |
+| `LT_MONITORS_ENABLED` | `false` | LT/LS Pine study WS sessions |
+
+No code was deleted. Every retired subsystem is behind a flag and restores by flipping it.
+
+### What now runs in data-service under the defaults
+
+Runs: TradingView WS (1m main series + 1h/1D history sessions), the TV JWT
+auto-refresh schedule, the 1s forming-bar close sweep, candle manager, HTTP API.
+
+Skipped: `initializeTradierService()` (this is the *Schwab* options client — the
+`Tradier*` naming is pure legacy), `initializeGexCalculators()`, `SchwabStreamer`
+(not even constructed), `createHistorySessions()` (self-gates on the null streamer),
+LT monitors, `scheduleGexRefresh()`, `scheduleRTHOpenRefresh()`.
+
+### Two defects found and fixed while wiring the cutover
+
+1. **1h/1D history was never seeded on the TV path.** `connect()`/`startStreaming()`
+   only establish the main 1m series; the hourly and daily bars are separate chart
+   sessions. Nothing created them, and `preclose-continuation` derives ATR14 from the
+   prior 14 full-session **daily** ranges (min 10) — so PCC would have produced no ATR
+   and never traded. Added `createTvHistorySessions()` (60→300 bars, 1D→10 bars per
+   symbol), called after connect **and** after every reconnect: both TV reconnect paths
+   restart only the main series, and `reconnectWithNewToken()` clears `chartSessions`
+   outright. Re-seed is debounced by the existing `RESEED_DEBOUNCE_MS` (2 min) so a flap
+   can't trigger a DATA_READY storm.
+
+2. **The manual token-update path would have stranded the primary feed.** Written when
+   Schwab carried market data, it deliberately called `stopTokenRefreshSchedule()` and
+   skipped `reconnectWithNewToken()`. With TV primary that stops auto-refresh and leaves
+   the live WS on the old token. Now branches on `MARKET_DATA_SOURCE`.
+
+### Corrections to earlier assumptions
+
+- **data-service is already 1 replica** (`scaling_strategy.manual.instanceCount = 1`,
+  verified via the Sevalla API). The earlier read that two replicas were running is
+  wrong. The `schwab_standby` alerts are consistent with old+new pods overlapping during
+  rolling deploys, which is expected and benign.
+
+### Known tradeoff, needs a call before deploy
+
+Disabling LT monitors removes the LT level overlay from the **dashboard chart**
+(`ltLevels` / `lsStatus` props on `GexChart`). No enabled strategy consumes `lt.levels`,
+so this costs nothing in execution, but it does remove discretionary context from the
+chart. Set `LT_MONITORS_ENABLED=true` to keep the overlay while everything else stays slim.
+
+### Dashboard (separate repo, NOT deployed)
+
+`PlatformStatus.jsx` and `SignalGeneratorStatus.jsx`: removed the Schwab/CBOE/Hybrid-GEX
+badges, detail rows, and the Schwab OAuth token form (−202 lines, +5). Both files parse
+clean under `@babel/parser` with the jsx plugin.
+
+`GexChart` was deliberately left in place — despite the name it is the **main price
+chart**, not a GEX panel; it simply renders without overlays now. `IVSkewPanel` already
+self-hides behind the disabled `iv-skew-gex` strategy.
+
+That repo shows all 49 files as modified from WSL CRLF churn; only the two touched files
+should ever be staged.
+
+### Still to validate before cutover
+
+- Bar closes land within ~2s of the wall clock (unit tests cover the sweep; needs a live session).
+- Dual-feed candle parity for 2 sessions.
+- ATR/daily seeding actually lands before 09:28 ET.
+- TV one-series-per-session limit under 1m + 1h + 1D concurrently.
