@@ -37,6 +37,13 @@ class LTMonitor extends EventEmitter {
     super();
 
     this.symbol = options.symbol || 'CME_MINI:NQ1!';
+    // [2026-08-21] qsd tick accounting. TV streams fast quotes to this socket
+    // (quote_add_symbols + quote_fast_symbols below) and the parser has always
+    // dropped them. Counted here to prove granularity parity with the old
+    // tradingview-client feed before anything downstream depends on it.
+    this._qsdCount = 0;
+    this._qsdWindowStart = null;
+    this._qsdWindowCount = 0;
     this.timeframe = options.timeframe || '15'; // 15-minute timeframe
     this.jwtToken = options.jwtToken;
     this.redisUrl = options.redisUrl || 'redis://localhost:6379';
@@ -383,7 +390,12 @@ class LTMonitor extends EventEmitter {
       }
 
       // Handle data updates
-      if (data.m === 'du') {
+      if (data.m === 'qsd') {
+        // Sub-second last-price stream. Same message type and subscription mode
+        // (quote_fast_symbols) that fed the previous OHLCV client, so this is the
+        // SAME granularity — it was simply never parsed here.
+        this.handleQuoteData(data);
+      } else if (data.m === 'du') {
         logger.debug('📊 LT monitor received data update');
         this.handleDataUpdate(data);
       } else if (data.m === 'study_error') {
@@ -752,6 +764,59 @@ class LTMonitor extends EventEmitter {
         }
       }
     }
+  }
+
+  /**
+   * Parse a qsd (quote stream) message and emit it as a `quote`.
+   * Mirrors tradingview-client.handleQuoteData so downstream consumers
+   * (candle-manager) see an identical payload shape.
+   */
+  handleQuoteData(data) {
+    const payload = data.p;
+    if (!payload || payload.length < 2) return;
+    const quoteData = payload[1];
+    let symbol = quoteData?.n || this.symbol;
+    const values = quoteData?.v || {};
+    if (typeof symbol === 'string' && symbol.startsWith('=')) {
+      try { symbol = JSON.parse(symbol.slice(1)).symbol || this.symbol; } catch { symbol = this.symbol; }
+    }
+    // Skip incremental updates carrying no last price (volume/change only).
+    if (!values.lp) return;
+
+    this._qsdCount += 1;
+    this._qsdWindowCount += 1;
+    const now = Date.now();
+    if (!this._qsdWindowStart) this._qsdWindowStart = now;
+    const elapsed = now - this._qsdWindowStart;
+    if (elapsed >= 30_000) {
+      const perSec = (this._qsdWindowCount / (elapsed / 1000)).toFixed(2);
+      logger.info(`📈 LT qsd ticks: ${this._qsdWindowCount} in ${Math.round(elapsed / 1000)}s (${perSec}/s, ${this._qsdCount} total)`);
+      this._qsdWindowStart = now;
+      this._qsdWindowCount = 0;
+    }
+
+    this.emit('quote', {
+      symbol,
+      baseSymbol: this.extractBaseSymbol(symbol),
+      close: values.lp,
+      volume: values.volume,
+      sessionOpen: values.open_price,
+      sessionHigh: values.high_price,
+      sessionLow: values.low_price,
+      prevClose: values.prev_close_price,
+      change: values.ch,
+      changePercent: values.chp,
+      timestamp: new Date().toISOString(),
+      source: 'tradingview-lt'
+    });
+  }
+
+  extractBaseSymbol(symbol) {
+    if (symbol.includes('MNQ')) return 'MNQ';
+    if (symbol.includes('NQ')) return 'NQ';
+    if (symbol.includes('MES')) return 'MES';
+    if (symbol.includes('ES')) return 'ES';
+    return symbol;
   }
 
   handleError(error) {
