@@ -123,6 +123,12 @@ const config = {
   // never trades), so it is a TEST setting, not a resting state.
   TV_HISTORY_SESSIONS: (process.env.TV_HISTORY_SESSIONS || 'both').toLowerCase(),
 
+  // [2026-08-21] Route OHLCV through the LT monitor's TradingView socket instead of
+  // tradingview-client's. Measured equivalent intra-bar resolution (du(sds_1) ~0.7-2.0/s
+  // on both, one forming bar per message) on a socket that holds indefinitely, while
+  // tradingview-client is cut by TV every 65-75s. Requires LT_MONITORS_ENABLED=true.
+  LT_FEED_OHLCV: process.env.LT_EMIT_OHLCV?.toLowerCase() === 'true',
+
   LT_MONITORS_ENABLED: process.env.LT_MONITORS_ENABLED?.toLowerCase() === 'true',
 
   SCHWAB_ENABLED: process.env.SCHWAB_ENABLED?.toLowerCase() === 'true',

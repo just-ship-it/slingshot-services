@@ -553,6 +553,14 @@ class DataService {
         });
 
         // Set up LT event listener
+        // [2026-08-21] Optional OHLCV feed off the LT socket — one TradingView
+        // connection carrying LT levels, LS state AND candles. handleQuoteUpdate is
+        // the same entry point the Schwab/TV streamers use, and lt-monitor emits an
+        // identically-shaped payload, so candle-manager needs no changes.
+        if (config.LT_FEED_OHLCV) {
+          monitor.on('quote', (quote) => this.handleQuoteUpdate(quote));
+          logger.info(`LT monitor ${ltConfig.key} is ALSO the OHLCV source (LT_EMIT_OHLCV=true)`);
+        }
         monitor.on('lt_levels', (ltLevels) => this.handleLtUpdate(ltConfig.key, ltLevels));
 
         // Set up LS sentiment listener

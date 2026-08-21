@@ -23,6 +23,11 @@ function buildTvWebsocketUrl() {
 }
 const TV_ORIGIN = 'https://www.tradingview.com';
 
+// [2026-08-21] When true, lt-monitor also emits the forming 1m bar as a `quote`,
+// letting ONE TradingView socket carry LT levels AND OHLCV. Its socket holds
+// indefinitely while tradingview-client is cut by TV every 65-75s.
+const LT_EMIT_OHLCV = process.env.LT_EMIT_OHLCV?.toLowerCase() === 'true';
+
 // Liquidity Triggers indicator by DDScript
 const LIQUIDITY_TRIGGER_INDICATOR = 'PUB;93e43ec4c20f420fac2b70f0f2b286cf';
 const LIQUIDITY_TRIGGER_VERSION = '1';
@@ -542,6 +547,36 @@ class LTMonitor extends EventEmitter {
         logger.info(`📊 LT du(sds_1) series updates: ${this._duWindowCount} in ${Math.round(elapsed / 1000)}s (${perSec}/s, ${this._duCount} total, lastBatch=${bars})`);
         this._duWindowStart = now;
         this._duWindowCount = 0;
+      }
+
+      // [2026-08-21] Emit the forming bar as a `quote`, mirroring
+      // tradingview-client's du->quote path exactly (same field names, so
+      // candle-manager.processQuote needs no changes). Measured parity with the
+      // old feed: ~0.7-2.0/s on both, rising and falling together, lastBatch=1
+      // (one forming bar per message) -- i.e. real intra-bar resolution.
+      //
+      // Off by default: enabling this makes lt-monitor a market-data source, which
+      // is a behaviour change for a component whose ONLY job has been LT levels.
+      if (LT_EMIT_OHLCV) {
+        const latest = update.sds_1.s[update.sds_1.s.length - 1];
+        const v = latest && latest.v;
+        if (v && v.length >= 5) {
+          const [ts, open, high, low, close, volume] = v;
+          if (ts && close) {
+            this.emit('quote', {
+              symbol: this.symbol,
+              baseSymbol: this.extractBaseSymbol(this.symbol),
+              close,
+              open,
+              high,
+              low,
+              volume: volume || 0,
+              timestamp: new Date(ts * 1000).toISOString(),
+              candleTimestamp: ts,
+              source: 'tradingview-lt'
+            });
+          }
+        }
       }
     }
 
