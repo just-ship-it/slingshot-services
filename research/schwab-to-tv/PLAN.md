@@ -239,3 +239,50 @@ The reconnect fix force-rebuilds 1h/1D on every reconnect. Combined with a ~70s 
 is ~3 DATA_READY publishes per 70s into signal-generator. Memory warns a DATA_READY storm
 can freeze the strategy engine. Tolerable at this rate, but it disappears once the flap is
 fixed — and it is a reason to fix the flap rather than live with it.
+
+### A/B RESULT 2026-08-21 03:15-03:20 — cause is client-side, NOT environmental
+
+Ran both TV sockets simultaneously (`LT_MONITORS_ENABLED=true`) in ONE process, ONE
+account, ONE cookie jar — the historically normal pre-Schwab topology.
+
+| socket | connects | disconnects | data |
+|---|---|---|---|
+| `lt-monitor` | 1 (03:15:38) | **0** | LT levels flowing continuously |
+| `tradingview-client` | — | **4** (03:15:43, 03:17:04, 03:18:19, 03:19:29) | flowing but cycling ~70s |
+
+**This kills the sessionid-collision hypothesis** (and account limits, credentials, and any
+TV-side policy change): a collision or account-level cap would hit both sockets. The cause
+is specific to `tradingview-client`'s post-handshake behavior.
+
+Also verified identical between the two clients, so NOT the cause:
+- URL builder — byte-identical (`prodata`, `from=chart/4NTS38Zt/`, `date`, `type=chart`, `auth=sessionid`)
+- Handshake headers — byte-identical (Origin, UA Chrome/148, Accept-Language, Accept-Encoding, Cookie)
+- Handshake messages — `set_auth_token`, `set_locale`, `quote_create_session`,
+  `quote_set_fields`, `quote_fast_symbols`; neither hibernates, neither tears down sessions
+
+Health is perfect right up to the cut, with no TV-side error:
+```
+03:18:09  ✅ HEALTH: Connection active - last quote 0s ago, authState: authenticated
+03:18:19  ❌ DISCONNECTED - Code: 1000   uptime=69s  chartSessions=3
+```
+
+### Leading candidate: the extra 1h/1D chart sessions
+
+Every steady-state cut carries `chartSessions=3` (1m + 60m + 1D) created within ~1s of
+connect. `lt-monitor` runs 1-2 chart sessions and survives. The documented cap family is
+exactly chart-session churn ("rapid create+delete ... trips TV's polling-cap ~63-67s").
+The main client's historically stable config had ONE chart session per symbol; 1h/1D
+sessions were an ai-trader add-on.
+
+**Counter-evidence (unresolved):** the 00:34:06 cut had `chartSessions=1` and still died at
+80s — marginally longer than the 59-75s seen at 3 sessions, but still cut. Either the cap
+has a per-session cooldown that outlives one reconnect, or session count is not the trigger.
+
+**Next test (needs a deploy):** env-gate `createTvHistorySessions()`, run with it off, and
+watch whether uptime clears ~80s. If it stabilizes, the fix is to fetch 1h/1D history over
+a SEPARATE short-lived connection (as a browser would) and keep the persistent market-data
+socket at exactly one chart session — NOT to delete sessions on the live socket, which is
+itself a documented trigger.
+
+**Do not disable history sessions permanently as the "fix":** preclose-continuation needs
+the 10 daily ranges seeded or it never produces an ATR and never trades.
