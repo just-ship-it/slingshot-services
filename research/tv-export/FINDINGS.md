@@ -378,3 +378,48 @@ The indicator's OWN outputs, which are claims rather than our constructions:
 plots **26 "Suspected Rip Incoming"**, **27 "Suspected Dip Incoming"**,
 `22/23 Is Bullish/Bearish`, `24/25 Has Become Bullish/Bearish`. If the author encoded
 something beyond the level geometry, it lives there — everything above tests geometry.
+
+## "Buyers/sellers stepping in at a level" — candle signature x level interaction
+
+Drew's framing: not the levels alone, but a candle signature that says someone defended a
+level. Substrate: `firstbreak/NQ_5m_fb.csv` (wick/volume/time features + a 1s-honest causal
+outcome), joined to all eight levels with candle-close alignment. 293,915 rows.
+
+Rejection candle = lower wick > 40% of range, close in the top 30% (`clv > 0.7`), down-wick
+volume in the top 40% — i.e. price was pushed down and bought back with volume in the wick.
+Mirror for sellers. "At a level" = the wick pierced one of the eight and the candle closed
+back on the other side.
+
+**The control is the whole point**: does the LEVEL add anything to the signature alone?
+
+| | +30m | +120m |
+|---|---|---|
+| BUY rejection **at a level** | -0.52 (t=-1.33) | **-1.89 (t=-1.76)** |
+| BUY rejection, **no level** | +0.10 (t=+0.31) | +0.65 (t=+0.71) |
+| SELL rejection **at a level** | -0.20 (t=-0.44) | -0.17 (t=-0.15) |
+| SELL rejection, **no level** | -0.25 (t=-0.77) | +0.09 (t=+0.11) |
+
+No edge, and the level makes it WORSE for the buy side rather than better. On the
+first-break payoff the same test gives -0.08pp with a level vs -0.41pp without (control),
+against the ~+7pp needed — and the sign is backwards: a high-volume down-wick slightly
+predicts the LOW breaking first, i.e. continuation, not rejection.
+
+### Why this probably cannot work from OHLCV
+
+"Buyers stepping in" is an order-flow statement — resting bids absorbing market sells. A
+wick with volume in it is only a proxy: it cannot distinguish absorption (passive buyers
+soaking supply) from a fast round trip (sellers hit, then buyers lift). Both print the same
+candle. Measuring it properly needs the book/tape, not OHLCV — and per
+[[orderflow-sweep-strategy]] the tape came back EFFICIENT, and the MBO recon in
+[[vacuum-program]] found a fragility footprint with NO direction.
+
+So this is the third route to the same wall: the geometry of levels, the shape of candles,
+and their interaction all fail to say who is stepping in.
+
+### Two of my own bugs worth recording
+
+1. `clv` is on **0..1**, not -1..1. My first sell-side filter used `clv < -0.5` and matched
+   **zero** candles — the sell side silently went untested until the counts were checked.
+   Always print event counts before reading results.
+2. Earlier in the same file: LT levels joined on candle OPEN rather than candle CLOSE, worth
+   up to 15 minutes of lookahead (see the alignment section above).
