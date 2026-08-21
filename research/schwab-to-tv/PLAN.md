@@ -286,3 +286,45 @@ itself a documented trigger.
 
 **Do not disable history sessions permanently as the "fix":** preclose-continuation needs
 the 10 daily ranges seeded or it never produces an ATR and never trades.
+
+### Elimination complete 2026-08-21 03:20-03:55 — and the fix is already running
+
+All tests below ran with `lt-monitor` alongside in the SAME process/account/cookies.
+**lt-monitor: 0 disconnects across ~38 minutes. Market-data socket: cut ~32 times.**
+
+| hypothesis | test | result |
+|---|---|---|
+| sessionid / account / credentials | both sockets, one account | **DEAD** — LT stable, other cuts |
+| WS URL + handshake headers | source diff | **DEAD** — byte-identical |
+| client keepalive not reaching TV | added `pingsSent` to diagnostic | **DEAD** — `pingsSent=7` at `uptime=75s` |
+| extra 1h/1D chart sessions | `TV_HISTORY_SESSIONS=none` | **DEAD** — still cut at 60-75s with `chartSessions=1` |
+| missing `create_study` | attached `Volume@tv-basicstudies-241` | **DEAD** — attached clean, still cut at 75s/69s |
+| `NASDAQ:QQQ` on the quote session | `quotes=[]` | **DEAD** — still cut at 75s/70s |
+
+Caveat on the study test: no `study_error` was logged, but this client never parses
+study output, so "attached and didn't help" cannot be fully distinguished from "never
+attached". Treat as probable-dead, not certain.
+
+Still untested: series bar count (LT 700 vs 500 — not env-settable, `options` beats env)
+and the `from=` chart slug (both clients claim the SAME `chart/4NTS38Zt/`; `TV_FROM_CHART`
+now exists but needs a second real chart slug Drew owns).
+
+### ★ The pragmatic fix: lt-monitor ALREADY streams NQ 1m OHLCV
+
+`LT_NQ_SYMBOL = CME_MINI:NQU2026`, `LT_NQ_TIMEFRAME = '1'`, series created with **700
+bars**, and `du` / `timescale_update` are already parsed (lt-monitor.js:386,410). It emits
+only `lt_levels` / `ls_status` — the OHLC bars are decoded and discarded.
+
+So the "merge the two clients" question answers itself: the stable socket is already
+carrying the exact feed we need. Emitting those bars as `candle` / `quote` events is a far
+smaller change than porting OHLCV onto the capped client, and it sidesteps the cap
+entirely rather than continuing to bisect it.
+
+Open risks for that path:
+- 1h/1D history for preclose-continuation's ATR would need extra chart sessions on LT's
+  socket. `chartSessions=3` was eliminated as a cap trigger, so this *should* be safe —
+  but it is unproven ON LT's socket, and destabilising our only known-good reference
+  would be costly. Add them behind a flag and watch.
+- `price.update` currently derives from quote events; the 1m `du` stream gives the live
+  forming bar, which is what the main client already uses to synthesise quotes for 1m
+  sessions. Equivalent, but needs wiring.
