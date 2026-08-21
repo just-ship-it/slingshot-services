@@ -29,13 +29,39 @@ indicator("T reconstruction — RMA(close,14) MTF", "T recon", overlay = true)
 
 len     = input.int(14,    "RMA length", minval = 1)
 liveBar = input.bool(true, "Include forming HTF bar (matches original; off = backtest-safe)")
-showAll = input.bool(false, "Show D / W / M")
+showAll   = input.bool(false, "Show D / W / M")
+useManual = input.bool(true,  "Manual recursion (avoids request.security duality)")
 
-trig(simple string tf) =>
+// Two ways to build it.
+//  manual  — track htf bars on the chart and run the recursion ourselves. Avoids
+//            request.security's real-time/historical duality, where it returns the
+//            CONFIRMED htf value on historical bars but the FORMING one on the live
+//            bar, so "conf + (close-conf)/len" double-counts the last step there.
+//            Exact when the chart tf divides the htf (e.g. 3m chart -> 60m: 20 bars).
+//  security — simpler, but carries that duality.
+trigManual(simple string tf) =>
+    isNew = ta.change(time(tf)) != 0
+    var float rConf   = na
+    var int   seen    = 0
+    var float seedSum = 0.0
+    if isNew and not na(close[1])
+        pc = close[1]                       // last chart close of the htf bar that just ended
+        if seen < len
+            seedSum += pc
+            seen    += 1
+            if seen == len
+                rConf := seedSum / len
+        else
+            rConf := rConf + (pc - rConf) / len
+    na(rConf) ? na : liveBar ? rConf + (close - rConf) / len : rConf
+
+trigSecurity(simple string tf) =>
     conf = request.security(syminfo.tickerid, tf, ta.rma(close, len),
                             lookahead = barmerge.lookahead_off)
-    // Fold the forming htf bar in: one more RMA step using the live chart close.
     liveBar and not na(conf) ? conf + (close - conf) / len : conf
+
+trig(simple string tf) =>
+    useManual ? trigManual(tf) : trigSecurity(tf)
 
 t1 = trig("1")
 t5 = trig("5")
