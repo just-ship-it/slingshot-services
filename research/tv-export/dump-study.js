@@ -26,7 +26,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import WebSocket from 'ws';
 import { fileURLToPath } from 'node:url';
-import { getBestAvailableToken, getCachedSessionCookies } from
+import { getBestAvailableToken, getCachedSessionCookies, extractJwtFromPage, parseCookieString } from
   '../../signal-generator/src/utils/tradingview-auth.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -70,7 +70,16 @@ function studyPayload(scriptId, meta, version) {
     __profile: { v: false, f: true, t: 'bool' },
   };
   for (const i of meta.inputs || []) {
-    if (i?.id?.startsWith('in_')) p[i.id] = { v: i.defval, f: true, t: i.type };
+    if (!i?.id?.startsWith('in_')) continue;
+    let v = i.defval;
+    // metaInfo returns colors as "#RRGGBB", but create_study wants the ARGB int
+    // TV's own frames carry (e.g. 4289173248). Sending the string yields
+    // "Internal server study error: NumberFormatException: For input string: #80DEEA".
+    if (i.type === 'color' && typeof v === 'string') {
+      const m = /^#?([0-9a-fA-F]{6})$/.exec(v);
+      if (m) v = (0xff000000 | parseInt(m[1], 16)) >>> 0;
+    }
+    p[i.id] = { v, f: true, t: i.type };
   }
   return p;
 }
@@ -118,6 +127,18 @@ async function dump() {
   // run anywhere ("sessionid=...; sessionid_sign=..."); otherwise fall back to the
   // session cached in Redis (populated on the data-service host).
   let token = null, cookieHeader = process.env.TV_COOKIE || null;
+  if (cookieHeader) {
+    // Cookies alone are not enough: the WS must be authenticated with a JWT
+    // DERIVED from the session, or TV silently applies the free-tier quota and
+    // create_study fails with "maximum number of studies per chart has been
+    // reached for current subscription" — which is the documented signature of
+    // degraded premium auth, not of an actual study limit.
+    const parsed = parseCookieString(cookieHeader);
+    const { jwt } = await extractJwtFromPage(parsed);
+    if (!jwt) throw new Error('could not derive a JWT from the supplied cookies (expired?)');
+    token = jwt;
+    console.log('derived JWT from session cookies');
+  }
   if (!cookieHeader) {
     try {
       token = await getBestAvailableToken(REDIS);
@@ -186,12 +207,13 @@ async function dump() {
       const vals = v.slice(1).map(x => (x === 1e100 || x == null ? '' : x));
       ws2.write([k, new Date(k * 1000).toISOString(), ...vals].join(',') + '\n');
     }
-    ws2.end();
-    console.log(`\nwrote ${keys.length} bars -> ${out}`);
-    console.log(`range ${new Date(keys[0] * 1000).toISOString()} .. ${new Date(keys.at(-1) * 1000).toISOString()}`);
-    console.log('\nConfirm the columns by matching a value against the chart:');
-    console.log('  T:H 24,254.74 and T:5 24,250.17 at 2026-08-23 ~02:45 in the screenshot.');
-    process.exit(0);
+    // MUST wait for 'finish': process.exit() right after end() drops the buffered
+    // writes and leaves no file at all (same trap as run-historical.js).
+    ws2.end(() => {
+      console.log(`\nwrote ${keys.length} bars -> ${out}`);
+      console.log(`range ${new Date(keys[0] * 1000).toISOString()} .. ${new Date(keys.at(-1) * 1000).toISOString()}`);
+      process.exit(0);
+    });
   }, +arg('wait', 25) * 1000);
 }
 
