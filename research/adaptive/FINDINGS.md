@@ -138,3 +138,78 @@ high instead of slicing it thin across 288 candidates?
   adaptive-vs-static comparison. Any future selection scheme can be dropped into it.
 - The corrected null and the martingale baseline are the two pieces worth carrying into
   every subsequent experiment in this program.
+
+---
+
+# A2 — LOCAL analogue repetition (Drew's actual timescale)
+
+A1 tested the wrong thing. Drew's idea was 1-3 days MAX — signatures from the last hour or
+two predicting a similarly-shaped candle in the next hour. A1 selected among candidates on
+5-63 TRADING-DAY windows, which is a different hypothesis entirely.
+
+Predictor: mean martingale-residual of the previous m candles in the SAME coarse signature
+bucket (close location x body share x volume lean), strictly prior, capped by age.
+Median look-alike age 48 min (m=3) / 78 min (m=5) — Drew's window.
+
+## 🚨 The finding that nearly got away: resolve-side lookahead
+
+First pass reported **+0.47pp at z=8.5** on 3m, and pairing it with the wider 15m bracket
+gave **+7.8 ticks/trade excess, 6/6 positive years, z=4-6**. All of it was contamination.
+
+`pred` averages the OUTCOMES of prior look-alikes, but an outcome resolves AFTER its bar
+closes. On the 15m bracket median resolution is 5.1 min (p90 16.1), and **27.3% of
+decisions used a look-alike that had not yet resolved** — median 4.9 min of look-ahead.
+That leaks what price is doing at the decision instant, which is precisely what predicts
+the current break.
+
+**A permutation null CANNOT catch this.** The permutation preserves timing structure, so
+the null stayed clean while the real number inflated. Same failure mode as the
+dealer-reaction FSM (PF 1.35, VOID). **Audit exit-walk t0 against the entry instant BEFORE
+trusting any placebo.**
+
+Corrected (a look-alike is admissible only once `ts + secsToBreak <= now`):
+
+| test | contaminated | knowability-corrected |
+|---|---|---|
+| 3m own-candle, m=5 | +0.47pp, z=8.5 | **+0.184pp, z=2.96** |
+| 15m bracket, EV | +8.40 ticks, 6/6 yrs | **−3.54 ticks, 1/5 yrs, skill +0.003pp** |
+
+3m was only 3.5% contaminated (1.4 min) yet that inflated the effect ~60%. The MTF version
+collapsed completely.
+
+## What actually survives
+
+Small, real, and concentrated exactly where Drew predicted:
+
+| cell | n | excess | z | EV excess |
+|---|---|---|---|---|
+| ALL | 437k | +0.168pp | 2.70 | +0.03 |
+| within 2pt of a 50-level | 36k | **+0.720pp** | 3.33 | +0.43 |
+| within 5pt of a 50-level | 89k | **+0.587pp** | **4.25** | +0.27 |
+| within 2pt of a 100-level | 18k | +0.695pp | 2.30 | +0.38 |
+| 10:00-12:00 AND within 5pt of 50 | 8.8k | **+1.052pp** | 2.46 | +0.88 |
+
+Round-number proximity concentrates the edge **3-4x**. Time-of-day alone is weak
+(+0.34pp, z=1.78); round numbers are the real filter, and the dose-response across
+25/50/100-levels held on the contaminated run too.
+
+## Why it still does not pay, and the one arithmetic route out
+
+The 3m candle's own bracket is ~35 ticks combined, needing **7.3pp**. We have ~0.7pp.
+
+Breakeven excess is `(X+4)/(2X+2) − 0.5` for a symmetric target X ticks. Setting that to
+0.7pp gives **X ≈ 213 ticks ≈ 53 points combined** (roughly a ±26pt bracket). So the honest
+next step is: keep the round-number-conditioned 3m signal, trade a MUCH wider bracket, and
+price it on the touch-grid.
+
+Caveat that must be respected: the one wider-bracket test run so far (A2d, 15m) showed
+skill +0.003pp — but on only 3,272 rows after knowability filtering, so it is low-powered
+rather than decisive.
+
+## Standing rules added by A2
+
+1. **Knowability audit BEFORE placebo.** Placebos cannot see resolve-side lookahead.
+   For any predictor built from prior OUTCOMES, verify `outcome_resolved_ts <= decision_ts`
+   for every contributing row and report the violation rate.
+2. A 3.5% contamination rate with 1.4 min of leak inflated a result by 60%. Small
+   violation rates are not safe.
