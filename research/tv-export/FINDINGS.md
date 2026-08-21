@@ -468,3 +468,43 @@ N ticks of it, versus a placebo price the same distance from spot? If the levels
 with real resting liquidity, that is a genuine finding even though the levels predict
 nothing directionally — it would matter for EXECUTION (where stops get run, where limits
 fill) rather than for entry.
+
+## Is a bounce / rejection at a level predictable? — NO
+
+The sharpest form of the question, and the right one: not "does a touch predict direction"
+but **given price is AT a level, what separates a bounce from a break-through?**
+
+Posed as a symmetric first-passage race so there is a martingale baseline to beat. At each
+touch, barriers at L ± 0.5*ATR, walked forward 24 bars (5m), same-bar hits resolved
+ADVERSELY. Bounce = the barrier on the approach side is reached first.
+**157,514 touch events**, 8 levels (5 LT-fibs + T5/TH/TD), 2021-2026.
+
+| conditioning | result |
+|---|---|
+| unconditional, per level | skill -0.85 .. +1.26pp, mixed signs |
+| **by approach direction** (16 cells) | bounce 48-54% vs martingale 48.7-51.6% |
+| pooled, approached from below | **-0.24pp, t = -1.77** |
+| pooled, approached from above | **-0.10pp, t = -0.78** |
+| **by confluence** (1 / 2 / 3 / 4 levels stacked) | -0.14 / -0.26 / -0.38 / +1.19pp, no trend |
+| 3+ levels stacked | **-0.15pp, t = -0.31** |
+| ALL touches | **-0.17pp, t = -1.81** |
+
+The bounce rate IS the martingale rate. A level touch is a geometry-weighted coin flip.
+Across 16 approach cells the largest was LT610-from-above at t=3.82 — about what 16 draws
+produce by chance, and it does not survive as a family.
+
+Confluence was the most promising conditioner (Drew's chart shows the rejections happening
+where T:H, LT:L4 and LT:L7 stack within ~10pt) and it is flat: stacking more levels does
+not raise the bounce rate at all.
+
+### What this leaves — and it is now a sharp question for the book
+
+Everything above asks whether the bounce is predictable from PRICE. The remaining
+hypothesis is that it is predictable from LIQUIDITY: at the instant of a touch, does the
+resting size at the level differ between the touches that bounce and the ones that break?
+
+That is a STATE question at a precisely defined instant, with a labelled outcome already
+computed (157k touches, each tagged bounce/break). It is the best-posed use of the 407GB
+`mbp-1` set found so far — far better than "look for alpha in the tape", because it asks the
+book a question only the book can answer, on events we have already isolated, with the
+answer falsifiable either way.
