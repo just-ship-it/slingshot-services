@@ -306,3 +306,42 @@ against plain momentum. Whatever LT is doing, it is not a moving average of pric
 28 plots: `2=LT`, `4..16 = L1..L7`, `18/20 = LT Reference-1/2`, `22/23 = Is Bullish/Bearish`,
 `24/25 = Has Become Bullish/Bearish`, and — untested — **`26 = Suspected Rip Incoming`,
 `27 = Suspected Dip Incoming`**.
+
+## Full sweep: expansion / compression / deviation / snap-back — all empty
+
+Ten features x horizons on correctly-aligned data, independent (strided) samples:
+price deviation from each of the five LT-fibs, distance to the NEAREST level, fan width
+(LT max-min), fan expansion rate, LT34-vs-LT610 spread, price vs fan centre.
+
+**Directional: nothing, anywhere.** Every q4-q0 spread has |t| < 1.60. No level, no
+distance, no spread, no width, at 60m or 120m.
+
+**Volatility: everything that looked strong was volatility state in disguise.**
+
+| feature | q4/q0 fwd \|move\| (ATR-norm) | t | after controlling for plain vol |
+|---|---|---|---|
+| `fan_chg` (60m expansion rate) | 0.701x | **-14.02** | **t = -0.37 / -1.80 — GONE** |
+| `fan_width` | 1.154x | +5.89 | t = +3.62 / +4.31, incremental R² **+0.0005** |
+| `dev_near` | 1.104x | +3.66 | not tested separately |
+
+The `fan_chg` result was the strongest single number found all session (t=-14) and it is
+pure volatility proxy. Worse, plain realised-vol features BEAT it at its own job and in the
+opposite direction: `vol_ratio_chg` gives q4/q0 = 1.905x at **t = +24.19** (vol begets vol),
+versus the fan's 0.701x at t=-14. `fan_width` does survive the control, but adds 0.1% of
+variance — statistically real, economically nil.
+
+### Verdict on the LT-fibs
+
+No tradeable alpha in the levels themselves: not from where price sits relative to them,
+not from how far apart they are, not from how fast they spread or contract, not from
+snap-back to the nearest one. The one property that IS distinctive — they are genuinely
+non-redundant with price and the T-levels (R² 0.09-0.25) — does not convert into forward
+information about either direction or volatility beyond what ATR already says.
+
+### What remains untested (the honest gap)
+
+The indicator's own directional calls, which are unambiguous outputs rather than something
+we derive: plots **26 "Suspected Rip Incoming"** and **27 "Suspected Dip Incoming"**, plus
+`22/23 Is Bullish/Bearish` and `24/25 Has Become Bullish/Bearish`. Everything above tests
+OUR constructions from the levels; those test the AUTHOR'S. Cheap to run with
+`dump-study.js` now that the plot map is known.
