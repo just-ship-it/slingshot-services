@@ -328,3 +328,56 @@ Open risks for that path:
 - `price.update` currently derives from quote events; the 1m `du` stream gives the live
   forming bar, which is what the main client already uses to synthesise quotes for 1m
   sessions. Equivalent, but needs wiring.
+
+---
+
+## ✅ RESOLVED 2026-08-21 — one socket, all data, zero disconnects
+
+`MARKET_DATA_SOURCE=lt` + `LT_EMIT_OHLCV=true` + `LT_MONITORS_ENABLED=true`.
+OHLCV, LT levels and LS state all ride the LT monitor's single TradingView socket.
+The separate market-data client is never opened.
+
+```
+04:36:25  OHLCV source: LT monitor socket (no separate TradingView market-data WS)
+04:36:26  History loaded (LT): 700 1 candles / 25 1D candles / 300 60 candles for NQ
+04:36:26  Strategy preclose-continuation (NQ) is now data-ready
+04:36:26  Strategy gapup-fade (NQ) is now data-ready
+```
+
+Verified: 0 lt-monitor disconnects; **0 tradingview-client disconnects after cutover**
+(last 04:27:05 = dying old pod); candle.close once per minute at ~1s lag; one duplicate
+bar at 04:27:00 from two-pod rollout overlap only; 4 chart sessions (1m/15m/60m/1D)
+coexisting with no `critical_error`; all 7 strategies data-ready.
+
+The ~70s cap was never root-caused — six hypotheses eliminated (see table above), the last
+untested differences being series bar count (700 vs 500) and the shared `from=` chart slug.
+This route sidesteps it. Drew's own theory — TV culling duplicate claims on one chart
+layout, oldest wins — remains the best unverified explanation and fits everything except
+the 00:32-03:14 single-socket window (which it survives only if a browser held the claim).
+
+### 🚨 Two long-standing bugs found, unrelated to the cutover
+
+1. **PCC and gapup-fade could NEVER seed an ATR.** Both call
+   `/candles/daily?count=atrPeriod+6` (20) and bail unless they get `atrMinPeriods+1`
+   (11); every seed site requested exactly **10**. `isSeeded()` stayed false so
+   `checkStrategyDataReady()` never marked them ready — they sat in "warming up" with
+   "need >= — pts". Any ATR seen came from slow live `_recordDayRange` accumulation that
+   every restart wiped. Fixed via `DAILY_SEED_BARS = 25` (hoisted in both files so the
+   three sites cannot drift). **This explains the note that gapup-fade never fired live.**
+2. **Dashboard forming candle stopped building.** `quote.candleTimestamp` is Unix
+   SECONDS; `GexChart` passed it to `new Date()`, which reads a bare number as
+   milliseconds → Jan 1970 → `candleTime` never matched the live bar. Masked under Schwab
+   (its 1Hz L1 ticks carried no `candleTimestamp` and drove the working branch); TV's `du`
+   sets it on every update, so the broken branch became the common case — chart moved
+   ~1/min while the top-bar ticker updated normally. That is the top-bar/chart desync.
+   Fixed in slingshot-web `02736b4` (seconds/ms/ISO all accepted).
+
+### Follow-ups
+
+- **slingshot-web needs `git push origin master`** (Drew, from Windows): `9591709`
+  (Schwab/CBOE/GEX UI removal + GEX overlay no longer covers the chart) and `02736b4`
+  (forming-candle fix).
+- Sanity-check the `du` rate at the RTH open. It measured 0.7-2.0/s alongside the old
+  feed; overnight it sits at 0.26-0.44/s, which tracks market activity, but the
+  side-by-side comparison is gone now that the old client is off.
+- `tradingview-client` is retained and reachable via `MARKET_DATA_SOURCE=tradingview`.
