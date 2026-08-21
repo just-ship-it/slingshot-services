@@ -656,15 +656,20 @@ class DataService {
       // clears chartSessions), so the 1h/1D sessions must be rebuilt. Debounced so
       // a flap can't trigger a DATA_READY storm that freezes the strategy engine.
       const sinceLast = Date.now() - (this._lastHistoryReseedAt || 0);
-      if (sinceLast >= RESEED_DEBOUNCE_MS) {
-        this.candleManager.resetReadiness();
-        await this.createTvHistorySessions({ force: true });
+      // A reconnect means a NEW socket, so every chart session created on the old
+      // one is dead — including the 1h/1D ones. The auto-reconnect path does not
+      // clear chartSessions (only reconnectWithNewToken does), so the map still
+      // holds keys pointing at dead sessions: a presence check would skip them and
+      // leave 1h/1D silently stale. Always re-create; createHistorySession()
+      // overwrites the map entry with the new session id.
+      if (sinceLast < RESEED_DEBOUNCE_MS) {
+        // Debounce only the readiness reset (that is what storms the strategy
+        // engine), never the session rebuild.
+        logger.info(`TV reconnect: rebuilding history sessions (skipping readiness reset, last ${Math.round(sinceLast / 1000)}s ago)`);
       } else {
-        // Still repair any session the reconnect dropped — the debounce exists to
-        // stop flap-driven DATA_READY storms, not to leave 1h/1D permanently dead.
-        logger.info(`Skipping TV history re-seed (last ${Math.round(sinceLast / 1000)}s ago) — checking for dropped sessions`);
-        await this.createTvHistorySessions();
+        this.candleManager.resetReadiness();
       }
+      await this.createTvHistorySessions({ force: true });
       this._alertThrottled?.(
         'tv_streamer_recovered', 'info',
         'TradingView reconnected — live candles/quotes flowing again.',

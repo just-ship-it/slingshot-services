@@ -137,3 +137,61 @@ should ever be staged.
 - Dual-feed candle parity for 2 sessions.
 - ATR/daily seeding actually lands before 09:28 ET.
 - TV one-series-per-session limit under 1m + 1h + 1D concurrently.
+
+---
+
+## Deployed 2026-08-21 — outcome
+
+`8b7404f` (cutover) then `ae88732` (session-repair fix). data-service only; dry run
+confirmed no other service was touched. master/production were identical beforehand, so
+nothing else rode along.
+
+### Verified live from runtime logs
+
+- TV connected, streaming `CME_MINI:NQU2026`; quotes flowing.
+- **1m 500 / 1h 300 / 1D 10 all seeded** — the 1D seed is the one PCC's ATR14 depends on.
+- Zero schwab/cboe/gex/tradier lines after boot; LT monitors logged as disabled.
+- Bar-close timing good: `00:37:00` bar published `00:38:00` (~1s after close), via the
+  new forming-bar sweep.
+
+### 🚨 Landmine found on the first production boot
+
+`reconnectWithNewToken()` **clears `chartSessions`**. The startup JWT auto-refresh fires
+~7s after start (even at a healthy 207m TTL) and — now that the token path reconnects the
+WS — that wiped the 60m/1D sessions created seconds earlier. The reconnect handler tried
+to rebuild them and the 2-minute debounce refused:
+
+```
+00:32:39  Created 1D history session for CME_MINI:NQU2026 (TV)
+00:32:46  TradingView WebSocket DISCONNECTED - Code: 1005
+00:32:47  Skipping TV history re-seed (last 9s ago)
+```
+
+That would have recurred on **every boot**, leaving 1h/1D permanently dead. The seeded
+buffers survive the wipe, so PCC still had its 10 daily ranges — luck (the damage lands
+after seeding), not design.
+
+Fix (`ae88732`): `createTvHistorySessions()` is idempotent by presence — it re-creates
+only sessions actually missing from `chartSessions`. Confirmed in production:
+
+```
+00:37:54  Skipping TV history re-seed (last 9s ago) — checking for dropped sessions
+00:37:54  Creating history session for CME_MINI:NQU2026 @ 60m   <- repaired
+00:37:55  Creating history session for CME_MINI:NQU2026 @ 1Dm   <- repaired
+00:37:59  Skipping TV history re-seed (last 5s ago) — checking for dropped sessions
+          (no creation — idempotent no-op)
+```
+
+**Rule for anyone touching this path:** any code that reconnects the TV WS must assume
+`chartSessions` is gone afterwards and re-assert the 1h/1D sessions. A debounce guarding
+DATA_READY storms must never gate session *repair*.
+
+### Still unvalidated
+
+- **TV daily-bar date labeling** — TV labels futures daily bars by session-OPEN date. The
+  10 daily bars are seeded but their dates have NOT been checked against what PCC's
+  day_range accumulation expects. First place to look if PCC misbehaves with ATR present.
+- Dual-feed parity never ran; deploying replaced the feed outright, so the open is the
+  validation run.
+- Revert lever: `MARKET_DATA_SOURCE=schwab` (no redeploy needed), though Schwab's token
+  will likely need a manual re-auth.
