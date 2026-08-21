@@ -84,6 +84,7 @@ class TradingViewClient extends EventEmitter {
     // every 10s with n strictly incrementing per-connection; without this TV
     // cuts the WS at ~65-75s as "polling only". See startKeepalivePing.
     this.pingCounter = 0;
+    this._pingsSent = 0;
 
     // Candle tracking for 15-minute detection
     this.lastCandleTimes = new Map();
@@ -349,6 +350,7 @@ class TradingViewClient extends EventEmitter {
         return;
       }
       this.pingCounter += 1;
+      this._pingsSent = (this._pingsSent || 0) + 1;
       const body = `~h~${this.pingCounter}`;
       const frame = `~m~${body.length}~m~${body}`;
       try {
@@ -978,7 +980,7 @@ class TradingViewClient extends EventEmitter {
     const quoteAgeMs = this.lastQuoteReceived ? Date.now() - new Date(this.lastQuoteReceived).getTime() : null;
     const heartbeatAgeMs = this.lastHeartbeat ? Date.now() - new Date(this.lastHeartbeat).getTime() : null;
     logger.error(`❌ TradingView WebSocket DISCONNECTED - Code: ${code}, Reason: ${reason || 'No reason provided'}`);
-    logger.error(`📊 Diagnostic: uptime=${uptimeMs != null ? Math.floor(uptimeMs/1000) + 's' : 'n/a'}  jwtTTL=${jwtTtl != null ? Math.floor(jwtTtl/60) + 'm' : 'n/a'}  quoteAge=${quoteAgeMs != null ? Math.floor(quoteAgeMs/1000) + 's' : 'n/a'}  heartbeatAge=${heartbeatAgeMs != null ? Math.floor(heartbeatAgeMs/1000) + 's' : 'n/a'}  chartSessions=${this.chartSessions.size}`);
+    logger.error(`📊 Diagnostic: uptime=${uptimeMs != null ? Math.floor(uptimeMs/1000) + 's' : 'n/a'}  jwtTTL=${jwtTtl != null ? Math.floor(jwtTtl/60) + 'm' : 'n/a'}  quoteAge=${quoteAgeMs != null ? Math.floor(quoteAgeMs/1000) + 's' : 'n/a'}  heartbeatAge=${heartbeatAgeMs != null ? Math.floor(heartbeatAgeMs/1000) + 's' : 'n/a'}  chartSessions=${this.chartSessions.size}  pingsSent=${this._pingsSent || 0}`);
     logger.error(`🔄 This is reconnection attempt #${this.reconnectAttempts}`);
 
     this.connected = false;

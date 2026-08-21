@@ -834,9 +834,16 @@ class DataService {
   async createTvHistorySessions({ force = false } = {}) {
     if (!this.tradingViewClient) return;
     this._lastHistoryReseedAt = Date.now();
+    const mode = config.TV_HISTORY_SESSIONS;
+    if (mode === 'none') {
+      logger.warn('TV history sessions DISABLED (TV_HISTORY_SESSIONS=none) — 1h/1D will not seed; preclose-continuation gets no ATR. Test setting only.');
+      return;
+    }
+    const wanted = [['60', 300, '1h'], ['1D', 10, '1D']]
+      .filter(([, , label]) => mode === 'both' || mode === label.toLowerCase());
     for (const sym of config.OHLCV_SYMBOLS) {
       const exchangeSymbol = sym.includes(':') ? sym : `CME_MINI:${sym}`;
-      for (const [tf, bars, label] of [['60', 300, '1h'], ['1D', 10, '1D']]) {
+      for (const [tf, bars, label] of wanted) {
         // Idempotent by presence. reconnectWithNewToken() CLEARS chartSessions,
         // so a token refresh silently destroys these sessions; re-creating only
         // what is actually missing lets every reconnect path repair itself

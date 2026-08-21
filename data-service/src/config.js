@@ -107,6 +107,14 @@ const config = {
   // (lt-candle-regime, gex-lt-3m-crossover and ls-flip-trigger-bar are all off;
   // PCC / monday-strength / gapup-fade declare candles-only). Off by default to
   // cut startup time and TV session pressure; code retained.
+  // [2026-08-21] Which extra chart sessions to open on the persistent market-data
+  // socket: 'both' (1h+1D) | '1h' | '1d' | 'none'. Diagnostic lever for the ~70s
+  // TV session cut — every steady-state cut carries chartSessions=3, while
+  // lt-monitor (1-2 sessions) survives indefinitely on the same account.
+  // NOTE: 'none' starves preclose-continuation of its 10 daily ranges (no ATR ->
+  // never trades), so it is a TEST setting, not a resting state.
+  TV_HISTORY_SESSIONS: (process.env.TV_HISTORY_SESSIONS || 'both').toLowerCase(),
+
   LT_MONITORS_ENABLED: process.env.LT_MONITORS_ENABLED?.toLowerCase() === 'true',
 
   SCHWAB_ENABLED: process.env.SCHWAB_ENABLED?.toLowerCase() === 'true',
