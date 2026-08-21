@@ -49,26 +49,49 @@ async function searchScripts(q) {
 }
 
 async function fetchMeta(scriptId, version) {
-  const url = `https://pine-facade.tradingview.com/pine-facade/translate/${scriptId}/${version || 'last'}`;
-  const r = await fetch(url, { headers: { 'User-Agent': 'Mozilla/5.0', Origin: TV_ORIGIN } });
+  // Works WITHOUT auth even for invite-only scripts — the endpoint is keyed on
+  // knowing the id. (lt-monitor fetches its invite-only LT script the same way.)
+  const url = `https://pine-facade.tradingview.com/pine-facade/translate/${encodeURIComponent(scriptId)}/${version || 'last'}`;
+  const r = await fetch(url, { headers: { 'User-Agent': 'Mozilla/5.0', Accept: 'application/json' } });
   if (!r.ok) throw new Error(`translate HTTP ${r.status}`);
   const j = await r.json();
   const meta = j.result?.metaInfo;
   if (!meta) throw new Error('no metaInfo in translate response');
-  return { meta, endpoint: j.result.metaInfo.scriptIdPart ? `${scriptId}@tv-scripting-101!` : `${scriptId}@tv-scripting-101!` };
+  return meta;
 }
 
-/** Map value index -> plot title, so CSV columns are named instead of guessed. */
+/** Mirror lt-monitor.prepareIndicatorMetadata: inputs[0].defval is the compiled script. */
+function studyPayload(scriptId, meta, version) {
+  const p = {
+    text: meta.inputs?.[0]?.defval || '',
+    pineId: scriptId,
+    pineVersion: version || meta.pine?.version || '1.0',
+    pineFeatures: { v: '{"indicator":1,"plot":1,"ta":1}', f: true, t: 'text' },
+    __profile: { v: false, f: true, t: 'bool' },
+  };
+  for (const i of meta.inputs || []) {
+    if (i?.id?.startsWith('in_')) p[i.id] = { v: i.defval, f: true, t: i.type };
+  }
+  return p;
+}
+
+/**
+ * Map plot index -> title. For "Liquidity Toolkit | T" the trigger lines are
+ * idx 7=1m, 10=5m(T:5), 13=H(T:H), 16=D, 19=W, 22=M, and idx 50-59 are the
+ * alertconditions INCLUDING the 5-Minute / 1-Hour / 1-Day crossovers, which is
+ * the signal we actually want rather than re-deriving crossings ourselves.
+ *
+ * The plot index is NOT necessarily the value index: LT interleaves its levels
+ * at odd indices 5..17. So every index is dumped and confirmed against a known
+ * on-screen value.
+ */
 function plotNames(meta) {
   const names = {};
-  const plots = meta.plots || [];
   const styles = meta.styles || {};
-  plots.forEach((p, i) => {
-    const t = styles[p.id]?.title || p.id || `plot${i}`;
-    // TV packs [ts, ...values]; plot k lands at value index k+1 in most scripts,
-    // but LT's spacing shows scripts can interleave. Titles + a sanity check
-    // against a known on-screen value are the reliable way to confirm.
-    names[i] = t;
+  (meta.plots || []).forEach((p, i) => {
+    const st = styles[p.id];
+    const t = (st && typeof st === 'object' ? st.title : null) || p.type || p.id || `plot${i}`;
+    names[i] = String(t);
   });
   return names;
 }
@@ -78,21 +101,35 @@ function send(ws, m, p) { ws.send(frame(JSON.stringify({ m, p }))); }
 const sess = (pre) => pre + '_' + Math.random().toString(36).slice(2, 14);
 
 async function dump() {
-  const scriptId = arg('script');
-  if (!scriptId) throw new Error('--script required (use --search to find one)');
+  // defaults to Liquidity Toolkit | T (invite-only; needs the entitled session)
+  const scriptId = arg('script', 'PUB;8ec4a4d429674d018d2cae43c621341e');
   const symbol = arg('symbol', 'CME_MINI:NQU2026');
   const tf = arg('tf', '3');
   const bars = +arg('bars', 5000);
   const out = path.join(__dirname, arg('out', 'study.csv'));
 
-  const { meta } = await fetchMeta(scriptId, arg('version', 'last'));
+  const version = arg('version', '1.0');
+  const meta = await fetchMeta(scriptId, version);
   const names = plotNames(meta);
   console.log(`script: ${meta.description || meta.shortDescription || scriptId}`);
   console.log(`plots : ${Object.entries(names).map(([i, n]) => `${i}=${n}`).join(', ') || '(none listed)'}`);
 
-  const token = await getBestAvailableToken(REDIS);
-  const cookies = await getCachedSessionCookies(REDIS);
-  const cookieHeader = cookies ? Object.entries(cookies).map(([k, v]) => `${k}=${v}`).join('; ') : null;
+  // Invite-only scripts only COMPUTE for an entitled session. TV_COOKIE lets this
+  // run anywhere ("sessionid=...; sessionid_sign=..."); otherwise fall back to the
+  // session cached in Redis (populated on the data-service host).
+  let token = null, cookieHeader = process.env.TV_COOKIE || null;
+  if (!cookieHeader) {
+    try {
+      token = await getBestAvailableToken(REDIS);
+      const cookies = await getCachedSessionCookies(REDIS);
+      if (cookies) cookieHeader = Object.entries(cookies).map(([k, v]) => `${k}=${v}`).join('; ');
+    } catch (e) { /* fall through to the explicit error below */ }
+  }
+  if (!cookieHeader) {
+    throw new Error('no TV session. Set TV_COOKIE="sessionid=...; sessionid_sign=..." ' +
+      'or run where the data-service Redis session is reachable. ' +
+      'Invite-only scripts will not compute without it.');
+  }
   const url = `wss://prodata.tradingview.com/socket.io/websocket?from=chart%2F4NTS38Zt%2F&type=chart&auth=sessionid`;
   const headers = {
     Origin: TV_ORIGIN,
@@ -122,8 +159,8 @@ async function dump() {
       let d; try { d = JSON.parse(m); } catch { continue; }
       if (d.m === 'timescale_update' && !studyMade) {
         studyMade = true;
-        send(ws, 'create_study', [cs, 'st1', 'st1', 'sds_1', `${scriptId}@tv-scripting-101!`,
-          { text: meta.inputs ? '' : '', pineId: scriptId, pineVersion: arg('version', 'last') }]);
+        send(ws, 'create_study', [cs, 'st1', 'st1', 'sds_1', 'Script@tv-scripting-101!',
+          studyPayload(scriptId, meta, version)]);
         console.log('study requested; collecting…');
       }
       const upd = d.p?.[1];
