@@ -1,8 +1,8 @@
 # A1 — Does setup performance persist? (2026-08-21)
 
-**Verdict: RED for fast adaptation on this family.** Adaptive selection delivers a real
-but tiny edge — **~0.2pp over the martingale** — where the cost bar needs **~7pp**. Off by
-roughly 20-70x. What persistence exists is strongest at **quarterly**, not daily, windows.
+**Verdict: RED.** No detectable persistence at any window (z = +0.5 to +1.3 vs a matched
+null). Even read at face value the effect is ~0.3pp where the cost bar needs ~7.2pp — off
+by ~24x. Selection over this candidate family cannot be made to work by tuning.
 
 Script: `01-persistence.py`. Substrate: `tick-engine/firstbreak/NQ_{3m,5m,15m}_fb.csv`
 (363k 5m candles, 2021-01-18 -> 2026-06-16, 1400 days). Features are everything knowable
@@ -57,13 +57,37 @@ by geometry gets dominated by it.
    lands on exactly **−3.00 ticks = the cost bar** confirms the market sits on this fair
    line and validates the harness.
 
-## The one directional finding worth keeping
+## A1b — calibration, and a retraction
 
-`rhoEV` excess is consistently **largest at the 63-day window** across all three
-timeframes (0.134 / 0.142 / 0.090) and near zero at 5-10 days. Whatever exploitable
-structure exists here is **slow** — quarterly regime, not "the last few sessions". That
-is the opposite of the fast-adaptation premise, and it is consistent with vol clustering
-being the #1 survivor of the Wave A census.
+Binning candidates by skill in window t and measuring the skill they deliver in t+1 is the
+direct test of "keep winners, kill underperformers": it asks whether past performance
+predicts future performance AT THE TOP END, not on average.
+
+The real curve looked encouraging — monotonic through the middle deciles, top-minus-bottom
+spread +0.29pp (21d) and +0.39pp (63d). Against a SINGLE null seed (−0.59pp) that read as
+signal. It is not. Null spreads vary enormously seed to seed:
+
+| window | real spread | null (5 seeds) | z |
+|---|---|---|---|
+| 21d | +0.29pp | +0.04 ± 0.46 | **+0.54** |
+| 63d | +0.39pp | +0.27 ± 0.09 | **+1.29** |
+
+**Neither is significant.** Past skill does not predict future skill at any threshold, so
+no "keep winners" rule can work regardless of tuning. Even taken at face value the best
+decile returns +0.30pp against a 7.2pp requirement, with EV −2.66 ticks.
+
+### 🚨 Retraction: "persistence is strongest at 63 days"
+
+A1 highlighted rising rhoEV at the 63-day window as the one keeper. **Withdrawn.** The
+null shows a consistent POSITIVE spread at 63 days (+0.27 ± 0.09, tight), i.e. the effect
+is structural, not market. Likely mechanism: permuting within a day preserves that day's
+TOTAL residual, so any candidate selecting a stable fraction of days inherits a persistent
+component carrying no row-level predictive content. Long windows average more days and
+expose it more.
+
+**Methodological rule for this program: never read a null off one seed.** A single draw
+here ranged −0.72 to +0.44pp — wide enough to manufacture or destroy any effect of the
+size we are hunting.
 
 ## Recommended next step: A2, adapt the CONDITIONING, not the setup
 
