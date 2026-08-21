@@ -525,6 +525,26 @@ class LTMonitor extends EventEmitter {
 
     const update = payload[1];
 
+    // [2026-08-21] Intra-bar tick accounting on the PRICE SERIES (sds_1).
+    // The old OHLCV client emitted a `quote` for every du on its 1m series, so
+    // du -- not qsd -- is where its ~1.3/s came from. Counting the same channel
+    // here is the like-for-like comparison; qsd alone understates this socket
+    // by 20-60x and is NOT evidence of lost granularity.
+    if (update.sds_1 && update.sds_1.s) {
+      this._duCount = (this._duCount || 0) + 1;
+      this._duWindowCount = (this._duWindowCount || 0) + 1;
+      const now = Date.now();
+      if (!this._duWindowStart) this._duWindowStart = now;
+      const elapsed = now - this._duWindowStart;
+      if (elapsed >= 30_000) {
+        const perSec = (this._duWindowCount / (elapsed / 1000)).toFixed(2);
+        const bars = update.sds_1.s.length;
+        logger.info(`📊 LT du(sds_1) series updates: ${this._duWindowCount} in ${Math.round(elapsed / 1000)}s (${perSec}/s, ${this._duCount} total, lastBatch=${bars})`);
+        this._duWindowStart = now;
+        this._duWindowCount = 0;
+      }
+    }
+
     // 15m LS state (st11 on sds_2) — STATE feed for the lstb ltAlign gate.
     // Semantics differ from the 1m flip feed below on purpose:
     //  - Baseline seeding: the first batch after study creation carries
