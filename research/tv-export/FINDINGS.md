@@ -423,3 +423,48 @@ and their interaction all fail to say who is stepping in.
    Always print event counts before reading results.
 2. Earlier in the same file: LT levels joined on candle OPEN rather than candle CLOSE, worth
    up to 15 minutes of lookahead (see the alignment section above).
+
+## Is the ORDER BOOK different when price is at an LT level? (first look)
+
+Never previously tested — the level work was all OHLCV, and the MBO work was about vacuum
+candles, not levels. Substrate: `orderflow/nq/book-imbalance-1m.csv` (377k 1m rows,
+2025-01 -> 2026-01), joined to LT levels with candle-close alignment. 60,762 overlapping rows.
+
+Control: a **placebo level set** shifted +37.5pt. Tests "this level" against "a level".
+
+### Two confounds had to be removed first
+
+1. **The raw sums are activity, not depth.** `totalBidSize` is summed over the minute's
+   book updates, so it scales with `updates`. Raw, it showed the book at 0.527x near a level
+   — but the placebo showed 0.615x, i.e. mostly not level-specific. Per-update normalisation
+   is required.
+2. **Proximity to a level IS a volatility state.** ATR near a level 15.54 vs 26.53 far,
+   because the levels lag price: calm price sits on them, running price leaves them behind.
+   Un-matched, |imbalance| looked 1.204x higher near levels at t=13.35.
+
+### Volatility-matched result: nothing
+
+| ATR bucket | REAL imb near/far | t | PLACEBO | t |
+|---|---|---|---|---|
+| 0-4 | 0.995 / 1.055 / 0.976 / 1.003 / 1.091 | all abs t < 2 | comparable | comparable |
+
+Depth per update: REAL 0.992 / 1.018 / 1.026 / **1.112** / 1.045; PLACEBO 1.033 / 1.045 /
+1.078 / 1.042 / 1.051 — the placebo is LARGER in three of five buckets. One cell (bucket 3,
+1.112x at t=10.77) exceeds its placebo, which is one standout in ten comparisons.
+
+**The book is not meaningfully different when price is at an LT level.**
+
+### 🚨 But this does NOT answer the sharpest version of the question
+
+`book-imbalance-1m.csv` is a per-minute AGGREGATE. It cannot see WHERE in the book the size
+sits. The question that matters — *is there resting size AT the level's price* — needs an
+actual depth snapshot keyed to price, which is what `mbp-1/` (407GB) and `mbo/` (58GB) hold
+and this file does not.
+
+That version is well-posed and is the kind of STATE question order-book data answers well
+(as opposed to direction, which it does not — see the vacuum program's "fragility footprint,
+NO direction"). Concretely: for each LT level at each moment, how much size rests within
+N ticks of it, versus a placebo price the same distance from spot? If the levels coincide
+with real resting liquidity, that is a genuine finding even though the levels predict
+nothing directionally — it would matter for EXECUTION (where stops get run, where limits
+fill) rather than for entry.
