@@ -2,41 +2,40 @@
 // =============================================================================
 // "Liquidity Toolkit | T" — LINE reconstruction
 //
-// PROVEN: the trigger lines are Wilder's moving average of close, period 14, each
-// on its own timeframe.  T:{tf} = ta.rma(close, 14)
+// PROVEN:  T:{tf} = ta.rma(close, 14)  on that timeframe's own bars.
+// Forward-computed from an SMA(14) seed against the original's own output:
+// from bar 300 on, mean|diff| 5.79e-12, max 1.71e-10, 100.00% exact over 2,686
+// hourly bars. Bit-identical, not a fit. (Earlier bars differ only while the
+// recursion seed washes out: 0.287 at bar 40 -> 8.3e-5 at 150 -> 2.0e-6 at 200.)
 //
-// Fitted by solving the EMA recursion  T[i] = a*c[i] + (1-a)*T[i-1]  against the
-// original indicator's own output, pulled off the TradingView socket:
-//     T:5  on a native 5m chart : alpha = 0.071429 = 1/14, R^2 = 1.000000,
-//                                 rmse 0.0000, max|err| 0.000  (n = 20,279)
-//     T:H  on a native 60m chart: alpha = 0.071429 = 1/14, R^2 = 1.000000,
-//                                 rmse 0.0000, max|err| 0.000  (n = 2,712)
-// An identity, not a fit.
+// v2 — SAMPLING FIX. v1 used a plain request.security, which on a lower-timeframe
+// chart returns the last CONFIRMED htf bar, so its steps lagged the original.
+// The original folds in the FORMING htf bar's current close, which is why T:5
+// moves on every 3m bar. Not lookahead — the forming bar's price is known now —
+// just more responsive. `liveBar` reproduces it:
+//     displayed = rmaConfirmed + (close - rmaConfirmed) / len
 //
-// NOT PROVEN — do not assume this file reproduces them:
-//   * the alertconditions (5-Minute / 1-Hour / 1-Day Bullish Crossover etc).
-//     Only ~80-87% of the original's crossover flags coincide with a T5/TH
-//     crossing; the rest fire with the two lines >100 pts apart, so the real
-//     condition carries something else. Unsolved.
-//   * the band/"Plot" edges, the ten `data` plots, the colorers,
-//     "Trigger Strength", and "Recovery Opportunity".
+// For BACKTESTING keep liveBar = false. The confirmed reading is the one that is
+// stable once printed; the live reading moves within the htf bar, so a signal
+// taken from it must be evaluated at the chart bar's close, not after the fact.
 //
-// TO VERIFY: load this alongside the original on a 5m or 60m chart. The lines
-// should sit exactly on top of each other. On a LOWER timeframe than the series
-// (e.g. T:H on a 3m chart) intrabar update behaviour may differ — the original
-// updates T:5 on every 3m bar, which a confirmed-bar security call does not.
+// STILL NOT SOLVED (58 of the original's 60 outputs): the alertconditions
+// (only ~80-87% of its crossover flags coincide with a T5/TH crossing — the rest
+// fire with the lines a median 133 pts apart), the band/"Plot" edges, the ten
+// `data` plots, the colorers, Trigger Strength, Recovery Opportunity.
 // =============================================================================
 
 indicator("T reconstruction — RMA(close,14) MTF", "T recon", overlay = true)
 
-len      = input.int(14,    "RMA length", minval = 1)
-showAll  = input.bool(false, "Show D / W / M as well")
+len     = input.int(14,    "RMA length", minval = 1)
+liveBar = input.bool(true, "Include forming HTF bar (matches original; off = backtest-safe)")
+showAll = input.bool(false, "Show D / W / M")
 
-// lookahead_off (default) => on a lower-timeframe chart this returns the last
-// CONFIRMED higher-timeframe value. That is the causal reading and matches the
-// observed behaviour of T:H, which steps at :00 and then holds for the hour.
 trig(simple string tf) =>
-    request.security(syminfo.tickerid, tf, ta.rma(close, len), lookahead = barmerge.lookahead_off)
+    conf = request.security(syminfo.tickerid, tf, ta.rma(close, len),
+                            lookahead = barmerge.lookahead_off)
+    // Fold the forming htf bar in: one more RMA step using the live chart close.
+    liveBar and not na(conf) ? conf + (close - conf) / len : conf
 
 t1 = trig("1")
 t5 = trig("5")
@@ -46,22 +45,8 @@ tW = trig("W")
 tM = trig("M")
 
 plot(t1, "T:1", color = color.new(#26A69A, 40), linewidth = 1)
-plot(t5, "T:5", color = #26A69A,               linewidth = 2)
-plot(tH, "T:H", color = #0097A7,               linewidth = 2)
-plot(showAll ? tD : na, "T:D", color = #FFF59D, linewidth = 2)
+plot(t5, "T:5", color = #26A69A,                linewidth = 2)
+plot(tH, "T:H", color = #0097A7,                linewidth = 2)
+plot(showAll ? tD : na, "T:D", color = #FFF59D,               linewidth = 2)
 plot(showAll ? tW : na, "T:W", color = color.new(#FFF59D, 40), linewidth = 1)
 plot(showAll ? tM : na, "T:M", color = color.new(#FFF59D, 70), linewidth = 1)
-
-// Side-by-side check against the original: put its T:5 / T:H values in these
-// inputs at a given bar and read the residual off the label.
-verify   = input.bool(false, "Verify against original")
-refT5    = input.float(0.0,  "original T:5")
-refTH    = input.float(0.0,  "original T:H")
-if verify and barstate.islast
-    lbl = label.new(bar_index, high, "", style = label.style_label_down,
-                    color = color.new(color.black, 20), textcolor = color.white)
-    label.set_text(lbl,
-         "T:5 mine " + str.tostring(t5, "#.##") + "  ref " + str.tostring(refT5, "#.##") +
-         "  diff " + str.tostring(t5 - refT5, "#.####") + "\n" +
-         "T:H mine " + str.tostring(tH, "#.##") + "  ref " + str.tostring(refTH, "#.##") +
-         "  diff " + str.tostring(tH - refTH, "#.####"))
