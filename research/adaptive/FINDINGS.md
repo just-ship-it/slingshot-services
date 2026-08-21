@@ -89,6 +89,38 @@ expose it more.
 here ranged −0.72 to +0.44pp — wide enough to manufacture or destroy any effect of the
 size we are hunting.
 
+## A1c — the richer MTF family gives the same answer
+
+A1's family was single-feature thresholds on a candle's own extremes, so the RED verdict
+could have been an artifact of a weak family. `03-mtf-persistence.py` reruns the identical
+gate on `mtf/NQ_15m_3m_mtf.csv` — **does 3m structure predict which side of the previous
+15m candle breaks first**, which is the question this program started from. It adds the
+cumulative path since the HTF close, the LTF sequence position `k`, and the HTF candle's
+own shape: 17 features, 180k rows.
+
+| window | lift excess | EV | baseline |
+|---|---|---|---|
+| 5d | +0.51pp | −2.01 | −3.00 |
+| 10d | +0.35pp | −3.63 | −3.00 |
+| 21d | +0.28pp | −2.95 | −3.00 |
+| 63d | −0.58pp | −3.98 | −3.00 |
+
+Same result: ~0.3-0.5pp at best, no window profitable, `allmean` again exactly −3.00.
+The RED verdict is **not** an artifact of a thin candidate family.
+
+## Honest limits of this verdict
+
+- It covers **threshold rules over these feature sets**. A pattern that no candidate can
+  express would show no persistence here simply because nothing captures it. A richer
+  learner (walk-forward gradient boosting on the same causal features) is a legitimate
+  extension — though the calibration result argues the problem is persistence itself
+  rather than expressiveness.
+- It covers the **first-break payoff family** (target = the candle's / HTF candle's own
+  extreme). But the arithmetic generalises: a 0.3pp edge needs ~375 points of combined
+  excursion to clear 3 ticks of cost, so no target/stop pair rescues it.
+- NQ only. ES data exists (`wicks/ES_*`) but per Drew's standing guidance a separate
+  instrument is not a validity gate.
+
 ## Recommended next step: A2, adapt the CONDITIONING, not the setup
 
 A1 tested adaptive *setup discovery*. The repo's own evidence favours the other framing —
