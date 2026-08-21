@@ -45,6 +45,14 @@ function tvSymbolToSchwabEquity(tvSym) {
 // Don't full-reload history on every Schwab reconnect — a transient reconnect
 // resumes the live stream where it left off, and re-seeding each time is what
 // turned a Schwab flap into a DATA_READY storm that froze every strategy.
+// [2026-08-21] Daily bars to seed. 🚨 preclose-continuation and gapup-fade both
+// request atrPeriod+6 (=20) daily candles and BAIL OUT unless they receive at
+// least atrMinPeriods+1 (=11). Seeding only 10 meant both silently failed to
+// build an ATR on every restart and fell back to slow live accumulation, which
+// the next restart wiped -- they never reached data-ready. Must stay >= 11, and
+// candle-manager's daily buffer holds 30.
+const DAILY_SEED_BARS = 25;
+
 const RESEED_DEBOUNCE_MS = 120_000; // 2 min between history re-seeds
 
 // Single-instance guard for the Schwab streamer. Schwab permits ONE streamer
@@ -844,7 +852,7 @@ class DataService {
         logger.error(`Failed to create 1h history session for ${sym}: ${error.message}`);
       }
       try {
-        await this.schwabStreamer.createHistorySession(sym, '1D', 10);
+        await this.schwabStreamer.createHistorySession(sym, '1D', DAILY_SEED_BARS);
         logger.info(`Created 1D history session for ${sym}`);
       } catch (error) {
         logger.error(`Failed to create 1D history session for ${sym}: ${error.message}`);
@@ -874,7 +882,7 @@ class DataService {
       logger.warn('TV history sessions DISABLED (TV_HISTORY_SESSIONS=none) — 1h/1D will not seed; preclose-continuation gets no ATR. Test setting only.');
       return;
     }
-    const wanted = [['60', 300, '1h'], ['1D', 10, '1D']]
+    const wanted = [['60', 300, '1h'], ['1D', DAILY_SEED_BARS, '1D']]
       .filter(([, , label]) => mode === 'both' || mode === label.toLowerCase());
     for (const sym of config.OHLCV_SYMBOLS) {
       const exchangeSymbol = sym.includes(':') ? sym : `CME_MINI:${sym}`;

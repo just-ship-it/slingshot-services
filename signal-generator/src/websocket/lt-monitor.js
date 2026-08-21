@@ -26,6 +26,14 @@ const TV_ORIGIN = 'https://www.tradingview.com';
 // [2026-08-21] When true, lt-monitor also emits the forming 1m bar as a `quote`,
 // letting ONE TradingView socket carry LT levels AND OHLCV. Its socket holds
 // indefinitely while tradingview-client is cut by TV every 65-75s.
+// [2026-08-21] Daily bars to seed. 🚨 preclose-continuation and gapup-fade both
+// request atrPeriod+6 (=20) daily candles and BAIL OUT unless they receive at
+// least atrMinPeriods+1 (=11). Seeding only 10 meant both silently failed to
+// build an ATR on every restart and fell back to slow live accumulation, which
+// the next restart wiped -- they never reached data-ready. Must stay >= 11, and
+// candle-manager's daily buffer holds 30.
+const DAILY_SEED_BARS = 25;
+
 const LT_EMIT_OHLCV = process.env.LT_EMIT_OHLCV?.toLowerCase() === 'true';
 
 // Liquidity Triggers indicator by DDScript
@@ -361,7 +369,7 @@ class LTMonitor extends EventEmitter {
     }
     if (this.chartSession1D) {
       this.sendMessage('resolve_symbol', [this.chartSession1D, 'sds_sym_1', `=${resolveSymbol}`]);
-      this.sendMessage('create_series', [this.chartSession1D, 'sds_1', 's1', 'sds_sym_1', '1D', 10, '']);
+      this.sendMessage('create_series', [this.chartSession1D, 'sds_1', 's1', 'sds_sym_1', '1D', DAILY_SEED_BARS, '']);
     }
 
     // Study will be added after receiving timescale_update message
