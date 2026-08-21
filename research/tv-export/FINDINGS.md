@@ -249,3 +249,60 @@ needs an edge to condition, e.g. PCC, not a standalone sweep.
 3. **Normalise by ATR on BOTH sides** — see the compression finding above.
 4. **Check redundancy before hunting.** An R² of 0.70 against plain momentum would have
    predicted the null before any of the return work was done.
+
+---
+
+# LT-fibs vs T-levels (2026-08-21)
+
+**Terminology** (settled to stop "trigger" collisions):
+* **T-levels** — Liquidity Toolkit | T: `T5`, `TH`, `TD` = `RMA(close,14)` per timeframe.
+* **LT-fibs** — Liquidity Triggers, named by PERIOD: `LT34`, `LT55`, `LT144`, `LT377`, `LT610`.
+  Name by period, never index: the indicator's UI numbers them Fib 1..7 (8/13/34/55/144/377/610)
+  while `lt-monitor` keys them `L0..L6`, so the UI is ONE AHEAD of our code.
+
+Backtest CSV maps: `level_1..level_5` = LT34/LT55/LT144/LT377/LT610, confirmed by
+responsiveness (mean|diff| 18.10 / 13.66 / 9.08 / 7.14 / 6.73, monotonic).
+128,292 rows, 15-min cadence, 2021-01-27 -> 2026-07-14.
+
+## 🚨 MY ALIGNMENT BUG — the one Drew called out
+
+First pass showed LT spikes predicting reversal at **t = -6 to -19**, and
+`corr(dLT, next price change)` of **-0.14 to -0.21**. All of it was mine.
+
+`triggers_NQ_mtf.csv` labels bars by OPEN time, and the LT feed labels each snapshot by its
+CANDLE OPEN. A 15-minute LT value stamped 07:30 is known only at **07:45**. My `merge_asof`
+attached it to the 5m bars at 07:30 / 07:35 / 07:40 — up to 15 minutes before it existed.
+
+I had applied exactly this rule to T:H (`avail = dt + 1h`) and T:D and then failed to carry
+it to LT. **The rule: a value labelled T on an N-minute series is knowable at T+N, never at T.**
+
+Fixed (`avail = dt_open + cadence`, joined on the 5m bar's CLOSE):
+
+| | dC[t-1] (past) | dC[t] | dC[t+1] (FUTURE) |
+|---|---|---|---|
+| before fix | +0.10 | +0.04..+0.21 | **-0.14 .. -0.21** |
+| after fix | +0.18..+0.27 | -0.09..-0.29 | **+0.012 .. +0.015** |
+
+Forward information is now zero, and the levels load on PAST price as a lagging level must.
+
+## Results after the fix
+
+**Directional: nothing.** LT spikes (>6x their own MAD; kurtosis 847-1616, so genuinely
+fat-tailed events rather than wiggle) give excess of -2.5..+3.1 pts, all |t| < 1.72, no
+consistent sign across level or horizon.
+
+**Volatility: small but the largest residual we have found.** |move| after a spike is
+1.40-1.57x normal raw; ATR at spike 21.5 vs 16.1 normal, so most of it is volatility
+clustering — but the ATR-NORMALISED ratio is still **1.08-1.17x**, versus 1.02x for the
+T5/TH compression test. Not directional, so its use would be sizing/vol, not entry.
+
+**Redundancy: LT-fibs are genuinely new information.** R² of each LT change on
+{dT5, dTH, dTD, dPrice} is only **0.09-0.25** — unlike the T-levels, which were 0.56-0.70
+against plain momentum. Whatever LT is doing, it is not a moving average of price.
+
+## Also pulled: the LT indicator's full output map
+
+`dump-study.js --script "PUB;93e43ec4c20f420fac2b70f0f2b286cf" --tf 15` gives
+28 plots: `2=LT`, `4..16 = L1..L7`, `18/20 = LT Reference-1/2`, `22/23 = Is Bullish/Bearish`,
+`24/25 = Has Become Bullish/Bearish`, and — untested — **`26 = Suspected Rip Incoming`,
+`27 = Suspected Dip Incoming`**.
