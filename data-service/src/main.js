@@ -658,9 +658,12 @@ class DataService {
       const sinceLast = Date.now() - (this._lastHistoryReseedAt || 0);
       if (sinceLast >= RESEED_DEBOUNCE_MS) {
         this.candleManager.resetReadiness();
-        await this.createTvHistorySessions();
+        await this.createTvHistorySessions({ force: true });
       } else {
-        logger.info(`Skipping TV history re-seed (last ${Math.round(sinceLast / 1000)}s ago)`);
+        // Still repair any session the reconnect dropped — the debounce exists to
+        // stop flap-driven DATA_READY storms, not to leave 1h/1D permanently dead.
+        logger.info(`Skipping TV history re-seed (last ${Math.round(sinceLast / 1000)}s ago) — checking for dropped sessions`);
+        await this.createTvHistorySessions();
       }
       this._alertThrottled?.(
         'tv_streamer_recovered', 'info',
@@ -823,11 +826,19 @@ class DataService {
    * Must also run after every reconnect: both TV reconnect paths restart only the
    * main series, and reconnectWithNewToken() clears chartSessions outright.
    */
-  async createTvHistorySessions() {
+  async createTvHistorySessions({ force = false } = {}) {
     if (!this.tradingViewClient) return;
     this._lastHistoryReseedAt = Date.now();
     for (const sym of config.OHLCV_SYMBOLS) {
+      const exchangeSymbol = sym.includes(':') ? sym : `CME_MINI:${sym}`;
       for (const [tf, bars, label] of [['60', 300, '1h'], ['1D', 10, '1D']]) {
+        // Idempotent by presence. reconnectWithNewToken() CLEARS chartSessions,
+        // so a token refresh silently destroys these sessions; re-creating only
+        // what is actually missing lets every reconnect path repair itself
+        // without re-seeding (and re-publishing DATA_READY for) live sessions.
+        if (!force && this.tradingViewClient.chartSessions?.has(`${exchangeSymbol}_${tf}`)) {
+          continue;
+        }
         try {
           await this.tradingViewClient.createHistorySession(sym, tf, bars);
           logger.info(`Created ${label} history session for ${sym} (TV)`);
