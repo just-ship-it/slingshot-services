@@ -60,8 +60,15 @@ trigSecurity(simple string tf) =>
                             lookahead = barmerge.lookahead_off)
     liveBar and not na(conf) ? conf + (close - conf) / len : conf
 
+// Manual recursion is limited to the bars loaded on the CHART. On a 3m chart
+// that is ~40 days, i.e. only ~40 daily bars — not enough for RMA(14) to shake
+// off its SMA seed, which is why T:D read ~11 pts high. request.security runs on
+// the native series with full history and the correct CME session boundary, so
+// D/W/M always use it; intraday keeps the manual path, which is exact whenever
+// the chart timeframe divides the target (3m -> 60m).
 trig(simple string tf) =>
-    useManual ? trigManual(tf) : trigSecurity(tf)
+    hi = tf == "D" or tf == "W" or tf == "M"
+    useManual and not hi ? trigManual(tf) : trigSecurity(tf)
 
 t1 = trig("1")
 t5 = trig("5")
