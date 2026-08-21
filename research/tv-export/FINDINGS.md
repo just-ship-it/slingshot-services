@@ -345,3 +345,36 @@ we derive: plots **26 "Suspected Rip Incoming"** and **27 "Suspected Dip Incomin
 `22/23 Is Bullish/Bearish` and `24/25 Has Become Bullish/Bearish`. Everything above tests
 OUR constructions from the levels; those test the AUTHOR'S. Cheap to run with
 `dump-study.js` now that the plot map is known.
+
+## Directionality and reversals — also empty
+
+Slope over 60min, ATR-normalised, computed on windows long enough that the 15m ffill
+cannot fake them. Independent (strided) samples, drift removed.
+
+| test | series | best abs t |
+|---|---|---|
+| **direction state** (rising / flat / falling) | LT34/144/610, T5/TH/TD | **1.48** |
+| **reversal** (level bottom / level top, detected causally) | same | **1.04** |
+| **confluence** (all 5 LT-fibs rising / all falling) | LT ladder | **0.57** |
+| **mass flip** (ladder swings from mostly-down to mostly-up) | LT ladder | **1.25** |
+
+Nothing clears t=2 anywhere, in either direction, at 60m or 120m. Volatility is flat too —
+|move| ratios 0.94-1.08x for the confluence states.
+
+### The feature space is now covered
+
+Across this and the previous sweeps, on 311,625 correctly-aligned 5m bars (2021-2026):
+crossovers, compression, expansion rate, fan width, deviation from price, deviation
+between levels, distance to nearest level, snap-back, spikes, direction, reversals,
+confluence, mass flips. **No directional edge anywhere.** The only survivors were
+volatility restatements that died under an ATR control, except `fan_width` at +0.1% R².
+
+The levels describe where price has been. They do not appear to say anything about where
+it goes next, at 5m-2h horizons, on NQ.
+
+### The one genuinely untested thing
+
+The indicator's OWN outputs, which are claims rather than our constructions:
+plots **26 "Suspected Rip Incoming"**, **27 "Suspected Dip Incoming"**,
+`22/23 Is Bullish/Bearish`, `24/25 Has Become Bullish/Bearish`. If the author encoded
+something beyond the level geometry, it lives there — everything above tests geometry.
