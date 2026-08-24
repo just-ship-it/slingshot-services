@@ -46,13 +46,18 @@ for (let i = 1; i < rows.length; i++) {
   sess.set(key, r);
 }
 const obs = [];
+const skipped = [];
 for (const [date, r] of [...sess.entries()].sort()) {
-  const close = r.c1530 ?? r.last;
-  if (!Number.isFinite(r.open) || !Number.isFinite(close)) continue;
+  // Require the 15:29 bar (which closes AT 15:30 ET, the decision instant).
+  // Falling back to r.last would inject a PARTIAL-day move for the in-progress
+  // session — a bogus observation the live strategy would then have to fight.
+  const close = r.c1530;
+  if (!Number.isFinite(r.open) || !Number.isFinite(close)) { skipped.push(date); continue; }
   obs.push({ date, move: Math.abs(close - r.open) });
 }
 const seed = obs.slice(-limit);
 console.log(`computed ${obs.length} sessions from ${file}; seeding last ${seed.length}`);
+if (skipped.length) console.log(`  skipped ${skipped.length} incomplete session(s): ${skipped.slice(-3).join(', ')}`);
 console.log(`  range ${seed[0]?.date} .. ${seed[seed.length - 1]?.date}`);
 const mv = seed.map(o => o.move).sort((a, b) => a - b);
 console.log(`  |day move| pts: median ${mv[Math.floor(mv.length / 2)].toFixed(1)}  min ${mv[0].toFixed(1)}  max ${mv[mv.length - 1].toFixed(1)}`);

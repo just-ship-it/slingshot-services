@@ -408,8 +408,16 @@ export class LetfGammaCloseStrategy extends BaseStrategy {
 
   /** Seeded once BOTH trailing percentile buffers have enough sessions. */
   isSeeded() {
-    return this.obs.length >= this.params.trailMinSessions &&
-           this.gexPool.length >= this.params.gexPoolMinObs;
+    // 🚨 DEADLOCK — do NOT re-add the gexPool condition here.
+    // multi-strategy-engine gates runner.dataReady on isSeeded() and only calls
+    // evaluateSignal() when dataReady is true (checkStrategyDataReady →
+    // 'candle history' blocker). But gexPool is filled ONLY inside
+    // evaluateSignal(). Requiring the pool here meant the pool could never fill,
+    // so the sleeve sat at "gamma 0/20 samples" forever and never evaluated.
+    // Safety is not weakened: the decision path independently refuses to trade
+    // while the pool is shallow — _gexDeadband() returns null until
+    // gexPoolMinObs and evaluateSignal bails with _lastSkipReason='warmup'.
+    return this.obs.length >= this.params.trailMinSessions;
   }
 
   /** Latest |total_gex| seen at a decision, for the panel. */
