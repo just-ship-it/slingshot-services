@@ -438,8 +438,24 @@ export class LetfGammaCloseStrategy extends BaseStrategy {
         deadband: gexThr,
         inDeadband: this._lastGex != null && gexThr != null ? Math.abs(this._lastGex) <= gexThr : null,
         regime: this._lastGex == null ? null : (this._lastGex > 0 ? 'positive (fade)' : 'negative (chase)'),
+        // Warmup telemetry. `sessions` counts pooled AFTERNOON snapshots (~10/day
+        // from gexPoolStart), NOT days — so a full pool is ~2 sessions, not 20.
         sessions: this.gexPool.length,
+        needed: this.params.gexPoolMinObs,
+        poolOpensAt: `${String(this.params.gexPoolStartHour).padStart(2,'0')}:${String(this.params.gexPoolStartMinute).padStart(2,'0')} ET`,
+        poolOpen: et.minutesOfDay >= (this.params.gexPoolStartHour * 60 + this.params.gexPoolStartMinute)
+                  && et.minutesOfDay <= decMin && isWeekday,
       },
+      // Which gate is actually holding the sleeve dormant
+      warmup: (() => {
+        const g = this.gexPool.length, gN = this.params.gexPoolMinObs;
+        const m = this.obs.length, mN = this.params.trailMinSessions;
+        if (g >= gN && m >= mN) return null;
+        const parts = [];
+        if (g < gN) parts.push(`gamma ${g}/${gN} samples`);
+        if (m < mN) parts.push(`day-move ${m}/${mN} sessions`);
+        return { blocked: parts.join(' · '), gex: [g, gN], move: [m, mN] };
+      })(),
       trailSessions: this.obs.length,
       persistError: this._persistErr,
       skipReason: this._lastSkipReason,
