@@ -151,6 +151,21 @@ export class LetfGammaCloseStrategy extends BaseStrategy {
     return { hour, minute, hhmm: hour * 100 + minute, tradeDate: tdKey };
   }
 
+  /**
+   * Read total gamma exposure from a GEX snapshot.
+   * 🚨 The BACKTEST loader emits snake_case `total_gex` (raw, e.g. 3.4e9) while the
+   * LIVE gex-calculator publishes camelCase `totalGex` ALREADY IN BILLIONS
+   * (gex-calculator.js:340 `totalGex: totalGex / 1e9`, surfaced at :524).
+   * Reading only one shape made the sleeve see `undefined` live and pool nothing.
+   * Units do not matter downstream — the deadband is a percentile of whichever
+   * source is running, so it is scale-free — but the FIELD NAME does.
+   */
+  static readGex(snap) {
+    if (!snap) return null;
+    const v = snap.total_gex ?? snap.totalGex;
+    return Number.isFinite(v) ? v : null;
+  }
+
   /** Deadband = percentile of the AFTERNOON |gex| pool; null until gexPoolMinObs. */
   _gexDeadband() {
     const vals = this.gexPool.map(o => o.v).filter(v => Number.isFinite(v));
@@ -287,8 +302,8 @@ export class LetfGammaCloseStrategy extends BaseStrategy {
     const decHHMM = this.params.decisionHour * 100 + this.params.decisionMinute;
     if (et.hhmm >= poolStart && et.hhmm <= decHHMM) {
       const ps = marketData?.gexLoader?.getGexLevels?.(new Date(timestamp)) || marketData?.gexLevels;
-      const pv = ps?.total_gex;
-      if (ps && Number.isFinite(pv)) {
+      const pv = LetfGammaCloseStrategy.readGex(ps);
+      if (ps && pv !== null) {
         const pms = ps.timestamp instanceof Date ? ps.timestamp.getTime() : this.toMs(ps.timestamp);
         this._poolGex(pms, Math.abs(pv));
       }
@@ -310,8 +325,8 @@ export class LetfGammaCloseStrategy extends BaseStrategy {
 
     // --- GEX at the decision (causal: last snapshot at/before this bar) ---
     const snap = marketData?.gexLoader?.getGexLevels?.(new Date(timestamp)) || marketData?.gexLevels;
-    const totalGex = snap?.total_gex;
-    if (snap == null || totalGex == null || !isFinite(totalGex)) {
+    const totalGex = LetfGammaCloseStrategy.readGex(snap);
+    if (snap == null || totalGex === null) {
       this._lastSkipReason = 'no_gex';
       this._record(et.tradeDate, absMove, undefined);   // move still counts; gex does not
       return null;
