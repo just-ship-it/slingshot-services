@@ -169,6 +169,10 @@ export class LetfGammaCloseStrategy extends BaseStrategy {
     if (this.gexPool.length > this.params.gexPoolMax) {
       this.gexPool = this.gexPool.slice(-this.params.gexPoolMax);
     }
+    // Persist on each NEW snapshot (~10/day after dedupe). Without this the
+    // afternoon pool only reached Redis at the 15:30 decision, so a restart at
+    // e.g. 14:00 silently threw away that day's samples.
+    this._save();
   }
 
   /** Percentile over one field of the observation log; null until minSessions. */
