@@ -1981,7 +1981,9 @@ export class BacktestEngine {
       case 'letf-gamma-close':
       case 'letf-gamma':
       case 'lgc':
-        return new LetfGammaCloseStrategy(params);
+        // persist:false — a backtest must never write its ~700 synthetic observations
+        // into the LIVE Redis rolling-window key.
+        return new LetfGammaCloseStrategy({ ...params, persist: false });
       case 'gapup-fade':
       case 'gap-fade':
       case 'guf':

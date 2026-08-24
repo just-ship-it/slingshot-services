@@ -38,6 +38,7 @@
  * Research: research/mcgraw-claims/ (t1_letf.py .. t1i_lag.py).
  */
 
+import Redis from 'ioredis';
 import { BaseStrategy } from './base-strategy.js';
 import { isValidCandle, roundTo, etParts, secondsToNextDecision } from './strategy-utils.js';
 
@@ -69,6 +70,16 @@ export class LetfGammaCloseStrategy extends BaseStrategy {
       trailWindow: 60,
       trailMinSessions: 20,
 
+      // ★ GEX deadband pool. |total_gex| varies by TIME OF DAY, so the reference
+      // distribution must come from the AFTERNOON, not the whole session: an
+      // all-day pool tested PF 1.54 vs 1.82 for 13:00-15:30. Pooling ~10
+      // snapshots/day from 13:00 collapses warmup from 20 sessions to 2, costing
+      // only PF 1.88->1.82 (net -7%, maxDD identical). Validated on the CLEAN
+      // cbbo-IV period 2025-01..2026-01.
+      gexPoolStartHour: 13, gexPoolStartMinute: 0,
+      gexPoolMinObs: 20,
+      gexPoolMax: 600,
+
       // Gate 1: |day move| must be >= this percentile of its trailing window
       movePct: 0.50,
       // Gate 2: |total_gex| must be > this percentile of its trailing window
@@ -84,6 +95,14 @@ export class LetfGammaCloseStrategy extends BaseStrategy {
       // there is no valid unconditioned version, "always fade" is only PF 1.03 on ES).
       maxGexAgeMin: 120,
 
+      // Redis persistence of the rolling observation window. Without this ANY
+      // data-service/signal-generator restart resets the 20-session warmup and the
+      // sleeve silently never fires. Same failure class as
+      // memory/session-reset-wipes-atr-warmup.md.
+      redisUrl: process.env.REDIS_URL || 'redis://localhost:6379',
+      redisKey: 'strategy:letf-gamma-close:observations',
+      persist: true,
+
       tradingSymbol: 'NQ1!',
       defaultQuantity: 1,
       seedSymbol: 'NQ',
@@ -91,8 +110,14 @@ export class LetfGammaCloseStrategy extends BaseStrategy {
     };
     this.params = { ...this.defaultParams, ...this.params };
 
-    this.moveBuf = [];   // trailing |day move|
-    this.gexBuf = [];    // trailing |total_gex| observed at the decision instant
+    // Dated observation log: [{date:'YYYY-MM-DD', move:<abs pts>, gex:<abs total_gex>}]
+    // Dated so restarts can't double-count a day and so an external seed merges cleanly.
+    this.obs = [];
+    // Deduped afternoon |total_gex| pool: [{ts:<snapshot ms>, v:<abs gex>}]
+    this.gexPool = [];
+    this.redis = null;
+    this._persistErr = null;
+    this._persistDisabled = false;
 
     this.sessTradeDate = null;
     this._resetSession();
@@ -126,18 +151,115 @@ export class LetfGammaCloseStrategy extends BaseStrategy {
     return { hour, minute, hhmm: hour * 100 + minute, tradeDate: tdKey };
   }
 
-  /** Percentile of a buffer (linear interpolation), null until minSessions. */
-  _pct(buf, p) {
-    if (buf.length < this.params.trailMinSessions) return null;
-    const a = [...buf].sort((x, y) => x - y);
+  /** Deadband = percentile of the AFTERNOON |gex| pool; null until gexPoolMinObs. */
+  _gexDeadband() {
+    const vals = this.gexPool.map(o => o.v).filter(v => Number.isFinite(v));
+    if (vals.length < this.params.gexPoolMinObs) return null;
+    const a = vals.sort((x, y) => x - y);
+    const idx = this.params.deadbandPct * (a.length - 1);
+    const lo = Math.floor(idx), hi = Math.ceil(idx);
+    return lo === hi ? a[lo] : a[lo] + (a[hi] - a[lo]) * (idx - lo);
+  }
+
+  /** Record one afternoon GEX snapshot, deduped by snapshot timestamp. */
+  _poolGex(snapMs, absGex) {
+    if (!Number.isFinite(snapMs) || !Number.isFinite(absGex)) return;
+    if (this.gexPool.some(o => o.ts === snapMs)) return;
+    this.gexPool.push({ ts: snapMs, v: absGex });
+    if (this.gexPool.length > this.params.gexPoolMax) {
+      this.gexPool = this.gexPool.slice(-this.params.gexPoolMax);
+    }
+  }
+
+  /** Percentile over one field of the observation log; null until minSessions. */
+  _pct(field, p) {
+    const vals = this.obs.map(o => o[field]).filter(v => Number.isFinite(v));
+    if (vals.length < this.params.trailMinSessions) return null;
+    const a = vals.sort((x, y) => x - y);
     const idx = p * (a.length - 1);
     const lo = Math.floor(idx), hi = Math.ceil(idx);
     return lo === hi ? a[lo] : a[lo] + (a[hi] - a[lo]) * (idx - lo);
   }
 
-  _push(buf, v) {
-    buf.push(v);
-    if (buf.length > this.params.trailWindow) buf.shift();
+  /** Upsert one day's observation, trim to trailWindow, persist. Date-keyed so a
+   *  restart mid-session cannot double-count, and an external seed merges cleanly. */
+  _record(date, move, gex) {
+    const i = this.obs.findIndex(o => o.date === date);
+    const row = { date, move, ...(Number.isFinite(gex) ? { gex } : {}) };
+    if (i >= 0) this.obs[i] = { ...this.obs[i], ...row };
+    else this.obs.push(row);
+    this.obs.sort((a, b) => (a.date < b.date ? -1 : 1));
+    if (this.obs.length > this.params.trailWindow) {
+      this.obs = this.obs.slice(-this.params.trailWindow);
+    }
+    this._save();
+  }
+
+  async _redis() {
+    if (!this.params.persist || this._persistDisabled) return null;
+    if (!this.redis) {
+      this.redis = new Redis(this.params.redisUrl, { lazyConnect: true, maxRetriesPerRequest: 2 });
+      this.redis.on('error', () => {});           // never let redis noise kill the strategy
+      try { await this.redis.connect(); }
+      catch (e) {
+        // Give up permanently after the first failure. Backtests have no Redis and
+        // would otherwise retry on every one of ~700 observations.
+        this._persistErr = e.message;
+        this._persistDisabled = true;
+        try { this.redis.disconnect(); } catch { /* ignore */ }
+        this.redis = null;
+        return null;
+      }
+    }
+    return this.redis;
+  }
+
+  /** Fire-and-forget write. A persistence failure must never block trading. */
+  _save() {
+    if (!this.params.persist) return;
+    this._redis().then(r => {
+      if (!r) return;
+      return r.set(this.params.redisKey, JSON.stringify({ obs: this.obs, gexPool: this.gexPool }));
+    }).then(() => { this._persistErr = null; })
+      .catch(e => { this._persistErr = e.message; });
+  }
+
+  /**
+   * Engine startup hook (multi-strategy-engine calls this when present).
+   * Restores the rolling window from Redis so a data-service / signal-generator
+   * restart does NOT reset the 20-session warmup.
+   * Also the injection point for an offline seed: write the same JSON shape to
+   * `redisKey` and the sleeve picks it up on next boot.
+   * 🚨 The `gex` values MUST come from the SAME source that will run live (CBOE).
+   * Seeding with OPRA/CBBO magnitudes breaks the deadband — median |total_gex|
+   * differs ~0.75x between sources, so the percentile would be measured off the
+   * wrong scale. Price-derived `move` is source-independent and safe to seed.
+   */
+  async seedHistoricalData() {
+    const r = await this._redis();
+    if (!r) return { seeded: false, reason: this._persistErr || 'persist disabled' };
+    try {
+      const raw = await r.get(this.params.redisKey);
+      if (!raw) return { seeded: false, reason: 'no stored observations' };
+      const parsed = JSON.parse(raw);
+      const arr = Array.isArray(parsed) ? parsed : parsed.obs;   // accept legacy array form
+      if (!Array.isArray(arr)) return { seeded: false, reason: 'bad payload' };
+      this.gexPool = Array.isArray(parsed.gexPool)
+        ? parsed.gexPool.filter(o => o && Number.isFinite(o.ts) && Number.isFinite(o.v))
+                        .slice(-this.params.gexPoolMax)
+        : [];
+      this.obs = arr
+        .filter(o => o && typeof o.date === 'string' && Number.isFinite(o.move))
+        .sort((a, b) => (a.date < b.date ? -1 : 1))
+        .slice(-this.params.trailWindow);
+      const withGex = this.obs.filter(o => Number.isFinite(o.gex)).length;
+      return { seeded: true, sessions: this.obs.length, gexSessions: withGex,
+               gexPool: this.gexPool.length,
+               first: this.obs[0]?.date, last: this.obs[this.obs.length - 1]?.date };
+    } catch (e) {
+      this._persistErr = e.message;
+      return { seeded: false, reason: e.message };
+    }
   }
 
   evaluateSignal(candle, prevCandle, marketData, options = {}) {
@@ -152,6 +274,20 @@ export class LetfGammaCloseStrategy extends BaseStrategy {
     }
     if (et.hhmm === this.params.rthOpenHour * 100 + this.params.rthOpenMinute && this.rthOpen === null) {
       this.rthOpen = candle.open;
+    }
+
+    // --- Pool afternoon |total_gex| for the deadband reference distribution. ---
+    // Runs on every candle from gexPoolStart to the decision; deduped by snapshot ts
+    // so a 15-min GEX snapshot is counted once, not 15 times.
+    const poolStart = this.params.gexPoolStartHour * 100 + this.params.gexPoolStartMinute;
+    const decHHMM = this.params.decisionHour * 100 + this.params.decisionMinute;
+    if (et.hhmm >= poolStart && et.hhmm <= decHHMM) {
+      const ps = marketData?.gexLoader?.getGexLevels?.(new Date(timestamp)) || marketData?.gexLevels;
+      const pv = ps?.total_gex;
+      if (ps && Number.isFinite(pv)) {
+        const pms = ps.timestamp instanceof Date ? ps.timestamp.getTime() : this.toMs(ps.timestamp);
+        this._poolGex(pms, Math.abs(pv));
+      }
     }
 
     // Fire on the bar that CLOSES at the decision instant (15:30 ET) = the
@@ -173,7 +309,7 @@ export class LetfGammaCloseStrategy extends BaseStrategy {
     const totalGex = snap?.total_gex;
     if (snap == null || totalGex == null || !isFinite(totalGex)) {
       this._lastSkipReason = 'no_gex';
-      this._push(this.moveBuf, absMove);
+      this._record(et.tradeDate, absMove, undefined);   // move still counts; gex does not
       return null;
     }
     this._lastGex = totalGex;
@@ -181,15 +317,14 @@ export class LetfGammaCloseStrategy extends BaseStrategy {
     const ageMin = isFinite(snapMs) ? (timestamp - snapMs) / ONE_MIN_MS : 0;
     if (ageMin > this.params.maxGexAgeMin) {
       this._lastSkipReason = `gex_stale_${Math.round(ageMin)}m`;
-      this._push(this.moveBuf, absMove);
+      this._record(et.tradeDate, absMove, undefined);
       return null;
     }
 
     // Thresholds from the TRAILING windows (computed BEFORE pushing today's obs)
-    const moveThr = this._pct(this.moveBuf, this.params.movePct);
-    const gexThr = this._pct(this.gexBuf, this.params.deadbandPct);
-    this._push(this.moveBuf, absMove);
-    this._push(this.gexBuf, Math.abs(totalGex));
+    const moveThr = this._pct('move', this.params.movePct);
+    const gexThr = this._gexDeadband();          // afternoon pool, not once-a-day
+    this._record(et.tradeDate, absMove, Math.abs(totalGex));
 
     if (moveThr === null || gexThr === null) { this._lastSkipReason = 'warmup'; return null; }
     if (absMove < moveThr) { this._lastSkipReason = 'move_below_median'; return null; }
@@ -244,8 +379,8 @@ export class LetfGammaCloseStrategy extends BaseStrategy {
 
   /** Seeded once BOTH trailing percentile buffers have enough sessions. */
   isSeeded() {
-    return this.moveBuf.length >= this.params.trailMinSessions &&
-           this.gexBuf.length >= this.params.trailMinSessions;
+    return this.obs.length >= this.params.trailMinSessions &&
+           this.gexPool.length >= this.params.gexPoolMinObs;
   }
 
   /** Latest |total_gex| seen at a decision, for the panel. */
@@ -260,8 +395,8 @@ export class LetfGammaCloseStrategy extends BaseStrategy {
     const decisionPassed = isWeekday && et.minutesOfDay >= decMin;
     const firedToday = this._firedDate === et.dateKey;
 
-    const moveThr = this._pct(this.moveBuf, this.params.movePct);
-    const gexThr = this._pct(this.gexBuf, this.params.deadbandPct);
+    const moveThr = this._pct('move', this.params.movePct);
+    const gexThr = this._gexDeadband();
 
     let moveP = null, met = null, direction = null;
     if (this.rthOpen != null && this._lastPrice != null) {
@@ -303,9 +438,10 @@ export class LetfGammaCloseStrategy extends BaseStrategy {
         deadband: gexThr,
         inDeadband: this._lastGex != null && gexThr != null ? Math.abs(this._lastGex) <= gexThr : null,
         regime: this._lastGex == null ? null : (this._lastGex > 0 ? 'positive (fade)' : 'negative (chase)'),
-        sessions: this.gexBuf.length,
+        sessions: this.gexPool.length,
       },
-      trailSessions: this.moveBuf.length,
+      trailSessions: this.obs.length,
+      persistError: this._persistErr,
       skipReason: this._lastSkipReason,
       firedToday, lastSignal: this._lastSignal,
     };
@@ -313,7 +449,7 @@ export class LetfGammaCloseStrategy extends BaseStrategy {
 
   /**
    * Session reset (live engine, 18:00 ET Globex boundary). Clears INTRADAY state
-   * ONLY. moveBuf/gexBuf are rolling MULTI-DAY percentile buffers — wiping them
+   * ONLY. this.obs is the rolling MULTI-DAY percentile window — wiping it
    * here un-seeds the sleeve every evening and it would never fire live. This is
    * the exact bug that silently disabled gapup-fade (see
    * memory/session-reset-wipes-atr-warmup.md); do not "tidy" it.
@@ -326,7 +462,7 @@ export class LetfGammaCloseStrategy extends BaseStrategy {
     this._lastSignal = null;
     this._firedDate = null;
     this._lastSkipReason = null;
-    // NOTE: moveBuf / gexBuf deliberately preserved.
+    // NOTE: this.obs deliberately preserved (and it is Redis-backed anyway).
   }
 
   getName() { return 'LETF_GAMMA_CLOSE'; }
