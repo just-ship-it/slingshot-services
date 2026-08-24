@@ -248,6 +248,9 @@ export function reconcilePositionSnapshot(openPositions, accountId, brokerPositi
         maxHoldBars: defaults?.maxHoldBars ?? null,
         exitRules: defaults?.exitRules ?? [],
         originalStop: defaults?.originalStop ?? null,
+        // Preserve the EOD-cutoff exemption across adoption; defaulting to
+        // false keeps existing strategies on the EOD force-flat.
+        exemptEodCutoff: defaults?.exemptEodCutoff === true,
         source: 'broker_snapshot',
         defaultsSource: defaults?.source ?? null, // 'signalId' | 'strategy' | null
         missingFromBroker: 0,

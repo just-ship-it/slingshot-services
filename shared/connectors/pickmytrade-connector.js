@@ -217,6 +217,15 @@ export class PickMyTradeConnector extends BaseConnector {
       return { dispatched: false, reason: 'invalid payload' };
     }
 
+    // Stop ENTRY orders are not supported on the PMT path: _buildOrderPayload
+    // maps every non-Market type to 'LMT', and a stop trigger sent as a limit
+    // on the same side of market fills IMMEDIATELY at market — the opposite of
+    // a stop entry. Reject loudly until PMT's STP payload mapping is verified.
+    if (message.orderType === 'Stop') {
+      await this._publishReject(signalId, strategy, 'Stop entry orders not supported on PickMyTrade route');
+      return { dispatched: false, reason: 'stop_entry_unsupported' };
+    }
+
     // Defense-in-depth: snap limit / stop / target to the tick grid. See
     // tradovate-connector._roundPricesToTick for context.
     this._roundPricesToTick(message, symbol);

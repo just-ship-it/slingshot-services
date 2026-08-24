@@ -188,19 +188,24 @@ async function fetchSymbol(tvSymbol, resolution, bars, pages, jwt, cookieHeader)
 async function main() {
   const args = process.argv.slice(2);
   let bars = 8000, outDir = path.join(__dirname, '..', 'data', 'macro'), only = null;
-  let resolution = '1D', pages = 0, merge = false;
+  let resolution = '1D', pages = 0, merge = false, tvSymbols = null;
   for (let i = 0; i < args.length; i++) {
     if (args[i] === '--merge') merge = true;
     else if (args[i] === '--bars' && args[i + 1]) bars = parseInt(args[++i], 10);
     else if (args[i] === '--out' && args[i + 1]) outDir = path.isAbsolute(args[i + 1]) ? args[++i] : path.join(process.cwd(), args[++i]);
     else if (args[i] === '--symbols' && args[i + 1]) only = args[++i].toLowerCase().split(',');
+    // Arbitrary full TV symbols (exchange-prefixed), bypassing BASKET:
+    //   --tv-symbols NYSE:GME,NASDAQ:BYND  → out files gme_1d.csv, bynd_1d.csv
+    else if (args[i] === '--tv-symbols' && args[i + 1]) tvSymbols = args[++i].split(',');
     else if ((args[i] === '--resolution' || args[i] === '--res') && args[i + 1]) resolution = args[++i];
     else if (args[i] === '--pages' && args[i + 1]) pages = parseInt(args[++i], 10);
   }
   // Output suffix: '1D'→1d, '60'→1h, '240'→4h, '15'→15m, '5'→5m, '1'→1m, '1S'→1s
   const resSuffix = ({ '1D': '1d', '1W': '1w', '60': '1h', '120': '2h', '240': '4h' }[resolution])
     || (/^\d+$/.test(resolution) ? `${resolution}m` : resolution.toLowerCase());
-  const basket = only ? BASKET.filter(b => only.includes(b.name)) : BASKET;
+  const basket = tvSymbols
+    ? tvSymbols.map(s => ({ name: s.split(':').pop().toLowerCase(), tv: s }))
+    : (only ? BASKET.filter(b => only.includes(b.name)) : BASKET);
   fs.mkdirSync(outDir, { recursive: true });
 
   console.log('=== Market Data Fetcher (TradingView) ===');

@@ -1,0 +1,97 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "slingshot/price-structures/pattern-event/v0",
+  "title": "PatternEvent",
+  "description": "One state transition of one detected price structure on one timeframe. The detector emits these as a stream; the probability layer consumes them. Every field must be knowable at `ts` (KNOWABILITY.md). Bar timestamps are bar-OPEN stamps; a transition is emitted only after the bar that caused it has CLOSED, so `ts` = close instant of the causing bar.",
+  "type": "object",
+  "required": ["v", "ts", "symbol", "tf", "patternId", "instanceId", "state", "direction", "levels", "anchors", "context"],
+  "properties": {
+    "v": { "const": 0 },
+    "ts": { "type": "string", "format": "date-time", "description": "Emission instant (UTC ISO). Equals the close of the bar that produced this transition." },
+    "symbol": { "type": "string", "description": "Raw contract symbol (e.g. NQU6) — never continuous." },
+    "product": { "type": "string", "enum": ["NQ", "ES"] },
+    "tf": { "type": "string", "description": "Timeframe label, e.g. 1m 3m 5m 15m 30m 1h 4h 1d. Aggregation is session-anchored (ET) — see DESIGN.md." },
+    "patternId": { "type": "string", "description": "Catalog id (kebab-case) from catalog/00-master-index.md, e.g. bull-flag, double-top, hammer, fvg-bull." },
+    "family": { "type": "string", "enum": ["candle", "chart-continuation", "chart-reversal", "chart-bilateral", "structure", "event"] },
+    "instanceId": { "type": "string", "description": "Stable id for one occurrence across its state transitions: `${product}:${tf}:${patternId}:${firstAnchorTs}`." },
+    "state": {
+      "type": "string",
+      "enum": ["candidate", "forming", "confirmed", "triggered", "resolved-up", "resolved-down", "invalidated", "expired"],
+      "description": "candidate: minimum geometry present but tolerance/duration not yet met; forming: geometry met, awaiting breakout/trigger (this is the state that must be COUNTED for honest base rates); confirmed: pattern completed per its rule (e.g. neckline close); triggered: entry level touched (fill-level semantics); resolved-*: target hit or resolution horizon reached with sign; invalidated: invalidation level breached before trigger; expired: max duration exceeded without trigger."
+    },
+    "prevState": { "type": ["string", "null"] },
+    "direction": { "type": "string", "enum": ["up", "down", "bilateral"], "description": "Bias implied by the pattern in its current state. Bilateral (triangles, ranges) until the breakout side is known." },
+    "levels": {
+      "type": "object",
+      "description": "Key tradable levels in RAW contract price. All are as-of `ts`; they may be re-emitted (updated) on later transitions as trendlines extend, but each emission's values are frozen for its ts.",
+      "required": ["trigger", "invalidation"],
+      "properties": {
+        "trigger": { "type": ["number", "null"], "description": "Level whose breach validates/enters the pattern (breakout line, neckline, pattern high/low)." },
+        "triggerSide": { "type": "string", "enum": ["above", "below"] },
+        "invalidation": { "type": ["number", "null"], "description": "Level whose breach voids the pattern (opposite extreme, flag low, apex break)." },
+        "target": { "type": ["number", "null"], "description": "Measured-move / catalog target." },
+        "target2": { "type": ["number", "null"] },
+        "midline": { "type": ["number", "null"] },
+        "upper": { "type": ["number", "null"], "description": "Upper boundary at ts (trendline value or box top)." },
+        "lower": { "type": ["number", "null"] },
+        "upperSlope": { "type": ["number", "null"], "description": "Points per bar of upper boundary (0 for horizontal)." },
+        "lowerSlope": { "type": ["number", "null"] },
+        "extra": { "type": "object", "additionalProperties": { "type": ["number", "null"] }, "description": "Pattern-specific named levels (neckline, apex, prz_low, prz_high, ob_high, ob_low, fvg_top, fvg_bottom, ce, ...)." }
+      }
+    },
+    "anchors": {
+      "type": "array",
+      "description": "The pivots/bars that define the geometry, in chronological order. Each pivot carries confirmedAt (the instant it became known) — never earlier than its own bar close + confirmation lag.",
+      "items": {
+        "type": "object",
+        "required": ["role", "ts", "price", "confirmedAt"],
+        "properties": {
+          "role": { "type": "string", "description": "e.g. poleStart, poleEnd, flagHigh1, flagLow1, leftShoulder, head, rightShoulder, neck1, neck2, X, A, B, C, D, bar0, bar1 ..." },
+          "ts": { "type": "string", "format": "date-time" },
+          "price": { "type": "number" },
+          "confirmedAt": { "type": "string", "format": "date-time" }
+        }
+      }
+    },
+    "geometry": {
+      "type": "object",
+      "description": "Normalized shape descriptors so instances compare across timeframes and vol regimes: everything in ATR units or ratios.",
+      "properties": {
+        "durationBars": { "type": "integer" },
+        "heightAtr": { "type": "number", "description": "Pattern height / ATR(14) of the tf at pattern start." },
+        "priorMoveAtr": { "type": "number", "description": "Signed prior-trend move (flagpole etc.) in ATR units." },
+        "priorMoveBars": { "type": "integer" },
+        "retracePct": { "type": "number", "description": "Retracement of the prior move at deepest point (0-1+)." },
+        "slopeAtrPerBar": { "type": "number" },
+        "symmetry": { "type": "number" },
+        "touchesUpper": { "type": "integer" },
+        "touchesLower": { "type": "integer" },
+        "volumeRatio": { "type": "number", "description": "Pattern mean volume / prior-move mean volume (or vs rolling avg for candles)." },
+        "fitQuality": { "type": "number", "description": "0-1 how well the shape matches the ideal template (tolerance slack used)." },
+        "params": { "type": "object", "description": "Detector parameter set id/values used (pivot threshold, tolerances) — for multiple-comparison bookkeeping." }
+      }
+    },
+    "context": {
+      "type": "object",
+      "description": "Conditioning features knowable at ts (for the probability layer). Keep this small and causal.",
+      "properties": {
+        "session": { "type": "string", "enum": ["overnight", "premarket", "rth", "afterhours"] },
+        "minuteOfDayEt": { "type": "integer" },
+        "dow": { "type": "integer" },
+        "atr14": { "type": "number", "description": "ATR of this tf at ts, points." },
+        "atrPctile": { "type": "number", "description": "Percentile of atr14 vs trailing 60 sessions of the same tf." },
+        "trend": { "type": "object", "properties": { "ema20Slope": { "type": "number" }, "structure": { "type": "string", "enum": ["hh-hl", "lh-ll", "mixed"] } } },
+        "distToRthOpenAtr": { "type": "number" },
+        "distToPdhAtr": { "type": "number" },
+        "distToPdlAtr": { "type": "number" },
+        "distToVwapAtr": { "type": "number" },
+        "parents": {
+          "type": "array",
+          "description": "Higher-timeframe SHAPE instances (family chart-* plus a few range containers) live at ts whose span contains this instance's start — the nesting link (3m bull flag inside 15m bull flag). Emitted on `forming` events only, capped at 12, compact string form `<instanceId>|<state[0]>|<direction[0]>|<alignment[0]>` where alignment ∈ same|counter|neutral.",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "note": { "type": "string" }
+  }
+}

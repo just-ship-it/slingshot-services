@@ -75,6 +75,30 @@
           "enabled": false,
           "priority": 7,
           "evalTimeframe": "1m"
+        },
+        {
+          "name": "letf-gamma-close",
+          "enabled": false,
+          "priority": 8,
+          "evalTimeframe": "1m"
+        },
+        {
+          "name": "pattern-hs-top",
+          "enabled": false,
+          "priority": 8,
+          "evalTimeframe": "1m"
+        },
+        {
+          "name": "pattern-fvg-bear",
+          "enabled": false,
+          "priority": 9,
+          "evalTimeframe": "1m"
+        },
+        {
+          "name": "pattern-retest-long",
+          "enabled": false,
+          "priority": 10,
+          "evalTimeframe": "1m"
         }
       ]
     },

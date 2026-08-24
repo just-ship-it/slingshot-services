@@ -231,10 +231,27 @@ export class TradovateConnector extends BaseConnector {
     this.contractCache.set(contract.id, contract.symbol || symbol);
 
     const quantity = message.quantity || 1;
-    const orderType = message.orderType;               // 'Limit' | 'Market'
+    const orderType = message.orderType;               // 'Limit' | 'Market' | 'Stop'
+    // Stop ENTRY orders (orderType 'Stop') use message.price as the stop
+    // TRIGGER price — encoded to the broker as `stopPrice`, mirroring the SL
+    // bracket leg. A Stop entry without a trigger price is unplaceable, and
+    // the orderStrategy (trailing) endpoint has no stop-entry mapping yet, so
+    // both are rejected loudly instead of silently mis-ordering.
+    if (orderType === 'Stop' && !Number.isFinite(Number(message.price))) {
+      return this._rejectLocally(signalId, strategy, `Stop entry requires numeric price (got ${message.price})`, { symbol });
+    }
     const hasStop = message.stopLoss != null;
     const hasTarget = message.takeProfit != null;
     const hasTrailing = message.trailingTrigger != null && message.trailingOffset != null;
+    if (orderType === 'Stop' && hasTrailing) {
+      return this._rejectLocally(signalId, strategy, 'Stop entry + trailing (orderStrategy) not supported — drop trailingTrigger/trailingOffset or use Limit/Market', { symbol });
+    }
+    if (orderType === 'StopLimit' && (!Number.isFinite(Number(message.price)) || !Number.isFinite(Number(message.stopTrigger)))) {
+      return this._rejectLocally(signalId, strategy, `StopLimit entry requires numeric price (limit) + stopTrigger (got ${message.price}/${message.stopTrigger})`, { symbol });
+    }
+    if (orderType === 'StopLimit' && hasTrailing) {
+      return this._rejectLocally(signalId, strategy, 'StopLimit entry + trailing (orderStrategy) not supported — drop trailingTrigger/trailingOffset', { symbol });
+    }
     const isBracket = hasStop || hasTarget || hasTrailing;
 
     this.pendingOrderSignals.set(symbol, { signalId, strategy, timestamp: Date.now() });
@@ -370,7 +387,14 @@ export class TradovateConnector extends BaseConnector {
       action: message.action,
       orderQty: Number(message.quantity || 1),
       orderType: message.orderType,
-      price: message.orderType === 'Limit' ? Number(message.price) : undefined,
+      price: (message.orderType === 'Limit' || message.orderType === 'StopLimit') ? Number(message.price) : undefined,
+      // StopLimit ENTRY: trigger in `stopPrice`, limit in `price`.
+      // Stop ENTRY: Tradovate encodes the trigger as `stopPrice` (same field
+      // the SL bracket leg uses on /order/placeOSO). BUY stop rests above
+      // market, SELL stop below — the caller supplies the price; the broker
+      // rejects a wrong-side trigger.
+      stopPrice: message.orderType === 'Stop' ? Number(message.price)
+        : message.orderType === 'StopLimit' ? Number(message.stopTrigger) : undefined,
       isAutomated: true,
       // Server-side attribution carriers. `text` lives on OrderVersion forever;
       // `clOrdId` on Command. Lets reconcile recover strategy without local state.
@@ -391,7 +415,11 @@ export class TradovateConnector extends BaseConnector {
       action,
       orderQty: Number(message.quantity || 1),
       orderType: message.orderType,
-      price: message.orderType === 'Limit' ? Number(message.price) : undefined,
+      price: (message.orderType === 'Limit' || message.orderType === 'StopLimit') ? Number(message.price) : undefined,
+      // Stop ENTRY on an OSO: trigger goes in `stopPrice`, mirroring the SL
+      // bracket leg below. See _placeSimple.
+      stopPrice: message.orderType === 'Stop' ? Number(message.price)
+        : message.orderType === 'StopLimit' ? Number(message.stopTrigger) : undefined,
       isAutomated: true,
       // Server-side attribution. customTag50 (FIX 50) is rejected by CME
       // ("Unregisted Tag50") so we only use text (FIX 58) + clOrdId (FIX 11).
@@ -430,7 +458,7 @@ export class TradovateConnector extends BaseConnector {
       action: message.action,
       orderQty: Number(message.quantity || 1),
       orderType: message.orderType,
-      price: message.orderType === 'Limit' ? Number(message.price) : undefined,
+      price: (message.orderType === 'Limit' || message.orderType === 'StopLimit') ? Number(message.price) : undefined,
       trailingTrigger: Number(message.trailingTrigger),
       trailingOffset: Number(message.trailingOffset),
       stopLoss: message.stopLoss != null ? Number(message.stopLoss) : undefined,

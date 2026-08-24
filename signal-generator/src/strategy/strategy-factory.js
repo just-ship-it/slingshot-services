@@ -20,7 +20,11 @@ import { GexLevelFadeStrategy } from '../../../shared/strategies/gex-level-fade.
 import { LsFlipTriggerBarStrategy } from '../../../shared/strategies/ls-flip-trigger-bar.js';
 import { PreCloseContinuationStrategy } from '../../../shared/strategies/preclose-continuation.js';
 import { MondayStrengthStrategy } from '../../../shared/strategies/monday-strength.js';
+import { LetfGammaCloseStrategy } from '../../../shared/strategies/letf-gamma-close.js';
 import { GapUpFadeStrategy } from '../../../shared/strategies/gapup-fade.js';
+import { PatternHsTopStrategy } from '../../../shared/strategies/pattern-hs-top.js';
+import { PatternFvgBearStrategy } from '../../../shared/strategies/pattern-fvg-bear.js';
+import { PatternRetestLongStrategy } from '../../../shared/strategies/pattern-retest-long.js';
 import { IntradayMomentumStrategy } from '../../../shared/strategies/intraday-momentum.js';
 
 const logger = createLogger('strategy-factory');
@@ -43,7 +47,11 @@ export const STRATEGY_TYPES = {
   LS_FLIP_TRIGGER_BAR: 'ls-flip-trigger-bar',
   PRECLOSE_CONTINUATION: 'preclose-continuation',
   MONDAY_STRENGTH: 'monday-strength',
+  LETF_GAMMA_CLOSE: 'letf-gamma-close',
   GAPUP_FADE: 'gapup-fade',
+  PATTERN_HS_TOP: 'pattern-hs-top',
+  PATTERN_FVG_BEAR: 'pattern-fvg-bear',
+  PATTERN_RETEST_LONG: 'pattern-retest-long',
   INTRADAY_MOMENTUM: 'intraday-momentum',
   AI_TRADER: 'ai-trader'
 };
@@ -133,11 +141,35 @@ export function createStrategy(strategyName, config) {
     case 'mon':
       return createMondayStrengthStrategy(config);
 
+    case STRATEGY_TYPES.LETF_GAMMA_CLOSE:
+    case 'letf_gamma_close':
+    case 'letf-gamma':
+    case 'lgc':
+      return createLetfGammaCloseStrategy(config);
+
     case STRATEGY_TYPES.GAPUP_FADE:
     case 'gapup_fade':
     case 'gap-fade':
     case 'guf':
       return createGapUpFadeStrategy(config);
+
+    case STRATEGY_TYPES.PATTERN_HS_TOP:
+    case 'pattern_hs_top':
+    case 'hs-top':
+    case 'phs':
+      return createPatternHsTopStrategy(config);
+
+    case STRATEGY_TYPES.PATTERN_FVG_BEAR:
+    case 'pattern_fvg_bear':
+    case 'fvg-bear':
+    case 'pfb':
+      return createPatternFvgBearStrategy(config);
+
+    case STRATEGY_TYPES.PATTERN_RETEST_LONG:
+    case 'pattern_retest_long':
+    case 'retest-long':
+    case 'prl':
+      return createPatternRetestLongStrategy(config);
 
     case STRATEGY_TYPES.INTRADAY_MOMENTUM:
     case 'intraday_momentum':
@@ -323,11 +355,35 @@ export function getStrategyConstant(strategyName) {
     case 'mon':
       return 'MONDAY_STRENGTH';
 
+    case STRATEGY_TYPES.LETF_GAMMA_CLOSE:
+    case 'letf_gamma_close':
+    case 'letf-gamma':
+    case 'lgc':
+      return 'LETF_GAMMA_CLOSE';
+
     case STRATEGY_TYPES.GAPUP_FADE:
     case 'gapup_fade':
     case 'gap-fade':
     case 'guf':
       return 'GAPUP_FADE';
+
+    case STRATEGY_TYPES.PATTERN_HS_TOP:
+    case 'pattern_hs_top':
+    case 'hs-top':
+    case 'phs':
+      return 'PATTERN_HS_TOP';
+
+    case STRATEGY_TYPES.PATTERN_FVG_BEAR:
+    case 'pattern_fvg_bear':
+    case 'fvg-bear':
+    case 'pfb':
+      return 'PATTERN_FVG_BEAR';
+
+    case STRATEGY_TYPES.PATTERN_RETEST_LONG:
+    case 'pattern_retest_long':
+    case 'retest-long':
+    case 'prl':
+      return 'PATTERN_RETEST_LONG';
 
     case STRATEGY_TYPES.INTRADAY_MOMENTUM:
     case 'intraday_momentum':
@@ -436,11 +492,35 @@ export function getDataRequirements(strategyName) {
     case 'mon':
       return MondayStrengthStrategy.getDataRequirements();
 
+    case STRATEGY_TYPES.LETF_GAMMA_CLOSE:
+    case 'letf_gamma_close':
+    case 'letf-gamma':
+    case 'lgc':
+      return LetfGammaCloseStrategy.getDataRequirements();
+
     case STRATEGY_TYPES.GAPUP_FADE:
     case 'gapup_fade':
     case 'gap-fade':
     case 'guf':
       return GapUpFadeStrategy.getDataRequirements();
+
+    case STRATEGY_TYPES.PATTERN_HS_TOP:
+    case 'pattern_hs_top':
+    case 'hs-top':
+    case 'phs':
+      return PatternHsTopStrategy.getDataRequirements();
+
+    case STRATEGY_TYPES.PATTERN_FVG_BEAR:
+    case 'pattern_fvg_bear':
+    case 'fvg-bear':
+    case 'pfb':
+      return PatternFvgBearStrategy.getDataRequirements();
+
+    case STRATEGY_TYPES.PATTERN_RETEST_LONG:
+    case 'pattern_retest_long':
+    case 'retest-long':
+    case 'prl':
+      return PatternRetestLongStrategy.getDataRequirements();
 
     case STRATEGY_TYPES.INTRADAY_MOMENTUM:
     case 'intraday_momentum':
@@ -704,6 +784,21 @@ function createPreCloseContinuationStrategy(config) {
  * self-contained max-hold exit at 15:45 ET (holdBars=375). Long-only session beta
  * — a book diversifier, size accordingly.
  */
+function createLetfGammaCloseStrategy(config) {
+  const overrides = typeof config.getLetfGammaCloseParams === 'function'
+    ? config.getLetfGammaCloseParams() : {};
+  const params = {
+    ...overrides,
+    tradingSymbol: config.TRADING_SYMBOL,
+    defaultQuantity: config.DEFAULT_QUANTITY,
+    debug: false,
+  };
+  logger.info(`LETF-Gamma-Close params: decision=15:30 ET hold=${params.holdBars ?? 15}min (→15:45 ET), `
+    + `movePct=${params.movePct ?? 0.50} deadbandPct=${params.deadbandPct ?? 0.40} `
+    + `trail=${params.trailWindow ?? 60} sessions`);
+  return new LetfGammaCloseStrategy(params);
+}
+
 function createMondayStrengthStrategy(config) {
   const overrides = typeof config.getMondayStrengthParams === 'function'
     ? config.getMondayStrengthParams() : {};
@@ -735,6 +830,63 @@ function createGapUpFadeStrategy(config) {
   logger.info(`GapUp-Fade params: gapAtrMult=${params.gapAtrMult ?? 0.50}, `
     + `hold=${params.holdBars ?? 90}min (→11:00 ET), seedSymbol=${params.seedSymbol ?? 'NQ'}`);
   return new GapUpFadeStrategy(params);
+}
+
+/**
+ * Price-structures port #1 — H&S Top (5m, SHORT). Stop-entry at the sloped
+ * neckline, cancel pending 10m; stop 1.0 ATR, time exit 30m, no target.
+ * STUB — evaluateSignal returns null until the pattern-engine port lands.
+ */
+function createPatternHsTopStrategy(config) {
+  const overrides = typeof config.getPatternHsTopParams === 'function'
+    ? config.getPatternHsTopParams() : {};
+  const params = {
+    ...overrides,
+    tradingSymbol: config.TRADING_SYMBOL,
+    defaultQuantity: config.DEFAULT_QUANTITY,
+    debug: false,
+  };
+  logger.info(`Pattern-HS-Top params: tf=${params.patternTimeframe ?? '5m'}, `
+    + `stopAtr=${params.stopAtrMult ?? 1.0}, hold=${params.maxHoldBars ?? 30}min`);
+  return new PatternHsTopStrategy(params);
+}
+
+/**
+ * Price-structures port #2 — Bearish FVG retrace (15m, SHORT). Limit-SELL at
+ * fvgTop, ema20Slope <= 0 filter; stop 1.5 ATR, time cap 240m, no target.
+ * STUB — evaluateSignal returns null until the pattern-engine port lands.
+ */
+function createPatternFvgBearStrategy(config) {
+  const overrides = typeof config.getPatternFvgBearParams === 'function'
+    ? config.getPatternFvgBearParams() : {};
+  const params = {
+    ...overrides,
+    tradingSymbol: config.TRADING_SYMBOL,
+    defaultQuantity: config.DEFAULT_QUANTITY,
+    debug: false,
+  };
+  logger.info(`Pattern-FVG-Bear params: tf=${params.patternTimeframe ?? '15m'}, `
+    + `stopAtr=${params.stopAtrMult ?? 1.5}, hold=${params.maxHoldBars ?? 240}min`);
+  return new PatternFvgBearStrategy(params);
+}
+
+/**
+ * Price-structures port #3 — Twin-high retest (5m, LONG, shadow-grade).
+ * Limit-BUY at the broken twin level, work 120m; pattern stop/target, cap 480m.
+ * STUB — evaluateSignal returns null until the pattern-engine port lands.
+ */
+function createPatternRetestLongStrategy(config) {
+  const overrides = typeof config.getPatternRetestLongParams === 'function'
+    ? config.getPatternRetestLongParams() : {};
+  const params = {
+    ...overrides,
+    tradingSymbol: config.TRADING_SYMBOL,
+    defaultQuantity: config.DEFAULT_QUANTITY,
+    debug: false,
+  };
+  logger.info(`Pattern-Retest-Long params: tf=${params.patternTimeframe ?? '5m'}, `
+    + `work=${params.timeoutCandles ?? 120}min, hold=${params.maxHoldBars ?? 480}min`);
+  return new PatternRetestLongStrategy(params);
 }
 
 /**

@@ -445,7 +445,7 @@ export class TradeSimulator {
         // invalidated and we never enter.
         if (trade.signal?.cancelOnPreFillExtreme) {
           const isBuy = trade.side === 'buy' || trade.side === 'long';
-          const wouldFill = this._limitFillReached(trade, bar, isBuy);
+          const wouldFill = this._entryFillReached(trade, bar, isBuy);
           if (!wouldFill) {
             const targetHit = isBuy ? (bar.high >= trade.takeProfit) : (bar.low <= trade.takeProfit);
             const stopHit   = isBuy ? (bar.low  <= trade.stopLoss)  : (bar.high >= trade.stopLoss);
@@ -462,7 +462,7 @@ export class TradeSimulator {
             }
           }
         }
-        const fillResult = this.checkOrderFill(trade, bar);
+        const fillResult = this.checkOrderFill(trade, { ...bar, _is1s: true });
         if (fillResult.filled) {
           trade.status = 'active';
           trade.actualEntry = fillResult.fillPrice;
@@ -641,7 +641,29 @@ export class TradeSimulator {
     // If we're still pending after all second bars, check timeout
     if (trade.status === 'pending' && minuteCandle) {
       trade.candlesSinceSignal++;
-      if (trade.signal.action === 'place_limit' && trade.timeoutCandles > 0) {
+      if (trade.signal.action === 'place_stop_limit' && trade.timeoutCandles > 0) {
+        // stop-limit: pre-arm window counts against armTimeoutCandles; the
+        // limit's timeoutCandles only starts once ARMED (matches broker
+        // semantics: the limit begins working at the stop trigger).
+        let slCancel = null;
+        if (!trade.armed) {
+          trade.armElapsed = (trade.armElapsed || 0) + 1;
+          const armTtl = trade.signal.armTimeoutCandles ?? trade.signal.arm_timeout_candles ?? 0;
+          if (armTtl > 0 && trade.armElapsed >= armTtl) slCancel = 'arm_timeout';
+        } else {
+          trade.armedElapsed = (trade.armedElapsed || 0) + 1;
+          if (trade.armedElapsed >= trade.timeoutCandles) slCancel = 'timeout';
+        }
+        if (slCancel) {
+          trade.status = 'cancelled';
+          return {
+            ...trade,
+            event: 'order_cancelled',
+            cancelReason: slCancel,
+            candlesWaited: trade.candlesSinceSignal
+          };
+        }
+      } else if ((trade.signal.action === 'place_limit' || trade.signal.action === 'place_stop') && trade.timeoutCandles > 0) {
         if (trade.candlesSinceSignal >= trade.timeoutCandles) {
           trade.status = 'cancelled';
           return {
@@ -776,7 +798,29 @@ export class TradeSimulator {
       }
 
       // Check for order timeout (limit orders only)
-      if (trade.signal.action === 'place_limit' && trade.timeoutCandles > 0) {
+      if (trade.signal.action === 'place_stop_limit' && trade.timeoutCandles > 0) {
+        // stop-limit: pre-arm window counts against armTimeoutCandles; the
+        // limit's timeoutCandles only starts once ARMED (matches broker
+        // semantics: the limit begins working at the stop trigger).
+        let slCancel = null;
+        if (!trade.armed) {
+          trade.armElapsed = (trade.armElapsed || 0) + 1;
+          const armTtl = trade.signal.armTimeoutCandles ?? trade.signal.arm_timeout_candles ?? 0;
+          if (armTtl > 0 && trade.armElapsed >= armTtl) slCancel = 'arm_timeout';
+        } else {
+          trade.armedElapsed = (trade.armedElapsed || 0) + 1;
+          if (trade.armedElapsed >= trade.timeoutCandles) slCancel = 'timeout';
+        }
+        if (slCancel) {
+          trade.status = 'cancelled';
+          return {
+            ...trade,
+            event: 'order_cancelled',
+            cancelReason: slCancel,
+            candlesWaited: trade.candlesSinceSignal
+          };
+        }
+      } else if ((trade.signal.action === 'place_limit' || trade.signal.action === 'place_stop') && trade.timeoutCandles > 0) {
         if (trade.candlesSinceSignal >= trade.timeoutCandles) {
           // Order expired - cancel it
           trade.status = 'cancelled';
@@ -807,7 +851,7 @@ export class TradeSimulator {
       // Structural pre-fill invalidation (1m fallback when no 1s data).
       if (trade.signal?.cancelOnPreFillExtreme) {
         const isBuy = trade.side === 'buy' || trade.side === 'long';
-        const wouldFill = this._limitFillReached(trade, candle, isBuy);
+        const wouldFill = this._entryFillReached(trade, candle, isBuy);
         if (!wouldFill) {
           const targetHit = isBuy ? (candle.high >= trade.takeProfit) : (candle.low <= trade.takeProfit);
           const stopHit   = isBuy ? (candle.low  <= trade.stopLoss)  : (candle.high >= trade.stopLoss);
@@ -891,9 +935,12 @@ export class TradeSimulator {
         return { ...trade, event: 'entry_filled', fillPrice: fillResult.fillPrice };
       }
 
-      if (debug && trade.signal.action === 'place_limit') {
-        const distanceToFill = this.isBuyPosition(trade) ? (candle.low - trade.entryPrice) : (trade.entryPrice - candle.high);
-        console.log(`    📊 [TRADE ${trade.id}] Limit order waiting | Entry: ${trade.entryPrice} | Low: ${candle.low} | High: ${candle.high} | Distance to fill: ${distanceToFill.toFixed(2)}`);
+      if (debug && (trade.signal.action === 'place_limit' || trade.signal.action === 'place_stop')) {
+        const isStopEntry = trade.signal.action === 'place_stop';
+        const distanceToFill = this.isBuyPosition(trade)
+          ? (isStopEntry ? trade.entryPrice - candle.high : candle.low - trade.entryPrice)
+          : (isStopEntry ? candle.low - trade.entryPrice : trade.entryPrice - candle.high);
+        console.log(`    📊 [TRADE ${trade.id}] ${isStopEntry ? 'Stop-entry' : 'Limit'} order waiting | Entry: ${trade.entryPrice} | Low: ${candle.low} | High: ${candle.high} | Distance to fill: ${distanceToFill.toFixed(2)}`);
       }
       return null;
     }
@@ -1055,6 +1102,11 @@ export class TradeSimulator {
    * - If price gaps THROUGH the limit (opens beyond it), fill at the open (price improvement)
    * - This handles overnight gaps and fast markets correctly
    *
+   * Stop-market entries (place_stop) are the mirror image: BUY stop rests
+   * ABOVE the market, SELL stop BELOW. On trigger they convert to market
+   * orders, so every fill takes stopOrderSlippage — and a gap through the
+   * stop CHASES (fill at open ± slippage), never price improvement.
+   *
    * @param {Object} trade - Trade object
    * @param {Object} candle - Current candle
    * @returns {Object} { filled: boolean, fillPrice: number }
@@ -1087,6 +1139,52 @@ export class TradeSimulator {
       }
     }
 
+    if (trade.signal.action === 'place_stop') {
+      // Stop-market entry — BUY stop above market, SELL stop below. The stop
+      // converts to a market order on trigger, so every fill slips by
+      // stopOrderSlippage (same treatment as stop_loss exits).
+      if (this._stopFillReached(trade, candle, isBuyOrder)) {
+        // Gap-through (open already beyond the stop) → the stop triggers on
+        // the open print and CHASES from there: fill at open ± slippage.
+        // Stops never get price improvement — the opposite of limit gaps.
+        const gappedThrough = isBuyOrder ? (candle.open >= trade.entryPrice) : (candle.open <= trade.entryPrice);
+        const basePrice = gappedThrough ? candle.open : trade.entryPrice;
+        const slippage = isBuyOrder ? this.slippage.stopOrderSlippage : -this.slippage.stopOrderSlippage;
+        return { filled: true, fillPrice: roundTo(basePrice + slippage) };
+      }
+    }
+
+    if (trade.signal.action === 'place_stop_limit') {
+      // Stop-limit entry: inert until the STOP TRIGGER (signal.stopTrigger) is
+      // touched (BUY: high >= trigger arms; SELL: low <= trigger). Once armed,
+      // it becomes a resting limit at entryPrice (limit semantics, zero slip).
+      // Arming and filling may happen on the SAME bar only in the 1s path
+      // (candle._is1s), where intra-bar ordering is ~exact; on 1m bars the
+      // arming bar cannot also fill (ordering unknowable) — fills start on the
+      // next bar. `timeoutCandles` counts from ARMING (see pending paths);
+      // `armTimeoutCandles` bounds the pre-arm window.
+      const trig = trade.signal.stopTrigger ?? trade.signal.stop_trigger;
+      if (!trade.armed) {
+        const armed = isBuyOrder ? (candle.high >= trig) : (candle.low <= trig);
+        if (armed) {
+          trade.armed = true;
+          trade.armedAt = candle.timestamp;
+          if (!candle._is1s) return { filled: false, fillPrice: null };   // 1m arming bar: no same-bar fill
+          // 1s arming bar: allow same-bar fill only if the bar ALSO spans the
+          // limit on the retrace side (1-second granularity; treated as sequential).
+        } else {
+          return { filled: false, fillPrice: null };
+        }
+      }
+      if (this._limitFillReached(trade, candle, isBuyOrder)) {
+        const gappedThrough = isBuyOrder ? (candle.open <= trade.entryPrice) : (candle.open >= trade.entryPrice);
+        if (gappedThrough && trade.armedAt !== candle.timestamp) {
+          return { filled: true, fillPrice: roundTo(candle.open) };
+        }
+        return { filled: true, fillPrice: roundTo(trade.entryPrice) };
+      }
+    }
+
     return { filled: false, fillPrice: null };
   }
 
@@ -1101,6 +1199,33 @@ export class TradeSimulator {
       return isBuyOrder ? (candle.low < trade.entryPrice) : (candle.high > trade.entryPrice);
     }
     return isBuyOrder ? (candle.low <= trade.entryPrice) : (candle.high >= trade.entryPrice);
+  }
+
+  /**
+   * Stop-entry trigger predicate (place_stop). BUY stop rests ABOVE the
+   * market and triggers when price trades up to it; SELL stop rests BELOW
+   * and triggers on a trade down to it. Touch = trigger: the exchange fires
+   * a stop on any trade at the price, so there is no queue-position analog
+   * and strictLimitFill does not apply.
+   */
+  _stopFillReached(trade, candle, isBuyOrder) {
+    return isBuyOrder ? (candle.high >= trade.entryPrice) : (candle.low <= trade.entryPrice);
+  }
+
+  /**
+   * Action-aware entry-fill predicate. Dispatches on signal.action so the
+   * pre-fill invalidation checks (cancelOnPreFillExtreme) always agree with
+   * checkOrderFill about "would this bar have filled us" for BOTH limit and
+   * stop entries.
+   */
+  _entryFillReached(trade, candle, isBuyOrder) {
+    if (trade.signal?.action === 'place_stop') {
+      return this._stopFillReached(trade, candle, isBuyOrder);
+    }
+    if (trade.signal?.action === 'place_stop_limit' && !trade.armed) {
+      return false;   // unarmed stop-limit cannot fill
+    }
+    return this._limitFillReached(trade, candle, isBuyOrder);
   }
 
   /**

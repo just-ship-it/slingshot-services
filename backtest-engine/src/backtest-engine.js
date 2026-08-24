@@ -61,7 +61,11 @@ import { MidnightOpenRetracementStrategy } from '../../shared/strategies/midnigh
 import { InitialBalanceBreakoutStrategy } from '../../shared/strategies/initial-balance-breakout.js';
 import { PreCloseContinuationStrategy } from '../../shared/strategies/preclose-continuation.js';
 import { MondayStrengthStrategy } from '../../shared/strategies/monday-strength.js';
+import { LetfGammaCloseStrategy } from '../../shared/strategies/letf-gamma-close.js';
 import { GapUpFadeStrategy } from '../../shared/strategies/gapup-fade.js';
+import { PatternHsTopStrategy } from '../../shared/strategies/pattern-hs-top.js';
+import { PatternFvgBearStrategy } from '../../shared/strategies/pattern-fvg-bear.js';
+import { PatternRetestLongStrategy } from '../../shared/strategies/pattern-retest-long.js';
 import { IntradayMomentumStrategy } from '../../shared/strategies/intraday-momentum.js';
 import { GapFillStrategy } from '../../shared/strategies/gap-fill.js';
 import { DailyLevelSweepStrategy } from '../../shared/strategies/daily-level-sweep.js';
@@ -1974,10 +1978,26 @@ export class BacktestEngine {
       case 'monday':
       case 'mon':
         return new MondayStrengthStrategy(params);
+      case 'letf-gamma-close':
+      case 'letf-gamma':
+      case 'lgc':
+        return new LetfGammaCloseStrategy(params);
       case 'gapup-fade':
       case 'gap-fade':
       case 'guf':
         return new GapUpFadeStrategy(params);
+      case 'pattern-hs-top':
+      case 'hs-top':
+      case 'phs':
+        return new PatternHsTopStrategy(params);
+      case 'pattern-fvg-bear':
+      case 'fvg-bear':
+      case 'pfb':
+        return new PatternFvgBearStrategy(params);
+      case 'pattern-retest-long':
+      case 'retest-long':
+      case 'prl':
+        return new PatternRetestLongStrategy(params);
       case 'intraday-momentum':
       case 'zarattini':
       case 'zim':

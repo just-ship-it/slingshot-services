@@ -3358,7 +3358,7 @@ app.get('/api/strategies', dashboardAuth, async (req, res) => {
 // call for the "book at a glance" panel. Proxies signal-generator's all-status
 // (which carries each strategy's getInternalState internals) and returns just
 // the three book strategies, in display order.
-const BOOK_STRATEGIES = ['preclose-continuation', 'monday-strength', 'gapup-fade'];
+const BOOK_STRATEGIES = ['preclose-continuation', 'monday-strength', 'gapup-fade', 'letf-gamma-close'];
 app.get('/api/book/readiness', dashboardAuth, async (req, res) => {
   try {
     const response = await axios.get(`${SIGNAL_GENERATOR_URL}/strategy/status`, { timeout: 5000 });
@@ -3684,6 +3684,14 @@ app.post('/api/signals/resend', dashboardAuth, async (req, res) => {
       stop_loss: signal.stop_loss,
       take_profit: signal.take_profit,
       quantity: signal.quantity || null,
+      // Opt-in lifecycle fields for the pattern strategies — pass through so a
+      // manual resend keeps the same live-path contract as the original signal
+      // (place_stop entries, 1m close-beyond cancel, 24/7 EOD exemption).
+      // Absent fields stay absent → zero change for existing strategies.
+      ...(signal.exemptEodCutoff === true ? { exemptEodCutoff: true } : {}),
+      ...(signal.cancelOnCloseBeyond ? { cancelOnCloseBeyond: signal.cancelOnCloseBeyond } : {}),
+      ...(signal.maxHoldBars != null ? { maxHoldBars: signal.maxHoldBars } : {}),
+      ...(signal.timeoutCandles != null ? { timeoutCandles: signal.timeoutCandles } : {}),
       ...(targetAccountId ? { targetAccountId } : {})
     };
     await messageBus.publish(CHANNELS.TRADE_SIGNAL, tradeSignal);

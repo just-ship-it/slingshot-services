@@ -84,7 +84,9 @@ export function shouldCancelOnAdverseLsFlip(direction, sentiment) {
 export function shouldCancelPendingOnFlip(pending, product, sentiment, flipTsMs) {
   if (!pending || !pending.cancelOnAdverseLsFlip) return false;
   if (pending.cancelRequested) return false;
-  if (pending.action !== 'place_limit') return false;
+  // Working entry orders only (resting limit OR resting stop entry) — a
+  // place_market entry never rests, so there is nothing to cancel.
+  if (pending.action !== 'place_limit' && pending.action !== 'place_stop') return false;
   if (!pending.signalId) return false;
   if (pending.underlying !== product) return false;
   if (!shouldCancelOnAdverseLsFlip(pending.direction, sentiment)) return false;
@@ -106,4 +108,61 @@ export function shouldCancelOnPreFillExtreme(direction, stopLoss, takeProfit, hi
     if (high != null && high >= stopLoss) return `SL-first (high ${high} >= stopLoss ${stopLoss})`;
   }
   return null;
+}
+
+/**
+ * Cancel-on-close-beyond: sanitize the opt-in signal field.
+ *
+ * Signal contract (opt-in; absent/malformed → feature off for that signal):
+ *   cancelOnCloseBeyond: { price: <number>, side: 'above'|'below' }
+ * meaning "cancel my working entry order if a 1m candle CLOSES beyond
+ * `price` in direction `side`". Used by fvg-bear to kill a resting limit
+ * when a 1m close exceeds the gap-invalidation level.
+ *
+ * @returns {{price:number, side:'above'|'below'}|null}
+ */
+export function normalizeCancelOnCloseBeyond(raw) {
+  if (!raw || typeof raw !== 'object') return null;
+  const price = Number(raw.price);
+  const side = String(raw.side || '').toLowerCase();
+  if (!Number.isFinite(price)) return null;
+  if (side !== 'above' && side !== 'below') return null;
+  return { price, side };
+}
+
+/**
+ * Full per-order decision for the cancel-on-close-beyond watcher, driven by
+ * 1m candle.close bus messages (NOT price.update ticks — the whole point is
+ * bar-CLOSE confirmation; intra-bar wicks through the level must not cancel).
+ *
+ * Trigger-bar guard: only bars that CLOSE strictly after the order was placed
+ * count. candle.close carries the bar-START timestamp; the bar's close happens
+ * at barStart + 60s. This keeps the signal's own trigger bar (whose close the
+ * strategy already evaluated before emitting the signal) from self-cancelling
+ * when its candle.close event races the trade.signal through the bus. When the
+ * bar timestamp is missing/unparseable we evaluate anyway — data-service
+ * always stamps it, and failing open here only risks cancelling an order whose
+ * setup is invalidated per the strategy's own definition.
+ *
+ * @param {object} pending - pendingOrders entry ({cancelOnCloseBeyond,
+ *   cancelRequested, action, signalId, underlying, requestedAt}).
+ * @param {object} bar - { product, close, barStartMs } from candle.close
+ *   (product = base symbol e.g. 'NQ'; barStartMs = bar-start epoch ms | null).
+ * @returns {boolean} true when the pending order should be cancelled.
+ */
+export function shouldCancelOnCloseBeyond(pending, { product, close, barStartMs }) {
+  if (!pending) return false;
+  const cfg = normalizeCancelOnCloseBeyond(pending.cancelOnCloseBeyond);
+  if (!cfg) return false;
+  if (pending.cancelRequested) return false;
+  if (pending.action !== 'place_limit' && pending.action !== 'place_stop') return false;
+  if (!pending.signalId) return false;
+  if (!product || pending.underlying !== product) return false;
+  const c = Number(close);
+  if (!Number.isFinite(c)) return false;
+  if (Number.isFinite(barStartMs) && Number.isFinite(pending.requestedAt)) {
+    const barEndMs = barStartMs + 60_000;
+    if (barEndMs <= pending.requestedAt) return false; // bar closed at/before placement
+  }
+  return cfg.side === 'above' ? c > cfg.price : c < cfg.price;
 }

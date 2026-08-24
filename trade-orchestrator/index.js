@@ -29,7 +29,12 @@ import { evaluateCrossStrategyRules, evaluateStrategyAlerts } from './cross-stra
 import { evaluateGammaFilter, readGammaFilterConfig, normRegime } from '../shared/filters/gamma-filter.js';
 import { createExitRuleManager, captureRuleFromSignal } from './src/exit-rule-manager.js';
 import { applyStrategyRuleProfile } from './src/strategy-rule-profile.js';
-import { shouldCancelOnPreFillExtreme, effectivePreFillExtremes, shouldCancelOnAdverseLsFlip, shouldCancelPendingOnFlip } from './src/pre-fill-cancel.js';
+import { shouldCancelOnPreFillExtreme, effectivePreFillExtremes, shouldCancelOnAdverseLsFlip, shouldCancelPendingOnFlip, shouldCancelOnCloseBeyond, normalizeCancelOnCloseBeyond } from './src/pre-fill-cancel.js';
+import {
+  normalizeOrderType, isWorkingEntryAction, getEtParts,
+  nextEodCutoffTs as nextEodCutoffTsCore,
+  computeSignalExpiry as computeSignalExpiryCore,
+} from './src/signal-lifecycle.js';
 import { reconcileOrdersSnapshot, reconcilePositionSnapshot } from './src/snapshot-reconciler.js';
 
 const SERVICE_NAME = 'trade-orchestrator';
@@ -128,6 +133,9 @@ function recordSignalDefaults(signalId, signal, exitRules) {
     maxHoldBars: signal.maxHoldBars ?? null,
     exitRules: Array.isArray(exitRules) ? exitRules : [],
     originalStop: signal.stop_loss ?? null,
+    // Opt-in EOD exemption (24/7 pattern strategies) — must survive orphan
+    // adoption, or a restart would re-arm the EOD force-flat on the position.
+    exemptEodCutoff: signal.exemptEodCutoff === true,
     recordedAt: Date.now(),
   };
   // FIFO evict if at cap. Map preserves insertion order so delete-first works.
@@ -159,6 +167,7 @@ function resolveAdoptionDefaults({ strategy, signalId }) {
         maxHoldBars: exact.maxHoldBars,
         exitRules: exact.exitRules,
         originalStop: exact.originalStop,
+        exemptEodCutoff: exact.exemptEodCutoff === true,
         source: 'signalId',
       };
     }
@@ -170,6 +179,7 @@ function resolveAdoptionDefaults({ strategy, signalId }) {
         maxHoldBars: fallback.maxHoldBars,
         exitRules: fallback.exitRules,
         originalStop: fallback.originalStop,
+        exemptEodCutoff: fallback.exemptEodCutoff === true,
         source: 'strategy',
       };
     }
@@ -224,13 +234,6 @@ function normalizeDirection(side) {
 
 function directionToAction(direction) {
   return direction === 'long' ? 'Buy' : direction === 'short' ? 'Sell' : null;
-}
-
-function normalizeOrderType(action) {
-  const a = String(action || '').toLowerCase();
-  if (a === 'place_market') return 'Market';
-  if (a === 'place_limit') return 'Limit';
-  return null;
 }
 
 function generateSignalIdIfMissing(signal) {
@@ -896,7 +899,11 @@ async function handleTradeSignal(raw) {
       underlying,
       action,
       orderType: mappedOrderType,
-      price: mappedOrderType === 'Limit' ? signal.price : null,
+      // Limit → resting limit price. Stop → stop TRIGGER price (the connector
+      // maps it to Tradovate's stopPrice field). StopLimit → limit price in
+      // `price` + trigger in `stopTrigger`. Market → no price.
+      price: (mappedOrderType === 'Limit' || mappedOrderType === 'Stop' || mappedOrderType === 'StopLimit') ? signal.price : null,
+      stopTrigger: mappedOrderType === 'StopLimit' ? (signal.stopTrigger ?? signal.stop_trigger ?? null) : null,
       quantity,
       stopLoss: signal.stop_loss ?? null,
       takeProfit: signal.take_profit ?? null,
@@ -935,6 +942,15 @@ async function handleTradeSignal(raw) {
       // that created the signal, so a stale/creating flip can't self-cancel.
       cancelOnAdverseLsFlip: signal.cancelOnAdverseLsFlip === true,
       adverseFlipCreatedTs: signal.metadata?.flipTs ?? null,
+      // Cancel-on-close-beyond (opt-in via signal.cancelOnCloseBeyond =
+      // { price, side:'above'|'below' }; fvg-bear sets it). The 1m candle.close
+      // watcher (checkCancelOnCloseBeyond) cancels this working entry when a
+      // bar CLOSES beyond price in that direction. Sanitized here so a
+      // malformed field is OFF rather than half-armed.
+      cancelOnCloseBeyond: normalizeCancelOnCloseBeyond(signal.cancelOnCloseBeyond),
+      // Opt-in EOD-cutoff exemption for 24/7 strategies (their maxHoldBars is
+      // the only time cap). Transfers onto the open position at fill.
+      exemptEodCutoff: signal.exemptEodCutoff === true,
     });
 
     // Persist signal's protection metadata to the signalDefaults registry so
@@ -1040,6 +1056,7 @@ async function handlePositionOpened(msg) {
     maxHoldBars: pending?.maxHoldBars ?? null,
     exitRules,
     originalStop: pending?.originalStop ?? null,
+    exemptEodCutoff: pending?.exemptEodCutoff === true,
   });
   state.pendingOrders.delete(pendingKey(accountId, strategy, symbol));
   logger.info(`[${signalId || '?'}] position.opened ${accountId} ${strategy} ${symbol} ${side} @ ${entryPrice}`);
@@ -1314,23 +1331,9 @@ function buildApp() {
 
 // ---------- EOD force-flat (day-trade-margin liquidation safety) ----------
 
-function getEtParts(timestamp = Date.now()) {
-  const parts = new Intl.DateTimeFormat('en-US', {
-    timeZone: 'America/New_York',
-    weekday: 'short',
-    year: 'numeric', month: '2-digit', day: '2-digit',
-    hour: '2-digit', minute: '2-digit',
-    hour12: false,
-  }).formatToParts(new Date(timestamp));
-  const o = {};
-  for (const p of parts) o[p.type] = p.value;
-  return {
-    weekday: o.weekday,
-    dateKey: `${o.year}-${o.month}-${o.day}`,
-    hour: parseInt(o.hour, 10),
-    minute: parseInt(o.minute, 10),
-  };
-}
+// getEtParts / tsForEtWallClock / nextEodCutoffTs / computeSignalExpiry now
+// live in src/signal-lifecycle.js (pure + unit-testable); the wrappers below
+// bind this service's EOD_CUTOFF_ET.
 
 function isPastEodCutoff(timestamp = Date.now()) {
   if (!EOD_CUTOFF_ET) return false;
@@ -1342,64 +1345,16 @@ function isPastEodCutoff(timestamp = Date.now()) {
   return et.hour > cutoffH || (et.hour === cutoffH && et.minute >= cutoffM);
 }
 
-// Absolute UTC ms for an ET wall-clock (HH:MM) on a given ET calendar date.
-// Computes the ET↔UTC offset empirically at the target instant so it's correct
-// across DST without hardcoding -4/-5.
-function tsForEtWallClock(dateKey, hour, minute) {
-  const [Y, Mo, D] = dateKey.split('-').map(Number);
-  const utcGuess = Date.UTC(Y, Mo - 1, D, hour, minute, 0);
-  const et = getEtParts(utcGuess);
-  let delta = (hour * 60 + minute) - (et.hour * 60 + et.minute);
-  if (delta > 720) delta -= 1440;
-  if (delta < -720) delta += 1440;
-  return utcGuess + delta * 60_000;
-}
-
-// Next EOD force-flat cutoff at/after `anchorTs` (skips weekends). null if EOD
-// flattening is disabled.
+// EOD_CUTOFF_ET-bound wrappers around the pure signal-lifecycle helpers.
 function nextEodCutoffTs(anchorTs) {
-  if (!EOD_CUTOFF_ET) return null;
-  const [hStr, mStr] = EOD_CUTOFF_ET.split(':');
-  const h = parseInt(hStr, 10);
-  const m = parseInt(mStr || '0', 10);
-  if (!Number.isFinite(h)) return null;
-  let probe = anchorTs;
-  for (let i = 0; i < 8; i++) {
-    const et = getEtParts(probe);
-    if (et.weekday !== 'Sat' && et.weekday !== 'Sun') {
-      const ts = tsForEtWallClock(et.dateKey, h, m);
-      if (ts > anchorTs) return ts;
-    }
-    probe += 24 * 60 * 60 * 1000;
-  }
-  return null;
+  return nextEodCutoffTsCore(anchorTs, EOD_CUTOFF_ET);
 }
 
-// When this trade would be force-closed if it never hits stop/target. maxHoldBars
-// is per-signal (rule-dependent) and counted as MINUTES from entry (matching
-// checkMaxHold); the EOD force-flat closes everything at EOD_CUTOFF_ET. The
-// binding expiry is whichever comes first. `anchorTs` approximates entry/fill
-// time — the alert fires at signal time, so the max-hold leg is an estimate
-// while the EOD leg is exact.
+// When this trade would be force-closed if it never hits stop/target.
+// Respects signal.exemptEodCutoff === true (24/7 strategies): expiry is then
+// max-hold only. See src/signal-lifecycle.js.
 function computeSignalExpiry(signal, anchorTs = Date.now()) {
-  const out = { expiresAt: null, expiryReason: null, eodCutoffEt: EOD_CUTOFF_ET || null };
-  const maxHoldBars = Number(signal?.maxHoldBars);
-  const maxHoldTs = Number.isFinite(maxHoldBars) && maxHoldBars > 0
-    ? anchorTs + maxHoldBars * 60_000
-    : null;
-  const eodTs = nextEodCutoffTs(anchorTs);
-
-  let ts = null, reason = null;
-  if (maxHoldTs != null && eodTs != null) {
-    if (eodTs <= maxHoldTs) { ts = eodTs; reason = 'eod'; }
-    else { ts = maxHoldTs; reason = 'max_hold'; }
-  } else if (maxHoldTs != null) {
-    ts = maxHoldTs; reason = 'max_hold';
-  } else if (eodTs != null) {
-    ts = eodTs; reason = 'eod';
-  }
-  if (ts != null) { out.expiresAt = new Date(ts).toISOString(); out.expiryReason = reason; }
-  return out;
+  return computeSignalExpiryCore(signal, anchorTs, EOD_CUTOFF_ET);
 }
 
 // ---------- Hardened broker flatten (shared by max-hold + EOD) ----------
@@ -1512,7 +1467,15 @@ async function checkEodForceFlat() {
   if (EOD_FIRED_DATES.has(et.dateKey)) return;
   EOD_FIRED_DATES.add(et.dateKey);
 
-  const positions = [...state.openPositions.values()].filter(p => p.side !== 'flat' && p.netPos !== 0);
+  const all = [...state.openPositions.values()].filter(p => p.side !== 'flat' && p.netPos !== 0);
+  // Opt-in exemption: 24/7 strategies whose signals set exemptEodCutoff=true
+  // are governed by their own maxHoldBars cap (checkMaxHold), not the EOD
+  // force-flat. Everything else keeps the existing behavior.
+  const exempt = all.filter(p => p.exemptEodCutoff === true);
+  const positions = all.filter(p => p.exemptEodCutoff !== true);
+  if (exempt.length > 0) {
+    logger.info(`[EOD-FLAT] exempting ${exempt.length} position(s) flagged exemptEodCutoff: ${exempt.map(p => `${p.accountId} ${p.strategy} ${p.symbol}`).join(', ')}`);
+  }
   if (positions.length === 0) {
     logger.info(`[EOD-FLAT] ${EOD_CUTOFF_ET} ET cutoff reached for ${et.dateKey} — no open positions`);
     return;
@@ -1677,7 +1640,7 @@ const exitRuleManager = createExitRuleManager({
 //
 // We call the tradovate-service's POST /accounts/:id/cancel/:signalId endpoint
 // directly. The trade.signal action `cancel_limit` is not currently routable
-// through handleTradeSignal (normalizeOrderType only maps place_market/place_limit),
+// through handleTradeSignal (normalizeOrderType maps place_market/place_limit/place_stop),
 // so going through the HTTP endpoint is the minimal change that gets the
 // cancellation reliably to the broker.
 async function checkStaleLimits() {
@@ -1685,7 +1648,9 @@ async function checkStaleLimits() {
   for (const pending of state.pendingOrders.values()) {
     if (pending.cancelRequested) continue;
     if (!pending.timeoutCandles || pending.timeoutCandles <= 0) continue;
-    if (pending.action !== 'place_limit') continue;
+    // Working entry orders: resting limits AND resting stop entries both go
+    // stale the same way; place_market never rests.
+    if (!isWorkingEntryAction(pending.action)) continue;
     if (!pending.signalId) continue; // can't cancel without an ID hint
     const elapsedMin = (now - pending.requestedAt) / 60_000;
     if (elapsedMin < pending.timeoutCandles) continue;
@@ -1734,7 +1699,7 @@ async function checkPreFillExtremes(priceMsg) {
   for (const pending of state.pendingOrders.values()) {
     if (!pending.cancelOnPreFillExtreme) continue;
     if (pending.cancelRequested) continue;
-    if (pending.action !== 'place_limit') continue;
+    if (!isWorkingEntryAction(pending.action)) continue;
     if (!pending.signalId) continue;
     if (pending.preFillStopLoss == null || pending.preFillTakeProfit == null) continue;
     if (extractUnderlying(pending.symbol) !== baseSymbol) continue;
@@ -1813,6 +1778,45 @@ async function checkAdverseLsFlip(lsMsg) {
   }
 }
 
+// Cancel-on-close-beyond watcher: driven by 1m candle.close bus messages
+// (bar-CLOSE confirmation — intra-bar wicks through the level must NOT
+// cancel, which is why this does not ride price.update like the pre-fill-
+// extreme watcher). Opt-in per signal via cancelOnCloseBeyond={price, side};
+// fvg-bear uses it to kill a resting limit once a 1m close exceeds the gap
+// invalidation level. Cancels through the same tradovate-service HTTP cancel
+// path as checkStaleLimits. Decision logic is pure and unit-tested
+// (shouldCancelOnCloseBeyond in src/pre-fill-cancel.js).
+async function checkCancelOnCloseBeyond(candleMsg) {
+  if (!candleMsg) return;
+  const product = candleMsg.product ? String(candleMsg.product).toUpperCase() : null;
+  if (!product) return;
+  const close = Number(candleMsg.close);
+  if (!Number.isFinite(close)) return;
+  // candle.close stamps `timestamp` = bar START (ISO string from data-service).
+  const barStartMs = Date.parse(candleMsg.timestamp) || null;
+
+  for (const pending of state.pendingOrders.values()) {
+    const candidate = { ...pending, underlying: extractUnderlying(pending.symbol) };
+    if (!shouldCancelOnCloseBeyond(candidate, { product, close, barStartMs })) continue;
+
+    pending.cancelRequested = true;
+    const cfg = pending.cancelOnCloseBeyond;
+    logger.warn(`[CLOSE-BEYOND-CANCEL] ${pending.accountId} ${pending.strategy} ${pending.symbol} ${pending.direction} — 1m close ${close} ${cfg.side} ${cfg.price} — cancelling working entry`);
+    const url = `${TRADOVATE_SERVICE_URL}/accounts/${encodeURIComponent(pending.accountId)}/cancel/${encodeURIComponent(pending.signalId)}?symbol=${encodeURIComponent(pending.symbol)}`;
+    try {
+      const res = await fetch(url, { method: 'POST' });
+      if (!res.ok) {
+        logger.error(`[CLOSE-BEYOND-CANCEL] cancel HTTP ${res.status} url=${url}: ${await res.text().catch(() => '')}`);
+        pending.cancelRequested = false; // allow retry on next bar close
+      }
+    } catch (err) {
+      const cause = err.cause ? `cause=${err.cause.code || err.cause.name || ''} ${err.cause.message || err.cause}` : '';
+      logger.error(`[CLOSE-BEYOND-CANCEL] cancel failed url=${url} msg="${err.message}" ${cause}`);
+      pending.cancelRequested = false;
+    }
+  }
+}
+
 async function probeTradovateService() {
   const url = `${TRADOVATE_SERVICE_URL}/health`;
   const startedAt = Date.now();
@@ -1871,6 +1875,10 @@ async function main() {
   await messageBus.subscribe(CHANNELS.CANDLE_CLOSE, (msg) => {
     try { exitRuleManager.onCandleClose(msg); }
     catch (err) { logger.error(`[ExitRule] onCandleClose threw: ${err.message}`); }
+    // Cancel-on-close-beyond watcher (opt-in per signal via
+    // cancelOnCloseBeyond). Fire-and-forget — errors logged inside.
+    checkCancelOnCloseBeyond(msg).catch(err =>
+      logger.error(`[CLOSE-BEYOND-CANCEL] watcher threw: ${err.message}`));
   });
   await messageBus.subscribe(CHANNELS.LS_STATUS, (msg) => {
     try { exitRuleManager.onLsFlip(msg); }
