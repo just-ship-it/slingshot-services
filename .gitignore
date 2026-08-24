@@ -99,3 +99,18 @@ backtest-engine/greenfield/explore/cache_*
 backtest-engine/greenfield/explore/C1-touches.csv.gz
 backtest-engine/greenfield/explore/R1-oi-cache.csv
 backtest-engine/greenfield/explore/episodes.csv
+
+# [2026-08-23] Top-level research/ derived artifacts. These are REGENERABLE from the
+# scripts in the same dir and were adding ~4.4GB to a single push (git choked at
+# "Compressing objects 99%"). Masters live in backtest-engine/data/ or are re-derivable.
+research/**/.venv/
+research/**/__pycache__/
+research/tick-engine/cache/
+research/tick-engine/wicks/
+research/tick-engine/reversal/
+research/tick-engine/firstbreak/
+research/tick-engine/touchgrid/
+research/tick-engine/level-episodes/
+research/tick-engine/mtf/
+research/mbo-resting-orders/derived/
+research/price-structures/analysis/
