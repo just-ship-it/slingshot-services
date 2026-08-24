@@ -166,6 +166,16 @@ export class LetfGammaCloseStrategy extends BaseStrategy {
     return Number.isFinite(v) ? v : null;
   }
 
+  /**
+   * Format a gamma value as billions REGARDLESS of source scale. The backtest
+   * loader emits raw (~3.4e9); the live bus emits billions (~3.07). Dividing
+   * unconditionally printed "0.00B" on live. See readGex().
+   */
+  static fmtB(v) {
+    if (!Number.isFinite(v)) return 'n/a';
+    return `${(Math.abs(v) > 1e6 ? v / 1e9 : v).toFixed(2)}B`;
+  }
+
   /** Deadband = percentile of the AFTERNOON |gex| pool; null until gexPoolMinObs. */
   _gexDeadband() {
     const vals = this.gexPool.map(o => o.v).filter(v => Number.isFinite(v));
@@ -365,8 +375,8 @@ export class LetfGammaCloseStrategy extends BaseStrategy {
 
     if (this.params.debug) {
       console.log(`[LGC] ${et.tradeDate} ${side.toUpperCase()} move=${move.toFixed(1)} `
-        + `thr=${moveThr.toFixed(1)} gex=${(totalGex / 1e9).toFixed(2)}B `
-        + `deadband=${(gexThr / 1e9).toFixed(2)}B age=${ageMin.toFixed(0)}m`);
+        + `thr=${moveThr.toFixed(1)} gex=${LetfGammaCloseStrategy.fmtB(totalGex)} `
+        + `deadband=${LetfGammaCloseStrategy.fmtB(gexThr)} age=${ageMin.toFixed(0)}m`);
     }
 
     return {
