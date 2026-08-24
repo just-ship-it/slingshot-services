@@ -264,15 +264,61 @@ export class LetfGammaCloseStrategy extends BaseStrategy {
    * differs ~0.75x between sources, so the percentile would be measured off the
    * wrong scale. Price-derived `move` is source-independent and safe to seed.
    */
-  async seedHistoricalData() {
+  /**
+   * Recover today's 09:30 ET open from the data-service 1m buffer.
+   *
+   * 🚨 rthOpen is normally captured by WITNESSING the live 09:30 bar
+   * (evaluateSignal). A deploy or restart at any time after 09:30 therefore
+   * leaves it null, `move` is uncomputable, and the 15:30 decision skips with
+   * 'no_rth_open' — the sleeve is silently dead for the rest of the day.
+   * Same failure family as memory/session-reset-wipes-atr-warmup.md.
+   *
+   * Sets sessTradeDate alongside rthOpen: evaluateSignal calls _resetSession()
+   * (which nulls rthOpen) whenever et.tradeDate !== sessTradeDate, so seeding
+   * one without the other would be undone by the very next candle.
+   */
+  async _seedRthOpen(dataServiceUrl) {
+    if (!dataServiceUrl) return { rthOpen: null, reason: 'no data-service url' };
+    const rthHHMM = this.params.rthOpenHour * 100 + this.params.rthOpenMinute;
+    const nowEt = this.getETTime(Date.now());
+    if (nowEt.hhmm < rthHHMM) return { rthOpen: null, reason: 'before 09:30 - live capture handles it' };
+    try {
+      const root = this.params.seedSymbol || 'NQ';
+      const res = await fetch(`${dataServiceUrl}/candles?symbol=${root}&count=600`);
+      if (!res.ok) throw new Error(`candles HTTP ${res.status}`);
+      const body = await res.json();
+      const candles = Array.isArray(body?.candles) ? body.candles : [];
+      for (let i = candles.length - 1; i >= 0; i--) {
+        const c = candles[i];
+        const et = this.getETTime(c.timestamp);
+        if (et.tradeDate === nowEt.tradeDate && et.hhmm === rthHHMM) {
+          const open = Number(c.open);
+          if (!Number.isFinite(open)) break;
+          this.rthOpen = open;
+          this.sessTradeDate = nowEt.tradeDate;
+          return { rthOpen: open };
+        }
+      }
+      return { rthOpen: null, reason: 'no 09:30 bar in buffer' };
+    } catch (e) {
+      return { rthOpen: null, reason: e.message };
+    }
+  }
+
+  async seedHistoricalData(dataServiceUrl) {
+    // Recover today's 09:30 open BEFORE the Redis hydration, and independently of
+    // it — a restart after 09:30 otherwise leaves rthOpen null for the whole day
+    // and the 15:30 decision skips with 'no_rth_open'.
+    const rth = await this._seedRthOpen(dataServiceUrl);
+
     const r = await this._redis();
-    if (!r) return { seeded: false, reason: this._persistErr || 'persist disabled' };
+    if (!r) return { seeded: false, rthOpen: rth.rthOpen, reason: this._persistErr || 'persist disabled' };
     try {
       const raw = await r.get(this.params.redisKey);
-      if (!raw) return { seeded: false, reason: 'no stored observations' };
+      if (!raw) return { seeded: false, rthOpen: rth.rthOpen, reason: 'no stored observations' };
       const parsed = JSON.parse(raw);
       const arr = Array.isArray(parsed) ? parsed : parsed.obs;   // accept legacy array form
-      if (!Array.isArray(arr)) return { seeded: false, reason: 'bad payload' };
+      if (!Array.isArray(arr)) return { seeded: false, rthOpen: rth.rthOpen, reason: 'bad payload' };
       this.gexPool = Array.isArray(parsed.gexPool)
         ? parsed.gexPool.filter(o => o && Number.isFinite(o.ts) && Number.isFinite(o.v))
                         .slice(-this.params.gexPoolMax)
@@ -282,7 +328,7 @@ export class LetfGammaCloseStrategy extends BaseStrategy {
         .sort((a, b) => (a.date < b.date ? -1 : 1))
         .slice(-this.params.trailWindow);
       const withGex = this.obs.filter(o => Number.isFinite(o.gex)).length;
-      return { seeded: true, sessions: this.obs.length, gexSessions: withGex,
+      return { seeded: true, rthOpen: rth.rthOpen, sessions: this.obs.length, gexSessions: withGex,
                gexPool: this.gexPool.length,
                first: this.obs[0]?.date, last: this.obs[this.obs.length - 1]?.date };
     } catch (e) {
