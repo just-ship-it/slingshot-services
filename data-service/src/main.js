@@ -80,6 +80,7 @@ class DataService {
 
     // Hybrid GEX calculators (per product)
     this.hybridGexCalculators = new Map();
+    this._cboeRefreshTimers = [];
 
     // LT Monitors (per product)
     this.ltMonitors = new Map();  // 'NQ' -> LTMonitor, 'ES' -> LTMonitor
@@ -429,6 +430,7 @@ class DataService {
             }
           }
           this.gexCalculators.set(product.key, gex);
+          this._startCboeIntradayRefresh(product.key, gex);
           logger.info(`CBOE GEX for ${product.key} initialized`);
         }
       } catch (error) {
@@ -991,6 +993,43 @@ class DataService {
     } catch (error) {
       logger.error(`Error handling LS-15m update for ${product}:`, error);
     }
+  }
+
+  /**
+   * Periodic intraday GEX refresh for CBOE-ONLY mode.
+   *
+   * 🚨 The hybrid branch keeps gex.levels current via hybrid.setUpdateCallback()
+   * fed by HybridGexCalculator's own timers. The plain GexCalculator has NO
+   * timer, so in CBOE-only mode the only refreshes were scheduleGexRefresh()
+   * (once daily at GEX_FETCH_TIME, default 16:35) and scheduleRTHOpenRefresh()
+   * (once daily ~09:30 ET). gex.levels therefore went hours stale intraday,
+   * which (a) trips consumers' staleness guards and (b) starves
+   * letf-gamma-close's afternoon deadband pool, which needs ~20 DISTINCT
+   * snapshots between 13:00 and 15:30 ET.
+   */
+  _startCboeIntradayRefresh(productKey, gex) {
+    const minutes = config.CBOE_REFRESH_MINUTES;
+    if (!(minutes > 0)) {
+      logger.info(`CBOE intraday GEX refresh disabled for ${productKey} (CBOE_REFRESH_MINUTES=${minutes})`);
+      return;
+    }
+    const timer = setInterval(async () => {
+      try {
+        const et = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/New_York' }));
+        const day = et.getDay();
+        if (day === 0 || day === 6) return;
+        const mod = et.getHours() * 60 + et.getMinutes();
+        if (mod < 9 * 60 + 25 || mod > 16 * 60 + 15) return;   // options session only
+        const levels = await gex.calculateLevels(true);
+        await messageBus.publish(CHANNELS.GEX_LEVELS, { ...levels, product: productKey });
+        logger.debug(`CBOE intraday GEX refresh published for ${productKey}`);
+      } catch (err) {
+        logger.warn(`CBOE intraday GEX refresh for ${productKey} failed: ${err.message}`);
+      }
+    }, minutes * 60 * 1000);
+    if (typeof timer.unref === 'function') timer.unref();
+    this._cboeRefreshTimers.push(timer);
+    logger.info(`CBOE intraday GEX refresh scheduled for ${productKey} every ${minutes}m (09:25-16:15 ET)`);
   }
 
   /**

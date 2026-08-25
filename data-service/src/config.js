@@ -152,6 +152,13 @@ const config = {
   RISK_FREE_RATE: parseFloat(process.env.RISK_FREE_RATE || '0.05'),
   EXPOSURE_POLL_INTERVAL_MINUTES: parseInt(process.env.EXPOSURE_POLL_INTERVAL_MINUTES || '2'),
 
+  // [2026-08-25] Intraday refresh cadence for CBOE-ONLY mode. The hybrid path
+  // drives updates from HybridGexCalculator's internal timers; the plain
+  // GexCalculator has none, so without this gex.levels only moved twice a day.
+  // CBOE regenerates its delayed_quotes file about every 60s (measured), so a
+  // 5-minute pull is comfortably conservative.
+  CBOE_REFRESH_MINUTES: parseInt(process.env.CBOE_REFRESH_MINUTES || '5'),
+
   // Hybrid GEX Configuration
   HYBRID_GEX_ENABLED: process.env.HYBRID_GEX_ENABLED === 'true',
   HYBRID_TRADIER_REFRESH_MINUTES: parseInt(process.env.HYBRID_TRADIER_REFRESH_MINUTES || '3'),
