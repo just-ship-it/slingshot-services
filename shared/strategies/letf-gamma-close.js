@@ -119,6 +119,7 @@ export class LetfGammaCloseStrategy extends BaseStrategy {
     this._persistErr = null;
     this._persistDisabled = false;
     this.gexSource = null;          // provider the gexPool was measured on
+    this.gexPoolDropped = 0;        // untagged samples discarded at hydrate
     this._lastSourceSwitch = null;
 
     this.sessTradeDate = null;
@@ -346,11 +347,22 @@ export class LetfGammaCloseStrategy extends BaseStrategy {
       const parsed = JSON.parse(raw);
       const arr = Array.isArray(parsed) ? parsed : parsed.obs;   // accept legacy array form
       if (!Array.isArray(arr)) return { seeded: false, rthOpen: rth.rthOpen, reason: 'bad payload' };
-      this.gexSource = typeof parsed.gexSource === 'string' ? parsed.gexSource : null;
-      this.gexPool = Array.isArray(parsed.gexPool)
-        ? parsed.gexPool.filter(o => o && Number.isFinite(o.ts) && Number.isFinite(o.v))
-                        .slice(-this.params.gexPoolMax)
-        : [];
+      // 🚨 UNTAGGED SAMPLES HAVE UNKNOWN PROVENANCE - DISCARD THEM.
+      // Pools persisted before provider tagging existed carry no `src`, so
+      // adopting them silently mixes scales: on 2026-08-25 a 29-sample Schwab
+      // pool (|gex| ~2.7) was inherited and CBOE samples (~0.47) appended to
+      // it, leaving a 2.66 deadband that CBOE could never exceed - the sleeve
+      // would have skipped every decision while looking perfectly healthy.
+      // Switch-detection in _poolGex cannot catch this because it only fires
+      // when a KNOWN previous source differs, and legacy pools report none.
+      const rawPool = Array.isArray(parsed.gexPool) ? parsed.gexPool : [];
+      const tagged = rawPool.filter(o => o && Number.isFinite(o.ts) && Number.isFinite(o.v)
+                                          && typeof o.src === 'string');
+      this.gexPoolDropped = rawPool.length - tagged.length;
+      // Trust the stored source only if it is corroborated by surviving samples.
+      const srcs = new Set(tagged.map(o => o.src));
+      this.gexSource = srcs.size === 1 ? [...srcs][0] : null;
+      this.gexPool = (srcs.size === 1 ? tagged : []).slice(-this.params.gexPoolMax);
       this.obs = arr
         .filter(o => o && typeof o.date === 'string' && Number.isFinite(o.move))
         .sort((a, b) => (a.date < b.date ? -1 : 1))
