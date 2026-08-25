@@ -118,6 +118,8 @@ export class LetfGammaCloseStrategy extends BaseStrategy {
     this.redis = null;
     this._persistErr = null;
     this._persistDisabled = false;
+    this.gexSource = null;          // provider the gexPool was measured on
+    this._lastSourceSwitch = null;
 
     this.sessTradeDate = null;
     this._resetSession();
@@ -176,6 +178,24 @@ export class LetfGammaCloseStrategy extends BaseStrategy {
     return `${(Math.abs(v) > 1e6 ? v / 1e9 : v).toFixed(2)}B`;
   }
 
+  /**
+   * Coarse provider identity for a GEX snapshot.
+   * 🚨 The deadband is a PERCENTILE of |total_gex| measured on ONE provider's
+   * distribution. Median |total_gex| differs materially between providers
+   * (~0.75x Schwab vs OPRA), so a percentile taken off a MIXED pool is
+   * meaningless — it is neither source's 40th percentile. Switching the GEX
+   * source must therefore discard the pool, not blend into it.
+   * Note gex-calculator's dataSource reports the SPOT price source
+   * ('tradingview'|'cboe') while hybrid reports the options source
+   * ('tradier'|'hybrid') — both are mapped to the provider family here.
+   */
+  static gexSourceOf(snap) {
+    const d = snap?.dataSource ?? snap?.data_source;
+    if (d === 'tradier' || d === 'hybrid') return 'schwab';
+    if (d === 'cboe' || d === 'tradingview') return 'cboe';
+    return d ? String(d) : 'unknown';
+  }
+
   /** Deadband = percentile of the AFTERNOON |gex| pool; null until gexPoolMinObs. */
   _gexDeadband() {
     const vals = this.gexPool.map(o => o.v).filter(v => Number.isFinite(v));
@@ -187,10 +207,17 @@ export class LetfGammaCloseStrategy extends BaseStrategy {
   }
 
   /** Record one afternoon GEX snapshot, deduped by snapshot timestamp. */
-  _poolGex(snapMs, absGex) {
+  _poolGex(snapMs, absGex, src = 'unknown') {
     if (!Number.isFinite(snapMs) || !Number.isFinite(absGex)) return;
+    // Provider switch (e.g. Schwab -> CBOE): drop the pool rather than blend
+    // two incompatible |gex| scales into one percentile. See gexSourceOf().
+    if (this.gexSource !== null && src !== this.gexSource) {
+      this._lastSourceSwitch = { from: this.gexSource, to: src, dropped: this.gexPool.length };
+      this.gexPool = [];
+    }
+    this.gexSource = src;
     if (this.gexPool.some(o => o.ts === snapMs)) return;
-    this.gexPool.push({ ts: snapMs, v: absGex });
+    this.gexPool.push({ ts: snapMs, v: absGex, src });
     if (this.gexPool.length > this.params.gexPoolMax) {
       this.gexPool = this.gexPool.slice(-this.params.gexPoolMax);
     }
@@ -248,7 +275,7 @@ export class LetfGammaCloseStrategy extends BaseStrategy {
     if (!this.params.persist) return;
     this._redis().then(r => {
       if (!r) return;
-      return r.set(this.params.redisKey, JSON.stringify({ obs: this.obs, gexPool: this.gexPool }));
+      return r.set(this.params.redisKey, JSON.stringify({ obs: this.obs, gexPool: this.gexPool, gexSource: this.gexSource }));
     }).then(() => { this._persistErr = null; })
       .catch(e => { this._persistErr = e.message; });
   }
@@ -319,6 +346,7 @@ export class LetfGammaCloseStrategy extends BaseStrategy {
       const parsed = JSON.parse(raw);
       const arr = Array.isArray(parsed) ? parsed : parsed.obs;   // accept legacy array form
       if (!Array.isArray(arr)) return { seeded: false, rthOpen: rth.rthOpen, reason: 'bad payload' };
+      this.gexSource = typeof parsed.gexSource === 'string' ? parsed.gexSource : null;
       this.gexPool = Array.isArray(parsed.gexPool)
         ? parsed.gexPool.filter(o => o && Number.isFinite(o.ts) && Number.isFinite(o.v))
                         .slice(-this.params.gexPoolMax)
@@ -361,7 +389,7 @@ export class LetfGammaCloseStrategy extends BaseStrategy {
       const pv = LetfGammaCloseStrategy.readGex(ps);
       if (ps && pv !== null) {
         const pms = ps.timestamp instanceof Date ? ps.timestamp.getTime() : this.toMs(ps.timestamp);
-        this._poolGex(pms, Math.abs(pv));
+        this._poolGex(pms, Math.abs(pv), LetfGammaCloseStrategy.gexSourceOf(ps));
       }
     }
 
