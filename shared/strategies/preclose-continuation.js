@@ -62,6 +62,10 @@ export class PreCloseContinuationStrategy extends BaseStrategy {
       // A session needs >= this many RTH 1m bars to count as a FULL day for ATR
       fullRthMinBars: 300,
 
+      // Pre-open ET time from which the live ATR14 buffer is re-verified against
+      // data-service daily candles (see dailyRefresh)
+      refreshStartHhmm: 800,
+
       allowLongs: true,
       allowShorts: true,
 
@@ -121,6 +125,11 @@ export class PreCloseContinuationStrategy extends BaseStrategy {
     this._lastSignal = null;
     this._firedDate = null;
     this._condLatest = null;
+
+    // Live ATR re-verification (live only — dailyRefresh is never called by the
+    // backtest engine).
+    this._refreshedFor = null;
+    this._refreshError = null;
   }
 
   _resetSession() {
@@ -305,26 +314,68 @@ export class PreCloseContinuationStrategy extends BaseStrategy {
    * to building ATR from live candles.
    */
   async seedHistoricalData(dataServiceUrl) {
-    const root = this.params.seedSymbol || 'NQ';
     try {
-      const res = await fetch(`${dataServiceUrl}/candles/daily?symbol=${root}&count=${this.params.atrPeriod + 6}`);
-      if (!res.ok) throw new Error(`daily candles HTTP ${res.status}`);
-      const body = await res.json();
-      const candles = Array.isArray(body?.candles) ? body.candles.slice() : [];
-      if (candles.length < this.params.atrMinPeriods + 1) {
-        if (this.params.debug) console.log(`[PCC] seed: only ${candles.length} daily candles — building ATR from live bars`);
-        return;
-      }
-      candles.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
-      // Drop the last (today's still-forming) daily bar; keep the last atrPeriod completed.
-      const use = candles.slice(0, -1).slice(-this.params.atrPeriod);
-      this.dayRanges = use.map(c => Number(c.high) - Number(c.low)).filter(r => r > 0);
+      this.dayRanges = await this._fetchDayRanges(dataServiceUrl);
       if (this.params.debug) {
         const atr = this._atr();
         console.log(`[PCC] seeded ATR14 from ${this.dayRanges.length} daily bars → atr=${atr ? atr.toFixed(1) : 'n/a'}`);
       }
     } catch (err) {
       if (this.params.debug) console.log(`[PCC] seedHistoricalData failed: ${err.message} — building ATR from live candles`);
+    }
+  }
+
+  /**
+   * ATR14 day_range buffer from data-service daily candles, oldest→newest, with
+   * today's still-forming bar dropped.
+   */
+  async _fetchDayRanges(dataServiceUrl) {
+    const root = this.params.seedSymbol || 'NQ';
+    const res = await fetch(`${dataServiceUrl}/candles/daily?symbol=${root}&count=${this.params.atrPeriod + 6}`);
+    if (!res.ok) throw new Error(`daily candles HTTP ${res.status}`);
+    const body = await res.json();
+    const candles = Array.isArray(body?.candles) ? body.candles.slice() : [];
+    if (candles.length < this.params.atrMinPeriods + 1) throw new Error(`only ${candles.length} daily candles`);
+    candles.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+    // Drop the last (today's still-forming) daily bar; keep the last atrPeriod completed.
+    const use = candles.slice(0, -1).slice(-this.params.atrPeriod);
+    const ranges = use.map(c => Number(c.high) - Number(c.low)).filter(r => r > 0);
+    if (ranges.length < this.params.atrMinPeriods) throw new Error(`only ${ranges.length} usable day ranges`);
+    return ranges;
+  }
+
+  /**
+   * Pre-open re-verification of the rolling ATR14 buffer against data-service —
+   * the independent check on the live stream's carry-forward. Called by the
+   * multi-strategy engine's run loop (~30s); no-ops outside the window and once
+   * it has succeeded for the day. On failure the seeded/stream-built buffer is
+   * kept (a slightly stale ATR only mis-sizes the threshold — unlike gapup-fade,
+   * no price REFERENCE rides on it), so this never stands the sleeve down.
+   */
+  async dailyRefresh(dataServiceUrl) {
+    if (!dataServiceUrl) return;
+    const et = etParts(Date.now());
+    if (et.dow < 1 || et.dow > 5) return;
+    const startMin = Math.floor(this.params.refreshStartHhmm / 100) * 60 + (this.params.refreshStartHhmm % 100);
+    const decisionMin = this.params.decisionHour * 60 + this.params.decisionMinute;
+    if (et.minutesOfDay < startMin || et.minutesOfDay >= decisionMin) return;
+    if (this._refreshedFor === et.dateKey) return;
+
+    try {
+      const ranges = await this._fetchDayRanges(dataServiceUrl);
+      const had = this._atr();
+      this.dayRanges = ranges;
+      this._refreshedFor = et.dateKey;
+      this._refreshError = null;
+      const now = this._atr();
+      if (had !== null && now !== null && Math.abs(now - had) > 1.0) {
+        console.warn(`[PCC] ATR14 refreshed before the open: ${had.toFixed(1)} → ${now.toFixed(1)} `
+          + `(${ranges.length} daily bars) — the live carry-forward had drifted`);
+      } else if (this.params.debug) {
+        console.log(`[PCC] ${et.dateKey} ATR14 verified: ${now ? now.toFixed(1) : 'n/a'} from ${ranges.length} daily bars`);
+      }
+    } catch (err) {
+      this._refreshError = err.message;   // keep the existing buffer and retry next tick
     }
   }
 
@@ -405,9 +456,18 @@ export class PreCloseContinuationStrategy extends BaseStrategy {
    * un-seeds the sleeve every evening, and the only re-seed path (data.ready)
    * fires on an incidental Schwab reconnect, so the strategy sat "warming up"
    * from 18:00 ET until whenever the streamer next reconnected.
+   *
+   * Finalize FIRST. This reset lands at 18:00 ET, the same boundary the Globex
+   * trade_date rolls on, and always beats the 18:00 bar's ~18:01 delivery — so
+   * nulling sessTradeDate here skipped the tradeDate-change branch in
+   * evaluateSignal that is the only other caller of _finalizeSession(), and the
+   * day's range was never appended: ATR14 stayed frozen at its seed value until
+   * the next process restart. Guarded by fullRthMinBars, so a partial or
+   * off-hours reset contributes nothing.
    */
   reset() {
     super.reset();
+    this._finalizeSession();
     this.sessTradeDate = null;
     this._resetSession();
     this._lastPrice = null;

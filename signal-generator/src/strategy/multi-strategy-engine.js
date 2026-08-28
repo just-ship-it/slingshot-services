@@ -893,6 +893,30 @@ class MultiStrategyEngine {
     await this.seedStrategies();
   }
 
+  /**
+   * Give strategies a pre-decision re-verification pass against data-service.
+   *
+   * Strategies that carry multi-day state (ATR buffers, the prior RTH close)
+   * build it from the live stream, and a single missed carry-forward freezes it
+   * silently — the value is still there, just wrong, so nothing looks broken.
+   * Any strategy implementing dailyRefresh(dataServiceUrl) gets called here on
+   * every run-loop tick and decides for itself whether it is due (they no-op
+   * outside their pre-decision window and once they have succeeded for the day).
+   */
+  async refreshStrategyDailyState() {
+    const dataServiceUrl = process.env.DATA_SERVICE_URL || 'http://localhost:3019';
+    for (const [product, state] of this.products) {
+      for (const [name, runner] of state.strategies) {
+        if (typeof runner.strategy?.dailyRefresh !== 'function') continue;
+        try {
+          await runner.strategy.dailyRefresh(dataServiceUrl);
+        } catch (err) {
+          logger.warn(`Daily refresh failed for ${name} (${product}): ${err.message}`);
+        }
+      }
+    }
+  }
+
   resetProduct(product) {
     const state = this.products.get(product);
     if (!state) return;
@@ -1134,6 +1158,9 @@ class MultiStrategyEngine {
 
         // Refill any cold warmup buffer (throttled to RESEED_RETRY_MS)
         await this.reseedUnseededStrategies();
+
+        // Re-verify multi-day state (ATR14, prior RTH close) before the decision
+        await this.refreshStrategyDailyState();
 
         await new Promise(resolve => setTimeout(resolve, 30000));
       } catch (error) {
