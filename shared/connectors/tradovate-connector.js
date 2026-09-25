@@ -62,6 +62,9 @@ export class TradovateConnector extends BaseConnector {
       secret: credentials.secret,
       useDemo: this.mode === 'demo',
       defaultAccountId: this.brokerAccountId,
+      // BOOTSTRAP hosts only (NinjaTrader Dynamic API Hosts): the first accesstokenrequest goes here, and
+      // TradovateClient then builds every REST/WS URL from the apiHosts in each auth/renew response. Stored
+      // URL overrides on an account record are bootstrap addresses too, never the live routing.
       demoUrl: config.demoUrl || 'https://demo.tradovateapi.com/v1',
       liveUrl: config.liveUrl || 'https://live.tradovateapi.com/v1',
       // TRADING/user socket — NOT the market-data (md) host. user/syncrequest
@@ -172,6 +175,9 @@ export class TradovateConnector extends BaseConnector {
       ok: this.ready && (this.client?.isConnected ?? false),
       mode: this.mode,
       brokerAccountId: this.brokerAccountId,
+      restUrl: this.client?.baseUrl ?? null,
+      wssUrl: this.client?.wssUrl ?? null,
+      hostSource: this.client?.hostSource ?? null,
       openStrategies: this.orderStrategyLinks.size,
       pendingStructuralStops: this.pendingStructuralStops.size,
       lastError: this.lastError

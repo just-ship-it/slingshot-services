@@ -76,8 +76,10 @@ function buildTradovateAccount(mode) {
     appVersion: envOr('TRADOVATE_APP_VERSION', '1.0'),
     demoUrl: envOr('TRADOVATE_DEMO_URL', 'https://demo.tradovateapi.com/v1'),
     liveUrl: envOr('TRADOVATE_LIVE_URL', 'https://live.tradovateapi.com/v1'),
-    wssDemoUrl: envOr('TRADOVATE_WSS_DEMO_URL', 'wss://md-demo.tradovateapi.com/v1/websocket'),
-    wssLiveUrl: envOr('TRADOVATE_WSS_LIVE_URL', 'wss://md.tradovateapi.com/v1/websocket')
+    // Trading/user socket, NOT the market-data (md) host — md 404s on user/syncrequest. These are bootstrap
+    // addresses only; the client re-resolves hosts from apiHosts on every auth.
+    wssDemoUrl: envOr('TRADOVATE_WSS_DEMO_URL', 'wss://demo.tradovateapi.com/v1/websocket'),
+    wssLiveUrl: envOr('TRADOVATE_WSS_LIVE_URL', 'wss://live.tradovateapi.com/v1/websocket')
   };
 
   return {

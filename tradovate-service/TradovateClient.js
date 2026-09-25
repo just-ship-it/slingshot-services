@@ -2,6 +2,7 @@ import axios from 'axios';
 import { EventEmitter } from 'events';
 import WebSocket from 'ws';
 import { Resend } from 'resend';
+import { resolveHosts } from '../shared/connectors/tradovate-hosts.js';
 
 // WS liveness watchdog. Tradovate pushes an 'h' heartbeat frame ~every 2.5s, so
 // a healthy user-data socket has continuous inbound traffic. A "zombie" socket
@@ -50,104 +51,207 @@ class TradovateClient extends EventEmitter {
     this.enrichmentCache = new Map(); // orderId -> enrichedOrderData
     this.contractCache = new Map();   // contractId -> contractDetails
 
-    // Set base URLs
-    this.baseUrl = config.useDemo ? config.demoUrl : config.liveUrl;
-    this.wssUrl = config.useDemo ? config.wssDemoUrl : config.wssLiveUrl;
+    // HOSTS ARE NOT CONFIGURATION (NinjaTrader Dynamic API Hosts, mandatory 2026-10-03). The configured URLs are
+    // the BOOTSTRAP pair: where the first accesstokenrequest goes, and the one-shot fallback if the resolved host
+    // becomes unreachable. Every auth and every renewal re-resolves baseUrl/wssUrl from the response's apiHosts,
+    // because an organisation can be moved to different hosts between sessions.
+    this.purpose = config.useDemo ? 'demo' : 'live';
+    this.bootstrap = {
+      restUrl: config.useDemo ? config.demoUrl : config.liveUrl,
+      wssUrl: config.useDemo ? config.wssDemoUrl : config.wssLiveUrl
+    };
+    this.baseUrl = this.bootstrap.restUrl;
+    this.wssUrl = this.bootstrap.wssUrl;
+    this.apiHosts = null;
+    this.hostSource = 'bootstrap';   // 'bootstrap' until the first auth, then 'apiHosts' | 'fallback'
+    this._warnedNoHosts = false;
+    this._wrongHostRedialed = false;
+    this._connecting = false;
+  }
+
+  /** What the client is actually talking to, for /health and audits. */
+  get hostInfo() {
+    return { purpose: this.purpose, restUrl: this.baseUrl, wssUrl: this.wssUrl, hostSource: this.hostSource };
+  }
+
+  /**
+   * Book the token AND re-resolve the hosts from one auth/renew response. The fallback is the CURRENTLY resolved
+   * pair rather than config, so a response that omits apiHosts (errors, CAPTCHA and MFA do) leaves us on the host
+   * we were already talking to instead of snapping back to a bootstrap address the org may have moved off.
+   */
+  _applyAuthResponse(data) {
+    this.accessToken = data.accessToken;
+    if (data.mdAccessToken) this.mdAccessToken = data.mdAccessToken;
+    if (data.userId != null) this.userId = data.userId;
+    if (data.expirationTime) this.tokenExpiry = new Date(data.expirationTime);
+
+    const fromRest = this.baseUrl, fromWs = this.wssUrl;
+    const r = resolveHosts(data.apiHosts, this.purpose, { restUrl: this.baseUrl, wssUrl: this.wssUrl });
+    this.apiHosts = data.apiHosts ?? this.apiHosts;
+    this.hostSource = r.source;
+    this.baseUrl = r.restUrl;
+    this.wssUrl = r.wssUrl;
+
+    if (r.source === 'fallback' && !this._warnedNoHosts) {
+      this._warnedNoHosts = true;
+      this.logger.warn(`⚠️ Auth response carried no apiHosts.${this.purpose} — staying on ${this.baseUrl} (fallback)`);
+    }
+    if (r.source === 'apiHosts') this._warnedNoHosts = false;
+
+    if (fromRest !== this.baseUrl || fromWs !== this.wssUrl) {
+      this.logger.info(`🌐 Tradovate API host → ${r.host ?? this.baseUrl} (${r.source})`);
+      // Only an existing socket needs redialling: it is now pointed at the wrong host. On the first auth there is
+      // no socket yet (connectWebSocket reads this.wssUrl), so announcing a redial there would be a scary log
+      // line for an ordinary startup.
+      if (fromWs !== this.wssUrl && this.ws) this._redialOnNewHost(fromWs, this.wssUrl);
+    }
+    return data;
+  }
+
+  /**
+   * POST accesstokenrequest to one URL. Redirects are never followed automatically, and a reply that is not a
+   * JSON object (a wrong host can answer a BODYLESS 404 instead of the documented 307) is reported with its
+   * status and URL rather than surfacing as a vague "Authentication failed".
+   */
+  async _postToken(url, authData) {
+    let res;
+    try {
+      res = await axios({
+        method: 'POST',
+        url,
+        data: authData,
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        maxRedirects: 0,
+        validateStatus: () => true
+      });
+    } catch (error) {
+      const e = new Error(`Network error: ${url}: ${error.message}`);
+      e.code = error.code;
+      throw e;
+    }
+
+    const location = res.status >= 300 && res.status < 400 ? res.headers?.location : null;
+    if (location) {
+      const e = new Error(`${url} -> ${res.status} -> ${location}`);
+      e.status = res.status;
+      e.location = location;
+      throw e;
+    }
+
+    const data = res.data;
+    if (data && typeof data === 'object') {
+      // A 5xx is only an answer when it is a CAPTCHA/penalty ticket; anything else is a failed request.
+      if (res.status >= 500 && !data['p-ticket']) {
+        const e = new Error(`${url} -> ${res.status}: ${data.errorText || JSON.stringify(data).slice(0, 200)}`);
+        e.status = res.status;
+        throw e;
+      }
+      return data;
+    }
+    const e = new Error(data === '' || data == null
+      ? `${url} -> ${res.status} with an empty body`
+      : `${url} -> ${res.status} non-JSON: ${String(data).slice(0, 120)}`);
+    e.status = res.status;
+    throw e;
+  }
+
+  /**
+   * The first request has to go somewhere, so it goes to the current host (bootstrap on a cold start); apiHosts in
+   * the reply decides everything after that.
+   */
+  async _requestToken(authData) {
+    const post = (base) => this._postToken(`${base}/auth/accesstokenrequest`, authData);
+    try {
+      return await post(this.baseUrl);
+    } catch (error) {
+      if (error.location) {
+        // No Authorization header on an auth request, so following ONE redirect is safe. A second redirect
+        // throws out of _postToken; nothing here loops.
+        this.logger.warn(`Auth redirected ${error.status} → ${error.location}`);
+        return this._postToken(error.location, authData);
+      }
+      if (this.baseUrl !== this.bootstrap.restUrl) {
+        // The last resolved host is unreachable (DNS, or it was retired between sessions). Hosts can only come FROM
+        // an auth response, so without this the client is stranded. One retry on the bootstrap address, whose
+        // reply then re-resolves everything.
+        this.logger.warn(`⚠️ Auth to ${this.baseUrl} failed (${error.message}) — retrying once on bootstrap host ${this.bootstrap.restUrl}`);
+        return post(this.bootstrap.restUrl);
+      }
+      throw error;
+    }
+  }
+
+  /**
+   * accesstokenrequest → token + hosts. No accounts, no socket: used by connect() and by the wrong-host
+   * recovery paths (REST 3xx, WebSocket 421), which only need to re-read apiHosts.
+   */
+  authenticate() {
+    // Single flight: concurrent wrong-host recoveries (several REST calls hitting the same 307) share ONE
+    // accesstokenrequest instead of each firing their own.
+    if (!this._authInFlight) {
+      this._authInFlight = this._authenticate().finally(() => { this._authInFlight = null; });
+    }
+    return this._authInFlight;
+  }
+
+  async _authenticate() {
+    // Use the same format as the working slingshot backend
+    const authData = {
+      name: this.config.username,
+      password: process.env.TRADOVATE_PASSWORD  // Use env directly to avoid masking issues
+    };
+
+    // Add WSL2-specific Slingshot credentials
+    if (this.config.appId) authData.appId = this.config.appId;
+    if (this.config.appVersion) authData.appVersion = this.config.appVersion;
+    if (this.config.deviceId) authData.deviceId = this.config.deviceId;
+    if (this.config.cid) authData.cid = this.config.cid;
+    if (this.config.secret) authData.sec = this.config.secret; // Map 'secret' to 'sec' field
+
+    this.logger.info(`Auth request URL: ${this.baseUrl}/auth/accesstokenrequest`);
+    this.logger.info(`Auth request data: ${JSON.stringify({ ...authData, password: '***masked***' }, null, 2)}`);
+
+    let data = await this._requestToken(authData);
+
+    if (data.errorText) {
+      throw new Error(`Authentication failed: ${data.errorText}`);
+    }
+
+    // Handle CAPTCHA challenge if present (copied from working backend)
+    if (data['p-ticket']) {
+      const waitTime = data['p-time'];
+      this.logger.warn(`CAPTCHA challenge received. Waiting ${waitTime} seconds...`);
+      await new Promise(resolve => setTimeout(resolve, waitTime * 1000));
+
+      // Retry with ticket — once
+      authData.p_ticket = data['p-ticket'];
+      data = await this._requestToken(authData);
+      if (!data.accessToken) {
+        throw new Error(`CAPTCHA challenge failed - ${data.errorText || 'app registration required'}`);
+      }
+    }
+
+    if (!data.accessToken) {
+      throw new Error('Authentication failed: no access token in response');
+    }
+
+    this._applyAuthResponse(data);
+    this.logger.info(`📋 Token expires at: ${this.tokenExpiry}`);
+    this.setupTokenRefresh();
+    return data;
   }
 
   async connect() {
+    this.logger.info(`Connecting to Tradovate ${this.config.useDemo ? 'DEMO' : 'LIVE'} API...`);
+    this._connecting = true;
     try {
-      this.logger.info(`Connecting to Tradovate ${this.config.useDemo ? 'DEMO' : 'LIVE'} API...`);
-
-      // Use the same format as the working slingshot backend
-      const authData = {
-        name: this.config.username,
-        password: process.env.TRADOVATE_PASSWORD  // Use env directly to avoid masking issues
-      };
-
-      // Add WSL2-specific Slingshot credentials
-      if (this.config.appId) authData.appId = this.config.appId;
-      if (this.config.appVersion) authData.appVersion = this.config.appVersion;
-      if (this.config.deviceId) authData.deviceId = this.config.deviceId;
-      if (this.config.cid) authData.cid = this.config.cid;
-      if (this.config.secret) authData.sec = this.config.secret; // Map 'secret' to 'sec' field
-
-      // Debug the request
-      this.logger.info(`Auth request URL: ${this.baseUrl}/auth/accesstokenrequest`);
-      this.logger.info(`Auth request data: ${JSON.stringify({ ...authData, password: '***masked***' }, null, 2)}`);
-
-
-      const response = await axios({
-        method: 'POST',
-        url: `${this.baseUrl}/auth/accesstokenrequest`,
-        data: authData,
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
-        validateStatus: function (status) {
-          return status < 500; // Accept any status code less than 500
-        }
-      });
-
-
-      // Check for error response first
-      if (response.data.errorText) {
-        throw new Error(`Authentication failed: ${response.data.errorText}`);
-      }
-
-      // Handle CAPTCHA challenge if present (copied from working backend)
-      if (response.data['p-ticket']) {
-        const ticket = response.data['p-ticket'];
-        const waitTime = response.data['p-time'];
-
-        this.logger.warn(`CAPTCHA challenge received. Waiting ${waitTime} seconds...`);
-        await new Promise(resolve => setTimeout(resolve, waitTime * 1000));
-
-        // Retry with ticket
-        authData.p_ticket = ticket;
-        const retryResponse = await axios({
-          method: 'POST',
-          url: `${this.baseUrl}/auth/accesstokenrequest`,
-          data: authData,
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-          },
-          validateStatus: function (status) {
-            return status < 500; // Accept any status code less than 500
-          }
-        });
-
-        if (!retryResponse.data.accessToken) {
-          throw new Error('CAPTCHA challenge failed - app registration required');
-        }
-
-        this.accessToken = retryResponse.data.accessToken;
-        this.mdAccessToken = retryResponse.data.mdAccessToken;
-        this.userId = retryResponse.data.userId;
-        this.tokenExpiry = new Date(retryResponse.data.expirationTime);
-
-        this.logger.info(`📋 Token expires at: ${this.tokenExpiry}`);
-      } else if (response.data.accessToken) {
-        this.accessToken = response.data.accessToken;
-        this.mdAccessToken = response.data.mdAccessToken;
-        this.userId = response.data.userId;
-        this.tokenExpiry = new Date(response.data.expirationTime);
-
-        this.logger.info(`📋 Token expires at: ${this.tokenExpiry}`);
-      } else {
-        throw new Error(response.data.errorText || 'Authentication failed');
-      }
+      await this.authenticate();
 
       this.logger.info(`Connected to Tradovate. User ID: ${this.userId}`);
       this.isConnected = true;
 
       // Load accounts
       await this.loadAccounts();
-
-      // Set up token refresh
-      this.setupTokenRefresh();
 
       // Initialize WebSocket connection
       await this.connectWebSocket();
@@ -160,69 +264,10 @@ class TradovateClient extends EventEmitter {
 
       return true;
     } catch (error) {
-
-      // Handle HTTP error responses that might contain CAPTCHA challenges
-      if (error.response && error.response.data) {
-        this.logger.error(`HTTP Status: ${error.response.status}`);
-        this.logger.error(`Response data: ${JSON.stringify(error.response.data, null, 2)}`);
-
-        // Check if this is actually a CAPTCHA challenge in the error response
-        if (error.response.data['p-ticket']) {
-          this.logger.info('CAPTCHA challenge detected in error response, handling...');
-          const ticket = error.response.data['p-ticket'];
-          const waitTime = error.response.data['p-time'];
-
-          this.logger.warn(`CAPTCHA challenge received. Waiting ${waitTime} seconds...`);
-          await new Promise(resolve => setTimeout(resolve, waitTime * 1000));
-
-          // Retry with ticket
-          authData.p_ticket = ticket;
-          try {
-            const retryResponse = await axios.post(`${this.baseUrl}/auth/accesstokenrequest`, authData, {
-              headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-              }
-            });
-
-            if (retryResponse.data.accessToken) {
-              this.accessToken = retryResponse.data.accessToken;
-              this.mdAccessToken = retryResponse.data.mdAccessToken;
-              this.userId = retryResponse.data.userId;
-              this.tokenExpiry = new Date(retryResponse.data.expirationTime);
-
-              this.logger.info(`📋 Token expires at: ${this.tokenExpiry}`);
-              this.logger.info(`Connected to Tradovate. User ID: ${this.userId}`);
-              this.isConnected = true;
-
-              // Load accounts
-              await this.loadAccounts();
-              this.setupTokenRefresh();
-
-              this.emit('connected', {
-                userId: this.userId,
-                accounts: this.accounts,
-                environment: this.config.useDemo ? 'demo' : 'live'
-              });
-
-              return true;
-            } else {
-              throw new Error('CAPTCHA challenge failed - no access token received');
-            }
-          } catch (retryError) {
-            this.logger.error('CAPTCHA retry failed:', retryError.message);
-            throw new Error(`CAPTCHA retry failed: ${retryError.message}`);
-          }
-        } else {
-          // Regular error response
-          const errorText = error.response.data.errorText || error.message;
-          throw new Error(`Authentication failed: ${errorText}`);
-        }
-      } else {
-        this.logger.error(`Network error: ${error.message}`);
-        this.logger.error(`Error code: ${error.code || 'Unknown'}`);
-        throw new Error(`Network error: ${error.message}`);
-      }
+      this.logger.error(`Tradovate connect failed: ${error.message}`);
+      throw error;
+    } finally {
+      this._connecting = false;
     }
   }
 
@@ -238,7 +283,11 @@ class TradovateClient extends EventEmitter {
     }
   }
 
-  async makeRequest(method, endpoint, data = null, retries = 3, pTicket = null) {
+  /**
+   * `redirected` marks the single retry after a wrong-host 3xx; it is carried through every other retry so the
+   * re-auth happens at most once per call.
+   */
+  async makeRequest(method, endpoint, data = null, retries = 3, pTicket = null, redirected = false) {
     // Rate limiting
     await this.enforceRateLimit();
 
@@ -253,7 +302,10 @@ class TradovateClient extends EventEmitter {
       const config = {
         method,
         url,
-        headers
+        headers,
+        // Never follow a redirect with a bearer token attached: axios strips Authorization on a cross-origin
+        // redirect, so a wrong-host 307 would come back as a 401 and hide the real cause (routing).
+        maxRedirects: 0
       };
 
       // Add p-ticket to request data if provided (for penalty retry)
@@ -289,18 +341,31 @@ class TradovateClient extends EventEmitter {
           this.logger.warn(`⏰ Received p-ticket penalty. Waiting ${pTime} seconds before retry...`);
           await new Promise(resolve => setTimeout(resolve, pTime * 1000));
           // Retry with the p-ticket included
-          return this.makeRequest(method, endpoint, data, retries - 1, pTicketNew);
+          return this.makeRequest(method, endpoint, data, retries - 1, pTicketNew, redirected);
         }
       }
 
       return response.data;
     } catch (error) {
       if (error.response) {
+        const status = error.response.status;
+
+        // Handle 3xx - we are on the wrong host. Re-auth re-reads apiHosts, then exactly one retry.
+        if (status >= 300 && status < 400) {
+          const location = error.response.headers?.location;
+          if (redirected) {
+            throw new Error(`API Error: ${status} - ${url} still redirects (Location: ${location}) after re-reading apiHosts`);
+          }
+          this.logger.warn(`⚠️ ${method} ${url} -> ${status} (Location: ${location}) — wrong host; re-authenticating to re-read apiHosts`);
+          await this.authenticate();
+          return this.makeRequest(method, endpoint, data, retries, pTicket, true);
+        }
+
         // Handle 401 - try to refresh token
-        if (error.response.status === 401 && retries > 0) {
+        if (status === 401 && retries > 0) {
           this.logger.warn('Token expired, attempting refresh...');
           await this.refreshToken();
-          return this.makeRequest(method, endpoint, data, retries - 1, pTicket);
+          return this.makeRequest(method, endpoint, data, retries - 1, pTicket, redirected);
         }
 
         // Handle rate limiting (429 response)
@@ -320,7 +385,7 @@ class TradovateClient extends EventEmitter {
               this.logger.warn(`⏰ Received p-ticket penalty (429). Waiting ${pTime} seconds before retry...`);
               await new Promise(resolve => setTimeout(resolve, pTime * 1000));
               // Retry with the p-ticket included
-              return this.makeRequest(method, endpoint, data, retries - 1, pTicketNew);
+              return this.makeRequest(method, endpoint, data, retries - 1, pTicketNew, redirected);
             }
           }
 
@@ -328,10 +393,13 @@ class TradovateClient extends EventEmitter {
           const retryAfter = error.response.headers['retry-after'] || 60;
           this.logger.warn(`⏱️ Rate limited (429). Retrying after ${retryAfter} seconds`);
           await new Promise(resolve => setTimeout(resolve, retryAfter * 1000));
-          return this.makeRequest(method, endpoint, data, retries - 1, pTicket);
+          return this.makeRequest(method, endpoint, data, retries - 1, pTicket, redirected);
         }
 
-        throw new Error(`API Error: ${error.response.status} - ${JSON.stringify(error.response.data)}`);
+        // A wrong host can answer a BODYLESS 404 instead of a 307 — name the URL so the host is visible.
+        const body = error.response.data;
+        const detail = body === '' || body == null ? `${url} returned an empty body` : JSON.stringify(body);
+        throw new Error(`API Error: ${status} - ${detail}`);
       }
       throw error;
     }
@@ -362,27 +430,45 @@ class TradovateClient extends EventEmitter {
     this.rateLimitTracker.set(now, true);
   }
 
-  async refreshToken() {
+  /**
+   * renewaccesstoken also carries apiHosts, and the org can move between renewals, so the reply goes through
+   * _applyAuthResponse (which redials the socket if the trading host changed). `redirected` bounds the wrong-host
+   * recovery to one re-auth + one retry.
+   */
+  async refreshToken(redirected = false) {
+    let response;
     try {
-      const response = await axios.post(`${this.baseUrl}/auth/renewaccesstoken`, {}, {
+      response = await axios.post(`${this.baseUrl}/auth/renewaccesstoken`, {}, {
         headers: {
           'Authorization': `Bearer ${this.accessToken}`,
           'Content-Type': 'application/json',
           'Accept': 'application/json'
-        }
+        },
+        maxRedirects: 0   // see makeRequest: a followed redirect drops the bearer token
       });
-
-      this.accessToken = response.data.accessToken;
-      this.mdAccessToken = response.data.mdAccessToken;
-      this.tokenExpiry = new Date(response.data.expirationTime);
-
-      this.logger.info('Token refreshed successfully');
-      return true;
+      if (!response.data?.accessToken) {
+        throw new Error(`renew returned no token: ${JSON.stringify(response.data).slice(0, 200)}`);
+      }
     } catch (error) {
+      const status = error.response?.status;
+      if (status >= 300 && status < 400 && !redirected) {
+        // A redirect on a renewal means the org moved hosts. A full auth re-reads apiHosts, then one retry.
+        this.logger.warn(`⚠️ Token renew redirected ${status} — re-authenticating to re-read apiHosts`);
+        await this.authenticate();
+        return this.refreshToken(true);
+      }
       this.logger.error('Failed to refresh token:', error.message);
+      // connect() can reach here itself (loadAccounts → 401 → refresh). Falling back to connect() again from
+      // inside it would re-enter the same path — fail instead and let the outer connect() report it.
+      if (this._connecting) throw error;
       // If refresh fails, try to reconnect
       return this.connect();
     }
+
+    this._applyAuthResponse(response.data);
+    this.logger.info('Token refreshed successfully');
+    this.setupTokenRefresh();   // re-arm: every renewal is also a host re-read
+    return true;
   }
 
   setupTokenRefresh() {
@@ -392,12 +478,13 @@ class TradovateClient extends EventEmitter {
     }
 
     // Refresh token 5 minutes before expiry
-    const refreshTime = this.tokenExpiry.getTime() - Date.now() - (5 * 60 * 1000);
+    const refreshTime = this.tokenExpiry?.getTime() - Date.now() - (5 * 60 * 1000);
 
     if (refreshTime > 0) {
       this.tokenRefreshTimer = setTimeout(() => {
-        this.refreshToken();
+        this.refreshToken().catch(err => this.logger.error(`Scheduled token refresh failed: ${err.message}`));
       }, refreshTime);
+      this.tokenRefreshTimer.unref?.();
     }
   }
 
@@ -1526,22 +1613,40 @@ class TradovateClient extends EventEmitter {
 
   // WebSocket connection management
   async connectWebSocket() {
-    if (this.ws && this.wsConnected) {
+    // Tradovate allows ONE socket per user — never open a second while one is still handshaking.
+    if (this.ws && (this.wsConnected || this.ws.readyState === WebSocket.CONNECTING)) {
       this.logger.info('WebSocket already connected');
       return;
     }
 
     try {
-      this.logger.info('Connecting to Tradovate WebSocket...');
+      const url = this.wssUrl;
+      this.logger.info(`Connecting to Tradovate WebSocket ${url}...`);
 
       // Connect without headers - authenticate after connection
-      this.ws = new WebSocket(this.wssUrl);
+      const ws = new WebSocket(url);
+      this.ws = ws;
+
+      // Listening for this makes `ws` hand us the handshake response instead of a bare Error, so the status code
+      // survives — 421 (wrong host) must be told apart from any other handshake failure.
+      ws.on('unexpected-response', (req, res) => {
+        const status = res.statusCode;
+        if (this.ws === ws) { this.ws = null; this.wsConnected = false; }
+        try { ws.terminate(); } catch { /* already gone */ }   // its error/close now land on a socket we no longer own
+        if (status === 421) {
+          this._recoverFromWrongHost(url);
+          return;
+        }
+        this.logger.error(`WebSocket handshake rejected: ${url} -> ${status}`);
+        this.attemptWebSocketReconnection();
+      });
 
       // Set up event handlers
-      this.ws.on('open', () => {
+      ws.on('open', () => {
         this.logger.info('✅ WebSocket connected to Tradovate');
         this.wsConnected = true;
         this.wsReconnectAttempts = 0;
+        this._wrongHostRedialed = false;
         this.wsRequestId = 1;  // Reset for clean state on each new connection
 
         // Don't send anything immediately - wait for open frame
@@ -1551,7 +1656,7 @@ class TradovateClient extends EventEmitter {
         this.startHeartbeat();
       });
 
-      this.ws.on('message', (data) => {
+      ws.on('message', (data) => {
         try {
           // Liveness: any inbound frame (incl. 'h' heartbeats) proves the feed
           // is alive. The watchdog reconnects if this stops advancing.
@@ -1603,14 +1708,21 @@ class TradovateClient extends EventEmitter {
       });
 
       // Pong is also an inbound liveness signal (response to our ping()).
-      this.ws.on('pong', () => { this.lastInboundTs = Date.now(); });
+      ws.on('pong', () => { this.lastInboundTs = Date.now(); });
 
-      this.ws.on('error', (error) => {
+      // error/close from a socket we already replaced or deliberately closed (host-change redial, 421 abort,
+      // disconnect()) must not touch the current socket's state or start a second reconnect chain.
+      ws.on('error', (error) => {
+        if (this.ws !== ws) return;
         this.logger.error('WebSocket error:', error);
         this.wsConnected = false;
       });
 
-      this.ws.on('close', (code, reason) => {
+      ws.on('close', (code, reason) => {
+        if (this.ws !== ws) {
+          this.logger.info(`Retired WebSocket closed: ${code}`);
+          return;
+        }
         this.logger.warn(`WebSocket disconnected: ${code} - ${reason}`);
         this.wsConnected = false;
 
@@ -1624,6 +1736,35 @@ class TradovateClient extends EventEmitter {
       this.logger.error('Failed to connect WebSocket:', error);
       this.wsConnected = false;
     }
+  }
+
+  /**
+   * A 421 is the wrong-host rejection and it has NO fallback — redialling the same URL can only fail again. So one
+   * re-auth (which re-reads apiHosts) and exactly ONE more dial. Deliberately not wired into
+   * attemptWebSocketReconnection: the 2026-09-20 reconnect storm is what happens when a retry path can re-enter
+   * itself. The allowance resets only when a socket actually opens.
+   */
+  async _recoverFromWrongHost(rejectedUrl) {
+    if (this._wrongHostRedialed) {
+      this.logger.error(`🚨 WebSocket 421 again at ${rejectedUrl} after re-reading apiHosts — giving up; manual intervention needed`);
+      return;
+    }
+    this._wrongHostRedialed = true;
+    this.logger.warn(`⚠️ WebSocket 421 at ${rejectedUrl} — wrong host; re-authenticating to re-read apiHosts`);
+    try {
+      await this.authenticate();
+    } catch (err) {
+      this.logger.error(`🚨 Re-auth after WebSocket 421 failed: ${err.message} — not redialling`);
+      return;
+    }
+    await this.connectWebSocket();
+  }
+
+  /** A renewal moved the trading host: retire the socket on the old host and dial the new one, once. */
+  _redialOnNewHost(fromUrl, toUrl) {
+    this.logger.warn(`🌐 Trading host changed ${fromUrl} → ${toUrl} — redialling WebSocket`);
+    this.disconnectWebSocket();   // nulls this.ws first, so the old socket's close is ignored
+    this.connectWebSocket();
   }
 
   // Add request ID counter
